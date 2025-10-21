@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 09b4cce0a7fcd4c51bd82932c677dc8d
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences:
+  - currentSettings: {fileID: 11400000, guid: 2050485d3f2754bfcb547b81523f9099, type: 2}
+  - uguiDropdown: {instanceID: 0}
+  - uguiNameInput: {instanceID: 0}
+  - statusText: {instanceID: 0}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

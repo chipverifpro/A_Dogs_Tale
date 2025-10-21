@@ -1,0 +1,28 @@
+fileFormatVersion: 2
+guid: 4e8ae2607ef234a90bf3971761052f8b
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences:
+  - cfg: {fileID: 11400000, guid: 2050485d3f2754bfcb547b81523f9099, type: 2}
+  - bottomBanner: {instanceID: 0}
+  - timeManager: {instanceID: 0}
+  - tilemap: {instanceID: 0}
+  - floorTile: {instanceID: 0}
+  - wallTile: {instanceID: 0}
+  - doorClosedTile: {instanceID: 0}
+  - doorOpenTile: {instanceID: 0}
+  - grid: {instanceID: 0}
+  - floorPrefab: {instanceID: 0}
+  - rampPrefab: {instanceID: 0}
+  - cliffPrefab: {instanceID: 0}
+  - diagonalWallPrefab: {instanceID: 0}
+  - triangleFloorPrefab: {instanceID: 0}
+  - doorClosedPrefab: {instanceID: 0}
+  - doorOpenPrefab: {instanceID: 0}
+  - root: {instanceID: 0}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

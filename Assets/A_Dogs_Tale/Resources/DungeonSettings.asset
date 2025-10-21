@@ -1,0 +1,113 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 66e31e87dc1d940368e65604dddcac77, type: 3}
+  m_Name: DungeonSettings
+  m_EditorClassIdentifier: 
+  RoomAlgorithm: 5
+  TunnelsAlgorithm: 0
+  showBuildProcess: 0
+  stepDelay: 0.1
+  randomizeSeed: 1
+  seed: -1524356450
+  useThinWalls: 1
+  mapWidth: 100
+  mapHeight: 100
+  borderKeepout: 0
+  roundWorld: 1
+  maxElevation: 100
+  unitHeight: 0.1
+  ScentInterval: 30
+  ScentDecayRate: 0.9
+  ScentSpreadAmount: 0.1
+  ScentMinimum: 0.005
+  perlinFloorHeights: 0
+  perlinFloorWavelength: 0.05
+  GlobalPerlinSeed: 1
+  slopeRoomMaxAngle: 0
+  enableTiltedTiles: 1
+  tiltFloorTilesMaxAngle: 0
+  edgeTiltScale: 0.01
+  useDiagonalCorners: 0
+  skipOrthogonalWhenDiagonal: 1
+  perimeterWallSteps: 30
+  useScatterRooms: 0
+  roomAttempts: 50
+  roomsMax: 15
+  minRoomSize: 30
+  maxRoomSize: 60
+  generateOverlappingRooms: 1
+  MergeScatteredRooms: 1
+  allowVerticalStacking: 1
+  minVerticalStackHeight: 5
+  ovalRooms: 0
+  useCellularAutomata: 0
+  cellularFillPercent: 45
+  CellularGrowthSteps: 5
+  usePerlin: 1
+  perlinWavelength: 0.05
+  perlin2Wavelength: 0.01
+  perlin2Amplitude: 1
+  perlinThreshold: 0.45
+  MinimumRoomSize: 200
+  MinimumRockSize: 25
+  softBorderSize: 0
+  wallThickness: 1
+  minRoomHeight: 30
+  corridorWidth: 4
+  limit_slope: 0
+  minimumRamp: 11
+  maximumRamp: 10
+  organicJitterChance: 0.2
+  bezierControlOffset: 5
+  bezierMaxControl: 0.1
+  neighborShape: 0
+  includeDiagonals: 0
+  createBuilding: 0
+  cellar_floor_height: -10
+  ground_floor_height: 0
+  next_floor_height: 10
+  corridorAlgo: 0
+  roomSeedAlgo: 0
+  roomGrowAlgo: 0
+  scrapAlgo: 1
+  doorAlgo: 0
+  usePackedRooms: 1
+  useRoundPen: 0
+  corridor:
+    corridorWidth: 3
+    spineCount: 8
+    wanderiness: 25
+    loopChance: 0.15
+    drunkWalkers: 5
+    drunkStepsPerWalker: 100
+    drunkMinimumStraight: 10
+  RoomSeeding:
+    spacing: 12
+    alternateSides: 1
+    jitter: 2
+  grow:
+    stripRounds: 40
+    areaCreditMin: 200
+    areaCreditMax: 1200
+    wallMoat: 0
+    splitArea: 50
+    splitAspect: 2
+    passesBeforeSplit: 20
+    targetAspect: 2
+    percentSkipGrowth: 50
+  scraps:
+    closetMaxArea: 12
+  doors:
+    loopiness: 0
+    minDoorSpacing: 20
+    maxDoorsPerRoom: 10
+    deadEndReach: 6
