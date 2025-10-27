@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.Rendering.Universal;
 
 [RequireComponent(typeof(CombatActor))]
 public class PlayerCombatInput : MonoBehaviour
@@ -46,6 +47,7 @@ public class PlayerCombatInput : MonoBehaviour
 
     void HandlePointer(bool down, bool up, Vector2 pos)
     {
+        //Debug.Log($"Handle Pointer: down={down}, up={up}, pos={pos}, tracking={tracking}");
         if (down)
         {
             tracking = true;
@@ -54,7 +56,7 @@ public class PlayerCombatInput : MonoBehaviour
         }
 
         if (!tracking) return;
-
+        Debug.Log($"startedOnPlayer = {startedOnPlayer}");
         if (up)
         {
             // Decide gesture only if it began on the player (otherwise it’s movement)
@@ -85,6 +87,7 @@ public class PlayerCombatInput : MonoBehaviour
 
     bool IsNearPlayerScreen(Vector2 screenPos, float radiusPx)
     {
+        Debug.Log("Is Near Player Screen");
         if (!cam) return false;
         Vector3 playerScreen = cam.WorldToScreenPoint(transform.position);
         playerScreen.z = 0;
@@ -93,6 +96,7 @@ public class PlayerCombatInput : MonoBehaviour
 
     bool IsAimedTowardEnemy(Vector2 start, Vector2 end, float coneDeg)
     {
+        Debug.Log("Is Aimed Toward Enemy");
         if (!cam || !enemy) return true; // be permissive if missing refs
         Vector2 v = (end - start).normalized;
 

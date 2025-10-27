@@ -1,16 +1,25 @@
 using UnityEngine;
 
-public class EnemyStun : MonoBehaviour
+public class EnemyStun : MonoBehaviour, IStunnable
 {
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
+    public bool IsStunned { get; private set; }
+    float stunEnd;
+
+    public void Stun(float duration)
     {
-        
+        if (duration <= 0f) return;
+        Debug.Log("Stun");
+        IsStunned = true;
+        stunEnd = Time.time + duration;
+        // TODO: play stun VFX/anim, disable attack AI, lower guard, etc.
     }
 
-    // Update is called once per frame
     void Update()
     {
-        
+        if (IsStunned && Time.time >= stunEnd)
+        {
+            IsStunned = false;
+            // TODO: exit stun VFX/anim, re-enable AI
+        }
     }
 }

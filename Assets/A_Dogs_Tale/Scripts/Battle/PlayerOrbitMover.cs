@@ -63,6 +63,7 @@ public class PlayerOrbitMover : MonoBehaviour
         {
             if (Input.GetMouseButton(0))
             {
+                Debug.Log("Mouse Button 0");
                 if (ScreenDragToWorld(Input.mousePosition, out Vector3 world))
                     UpdateOrbitFromPointer(world);
             }
@@ -72,6 +73,7 @@ public class PlayerOrbitMover : MonoBehaviour
         if (Input.touchSupported && Input.touchCount > 0)
         {
             var t = Input.GetTouch(0);
+            Debug.Log($"Get Touch: TouchPhase = {t.phase}");
             if (t.phase == TouchPhase.Moved || t.phase == TouchPhase.Stationary)
             {
                 if (ScreenDragToWorld(t.position, out Vector3 world))
@@ -82,6 +84,7 @@ public class PlayerOrbitMover : MonoBehaviour
 
     void UpdateOrbitFromPointer(Vector3 pointerWorld)
     {
+        Debug.Log("Update Orbit From Pointer");
         // Vector from center -> pointer
         Vector3 toPointer = pointerWorld - centerPos; toPointer.y = 0f;
         if (toPointer.sqrMagnitude < 0.0001f) return;
@@ -97,6 +100,7 @@ public class PlayerOrbitMover : MonoBehaviour
 
     bool ScreenDragToWorld(Vector2 screen, out Vector3 world)
     {
+        Debug.Log("Screen Drag To World");
         world = Vector3.zero;
         if (!cam) return false;
 

@@ -35,6 +35,7 @@ public class HitZoneSystem : MonoBehaviour
 
     public HitZone EvaluateZone(Vector3 targetPos)
     {
+        //Debug.Log("Evaluate Zone");
         Vector3 fwd = transform.forward; fwd.y = 0f; fwd.Normalize();
         Vector3 toP = (targetPos - transform.position); toP.y = 0f;
         if (toP.sqrMagnitude < 0.0001f) return HitZone.Front;
@@ -57,6 +58,7 @@ public class HitZoneSystem : MonoBehaviour
 
     public float GetMultiplier(HitZone z)
     {
+        Debug.Log($"Get Multiplier zone={z}");
         switch (z)
         {
             case HitZone.Front:      return frontMult;

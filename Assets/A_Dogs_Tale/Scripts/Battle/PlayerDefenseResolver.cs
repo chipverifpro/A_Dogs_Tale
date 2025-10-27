@@ -18,7 +18,7 @@ public class PlayerDefenseResolver : MonoBehaviour, IHitReceiver
     public void ResolveIncomingHit(HitIntent hit, IStunnable attackerStunnable = null)
     {
         float now = Time.time;
-
+        Debug.Log("Resolve Incoming Hit");
         if (actor && actor.IsBlocking)
         {
             // Check perfect window
@@ -49,12 +49,14 @@ public class PlayerDefenseResolver : MonoBehaviour, IHitReceiver
 
     public void ReceiveHit(float damage)
     {
+        Debug.Log("Receive Hit");
         // Legacy IHitReceiver support if something calls straight damage
         ApplyDamage(damage);
     }
 
     void ApplyDamage(float dmg)
     {
+        Debug.Log("Apply Damage");
         hp = Mathf.Max(0f, hp - Mathf.Max(0f, dmg));
         if (hp <= 0f)
         {

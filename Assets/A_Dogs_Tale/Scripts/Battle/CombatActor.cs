@@ -40,6 +40,7 @@ public class CombatActor : MonoBehaviour
 
     public bool TryBlock()
     {
+        Debug.Log("Try Block");
         if (Time.time < lastBlockTime + blockCooldown || IsBlocking) return false;
         IsBlocking = true;
         lastBlockTime = Time.time;
@@ -59,6 +60,7 @@ public class CombatActor : MonoBehaviour
 
     public bool TryAttack(IHitReceiver target, float zoneMultiplier = 1f)
     {
+        Debug.Log("Try Attack");
         if (Time.time < lastAttackTime + attackCooldown || IsAttacking) return false;
         lastAttackTime = Time.time;
         IsAttacking = true;
@@ -117,3 +119,4 @@ public interface IStunnable
 {
     void Stun(float duration);
 }
+
