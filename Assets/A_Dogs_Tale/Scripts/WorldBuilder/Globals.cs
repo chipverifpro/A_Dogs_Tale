@@ -164,16 +164,16 @@ public partial class DungeonGenerator : MonoBehaviour
     {
         if (!field)
         {
-            Debug.Log($"Loading resource {resourcesPath}");
+            //Debug.Log($"Loading resource {resourcesPath}");
             var loaded = Resources.Load<GameObject>(resourcesPath);
             if (loaded)
             {
                 field = loaded;
-                Debug.Log($"Success");
+                //Debug.Log($"Success {resourcesPath}");
             }
             else
             {
-                Debug.Log($"Failure");
+                Debug.Log($"Failure to load {resourcesPath}");
             }
         }
     }

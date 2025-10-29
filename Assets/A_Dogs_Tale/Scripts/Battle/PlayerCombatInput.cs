@@ -21,6 +21,50 @@ public class PlayerCombatInput : MonoBehaviour
     bool tracking;
     bool startedOnPlayer;
 
+    // ...existing fields...
+    public ArrowVisual arrow;    // assign in Inspector
+    public ArenaRig arena;       // to project pointer onto the ground plane
+
+    // inside PlayerCombatInput
+    public CurvedArrowVisual curvedArrow;   // assign in Inspector
+
+
+    void HandlePointer(bool down, bool up, Vector2 pos)
+    {
+        if (down)
+        {
+            tracking = true;
+            startScreenPos = pos;
+            startedOnPlayer = IsNearPlayerScreen(pos, startOnPlayerRadiusPx);
+            if (!startedOnPlayer && curvedArrow) curvedArrow.Hide();
+        }
+
+        if (!tracking) return;
+
+        if (up)
+        {
+            // existing block/attack logic...
+            if (curvedArrow) curvedArrow.Hide();
+            tracking = false;
+        }
+    }
+
+    bool ScreenToGround(Vector2 screen, out Vector3 world)
+    {
+        world = Vector3.zero;
+        if (!cam) return false;
+
+        float groundY = arena ? arena.CenterPos.y : 0f;
+        Plane plane = new Plane(Vector3.up, new Vector3(0f, groundY, 0f));
+        Ray ray = cam.ScreenPointToRay(screen);
+        if (plane.Raycast(ray, out float enter))
+        {
+            world = ray.GetPoint(enter);
+            return true;
+        }
+        return false;
+    }
+
     void Awake()
     {
         actor = GetComponent<CombatActor>();
@@ -40,12 +84,98 @@ public class PlayerCombatInput : MonoBehaviour
         else
         {
             bool down = Input.GetMouseButtonDown(0);
-            bool up   = Input.GetMouseButtonUp(0);
+            bool up = Input.GetMouseButtonUp(0);
             HandlePointer(down, up, Input.mousePosition);
+        }
+
+        // your existing touch/mouse code...
+        // After you compute pos and call HandlePointer(down, up, pos) as you do now,
+        // also add a "while dragging" visual update:
+
+        if (tracking && startedOnPlayer)
+        {
+            Vector3 from = transform.position;
+            if (ScreenDragToWorld(Input.touchSupported && Input.touchCount > 0 ? (Vector2)Input.GetTouch(0).position : (Vector2)Input.mousePosition, out Vector3 to))
+            {
+                bool aimed = IsAimedTowardEnemy(startScreenPos,
+                                                Input.touchSupported && Input.touchCount > 0 ? (Vector2)Input.GetTouch(0).position : (Vector2)Input.mousePosition,
+                                                attackAimConeDeg);
+                if (arrow) arrow.Show(from, to, aimed);
+            }
+        }
+
+        // existing input...
+        Vector2 currentPos = Input.touchSupported && Input.touchCount > 0
+            ? (Vector2)Input.GetTouch(0).position
+            : (Vector2)Input.mousePosition;
+
+        if (tracking && startedOnPlayer && curvedArrow)
+        {
+            if (ScreenToGround(currentPos, out Vector3 to))
+            {
+                bool aimed = IsAimedTowardEnemy(startScreenPos, currentPos, attackAimConeDeg);
+                curvedArrow.Show(transform.position, to, aimed);
+            }
         }
     }
 
-    void HandlePointer(bool down, bool up, Vector2 pos)
+    void HandlePointer_old(bool down, bool up, Vector2 pos)
+    {
+        if (down)
+        {
+            tracking = true;
+            startScreenPos = pos;
+            startedOnPlayer = IsNearPlayerScreen(pos, startOnPlayerRadiusPx);
+            if (!startedOnPlayer && arrow) arrow.Hide();
+        }
+
+        if (!tracking) return;
+
+        if (up)
+        {
+            // existing attack/tap logic...
+            if (startedOnPlayer)
+            {
+                Vector2 delta = pos - startScreenPos;
+                float dragDist = delta.magnitude;
+
+                if (dragDist < attackDragMinDistPx)
+                {
+                    actor.TryBlock();
+                }
+                else
+                {
+                    if (IsAimedTowardEnemy(startScreenPos, pos, attackAimConeDeg))
+                    {
+                        float mult = enemyZones ? enemyZones.CurrentMultiplier : 1f;
+                        actor.TryAttack(hitTarget, mult);
+                    }
+                }
+            }
+            // Hide arrow when finger/mouse released
+            if (arrow) arrow.Hide();
+            tracking = false;
+        }
+    }
+
+    bool ScreenDragToWorld(Vector2 screen, out Vector3 world)
+    {
+        world = Vector3.zero;
+        if (!cam) return false;
+
+        // Project to the same ground plane you use for movement
+        float groundY = arena ? arena.CenterPos.y : 0f;
+        Plane plane = new Plane(Vector3.up, new Vector3(0f, groundY, 0f));
+        Ray ray = cam.ScreenPointToRay(screen);
+        if (plane.Raycast(ray, out float enter))
+        {
+            world = ray.GetPoint(enter);
+            return true;
+        }
+        return false;
+    }
+
+    void HandlePointer_old2(bool down, bool up, Vector2 pos)
     {
         //Debug.Log($"Handle Pointer: down={down}, up={up}, pos={pos}, tracking={tracking}");
         if (down)

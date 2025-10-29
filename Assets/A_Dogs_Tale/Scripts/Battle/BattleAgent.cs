@@ -33,3 +33,14 @@ public class BattleAgent
     string DodgeName;
     float DodgeSpeed;
 }
+
+
+//IDEAS:
+// Limit rotate speed, show rotation travel by rounded arrows
+// Switch from straight target arrow to curved when power-up
+// Combine functions into fewer classes.  Simplify.
+// Show limits that move-in/out can be, and player's position within the range
+// Effects for hit / miss
+// Add keyboard controls
+// Turn player in direction of travel, exposing side to enemy
+// Show block

@@ -1,11 +1,10 @@
 using System.Collections;
 using UnityEngine;
-using UnityEngine.Analytics;
-using UnityEngine.SceneManagement;
 
 public class SceneFader : MonoBehaviour
 {
     public ObjectDirectory dir;
+    public SFXPlayer sfx;
 
     public static SceneFader Instance;
 
@@ -37,6 +36,9 @@ public class SceneFader : MonoBehaviour
     void Start()
     {
         StartCoroutine(CrossFade());
+        
+        if (!sfx) sfx = FindFirstObjectByType<SFXPlayer>();
+        if (sfx) StartCoroutine(sfx.RandomRepeatSFX("German_shepherd_bark",minVol:0.05f, maxVol:0.15f, MinTime:5f, MaxTime: 15f));
     }
 
     private IEnumerator CrossFade()
@@ -56,9 +58,14 @@ public class SceneFader : MonoBehaviour
         yield return StartCoroutine(Fade(menuCanvasGroup, 0f, 1f));
     }
 
+
     public IEnumerator FadeToGame()
     {
         BottomBanner.Show("🐾 Welcome, Pup! On the way to Adventure...");
+
+        MusicPlayer musicPlayer = FindFirstObjectByType<MusicPlayer>();
+        if (musicPlayer != null)
+            musicPlayer.StartMusic(musicPlayer.exploreAudioFileName, fadeOut:true, fadeIn:false);
 
         // Display just the menu screen.
         //splashCanvasGroup.alpha = 0;
