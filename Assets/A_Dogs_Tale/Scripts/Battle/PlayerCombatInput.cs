@@ -175,7 +175,7 @@ public class PlayerCombatInput : MonoBehaviour
         return false;
     }
 
-    void HandlePointer_old2(bool down, bool up, Vector2 pos)
+    void HandlePointer_old2A(bool down, bool up, Vector2 pos)
     {
         //Debug.Log($"Handle Pointer: down={down}, up={up}, pos={pos}, tracking={tracking}");
         if (down)
