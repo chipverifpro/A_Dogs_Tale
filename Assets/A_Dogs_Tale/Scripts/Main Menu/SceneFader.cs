@@ -4,7 +4,7 @@ using UnityEngine;
 public class SceneFader : MonoBehaviour
 {
     public ObjectDirectory dir;
-    public SFXPlayer sfx;
+    public AudioPlayer sfx;
 
     public static SceneFader Instance;
 
@@ -37,7 +37,7 @@ public class SceneFader : MonoBehaviour
     {
         StartCoroutine(CrossFade());
         
-        if (!sfx) sfx = FindFirstObjectByType<SFXPlayer>();
+        if (!sfx) sfx = FindFirstObjectByType<AudioPlayer>();
         if (sfx) StartCoroutine(sfx.RandomRepeatSFX("German_shepherd_bark",minVol:0.05f, maxVol:0.15f, MinTime:5f, MaxTime: 15f));
     }
 

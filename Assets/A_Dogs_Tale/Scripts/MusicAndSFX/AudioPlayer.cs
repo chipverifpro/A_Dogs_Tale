@@ -3,33 +3,22 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Audio;
 
-public static class SFX_AudioGroups
-{
-    // Register your groups here (drag in via Inspector)
-    public static AudioMixerGroup SFX;
-    public static AudioMixerGroup UI;
-    public static AudioMixerGroup Music;
-    public static AudioMixerGroup Voices;
-    public static AudioMixerGroup Ambient;
+/*. -- OLD DESCRIPTIONS --
+in AudioCatalog.cs...
+--SFX_AudioGroups is just a holder for the AudioMixerGroup controls.
+--SFX_Entry holds all data and options about a audio track.
+--SFX_Catalog is the master list of all known audio tracks.
 
-    // You can extend this with more categories
-    public static AudioMixerGroup GetGroup(string channel)
-    {
-        switch (channel.ToUpperInvariant())
-        {
-            case "MUSIC": return Music;
-            case "UI": return UI;
-            case "VOICES": return Voices;
-            case "AMBIENT": return Ambient;
-            default: return SFX; // default/fallback
-        }
-    }
-}
+
+in AudioPlayer.cs...
+--AudioPlayTracking holds data needed to interrupt currently playing tracks.
+--AudioPlayer has a pool of AudioSource structures intended to be reused.
+*/
+
 
 // Track all active audio tasks for easy cancel/cleanup
-public class SFX_Tasks
+public class AudioPlayTracking
 {
-    //public SFX_Entry entry;       // sfx (now parent of this)
     public AudioSource src;         // src
     public GameObject go;           // go
     public bool isTempGO;           // singleton
@@ -38,12 +27,12 @@ public class SFX_Tasks
     public bool stopRepeating = false; // stop at end of this track
 
     //see comment in SFX_Catalog.LookupAndStopAudioPlaying() for 'fadeout' options
-    public IEnumerator Abort_SFX(SFX_Entry entry, float fadeout)
+    public IEnumerator Abort_SFX(AudioClipCfg entry, float fadeout)
     {
         // kill the driving loop coroutine
         if (loopCo != null)
         {
-            SFXPlayer.Instance.StopCoroutine(loopCo);
+            AudioPlayer.Instance.StopCoroutine(loopCo);
             loopCo = null;
         }
 
@@ -86,177 +75,57 @@ public class SFX_Tasks
 }
 
 
-public class SFX_Entry
+public partial class AudioPlayer : MonoBehaviour
 {
-    public string name;
-    public string filename;
-    public string subtitle;
-    public float relative_volume = 1.0f;
-    public Object sourceObject = null;
-    public string channel = "SFX";
-    public Vector2 interval = new(999f, 0f); // no looping (x>y).
-                                             // (0,0)           : continuous loop
-                                             // (x,y) where x<y : wait between x and y seconds before repeat
-                                             // (x,y) where x=y : wait exactly x seconds before repeat         
-                                             // (x,y) where x>y : no looping, play once
+    public AudioCatalog catalog;
 
-    public Vector2 pitchRange = Vector2.one; // random from .x=min to .y=max
-    public AudioClip clip = null;
-    public AudioMixerGroup group = null;
-
-    // Lists to manage interrupting play.
-    public List<SFX_Tasks> running_Tasks = new();
-    //public List<Coroutine> running_Coroutines = new();
-    //public List<AudioSource> running_AudioSources = new();
-    //public List<GameObject> running_GameObjects = new();
-
-    public bool localized => sourceObject != null;
-
-    /// <summary>
-    /// Loads audio clip & assigns AudioMixerGroup based on 'channel'.
-    /// Returns true if both clip and group were successfully set.
-    /// </summary>
-    public bool SetClipAndGroup()
-    {
-        // --- Load clip if missing ---
-        if (clip == null)
-        {
-            clip = Resources.Load<AudioClip>($"Audio/{channel}/{filename}");
-            if (clip == null)
-            {
-                Debug.LogError($"[SFX_Entry: {name}] Clip not found at Resources/Audio/{channel}/{filename}");
-                return false;
-            }
-        }
-
-        // --- Assign mixer group ---
-        if (group == null)
-        {
-            group = SFX_AudioGroups.GetGroup(channel);
-            if (group == null)
-            {
-                Debug.LogWarning($"[SFX_Entry: {name}] No AudioMixerGroup found for channel '{channel}', using fallback.");
-                return clip != null; // clip still valid even if group missing
-            }
-        }
-
-        return true;
-    }
-
-    public bool LoadClip()
-    {
-        if (clip == null)
-            clip = Resources.Load<AudioClip>($"Audio/{channel}/{filename}");
-        return (clip != null);
-    }
-}
-
-
-// class SFX_Catalog contains a master list of all audio available
-//  to the game.  All that is needed is to call PlayClip() with
-//  the name of the track, and it handles everything else.
-public class SFX_Catalog : MonoBehaviour
-{
-    public List<SFX_Entry> sfx_List;    // catalog of sounds
- 
-    void Awake()
-    {
-        SFX_Entry sfx;
-        // --------------------
-        sfx = new()
-        {
-            name = "Bark_GermanShepherd",
-            filename = "Bark_GermanShepherd",
-            subtitle = "[Bark (German Shepherd)]",
-            sourceObject = GameObject.Find("AgentGermanShepherd"),
-            pitchRange = new Vector2(.95f, 1.05f)
-        };
-        // Attempt load + group setup
-        if (!sfx.SetClipAndGroup())
-            Debug.LogError($"Failed to initialize SFX entry: {sfx.name}");
-        else
-            sfx_List.Add(sfx);
-        // --------------------
-        sfx = new()
-        {
-            name = "Button-Click",
-            filename = "Button-Click",
-            subtitle = "[Button Click]",
-            channel = "UI"
-        };
-        // Attempt load + group setup
-        if (!sfx.SetClipAndGroup())
-            Debug.LogError($"Failed to initialize SFX entry: {sfx.name}");
-        else
-            sfx_List.Add(sfx);
-        // --------------------
-        sfx = new()
-        {
-            name = "Opening Title",
-            filename = "Curious Whispers",
-            subtitle = "[Music Playing]",
-            channel = "Music"
-        };
-        // Attempt load + group setup
-        if (!sfx.SetClipAndGroup())
-            Debug.LogError($"Failed to initialize SFX entry: {sfx.name}");
-        else
-            sfx_List.Add(sfx);
-        // --------------------
-        sfx = new()
-        {
-            name = "Mission 01",
-            filename = "Through the Windowpane",
-            subtitle = "[Music Playing]",
-            channel = "Music"
-        };
-        // Attempt load + group setup
-        if (!sfx.SetClipAndGroup())
-            Debug.LogError($"Failed to initialize SFX entry: {sfx.name}");
-        else
-            sfx_List.Add(sfx);
-        // --------------------
-    }
-
-    // PlayClip() finds the audio clip in the master catalog (sfx_List),
+    // PlayClip() finds the audio clip in the master catalog (clipCfgList),
     //  configures everything, and then launches the Coroutine
     //  PlayWithInterval() which starts the play and follows
     //  it through it's lifecycle.
-    // Each entry in the master catalog (a unique "sfx") maintains
+    // Each entry in the master catalog (a unique "clipCfg") maintains
     //  a list of currently playing copies so they can be ended
     //  anytime needed.
     bool PlayClip(string name)
     {
         // 1. Find entry
-        SFX_Entry sfx = sfx_List.Find(e => e.name == name);
+        AudioClipCfg clipCfg = catalog.clipCfgList.Find(e => e.name == name);
 
-        if (sfx == null)
+        if (clipCfg == null)
         {
-            Debug.LogWarning($"[SFX_Catalog] SFX '{name}' not found in sfx_List.");
+            Debug.LogWarning($"[SFX_Catalog] SFX '{name}' not found in clipCfgList.");
             return false;
         }
 
-        // 2. Ensure clip and mixer group loaded
-        if ((sfx.clip == null) || (sfx.group == null))
+        // 2. Ensure clip loaded
+        if (clipCfg.clip == null)
         {
-            if (!sfx.SetClipAndGroup()) // Load clip and assign mixer group
+            if (!catalog.LoadClip(clipCfg)) // Load clip
             {
-                Debug.LogError($"[SFX_Catalog] Failed to initialize SFX entry: {sfx.name}");
+                Debug.LogError($"Failed to load {clipCfg.channel} entry: {clipCfg.name} with file {clipCfg.filename}.");
                 return false;
             }
         }
 
-        // 2.1. Register this task so it can be terminated if needed.
-        SFX_Tasks taskInfo = new();
-        sfx.running_Tasks.Add(taskInfo);
+        // 2.1. Ensure channel is valid
+        if (clipCfg.group == null)
+        {
+            Debug.LogError($"{clipCfg.channel} was not matched to a group entry: {clipCfg.name}.");
+            return false;
+        }
 
-        // 3. Determine playback object
+        // 2.2. Register this task so it can be terminated if needed.
+        AudioPlayTracking taskInfo = new();
+        clipCfg.running_Tasks.Add(taskInfo);
+
+        // 3. Get playback object (GameObject) and source (AudioSource) 
         AudioSource src = null;
         GameObject go = null;
 
-        if (sfx.localized && sfx.sourceObject != null)
+        if (clipCfg.sourceObject != null)
         {
-            go = sfx.sourceObject as GameObject;
+            // a real object will be used as the source location of the sound
+            go = clipCfg.sourceObject as GameObject;
             src = go.GetComponent<AudioSource>();
             if (src == null) src = go.AddComponent<AudioSource>();
             taskInfo.go = go;
@@ -265,30 +134,42 @@ public class SFX_Catalog : MonoBehaviour
         }
         else
         {
-            go = new GameObject($"{sfx.channel}_{name}_Temp");
+            // a temporary object will be used as the source of the sound
+            go = new GameObject($"{clipCfg.channel}_{name}_Temp");
             src = go.AddComponent<AudioSource>();
-            go.transform.position = Vector3.zero;
-            src.spatialBlend = 0f; // 2D sound for non-localized
+            // if audioLocation is specified, use it, otherwise use 2D sound for non-localized sound
+            if (clipCfg.audioLocation == null)
+            {
+                // set sound location by moving the temporary GameObject
+                go.transform.position = clipCfg.audioLocation ?? Vector3.zero;
+            }
+            else
+            {
+                // no sound location specified
+                src.spatialBlend = 0f; // 2D sound for non-localized sounds like UI
+            }
             taskInfo.go = go;
             taskInfo.src = src;
-            taskInfo.isTempGO = true; // a new object was created
+            taskInfo.isTempGO = true; // a new GameObject was created so make ready to delete it when done.
         }
 
         // 4. Mixer group
-        src.outputAudioMixerGroup = sfx.group;
+        src.outputAudioMixerGroup = clipCfg.group;
 
         // 5. Volume and pitch
-        src.volume = sfx.relative_volume;
-        src.pitch = UnityEngine.Random.Range(sfx.pitchRange.x, sfx.pitchRange.y);
+        src.volume = clipCfg.relative_volume;
+        float pitch_min = (clipCfg.pitchRange?.x) ?? 1f;
+        float pitch_max = (clipCfg.pitchRange?.y) ?? 1f;
+        src.pitch = UnityEngine.Random.Range(pitch_min, pitch_max);
 
         // 6. Set clip
-        src.clip = sfx.clip;
-        src.loop = (sfx.interval == Vector2.zero); // Only use Unity's loop feature if interval is zero.
+        src.clip = clipCfg.clip;
+        src.loop = (clipCfg.interval == Vector2.zero); // Only use Unity's loop feature if interval is zero.
 
         // 7. Play once or looped
         // Use coroutine looping with fixed/random intervals, or one-time playback
         Coroutine co;
-        co = SFXPlayer.Instance.StartCoroutine(PlayWithInterval(src, sfx, taskInfo));
+        co = AudioPlayer.Instance.StartCoroutine(PlayWithInterval(src, clipCfg, taskInfo));
         taskInfo.loopCo = co; // save coroutine ID for manual kills
 
         return true;    // successfully started playing.
@@ -299,7 +180,7 @@ public class SFX_Catalog : MonoBehaviour
     //   repeat forever with fixed or random pauses between.
     // A TaskInfo structure is maintained so that tasks and audio 
     //   can be stopped if needed (ie. scene change, sound source disappears, etc)
-    IEnumerator PlayWithInterval(AudioSource src, SFX_Entry sfx, SFX_Tasks taskInfo)
+    IEnumerator PlayWithInterval(AudioSource src, AudioClipCfg clipCfg, AudioPlayTracking taskInfo)
     {
         yield return null;  // avoid race condition with caller function
 
@@ -318,7 +199,7 @@ public class SFX_Catalog : MonoBehaviour
                 yield break;
             }
             // Wait for the clip to end
-            float clipLength = sfx.clip.length / Mathf.Abs(src.pitch);
+            float clipLength = clipCfg.clip.length / Mathf.Abs(src.pitch);
             yield return new WaitForSeconds(clipLength);
 
             // done playing]
@@ -329,16 +210,19 @@ public class SFX_Catalog : MonoBehaviour
             if (taskInfo.stopRepeating)
                 break;
 
+            float interval_min = (clipCfg.pitchRange?.x) ?? 0f;
+            float interval_max = (clipCfg.pitchRange?.y) ?? 0f;
             // wait for interval before restarting
-            if (sfx.interval.x <= sfx.interval.y)
+            if (interval_min <= interval_max)
             {
                 // Delay random interval before beginning to play again.
-                float delay = UnityEngine.Random.Range(sfx.interval.x, sfx.interval.y);
+
+                float delay = UnityEngine.Random.Range(interval_min, interval_max);
                 yield return new WaitForSeconds(delay);
             }
-            else    // (interval.x > interval.y) is a special code that means no repeat
+            else    // (interval_min > interval_max) is a special code that means no repeat
             {
-                break;    // played once, now stop
+                break;    // played once, now stop looping
             }
         } // end while true
 
@@ -349,7 +233,7 @@ public class SFX_Catalog : MonoBehaviour
 
         // remove us from the running_Tasks list
         taskInfo.loopCo = null; // We are exiting, so don't need to keep this coroutine id anymore.  Not necessary, whole structure will be released on the next line.
-        sfx.running_Tasks.Remove(taskInfo);
+        clipCfg.running_Tasks.Remove(taskInfo);
     }
 
     // StopAudioPlaying has several options...
@@ -372,46 +256,45 @@ public class SFX_Catalog : MonoBehaviour
         bool stop_everything = !(stop_by_go || stop_by_temp_go || stop_by_name || stop_by_channel);
 
         // check all playing audio tracks
-        for (int snum = sfx_List.Count; snum >= 0; snum--)
+        for (int snum = catalog.clipCfgList.Count; snum >= 0; snum--)
         {
-            SFX_Entry sfx = sfx_List[snum];
-            for (int tnum = sfx.running_Tasks.Count; tnum >= 0; tnum--)
+            AudioClipCfg clipCfg = catalog.clipCfgList[snum];
+            for (int tnum = clipCfg.running_Tasks.Count; tnum >= 0; tnum--)
             {
-                SFX_Tasks task = sfx.running_Tasks[tnum];
+                AudioPlayTracking task = clipCfg.running_Tasks[tnum];
 
                 // Should we stop this task?  Does it meet any criteria?
                 bool stop_it =
                     stop_everything ||
                     (stop_by_go && task.go == go) ||
                     (stop_by_temp_go && task.isTempGO) ||
-                    (stop_by_name && sfx.name == trackName) ||
-                    (stop_by_channel && sfx.channel == channelName);
+                    (stop_by_name && clipCfg.name == trackName) ||
+                    (stop_by_channel && clipCfg.channel == channelName);
 
                 if (stop_it)
                 {
                     // Stop the task
-                    StartCoroutine(task.Abort_SFX(sfx, fadeOut));
+                    StartCoroutine(task.Abort_SFX(clipCfg, fadeOut));
 
                     // Remove task from the running tasks list
-                    sfx.running_Tasks.Remove(task);
+                    clipCfg.running_Tasks.Remove(task);
                 }
             }
         }
     }
-
 }
 
-
+// same class... continued.  The below code may still need some work.
 
 // optimized to keep a pool of audio sources to minimize garbage collection.
-public class SFXPlayer : MonoBehaviour
+public partial class AudioPlayer : MonoBehaviour
 {
     [SerializeField] int initialSize = 8;
     [SerializeField] AudioMixerGroup mixerGroup;
 
     readonly List<AudioSource> pool = new();
 
-    public static SFXPlayer Instance { get; private set; }
+    public static AudioPlayer Instance { get; private set; }
 
     void Awake()
     {
