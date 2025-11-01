@@ -136,6 +136,12 @@ public partial class DungeonGenerator : MonoBehaviour
         return; // didn't find it.
     }
 
+    public void MainMenuClosed()
+    {
+        // Start Game Music and SFX
+        dir.audioPlayer.PlayClip("Mission Home Sweet Home");
+    }
+
     // RegenerateDungeon is the main coroutine that handles dungeon generation.
     // It orchestrates the various steps involved in creating the dungeon layout.
     // Step 0: Select settings

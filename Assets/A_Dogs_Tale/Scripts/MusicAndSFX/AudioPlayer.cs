@@ -77,7 +77,21 @@ public class AudioPlayTracking
 
 public partial class AudioPlayer : MonoBehaviour
 {
-    public AudioCatalog catalog;
+    public AudioCatalog audioCatalog;
+
+    public static AudioPlayer Instance { get; private set; }
+
+    void Awake()
+    {
+        if (Instance != null && Instance != this)
+        {
+            Destroy(gameObject); // prevent duplicates
+            return;
+        }
+
+        Instance = this;
+        //DontDestroyOnLoad(gameObject); // optional: keep across scenes
+    }
 
     // PlayClip() finds the audio clip in the master catalog (clipCfgList),
     //  configures everything, and then launches the Coroutine
@@ -86,21 +100,23 @@ public partial class AudioPlayer : MonoBehaviour
     // Each entry in the master catalog (a unique "clipCfg") maintains
     //  a list of currently playing copies so they can be ended
     //  anytime needed.
-    bool PlayClip(string name)
+    public bool PlayClip(string name)
     {
+        Debug.Log($"[PlayClip] '{name}' requested.");
+            
         // 1. Find entry
-        AudioClipCfg clipCfg = catalog.clipCfgList.Find(e => e.name == name);
+        AudioClipCfg clipCfg = audioCatalog.clipCfgList.Find(e => e.name == name);
 
         if (clipCfg == null)
         {
-            Debug.LogWarning($"[SFX_Catalog] SFX '{name}' not found in clipCfgList.");
+            Debug.LogWarning($"[PlayClip] Audio definition '{name}' not found in clipCfgList. PlayClip aborting.");
             return false;
         }
 
         // 2. Ensure clip loaded
         if (clipCfg.clip == null)
         {
-            if (!catalog.LoadClip(clipCfg)) // Load clip
+            if (!audioCatalog.LoadClip(clipCfg)) // Load clip
             {
                 Debug.LogError($"Failed to load {clipCfg.channel} entry: {clipCfg.name} with file {clipCfg.filename}.");
                 return false;
@@ -157,10 +173,14 @@ public partial class AudioPlayer : MonoBehaviour
         src.outputAudioMixerGroup = clipCfg.group;
 
         // 5. Volume and pitch
-        src.volume = clipCfg.relative_volume;
+        float volume_min = (clipCfg.volumeRange?.x) ?? 1f;
+        float volume_max = (clipCfg.volumeRange?.y) ?? 1f;
+        src.volume = UnityEngine.Random.Range(volume_min, volume_max);
+
         float pitch_min = (clipCfg.pitchRange?.x) ?? 1f;
         float pitch_max = (clipCfg.pitchRange?.y) ?? 1f;
         src.pitch = UnityEngine.Random.Range(pitch_min, pitch_max);
+        Debug.Log("[PlayClip] {name}: volume = {src.volume}, pitch = {src.pitch}");
 
         // 6. Set clip
         src.clip = clipCfg.clip;
@@ -185,19 +205,23 @@ public partial class AudioPlayer : MonoBehaviour
         yield return null;  // avoid race condition with caller function
         int timesPlayed = 0;
 
+        Debug.Log($"[PlayWithInterval] '{clipCfg.name}' begins.");
+
         while (!taskInfo.stopRepeating) // repeat forever, unless abort requested at end of track
         {
-            if ((timesPlayed == 0) && (clipCfg.startAfterInterval == false))
+            if ((timesPlayed != 0) || (clipCfg.startAfterInterval == false)) // skip playing before waiting interval if requested.
             {
                 // Play the sound
                 src.Play();
                 taskInfo.isPlaying = true;
+                Debug.Log($"[PlayWithInterval] '{clipCfg.name}' started playing.");
 
                 if (src.loop)
                 {
                     // a continuously looping track will never end,
                     //  so go ahead and exit this task.  The taskInfo
                     //  will remain as a means of manually stopping it.
+                    Debug.Log($"[PlayWithInterval] '{clipCfg.name}' monitoring task ends since auto loop playing is active.");
                     taskInfo.loopCo = null;
                     yield break;    // exit coroutine without doing cleanup
                 }
@@ -208,27 +232,38 @@ public partial class AudioPlayer : MonoBehaviour
                 // done playing
                 src.Stop();     // probably not necessary, it should already stop itself.
                 taskInfo.isPlaying = false;
+                Debug.Log($"[PlayWithInterval] '{clipCfg.name}' finished playing.");
             }
 
             timesPlayed++;
-            
+
             // if we were requested to stop at end of track, then cleanup and end this coroutine
             if (taskInfo.stopRepeating)
+            {
+                Debug.Log($"PlayWithInterval: {clipCfg.name} stopRepeating flag observed, stopping.");
                 break;  // loop abort requested, so don't delay, exit the while loop and do cleanup
-                    
+            }
             if (clipCfg.IsPlayOnce())
             {
+                Debug.Log($"PlayWithInterval: {clipCfg.name} isPlayOnce, stopping. interval = {clipCfg.intervalRange}");
                 break;  // played once, now stop looping, exit the while loop and do cleanup
             }
 
             // Delay random interval before beginning to play again.
-            float interval_min = (clipCfg.interval?.x) ?? 0f;
-            float interval_max = (clipCfg.interval?.y) ?? 0f;
+            float interval_min = (clipCfg.intervalRange?.x) ?? 0f;
+            float interval_max = (clipCfg.intervalRange?.y) ?? 0f;
             float delay = UnityEngine.Random.Range(interval_min, interval_max);
+            Debug.Log($"[PlayWithInterval] '{clipCfg.name}' waiting {delay} between plays. intervalRange {clipCfg.intervalRange}");
             yield return new WaitForSeconds(delay);
 
         } // end while loop
 
+        if (taskInfo.stopRepeating)
+        {
+            src.Stop();
+            taskInfo.isPlaying = false;
+            Debug.Log($"PlayWithInterval: stopped {clipCfg.name} due to stopRepeating flag.");
+        }
         // DONE
         // cleanup temporary GameObject if we created one.
         if (taskInfo.isTempGO && taskInfo.go)
@@ -249,7 +284,7 @@ public partial class AudioPlayer : MonoBehaviour
     //  Immediate cutoff of playing. (fadeOut = 0)
     //  Fade out and then stop.      (fadeOut = # seconds)
     //  Allow to finish in-progress track, but don't start again. (fadeOut < 0)
-    public void LookupAndStopAudioPlaying(GameObject go = null, bool tempGO = false, string trackName = null, string channelName = null, float fadeOut = 0f)
+    public void StopClips(GameObject go = null, bool tempGO = false, string trackName = null, string channelName = null, float fadeOut = 0f)
     {
         // decide what to identify tracks to stop...
         bool stop_by_go = go != null;
@@ -259,10 +294,10 @@ public partial class AudioPlayer : MonoBehaviour
         bool stop_everything = !(stop_by_go || stop_by_temp_go || stop_by_name || stop_by_channel);
 
         // check all playing audio tracks
-        for (int snum = catalog.clipCfgList.Count; snum >= 0; snum--)
+        for (int snum = audioCatalog.clipCfgList.Count-1; snum >= 0; snum--)
         {
-            AudioClipCfg clipCfg = catalog.clipCfgList[snum];
-            for (int tnum = clipCfg.running_Tasks.Count; tnum >= 0; tnum--)
+            AudioClipCfg clipCfg = audioCatalog.clipCfgList[snum];
+            for (int tnum = clipCfg.running_Tasks.Count-1; tnum >= 0; tnum--)
             {
                 AudioPlayTracking task = clipCfg.running_Tasks[tnum];
 
@@ -287,6 +322,7 @@ public partial class AudioPlayer : MonoBehaviour
     }
 }
 
+/*
 // same class... continued.  The below code may still need some work.
 
 // optimized to keep a pool of audio sources to minimize garbage collection.
@@ -388,7 +424,7 @@ public partial class AudioPlayer : MonoBehaviour
         }
     }
 }
-
+*/
 /*
 USAGE: 
 

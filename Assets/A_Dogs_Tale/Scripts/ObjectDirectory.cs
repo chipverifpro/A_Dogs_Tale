@@ -16,8 +16,12 @@ public class ObjectDirectory : MonoBehaviour
     public DungeonGenerator gen;
     public DungeonGUISelector dungeonGUISelector;
     public DungeonBuildSettingsUI dungeonBuildSettingsUI;
+    public Pathfinding pathfinding;
 
-    public Pathfinding pathfinding; 
+
+    [Header("Audio Objects")]
+    public AudioPlayer audioPlayer;
+    public AudioCatalog audioCatalog;
 
 
     [Header("Game Objects")]
@@ -104,6 +108,8 @@ public class ObjectDirectory : MonoBehaviour
         if (!vcamOverhead) Debug.LogWarning($"[Directory{pass_num}] vcamOverhead not assigned.");
         if (!menuManager) Debug.LogWarning($"[Directory{pass_num}] menuManager not assigned.");
         if (!sceneFader) Debug.LogWarning($"[Directory{pass_num}] sceneFader not assigned.");
+        if (!audioPlayer) Debug.LogWarning($"[Directory{pass_num}] audioPlayer not assigned.");
+        if (!audioCatalog) Debug.LogWarning($"[Directory{pass_num}] audioCatalog not assigned.");
         if (!dungeonGUISelector) Debug.LogWarning($"[Directory{pass_num}] dungeonGUISelector not assigned.");
         if (!dungeonBuildSettingsUI) Debug.LogWarning($"[Directory{pass_num}] dungeonBuildSettingsUI not assigned.");
 

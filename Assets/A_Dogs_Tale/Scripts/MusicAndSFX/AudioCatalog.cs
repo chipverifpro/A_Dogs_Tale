@@ -4,9 +4,6 @@ using UnityEngine.Audio;
 
 /*
 in AudioCatalog.cs...
---AudioMixerGroups is just a holder for the AudioMixerGroup controls.
-    GetGroup() returns the mixer channel based on it's string name.
-
 --AudioClipCfg holds all data and options about an audio track.
     no functions
     
@@ -18,40 +15,16 @@ in AudioPlayer.cs...
 --SFXPlayer has a pool of AudioSource structures intended to be reused.
 */
 
-public static class AudioMixerGroups
-{
-    // Register your groups here (drag in via Inspector)
-    public static AudioMixerGroup SFX;
-    public static AudioMixerGroup UI;
-    public static AudioMixerGroup Music;
-    public static AudioMixerGroup Voices;
-    public static AudioMixerGroup Ambient;
-
-    // You can extend this with more categories
-    public static AudioMixerGroup GetGroup(string channel)
-    {
-        switch (channel.ToUpperInvariant())
-        {
-            case "MUSIC": return Music;
-            case "UI": return UI;
-            case "VOICES": return Voices;
-            case "AMBIENT": return Ambient;
-            default: return SFX; // default/fallback
-        }
-    }
-}
-
-
 public class AudioClipCfg
 {
     public string name;
     public string filename;
     public string subtitle;
-    public float relative_volume = 1.0f;
+    public Vector2? volumeRange = null;
     public Object sourceObject = null;
     public Vector3? audioLocation = null; // source of the sound if not attached to a sourceObject
     public string channel = "SFX";
-    public Vector2? interval = new(999f, 0f); // no looping (x>y).
+    public Vector2? intervalRange = new(999f, 0f); // no looping (x>y).
                                               // (0,0)           : continuous loop
                                               // (x,y) where x<y : wait between x and y seconds before repeat
                                               // (x,y) where x=y : wait exactly x seconds before repeat         
@@ -69,14 +42,14 @@ public class AudioClipCfg
     // Helpers for decoding interval
     public bool IsPlayOnce()
     {
-        float interval_min = (interval?.x) ?? 0f;
-        float interval_max = (interval?.y) ?? 0f;
+        float interval_min = (intervalRange?.x) ?? 0f;
+        float interval_max = (intervalRange?.y) ?? 0f;
         return (interval_min > interval_max);
     }
     public bool IsContinuousLoop()
     {
-        float interval_min = (interval?.x) ?? 0f;
-        float interval_max = (interval?.y) ?? 0f;
+        float interval_min = (intervalRange?.x) ?? 0f;
+        float interval_max = (intervalRange?.y) ?? 0f;
         return (interval_min == 0f && interval_max == 0f);
     }
 }
@@ -86,9 +59,10 @@ public class AudioClipCfg
 //  the name of the track, and it handles everything else.
 // It will eventually import this from some configuration file,
 //  maybe a .csv, a .json, or from the directory itself.
-public class AudioCatalog
+public class AudioCatalog : MonoBehaviour
 {
     public List<AudioClipCfg> clipCfgList = new(32);    // catalog of sounds
+    public AudioMixerGroups audioMixerGroups;           // mixer channels
 
     void StartTheCatalog()
     {
@@ -124,17 +98,18 @@ public class AudioCatalog
     }
 
     public bool AddClipToCatalog(
-            string name,
-            string filename,
-            string subtitle,
-            float relative_volume = 1.0f,
+            string name,                // REQUIRED
+            string filename,            // REQUIRED
+            string subtitle = null,
+            Vector2? volumeRange = null,
             Vector3? audioLocation = null,
             string sourceObjectName = null,
             string channel = "SFX",
-            Vector2? interval = null,   // (0,0)           : continuous loop, no gap (FYI: loop is managed by Unity automagically)
-                                        // (x,y) where x<y : wait between x and y seconds before repeat
-                                        // (x,y) where x=y : wait exactly x seconds before repeat         
-                                        // (x,y) where x>y : no looping, play once (DEFAULT if null)
+            Vector2? intervalRange = null,
+                    // intervalRange(0,0)           : continuous loop, no gap (FYI: loop is managed by Unity automagically)
+                    // intervalRange(x,y) where x<y : wait between x and y seconds before repeat
+                    // intervalRange(x,y) where x=y : wait exactly x seconds before repeat         
+                    // intervalRange(x,y) where x>y : no looping, play once (DEFAULT if null)
             bool startAfterInterval = true, // when true, will start with interval wait (if any) before first play.
             Vector2? pitchRange = null, // random from .x=min to .y=max (DEFAULT is (1,1) if null)
             bool deleteWhenDone = false,
@@ -147,10 +122,11 @@ public class AudioCatalog
             name = name,
             filename = filename,
             subtitle = subtitle,
-            relative_volume = relative_volume,
+            volumeRange = volumeRange,
             // sourceObject = GameObject.Find(sourceObjectName),  // initialized below...
             audioLocation = audioLocation,
             channel = channel,
+            intervalRange = intervalRange,
             startAfterInterval = startAfterInterval,
             pitchRange = pitchRange,
             deleteWhenDone = deleteWhenDone
@@ -168,12 +144,13 @@ public class AudioCatalog
             Debug.LogWarning($"clip name is blank, falling back to filename {clipCfg.name}");
         }
         // --- set default values for vecor (range) fields ---
-        if (pitchRange == null) clipCfg.pitchRange = new(1, 1);   // default non-varied pitch range
-        if (interval == null) clipCfg.interval = new(999f, 0f);   // default play-once (.x > .y)
+        if (pitchRange == null) clipCfg.pitchRange = new(1, 1);     // null default pitch=1
+        if (intervalRange == null) clipCfg.intervalRange = new(999f, 0f);     // null default play-once (.x > .y)
+        if (volumeRange == null) clipCfg.volumeRange = new(1f, 1f); // null default volume=1
 
         // --- Force startAfterInterval ---
         if (clipCfg.IsPlayOnce() || clipCfg.IsContinuousLoop())
-            clipCfg.startAfterInterval = false;
+            clipCfg.startAfterInterval = false;     // override this setting if there is no time interval
 
         // --- lookup sourceObject ---
         if (sourceObjectName != null && sourceObjectName.Length != 0)
@@ -197,11 +174,11 @@ public class AudioCatalog
         // --- Assign mixer group ---
         if (clipCfg.group == null)
         {
-            clipCfg.group = AudioMixerGroups.GetGroup(clipCfg.channel);
+            clipCfg.group = audioMixerGroups.GetGroup(clipCfg.channel);
             if (clipCfg.group == null)
             {
                 Debug.LogWarning($"[clipCfg]: {clipCfg.name}] No AudioMixerGroup found for channel '{clipCfg.channel}', using fallback SFX.");
-                clipCfg.group = AudioMixerGroups.GetGroup("SFX");
+                clipCfg.group = audioMixerGroups.GetGroup("SFX");
             }
         }
 
@@ -225,9 +202,14 @@ public class AudioCatalog
             // This does technically instantiate the AudioClip object but doesn’t decode or keep PCM data
             //   in memory if you unload immediately.  For small validation runs at startup, this is perfectly
             //   fine — it’s cheap and reliable.
-            var clip = Resources.Load<AudioClip>(clipCfg.filename);
+            var clip = Resources.Load<AudioClip>(GetPathToAudioClip(clipCfg));
             bool exists = (clip != null);
-            if (exists) Resources.UnloadAsset(clip); // release memory immediately
+            if (exists)
+            {
+                Resources.UnloadAsset(clip); // release memory immediately
+                clip = null;
+                clipCfgList.Add(clipCfg);
+            }
             if (!exists)
             {
                 // File doesnt exist: not an error, just a warning because we don't need it immediately.
@@ -239,6 +221,10 @@ public class AudioCatalog
         return true;
     }
 
+    public string GetPathToAudioClip (AudioClipCfg clipCfg)
+    {
+        return $"Audio/{clipCfg.channel}/{clipCfg.filename}";
+    }
     public bool UnloadClip(AudioClipCfg clipCfg)
     {
         if (clipCfg.clip != null)
@@ -259,7 +245,7 @@ public class AudioCatalog
         // --- Load clip if missing ---
         if (clipCfg.clip == null)
         {
-            clipCfg.clip = Resources.Load<AudioClip>($"Audio/{clipCfg.channel}/{clipCfg.filename}");
+            clipCfg.clip = Resources.Load<AudioClip>(GetPathToAudioClip(clipCfg));
             if (clipCfg.clip == null)
             {
                 Debug.LogError($"[SFX_Entry: {clipCfg.name}] Clip not found at Resources/Audio/{clipCfg.channel}/{clipCfg.filename}");
