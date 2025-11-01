@@ -2,12 +2,15 @@ using UnityEngine;
 using System.Collections;
 using System;
 
+//
+// Obsolete file, replaced by AudioPlayer and AudioCatalog
+//
 
 [RequireComponent(typeof(AudioSource))]
 public class MusicPlayer : MonoBehaviour
 {
-    public string titleAudioFileName = "Curious Whispers";
-    public string exploreAudioFileName = "Through the Windowpane";
+    public string titleAudioFileName = "Music/Curious Whispers";
+    public string exploreAudioFileName = "Music/Through the Windowpane";
     public float maxVolume = 0.1f;
     public float fadeInDuration = 2f;
     public float fadeOutDuration = 2f;
@@ -41,10 +44,10 @@ public class MusicPlayer : MonoBehaviour
         }
 
         // Load new music from Resources/Audio/
-        AudioClip clip = Resources.Load<AudioClip>("Audio/" + musicFilename);
+        AudioClip clip = Resources.Load<AudioClip>("Audio/Music/" + musicFilename);
         if (clip == null)
         {
-            Debug.LogError($"[TitleMusicPlayer] Could not find audio file: Resources/Audio/{musicFilename}");
+            Debug.LogError($"[TitleMusicPlayer] Could not find audio file: Resources/Audio/Music/{musicFilename}");
             yield break;
         }
 

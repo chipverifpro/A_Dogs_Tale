@@ -52,19 +52,33 @@ public class AudioClipCfg
     public Vector3? audioLocation = null; // source of the sound if not attached to a sourceObject
     public string channel = "SFX";
     public Vector2? interval = new(999f, 0f); // no looping (x>y).
-                                             // (0,0)           : continuous loop
-                                             // (x,y) where x<y : wait between x and y seconds before repeat
-                                             // (x,y) where x=y : wait exactly x seconds before repeat         
-                                             // (x,y) where x>y : no looping, play once
+                                              // (0,0)           : continuous loop
+                                              // (x,y) where x<y : wait between x and y seconds before repeat
+                                              // (x,y) where x=y : wait exactly x seconds before repeat         
+                                              // (x,y) where x>y : no looping, play once
 
     public Vector2? pitchRange = Vector2.one; // random from .x=min to .y=max
     public AudioClip clip = null;
     public AudioMixerGroup group = null;    // set from channel string above
     public bool deleteWhenDone = false;
+    public bool startAfterInterval = true;      // when false, will start with interval wait before first play.
 
     // List to manage interrupting play.  One entry per currently playing instance.
     public List<AudioPlayTracking> running_Tasks = new();
 
+    // Helpers for decoding interval
+    public bool IsPlayOnce()
+    {
+        float interval_min = (interval?.x) ?? 0f;
+        float interval_max = (interval?.y) ?? 0f;
+        return (interval_min > interval_max);
+    }
+    public bool IsContinuousLoop()
+    {
+        float interval_min = (interval?.x) ?? 0f;
+        float interval_max = (interval?.y) ?? 0f;
+        return (interval_min == 0f && interval_max == 0f);
+    }
 }
 
 // class AudioCatalog contains a master list of all audio available
@@ -74,65 +88,39 @@ public class AudioClipCfg
 //  maybe a .csv, a .json, or from the directory itself.
 public class AudioCatalog
 {
-    public List<AudioClipCfg> clipCfgList;    // catalog of sounds
+    public List<AudioClipCfg> clipCfgList = new(32);    // catalog of sounds
 
-    void Awake()
+    void StartTheCatalog()
     {
-        AudioClipCfg clipCfg;
-        // --------------------
-        clipCfg = new()
-        {
-            name = "Bark_GermanShepherd",
-            filename = "Bark_GermanShepherd",
-            subtitle = "[Bark (German Shepherd)]",
-            sourceObject = GameObject.Find("AgentGermanShepherd"),
-            pitchRange = new Vector2(.95f, 1.05f)
-        };
-        // Attempt load + group setup
-        if (!LoadClip(clipCfg))
-            Debug.LogError($"Failed to initialize SFX entry: {clipCfg.name}");
-        else
-            clipCfgList.Add(clipCfg);
-        // --------------------
-        clipCfg = new()
-        {
-            name = "Button-Click",
-            filename = "Button-Click",
-            subtitle = "[Button Click]",
-            channel = "UI"
-        };
-        // Attempt load + group setup
-        if (!LoadClip(clipCfg))
-            Debug.LogError($"Failed to initialize SFX entry: {clipCfg.name}");
-        else
-            clipCfgList.Add(clipCfg);
-        // --------------------
-        clipCfg = new()
-        {
-            name = "Opening Title",
-            filename = "Curious Whispers",
-            subtitle = "[Music Playing]",
-            channel = "Music"
-        };
-        // Attempt load + group setup
-        if (!LoadClip(clipCfg))
-            Debug.LogError($"Failed to initialize SFX entry: {clipCfg.name}");
-        else
-            clipCfgList.Add(clipCfg);
-        // --------------------
-        clipCfg = new()
-        {
-            name = "Mission 01",
-            filename = "Through the Windowpane",
-            subtitle = "[Music Playing]",
-            channel = "Music"
-        };
-        // Attempt load + group setup
-        if (!LoadClip(clipCfg))
-            Debug.LogError($"Failed to initialize SFX entry: {clipCfg.name}");
-        else
-            clipCfgList.Add(clipCfg);
-        // --------------------
+        AddClipToCatalog(
+            name: "Bark_GermanShepherd",
+            filename: "Bark_GermanShepherd",
+            subtitle: "[Bark (German Shepherd)]",
+            sourceObjectName: "AgentGermanShepherd",
+            pitchRange: new(.95f, 1.05f)
+        );
+
+        AddClipToCatalog(
+            name: "Button-Click",
+            filename: "Button-Click",
+            subtitle: "[Button Click]",
+            channel: "UI"
+        );
+
+        AddClipToCatalog(
+            name: "Opening Title",
+            filename: "Curious Whispers",
+            subtitle: "[Music Playing]",
+            channel: "Music"
+        );
+        
+        AddClipToCatalog(
+            name: "Mission 01",
+            filename: "Through the Windowpane",
+            subtitle: "[Music Playing]",
+            channel: "Music"
+        );
+
     }
 
     public bool AddClipToCatalog(
@@ -147,7 +135,7 @@ public class AudioCatalog
                                         // (x,y) where x<y : wait between x and y seconds before repeat
                                         // (x,y) where x=y : wait exactly x seconds before repeat         
                                         // (x,y) where x>y : no looping, play once (DEFAULT if null)
-
+            bool startAfterInterval = true, // when true, will start with interval wait (if any) before first play.
             Vector2? pitchRange = null, // random from .x=min to .y=max (DEFAULT is (1,1) if null)
             bool deleteWhenDone = false,
             bool preload = false
@@ -163,6 +151,7 @@ public class AudioCatalog
             // sourceObject = GameObject.Find(sourceObjectName),  // initialized below...
             audioLocation = audioLocation,
             channel = channel,
+            startAfterInterval = startAfterInterval,
             pitchRange = pitchRange,
             deleteWhenDone = deleteWhenDone
         };
@@ -181,6 +170,10 @@ public class AudioCatalog
         // --- set default values for vecor (range) fields ---
         if (pitchRange == null) clipCfg.pitchRange = new(1, 1);   // default non-varied pitch range
         if (interval == null) clipCfg.interval = new(999f, 0f);   // default play-once (.x > .y)
+
+        // --- Force startAfterInterval ---
+        if (clipCfg.IsPlayOnce() || clipCfg.IsContinuousLoop())
+            clipCfg.startAfterInterval = false;
 
         // --- lookup sourceObject ---
         if (sourceObjectName != null && sourceObjectName.Length != 0)
@@ -241,10 +234,8 @@ public class AudioCatalog
                 // Later attempts to play it will just skip the play request with a clip missing warning.
                 Debug.LogWarning($"Warning: Failed non-preload {channel} file existance check: {clipCfg.name}, filename: {clipCfg.filename}");
             }
-
         }
 
-        clipCfgList.Add(clipCfg);
         return true;
     }
 

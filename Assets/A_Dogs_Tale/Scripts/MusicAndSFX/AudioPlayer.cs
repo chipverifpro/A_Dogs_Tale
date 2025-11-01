@@ -164,10 +164,10 @@ public partial class AudioPlayer : MonoBehaviour
 
         // 6. Set clip
         src.clip = clipCfg.clip;
-        src.loop = (clipCfg.interval == Vector2.zero); // Only use Unity's loop feature if interval is zero.
+        src.loop = clipCfg.IsContinuousLoop(); // Only use Unity's loop feature if interval is zero.
 
         // 7. Play once or looped
-        // Use coroutine looping with fixed/random intervals, or one-time playback
+        // Use this same coroutine for looping with fixed/random intervals, or one-time playback
         Coroutine co;
         co = AudioPlayer.Instance.StartCoroutine(PlayWithInterval(src, clipCfg, taskInfo));
         taskInfo.loopCo = co; // save coroutine ID for manual kills
@@ -183,48 +183,51 @@ public partial class AudioPlayer : MonoBehaviour
     IEnumerator PlayWithInterval(AudioSource src, AudioClipCfg clipCfg, AudioPlayTracking taskInfo)
     {
         yield return null;  // avoid race condition with caller function
+        int timesPlayed = 0;
 
-        while (!taskInfo.stopRepeating)
+        while (!taskInfo.stopRepeating) // repeat forever, unless abort requested at end of track
         {
-            // Play the sound
-            src.Play();
-            taskInfo.isPlaying = true;
-
-            if (src.loop)
+            if ((timesPlayed == 0) && (clipCfg.startAfterInterval == false))
             {
-                // a continuously looping track will never end,
-                //  so go ahead and exit this task.  The taskInfo
-                //  will remain as a means of manually stopping it.
-                taskInfo.loopCo = null;
-                yield break;
+                // Play the sound
+                src.Play();
+                taskInfo.isPlaying = true;
+
+                if (src.loop)
+                {
+                    // a continuously looping track will never end,
+                    //  so go ahead and exit this task.  The taskInfo
+                    //  will remain as a means of manually stopping it.
+                    taskInfo.loopCo = null;
+                    yield break;    // exit coroutine without doing cleanup
+                }
+                // Wait for the clip to end
+                float clipLength = clipCfg.clip.length / Mathf.Abs(src.pitch);
+                yield return new WaitForSeconds(clipLength);
+
+                // done playing
+                src.Stop();     // probably not necessary, it should already stop itself.
+                taskInfo.isPlaying = false;
             }
-            // Wait for the clip to end
-            float clipLength = clipCfg.clip.length / Mathf.Abs(src.pitch);
-            yield return new WaitForSeconds(clipLength);
 
-            // done playing]
-            src.Stop();     // not necessary, it should already stop itself.
-            taskInfo.isPlaying = false;
-
+            timesPlayed++;
+            
             // if we were requested to stop at end of track, then cleanup and end this coroutine
             if (taskInfo.stopRepeating)
-                break;
-
-            float interval_min = (clipCfg.pitchRange?.x) ?? 0f;
-            float interval_max = (clipCfg.pitchRange?.y) ?? 0f;
-            // wait for interval before restarting
-            if (interval_min <= interval_max)
+                break;  // loop abort requested, so don't delay, exit the while loop and do cleanup
+                    
+            if (clipCfg.IsPlayOnce())
             {
-                // Delay random interval before beginning to play again.
+                break;  // played once, now stop looping, exit the while loop and do cleanup
+            }
 
-                float delay = UnityEngine.Random.Range(interval_min, interval_max);
-                yield return new WaitForSeconds(delay);
-            }
-            else    // (interval_min > interval_max) is a special code that means no repeat
-            {
-                break;    // played once, now stop looping
-            }
-        } // end while true
+            // Delay random interval before beginning to play again.
+            float interval_min = (clipCfg.interval?.x) ?? 0f;
+            float interval_max = (clipCfg.interval?.y) ?? 0f;
+            float delay = UnityEngine.Random.Range(interval_min, interval_max);
+            yield return new WaitForSeconds(delay);
+
+        } // end while loop
 
         // DONE
         // cleanup temporary GameObject if we created one.
