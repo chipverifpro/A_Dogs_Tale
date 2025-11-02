@@ -3,6 +3,7 @@ using UnityEngine.Audio;
 
 public class AudioMixerGroups : MonoBehaviour
 {
+    [Header("Object References")]
     // Register your groups here (drag in via Inspector)
     public AudioMixerGroup SFX;
     public AudioMixerGroup UI;
@@ -11,7 +12,7 @@ public class AudioMixerGroups : MonoBehaviour
     public AudioMixerGroup Ambient;
 
     // You can extend this with more categories
-    public AudioMixerGroup GetGroup(string channel)
+    public AudioMixerGroup GetMixerGroup(string channel)
     {
         switch (channel.ToUpperInvariant())
         {

@@ -22,6 +22,7 @@ public class ObjectDirectory : MonoBehaviour
     [Header("Audio Objects")]
     public AudioPlayer audioPlayer;
     public AudioCatalog audioCatalog;
+    public AudioMixerGroups audioMixerGroups;
 
 
     [Header("Game Objects")]
@@ -110,6 +111,7 @@ public class ObjectDirectory : MonoBehaviour
         if (!sceneFader) Debug.LogWarning($"[Directory{pass_num}] sceneFader not assigned.");
         if (!audioPlayer) Debug.LogWarning($"[Directory{pass_num}] audioPlayer not assigned.");
         if (!audioCatalog) Debug.LogWarning($"[Directory{pass_num}] audioCatalog not assigned.");
+        if (!audioMixerGroups) Debug.LogWarning($"[Directory{pass_num}] audioMixerGroups not assigned.");
         if (!dungeonGUISelector) Debug.LogWarning($"[Directory{pass_num}] dungeonGUISelector not assigned.");
         if (!dungeonBuildSettingsUI) Debug.LogWarning($"[Directory{pass_num}] dungeonBuildSettingsUI not assigned.");
 

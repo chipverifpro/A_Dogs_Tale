@@ -1334,6 +1334,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 562558075b7d3458fa5e6359d98566eb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AudioPlayer
+  dir: {fileID: 0}
   audioCatalog: {fileID: 215243011}
 --- !u!114 &215243010
 MonoBehaviour:
@@ -1365,6 +1366,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AudioCatalog
   audioMixerGroups: {fileID: 215243010}
+  audioPlayer: {fileID: 0}
+  dir: {fileID: 0}
 --- !u!1 &217123029
 GameObject:
   m_ObjectHideFlags: 0
@@ -4705,8 +4708,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   fader: {fileID: 836622445}
+  audioMixerGroups: {fileID: 215243010}
+  audioPlayer: {fileID: 215243009}
+  dir: {fileID: 1920128612}
   bottomBanner: {fileID: 669106355}
-  menuMusic: 
   btnNewMap: {fileID: 1119592449}
   btnEditMap: {fileID: 1020557427}
   btnExplore: {fileID: 1350611108}
@@ -12213,6 +12218,7 @@ MonoBehaviour:
   pathfinding: {fileID: 1480059015}
   audioPlayer: {fileID: 215243009}
   audioCatalog: {fileID: 215243011}
+  audioMixerGroups: {fileID: 0}
   pack: {fileID: 766807147}
   player: {fileID: 556401680}
   brain: {fileID: 1815589289}

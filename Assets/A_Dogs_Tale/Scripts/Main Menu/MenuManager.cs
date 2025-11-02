@@ -5,20 +5,15 @@ using UnityEngine.SceneManagement;
 
 public class MenuManager : MonoBehaviour
 {
+    [Header("Object References")]
     public SceneFader fader;
 
-    [Header("Panels")]
-    //public GameObject splashPanel;
-    //public GameObject menuPanel;
-    //public CanvasGroup menuCanvas;      // assign if you want fade; else leave null
-
+    public AudioMixerGroups audioMixerGroups;           // mixer channels
+    public AudioPlayer audioPlayer;                     // play controls
+    public ObjectDirectory dir;
 
     [Header("Bottom Banner")]
     public BottomBanner bottomBanner;  // assign your existing BottomBanner
-
-    [Header("Splash Settings")]
-    //public float splashDuration = 2f;   // seconds before showing menu
-    public string menuMusic;            // optional background music clip name
 
 
     void Awake()
@@ -47,6 +42,12 @@ public class MenuManager : MonoBehaviour
     void Start()
     {
         // everything moved to Awake, just wait for button presses
+        dir.audioCatalog.AddClipToCatalog(
+            name: "Button-Click",
+            filename: "Button-Click",
+            subtitle: "[Button Click]",
+            channel: "UI"
+        );
     }
 
     // === BUTTON HOOKS ===
@@ -54,6 +55,7 @@ public class MenuManager : MonoBehaviour
     public void OnNewMap()
     {
         BottomBanner.Show("🐾 Digging a brand new hole...");
+        dir.audioPlayer.PlayClip("Button-Click");
         StartCoroutine(fader.FadeToGame());
         //SceneManager.LoadScene("2D_Fargoal_Map");  // your map gen scene
         

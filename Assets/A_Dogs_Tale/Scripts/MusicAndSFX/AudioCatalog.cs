@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Audio;
@@ -32,7 +33,7 @@ public class AudioClipCfg
 
     public Vector2? pitchRange = Vector2.one; // random from .x=min to .y=max
     public AudioClip clip = null;
-    public AudioMixerGroup group = null;    // set from channel string above
+    public AudioMixerGroup mixerGroup = null;    // set from channel string above
     public bool deleteWhenDone = false;
     public bool startAfterInterval = true;      // when false, will start with interval wait before first play.
 
@@ -61,11 +62,31 @@ public class AudioClipCfg
 //  maybe a .csv, a .json, or from the directory itself.
 public class AudioCatalog : MonoBehaviour
 {
-    public List<AudioClipCfg> clipCfgList = new(32);    // catalog of sounds
-    public AudioMixerGroups audioMixerGroups;           // mixer channels
+    public List<AudioClipCfg> clipCfgList = new(10);    // catalog of sounds
 
-    void StartTheCatalog()
+    [Header("Object References")]
+    public AudioMixerGroups audioMixerGroups;           // mixer channels
+    public AudioPlayer audioPlayer;                     // play controls
+    public ObjectDirectory dir;
+
+    // call this from AudioPlayer.Awake()
+    public void StartAudioCatalog()
     {
+        // Initialize class references...
+        if (dir == null) dir = FindFirstObjectByType<ObjectDirectory>(FindObjectsInactive.Include);
+        if (dir == null)
+        {
+            Debug.LogError($"AudioCatalog: ObjectDirectory not found");
+            return;
+        }
+        if (audioMixerGroups == null) audioMixerGroups = dir.audioMixerGroups;
+        if (audioPlayer == null) audioPlayer = dir.audioPlayer;
+    }
+
+    // these should move to someplace more relevant to each.
+    public void AddSomeClipsToTheCatalog()
+    {
+        // add some clips to the catalog...
         AddClipToCatalog(
             name: "Bark_GermanShepherd",
             filename: "Bark_GermanShepherd",
@@ -87,7 +108,7 @@ public class AudioCatalog : MonoBehaviour
             subtitle: "[Music Playing]",
             channel: "Music"
         );
-        
+
         AddClipToCatalog(
             name: "Mission 01",
             filename: "Through the Windowpane",
@@ -104,12 +125,12 @@ public class AudioCatalog : MonoBehaviour
             Vector2? volumeRange = null,
             Vector3? audioLocation = null,
             string sourceObjectName = null,
-            string channel = "SFX",
+            string channel = null,
             Vector2? intervalRange = null,
-                    // intervalRange(0,0)           : continuous loop, no gap (FYI: loop is managed by Unity automagically)
-                    // intervalRange(x,y) where x<y : wait between x and y seconds before repeat
-                    // intervalRange(x,y) where x=y : wait exactly x seconds before repeat         
-                    // intervalRange(x,y) where x>y : no looping, play once (DEFAULT if null)
+            // intervalRange(0,0)           : continuous loop, no gap (FYI: loop is managed by Unity automagically)
+            // intervalRange(x,y) where x<y : wait between x and y seconds before repeat
+            // intervalRange(x,y) where x=y : wait exactly x seconds before repeat         
+            // intervalRange(x,y) where x>y : no looping, play once (DEFAULT if null)
             bool startAfterInterval = true, // when true, will start with interval wait (if any) before first play.
             Vector2? pitchRange = null, // random from .x=min to .y=max (DEFAULT is (1,1) if null)
             bool deleteWhenDone = false,
@@ -171,29 +192,27 @@ public class AudioCatalog : MonoBehaviour
         if ((clipCfg.sourceObject != null) && (clipCfg.audioLocation != null))
             Debug.LogWarning($"Warning: in {clipCfg.name} an audioLocation was specified {clipCfg.audioLocation} in addition to a source object {sourceObjectName}.  audioLocation will be ignored.");
 
-        // --- Assign mixer group ---
-        if (clipCfg.group == null)
+        // --- Assign channel and mixer group ---
+        if (string.IsNullOrEmpty(clipCfg.channel)) clipCfg.channel = "SFX";
+
+        if (clipCfg.mixerGroup == null)
         {
-            clipCfg.group = audioMixerGroups.GetGroup(clipCfg.channel);
-            if (clipCfg.group == null)
+            clipCfg.mixerGroup = audioMixerGroups.GetMixerGroup(clipCfg.channel);
+            if (clipCfg.mixerGroup == null)
             {
                 Debug.LogWarning($"[clipCfg]: {clipCfg.name}] No AudioMixerGroup found for channel '{clipCfg.channel}', using fallback SFX.");
-                clipCfg.group = audioMixerGroups.GetGroup("SFX");
+                clipCfg.mixerGroup = audioMixerGroups.GetMixerGroup("SFX");
             }
         }
 
         // --- load audio now or later ---
         if (preload)    // load audio now
         {
-            // Attempt load + group setup
+            // Attempt clip load
             if (!LoadClip(clipCfg))
             {
                 Debug.LogError($"Failed to load {channel} entry: {clipCfg.name}, filename: {clipCfg.filename}");
                 return false;
-            }
-            else
-            {
-                clipCfgList.Add(clipCfg);
             }
         }
         else // not preload, load audio later
@@ -208,7 +227,6 @@ public class AudioCatalog : MonoBehaviour
             {
                 Resources.UnloadAsset(clip); // release memory immediately
                 clip = null;
-                clipCfgList.Add(clipCfg);
             }
             if (!exists)
             {
@@ -218,13 +236,61 @@ public class AudioCatalog : MonoBehaviour
             }
         }
 
+        // --- Determine if clipCfg already existed ---
+        // Find entry
+        AudioClipCfg clipCfg_old = clipCfgList.Find(e => e.name == name);
+
+        // M2. Merge if it exists
+        if (clipCfg_old != null)
+        {
+            bool success = MergeClipCfg(clipCfg_old, ref clipCfg,
+                                        name,
+                                        filename,
+                                        subtitle,
+                                        volumeRange,
+                                        audioLocation,
+                                        sourceObjectName,
+                                        channel,
+                                        intervalRange,
+                                        startAfterInterval,
+                                        pitchRange,
+                                        deleteWhenDone,
+                                        preload );
+            if (success == true)
+            {
+                UnloadClip(clipCfg_old); // free up memory if any allocated
+                clipCfgList.Remove(clipCfg_old);
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        // --- Add clipCfg to master list
+        clipCfgList.Add(clipCfg);
+
         return true;
     }
 
-    public string GetPathToAudioClip (AudioClipCfg clipCfg)
+    public string GetPathToAudioClip(AudioClipCfg clipCfg)
     {
         return $"Audio/{clipCfg.channel}/{clipCfg.filename}";
     }
+
+    public IEnumerator UnloadClipCfg(AudioClipCfg clipCfg, float fadeOut)
+    {
+        yield return null;
+        if (clipCfg.running_Tasks.Count != 0)
+        {
+            audioPlayer.StopClips(trackName: clipCfg.name, fadeOut: fadeOut);
+            clipCfgList.Remove(clipCfg);    // remove entry from master list (but keep local reference here)
+            yield return new WaitUntil(() => clipCfg.running_Tasks.Count == 0);
+        }
+        if (clipCfg.clip != null) Resources.UnloadAsset(clipCfg.clip);
+        clipCfg.clip = null; // break references so GC can clean up
+    }
+
     public bool UnloadClip(AudioClipCfg clipCfg)
     {
         if (clipCfg.clip != null)
@@ -238,7 +304,7 @@ public class AudioCatalog : MonoBehaviour
 
     /// <summary>
     /// Loads audio clip & assigns AudioMixerGroup based on 'channel'.
-    /// Returns true if both clip and group were successfully set.
+    /// Returns true if clip was successfully set.
     /// </summary>
     public bool LoadClip(AudioClipCfg clipCfg)
     {
@@ -255,5 +321,48 @@ public class AudioCatalog : MonoBehaviour
 
         return true;
     }
-}
 
+    // MergeClipCfg(old, ref new):
+    //   If any fields are not specifically set by non-default parameters,
+    //   then copy relevant values from clipCfg_old to clipCfg_new.
+    // Exceptions:
+    //   Not allowed to change:        name
+    //   Old value ignored, keep new:  filename, startAfterInterval, deleteWhenDone, preload
+    //   
+    // Commentary: This routine has been difficult to get right, and has no known necessary usage case.
+    //             I'd recommend if the fields change, this breaks or needs update, just scrap it instead.
+    public bool MergeClipCfg(AudioClipCfg clipCfg_old, ref AudioClipCfg clipCfg,
+            string name,                // equivalent or this function wouldn't be relevant
+            string filename,            // keep new
+            string subtitle,
+            Vector2? volumeRange,
+            Vector3? audioLocation,
+            string sourceObjectName,
+            string channel,
+            Vector2? intervalRange,
+            bool startAfterInterval,    // old ignored, keep new
+            Vector2? pitchRange,
+            bool deleteWhenDone,        // old ignored, keep new
+            bool preload)               // old ignored, keep new
+    {
+        //
+        if (!string.IsNullOrEmpty(subtitle)) clipCfg.subtitle = clipCfg_old.subtitle;
+        if (volumeRange != null) clipCfg.volumeRange = clipCfg_old.volumeRange;
+        if (audioLocation != null) clipCfg.audioLocation = clipCfg_old.audioLocation;
+        if (!string.IsNullOrEmpty(sourceObjectName)) clipCfg.sourceObject = clipCfg_old.sourceObject;
+        if (!string.IsNullOrEmpty(channel)) clipCfg.channel = clipCfg_old.channel;
+        if (intervalRange != null) clipCfg.intervalRange = clipCfg_old.intervalRange;
+        // startAfterInterval -> keep new
+        if (pitchRange != null) clipCfg.pitchRange = clipCfg_old.pitchRange;
+        // deleteWhenDone -> keep new
+        if ((preload == true) && (clipCfg.clip == null) && (clipCfg.filename != clipCfg_old.filename)) clipCfg.clip = clipCfg_old.clip;
+        if (!string.IsNullOrEmpty(channel)) clipCfg.mixerGroup = clipCfg_old.mixerGroup;
+        // transfer any old running_Tasks...
+        clipCfg.running_Tasks = clipCfg_old.running_Tasks;
+        if ((preload == true) && (clipCfg.filename != clipCfg_old.filename))
+            UnloadClip(clipCfg_old);
+
+        Debug.Log($"[MergeClip] '{clipCfg.name}' complete.");
+        return true;
+    }
+}

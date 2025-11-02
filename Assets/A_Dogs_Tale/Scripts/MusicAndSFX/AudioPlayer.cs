@@ -39,7 +39,7 @@ public class AudioPlayTracking
         if (fadeout < 0) // allow the current play to complete.
         {
             src.loop = false;
-            yield return (src.isPlaying == false);
+            yield return new WaitUntil(() => src.isPlaying == false);
             src.Stop(); // not really necessary, it is done.
         }
         else    // don't let it complete, stop or fade out now.
@@ -77,6 +77,8 @@ public class AudioPlayTracking
 
 public partial class AudioPlayer : MonoBehaviour
 {
+    [Header("Object References")]
+    public ObjectDirectory dir;
     public AudioCatalog audioCatalog;
 
     public static AudioPlayer Instance { get; private set; }
@@ -90,6 +92,7 @@ public partial class AudioPlayer : MonoBehaviour
         }
 
         Instance = this;
+        audioCatalog.StartAudioCatalog();
         //DontDestroyOnLoad(gameObject); // optional: keep across scenes
     }
 
@@ -124,9 +127,9 @@ public partial class AudioPlayer : MonoBehaviour
         }
 
         // 2.1. Ensure channel is valid
-        if (clipCfg.group == null)
+        if (clipCfg.mixerGroup == null)
         {
-            Debug.LogError($"{clipCfg.channel} was not matched to a group entry: {clipCfg.name}.");
+            Debug.LogError($"{clipCfg.channel} was not matched to a mixerGroup entry: {clipCfg.name}.");
             return false;
         }
 
@@ -170,7 +173,7 @@ public partial class AudioPlayer : MonoBehaviour
         }
 
         // 4. Mixer group
-        src.outputAudioMixerGroup = clipCfg.group;
+        src.outputAudioMixerGroup = clipCfg.mixerGroup;
 
         // 5. Volume and pitch
         float volume_min = (clipCfg.volumeRange?.x) ?? 1f;
@@ -180,7 +183,7 @@ public partial class AudioPlayer : MonoBehaviour
         float pitch_min = (clipCfg.pitchRange?.x) ?? 1f;
         float pitch_max = (clipCfg.pitchRange?.y) ?? 1f;
         src.pitch = UnityEngine.Random.Range(pitch_min, pitch_max);
-        Debug.Log("[PlayClip] {name}: volume = {src.volume}, pitch = {src.pitch}");
+        Debug.Log($"[PlayClip] {name}: volume = {src.volume}, pitch = {src.pitch}");
 
         // 6. Set clip
         src.clip = clipCfg.clip;
