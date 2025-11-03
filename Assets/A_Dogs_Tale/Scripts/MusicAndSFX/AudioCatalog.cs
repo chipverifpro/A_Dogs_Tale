@@ -5,15 +5,12 @@ using UnityEngine.Audio;
 
 /*
 in AudioCatalog.cs...
---AudioClipCfg holds all data and options about an audio track.
+--AudioClipCfg (data class) holds all data and options about an audio track.
     no functions
-    
---AudioCatalog is the master list of all known audio tracks.
 
-
-in AudioPlayer.cs...
---AudioPlayTracking holds data needed to interrupt currently playing tracks.
---SFXPlayer has a pool of AudioSource structures intended to be reused.
+--AudioCatalog holds the master list "clipCfgList" of all known audio tracks that contain:
+  name, audio file, location or object, mixer group, special effects, and repeat modes.
+  AddClipToCatalog() builds an entry. You only need to specify parameters that are not defaults.
 */
 
 public class AudioClipCfg
@@ -26,10 +23,10 @@ public class AudioClipCfg
     public Vector3? audioLocation = null; // source of the sound if not attached to a sourceObject
     public string channel = "SFX";
     public Vector2? intervalRange = new(999f, 0f); // no looping (x>y).
-                                              // (0,0)           : continuous loop
-                                              // (x,y) where x<y : wait between x and y seconds before repeat
-                                              // (x,y) where x=y : wait exactly x seconds before repeat         
-                                              // (x,y) where x>y : no looping, play once
+                                                   // (0,0)           : continuous loop
+                                                   // (x,y) where x<y : wait between x and y seconds before repeat
+                                                   // (x,y) where x=y : wait exactly x seconds before repeat         
+                                                   // (x,y) where x>y : no looping, play once
 
     public Vector2? pitchRange = Vector2.one; // random from .x=min to .y=max
     public AudioClip clip = null;
@@ -37,7 +34,7 @@ public class AudioClipCfg
     public bool deleteWhenDone = false;
     public bool startAfterInterval = true;      // when false, will start with interval wait before first play.
 
-    // List to manage interrupting play.  One entry per currently playing instance.
+    // List inside each catalog entry with one task listed per currently playing instance of the audio file.
     public List<AudioPlayTracking> running_Tasks = new();
 
     // Helpers for decoding interval
@@ -138,7 +135,7 @@ public class AudioCatalog : MonoBehaviour
             )
     {
         AudioClipCfg clipCfg;
-        clipCfg = new()
+        clipCfg = new()  // assign all the easy fields first...
         {
             name = name,
             filename = filename,
@@ -169,7 +166,7 @@ public class AudioCatalog : MonoBehaviour
         if (intervalRange == null) clipCfg.intervalRange = new(999f, 0f);     // null default play-once (.x > .y)
         if (volumeRange == null) clipCfg.volumeRange = new(1f, 1f); // null default volume=1
 
-        // --- Force startAfterInterval ---
+        // --- Override startAfterInterval if required by repeat modes ---
         if (clipCfg.IsPlayOnce() || clipCfg.IsContinuousLoop())
             clipCfg.startAfterInterval = false;     // override this setting if there is no time interval
 
@@ -237,10 +234,11 @@ public class AudioCatalog : MonoBehaviour
         }
 
         // --- Determine if clipCfg already existed ---
-        // Find entry
+        // Find if the clip is already in the catalog (by name)
         AudioClipCfg clipCfg_old = clipCfgList.Find(e => e.name == name);
 
-        // M2. Merge if it exists
+        // Merge if an entry already exists for this name.  This works as if the old clip was the default
+        // values for the unspecified new parameters.  See comment at MergeClipCfg for subtle details.
         if (clipCfg_old != null)
         {
             bool success = MergeClipCfg(clipCfg_old, ref clipCfg,
@@ -255,7 +253,7 @@ public class AudioCatalog : MonoBehaviour
                                         startAfterInterval,
                                         pitchRange,
                                         deleteWhenDone,
-                                        preload );
+                                        preload);
             if (success == true)
             {
                 UnloadClip(clipCfg_old); // free up memory if any allocated
@@ -273,11 +271,13 @@ public class AudioCatalog : MonoBehaviour
         return true;
     }
 
+    // helper function
     public string GetPathToAudioClip(AudioClipCfg clipCfg)
     {
         return $"Audio/{clipCfg.channel}/{clipCfg.filename}";
     }
 
+    // Unused
     public IEnumerator UnloadClipCfg(AudioClipCfg clipCfg, float fadeOut)
     {
         yield return null;
@@ -291,6 +291,8 @@ public class AudioCatalog : MonoBehaviour
         clipCfg.clip = null; // break references so GC can clean up
     }
 
+    // UnloadClip() just unloads the audio data, leaving the small AudioCatalog entry
+    // which is able to be reloaded with LoadClip() if needed again.
     public bool UnloadClip(AudioClipCfg clipCfg)
     {
         if (clipCfg.clip != null)
@@ -322,15 +324,21 @@ public class AudioCatalog : MonoBehaviour
         return true;
     }
 
-    // MergeClipCfg(old, ref new):
-    //   If any fields are not specifically set by non-default parameters,
+    // MergeClipCfg(old, ref new, ...):
+    //   Usually DO NOT CALL DIRECTLY, use AddClipToCatalog with an existing entry of the same name.
+    //   in order to update an entry.  However, you may find a use-case where calling directly makes sense.
+    //   I had envisioned it as a way to quickly code up slight variations to established configurations,
+    //   Or possibly to modify an entry for a new condition (eg. (1) change from a source object to fixed position
+    //   if noisy object is dropped by it's owner. (2) change sound file for footsteps if walking on different
+    //   surfaces.). There are likely easier ways to do much of this.
+    //
+    // How it works: If any fields are not specifically set by non-default parameters,
     //   then copy relevant values from clipCfg_old to clipCfg_new.
     // Exceptions:
-    //   Not allowed to change:        name
-    //   Old value ignored, keep new:  filename, startAfterInterval, deleteWhenDone, preload
+    //   Old value ignored, keep new:  name, filename, startAfterInterval, deleteWhenDone, preload
     //   
     // Commentary: This routine has been difficult to get right, and has no known necessary usage case.
-    //             I'd recommend if the fields change, this breaks or needs update, just scrap it instead.
+    //             I'd recommend that if the fields change, this breaks, or needs update, then just scrap it rather than fix it.
     public bool MergeClipCfg(AudioClipCfg clipCfg_old, ref AudioClipCfg clipCfg,
             string name,                // equivalent or this function wouldn't be relevant
             string filename,            // keep new
@@ -362,7 +370,7 @@ public class AudioCatalog : MonoBehaviour
         if ((preload == true) && (clipCfg.filename != clipCfg_old.filename))
             UnloadClip(clipCfg_old);
 
-        Debug.Log($"[MergeClip] '{clipCfg.name}' complete.");
+        Debug.Log($"[MergeClipCfg] '{clipCfg_old.name}' => '{clipCfg.name}' complete.");
         return true;
     }
 }

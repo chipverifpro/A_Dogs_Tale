@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.Audio;
 
+// Small helper class to manage AudioMixerGroups by reference or name.
 public class AudioMixerGroups : MonoBehaviour
 {
     [Header("Object References")]
