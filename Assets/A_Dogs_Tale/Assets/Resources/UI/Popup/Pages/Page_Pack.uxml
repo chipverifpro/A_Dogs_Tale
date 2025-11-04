@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<UXML xmlns="UnityEngine.UIElements">
+  <VisualElement class="col">
+    <Label text="Pack" class="card"/>
+    <VisualElement name="PackToolbar" class="row">
+      <DropdownField name="Formation" />
+      <Toolbar>
+        <ToolbarButton name="Order-Stay"    text="Stay"/>
+        <ToolbarButton name="Order-Patrol"  text="Patrol"/>
+        <ToolbarButton name="Order-Guard"   text="Guard"/>
+        <ToolbarButton name="Order-Track"   text="Track"/>
+      </Toolbar>
+    </VisualElement>
+    <ListView name="PackList" fixedItemHeight="64" reorderable="true" selectionType="Single"/>
+  </VisualElement>
+</UXML>

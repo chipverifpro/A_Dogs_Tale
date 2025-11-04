@@ -169,14 +169,14 @@ public partial class AudioPlayer : MonoBehaviour
                 // Play the sound
                 src.Play();
                 taskInfo.isPlaying = true;
-                Debug.Log($"[PlayWithInterval] '{clipCfg.name}' started playing.");
+                //Debug.Log($"[PlayWithInterval] '{clipCfg.name}' started playing.");
 
                 if (src.loop)
                 {
                     // a continuously looping track will never end,
                     //  so go ahead and exit this task.  The taskInfo
                     //  will remain as a means of manually stopping it.
-                    Debug.Log($"[PlayWithInterval] '{clipCfg.name}' monitoring task ends since auto loop playing is active.");
+                    //Debug.Log($"[PlayWithInterval] '{clipCfg.name}' monitoring task ends since auto loop playing is active.");
                     taskInfo.loopCo = null;
                     yield break;    // exit coroutine without doing cleanup
                 }
@@ -187,7 +187,7 @@ public partial class AudioPlayer : MonoBehaviour
                 // done playing
                 src.Stop();     // probably not necessary, it should already stop itself.
                 taskInfo.isPlaying = false;
-                Debug.Log($"[PlayWithInterval] '{clipCfg.name}' finished playing.");
+                //Debug.Log($"[PlayWithInterval] '{clipCfg.name}' finished playing.");
             }
 
             timesPlayed++;
@@ -195,12 +195,12 @@ public partial class AudioPlayer : MonoBehaviour
             // if we were requested to stop at end of track, then cleanup and end this coroutine
             if (taskInfo.stopRepeating)
             {
-                Debug.Log($"PlayWithInterval: {clipCfg.name} stopRepeating flag observed, stopping.");
+                //Debug.Log($"PlayWithInterval: {clipCfg.name} stopRepeating flag observed, stopping.");
                 break;  // loop abort requested, so don't delay, exit the while loop and do cleanup
             }
             if (clipCfg.IsPlayOnce())
             {
-                Debug.Log($"PlayWithInterval: {clipCfg.name} isPlayOnce, stopping. interval = {clipCfg.intervalRange}");
+                //Debug.Log($"PlayWithInterval: {clipCfg.name} isPlayOnce, stopping. interval = {clipCfg.intervalRange}");
                 break;  // played once, now stop looping, exit the while loop and do cleanup
             }
 
@@ -208,7 +208,7 @@ public partial class AudioPlayer : MonoBehaviour
             float interval_min = (clipCfg.intervalRange?.x) ?? 0f;
             float interval_max = (clipCfg.intervalRange?.y) ?? 0f;
             float delay = UnityEngine.Random.Range(interval_min, interval_max);
-            Debug.Log($"[PlayWithInterval] '{clipCfg.name}' waiting {delay} between plays. intervalRange {clipCfg.intervalRange}");
+            //Debug.Log($"[PlayWithInterval] '{clipCfg.name}' waiting {delay} between plays. intervalRange {clipCfg.intervalRange}");
             yield return new WaitForSeconds(delay);
 
         } // end while loop
@@ -217,7 +217,7 @@ public partial class AudioPlayer : MonoBehaviour
         {
             src.Stop();
             taskInfo.isPlaying = false;
-            Debug.Log($"PlayWithInterval: stopped {clipCfg.name} due to stopRepeating flag.");
+            //Debug.Log($"PlayWithInterval: stopped {clipCfg.name} due to stopRepeating flag.");
         }
         // DONE
         // cleanup temporary GameObject if we created one.

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<UXML xmlns="UnityEngine.UIElements">
+  <VisualElement class="col">
+    <Label text="Inventory" class="card"/>
+    <TextField name="Search" label="Search"/>
+    <ScrollView>
+      <VisualElement name="InventoryGrid" class="inventory-grid row" />
+    </ScrollView>
+  </VisualElement>
+</UXML>

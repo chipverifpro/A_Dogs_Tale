@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<UXML xmlns="UnityEngine.UIElements">
+  <Style src="PopupPanel.uss" />
+  <VisualElement name="PopupRoot" class="popup hidden" focusable="true">
+    <VisualElement name="Frame" class="frame horizontal">
+      <VisualElement name="TabStrip" class="tabs horizontal">
+        <Button text="Game"      name="Tab-Game"      class="tab selected"/>
+        <Button text="Pack"      name="Tab-Pack"      class="tab"/>
+        <Button text="Inventory" name="Tab-Inventory" class="tab"/>
+        <Button text="Settings"  name="Tab-Settings"  class="tab"/>
+      </VisualElement>
+      <VisualElement name="TabContent" class="content"/>
+    </VisualElement>
+  </VisualElement>
+</UXML>

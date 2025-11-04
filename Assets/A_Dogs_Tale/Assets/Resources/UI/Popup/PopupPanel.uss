@@ -1,0 +1,55 @@
+.popup { position: absolute; left: 0; top: 0; right: 0; bottom: 0; display: none; }
+.popup.hidden { display: none; }
+.popup:not(.hidden) { display: flex; justify-content: center; align-items: center; }
+
+.frame { width: 92vw; height: 88vh; background-color: rgba(32,34,40,0.93); border-radius: 16px; padding: 8px;
+         display: flex; gap: 8px; }
+.frame.horizontal { flex-direction: column; }
+.frame.vertical   { flex-direction: row; }
+
+.tabs { display: flex; gap: 6px; }
+.tabs.horizontal { flex-direction: row; }
+.tabs.vertical   { flex-direction: column; width: 160px; }
+
+.tab { padding: 6px 10px; border-radius: 10px; }
+.tab.selected { background-color: #3a3f57; color: white; }
+
+.content { flex-grow: 1; background-color: #1a1c26; border-radius: 12px; padding: 8px; overflow: hidden; }
+
+.card { padding: 8px; border-radius: 10px; background-color: #232634; margin-bottom: 8px; }
+.row { display: flex; gap: 8px; }
+.col { display: flex; flex-direction: column; gap: 8px; }
+.btn { padding: 6px 10px; border-radius: 8px; }
+
+/* === General text / font sizes === */
+* {
+    font-size: 14px;              /* smaller baseline */
+    -unity-font-definition: none; /* use default dynamic font */
+    color: white;
+}
+
+/* === Buttons === */
+.tab {
+    font-size: 14px;             /* smaller text */
+    padding: 4px 8px;            /* tighter */
+    min-width: 80px;
+    min-height: 24px;
+    justify-content: center;
+    align-items: center;
+}
+
+.tab.selected {
+    background-color: #3a3f57;
+    color: white;
+}
+
+/* === Content area === */
+.content {
+    font-size: 12px;
+}
+
+/* === Optional: scale down frame === */
+.frame {
+    width: 80vw;
+    height: 70vh;
+}

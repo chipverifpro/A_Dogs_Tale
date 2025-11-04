@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<UXML xmlns="UnityEngine.UIElements">
+  <VisualElement class="col">
+    <Label text="Game" class="card"/>
+    <VisualElement class="row">
+      <Button name="Btn-Pause" text="Pause/Resume" class="btn"/>
+      <Button name="Btn-Save"  text="Save" class="btn"/>
+      <Button name="Btn-Load"  text="Load" class="btn"/>
+      <Button name="Btn-Exit"  text="Exit to Menu" class="btn"/>
+    </VisualElement>
+  </VisualElement>
+</UXML>

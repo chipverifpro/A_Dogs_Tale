@@ -186,7 +186,7 @@ public partial class DungeonGenerator : MonoBehaviour
             if (loaded)
                 tile = loaded;
             else
-                Debug.LogWarning($"[DungeonGenerator] Tile not found at Resources/{path}");
+                Debug.Log($"[DungeonGenerator] Tile not found at Resources/{path}");
         }
     }
     static Transform EnsureChild(Transform parent, string childName)
