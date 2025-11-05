@@ -441,7 +441,7 @@ public partial class Agent : MonoBehaviour
         agent.prevYawDeg = agent.yawDeg;
         if (pack.gen.buildComplete == false)
         {
-            Debug.LogWarning("TransformPosition: Dungeon generation not complete yet.");
+            Debug.Log("TransformPosition: Dungeon generation not complete yet.  Don't bother moving agent now.");
             return false;
         }
         Cell cell = new(0,0);
