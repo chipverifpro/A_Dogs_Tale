@@ -102,6 +102,7 @@ public partial class AudioPlayer : MonoBehaviour
             taskInfo.go = go;
             taskInfo.src = src;
             taskInfo.isTempGO = false; // a real object is used
+            src.spatialBlend = 1f; // 3D sound
         }
         else
         {
@@ -109,10 +110,11 @@ public partial class AudioPlayer : MonoBehaviour
             go = new GameObject($"{clipCfg.channel}_{name}_Temp");
             src = go.AddComponent<AudioSource>();
             // if audioLocation is specified, use it, otherwise use 2D sound for non-localized sound
-            if (clipCfg.audioLocation == null)
+            if (clipCfg.audioLocation != null)
             {
                 // set sound location by moving the temporary GameObject
                 go.transform.position = clipCfg.audioLocation ?? Vector3.zero;
+                src.spatialBlend = 1f; // 3D sound
             }
             else
             {
@@ -235,7 +237,7 @@ public partial class AudioPlayer : MonoBehaviour
     //  Stop everything
     //  Stop all with a particular name
     //  Stop all on a particular channel (ie Music, UI, SFX, ...)
-    //  Stop all from a GameObject
+    //  Stop all from a particular GameObject
     //  Stop all from all temporary GameObjects
 
     // Can end in one of these styles:
@@ -269,15 +271,12 @@ public partial class AudioPlayer : MonoBehaviour
                 if (stop_it)
                 {
                     // Stop the task
-                    StartCoroutine(AudioTaskStop(task, fadeOut));
-
-                    // Remove task from the running tasks list
-                    clipCfg.running_Tasks.Remove(task);
+                    StartCoroutine(AudioTaskStop(clipCfg, task, fadeOut));
                 }
             }
         }
     }
-    
+
     // Don't call coroutine AudioTaskStop() directly, use StopClips() above
     //   which applies a lookup filter to select tasks and remove them from the active
     //   list, and send control of them here to be managed until they are done.
@@ -288,7 +287,7 @@ public partial class AudioPlayer : MonoBehaviour
     //   Immediate cutoff of playing. (fadeOut = 0)
     //   Fade out and then stop.      (fadeOut = # seconds)
     //   Allow to finish in-progress track, but don't start again. (fadeOut < 0)
-    public IEnumerator AudioTaskStop (AudioPlayTracking track, float fadeout)
+    public IEnumerator AudioTaskStop(AudioClipCfg clipCfg, AudioPlayTracking track, float fadeout)
     {
         // kill the driving loop coroutine
         if (track.loopCo != null)
@@ -324,15 +323,14 @@ public partial class AudioPlayer : MonoBehaviour
                     track.src = null;
                 }
             }
-
-            // destroy the game object if it is temporary
-            if ((track.isTempGO == true) && (track.go != null))
-            {
-                Object.Destroy(track.go);
-                track.go = null;
-            }
         }
-        // When this coroutine ends, the last reference to 'track' will be gone
-        // and remaining memory used will be garbage collected.
+        // destroy the game object if it is temporary
+        if ((track.isTempGO == true) && (track.go != null))
+        {
+            Object.Destroy(track.go);
+            track.go = null;
+        }
+        clipCfg.running_Tasks.Remove(track); // remove it now that playing is stopped.
     }
+
 }

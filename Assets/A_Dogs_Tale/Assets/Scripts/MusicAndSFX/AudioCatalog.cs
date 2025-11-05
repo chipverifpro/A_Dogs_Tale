@@ -80,7 +80,7 @@ public class AudioCatalog : MonoBehaviour
         if (audioPlayer == null) audioPlayer = dir.audioPlayer;
     }
 
-    // these should move to someplace more relevant to each.
+    // these should move to someplace more relevant to each.  Left here as an example.
     public void AddSomeClipsToTheCatalog()
     {
         // add some clips to the catalog...
@@ -135,13 +135,13 @@ public class AudioCatalog : MonoBehaviour
             )
     {
         AudioClipCfg clipCfg;
+
         clipCfg = new()  // assign all the easy fields first...
         {
             name = name,
             filename = filename,
             subtitle = subtitle,
             volumeRange = volumeRange,
-            // sourceObject = GameObject.Find(sourceObjectName),  // initialized below...
             audioLocation = audioLocation,
             channel = channel,
             intervalRange = intervalRange,
@@ -229,42 +229,22 @@ public class AudioCatalog : MonoBehaviour
             {
                 // File doesnt exist: not an error, just a warning because we don't need it immediately.
                 // Later attempts to play it will just skip the play request with a clip missing warning.
-                Debug.LogWarning($"Warning: Failed non-preload {channel} file existance check: {clipCfg.name}, filename: {clipCfg.filename}");
+                Debug.LogWarning($"Warning: Failed non-preload {channel} file existence check: {clipCfg.name}, filename: {clipCfg.filename}");
             }
         }
 
+        // new clipCfg is ready to add to catalog, but first make sure it is unique...
         // --- Determine if clipCfg already existed ---
         // Find if the clip is already in the catalog (by name)
-        AudioClipCfg clipCfg_old = clipCfgList.Find(e => e.name == name);
-
-        // Merge if an entry already exists for this name.  This works as if the old clip was the default
-        // values for the unspecified new parameters.  See comment at MergeClipCfg for subtle details.
-        if (clipCfg_old != null)
+        AudioClipCfg clipCfg_old;
+        
+        // A new clip completely replaces an old one of the same name.  Just in case more than one entry exists, loop through all.
+        while ((clipCfg_old = clipCfgList.Find(e => e.name == name)) != null)
         {
-            bool success = MergeClipCfg(clipCfg_old, ref clipCfg,
-                                        name,
-                                        filename,
-                                        subtitle,
-                                        volumeRange,
-                                        audioLocation,
-                                        sourceObjectName,
-                                        channel,
-                                        intervalRange,
-                                        startAfterInterval,
-                                        pitchRange,
-                                        deleteWhenDone,
-                                        preload);
-            if (success == true)
-            {
-                UnloadClip(clipCfg_old); // free up memory if any allocated
-                clipCfgList.Remove(clipCfg_old);
-            }
-            else
-            {
-                return false;
-            }
+            Debug.LogWarning($"Warning: Replacing old clipCfg '{clipCfg_old.name}' which has {clipCfg_old.running_Tasks.Count} running tasks which will be stopped.");
+            UnloadClipCfg(clipCfg_old, fadeOut: 0f); // spawns coroutines to stop tasks and unload audio.
+            clipCfgList.Remove(clipCfg_old);  // we can remove the old entry now (even if tasks are still stopping)
         }
-
         // --- Add clipCfg to master list
         clipCfgList.Add(clipCfg);
 
@@ -277,18 +257,32 @@ public class AudioCatalog : MonoBehaviour
         return $"Audio/{clipCfg.channel}/{clipCfg.filename}";
     }
 
-    // Unused
-    public IEnumerator UnloadClipCfg(AudioClipCfg clipCfg, float fadeOut)
+    // Note: UnloadClipCfg() does NOT remove the clipCfg from the catalog list, do that separately.
+    // UnloadClipCfg() stops any running tasks, unloads audio data, and cleans up references.
+    // Note that much of this is done as coroutines which will complete over time.  No need to wait for any of that to finish.
+    public void UnloadClipCfg(AudioClipCfg clipCfg, float fadeOut)
     {
-        yield return null;
         if (clipCfg.running_Tasks.Count != 0)
         {
             audioPlayer.StopClips(trackName: clipCfg.name, fadeOut: fadeOut);
-            clipCfgList.Remove(clipCfg);    // remove entry from master list (but keep local reference here)
-            yield return new WaitUntil(() => clipCfg.running_Tasks.Count == 0);
+            StartCoroutine(UnloadAudioClipWhenAllTasksDone(clipCfg));
+        } else {
+            if (clipCfg.clip != null) UnloadClip(clipCfg);
         }
-        if (clipCfg.clip != null) Resources.UnloadAsset(clipCfg.clip);
-        clipCfg.clip = null; // break references so GC can clean up
+    }
+
+    // Launch one of these when deleting a clipCfg if there were tasks still running.  Frees remaining memory when done.
+    public IEnumerator UnloadAudioClipWhenAllTasksDone(AudioClipCfg clipCfg)
+    {
+        // Wait until all tasks for this clipCfg are done
+        yield return new WaitUntil(() => clipCfg.running_Tasks.Count == 0);
+        // Unload the clip
+        if (clipCfg.clip != null)
+        {
+            UnloadClip(clipCfg);
+        }
+        Debug.Log($"[DeleteAudioClipWhenAllTasksDone] Unloaded clip '{clipCfg.name}' after all tasks done.");
+
     }
 
     // UnloadClip() just unloads the audio data, leaving the small AudioCatalog entry
@@ -304,10 +298,8 @@ public class AudioCatalog : MonoBehaviour
         return false;
     }
 
-    /// <summary>
-    /// Loads audio clip & assigns AudioMixerGroup based on 'channel'.
-    /// Returns true if clip was successfully set.
-    /// </summary>
+    // Loads audio clip & assigns AudioMixerGroup based on 'channel' and 'filename'.
+    // Returns true if clip was successfully set.
     public bool LoadClip(AudioClipCfg clipCfg)
     {
         // --- Load clip if missing ---
@@ -321,56 +313,6 @@ public class AudioCatalog : MonoBehaviour
             }
         }
 
-        return true;
-    }
-
-    // MergeClipCfg(old, ref new, ...):
-    //   Usually DO NOT CALL DIRECTLY, use AddClipToCatalog with an existing entry of the same name.
-    //   in order to update an entry.  However, you may find a use-case where calling directly makes sense.
-    //   I had envisioned it as a way to quickly code up slight variations to established configurations,
-    //   Or possibly to modify an entry for a new condition (eg. (1) change from a source object to fixed position
-    //   if noisy object is dropped by it's owner. (2) change sound file for footsteps if walking on different
-    //   surfaces.). There are likely easier ways to do much of this.
-    //
-    // How it works: If any fields are not specifically set by non-default parameters,
-    //   then copy relevant values from clipCfg_old to clipCfg_new.
-    // Exceptions:
-    //   Old value ignored, keep new:  name, filename, startAfterInterval, deleteWhenDone, preload
-    //   
-    // Commentary: This routine has been difficult to get right, and has no known necessary usage case.
-    //             I'd recommend that if the fields change, this breaks, or needs update, then just scrap it rather than fix it.
-    public bool MergeClipCfg(AudioClipCfg clipCfg_old, ref AudioClipCfg clipCfg,
-            string name,                // equivalent or this function wouldn't be relevant
-            string filename,            // keep new
-            string subtitle,
-            Vector2? volumeRange,
-            Vector3? audioLocation,
-            string sourceObjectName,
-            string channel,
-            Vector2? intervalRange,
-            bool startAfterInterval,    // old ignored, keep new
-            Vector2? pitchRange,
-            bool deleteWhenDone,        // old ignored, keep new
-            bool preload)               // old ignored, keep new
-    {
-        //
-        if (!string.IsNullOrEmpty(subtitle)) clipCfg.subtitle = clipCfg_old.subtitle;
-        if (volumeRange != null) clipCfg.volumeRange = clipCfg_old.volumeRange;
-        if (audioLocation != null) clipCfg.audioLocation = clipCfg_old.audioLocation;
-        if (!string.IsNullOrEmpty(sourceObjectName)) clipCfg.sourceObject = clipCfg_old.sourceObject;
-        if (!string.IsNullOrEmpty(channel)) clipCfg.channel = clipCfg_old.channel;
-        if (intervalRange != null) clipCfg.intervalRange = clipCfg_old.intervalRange;
-        // startAfterInterval -> keep new
-        if (pitchRange != null) clipCfg.pitchRange = clipCfg_old.pitchRange;
-        // deleteWhenDone -> keep new
-        if ((preload == true) && (clipCfg.clip == null) && (clipCfg.filename != clipCfg_old.filename)) clipCfg.clip = clipCfg_old.clip;
-        if (!string.IsNullOrEmpty(channel)) clipCfg.mixerGroup = clipCfg_old.mixerGroup;
-        // transfer any old running_Tasks...
-        clipCfg.running_Tasks = clipCfg_old.running_Tasks;
-        if ((preload == true) && (clipCfg.filename != clipCfg_old.filename))
-            UnloadClip(clipCfg_old);
-
-        Debug.Log($"[MergeClipCfg] '{clipCfg_old.name}' => '{clipCfg.name}' complete.");
         return true;
     }
 }
