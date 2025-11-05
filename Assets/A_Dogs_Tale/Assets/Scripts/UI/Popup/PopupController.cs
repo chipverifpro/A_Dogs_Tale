@@ -196,7 +196,7 @@ public class PopupController : MonoBehaviour
     VisualElement root, popup, frame, tabStrip, content;
     Button tabGame, tabPack, tabInventory, tabSettings;
     string curTab = "Game";
-    bool isOpen;
+    bool isOpen = false;
     bool initialized;
 
     void Awake()
@@ -238,7 +238,7 @@ public class PopupController : MonoBehaviour
                 tabSettings  = root.Q<Button>("Tab-Settings");
 
                 var allButtons = root.Query<Button>().ToList();
-                Debug.LogWarning("PopupController: Init attempt " + i + " found " + allButtons.Count + " buttons.");
+                if (allButtons.Count == 0) Debug.LogWarning("PopupController: Init attempt " + i + " found " + allButtons.Count + " buttons.");
 
                 if (popup != null && allButtons.Count > 0 &&
                     tabGame != null && tabPack != null && tabInventory != null && tabSettings != null)
@@ -305,17 +305,23 @@ public class PopupController : MonoBehaviour
 
     public void Toggle()
     {
-        if (!initialized) return;
+        if (!initialized || popup == null) return;
+
         if (isOpen) Close();
         else Open();
     }
-
     public void Open()
     {
         if (!initialized || popup == null) return;
 
         isOpen = true;
-        popup.style.display = DisplayStyle.Flex;   // show
+
+        // First make sure it's participating in layout
+        popup.style.display = DisplayStyle.Flex;
+
+        // Then add the visible class so the transition animates in
+        popup.AddToClassList("visible");
+
         SwitchTab(curTab);
     }
 
@@ -324,24 +330,24 @@ public class PopupController : MonoBehaviour
         if (!initialized || popup == null) return;
 
         isOpen = false;
-        popup.style.display = DisplayStyle.None;   // hide
-    }
-/*
-    public void Open()
+
+        // Remove visible class so it animates out (fade/scale)
+        popup.RemoveFromClassList("visible");
+
+        // Optionally, hide after the animation finishes
+        StartCoroutine(HideAfterDelay(0.15f)); // match USS duration
+    }  
+
+    private System.Collections.IEnumerator HideAfterDelay(float seconds)
     {
-        if (!initialized) return;
-        isOpen = true;
-        popup?.RemoveFromClassList("hidden");
-        SwitchTab(curTab);
+        yield return new WaitForSeconds(seconds);
+
+        if (!isOpen && popup != null)
+        {
+            popup.style.display = DisplayStyle.None;
+        }
     }
 
-    public void Close()
-    {
-        if (!initialized) return;
-        isOpen = false;
-        popup?.AddToClassList("hidden");
-    }
-*/
     void SwitchTab(string tab)
     {
         if (!initialized || content == null) return;

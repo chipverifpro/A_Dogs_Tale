@@ -17,7 +17,7 @@ MonoBehaviour:
   showBuildProcess: 0
   stepDelay: 0.1
   randomizeSeed: 1
-  seed: -452832872
+  seed: 9302354
   useThinWalls: 1
   mapWidth: 100
   mapHeight: 100
@@ -25,10 +25,10 @@ MonoBehaviour:
   roundWorld: 1
   maxElevation: 100
   unitHeight: 0.1
-  ScentInterval: 30
-  ScentDecayRate: 0.9
-  ScentSpreadAmount: 0.1
-  ScentMinimum: 0.005
+  ScentInterval: 10
+  ScentDecayRate: 0.1
+  ScentSpreadAmount: 0.05
+  ScentMinimum: 0.001
   perlinFloorHeights: 0
   perlinFloorWavelength: 0.05
   GlobalPerlinSeed: 1

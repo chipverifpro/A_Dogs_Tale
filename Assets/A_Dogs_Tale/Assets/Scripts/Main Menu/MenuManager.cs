@@ -41,7 +41,7 @@ public class MenuManager : MonoBehaviour
 
     void Start()
     {
-        // everything moved to Awake, just wait for button presses
+        // Create sound effects entries for the menu
         dir.audioCatalog.AddClipToCatalog(
             name: "Button-Click",
             filename: "Button-Click",

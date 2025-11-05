@@ -62,13 +62,6 @@ public class SceneFader : MonoBehaviour
     void SetupTitleSFX()
     {
         audioCatalog.AddClipToCatalog(
-            name: "Button-Click",
-            filename: "Button-Click",
-            channel: "UI",
-            preload: true
-        );
-
-        audioCatalog.AddClipToCatalog(
             name: "Opening Title",
             filename: "Curious Whispers",
             subtitle: "[Music Playing: Curious Whispers]",

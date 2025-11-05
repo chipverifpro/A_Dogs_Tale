@@ -1,55 +1,201 @@
-.popup { position: absolute; left: 0; top: 0; right: 0; bottom: 0; display: none; }
-.popup.hidden { display: none; }
-.popup:not(.hidden) { display: flex; justify-content: center; align-items: center; }
+/* ===== Global text + defaults ===== */
 
-.frame { width: 92vw; height: 88vh; background-color: rgba(32,34,40,0.93); border-radius: 16px; padding: 8px;
-         display: flex; gap: 8px; }
-.frame.horizontal { flex-direction: column; }
-.frame.vertical   { flex-direction: row; }
-
-.tabs { display: flex; gap: 6px; }
-.tabs.horizontal { flex-direction: row; }
-.tabs.vertical   { flex-direction: column; width: 160px; }
-
-.tab { padding: 6px 10px; border-radius: 10px; }
-.tab.selected { background-color: #3a3f57; color: white; }
-
-.content { flex-grow: 1; background-color: #1a1c26; border-radius: 12px; padding: 8px; overflow: hidden; }
-
-.card { padding: 8px; border-radius: 10px; background-color: #232634; margin-bottom: 8px; }
-.row { display: flex; gap: 8px; }
-.col { display: flex; flex-direction: column; gap: 8px; }
-.btn { padding: 6px 10px; border-radius: 8px; }
-
-/* === General text / font sizes === */
 * {
-    font-size: 14px;              /* smaller baseline */
-    -unity-font-definition: none; /* use default dynamic font */
+    font-size: 13px;
     color: white;
+    -unity-font-definition: none;
 }
 
-/* === Buttons === */
-.tab {
-    font-size: 14px;             /* smaller text */
-    padding: 4px 8px;            /* tighter */
-    min-width: 80px;
-    min-height: 24px;
+/* ===== Popup root (full-screen overlay with fade/scale) ===== */
+
+.popup {
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+
+    justify-content: center;
+    align-items: center;
+
+    opacity: 0;
+    transform: scale(0.96);
+    -unity-transform-origin: center center;
+
+    transition-property: opacity, transform;
+    transition-duration: 0.15s;
+    transition-timing-function: ease-out;
+}
+
+/* C# adds 'visible' to animate open/close */
+.popup.visible {
+    opacity: 1;
+    transform: scale(1.0);
+}
+
+/* ===== Main frame ===== */
+
+.frame {
+    width: 80vw;
+    height: 70vh;
+    max-width: 1024px;
+    max-height: 680px;
+
+    background-color: rgba(20, 22, 30, 0.95);
+    border-radius: 14px;
+    padding: 8px;
+
+    display: flex;
+    gap: 8px;
+}
+
+/* Portrait: tabs on top; Landscape: tabs on left */
+.frame.horizontal {
+    flex-direction: column;
+}
+
+.frame.vertical {
+    flex-direction: row;
+}
+
+/* ===== Tabs strip ===== */
+
+.tabs {
+    display: flex;
+    gap: 6px;
     justify-content: center;
     align-items: center;
 }
 
+.tabs.horizontal {
+    flex-direction: row;
+}
+
+.tabs.vertical {
+    flex-direction: column;
+    width: 160px;
+    align-items: stretch;
+}
+
+/* ===== Tab buttons ===== */
+
+.tab {
+    flex-grow: 0;
+    flex-shrink: 0;
+    flex-basis: 25%;          /* ~25% of row width in horizontal mode */
+    min-width: 80px;
+    height: 32px;
+
+    padding: 4px 8px;
+    border-radius: 6px;
+
+    background-color: #2b3040;
+    color: #d0d3e0;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    border-width: 0;
+}
+
+.tabs.vertical .tab {
+    flex-basis: auto;
+    width: 100%;              /* full width in vertical sidebar */
+}
+
+.tab:hover {
+    background-color: #3a4155;
+}
+
 .tab.selected {
-    background-color: #3a3f57;
-    color: white;
+    background-color: #4b5a88;
+    color: #ffffff;
 }
 
-/* === Content area === */
+/* ===== Content area ===== */
+
 .content {
-    font-size: 12px;
+    flex-grow: 1;
+    background-color: #161822;
+    border-radius: 10px;
+    padding: 8px;
+    overflow: hidden;
+
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
 }
 
-/* === Optional: scale down frame === */
-.frame {
-    width: 80vw;
-    height: 70vh;
+/* ===== Common layout helpers ===== */
+
+.card {
+    padding: 6px 8px;
+    border-radius: 8px;
+    background-color: #232634;
+    margin-bottom: 4px;
+}
+
+.row {
+    display: flex;
+    flex-direction: row;
+    gap: 6px;
+}
+
+.col {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+/* ===== Generic buttons inside pages ===== */
+
+.btn {
+    padding: 4px 8px;
+    border-radius: 6px;
+    min-height: 26px;
+
+    background-color: #2b3040;
+    color: #e0e4ff;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    border-width: 0;
+}
+
+.btn:hover {
+    background-color: #3a4155;
+}
+
+/* ===== Inventory grid ===== */
+
+.inventory-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.inventory-item {
+    padding: 4px;
+    border-radius: 8px;
+    background-color: #232634;
+
+    min-width: 96px;
+    min-height: 96px;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* ===== ScrollView tweaks (optional) ===== */
+
+unity-scroll-view {
+    padding: 0;
+}
+
+unity-scroll-view > .unity-content-viewport {
+    padding-right: 4px;
 }
