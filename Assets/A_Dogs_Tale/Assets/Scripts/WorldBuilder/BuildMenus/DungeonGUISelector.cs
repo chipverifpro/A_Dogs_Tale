@@ -12,38 +12,6 @@ public class DungeonGUISelector : MonoBehaviour
     public UnityEngine.UI.Button regenerateButton; // Button to trigger regeneration
     public DungeonGenerator generator;
 
-    //public void OnRegenerateClicked()
-    //{
-    //    //generator.StopAllCoroutines();
-    //    StartCoroutine(generator.RegenerateDungeon());
-    //}
-
-    /*
-        public void OnRoomAlgorithmSelected(int index)
-        {
-            string selected = roomAlgorithmDropdown.options[index].text;
-            Debug.Log("Room Algorithm selected: " + selected);
-
-            cfg.RoomAlgorithm = (DungeonSettings.RoomAlgorithm_e)index;
-            //generator.StopAllCoroutines();
-            //ca.StopAllCoroutines();
-            //Start();
-            StartCoroutine(generator.RegenerateDungeon());
-        }
-
-        public void OnTunnelsAlgorithmSelected(int index)
-        {
-            string selected = tunnelsAlgorithmDropdown.options[index].text;
-            Debug.Log("Tunnels Algorithm selected: " + selected);
-
-            cfg.TunnelsAlgorithm = (DungeonSettings.TunnelsAlgorithm_e)index;
-            //generator.StopAllCoroutines();
-            //ca.StopAllCoroutines();
-            //Start();
-            StartCoroutine(generator.RegenerateDungeon());
-        }
-    */
-
     void Start()
     {
         roomAlgorithmDropdown.value = (int)cfg.RoomAlgorithm;
@@ -132,21 +100,6 @@ public class DungeonGUISelector : MonoBehaviour
             tunnelsAlgorithmDropdown.value = IndexOfEnum(_tunnelAlgValues, cfg.TunnelsAlgorithm);
             tunnelsAlgorithmDropdown.RefreshShownValue();
         }
-
-        // ----- STRING PATH (if your settings store strings) -----
-        // If you have string lists in cfg, do this instead:
-        // if (roomAlgorithmDropdown && cfg.roomAlgorithmOptions != null)
-        // {
-        //     PopulateDropdownFromList(roomAlgorithmDropdown, cfg.roomAlgorithmOptions);
-        //     roomAlgorithmDropdown.value = Mathf.Max(0, cfg.roomAlgorithmOptions.IndexOf(cfg.roomAlgorithmName));
-        //     roomAlgorithmDropdown.RefreshShownValue();
-        // }
-        // if (tunnelsAlgorithmDropdown && cfg.tunnelAlgorithmOptions != null)
-        // {
-        //     PopulateDropdownFromList(tunnelsAlgorithmDropdown, cfg.tunnelAlgorithmOptions);
-        //     tunnelsAlgorithmDropdown.value = Mathf.Max(0, cfg.tunnelAlgorithmOptions.IndexOf(cfg.tunnelAlgorithmName));
-        //     tunnelsAlgorithmDropdown.RefreshShownValue();
-        // }
     }
 
     void WireEvents()
@@ -178,7 +131,7 @@ public class DungeonGUISelector : MonoBehaviour
         cfg.RoomAlgorithm = (DungeonSettings.RoomAlgorithm_e)_roomAlgValues.GetValue(index);
         // If using string path, set cfg.roomAlgorithmName = roomAlgorithmDropdown.options[index].text;
         // Optionally: mark settings dirty in editor with UnityEditor.EditorUtility.SetDirty(cfg);
-        StartCoroutine(generator.RegenerateDungeon());
+        generator.RegenerateDungeon();
     }
 
     void OnTunnelAlgorithmChanged(int index)
@@ -186,27 +139,12 @@ public class DungeonGUISelector : MonoBehaviour
         if (!cfg || _tunnelAlgValues == null) return;
         cfg.TunnelsAlgorithm = (DungeonSettings.TunnelsAlgorithm_e)_tunnelAlgValues.GetValue(index);
         // If using string path, set cfg.tunnelAlgorithmName = tunnelsAlgorithmDropdown.options[index].text;
-        StartCoroutine(generator.RegenerateDungeon());
+        generator.RegenerateDungeon();
     }
 
     void OnRegenerateClicked()
     {
-        if (!generator)
-        {
-            Debug.LogWarning("[DungeonGUISelector] Regenerate clicked, but no DungeonGenerator assigned.");
-            return;
-        }
-
-        // If your generator needs the settings object, make sure it already reads from cfg.
-        // Otherwise, pass necessary params or call a dedicated API.
-        try
-        {
-            generator.RegenerateDungeon(); // or generator.GenerateFromSettings(cfg);
-        }
-        catch (System.Exception ex)
-        {
-            Debug.LogError($"[DungeonGUISelector] Regenerate failed: {ex.Message}", generator);
-        }
+        generator.RegenerateDungeon();
     }
 
     // --- Helpers ---

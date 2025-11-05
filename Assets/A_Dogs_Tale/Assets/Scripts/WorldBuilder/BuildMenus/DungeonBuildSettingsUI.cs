@@ -89,7 +89,7 @@ public class DungeonBuildSettingsUI : MonoBehaviour
         ShowStatus(ok ? $"Loaded: {name}" : $"Load failed: {name}");
 
         //dungeonGenerator.StopAllCoroutines();
-        StartCoroutine(dungeonGenerator.RegenerateDungeon(tm: null));
+        dungeonGenerator.RegenerateDungeon();
     }
 
     // Button: Delete (remove selected preset file)

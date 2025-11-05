@@ -12,12 +12,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 66e31e87dc1d940368e65604dddcac77, type: 3}
   m_Name: DungeonSettings
   m_EditorClassIdentifier: 
-  RoomAlgorithm: 0
+  RoomAlgorithm: 5
   TunnelsAlgorithm: 0
   showBuildProcess: 0
   stepDelay: 0.1
   randomizeSeed: 1
-  seed: 9302354
+  seed: -1524356450
   useThinWalls: 1
   mapWidth: 100
   mapHeight: 100
@@ -25,10 +25,10 @@ MonoBehaviour:
   roundWorld: 1
   maxElevation: 100
   unitHeight: 0.1
-  ScentInterval: 10
-  ScentDecayRate: 0.1
-  ScentSpreadAmount: 0.05
-  ScentMinimum: 0.001
+  ScentInterval: 30
+  ScentDecayRate: 0.9
+  ScentSpreadAmount: 0.1
+  ScentMinimum: 0.005
   perlinFloorHeights: 0
   perlinFloorWavelength: 0.05
   GlobalPerlinSeed: 1
@@ -39,7 +39,7 @@ MonoBehaviour:
   useDiagonalCorners: 0
   skipOrthogonalWhenDiagonal: 1
   perimeterWallSteps: 30
-  useScatterRooms: 1
+  useScatterRooms: 0
   roomAttempts: 50
   roomsMax: 15
   minRoomSize: 30
@@ -80,7 +80,7 @@ MonoBehaviour:
   roomGrowAlgo: 0
   scrapAlgo: 1
   doorAlgo: 0
-  usePackedRooms: 0
+  usePackedRooms: 1
   useRoundPen: 0
   corridor:
     corridorWidth: 3

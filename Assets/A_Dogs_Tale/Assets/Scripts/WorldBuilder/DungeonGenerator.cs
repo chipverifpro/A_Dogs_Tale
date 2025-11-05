@@ -3,7 +3,6 @@ using UnityEngine;
 using UnityEngine.Tilemaps;
 using System.Collections;
 using System;
-using Unity.Mathematics;
 using UnityEngine.SceneManagement;
 
 
@@ -54,6 +53,7 @@ public partial class DungeonGenerator : MonoBehaviour
     public DungeonSettings cfg;     // This is used lots of places!
 
     public bool buildComplete = false;
+    public Coroutine regenerateCoroutine = null;
 
     void OnEnable()  => Debug.Log($"[DG] OnEnable in scene '{gameObject.scene.name}' (id {GetInstanceID()})");
     void OnDisable() => Debug.Log($"[DG] OnDisable in scene '{gameObject.scene.name}' (id {GetInstanceID()})");
@@ -106,13 +106,18 @@ public partial class DungeonGenerator : MonoBehaviour
 
         // DOING THIS HANGS/CRASHES UNITY!!!!!!
         //StopAllCoroutines();
-        //dir.dungeonBuildSettingsUI.LoadMapSettingsByName("01_House_Tutorial");
+        if (dir.dungeonBuildSettingsUI != null)
+            dir.dungeonBuildSettingsUI.LoadMapSettingsByName("01_House_Tutorial");
 
         // Start the fun...
 
-        StartCoroutine(RegenerateDungeon(null));
-
-        Start_Scents();
+        if (regenerateCoroutine != null)
+        {
+            Debug.Log("DungeonGenerator.Start: Stopping previous in-progress regeneration coroutine.");
+            StopCoroutine(regenerateCoroutine);
+            regenerateCoroutine = null;
+        }
+        regenerateCoroutine = StartCoroutine(RegenerateDungeonCoroutine(null));
 
         EnableSplash();
     }
@@ -155,7 +160,18 @@ public partial class DungeonGenerator : MonoBehaviour
     //  Draw Map by Rooms
     //  Draw Walls
 
-    public IEnumerator RegenerateDungeon(TimeTask tm = null)
+    // call this instead of the coroutine directly to manage stopping previous runs.
+    public void RegenerateDungeon()
+    {
+        if (regenerateCoroutine != null)
+        {
+            Debug.Log("RegenerateDungeon: Stopping previous in-progress regeneration coroutine.");
+            StopCoroutine(regenerateCoroutine);
+            regenerateCoroutine = null;
+        }
+        regenerateCoroutine = StartCoroutine(RegenerateDungeonCoroutine(null));
+    }
+    public IEnumerator RegenerateDungeonCoroutine(TimeTask tm = null)
     {
         buildComplete = false;
         bool local_tm = false;
@@ -374,8 +390,11 @@ public partial class DungeonGenerator : MonoBehaviour
             if (hf == null) PrepareHeightfield();
 
             BottomBanner.ShowFor("Dungeon generation complete!", 5f);
-            buildComplete = true;
 
+            buildComplete = true;
+            regenerateCoroutine = null;
+
+            // this must be after buildComplete = true;
             yield return StartCoroutine(dir.player.DetermineStartPosition());
         }
         finally { if (local_tm) tm.End(); }
@@ -1083,7 +1102,7 @@ public partial class DungeonGenerator : MonoBehaviour
         return true;
     }
 
-    Cell GetCellFromHf(int x, int y, int z, int threshold)
+    public Cell GetCellFromHf(int x, int y, int z, int threshold)
     {
         NeighborMatch match;
         if (hf.TryQueryAt(x, y + 1, z, threshold: 10, out match))

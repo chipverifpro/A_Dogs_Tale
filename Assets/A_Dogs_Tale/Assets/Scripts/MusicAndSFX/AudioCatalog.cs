@@ -61,7 +61,7 @@ public class AudioCatalog : MonoBehaviour
 {
     public List<AudioClipCfg> clipCfgList = new(10);    // catalog of sounds
 
-    [Header("Object References")]
+    [Header("Audio Catalog Object References")]
     public AudioMixerGroups audioMixerGroups;           // mixer channels
     public AudioPlayer audioPlayer;                     // play controls
     public ObjectDirectory dir;

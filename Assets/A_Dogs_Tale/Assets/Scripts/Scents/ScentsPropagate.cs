@@ -1,9 +1,14 @@
 using System.Collections;
 using UnityEngine;
 
-public partial class DungeonGenerator : MonoBehaviour
+public partial class Scents : MonoBehaviour
 {
-    public void Start_Scents()
+    [Header("Directory Object")]
+    public ObjectDirectory dir;     // Reference to external classes is maintained here
+    public DungeonSettings cfg;     // This is used lots of places!
+
+
+    public void Start()
     {
         StartCoroutine(ScentDecayOnIntervals());
     }
@@ -15,11 +20,12 @@ public partial class DungeonGenerator : MonoBehaviour
         float time_since_previous = 0f;
         while (true)
         {
-            if (time_since_previous < cfg.ScentInterval) {
-                yield return new WaitForSeconds(cfg.ScentInterval - time_since_previous); 
+            if (time_since_previous < cfg.ScentInterval)
+            {
+                yield return new WaitForSeconds(cfg.ScentInterval - time_since_previous);
                 time_since_previous = Time.time - decay_routine_start_time;
             }
-            
+
             decay_routine_start_time = Time.time;
             yield return StartCoroutine(ScentDecayAndSpread(time_since_previous));
             time_since_previous = Time.time - decay_routine_start_time;
@@ -45,20 +51,20 @@ public partial class DungeonGenerator : MonoBehaviour
             Debug.LogWarning($"ScentDecayAndSpread called after {time_since_previous} seconds, which is longer than expected interval of {cfg.ScentInterval} seconds.");
         }
         float scaled_spread_amount = cfg.ScentSpreadAmount * (time_since_previous / cfg.ScentInterval);
-        float scaled_decay_rate =    cfg.ScentDecayRate    * (time_since_previous / cfg.ScentInterval);
+        float scaled_decay_rate = cfg.ScentDecayRate * (time_since_previous / cfg.ScentInterval);
         // Check for problems at long intervals
-        if (scaled_spread_amount > 1f/10f)
+        if (scaled_spread_amount > 1f / 10f)
         {
             Debug.LogError($"ScentDecayAndSpread: scaled_spread_amount {scaled_spread_amount} is too high and will likely cause complete collapse of scent algorithm.");
-            scaled_spread_amount = 1f/10f; // clamp it, but this only masks the real problem.
+            scaled_spread_amount = 1f / 10f; // clamp it, but this only masks the real problem.
             // result at 1/4th is that original scent disappears in one iteration.
             // result at 1/5th is that scent in adjacent cells becomes greater than original in one iteration, making tracking impossible.
             // is 1/6th safe?  need to analyze more.  I'd feel more comfortable at 1/10th.
         }
         yield return null;
-        if (!buildComplete) yield break;    // can't do scents until build is done.
+        if (!dir.gen.buildComplete) yield break;    // can't do scents until build is done.
 
-        foreach (Room r in rooms)
+        foreach (Room r in dir.gen.rooms)
         {
             foreach (Cell c in r.cells)
             {
@@ -71,13 +77,13 @@ public partial class DungeonGenerator : MonoBehaviour
                         float spread_amount_per_direction = orig_intensity * scaled_spread_amount;
                         float accumulatedScentSpread = 0f;
                         // spread scent to nearby cells
-                        foreach (DirFlags dir in DirFlagsEx.AllCardinals)
+                        foreach (DirFlags dirFlags in DirFlagsEx.AllCardinals)
                         {
                             //walls and closed doors block scent spread
-                            if ((dir & (c.walls | (c.doors /* & c.doors_closed*/))) == 0)    // TODO: include door open/closed
+                            if ((dirFlags & (c.walls | (c.doors /* & c.doors_closed*/))) == 0)    // TODO: include door open/closed
                             {
-                                nPos = DirFlagsEx.ToVector2Int(dir);
-                                neighborCell = GetCellFromHf(c.x + nPos.x, c.y + nPos.y, c.z, threshold: 10);
+                                nPos = DirFlagsEx.ToVector2Int(dirFlags);
+                                neighborCell = dir.gen.GetCellFromHf(c.x + nPos.x, c.y + nPos.y, c.z, threshold: 10);
                                 if (neighborCell != null)
                                 {
                                     // spread the scent...
@@ -111,7 +117,7 @@ public partial class DungeonGenerator : MonoBehaviour
             }
 
             // now, transfer all those NextScents back to Scents.
-            foreach (Room room in rooms)
+            foreach (Room room in dir.gen.rooms)
             {
                 foreach (Cell cell in room.cells)
                 {
@@ -146,8 +152,8 @@ public partial class DungeonGenerator : MonoBehaviour
 
     void AddToNextScentIntensity(Cell c, int agent_id, float added_intensity)
     {
-       if (c.scents == null) c.scents = new();
-       if (c.nextScents == null) c.nextScents = new();
+        if (c.scents == null) c.scents = new();
+        //if (c.nextScents == null) c.nextScents = new();
 
         // if we find a matching agentId, add the scent amount
         for (int scent_num = 0; scent_num < c.scents.Count; scent_num++)

@@ -194,7 +194,7 @@ public class Cell       // one cell in a Room
     public Action<Cell> OnView;     // function triggered when viewed
     public Action<Cell> OnStep;     // function triggered when stepped on
     public List<ScentClass> scents; // tracks who has passed this way before
-    public List<ScentClass> nextScents; // temporarily holds next scent amount during decay/spread calculations
+    //public List<ScentClass> nextScents; // temporarily holds next scent amount during decay/spread calculations
 
 
     // Constructors:

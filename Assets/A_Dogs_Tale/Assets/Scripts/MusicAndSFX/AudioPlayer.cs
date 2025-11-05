@@ -27,9 +27,10 @@ public class AudioPlayTracking
 
 public partial class AudioPlayer : MonoBehaviour
 {
-    [Header("Object References")]
+    [Header("AudioPlayer Object References")]
     public ObjectDirectory dir;
     public AudioCatalog audioCatalog;
+    public GameObject nowPlayingContainer;
 
     public static AudioPlayer Instance { get; private set; }
 
@@ -42,6 +43,17 @@ public partial class AudioPlayer : MonoBehaviour
         }
 
         Instance = this;
+        if (dir == null) dir = FindFirstObjectByType<ObjectDirectory>(FindObjectsInactive.Include);
+        if (dir == null)
+        {
+            Debug.LogError($"AudioCatalog: ObjectDirectory not found");
+            return;
+        }
+        if (audioCatalog == null) audioCatalog = dir.audioCatalog;
+
+        if (nowPlayingContainer == null)
+            nowPlayingContainer = GameObject.Find("NowPlayingTemps");    // where temp objects are placed in hierarchy
+
         audioCatalog.StartAudioCatalog();
         //DontDestroyOnLoad(gameObject); // optional: keep across scenes
     }
@@ -108,6 +120,9 @@ public partial class AudioPlayer : MonoBehaviour
         {
             // a temporary object will be used as the source of the sound
             go = new GameObject($"{clipCfg.channel}_{name}_Temp");
+            if (nowPlayingContainer != null)
+                go.transform.parent = nowPlayingContainer.transform;
+                
             src = go.AddComponent<AudioSource>();
             // if audioLocation is specified, use it, otherwise use 2D sound for non-localized sound
             if (clipCfg.audioLocation != null)
