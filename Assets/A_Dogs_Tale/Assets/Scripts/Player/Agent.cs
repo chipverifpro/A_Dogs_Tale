@@ -167,7 +167,7 @@ public partial class Agent : MonoBehaviour
             dist_to_target = Mathf.Sqrt((pos2 - targetPos).sqrMagnitude);
             if ((move_credit > .01))// && (dist_to_target > .01))
             {
-                Debug.Log($"Distance to target: {dist_to_target}, Move credit: {move_credit}");
+                //Debug.Log($"Distance to target: {dist_to_target}, Move credit: {move_credit}");
                 if (move_credit < dist_to_target)
                 {
                     //Debug.Log("AA");
@@ -591,7 +591,7 @@ public partial class Agent : MonoBehaviour
         // Calculate how much we can turn this frame
         float maxStep = turnSpeedDegPerSec * Time.deltaTime;
 
-        Debug.Log($"vcamPerspective: {dir.vcamPerspective.Priority}, vcamFP: {dir.vcamFP.Priority}, vcamOverhead: {dir.vcamOverhead.Priority}");
+        //Debug.Log($"vcamPerspective: {dir.vcamPerspective.Priority}, vcamFP: {dir.vcamFP.Priority}, vcamOverhead: {dir.vcamOverhead.Priority}");
         if (dir.vcamOverhead.Priority > Mathf.Max(dir.vcamFP.Priority, dir.vcamPerspective.Priority))
             maxStep *= 3f; // with Overhead camera, speed up turn or it looks odd.
 

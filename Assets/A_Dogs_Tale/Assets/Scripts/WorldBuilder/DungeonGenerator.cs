@@ -1150,4 +1150,12 @@ public partial class DungeonGenerator : MonoBehaviour
         return return_color;
     }
 
+    // convert cell float position to cell int position.
+    public Vector2Int CellAtPosition(Vector2 position)
+    {
+        int x = Mathf.FloorToInt(position.x);
+        int y = Mathf.FloorToInt(position.y);
+        return new Vector2Int(x, y);
+    }
+
 } // End class DungeonGenerator

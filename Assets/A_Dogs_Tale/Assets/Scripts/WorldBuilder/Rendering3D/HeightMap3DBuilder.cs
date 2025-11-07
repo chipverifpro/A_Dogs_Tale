@@ -90,7 +90,7 @@ public partial class DungeonGenerator : MonoBehaviour
         }
         finally { if (local_tm) tm.End(); }
     }
-    
+
     public IEnumerator Build3DFromOneRoom(int room_number, TimeTask tm = null)
     {
         bool local_tm = false;
@@ -107,11 +107,11 @@ public partial class DungeonGenerator : MonoBehaviour
             //bool includes_ramp = false;
             DirFlags mywalls = DirFlags.None;
             DirFlags mydoors = DirFlags.None;
-            
-            
+            Color colorScent = getColor(Color.purple);
+
             // Cache once:
             var floorMR = (floorPrefab != null) ? floorPrefab.GetComponent<MeshRenderer>() : null;
-            var wallMR  = (cliffPrefab != null) ? cliffPrefab.GetComponent<MeshRenderer>() : null;
+            var wallMR = (cliffPrefab != null) ? cliffPrefab.GetComponent<MeshRenderer>() : null;
             var triangleFloorMR = (triangleFloorPrefab != null) ? triangleFloorPrefab.GetComponent<MeshRenderer>() : null;
 
             //if (tm.IfYield()) yield return null;
@@ -142,18 +142,18 @@ public partial class DungeonGenerator : MonoBehaviour
                 bool ED = mydoors.HasFlag(DirFlags.E);
                 bool SD = mydoors.HasFlag(DirFlags.S);
                 bool WD = mydoors.HasFlag(DirFlags.W);
-                
+
                 int num_doors = (ND ? 1 : 0) + (SD ? 1 : 0) + (ED ? 1 : 0) + (WD ? 1 : 0);
                 // prevent diagonal walls if there are doors in this cell.
 
                 // -------- diagonal corner smoothing (before orthogonal perimeter faces) --------
                 bool suppressN = false, suppressE = false, suppressS = false, suppressW = false;
 
-                if (num_doors==0 && cfg.useDiagonalCorners && isFloor && diagonalWallPrefab != null)
+                if (num_doors == 0 && cfg.useDiagonalCorners && isFloor && diagonalWallPrefab != null)
                 {
                     // include neighborhood, which is immediately connected rooms
                     // this allows for proper finding of walls at intersection.
-                    
+
                     mywalls = rooms[room_number].cells[cell_number].walls;
                     bool N = mywalls.HasFlag(DirFlags.N);
                     bool E = mywalls.HasFlag(DirFlags.E);
@@ -163,7 +163,7 @@ public partial class DungeonGenerator : MonoBehaviour
                     // if zero or one sides are walls, then nothing will happen here, so skip extra calculations
                     // if three sides are walls, don't replace with diagonals and leave as three walls (yucky X arrangement)
                     int num_walls = (N ? 1 : 0) + (S ? 1 : 0) + (E ? 1 : 0) + (W ? 1 : 0);
-                    
+
                     if (num_walls == 2)  // must have exactly two walls to use diagonal wall
                     {
                         float floorY = ySteps * cfg.unitHeight;
@@ -236,7 +236,7 @@ public partial class DungeonGenerator : MonoBehaviour
                     mydoors = rooms[room_number].cells[cell_number].doors;
 
                     if (nx < 0 || nz < 0 || nx >= cfg.mapWidth || nz >= cfg.mapHeight)
-                    {   
+                    {
                         nIsWall = true;     // off map
                         nIsDoor = false;
                     }
@@ -311,7 +311,7 @@ public partial class DungeonGenerator : MonoBehaviour
                         // Ramp spans from lower to higher tile
                         bool up = diff > 0;
                         if (up) continue; // don't create two ramps, one from each side, instead pick 'down'
-                                            // Place ramp slightly biased toward lower side so the top aligns cleanly
+                                          // Place ramp slightly biased toward lower side so the top aligns cleanly
                         int lower = up ? ySteps : nySteps;
                         float midheight = (ySteps + nySteps) / 2f;
                         int upper = up ? nySteps : ySteps;
@@ -319,10 +319,10 @@ public partial class DungeonGenerator : MonoBehaviour
                         var ramp = Instantiate(rampPrefab, nWorld + new Vector3(0, (upper) * cfg.unitHeight /*- .35f*/, 0), rot, root);
                         ramp.name = $"Ramp({Math.Abs(diff)})";
                         ramp.transform.localScale = new Vector3(cell.x, Math.Abs(diff) * cfg.unitHeight * 1.2f, cell.y); // length matches cell, height equals one step
-                                                                                                                            //includes_ramp = true;
+                                                                                                                         //includes_ramp = true;
                     }
                 } // end for i
-                
+
                 // Place floor at its height (Y is up)
                 if (/*!includes_ramp &&*/ isFloor && floorPrefab != null && triangleFloorPrefab != null)
                 {
@@ -367,13 +367,47 @@ public partial class DungeonGenerator : MonoBehaviour
                         f.transform.localScale = finalScale;
                         f.name = $"Floor({room_number}:{room_name},{ySteps})"; // comment out in perf builds
                     }
-                                                                // Cache renderer on prefab variant or:
+                    // Cache renderer on prefab variant or:
                     var rend = f.GetComponent<MeshRenderer>(); // ok once per object, but avoid if not needed
                     if (rend != null) rend.material.color = colorFloor;
+                }
+
+                // -------- Scent fog visualization --------
+                Cell scent_cell = rooms[room_number].cells[cell_number];
+                if (scent_cell.scents != null) {
+                    int scent_id = 1; // only visualize dummy scent_id 1 for now
+                    for (int scent_num = 0; scent_num < scent_cell.scents.Count; scent_num++)
+                    {
+                        if (scent_cell.scents[scent_num].agentId == scent_id && scent_cell.scents[scent_num].intensity > 0f)
+                        {
+                            ScentFogCellDraw(pos, colorScent, scent_cell.scents[scent_num].intensity);
+                        }
+                    }
                 }
             }
         }
         finally { if (local_tm) tm.End(); }
     }
     
+    void ScentFogCellDraw(Vector2Int pos, Color baseColor, float scentAmount)
+    {
+        Vector3 world = grid.CellToWorld(new Vector3Int(pos.x, pos.y, 0));
+        Vector3 cell = grid.cellSize;
+        
+        float height = 0.1f; // fixed height above floor
+        Vector3 position = world + new Vector3(0.0f, height, 0.0f);
+
+        GameObject f = Instantiate(floorPrefab, /*scentFogPrefab,*/ position, Quaternion.Euler(90f, 0f, 0f), root);
+        f.transform.localScale = new Vector3(cell.x * 0.5f, cell.y * 0.5f, 1f); // flat plane
+        f.name = $"ScentFog({pos.x},{pos.y}={scentAmount})"; // comment out in perf builds
+
+        // Color based on scent amount
+        var rend = f.GetComponent<MeshRenderer>(); // ok once per object, but avoid if not needed
+        if (rend != null)
+        {
+            Color c = baseColor;
+            c.a = Mathf.Clamp01(scentAmount * 2f); // scale alpha for visibility
+            rend.material.color = c;
+        }
+    }
 } // End class HeightMap3DBuilder

@@ -25,10 +25,10 @@ MonoBehaviour:
   roundWorld: 1
   maxElevation: 100
   unitHeight: 0.1
-  ScentInterval: 30
-  ScentDecayRate: 0.9
-  ScentSpreadAmount: 0.1
-  ScentMinimum: 0.005
+  scentInterval: 1
+  scentDecayRate: 0.1
+  scentSpreadAmount: 0.05
+  scentMinimum: 0.001
   perlinFloorHeights: 0
   perlinFloorWavelength: 0.05
   GlobalPerlinSeed: 1

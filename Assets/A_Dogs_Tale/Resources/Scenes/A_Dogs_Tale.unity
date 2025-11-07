@@ -12447,6 +12447,7 @@ MonoBehaviour:
   audioMixerGroups: {fileID: 215243010}
   pack: {fileID: 766807147}
   player: {fileID: 556401680}
+  scents: {fileID: 1546545659}
   brain: {fileID: 1815589289}
   vcamFP: {fileID: 445485060}
   vcamPerspective: {fileID: 1801122503}

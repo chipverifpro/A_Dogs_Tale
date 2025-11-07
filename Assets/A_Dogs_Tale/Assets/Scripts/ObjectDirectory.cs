@@ -28,6 +28,7 @@ public class ObjectDirectory : MonoBehaviour
     [Header("Game Objects")]
     public Pack pack;
     public Player player;
+    public Scents scents;
 
 
     [Header("Game Camearas")]

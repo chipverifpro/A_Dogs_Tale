@@ -164,6 +164,20 @@ public partial class Player : MonoBehaviour
 
         Input_Update();  // this is the update for inputs and resulting movement
                          // Input_Update will call Move_Update with the appropriate parameters.
+
+        if (gen.In((int)agent.pos2.x, (int)agent.pos2.y))
+        {
+            Cell player_cell = gen.cellGrid[(int)agent.pos2.x, (int)agent.pos2.y];
+            if (player_cell != null)
+            {
+                Debug.LogError($"[AddScent] Player is in cell {agent.pos2.x}, {agent.pos2.y}, room {player_cell.room_number}");
+                dir.scents.AddToNextScentIntensity(
+                    player_cell,        // cell
+                    1,                  // phony agent_id  // TODO: link to real agent id
+                    set_intensity: 1.0f // set a value, not add a value
+                );
+            }
+        }
     }
 
     public IEnumerator DetermineStartPosition()

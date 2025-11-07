@@ -194,8 +194,25 @@ public class Cell       // one cell in a Room
     public Action<Cell> OnView;     // function triggered when viewed
     public Action<Cell> OnStep;     // function triggered when stepped on
     public List<ScentClass> scents; // tracks who has passed this way before
-    //public List<ScentClass> nextScents; // temporarily holds next scent amount during decay/spread calculations
+    public GameObject[] GOs = new GameObject[Enum.GetValues(typeof(GOtypes)).Length]; // GameObjects for floor, walls, doors, etc.
+    //public GameObject scentGO = null; // GameObject for scent fog visualization
 
+    public enum GOtypes
+    {
+        Floor = 0,      // GO_floor = GOs[(int)GOtypes.Floor];
+        Ceiling = 1,    // GO_ceiling
+        Fog = 2,        // GO_fog      (either weather fog or scent fog or fog of war?)
+        Wall_N = 3,     // GO_wall_N
+        Wall_E = 4,     // GO_wall_E
+        Wall_S = 5,     // GO_wall_S
+        Wall_W = 6,     // GO_wall_W
+        Wall_Diag = 7,  // GO_wall_Diag
+        Door_N = 8,     // GO_door_N
+        Door_E = 9,     // GO_door_E
+        Door_S = 10,    // GO_door_S
+        Door_W = 11     // GO_door_W
+        // furniture, stairs, traps, etc. can be added later
+    }
 
     // Constructors:
     public Cell(int x, int y, int z)
@@ -218,6 +235,7 @@ public class Cell       // one cell in a Room
 
     // shortcuts to read access variations
     public Vector3Int pos3d => new Vector3Int(pos.x, pos.y, height);
+    public Vector3 pos3d_f => new Vector3(pos.x, pos.y, height);        // float version
     public int x => pos.x;
     public int y => pos.y;
     public int z => height;

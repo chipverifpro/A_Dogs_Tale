@@ -29,10 +29,10 @@ public class DungeonSettings : ScriptableObject
     public float unitHeight = 0.1f;  // World units per height unit in the height map. (eg. size of one X tile = 1/unitHeight Z)
 
     [Header("Scent Parameters")]
-    public float ScentInterval = 10f;       // interval to decay/spread scents (seconds)
-    public float ScentDecayRate = 0.1f;     // decay by percent per ScentInterval
-    public float ScentSpreadAmount = 0.05f;  // neighbors get this percent added per ScentInterval
-    public float ScentMinimum = 0.001f;       // amount below which the scent completely disappears
+    public float scentInterval = 10f;       // interval to decay/spread scents (seconds)
+    public float scentDecayRate = 0.1f;     // decay by percent per ScentInterval
+    public float scentSpreadAmount = 0.05f;  // neighbors get this percent added per ScentInterval
+    public float scentMinimum = 0.001f;       // amount below which the scent completely disappears
 
     [Header("Room Floor Bumpiness Settings")]
     public int perlinFloorHeights = 3;  // Height range of added ripple to the floor.
