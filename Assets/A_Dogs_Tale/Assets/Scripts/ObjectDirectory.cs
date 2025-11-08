@@ -44,6 +44,9 @@ public class ObjectDirectory : MonoBehaviour
     public MenuManager menuManager;
     public SceneFader sceneFader;
 
+    [Header("Rendering Objects")]
+    public ElementStore elementStore;
+    public ManufactureGO manufactureGO;
 
     void Awake()
     {

@@ -68,6 +68,8 @@ public sealed class TimeTask
         // Fair-share soft cap
         float softCap = _mgr.SoftCapPerTask();
 
+        softCap = Mathf.Max(MinInterval, softCap); // avoid zero
+
         // Let task continue if within its fair share and we can reserve
         bool allowContinue = (predicted <= softCap * 1.05f) // slight slack
                              && _mgr.TryReserveForNextChunk(predicted);

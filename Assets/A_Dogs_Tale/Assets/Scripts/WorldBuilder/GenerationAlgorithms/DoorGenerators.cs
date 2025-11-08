@@ -454,8 +454,8 @@ public partial class DungeonGenerator : MonoBehaviour
                 //c.cellA.walls |= c.dir;     // set the wall bit if not placed.
                 if ((before_doors != c.cellA.doors) || (before_walls != c.cellA.walls))
                 {
-                    Debug.Log($"before_doors = {before_doors}, after_doors = {c.cellA.doors}");
-                    Debug.Log($"before_walls = {before_walls}, after_walls = {c.cellA.walls}");
+                    //Debug.Log($"before_doors = {before_doors}, after_doors = {c.cellA.doors}");
+                    //Debug.Log($"before_walls = {before_walls}, after_walls = {c.cellA.walls}");
                     num_changes++;
                 }
                 DirFlags before_doorsB = c.cellB.doors;
@@ -464,8 +464,8 @@ public partial class DungeonGenerator : MonoBehaviour
                 //c.cellB.walls |= Opp(c.dir);     // set the wall bit if not placed.
                 if ((before_doorsB != c.cellB.doors) || (before_wallsB != c.cellB.walls))
                 {
-                    Debug.Log($"before_doorsB = {before_doorsB}, after_doorsB = {c.cellB.doors}");
-                    Debug.Log($"before_wallsB = {before_wallsB}, after_wallsB = {c.cellB.walls}");
+                    //Debug.Log($"before_doorsB = {before_doorsB}, after_doorsB = {c.cellB.doors}");
+                    //Debug.Log($"before_wallsB = {before_wallsB}, after_wallsB = {c.cellB.walls}");
                     num_changes++;
                 }
                 //Debug.Log($"{c.cellA.x},{c.cellA.y} doors={c.cellA.doors} -> {c.cellB.x},{c.cellB.y} doors={c.cellB.doors}");

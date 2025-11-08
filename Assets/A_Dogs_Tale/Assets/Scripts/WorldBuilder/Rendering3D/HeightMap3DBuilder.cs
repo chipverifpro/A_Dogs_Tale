@@ -5,6 +5,8 @@ using UnityEngine;
 
 public partial class DungeonGenerator : MonoBehaviour
 {
+    [SerializeField] private ElementStore elementStore;
+
     //[Header("3D Build Settings")]
     //    public float unitHeight = 0.1f;             // world Y per step
     //    public bool useDiagonalCorners = true;
@@ -78,7 +80,8 @@ public partial class DungeonGenerator : MonoBehaviour
         {
             if (root == null) root = new GameObject("Terrain3D").transform; // TODO: get existing game object?
 
-            Destroy3D(); // Clear old objects
+            //Destroy3D(); // Clear old objects -- old version
+            elementStore.ClearInstances(); // New version using ManufactureGO
 
             for (int room_number = 0; room_number < rooms.Count; room_number++)
             {
@@ -87,39 +90,42 @@ public partial class DungeonGenerator : MonoBehaviour
                 //Debug.Log($"Build3DFromOneRoom DONE room_number = {room_number}");
                 //if (tm.IfYield()) yield return null;
             }
+            dir.manufactureGO.BuildAll();
         }
         finally { if (local_tm) tm.End(); }
     }
 
     public IEnumerator Build3DFromOneRoom(int room_number, TimeTask tm = null)
     {
+        if (elementStore == null)
+        {
+            Debug.LogError("Build3DFromOneRoom: ElementStore is not assigned.");
+            yield break;
+        }
+
         bool local_tm = false;
         if (tm == null) { tm = TimeManager.Instance.BeginTask("Build3DFromOneRoom"); local_tm = true; }
+
         try
         {
-            //Debug.Log($"Build3DFromOneRoom room_number={room_number}");
             Vector3 mid = new();
             Vector3 world = new();
             Vector3 nWorld = new();
             Vector3 cell = grid.cellSize;
             bool use_triangle_floor = false;
             int triangle_floor_dir = 0;
-            //bool includes_ramp = false;
             DirFlags mywalls = DirFlags.None;
             DirFlags mydoors = DirFlags.None;
             Color colorScent = getColor(Color.purple);
 
-            // Cache once:
-            var floorMR = (floorPrefab != null) ? floorPrefab.GetComponent<MeshRenderer>() : null;
-            var wallMR = (cliffPrefab != null) ? cliffPrefab.GetComponent<MeshRenderer>() : null;
-            var triangleFloorMR = (triangleFloorPrefab != null) ? triangleFloorPrefab.GetComponent<MeshRenderer>() : null;
-
-            //if (tm.IfYield()) yield return null;
             string room_name = rooms[room_number].name;
             int num_cells = rooms[room_number].cells.Count;
+
             for (int cell_number = 0; cell_number < num_cells; cell_number++)
             {
-                if ((cell_number % 500) == 0) if (tm.IfYield()) yield return null;
+                if ((cell_number % 500) == 0)
+                    if (tm.IfYield()) yield return null;
+
                 Vector2Int pos = rooms[room_number].cells[cell_number].pos;
                 int x = pos.x;
                 int z = pos.y;
@@ -129,13 +135,9 @@ public partial class DungeonGenerator : MonoBehaviour
                 Color colorFloor = rooms[room_number].cells[cell_number].colorFloor;
                 if (colorFloor == colorDefault) // if cell has no color, use room's color
                     colorFloor = rooms[room_number].colorFloor;
-                //bool isWall = false; //unused
 
                 // Base world position of this tile center
                 world = grid.CellToWorld(new Vector3Int(x, z, 0));
-
-                // If your Grid's tile anchor isn't centered, you may want to offset by cell * 0.5f
-                // world += new Vector3(cell.x * 0.5f, 0, cell.y * 0.5f); // uncomment if needed
 
                 mydoors = rooms[room_number].cells[cell_number].doors;
                 bool ND = mydoors.HasFlag(DirFlags.N);
@@ -144,24 +146,18 @@ public partial class DungeonGenerator : MonoBehaviour
                 bool WD = mydoors.HasFlag(DirFlags.W);
 
                 int num_doors = (ND ? 1 : 0) + (SD ? 1 : 0) + (ED ? 1 : 0) + (WD ? 1 : 0);
-                // prevent diagonal walls if there are doors in this cell.
 
                 // -------- diagonal corner smoothing (before orthogonal perimeter faces) --------
                 bool suppressN = false, suppressE = false, suppressS = false, suppressW = false;
 
                 if (num_doors == 0 && cfg.useDiagonalCorners && isFloor && diagonalWallPrefab != null)
                 {
-                    // include neighborhood, which is immediately connected rooms
-                    // this allows for proper finding of walls at intersection.
-
                     mywalls = rooms[room_number].cells[cell_number].walls;
                     bool N = mywalls.HasFlag(DirFlags.N);
                     bool E = mywalls.HasFlag(DirFlags.E);
                     bool S = mywalls.HasFlag(DirFlags.S);
                     bool W = mywalls.HasFlag(DirFlags.W);
 
-                    // if zero or one sides are walls, then nothing will happen here, so skip extra calculations
-                    // if three sides are walls, don't replace with diagonals and leave as three walls (yucky X arrangement)
                     int num_walls = (N ? 1 : 0) + (S ? 1 : 0) + (E ? 1 : 0) + (W ? 1 : 0);
 
                     if (num_walls == 2)  // must have exactly two walls to use diagonal wall
@@ -172,58 +168,105 @@ public partial class DungeonGenerator : MonoBehaviour
                         Vector3 baseY = new Vector3(0f, floorY + wallH * 0.5f, 0f);
 
                         // NE corner (N & E)
-                        if (N && E /* && NE */)
+                        if (N && E)
                         {
-                            var t = Instantiate(diagonalWallPrefab,
-                                world + CornerOffset(east: true, north: true, cell) + baseY,
-                                Yaw45, root);
-                            t.transform.localScale = new Vector3(cell.x * 0.1f, wallH, diagLen);
-                            //t.name = $"Wall({room_name})";
+                            Vector3 posWorld = world + CornerOffset(east: true, north: true, cell) + baseY;
+                            Quaternion rot = Yaw45;
+                            Vector3 scale = new Vector3(cell.x * 0.1f, wallH, diagLen);
+
+                            elementStore.AddWall(
+                                archetypeId: "DiagonalWall",
+                                isDiagonal: true,
+                                roomIndex: room_number,
+                                cellCoord: new Vector2Int(x, z),
+                                heightSteps: ySteps,
+                                worldPos: posWorld,
+                                rotation: rot,
+                                scale: scale,
+                                color: Color.white,
+                                customFlags: 0
+                            );
+
                             use_triangle_floor = true;
-                            triangle_floor_dir = 0; // correct
+                            triangle_floor_dir = 0;
                             if (cfg.skipOrthogonalWhenDiagonal) { suppressN = true; suppressE = true; }
                         }
                         // NW corner (N & W)
-                        if (N && W /* && NW */)
+                        if (N && W)
                         {
-                            var t = Instantiate(diagonalWallPrefab,
-                                world + CornerOffset(east: false, north: true, cell) + baseY,
-                                Yaw315, root);
-                            t.transform.localScale = new Vector3(cell.x * 0.1f, wallH, diagLen);
-                            //t.name = $"Wall({room_name})";
+                            Vector3 posWorld = world + CornerOffset(east: false, north: true, cell) + baseY;
+                            Quaternion rot = Yaw315;
+                            Vector3 scale = new Vector3(cell.x * 0.1f, wallH, diagLen);
+
+                            elementStore.AddWall(
+                                archetypeId: "DiagonalWall",
+                                isDiagonal: true,
+                                roomIndex: room_number,
+                                cellCoord: new Vector2Int(x, z),
+                                heightSteps: ySteps,
+                                worldPos: posWorld,
+                                rotation: rot,
+                                scale: scale,
+                                color: Color.white,
+                                customFlags: 0
+                            );
+
                             use_triangle_floor = true;
-                            triangle_floor_dir = 3; // correct
+                            triangle_floor_dir = 3;
                             if (cfg.skipOrthogonalWhenDiagonal) { suppressN = true; suppressW = true; }
                         }
                         // SE corner (S & E)
-                        if (S && E /* && SE */)
+                        if (S && E)
                         {
-                            var t = Instantiate(diagonalWallPrefab,
-                                world + CornerOffset(east: true, north: false, cell) + baseY,
-                                Yaw135, root);
-                            t.transform.localScale = new Vector3(cell.x * 0.1f, wallH, diagLen);
-                            //t.name = $"Wall({room_name})";
+                            Vector3 posWorld = world + CornerOffset(east: true, north: false, cell) + baseY;
+                            Quaternion rot = Yaw135;
+                            Vector3 scale = new Vector3(cell.x * 0.1f, wallH, diagLen);
+
+                            elementStore.AddWall(
+                                archetypeId: "DiagonalWall",
+                                isDiagonal: true,
+                                roomIndex: room_number,
+                                cellCoord: new Vector2Int(x, z),
+                                heightSteps: ySteps,
+                                worldPos: posWorld,
+                                rotation: rot,
+                                scale: scale,
+                                color: Color.white,
+                                customFlags: 0
+                            );
+
                             use_triangle_floor = true;
-                            triangle_floor_dir = 1; // correct
+                            triangle_floor_dir = 1;
                             if (cfg.skipOrthogonalWhenDiagonal) { suppressS = true; suppressE = true; }
                         }
                         // SW corner (S & W)
-                        if (S && W /* && SW */)
+                        if (S && W)
                         {
-                            var t = Instantiate(diagonalWallPrefab,
-                                world + CornerOffset(east: false, north: false, cell) + baseY,
-                                Yaw225, root);
-                            t.transform.localScale = new Vector3(cell.x * 0.1f, wallH, diagLen);
-                            //t.name = $"Wall({room_name})";
+                            Vector3 posWorld = world + CornerOffset(east: false, north: false, cell) + baseY;
+                            Quaternion rot = Yaw225;
+                            Vector3 scale = new Vector3(cell.x * 0.1f, wallH, diagLen);
+
+                            elementStore.AddWall(
+                                archetypeId: "DiagonalWall",
+                                isDiagonal: true,
+                                roomIndex: room_number,
+                                cellCoord: new Vector2Int(x, z),
+                                heightSteps: ySteps,
+                                worldPos: posWorld,
+                                rotation: rot,
+                                scale: scale,
+                                color: Color.white,
+                                customFlags: 0
+                            );
+
                             use_triangle_floor = true;
-                            triangle_floor_dir = 2; // correct
+                            triangle_floor_dir = 2;
                             if (cfg.skipOrthogonalWhenDiagonal) { suppressS = true; suppressW = true; }
                         }
                     }
                 }
                 // -------- end diagonal corner smoothing, start straight walls/cliffs --------
 
-                // Compare with 4 neighbors and add perimeter walls or ramps/cliffs
                 for (int i = 0; i < 4; i++)
                 {
                     Vector2Int d = Dir4[i];
@@ -240,9 +283,6 @@ public partial class DungeonGenerator : MonoBehaviour
                         nIsWall = true;     // off map
                         nIsDoor = false;
                     }
-                    //bool nIsFloor = IsTileInNeighborhood(room_number, rooms[room_number].neighbors, new Vector2Int(nx, nz));
-                    //bool nIsWall = IsWallInNeighborhood(room_number, new Vector2Int(nx, nz));
-                    //bool nIsWall = !nIsFloor;
 
                     if (d.x == 0 && d.y == 1) nIsWall = mywalls.HasFlag(DirFlags.N);
                     if (d.x == 1 && d.y == 0) nIsWall = mywalls.HasFlag(DirFlags.E);
@@ -254,87 +294,89 @@ public partial class DungeonGenerator : MonoBehaviour
                     if (d.x == 0 && d.y == -1) nIsDoor = mydoors.HasFlag(DirFlags.S);
                     if (d.x == -1 && d.y == 0) nIsDoor = mydoors.HasFlag(DirFlags.W);
 
-                    // If current is FLOOR and neighbor is WALL => perimeter face (unless diagonal suppressed)
+                    // If current is FLOOR and neighbor is WALL or DOOR => perimeter face
                     if (isFloor && (nIsWall || nIsDoor) && cliffPrefab != null)
                     {
-                        // Respect suppress flags for the matching direction
                         if ((d.x == 0 && d.y == 1 && suppressN) ||
                             (d.x == 1 && d.y == 0 && suppressE) ||
                             (d.x == 0 && d.y == -1 && suppressS) ||
                             (d.x == -1 && d.y == 0 && suppressW))
                         {
-                            // skip orthogonal face; diagonal already placed
+                            // skip orthogonal; diagonal was already placed
                         }
                         else
                         {
-                            // location of the neighboring cell
                             nWorld = grid.CellToWorld(new Vector3Int(nx, nz, 0));
-                            // midpoint between the two cells
                             mid = 0.5f * (world + nWorld);
 
-                            //int floorSteps = GetHeightFromRoom(pos);
                             int floorSteps = rooms[room_number].cells[cell_number].height;
-
                             float ht = Mathf.Max(1, cfg.perimeterWallSteps) * cfg.unitHeight;
                             float baseY = floorSteps * cfg.unitHeight;
 
-                            var face = Instantiate(cliffPrefab,
-                                mid + new Vector3(0, baseY + (0.5f * ht), 0),
-                                RotFromDir(new Vector2Int((nx - x), (nz - z))),
-                                root);
-                            //face.name = $"Wall({room_name})";
-                            face.transform.localScale = new Vector3(cell.x, ht, cell.y * 0.1f);
+                            Vector3 wallPos = mid + new Vector3(0, baseY + (0.5f * ht), 0);
+                            Quaternion wallRot = RotFromDir(new Vector2Int(nx - x, nz - z));
+                            Vector3 wallScale = new Vector3(cell.x, ht, cell.y * 0.1f);
 
-                            // make the wall red to indicate a simple door...
-                            var rend = face.GetComponent<MeshRenderer>(); // ok once per object, but avoid if not needed
-                            if (nIsDoor /*&& (rend != null)*/) rend.material.color = Color.red;
+                            // For now, store doors as walls with a flag + color.
+                            // Later you can route nIsDoor into elementStore.AddDoor instead.
+                            int customFlags = nIsDoor ? 1 : 0; // 1 = door segment
+                            Color wallColor = nIsDoor ? Color.red : Color.white;
+
+                            elementStore.AddWall(
+                                archetypeId: nIsDoor ? "Door" : "Wall",
+                                isDiagonal: false,
+                                roomIndex: room_number,
+                                cellCoord: new Vector2Int(x, z),
+                                heightSteps: floorSteps,
+                                worldPos: wallPos,
+                                rotation: wallRot,
+                                scale: wallScale,
+                                color: wallColor,
+                                customFlags: customFlags
+                            );
                         }
                     }
 
-                    // Only consider transitions between walkable tiles, or visualize room->void edges as cliffs if you prefer
-                    //if (!(isFloor && nIsFloor)) continue;
-
+                    // Height transitions (ramps / cliffs) between this cell and neighbor
                     int nySteps = GetHeightInNeighborhood(room_number, new Vector2Int(nx, nz));
                     int diff = nySteps - ySteps;
                     if (diff == 0) continue;
 
-                    // Place transition geometry centered between the two tiles (for walls only)
                     nWorld = grid.CellToWorld(new Vector3Int(nx, nz, 0));
-                    mid = (world + nWorld) * 0.5f;
+                    mid = 0.5f * (world + nWorld);
 
-                    // Ramps or cliffs
-
-                    if ((Mathf.Abs(diff) >= cfg.minimumRamp) && (Mathf.Abs(diff) <= cfg.maximumRamp) && (rampPrefab != null))
+                    if ((Mathf.Abs(diff) >= cfg.minimumRamp) &&
+                        (Mathf.Abs(diff) <= cfg.maximumRamp) &&
+                        rampPrefab != null)
                     {
-                        // NOTE: Ramp size/placement is still a little off.  Needs work, possibly new origin for tile.
-
-                        // Ramp spans from lower to higher tile
                         bool up = diff > 0;
-                        if (up) continue; // don't create two ramps, one from each side, instead pick 'down'
-                                          // Place ramp slightly biased toward lower side so the top aligns cleanly
-                        int lower = up ? ySteps : nySteps;
-                        float midheight = (ySteps + nySteps) / 2f;
+                        if (up) continue; // keep your existing "only one side makes the ramp" rule
+
                         int upper = up ? nySteps : ySteps;
                         var rot = RotFromDir(d * (up ? 1 : -1)); // face uphill
-                        var ramp = Instantiate(rampPrefab, nWorld + new Vector3(0, (upper) * cfg.unitHeight /*- .35f*/, 0), rot, root);
-                        ramp.name = $"Ramp({Math.Abs(diff)})";
-                        ramp.transform.localScale = new Vector3(cell.x, Math.Abs(diff) * cfg.unitHeight * 1.2f, cell.y); // length matches cell, height equals one step
-                                                                                                                         //includes_ramp = true;
-                    }
-                } // end for i
+                        Vector3 rampPos = nWorld + new Vector3(0, upper * cfg.unitHeight, 0);
+                        Vector3 rampScale = new Vector3(cell.x, Mathf.Abs(diff) * cfg.unitHeight * 1.2f, cell.y);
 
-                // Place floor at its height (Y is up)
-                if (/*!includes_ramp &&*/ isFloor && floorPrefab != null && triangleFloorPrefab != null)
+                        elementStore.AddRamp(
+                            archetypeId: "Ramp",
+                            roomIndex: room_number,
+                            cellCoord: new Vector2Int(x, z),
+                            heightSteps: ySteps,
+                            worldPos: rampPos,
+                            rotation: rot,
+                            scale: rampScale,
+                            color: Color.white,
+                            heightDelta: diff
+                        );
+                    }
+                } // end 4-direction loop
+
+                // -------- Floor tiles (square or triangle) --------
+                if (isFloor && floorPrefab != null && triangleFloorPrefab != null)
                 {
                     Quaternion tilt = rooms[room_number].cells[cell_number].tiltFloor;
-                    Vector3 position = world + new Vector3(-0.0f, ySteps * cfg.unitHeight, 0.0f);
+                    Vector3 position = world + new Vector3(0f, ySteps * cfg.unitHeight, 0f);
 
-                    // Adjust scale to keep tile edges flush with neighbors when tilted
-                    // This assumes tilt is only around X and Z axes, not Yaw.
-                    // If you have extreme tilts, this can cause large scale changes.
-                    // You might want to clamp the scale to a maximum.
-                    // Alternatively, you could redesign your tiles to be larger than the cell size,
-                    // and overlap slightly to avoid gaps when tilted.
                     float rollRad = tilt.eulerAngles.z * Mathf.Deg2Rad;
                     float pitchRad = tilt.eulerAngles.x * Mathf.Deg2Rad;
                     float cosRoll = Mathf.Cos(rollRad);
@@ -342,72 +384,50 @@ public partial class DungeonGenerator : MonoBehaviour
                     float scaleX = (Mathf.Abs(cosRoll) > 1e-4f) ? 1f / cosRoll : 1f;
                     float scaleZ = (Mathf.Abs(cosPitch) > 1e-4f) ? 1f / cosPitch : 1f;
 
-                    //float scaleX = 1f / Mathf.Cos(rollRad);
-                    //float scaleZ = 1f / Mathf.Cos(pitchRad);
-
                     Vector3 finalScale = new Vector3(scaleX, 1f, scaleZ);
 
-                    // When you instantiate, skip naming in bulk builds:
-                    GameObject f;
                     if (use_triangle_floor)
                     {
-                        Quaternion triangle_floor_rot = Quaternion.Euler(-90f, (triangle_floor_dir) * 90f, 90f);
-                        //f = Instantiate(triangleFloorPrefab, world + new Vector3(-0.0f, ySteps * unitHeight, 0.0f), Quaternion.Euler(90f, 0f, (2+triangle_floor_dir) * 90), root);
-                        //f = Instantiate(triangleFloorPrefab, position, tilt * Quaternion.Euler(90f, 0f, (triangle_floor_dir) * 90), root);
-                        f = Instantiate(triangleFloorPrefab, position, triangle_floor_rot /** tilt*/, root);
-                        f.transform.localScale = finalScale * 50f;  // WHY 50?
-                        f.transform.Rotate(tilt.eulerAngles, Space.World);
-                        f.name = $"Triangle({room_number}:{room_name},{ySteps},{triangle_floor_dir})"; // comment out in perf builds
+                        Quaternion triangleFloorRot = Quaternion.Euler(-90f, triangle_floor_dir * 90f, 90f);
+                        // Approximate final rotation: tilt then triangle orientation
+                        Quaternion finalRot = tilt * triangleFloorRot;
+                        Vector3 triScale = finalScale * 50f; // keep your existing fudge factor for now
+
+                        elementStore.AddFloorTile(
+                            archetypeId: "TriangleFloor",
+                            isTriangle: true,
+                            roomIndex: room_number,
+                            cellCoord: new Vector2Int(x, z),
+                            heightSteps: ySteps,
+                            worldPos: position,
+                            rotation: finalRot,
+                            scale: triScale,
+                            color: colorFloor
+                        );
                     }
                     else
                     {
+                        Quaternion finalRot = tilt;
 
-                        //Debug.Log("Tilt: " + tilt.eulerAngles);  // DEBUG
-                        f = Instantiate(floorPrefab, position, tilt, root);
-                        f.transform.localScale = finalScale;
-                        f.name = $"Floor({room_number}:{room_name},{ySteps})"; // comment out in perf builds
-                    }
-                    // Cache renderer on prefab variant or:
-                    var rend = f.GetComponent<MeshRenderer>(); // ok once per object, but avoid if not needed
-                    if (rend != null) rend.material.color = colorFloor;
-                }
-
-                // -------- Scent fog visualization --------
-                Cell scent_cell = rooms[room_number].cells[cell_number];
-                if (scent_cell.scents != null) {
-                    int scent_id = 1; // only visualize dummy scent_id 1 for now
-                    for (int scent_num = 0; scent_num < scent_cell.scents.Count; scent_num++)
-                    {
-                        if (scent_cell.scents[scent_num].agentId == scent_id && scent_cell.scents[scent_num].intensity > 0f)
-                        {
-                            ScentFogCellDraw(pos, colorScent, scent_cell.scents[scent_num].intensity);
-                        }
+                        elementStore.AddFloorTile(
+                            archetypeId: "Floor",
+                            isTriangle: false,
+                            roomIndex: room_number,
+                            cellCoord: new Vector2Int(x, z),
+                            heightSteps: ySteps,
+                            worldPos: position,
+                            rotation: finalRot,
+                            scale: finalScale,
+                            color: colorFloor
+                        );
                     }
                 }
-            }
+            } // end cell loop
         }
-        finally { if (local_tm) tm.End(); }
-    }
-    
-    void ScentFogCellDraw(Vector2Int pos, Color baseColor, float scentAmount)
-    {
-        Vector3 world = grid.CellToWorld(new Vector3Int(pos.x, pos.y, 0));
-        Vector3 cell = grid.cellSize;
-        
-        float height = 0.1f; // fixed height above floor
-        Vector3 position = world + new Vector3(0.0f, height, 0.0f);
-
-        GameObject f = Instantiate(floorPrefab, /*scentFogPrefab,*/ position, Quaternion.Euler(90f, 0f, 0f), root);
-        f.transform.localScale = new Vector3(cell.x * 0.5f, cell.y * 0.5f, 1f); // flat plane
-        f.name = $"ScentFog({pos.x},{pos.y}={scentAmount})"; // comment out in perf builds
-
-        // Color based on scent amount
-        var rend = f.GetComponent<MeshRenderer>(); // ok once per object, but avoid if not needed
-        if (rend != null)
+        finally
         {
-            Color c = baseColor;
-            c.a = Mathf.Clamp01(scentAmount * 2f); // scale alpha for visibility
-            rend.material.color = c;
+            if (local_tm) tm.End();
         }
     }
+
 } // End class HeightMap3DBuilder
