@@ -192,7 +192,7 @@ public partial class Scents : MonoBehaviour
 
     // This routine updates the scent fog visualization in each cell based on current scent amounts.
     // It will reuse existing fog GameObjects if they exist, or create new ones as needed.
-    public void ScentFogUpdate()
+    public void ScentFogUpdate(Vector3 nosePosition, float noseSensitivity)
     {
         GameObject scentFogPrefab = dir.gen.floorPrefab;    // temporary; replace with actual scent fog prefab later
         Color colorScent = new Color(0.5f, 1f, 0.5f, 0.5f); // light greenish translucent
@@ -209,16 +209,21 @@ public partial class Scents : MonoBehaviour
                     GO_fog.SetActive(false);            // hide until we need it
                     GO_fog.name = $"Fog({c.x},{c.y})";  // comment out in perf builds
                 }
+                // -------- Scent distance from nose --------
+                float distFromNose = Vector3.Distance(nosePosition, c.pos3d_f);
+                float scentDistanceFactor = Mathf.Clamp01(1f - (distFromNose / noseSensitivity));
+
                 // -------- Scent fog visualization --------
                 if (GO_fog != null && c.scents != null)
                 {
                     int scent_id = 1; // only visualize dummy scent_id 1 for now
                     for (int scent_num = 0; scent_num < c.scents.Count; scent_num++)
                     {
-                        if (c.scents[scent_num].agentId == scent_id && c.scents[scent_num].intensity > 0f)
+                        float intensity = c.scents[scent_num].intensity * scentDistanceFactor;
+                        if ((c.scents[scent_num].agentId == scent_id) && (intensity > 0.001f))
                         {
                             // found scent to visualize via transparency
-                            float transparency = Mathf.Clamp01(c.scents[scent_num].intensity);
+                            float transparency = Mathf.Clamp01(intensity);
                             Assign_GO_Color(GO_fog, colorScent, transparency);
                             GO_fog.SetActive(true);
                         } else {
