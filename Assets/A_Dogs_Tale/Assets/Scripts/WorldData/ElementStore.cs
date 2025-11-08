@@ -38,6 +38,13 @@ public enum ElementRenderFlags
     NavWalkable     = 1 << 5  // floor / walkable surface
 }
 
+[System.Flags]
+public enum ElementUpdateFlags
+{
+    None  = 0,
+    Color = 1 << 0,
+    // Future: Transform = 1 << 1, Material = 1 << 2, etc.
+}
 /// <summary>
 /// Describes the "recipe" or archetype for a family of elements.
 /// Think of this as prefab-like data BEFORE it becomes an actual GameObject.
@@ -125,6 +132,9 @@ public struct ElementInstanceData
     [Tooltip("Application-specific flags (bitfield). Use as needed by game logic.")]
     public int customFlags;
 
+    [NonSerialized]
+    public ElementUpdateFlags dirtyFlags;
+
     public ElementInstanceData(
         string archetypeId,
         ElementLayerKind layerKind,
@@ -149,6 +159,7 @@ public struct ElementInstanceData
         this.color       = color;
         this.customFlags = customFlags;
         this.customValue = customValue;
+        this.dirtyFlags  = ElementUpdateFlags.None;
     }
 }
 
@@ -159,6 +170,9 @@ public struct ElementInstanceData
 [Serializable]
 public class ElementLayer
 {
+    [Tooltip("Kind of this layer (Floor, Wall, Ramp, Scenery, etc.).")]
+    public ElementLayerKind kind = ElementLayerKind.Custom;
+
     [Tooltip("Name of this layer (e.g. 'Floor', 'Walls', 'Props').")]
     public string name = "DefaultLayer";
 
@@ -441,6 +455,38 @@ public class ElementStore : ScriptableObject
         );
 
         AddInstance("Ramp", inst);
+    }
+
+    /// <summary>
+    /// Change the color of a specific instance and mark it dirty so
+    /// ManufactureGO.ApplyPendingUpdates can push it into the live GameObject.
+    /// Returns true if an instance was found and changed.
+    /// </summary>
+    public bool ChangeColor(
+        ElementLayerKind kind,
+        int roomIndex,
+        Vector2Int cellCoord,
+        Color newColor)
+    {
+        if (layers == null) return false;
+
+        // Find the layer
+        var layer = layers.Find(l => l != null && l.kind == kind);
+        if (layer == null || layer.instances == null) return false;
+
+        for (int i = 0; i < layer.instances.Count; i++)
+        {
+            var inst = layer.instances[i];
+            if (inst.roomIndex == roomIndex && inst.cellCoord == cellCoord)
+            {
+                inst.color = newColor;
+                inst.dirtyFlags |= ElementUpdateFlags.Color;
+                layer.instances[i] = inst; // struct copy back
+                return true;
+            }
+        }
+
+        return false;
     }
     #endregion
 }

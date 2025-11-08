@@ -142,4 +142,14 @@ public class WarehouseGO : MonoBehaviour
 
         return Array.Empty<GameObject>();
     }
+
+    public LayerBucket GetLayerBucket(ElementLayerKind kind)
+    {
+        if (layerLookup == null || layerLookup.Count != layers.Count)
+            BuildLookup();
+
+        layerLookup.TryGetValue(kind, out var bucket);
+        return bucket;
+    }
+
 }

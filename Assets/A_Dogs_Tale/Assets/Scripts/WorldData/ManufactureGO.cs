@@ -66,13 +66,21 @@ public class ManufactureGO : MonoBehaviour
 
         var baseParent = rootParentOverride != null ? rootParentOverride : warehouse.transform;
 
-        for (int i = 0; i < instances.Count; i++)
+        foreach (var dataLayer in elementStore.layers)
         {
-            var inst = instances[i];
-            ManufactureInstance(inst, baseParent);
+            if (dataLayer == null || dataLayer.instances == null) continue;
 
-            if (yieldEveryNInstances > 0 && (i % yieldEveryNInstances) == 0)
-                yield return null;
+            for (int i = 0; i < dataLayer.instances.Count; i++)
+            {
+                var inst = dataLayer.instances[i];
+                ManufactureInstance(inst, baseParent);
+                // ManufactureInstance internally calls warehouse.RegisterInstance(inst.layerKind, go)
+                // in that same order, so indices will align.
+
+
+                if (yieldEveryNInstances > 0 && (i % yieldEveryNInstances) == 0)
+                    yield return null;
+            }
         }
 
         Debug.Log("ManufactureGO: Build completed.");
@@ -295,9 +303,9 @@ public class ManufactureGO : MonoBehaviour
             return;
 
         // Transform
-        go.transform.position    = inst.position;
-        go.transform.rotation    = inst.rotation;
-        go.transform.localScale  = inst.scale;
+        go.transform.position = inst.position;
+        go.transform.rotation = inst.rotation;
+        go.transform.localScale = inst.scale;
 
         // Layer / tag from archetype
         if (archetype.unityLayer >= 0 && archetype.unityLayer < 32)
@@ -320,10 +328,59 @@ public class ManufactureGO : MonoBehaviour
     }
 
     /// <summary>
+    /// Apply any pending changes in ElementStore (based on dirtyFlags)
+    /// to the already manufactured GameObjects in WarehouseGO.
+    /// Currently supports Color; can be extended for transforms, etc.
+    /// </summary>
+    public void ApplyPendingUpdates()
+    {
+        if (elementStore == null || warehouse == null) return;
+
+        if (elementStore.layers == null || elementStore.layers.Count == 0)
+            return;
+
+        // For each layer in the data store
+        foreach (var dataLayer in elementStore.layers)
+        {
+            if (dataLayer == null || dataLayer.instances == null) continue;
+
+            // Matching GO bucket in Warehouse
+            var bucket = warehouse.GetLayerBucket(dataLayer.kind);
+            if (bucket == null || bucket.objects == null) continue;
+
+            // Instances and GOs should be in the same order they were built.
+            int count = Mathf.Min(dataLayer.instances.Count, bucket.objects.Count);
+
+            for (int i = 0; i < count; i++)
+            {
+                var inst = dataLayer.instances[i];
+                if (inst.dirtyFlags == ElementUpdateFlags.None)
+                    continue;
+
+                GameObject go = bucket.objects[i];
+                if (go == null) continue;
+
+                var archetype = elementStore.GetArchetype(inst.archetypeId);
+                if (archetype == null) continue;
+
+                // Apply color if it changed
+                if ((inst.dirtyFlags & ElementUpdateFlags.Color) != 0)
+                {
+                    ApplyInstanceColor(go, archetype, inst);
+                }
+
+                // Clear flags after applying
+                inst.dirtyFlags = ElementUpdateFlags.None;
+                dataLayer.instances[i] = inst; // write back
+            }
+        }
+    }
+
+    /// <summary>
     /// Applies the instance color override to any Renderer(s) on this GO.
     /// Uses archetype.defaultColor if inst.color.a < 0.
     /// </summary>
-    void ApplyInstanceColor(GameObject go, ElementArchetype archetype, ElementInstanceData inst)
+    void ApplyInstanceColor_old(GameObject go, ElementArchetype archetype, ElementInstanceData inst)
     {
         // Decide final color
         Color finalColor = inst.color;
@@ -351,11 +408,44 @@ public class ManufactureGO : MonoBehaviour
 
             // Also apply shadow flags here if you want, based on archetype.renderFlags
             var flags = archetype.renderFlags;
-            bool casts    = (flags & ElementRenderFlags.CastsShadows)    != 0;
+            bool casts = (flags & ElementRenderFlags.CastsShadows) != 0;
             bool receives = (flags & ElementRenderFlags.ReceivesShadows) != 0;
 
+            r.shadowCastingMode = casts ? ShadowCastingMode.On : ShadowCastingMode.Off;
+            r.receiveShadows = receives;
+        }
+    }
+
+
+    void ApplyInstanceColor(GameObject go, ElementArchetype archetype, ElementInstanceData inst)
+    {
+        if (go == null) return;
+
+        // Decide final color
+        Color finalColor = inst.color;
+        if (finalColor.a < 0f)
+            finalColor = archetype.defaultColor;
+
+        var renderers = go.GetComponentsInChildren<Renderer>();
+        if (renderers == null || renderers.Length == 0)
+            return;
+
+        var mpb = new MaterialPropertyBlock();
+
+        foreach (var r in renderers)
+        {
+            r.GetPropertyBlock(mpb);
+            mpb.SetColor("_Color",     finalColor);
+            mpb.SetColor("_BaseColor", finalColor); // URP/HDRP compatibility
+            r.SetPropertyBlock(mpb);
+
+            // Optional: shadow flags from archetype
+            var flags = archetype.renderFlags;
+            bool casts    = (flags & ElementRenderFlags.CastsShadows)    != 0;
+            bool receives = (flags & ElementRenderFlags.ReceivesShadows) != 0;
             r.shadowCastingMode = casts ? ShadowCastingMode.On : ShadowCastingMode.Off;
             r.receiveShadows    = receives;
         }
     }
+
 }
