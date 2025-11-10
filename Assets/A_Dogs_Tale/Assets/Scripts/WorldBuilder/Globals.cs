@@ -24,6 +24,7 @@ public partial class DungeonGenerator : MonoBehaviour
     public GameObject triangleFloorPrefab;   // half of a floor tile
     public GameObject doorClosedPrefab;
     public GameObject doorOpenPrefab;
+    public GameObject fogPrefab;
     public Transform root;                    // parent for spawned meshes
 
     public static readonly Color colorDefault = new(1f, 0.4f, 0.7f, 0.5f); // semi-transparent pink
@@ -132,6 +133,7 @@ public partial class DungeonGenerator : MonoBehaviour
         TryLoadIfNull(ref triangleFloorPrefab, "Prefabs/Terrain/PF_Triangle_Floor");
         TryLoadIfNull(ref doorClosedPrefab, "Prefabs/Terrain/PF_DoorClosed");
         TryLoadIfNull(ref doorOpenPrefab, "Prefabs/Terrain/PF_DoorOpen");
+        TryLoadIfNull(ref fogPrefab, "Prefabs/Terrain/PF_Fog");
 
         TryLoadTileIfNull(ref floorTile, "Tiles/floorTile");
         TryLoadTileIfNull(ref wallTile, "Tiles/wallTile");

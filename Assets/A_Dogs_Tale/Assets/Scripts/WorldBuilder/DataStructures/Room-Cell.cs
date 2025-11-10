@@ -164,7 +164,8 @@ public class ScentClass
 {
     public int agentId;
     public float intensity;     // current scent strength
-    public float nextIntensity; // temporary next value during decay/spread calculation
+    public float nextDelta; // temporary next value during decay/spread calculation
+    public int fogIndex = -1;    // index into scent fog visualization list
 }
 
 public enum DiagonalOpenDirection
@@ -467,8 +468,8 @@ public class Room
 
 public partial class DungeonGenerator : MonoBehaviour
 {
-    Heightfield hf;
-    bool hf_valid = false; // so we only create it once.
+    public Heightfield hf;
+    public bool hf_valid = false; // so we only create it once.
     DirFlags wall_dirs;
 
     // =======================================================
