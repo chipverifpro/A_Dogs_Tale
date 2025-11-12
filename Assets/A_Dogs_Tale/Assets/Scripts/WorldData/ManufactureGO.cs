@@ -78,7 +78,7 @@ public class ManufactureGO : MonoBehaviour
                 // in that same order, so indices will align.
 
 
-                if (yieldEveryNInstances > 0 && (i % yieldEveryNInstances) == 0)
+                if (i % (yieldEveryNInstances+1) == 0)
                     yield return null;
             }
         }
@@ -92,6 +92,7 @@ public class ManufactureGO : MonoBehaviour
     /// </summary>
     public void BuildNewInstancesForLayer(ElementLayerKind kind)
     {
+        Debug.LogWarning("BuildNewInstanceForLayer begins");
         if (elementStore == null || warehouse == null)
             return;
 
@@ -120,6 +121,7 @@ public class ManufactureGO : MonoBehaviour
         {
             var inst = dataLayer.instances[i];
             ManufactureInstance(inst, baseParent); // this will RegisterInstance internally
+            Debug.LogWarning("Manufactured instance");
         }
     }
 

@@ -160,14 +160,21 @@ Debug.Log($"{d} has {bits} bits set.");
 
 */
 
+[System.Serializable]
 public class ScentClass
 {
     public int agentId;
-    public float intensity;     // current scent strength
-    public float nextDelta; // temporary next value during decay/spread calculation
-    public int fogIndex = -1;    // index into scent fog visualization list
-}
 
+    // Airborne scent
+    public float airIntensity;     // current airborne scent strength
+    public float airNextDelta;     // next airborne value during decay/spread calc
+    public int   airGOindex = -1;  // index into airborne visual (fog, etc.)
+
+    // Ground (surface) scent
+    public float groundIntensity;      // current ground scent strength
+    public float groundNextDelta;      // next ground value during decay/spread calc
+    public int   groundGOindex = -1;   // index into ground visual (if any)
+}
 public enum DiagonalOpenDirection
 {
     None = 0,

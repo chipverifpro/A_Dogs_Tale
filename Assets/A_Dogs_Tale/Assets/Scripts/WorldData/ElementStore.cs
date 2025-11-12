@@ -20,6 +20,8 @@ public enum ElementLayerKind
     DoorFrame,
     DoorLeaf,
     Fog,
+    ScentGround,
+    ScentAir,
     Custom
 }
 
@@ -255,7 +257,7 @@ public class ElementStore : ScriptableObject
     /// <summary>
     /// Add a new instance to a named layer, creating the layer if it does not exist.
     /// </summary>
-    public void AddInstance(string layerName, ElementInstanceData instance)
+    public int AddInstance(string layerName, ElementInstanceData instance)
     {
         if (layers == null)
             layers = new List<ElementLayer>();
@@ -272,6 +274,7 @@ public class ElementStore : ScriptableObject
 
         instance.dirtyFlags = ElementUpdateFlags.All;
         layer.instances.Add(instance);
+        return layer.instances.Count - 1;   // array index of added GO
     }
 
     /// <summary>
@@ -431,6 +434,47 @@ public class ElementStore : ScriptableObject
         AddInstance("Wall", inst);
     }
 
+    public int AddScentAir(Cell cell, Color color)
+    {
+        var inst = new ElementInstanceData(
+            archetypeId: "PF_Fog",
+            layerKind: ElementLayerKind.ScentAir,
+            roomIndex: cell.room_number,
+            cellCoord: cell.pos,
+            heightSteps: cell.height,
+            position: cell.pos3d_f,
+            rotation: Quaternion.identity,
+            scale: Vector3.one,
+            color: color,
+            customFlags: 0,
+            customValue: 0f
+        );
+
+        int GOindex = AddInstance("ScentGround", inst);
+        return GOindex;
+
+    }
+
+    public int AddScentGround(Cell cell, Color color)
+    {
+        var inst = new ElementInstanceData(
+            archetypeId: "PF_GroundScent",
+            layerKind: ElementLayerKind.ScentAir,
+            roomIndex: cell.room_number,
+            cellCoord: cell.pos,
+            heightSteps: cell.height,
+            position: cell.pos3d_f,
+            rotation: Quaternion.identity,
+            scale: Vector3.one,
+            color: color,
+            customFlags: 0,
+            customValue: 0f
+        );
+
+        int GOindex = AddInstance("ScentGround", inst);
+        return GOindex;
+    }
+    
     public void AddFog(
         string archetypeId,
         int roomIndex,
@@ -525,72 +569,45 @@ public class ElementStore : ScriptableObject
 */
 
     // variant that takes cell
-    // If we have cell_scent_number, no searching needed in ChangeColor()
+    // If we have cell and scent, no searching for them needed in ChangeColor()
     public bool ChangeColor(
         ElementLayerKind kind,
-        String layerName,
+        int GOindex,
         Cell cell,
-        int cell_scent_number,  // -1 if unknown
         Color newColor)
     {
-        int fogIndex = -1;
-        if (cell_scent_number >= 0)
-            fogIndex = cell.scents[cell_scent_number].fogIndex;
-            
-        //Debug.Log($"XX ChangeColor: kind={kind}, room={cell.room_number}, pos={cell.pos}");
-        if (layers == null)
+        if ((cell == null) || (layers == null))
         {
-            Debug.Log("  layers is null");
+            Debug.LogError("ChangeColor aborting due to null pointer.");
             return false;
         }
 
+        
         // Find the layer
-        // TODO loop over all layers and debug print them
-        //foreach (var l in layers)
-        //{
-            //Debug.Log($"  layer: {l} = kind {l.kind}, name {l.name} : == {l.kind == kind} / == {l.name == layerName}");
-        //}
+        // TODO: tun this into one for loop that assigns AirLayer and GroundLayer
         var layer = layers.Find(l => l != null && (l.kind == kind));
+        //Error conditions...
         if (layer == null)
         {
-            // backup: try finding by name
-            layer = layers.Find(l => l != null && (l.name == layerName));
-        }
-        if (layer == null)
-        {
-            Debug.Log($"  layer = {layer} not found. kind={kind}");
+            Debug.Log($"  {kind} layer not found.");
             return false;
         } else if (layer.instances == null) {
-            Debug.Log("  layer.instances is null");
+            Debug.Log($"  {kind} layer.instances is null");
             return false;
         } else {
             //Debug.Log($"  FOUND: layer.instances count = {layer.instances.Count}");
         }
 
-        int i_start = fogIndex >= 0 ? fogIndex : 0; // TODO: start search at fogIndex if known.  See assertion below first.
-        for (int i = 0; i < layer.instances.Count; i++)
+        if (GOindex >0) 
         {
-            var inst = layer.instances[i];
-            //Debug.Log($"  Checking inst[{i}] room={inst.roomIndex}, coord={inst.cellCoord}");
-            if (inst.roomIndex == cell.room_number && inst.cellCoord == cell.pos)
-            {
-                if (cell_scent_number >= 0) {
-                    if (fogIndex < 0)
-                    {
-                        Debug.Log($"found cell.scents[{cell_scent_number}].fogIndex = {fogIndex}, save it for next time.");
-                        cell.scents[cell_scent_number].fogIndex = i;    // found fogIndex, save it for next time.
-                    } else if (i != fogIndex) {
-                        Debug.LogError($"Another Assumption Wrong: fogIndex = {fogIndex} not correct, turned out to be {i}.  If this never fires, use i_start above.");
-                    }
-                }
-                inst.color = newColor;
-                inst.dirtyFlags |= ElementUpdateFlags.Color;
-                layer.instances[i] = inst; // struct copy back
-                Debug.Log("  Color changed");
-                return true;
-            }
+            var inst = layer.instances[GOindex];
+            inst.color = newColor;
+            inst.dirtyFlags |= ElementUpdateFlags.Color;
+            layer.instances[GOindex] = inst; // copy back
+            Debug.Log($"  {layer} Color changed");
+            return true;
         }
-        Debug.Log("  No matching instance found");
+        Debug.Log($"  No matching {layer} instance found");
         return false;
     }
     #endregion

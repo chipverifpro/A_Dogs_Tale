@@ -1,8 +1,7 @@
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UIElements;
 
+/*
 public partial class Scents : MonoBehaviour
 {
     [Header("Directory Object")]
@@ -54,7 +53,7 @@ public partial class Scents : MonoBehaviour
             // move this elsewhere?
             ScentFogUpdate(dir.player.agent.pos2, 1.0f);
             updatecnt++;
-            if(updatecnt % 10 == 0)
+            if (updatecnt % 10 == 0)
             {
                 //dir.manufactureGO.BuildAll();
             }
@@ -104,6 +103,34 @@ public partial class Scents : MonoBehaviour
         yield return null;
         if (!dir.gen.buildComplete) yield break;    // can't do scents until build is done.
 
+        Debug.Log($"ScentDecayAndSpread before spreading scents. Now adding NextDeltas to Scents.");
+        // now, transfer all those NextScents back to Scents.
+        foreach (Room room in dir.gen.rooms)
+        {
+            foreach (Cell cell in room.cells)
+            {
+                if (cell.scents == null) continue; //cell.scents = new();
+                for (int scent_num = cell.scents.Count - 1; scent_num >= 0; scent_num--)
+                {
+                    // only keep scent if above cfg.scentMinimum
+                    if (cell.scents[scent_num].intensity + cell.scents[scent_num].nextDelta >= cfg.scentMinimum)
+                    {
+                        if (cell.scents[scent_num].nextDelta < (1f / 2560f))
+                        {
+                            Debug.Log($"({cell.x},{cell.y},{cell.z}) Updating scent for agent {cell.scents[scent_num].agentId}: intensity={cell.scents[scent_num].intensity}, nextDelta={cell.scents[scent_num].nextDelta}. New intensity={cell.scents[scent_num].intensity + cell.scents[scent_num].nextDelta}.");
+                            cell.scents[scent_num].intensity += cell.scents[scent_num].nextDelta;
+                            cell.scents[scent_num].nextDelta = 0; // clear for next pass
+                        }
+                    }
+                    else
+                    {
+                        Debug.Log($"({cell.x},{cell.y},{cell.z}) Removing scent for agent {cell.scents[scent_num].agentId} due to low intensity: intensity={cell.scents[scent_num].intensity}, nextDelta={cell.scents[scent_num].nextDelta}. New intensity would be {cell.scents[scent_num].intensity + cell.scents[scent_num].nextDelta} which is below minimum {cfg.scentMinimum}.");
+                        cell.scents.RemoveAt(scent_num);
+                    }
+                }
+            }
+        }
+
         foreach (Room r in dir.gen.rooms)
         {
             foreach (Cell c in r.cells)
@@ -112,14 +139,17 @@ public partial class Scents : MonoBehaviour
                 {
                     for (int s = 0; s < c.scents.Count; s++)
                     {
-                        if (c.scents[s].intensity == 0f) continue; // skip zero-intensity scents
-                        if (c.scents[s].intensity < 0f)
+                        if (c.scents[s].intensity + c.scents[s].nextDelta == 0f)
                         {
-                            Debug.LogError($"({c.x},{c.y},{c.z}) ScentDecayAndSpread found negative scent intensity {c.scents[s].intensity} for agentId {c.scents[s].agentId} in cell ({c.x},{c.y},{c.z}). Setting to zero.");
-                            c.scents[s].intensity = 0f;
-                            continue;
+                            continue; // skip zero-intensity scents
                         }
-                        float orig_intensity = c.scents[s].intensity;
+                        if (c.scents[s].intensity + c.scents[s].nextDelta < 0f)
+                        {
+                            //Debug.LogError($"({c.x},{c.y},{c.z}) ScentDecayAndSpread found negative scent intensity {c.scents[s].intensity} for agentId {c.scents[s].agentId} in cell ({c.x},{c.y},{c.z}). Setting to zero.");
+                            c.scents[s].nextDelta = -c.scents[s].intensity;
+                            //continue;
+                        }
+                        float orig_intensity = c.scents[s].intensity + c.scents[s].nextDelta;
                         spread_count = 0;
                         float spread_amount_per_direction = orig_intensity * scaled_spread_amount;
                         float accumulatedScentSpread = 0f;
@@ -157,39 +187,15 @@ public partial class Scents : MonoBehaviour
                     }
                 }
             }
-        }
-        Debug.Log($"ScentDecayAndSpread completed spreading scents. Now adding NextDeltas to Scents.");
-        // now, transfer all those NextScents back to Scents.
-        foreach (Room room in dir.gen.rooms)
-        {
-            foreach (Cell cell in room.cells)
-            {
-                if (cell.scents == null) continue; //cell.scents = new();
-                for (int scent_num = cell.scents.Count - 1; scent_num >= 0; scent_num--)
-                {
-                    // only keep scent if above cfg.scentMinimum
-                    if (cell.scents[scent_num].intensity + cell.scents[scent_num].nextDelta >= cfg.scentMinimum)
-                    {
-                        Debug.Log($"({cell.x},{cell.y},{cell.z}) Updating scent for agent {cell.scents[scent_num].agentId}: intensity={cell.scents[scent_num].intensity}, nextDelta={cell.scents[scent_num].nextDelta}. New intensity={cell.scents[scent_num].intensity + cell.scents[scent_num].nextDelta}.");
-                        cell.scents[scent_num].intensity += cell.scents[scent_num].nextDelta;
-                        cell.scents[scent_num].nextDelta = 0; // clear for next pass
-                    }
-                    else
-                    {
-                        Debug.Log($"({cell.x},{cell.y},{cell.z}) Removing scent for agent {cell.scents[scent_num].agentId} due to low intensity: intensity={cell.scents[scent_num].intensity}, nextDelta={cell.scents[scent_num].nextDelta}. New intensity would be {cell.scents[scent_num].intensity + cell.scents[scent_num].nextDelta} which is below minimum {cfg.scentMinimum}.");
-                        cell.scents.RemoveAt(scent_num);
-                    }
-                }
-            }
-        }
 
-        // yield every N rooms to allow other activities
-        room_yield_counter--;
-        if (room_yield_counter <= 0)
-        {
-            room_yield_counter = rooms_per_yield;
-            yields++;
-            yield return null;
+            // yield every N rooms to allow other activities
+            room_yield_counter--;
+            if (room_yield_counter <= 0)
+            {
+                room_yield_counter = rooms_per_yield;
+                yields++;
+                yield return null;
+            }
         }
         Debug.Log($"ScentDecayAndSpread completed after {yields} yields.");
     }
@@ -208,7 +214,7 @@ public partial class Scents : MonoBehaviour
                 //Debug.Log($"AddToNextScentIntensity found existing scent for agent {agent_id} in cell ({c.x},{c.y},{c.z}). OLD intensity={c.scents[scent_num].intensity}, nextDelta={c.scents[scent_num].nextDelta}.");
                 if (set_intensity.HasValue)
                 {
-                    c.scents[scent_num].intensity = set_intensity.Value;    // overwrite current intensity
+                    c.scents[scent_num].nextDelta = set_intensity.Value - c.scents[scent_num].intensity;    // overwrite current intensity
                     // Used to place initial scent amounts
                     //Debug.Log($"({c.x},{c.y},{c.z}) AddToNextScentIntensity set intensity for agent {agent_id}. NEW intensity={c.scents[scent_num].intensity}, NEW nextDelta={c.scents[scent_num].nextDelta}.");
                 }
@@ -219,7 +225,7 @@ public partial class Scents : MonoBehaviour
                 }
 
                 //Debug.Log($"AddToNextScentIntensity updated scent for agent {agent_id} in cell ({c.x},{c.y},{c.z}). NEW intensity={c.scents[scent_num].intensity}, nextDelta={c.scents[scent_num].nextDelta}.");
-                return;   // found a match so we are done.
+                break;   // found a match so we are done.
             }
         }
 
@@ -227,112 +233,20 @@ public partial class Scents : MonoBehaviour
         ScentClass new_scent = new ScentClass
         {
             agentId = agent_id,
-            nextDelta = 0f,  //
-            intensity = 0f,       // will be overwritten in next transfer
+            nextDelta = 0f,
+            intensity = 0f,
             fogIndex = -1
         };
         if (set_intensity.HasValue)
-            new_scent.intensity = set_intensity.Value;    // overwrite current intensity
+            new_scent.nextDelta = set_intensity.Value;    // overwrite current intensity
         if (added_intensity.HasValue)
             new_scent.nextDelta += added_intensity.Value;
 
-        Debug.Log($"AddToNextScentIntensity adding NEW scent for agent {agent_id} in cell ({c.x},{c.y},{c.z}). NEW intensity={new_scent.intensity}, nextDelta={new_scent.nextDelta}.");
+        if (added_intensity.HasValue)
+            Debug.Log($"AddToNextScentIntensity adding NEW scent for agent {agent_id} in cell ({c.x},{c.y},{c.z}). NEW intensity={new_scent.intensity}, nextDelta={new_scent.nextDelta}.");
         c.scents.Add(new_scent);
     }
 
-/*
-    // This routine updates the scent fog visualization in each cell based on current scent amounts.
-    // It will reuse existing fog GameObjects if they exist, or create new ones as needed.
-    public void ScentFogUpdate_old(Vector3 nosePosition, float noseSensitivity)
-    {
-        //GameObject scentFogPrefab = dir.gen.floorPrefab;    // temporary; replace with actual scent fog prefab later
-        Color colorScent = new Color(0.5f, 1f, 0.5f, 0.5f); // light greenish translucent
-        bool changed = false;   // if anything changes, call update.
-        bool created = false;   // if anything was created, call ?? update or create ??
-        foreach (Room r in dir.gen.rooms)
-        {
-            foreach (Cell c in r.cells)
-            {
-                //                GameObject GO_fog = c.GOs[(int)Cell.GOtypes.Fog];    // grab existing fog object if it exists
-                //                if (GO_fog == null)
-                //                {
-                //                    // create new fog object
-                //                    GO_fog = Instantiate(scentFogPrefab, c.pos3d_f, Quaternion.Euler(90f, 0f, 0f), dir.gen.root);
-                //                    GO_fog.transform.localScale = new Vector3(c.pos3d_f.x * 0.5f, c.pos3d_f.y * 0.5f, c.pos3d_f.z + 1f);
-                //                    GO_fog.SetActive(false);            // hide until we need it
-                //                    GO_fog.name = $"Fog({c.x},{c.y})";  // comment out in perf builds
-                //                }
-                // -------- Scent distance from nose --------
-                float distFromNose = Vector3.Distance(nosePosition, c.pos3d_f);
-                float scentDistanceFactor = 1;// Mathf.Clamp01(1f - (distFromNose / noseSensitivity));
-
-                // -------- Scent fog visualization --------
-                if (c.scents != null)
-                {
-                    int scent_id = 1; // only visualize dummy scent_id 1 for now
-                    for (int scent_num = 0; scent_num < c.scents.Count; scent_num++)
-                    {
-                        Debug.Log($"({c.x},{c.y},{c.z}) ScentFogUpdate checking, found scent_id {c.scents[scent_num].agentId} with intensity {c.scents[scent_num].intensity}.");
-                        float intensity = c.scents[scent_num].intensity * scentDistanceFactor;
-                        if ((c.scents[scent_num].agentId == scent_id) && (intensity > 0.001f))
-                        {
-                            // found scent to visualize via transparency
-                            float transparency = Mathf.Clamp01(intensity * 5f); // temporary scale factor for visibility
-                            colorScent.a = transparency;
-
-                            bool success = dir.elementStore.ChangeColor(
-                                ElementLayerKind.Fog,
-                                c,
-                                colorScent
-                            );
-                            changed |= success;
-                            if (!success)
-                            {
-                                Debug.Log($"({c.x},{c.y},{c.z}) ScentFogUpdate did not find existing fog GO, creating one at {c.pos3d_f}.");
-                                // assume we failed because the GO did not exist yet.  Create one.
-                                //Vector3 pos = new Vector3(c.pos3d_f.x * 0.5f, c.pos3d_f.y * 0.5f, c.pos3d_f.z + 1f);
-                                Vector3 pos = new Vector3(c.pos3d_f.x, c.pos3d_f.z + 1f, c.pos3d_f.y); // y and z swapped for Unity coords
-                                dir.elementStore.AddFog(
-                                    archetypeId: "Fog",
-                                    roomIndex: c.room_number,
-                                    cellCoord: new Vector2Int(c.x, c.y),
-                                    heightSteps: c.height,
-                                    worldPos: pos,
-                                    rotation: Quaternion.identity,
-                                    scale: Vector3.one,
-                                    color: colorScent
-                                );
-                            }
-                            //Assign_GO_Color(GO_fog, colorScent, transparency);
-                            //GO_fog.SetActive(true);
-                        }
-                        else
-                        {
-                            // no scent to visualize
-                            colorScent.a = 0;   // alpha to zero
-                            //GO_fog.SetActive(false);
-                            bool success = dir.elementStore.ChangeColor(
-                                ElementLayerKind.Fog,
-                                c,
-                                colorScent
-                            );
-                            created |= success;
-                            // no need to create one if this failed to find it.
-                        }
-                    }
-                }
-                //c.GOs[(int)Cell.GOtypes.Fog] = GO_fog;   // save back to cell
-            }
-        }
-
-        //if (changed || created)     // TODO: handle created separately?
-        //{
-        dir.manufactureGO.ApplyPendingUpdates();
-        //}
-
-        Debug.Log($"ScentFogUpdate completed. changed={changed}, created={created}");
-    }
-    */
     // This routine updates the scent fog visualization in each cell based on current scent amounts.
     // It will reuse existing fog instances if they exist in ElementStore, or create new ones as needed.
     public void ScentFogUpdate(Vector3 nosePosition, float noseSensitivity)
@@ -340,10 +254,11 @@ public partial class Scents : MonoBehaviour
         Color baseScentColor = new Color(0.5f, 1f, 0.5f, 0.5f); // light greenish translucent
 
         bool anyColorChanged = false;  // if any existing fog instance changed color
-        bool anyFogCreated   = false;  // if any new fog instance was added to ElementStore
+        bool anyFogCreated = false;  // if any new fog instance was added to ElementStore
 
+        const float MinApparentDelta = (1f / 2560f);
         const int scentIdToShow = 1;
-        const float minVisibleIntensity = 0.001f;
+        const float minVisibleIntensity = 0.0001f;
         const float debugVisibilityScale = .75f;
 
         foreach (Room r in dir.gen.rooms)
@@ -352,23 +267,7 @@ public partial class Scents : MonoBehaviour
             {
                 if (c.scents == null || c.scents.Count == 0)
                 {
-                    /* unnecessary and slow...
-                    
-                    // No scent here → clear any existing fog (set alpha to 0)
-                    Color transparent = baseScentColor;
-                    transparent.a = 0f;
-
-                    bool changed = dir.elementStore.ChangeColor(
-                        ElementLayerKind.Fog,
-                        "Fog",
-                        c,
-                        -1,     // cell_scent_number unknown
-                        transparent
-                    );
-
-                    anyColorChanged |= changed;
-                    */
-                    continue;
+                    continue; // no scents in cell, skip it.
                 }
 
                 // -------- Scent distance from nose (you can re-enable distance factor later) --------
@@ -377,22 +276,31 @@ public partial class Scents : MonoBehaviour
                 int cell_scent_number = -1;
 
                 // -------- Compute max intensity for this cell --------
+                // Don't need complexity, only one match for scent per agentId will be present.
                 float maxIntensity = 0f;
                 for (int i = 0; i < c.scents.Count; i++)
                 {
                     var s = c.scents[i];
-                    if (s.agentId != scentIdToShow)
+                    if (s.agentId == scentIdToShow)
                     {
-                        continue;
+                        cell_scent_number = i;
+                        float intensity = (s.intensity + s.nextDelta) * scentDistanceFactor;
+                        if (intensity > maxIntensity)
+                        {
+                            maxIntensity = intensity;
+                            break;
+                        }
                     }
-                    cell_scent_number = i;
-                    float intensity = s.intensity * scentDistanceFactor;
-                    if (intensity > maxIntensity)
-                        maxIntensity = intensity;
                 }
 
                 if (maxIntensity > minVisibleIntensity)
                 {
+                    // is next delta so small that it wouldn't show up, just skip it.
+                    if (Mathf.Abs(c.scents[cell_scent_number].nextDelta) < MinApparentDelta)
+                    {
+                        Debug.LogWarning($"Little visual change({c.scents[cell_scent_number].nextDelta}). Skip it.");
+                        continue;  // little visual change, skip it.
+                    }
                     float transparency = Mathf.Clamp01(maxIntensity * debugVisibilityScale);
 
                     Color fogColor = baseScentColor;
@@ -411,14 +319,16 @@ public partial class Scents : MonoBehaviour
                     {
                         anyColorChanged = true;
                         if (cell_scent_number < 0) Debug.LogError($"Asumption was wrong.  color changed even unknown cell_scent_number.  If this never fires off, optimize above.");
-                    } else {
+                    }
+                    else
+                    {
                         // No existing fog instance for this cell → create one
                         Debug.Log($"({c.x},{c.y},{c.z}) ScentFogUpdate: no fog instance, creating one at {c.pos3d_f}.");
 
                         // World position for fog; adjust Y/Z as needed for your grid→world
                         //Vector3 pos = c.pos3d_f;
                         Vector3 pos = new Vector3(c.pos3d_f.x, c.pos3d_f.z + 1f, c.pos3d_f.y); // y and z swapped for Unity coords
-                                
+
                         // Example: lift slightly above floor
                         pos.y += 0.1f;
 
@@ -438,19 +348,9 @@ public partial class Scents : MonoBehaviour
                 }
                 else
                 {
+                    
                     // Intensity too low → ensure fog here (if any) is transparent
-                    Color transparent = baseScentColor;
-                    transparent.a = 0f;
-
-                    bool changed = dir.elementStore.ChangeColor(
-                        ElementLayerKind.Fog,
-                        "Fog",
-                        c,
-                        cell_scent_number,
-                        transparent
-                    );
-
-                    anyColorChanged |= changed;
+                    
                 }
             }
         }
@@ -470,18 +370,6 @@ public partial class Scents : MonoBehaviour
         Debug.Log($"ScentFogUpdate completed. anyColorChanged={anyColorChanged}, anyFogCreated={anyFogCreated}");
     }
 
-    /*
-    void Assign_GO_Color(GameObject go, Color baseColor, float alpha = 1f)
-    {
-        // Color transparency based on scent amount
-        MeshRenderer rend = go.GetComponent<MeshRenderer>(); // ok once per object, but avoid if not needed
-        if (rend != null)
-        {
-            Color c = baseColor;
-            c.a = alpha;
-            rend.material.color = c;
-        }
-    }
-    */
 }
 
+*/

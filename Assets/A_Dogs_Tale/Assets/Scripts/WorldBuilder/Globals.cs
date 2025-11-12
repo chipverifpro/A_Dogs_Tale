@@ -62,13 +62,18 @@ public partial class DungeonGenerator : MonoBehaviour
     //       Vector2Int.down + Vector2Int.left,
     //       Vector2Int.down + Vector2Int.right };
 
+    public ScentAirGround scent;
+
+    public ScentRegistry scentRegistry;
+    
+
     // Sets the agent id to a unique number, and returns that value.
     // Can be called without an agent, and caller must assign the number themselves.
     // ID is used to (a) determine equivalence match, (b) track id of some event in a list.
     public int GetNewAgentId(Agent agent)
     {
         lastIssuedAgentId++;
-        if (agent!=null) agent.id = lastIssuedAgentId;
+        if (agent != null) agent.id = lastIssuedAgentId;
         return lastIssuedAgentId;
     }
 }

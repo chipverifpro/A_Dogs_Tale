@@ -155,7 +155,7 @@ public partial class Agent : MonoBehaviour
                 return; // No path to target found.
             }
             routeWaypoints.RemoveAt(0); // remove start position
-            Debug.Log($"pos2 {pos2} -> target {targetPos}, routeWaypoints = {routeWaypoints.Count}");
+            //Debug.Log($"pos2 {pos2} -> target {targetPos}, routeWaypoints = {routeWaypoints.Count}");
             dir.pathfinding.TrySkippingWaypoints(this);
             move_credit = FollowWaypoints(move_credit);
             pos2Int = VectFloat2Int(pos2);
@@ -334,7 +334,7 @@ public partial class Agent : MonoBehaviour
         }
         dist_to_target = Mathf.Sqrt((pos2 - targetPos).sqrMagnitude);
 
-        Debug.Log($"FollowWaypoints({move_credit}), dist_to_target = {dist_to_target}, waypoints = {routeWaypoints.Count}");
+        //Debug.Log($"FollowWaypoints({move_credit}), dist_to_target = {dist_to_target}, waypoints = {routeWaypoints.Count}");
 
         if (dist_to_target < .001)
         {

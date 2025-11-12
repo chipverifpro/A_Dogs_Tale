@@ -28,7 +28,9 @@ public class ObjectDirectory : MonoBehaviour
     [Header("Game Objects")]
     public Pack pack;
     public Player player;
-    public Scents scents;
+    //public Scents scents;     // replaced with ScentAirGround.cs
+    public ScentAirGround scents;
+    public ScentRegistry scentRegistry;
 
 
     [Header("Game Camearas")]
@@ -43,6 +45,7 @@ public class ObjectDirectory : MonoBehaviour
     [Header("Splash Screen Objects")]
     public MenuManager menuManager;
     public SceneFader sceneFader;
+
 
     [Header("Rendering Objects")]
     public ElementStore elementStore;
