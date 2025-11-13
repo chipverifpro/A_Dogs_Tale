@@ -244,6 +244,8 @@ public class Cell       // one cell in a Room
     // shortcuts to read access variations
     public Vector3Int pos3d => new Vector3Int(pos.x, pos.y, height);
     public Vector3 pos3d_f => new Vector3(pos.x, pos.y, height);        // float version
+    public Vector3 pos3d_world => new Vector3(pos.x, height, pos.y);    // axis swapped
+    
     public int x => pos.x;
     public int y => pos.y;
     public int z => height;

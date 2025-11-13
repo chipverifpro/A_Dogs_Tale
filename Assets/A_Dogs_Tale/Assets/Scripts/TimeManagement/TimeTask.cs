@@ -75,7 +75,7 @@ public sealed class TimeTask
                              && _mgr.TryReserveForNextChunk(predicted);
 
         _mgr.CountIfYield(Name, yielded: !allowContinue);
-        if (chunk / _mgr.budgetPercent > 1f) Debug.Log(Name + ": chunk/softCap " + chunk/softCap);  //DEBUG
+        //if (chunk / _mgr.budgetPercent > 1f) Debug.Log(Name + ": chunk/softCap " + chunk/softCap);  //DEBUG
         return !allowContinue;
     }
 

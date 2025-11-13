@@ -92,7 +92,7 @@ public class ManufactureGO : MonoBehaviour
     /// </summary>
     public void BuildNewInstancesForLayer(ElementLayerKind kind)
     {
-        Debug.LogWarning("BuildNewInstanceForLayer begins");
+        //Debug.LogWarning($"BuildNewInstanceForLayer {kind} begins");
         if (elementStore == null || warehouse == null)
             return;
 
@@ -121,7 +121,7 @@ public class ManufactureGO : MonoBehaviour
         {
             var inst = dataLayer.instances[i];
             ManufactureInstance(inst, baseParent); // this will RegisterInstance internally
-            Debug.LogWarning("Manufactured instance");
+            //Debug.LogWarning("Manufactured instance");
         }
     }
 
@@ -206,7 +206,7 @@ public class ManufactureGO : MonoBehaviour
     {
         //BuildAll(); // DEBUG: rebuild everything
         //return;
-        Debug.Log("ManufactureGO: Applying pending updates to manufactured GameObjects.");
+        //Debug.Log("ManufactureGO: Applying pending updates to manufactured GameObjects.");
         if (elementStore == null || warehouse == null)
         {
             Debug.LogWarning("ManufactureGO: elementStore or warehouse is null. Aborting pending updates.");
@@ -219,7 +219,7 @@ public class ManufactureGO : MonoBehaviour
             return;
         }
 
-        Debug.Log($"ManufactureGO: elementStore has {elementStore.layers.Count} layers.");
+        //Debug.Log($"ManufactureGO: elementStore has {elementStore.layers.Count} layers.");
         // For each layer in the data store
         foreach (var dataLayer in elementStore.layers)
         {
@@ -246,7 +246,7 @@ public class ManufactureGO : MonoBehaviour
             // Instances and GOs should be in the same order they were built.
             int count = Mathf.Min(dataLayer.instances.Count, bucket.objects.Count);
 
-            Debug.Log($"ManufactureGO: Applying {count} updates for layer {dataLayer.kind}, {dataLayer.instances.Count} dataLayer.instances, {bucket.objects.Count} GameObjects.");
+            //Debug.Log($"ManufactureGO: Applying {count} updates for layer {dataLayer.kind}, {dataLayer.instances.Count} dataLayer.instances, {bucket.objects.Count} GameObjects.");
             for (int i = 0; i < count; i++)
             {
                 var inst = dataLayer.instances[i];
@@ -270,7 +270,7 @@ public class ManufactureGO : MonoBehaviour
                 // Apply color if it changed
                 if ((inst.dirtyFlags & (ElementUpdateFlags.Color | ElementUpdateFlags.All)) != 0)
                 {
-                    Debug.Log($"ManufactureGO: Applying color update to instance {i} of layer {dataLayer.kind}. GO.name={go.name}, alpha={inst.color.a}");
+                    //Debug.Log($"ManufactureGO: Applying color update to instance {i} of layer {dataLayer.kind}. GO.name={go.name}, alpha={inst.color.a}");
                     ApplyInstanceColor(go, archetype, inst);
                 }
 

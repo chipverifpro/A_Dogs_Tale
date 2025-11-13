@@ -215,6 +215,7 @@ public class ScentAirGround : MonoBehaviour
             while (true)
             {
                 StepOnce(Time.deltaTime);
+                ApplyScentUpdates();
                 yield return wait;
             }
         }
@@ -233,6 +234,7 @@ public class ScentAirGround : MonoBehaviour
                     StepOnce(step);
                     accumulator -= step;
                 }
+                ApplyScentUpdates();
 
                 yield return null;
             }
@@ -448,7 +450,7 @@ public class ScentAirGround : MonoBehaviour
     {
         if (elementStore == null) return;
         //Debug.Log($"Visualize scent at cell {cell.pos}.  Air = {scent.airIntensity}, Ground = {scent.groundIntensity}");
-        
+
         // ----- Create or update visuals -----
 
         // =====Air layer
@@ -462,7 +464,7 @@ public class ScentAirGround : MonoBehaviour
             {
                 // First time: create the ScentAir element and store its index
                 scent.airGOindex = elementStore.AddScentAir(cell, color);
-                
+
                 if (scent.airGOindex < 0)
                     Debug.LogError($"ScentVisualization: AddScentAir(@{cell.pos}, alpha={color.a}) returned -1");
             }
@@ -496,7 +498,7 @@ public class ScentAirGround : MonoBehaviour
 
                 if (scent.groundGOindex < 0)
                     Debug.LogError($"ScentVisualization: AddScentGround(@{cell.pos}, alpha={color.a}) returned -1");
-                    
+
             }
             else // intensity>0 and GO already exists
             {
@@ -515,6 +517,25 @@ public class ScentAirGround : MonoBehaviour
         }
     }
 
+    public void ApplyScentUpdates()
+    {
+        bool anyFogCreated = true;      // for debug
+        bool anyColorChanged = true;    // for debug
+
+        // If we created any new fog instances, manufacture GOs for them
+        if (anyFogCreated)
+        {
+            dir.manufactureGO.BuildNewInstancesForLayer(ElementLayerKind.ScentAir);
+            dir.manufactureGO.BuildNewInstancesForLayer(ElementLayerKind.ScentGround);        }
+
+        // Then apply all color changes (including newly created ones)
+        if (anyFogCreated || anyColorChanged)
+        {
+            dir.manufactureGO.ApplyPendingUpdates();
+        }
+
+        //Debug.Log($"ApplyScentUpdates completed. anyColorChanged={anyColorChanged}, anyFogCreated={anyFogCreated}");
+    }
 
     #region Public API
 

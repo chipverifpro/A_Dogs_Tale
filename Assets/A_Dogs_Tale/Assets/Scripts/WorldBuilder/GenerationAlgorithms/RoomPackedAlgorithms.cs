@@ -832,7 +832,7 @@ public partial class DungeonGenerator : MonoBehaviour
         if (stripRounds > 0)
         {
             BottomBanner.Show($"Growth: Strip rounds (x{stripRounds})");
-            Debug.Log($"stripRounds #{stripRounds} begins with {rooms.Count} rooms.");
+            //Debug.Log($"stripRounds #{stripRounds} begins with {rooms.Count} rooms.");
             for (round = 0; round < stripRounds * (100 / percentSkipGrowth); round++) // increase the rounds because we randomly skip rooms
             {
                 bool anyGrewThisRound = false;
