@@ -247,7 +247,7 @@ public class ScentAirGround : MonoBehaviour
     {
         if (scentCells == null || scentCells.Count == 0)
             scentCells = new(); // create it empty.  could return now if we want
-        Debug.Log($"StepOnce: scentCells has {scentCells.Count} entries.");
+        //Debug.Log($"StepOnce: scentCells has {scentCells.Count} entries.");
 
         float airDecayFactor = Mathf.Clamp01(1f - airDecayRate * dt);
         float groundDecayFactor = Mathf.Clamp01(1f - groundDecayRate * dt);
@@ -447,7 +447,7 @@ public class ScentAirGround : MonoBehaviour
     private void ScentVisualization(Cell cell, ScentClass scent)
     {
         if (elementStore == null) return;
-        Debug.Log($"Visualize scent at cell {cell.pos}.  Air = {scent.airIntensity}, Ground = {scent.groundIntensity}");
+        //Debug.Log($"Visualize scent at cell {cell.pos}.  Air = {scent.airIntensity}, Ground = {scent.groundIntensity}");
         
         // ----- Create or update visuals -----
 

@@ -69,7 +69,7 @@ public partial class AudioPlayer : MonoBehaviour
     //  anytime needed.
     public bool PlayClip(string name)
     {
-        Debug.Log($"[PlayClip] '{name}' requested.");
+        //Debug.Log($"[PlayClip] '{name}' requested.");
             
         // 1. Find entry
         AudioClipCfg clipCfg = audioCatalog.clipCfgList.Find(e => e.name == name);
@@ -177,7 +177,7 @@ public partial class AudioPlayer : MonoBehaviour
         yield return null;  // avoid race condition with caller function
         int timesPlayed = 0;
 
-        Debug.Log($"[PlayWithInterval] '{clipCfg.name}' begins.");
+        //Debug.Log($"[PlayWithInterval] '{clipCfg.name}' begins.");
 
         while (!taskInfo.stopRepeating) // repeat forever, unless abort requested at end of track
         {

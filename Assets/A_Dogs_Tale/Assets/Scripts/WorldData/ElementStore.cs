@@ -351,7 +351,7 @@ public class ElementStore : ScriptableObject
         layer.instances.Add(instance);
 
         // DEBUG: prove it got in
-        Debug.Log($"[AddInstance] layer='{layer.name}', kind={layer.kind}, newCount={layer.instances.Count}");
+        //Debug.Log($"[AddInstance] layer='{layer.name}', kind={layer.kind}, newCount={layer.instances.Count}");
 
         // Return stable index within this layer's instance list
         return layer.instances.Count - 1;
@@ -537,8 +537,8 @@ public class ElementStore : ScriptableObject
         //}
 
         int GOindex = AddInstance("ScentAir", inst);
-        Debug.Log($"AddScentAir(@{cell.pos}, alpha={color.a}) -> GOindex={GOindex}");
-        inst.PrintElementInstanceData();    // more debug
+        //Debug.Log($"AddScentAir(@{cell.pos}, alpha={color.a}) -> GOindex={GOindex}");
+        //inst.PrintElementInstanceData();    // more debug
         return GOindex;
 
     }
@@ -560,8 +560,8 @@ public class ElementStore : ScriptableObject
         );
 
         int GOindex = AddInstance("ScentGround", inst);
-        Debug.Log($"AddScentGround(@{cell.pos}, alpha={color.a}) -> GOindex={GOindex}");
-        inst.PrintElementInstanceData();
+        //Debug.Log($"AddScentGround(@{cell.pos}, alpha={color.a}) -> GOindex={GOindex}");
+        //inst.PrintElementInstanceData();
         return GOindex;
     }
     
@@ -671,7 +671,7 @@ public class ElementStore : ScriptableObject
             Debug.LogError("ChangeColor aborting due to null pointer.");
             return false;
         }
-        Debug.Log($"ChangeColor({kind}, GOindex {GOindex}, @{cell.pos}, alpha={newColor.a})");
+        //Debug.Log($"ChangeColor({kind}, GOindex {GOindex}, @{cell.pos}, alpha={newColor.a})");
 
         // Find the layer
         var layer = layers.Find(l => l != null && (l.kind == kind));
@@ -679,7 +679,7 @@ public class ElementStore : ScriptableObject
         if (layer == null)
         {
             Debug.LogWarning($"  {kind} layer not found. creating one");
-            DumpLayers();
+            //DumpLayers();
             // TODO: call layer creation routine in Manufacture.go instead.
             layer = new();
             layer.kind = kind;
@@ -715,7 +715,7 @@ public class ElementStore : ScriptableObject
             inst.color = newColor;
             inst.dirtyFlags |= ElementUpdateFlags.Color;
             layer.instances[GOindex] = inst; // copy back
-            Debug.Log($"  {kind} Color changed");
+            //Debug.Log($"  {kind} Color changed");
             return true;
         }
         Debug.Log($"  No matching {kind} instance found for GOindex {GOindex}");
