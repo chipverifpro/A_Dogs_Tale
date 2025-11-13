@@ -66,19 +66,19 @@ public class ManufactureGO : MonoBehaviour
 
         var baseParent = rootParentOverride != null ? rootParentOverride : warehouse.transform;
 
-        foreach (var dataLayer in elementStore.layers)
+        for (int dlIdx = elementStore.layers.Count-1; dlIdx >= 0; dlIdx--)
         {
+            var dataLayer = elementStore.layers[dlIdx];
             if (dataLayer == null || dataLayer.instances == null) continue;
 
-            for (int i = 0; i < dataLayer.instances.Count; i++)
+            for (int iIdx = 0; iIdx < dataLayer.instances.Count; iIdx++)
             {
-                var inst = dataLayer.instances[i];
+                var inst = dataLayer.instances[iIdx];
                 ManufactureInstance(inst, baseParent);
                 // ManufactureInstance internally calls warehouse.RegisterInstance(inst.layerKind, go)
                 // in that same order, so indices will align.
 
-
-                if (i % (yieldEveryNInstances+1) == 0)
+                if (iIdx % (yieldEveryNInstances+1) == 0)
                     yield return null;
             }
         }

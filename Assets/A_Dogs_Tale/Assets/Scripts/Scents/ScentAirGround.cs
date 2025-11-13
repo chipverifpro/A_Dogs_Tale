@@ -13,8 +13,10 @@ public class ScentAirGround : MonoBehaviour
     public DungeonGenerator gen;
 
     [Tooltip("All cells that participate in scent simulation.")]
-    public List<Cell> scentCells = new List<Cell>(); // Cache a list including only cells with AgentId's scent
-    private int currentAgentId = -1;      // if this changes, recreate above list...
+    public List<Cell> scentCells = new List<Cell>(); // Cache a list including only cells with any scent
+    //public List<Cell> agentScentCells = new List<Cell>(); // Cache a list including only cells with current AgentId's scent
+    
+    public int currentAgentId = -1;      // if this changes, recreate above list...
 
     [Header("Air Layer Settings")]
     [Range(0f, 1f)]
@@ -42,6 +44,7 @@ public class ScentAirGround : MonoBehaviour
     [Header("Simulation Settings")]
     public float simulationTimeStep = 0.1f; // seconds per step
     public bool runOnStart = true;
+    public float practically_zero = 0.00001f;  // if anything is this tiny, ignore or make it go away
 
     [Header("Visualization")]
     public ElementStore elementStore;   // ScriptableObject you already use
@@ -103,7 +106,7 @@ public class ScentAirGround : MonoBehaviour
 	•	Air vs. Ground ratio intuition:
 	•	    Air > Ground → “smellable from afar.”
 	•	    Ground ≥ Air → “trackable trail.”
-    
+
     */
 
 
@@ -122,8 +125,14 @@ public class ScentAirGround : MonoBehaviour
         {
             StopCoroutine(_simulationCoroutine);    // kill previously still running copy?
         }
-        // Call this every time we change what we are looking for/visualizing...
-        scentCells = CreateScentCellsForAgentList(currentAgentId);
+
+        currentAgentId = 1;
+        // Call this every time we change map structure (load/build complete): likely to start empty or nearly so before scents start appearing.
+        ScentCellsListCreate();
+
+        // Call this every time we change agentId that we are visualizing...
+        //agentScentCells = new(); 
+        //AgentScentCellsListCreate(currentAgentId);
 
         // start the simulation loop, but keep the Coroutine ID for future StopScentSimulation() calls
         _simulationCoroutine = StartCoroutine(ScentDecayAndSpread());
@@ -137,6 +146,41 @@ public class ScentAirGround : MonoBehaviour
             _simulationCoroutine = null;
         }
     }
+
+    // This list is of all cells that have any scent in them.  Used to speed up scent physics.
+    public void ScentCellsListCreate()
+    {
+        scentCells = new();
+        foreach (Room room in dir.gen.rooms)
+        {
+            foreach (Cell cell in room.cells)
+            {
+                if ((cell != null) && (cell.scents != null) && (cell.scents.Count != 0))
+                    scentCells.Add(cell);
+            }
+        }
+    }
+
+    /* DON"T NEED THIS ???
+    // This list is all cells with scents from agentId in them.  Used to speed up scent visualization.
+    public void AgentScentCellsListCreate(int agentId)
+    {
+        agentScentCells = new();
+        foreach (Room room in dir.gen.rooms)
+        {
+            foreach (Cell cell in room.cells)
+            {
+                if (cell.scents == null) continue;
+                if (cell.scents.Count == 0) continue;
+                for (int sIdx = 0; sIdx < cell.scents.Count; sIdx++)
+                {
+                    if (cell.scents[sIdx].agentId == agentId)
+                        agentScentCells.Add(cell);
+                }
+
+            }
+        }
+    } */
 
     /// <summary>
     /// Main coroutine that steps the scent field over time using heightfield neighbors.
@@ -157,262 +201,255 @@ public class ScentAirGround : MonoBehaviour
             yield return null;
         }
 
-        WaitForSeconds wait = new WaitForSeconds(simulationTimeStep);
+        // Wait for build complete.
+        if (dir.gen.buildComplete == false)
+            yield return new WaitUntil(() => dir.gen.buildComplete == true);    // wait until build is done
 
-        while (true)
+        // Call this every time we change map structure (load/build complete): likely to start empty or nearly so before scents start appearing.
+        ScentCellsListCreate();
+        
+        WaitForSeconds wait = new WaitForSeconds(simulationTimeStep);
+        
+        if (dir.cfg.scentPhysicsConsistancey == false) // option A is to scale the call by actual time step
         {
-            StepOnce(simulationTimeStep);   // TODO: pass in actual time since last call
-            yield return wait;
+            while (true)
+            {
+                StepOnce(Time.deltaTime);
+                yield return wait;
+            }
         }
+        else // Option B is to use multiple fixed time steps until we catch up.
+        {
+            float accumulator = 0f;
+            float step = simulationTimeStep;
+
+            while (true)
+            {
+                accumulator += Time.deltaTime;
+
+                // Run one or more steps to catch up
+                while (accumulator >= step)
+                {
+                    StepOnce(step);
+                    accumulator -= step;
+                }
+
+                yield return null;
+            }
+        }
+
     }
 
     /// <summary>
     /// One simulation step: diffusion, coupling, decay, and commit.
     /// </summary>
-/*
-    private void StepOnce_old(float dt)
+    private void StepOnce(float dt)
     {
         if (scentCells == null || scentCells.Count == 0)
-            return;
+            scentCells = new(); // create it empty.  could return now if we want
+        Debug.Log($"StepOnce: scentCells has {scentCells.Count} entries.");
 
         float airDecayFactor = Mathf.Clamp01(1f - airDecayRate * dt);
         float groundDecayFactor = Mathf.Clamp01(1f - groundDecayRate * dt);
         float depositFactor = airToGroundRate * dt;
         float emitFactor = groundToAirRate * dt;
-        int sIdx;
 
-        // FIRST PASS: compute airNextDelta and groundNextDelta for each cell
-        for (int index = 0; index < scentCells.Count; index++)
-        {
-            Cell cell = scentCells[index];
-            if (cell == null) continue;
+        int cIdx;   // loop index: cell
+        int sIdx;   // loop index: scent
+        int nIdx;   // loop index: neighbor cell
+        int n_sIdx; // loop index: neighbor cell's scent
 
-            sIdx = FindAgentIdScentIndex(cell, currentAgentId, createIfNeeded: false);
-            if (sIdx < 0) Debug.LogError($"FindAgentIdScentIndex(cell {cell.pos.x},{cell.pos.y}, agentId={currentAgentId} returned not found.)");
-            ScentClass scent = cell.scents[sIdx];
-            if (scent == null) continue;
+        int agentId;
+        Cell[] neighbors = new Cell[4]; // cache the 4 neighbor cells once per cell examined.  reuse on each scent.
+        int neighborCount;
+        int original_cell_count = scentCells.Count;
 
-            float baseAir = scent.airIntensity;
-            float baseGround = scent.groundIntensity;
-
-            // Gather neighbor averages using the heightfield
-            float airNeighborSum = 0f;
-            float groundNeighborSum = 0f;
-            int neighborCount = 0;
-
-            // Get this cell's heightfield coordinates.
-            // TODO: adjust how you access c.x, c.y, c.z (your HF coords).
-            Vector3Int hf = cell.pos3d; // e.g. stored on your Cell; change as needed
-
-            foreach (Vector2Int offset in neighborOffsets)  // TODO: Change to our direction to vector routine
-            {
-                int neighborX = hf.x + offset.x;
-                int neighborY = hf.y + offset.y;
-                int neighborZ = hf.z;
-
-                Cell neighborCell = dir.gen.GetCellFromHf(
-                    neighborX,
-                    neighborY,
-                    neighborZ,
-                    threshold: 50); // same threshold you showed
-
-                if (neighborCell == null) continue;
-
-                int neighborSIdx = FindAgentIdScentIndex(neighborCell, currentAgentId, createIfNeeded: false);
-                if (neighborSIdx < 0) continue;
-                ScentClass neighborScent = neighborCell.scents[neighborSIdx];
-                if (neighborScent == null) continue;
-
-                neighborCount++;
-                airNeighborSum += neighborScent.airIntensity;
-                groundNeighborSum += neighborScent.groundIntensity;
-            }
-
-            float airValue = baseAir;
-            float groundValue = baseGround;
-
-            if (neighborCount > 0)
-            {
-                float airNeighborAverage = airNeighborSum / neighborCount;
-                float groundNeighborAverage = groundNeighborSum / neighborCount;
-
-                // Diffusion pulls intensity toward neighbor average
-                airValue += airDiffusionRate * (airNeighborAverage - baseAir);
-                groundValue += groundDiffusionRate * (groundNeighborAverage - baseGround);
-            }
-
-            // Phase coupling: air <-> ground
-            float deposit = baseAir * depositFactor; // air -> ground
-            float emit = baseGround * emitFactor;    // ground -> air
-
-            airValue = (airValue - deposit) * airDecayFactor + emit;
-            groundValue = (groundValue + deposit) * groundDecayFactor - emit;
-
-            if (airValue < 0f) airValue = 0f;
-            if (groundValue < 0f) groundValue = 0f;
-
-            scent.airNextDelta = airValue;
-            scent.groundNextDelta = groundValue;
-        }
-
-        // SECOND PASS: commit the new values and clear next-deltas
-        for (int index = 0; index < scentCells.Count; index++)
-        {
-            Cell cell = scentCells[index];
-            if (cell == null) continue;
-
-            sIdx = FindAgentIdScentIndex(cell, currentAgentId, createIfNeeded: false);
-            if (sIdx < 0) Debug.LogError($"FindAgentIdScentIndex(cell {cell.pos.x},{cell.pos.y}, agentId={currentAgentId} returned not found.)");
-            ScentClass scent = cell.scents[sIdx];
-            if (scent == null) continue;
-
-            scent.airIntensity = scent.airNextDelta;
-            scent.groundIntensity = scent.groundNextDelta;
-
-            scent.airNextDelta = 0f;
-            scent.groundNextDelta = 0f;
-        }
-    }
-*/
-    private void StepOnce(float dt)
-    {
-        if (scentCells == null || scentCells.Count == 0)
-            return;
-
-        float airDecayFactor    = Mathf.Clamp01(1f - airDecayRate    * dt);
-        float groundDecayFactor = Mathf.Clamp01(1f - groundDecayRate * dt);
-        float depositFactor     = airToGroundRate * dt;
-        float emitFactor = groundToAirRate * dt;
-
-        int sIdx;
-        int n_sIdx;
         // FIRST PASS: compute deltas and accumulate into airNextDelta / groundNextDelta
-        for (int index = 0; index < scentCells.Count; index++)
+
+        // This loop doesnt include any extra cells we add this pass.
+        for (cIdx = 0; cIdx < original_cell_count; cIdx++)
         {
-            Cell cell = scentCells[index];
-            if (cell == null) continue;
+            Cell cell = scentCells[cIdx];
+            if (cell == null) continue; // should not happen
 
-            sIdx = FindAgentIdScentIndex(cell, currentAgentId, createIfNeeded: false);
-            if (sIdx < 0) continue;
-
-            ScentClass scent = cell.scents[sIdx];  // TODO: adjust accessor
-            if (scent == null) continue;
-
-            float baseAir    = scent.airIntensity;
-            float baseGround = scent.groundIntensity;
-
-            // Gather neighbor averages using heightfield
-            float airNeighborSum    = 0f;
-            float groundNeighborSum = 0f;
-            int neighborCount       = 0;
-
-            Vector3Int hf = cell.pos3d;
-
-            foreach (Vector2Int offset in neighborOffsets)
+            // quick check to see if any scents are non-zero
+            bool i_have_scents = false;
+            if (cell.scents == null) cell.scents = new();
+            foreach (ScentClass scent in cell.scents)
             {
-                int neighborX = hf.x + offset.x;
-                int neighborY = hf.y + offset.y;
-                int neighborZ = hf.z;
-
-                Cell neighborCell = dir.gen.GetCellFromHf(
-                    neighborX,
-                    neighborY,
-                    neighborZ,
-                    threshold: 50);
-
-                if (neighborCell == null) continue;
-
-                n_sIdx = FindAgentIdScentIndex(cell, currentAgentId, createIfNeeded: false);
-                if (n_sIdx < 0) continue;
-                ScentClass neighborScent = neighborCell.scents[n_sIdx];
-                if (neighborScent == null) continue;
-
-                neighborCount++;
-                airNeighborSum    += neighborScent.airIntensity;
-                groundNeighborSum += neighborScent.groundIntensity;
+                if (scent.airIntensity >= practically_zero || scent.groundIntensity >= practically_zero)
+                {
+                    i_have_scents = true;
+                    break;
+                }
             }
 
-            float airValue    = baseAir;
-            float groundValue = baseGround;
-
-            if (neighborCount > 0)
+            // cache the cells for all this cell's neighbors for use in each agentId scent entry
+            neighborCount = 0;  // count them for later averaging or skipping later loop
+            for (nIdx = 0; nIdx < 4; nIdx++)
             {
-                float airNeighborAverage    = airNeighborSum    / neighborCount;
-                float groundNeighborAverage = groundNeighborSum / neighborCount;
-
-                // Diffusion moves towards neighbor average
-                airValue    += airDiffusionRate    * (airNeighborAverage    - baseAir);
-                groundValue += groundDiffusionRate * (groundNeighborAverage - baseGround);
+                neighbors[nIdx] = dir.gen.GetCellFromHf(cell.pos3d.x + neighborOffsets[nIdx].x,
+                                                        cell.pos3d.y + neighborOffsets[nIdx].y,
+                                                        cell.pos3d.z,
+                                                        threshold: 50); // returns null if no neighbor. that's ok.
+                if (neighbors[nIdx] != null) neighborCount++;
+                // if we are going to propogate scents to this cell soon, it better be on the scentCells list.
+                if (i_have_scents && (neighbors[nIdx] != null) && !scentCells.Contains(neighbors[nIdx]))
+                    scentCells.Add(neighbors[nIdx]);           // add neighbor cell to list
             }
 
-            // Phase coupling: air <-> ground
-            float deposit = baseAir    * depositFactor; // air -> ground
-            float emit    = baseGround * emitFactor;    // ground -> air
+            // for each different scent at this location
+            for (sIdx = 0; sIdx < cell.scents.Count; sIdx++)
+            {
+                ScentClass scent = cell.scents[sIdx];
+                if (scent == null) continue;    // should not happen unless we nulled out a scent (which we don't do)
 
-            airValue    = (airValue    - deposit) * airDecayFactor + emit;
-            groundValue = (groundValue + deposit) * groundDecayFactor - emit;
+                agentId = scent.agentId;
 
-            if (airValue < 0f)    airValue    = 0f;
-            if (groundValue < 0f) groundValue = 0f;
+                // grab the values at the beginning of the cycle, then initialize the new values to match.
+                float baseAir = scent.airIntensity;
+                float baseGround = scent.groundIntensity;
 
-            // Convert to delta relative to current intensity and accumulate
-            float airDelta    = airValue    - baseAir;
-            float groundDelta = groundValue - baseGround;
+                float airValue = baseAir;
+                float groundValue = baseGround;
 
-            scent.airNextDelta    += airDelta;
-            scent.groundNextDelta += groundDelta;
-        }
+                // if this is true, we will add the agentId to neighbor cells if not there already
+                bool thisCellHasThisScent = (baseAir > practically_zero) || (baseGround > practically_zero);
 
-        // SECOND PASS: visualization + conditional commit of nextDelta -> intensity
-        for (int index = 0; index < scentCells.Count; index++)
+                // calculate neighbor averages.  We already know neighborCount.
+                float airNeighborSum = 0f;
+                float groundNeighborSum = 0f;
+
+                if (neighborCount > 0) // skip if no neighbors
+                {
+                    for (nIdx = 0; nIdx < 4; nIdx++)   // for each of the 4 neighbors we already looked up at the beginning of the cell loop
+                    {
+                        if (neighbors[nIdx] == null) continue; // no neighbor in this direction
+
+                        // Look in the neighbor cell's scents for a matching agentId, index returned as n_sIdx
+                        n_sIdx = FindAgentIdScentIndex(neighbors[nIdx], agentId, createIfNeeded: false);
+
+                        if (n_sIdx >= 0) // neighbor has a scent with this agentId already, accumulate it
+                        {
+                            var neighborScent = neighbors[nIdx].scents[n_sIdx];
+                            airNeighborSum += neighborScent.airIntensity;
+                            groundNeighborSum += neighborScent.groundIntensity;
+                        }
+                        else // neighbor doesn't have this agentId but we do, add it so it may grow NEXT StepOnce
+                        {
+                            if (thisCellHasThisScent) // only add agentId if nonzero scent here.
+                            {
+                                if (neighbors[nIdx].scents == null) neighbors[nIdx].scents = new(); // create list if needed
+                                // add this scent agentId to neighbor, with zero intensities
+                                ScentClass newScent = new()
+                                {
+                                    agentId = agentId,
+                                    airGOindex = -1,
+                                    groundGOindex = -1
+                                };
+                                neighbors[nIdx].scents.Add(newScent);  // add scent to neighbor cell
+                            }
+                        }
+                    }
+
+                    // Diffusion moves towards neighbor average
+                    float airNeighborAverage = airNeighborSum / neighborCount;
+                    float groundNeighborAverage = groundNeighborSum / neighborCount;
+
+                    airValue += airDiffusionRate * (airNeighborAverage - baseAir);
+                    groundValue += groundDiffusionRate * (groundNeighborAverage - baseGround);
+                }
+
+                // Phase coupling: air <-> ground
+                float deposit = baseAir * depositFactor; // air -> ground (deposit)
+                float emit = baseGround * emitFactor;    // ground -> air (emit)
+
+                airValue = (airValue - deposit) * airDecayFactor + emit;
+                groundValue = (groundValue + deposit) * groundDecayFactor - emit;
+
+                // eliminate negative values, or tiny positive ones also
+                if (airValue < practically_zero) airValue = 0f;
+                if (groundValue < practically_zero) groundValue = 0f;
+
+                // Convert to delta relative to current intensity
+                float airDelta = airValue - baseAir;
+                float groundDelta = groundValue - baseGround;
+
+                // accumulate this delta to any existing delta left earlier
+                scent.airNextDelta += airDelta;
+                scent.groundNextDelta += groundDelta;
+            } // end for sIdx
+        } // end foreach cell
+
+        // SECOND PASS: conditional comit of nextDelta -> intensity
+        //              visualization if matches currentAgentId
+        
+        for (cIdx = 0; cIdx < original_cell_count; cIdx++)  // still doesnt include recent additions to list
         {
-            Cell cell = scentCells[index];
+            Cell cell = scentCells[cIdx];
             if (cell == null) continue;
 
-            sIdx = FindAgentIdScentIndex(cell, currentAgentId, createIfNeeded: false);
-            if (sIdx < 0) continue;
+            // for each different scent at this location
+            for (sIdx = 0; sIdx < cell.scents.Count; sIdx++)
+            {
+                ScentClass scent = cell.scents[sIdx];
+                if (scent == null) continue;
 
-            ScentClass scent = cell.scents[sIdx];
-            if (scent == null) continue;
+                // propogate changes we calculated in first pass above
+                float airDelta    = scent.airNextDelta;
+                float groundDelta = scent.groundNextDelta;
 
-            ScentVisualization(cell, scent);
+                bool airChanged;
+                bool groundChanged;
+
+                // only limit VisualThreshold for the visualualized currentAgentId
+                if (scent.agentId == currentAgentId)
+                {
+                    airChanged = Mathf.Abs(airDelta) >= scentVisualThreshold;
+                    groundChanged = Mathf.Abs(groundDelta) >= scentVisualThreshold;
+                }
+                else // not the visualized currentAgentId
+                {
+                    airChanged = airDelta != 0;
+                    groundChanged = groundDelta != 0;
+                }
+
+                // If either layer did not change enough, skip propagation:
+                // - no intensity update
+                // - no visual update
+                // nextDeltas left behind will continue to accumulate in future steps.
+
+                // ----- Apply deltas to intensities ONLY IF change exceeds scentVisualThreshold -----
+
+                if (airChanged)
+                {
+                    scent.airIntensity += airDelta;
+                    if (scent.airIntensity < practically_zero) scent.airIntensity = 0f;
+                    scent.airNextDelta = 0f;
+                }
+
+                if (groundChanged)
+                {
+                    scent.groundIntensity += groundDelta;
+                    if (scent.groundIntensity < practically_zero) scent.groundIntensity = 0f;
+                    scent.groundNextDelta = 0f;
+                }
+
+                // ONLY visualize if this is true...
+                if ((airChanged || groundChanged) && scent.agentId == currentAgentId)
+                {
+                    ScentVisualization(cell, scent);
+                }
+            }
         }
     }
 
     private void ScentVisualization(Cell cell, ScentClass scent)
     {
         if (elementStore == null) return;
-
-        float airDelta    = scent.airNextDelta;
-        float groundDelta = scent.groundNextDelta;
-
-        bool airChanged    = Mathf.Abs(airDelta)    >= scentVisualThreshold;
-        bool groundChanged = Mathf.Abs(groundDelta) >= scentVisualThreshold;
-
-        // If neither layer changed enough, skip everything:
-        // - no intensity update
-        // - no visual update
-        // nextDelta will continue to accumulate in future steps.
-        if (!airChanged && !groundChanged)
-            return;
-
-        // ----- Apply deltas to intensities -----
-
-        if (airChanged)
-        {
-            scent.airIntensity += airDelta;
-            if (scent.airIntensity < 0f) scent.airIntensity = 0f;
-            scent.airNextDelta = 0f;
-        }
-
-        if (groundChanged)
-        {
-            scent.groundIntensity += groundDelta;
-            if (scent.groundIntensity < 0f) scent.groundIntensity = 0f;
-            scent.groundNextDelta = 0f;
-        }
-
-        // ----- Update / create visuals -----
+        Debug.Log($"Visualize scent at cell {cell.pos}.  Air = {scent.airIntensity}, Ground = {scent.groundIntensity}");
+        
+        // ----- Create or update visuals -----
 
         // =====Air layer
         if (scent.airIntensity > 0f)
@@ -421,22 +458,24 @@ public class ScentAirGround : MonoBehaviour
             Color color = airBaseColor;
             color.a = normalized;
 
-            if (scent.airGOindex < 0)
+            if (scent.airGOindex < 0) // intensity>0 and no GO exists
             {
                 // First time: create the ScentAir element and store its index
-                // TODO: adjust AddScentAir signature as needed.
                 scent.airGOindex = elementStore.AddScentAir(cell, color);
+                
+                if (scent.airGOindex < 0)
+                    Debug.LogError($"ScentVisualization: AddScentAir(@{cell.pos}, alpha={color.a}) returned -1");
             }
-            else
+            else // intensity>0 and GO already exists
             {
                 // Update color of existing instance
                 elementStore.ChangeColor(ElementLayerKind.ScentAir, scent.airGOindex, cell, color);
             }
         }
-        else if (scent.airGOindex >= 0)
+        else if (scent.airGOindex >= 0)     // intensity==0 and GO exists
         {
-            // Optionally fade out / hide when intensity hits zero
-            // (e.g. set alpha to 0 or destroy the element).
+            // Future: Optionally fade out / hide when intensity hits zero
+            //         (e.g. set alpha to 0 or destroy the element).
             // For now we just make it fully transparent via ChangeColor.
             Color color = airBaseColor;
             color.a = 0f;
@@ -450,22 +489,25 @@ public class ScentAirGround : MonoBehaviour
             Color color = groundBaseColor;
             color.a = normalized;
 
-            if (scent.groundGOindex < 0)
+            if (scent.groundGOindex < 0) // intensity>0 and no GO exists
             {
                 // First time: create the ScenGround element and store its index
-                // TODO: adjust AddScentAir signature as needed.
                 scent.groundGOindex = elementStore.AddScentGround(cell, color);
+
+                if (scent.groundGOindex < 0)
+                    Debug.LogError($"ScentVisualization: AddScentGround(@{cell.pos}, alpha={color.a}) returned -1");
+                    
             }
-            else
+            else // intensity>0 and GO already exists
             {
                 // Update color of existing instance
                 elementStore.ChangeColor(ElementLayerKind.ScentGround, scent.groundGOindex, cell, color);
             }
         }
-        else if (scent.groundGOindex >= 0)
+        else if (scent.groundGOindex >= 0)     // intensity==0 and GO exists
         {
-            // Optionally fade out / hide when intensity hits zero
-            // (e.g. set alpha to 0 or destroy the element).
+            // Future: Optionally fade out / hide when intensity hits zero
+            //         (e.g. set alpha to 0 or destroy the element).
             // For now we just make it fully transparent via ChangeColor.
             Color color = groundBaseColor;
             color.a = 0f;
@@ -486,10 +528,15 @@ public class ScentAirGround : MonoBehaviour
         float groundAmount = 0f)
     {
         int sIdx = FindAgentIdScentIndex(cell, agentId, createIfNeeded: true);
+        //Debug.Log($"Adding scent agentId={agentId} to cell at {cell.pos}. sIdx={sIdx}");
         if (sIdx < 0) return;
 
         cell.scents[sIdx].airIntensity += airAmount;
         cell.scents[sIdx].groundIntensity += groundAmount;
+
+        // add cell to the list if it isn't there already
+        if (!scentCells.Contains(cell))
+            scentCells.Add(cell);
     }
 
     /// <summary>
@@ -511,8 +558,11 @@ public class ScentAirGround : MonoBehaviour
         // Determine Agent's scent index
         int sIdx;
         if (cell == null) return -1;    // cannot do anything if the cell doesn't exist.
-        if (cell.scents == null && createIfNeeded) cell.scents = new();   // create the list if not present.
-
+        if (cell.scents == null)
+        {
+            if (createIfNeeded) cell.scents = new();   // create the list if not present.
+            else return -1;
+        }
         for (sIdx = cell.scents.Count - 1; sIdx > 0; sIdx--)    // search the list last to first = optimize for recent scents
             if (cell.scents[sIdx].agentId == agentId) break;
 
@@ -529,6 +579,7 @@ public class ScentAirGround : MonoBehaviour
         return sIdx;
     }
 
+    // Unused
     List<Cell> CreateScentCellsForAgentList(int agentId)
     {
         List<Cell> clist = new();
@@ -550,6 +601,12 @@ public class ScentAirGround : MonoBehaviour
         return clist;
     }
 
+    // adds the cell to the current big scent list if it isn't already there.
+    void AddToScentCells(Cell cell)
+    {
+        if (!scentCells.Contains(cell))
+            scentCells.Add(cell);
+    }
 
     #endregion
 }

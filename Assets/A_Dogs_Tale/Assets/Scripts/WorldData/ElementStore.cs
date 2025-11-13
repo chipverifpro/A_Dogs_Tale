@@ -101,7 +101,7 @@ public class ElementArchetype
 /// This is the raw data BEFORE it becomes a GameObject or GPU instance.
 /// </summary>
 [Serializable]
-public struct ElementInstanceData
+public class ElementInstanceData
 {
     [Tooltip("Archetype id this instance refers to.")]
     public string archetypeId;
@@ -153,17 +153,22 @@ public struct ElementInstanceData
         float customValue = 0f)
     {
         this.archetypeId = archetypeId;
-        this.layerKind   = layerKind;
-        this.roomIndex   = roomIndex;
-        this.cellCoord   = cellCoord;
+        this.layerKind = layerKind;
+        this.roomIndex = roomIndex;
+        this.cellCoord = cellCoord;
         this.heightSteps = heightSteps;
-        this.position    = position;
-        this.rotation    = rotation;
-        this.scale       = scale;
-        this.color       = color;
+        this.position = position;
+        this.rotation = rotation;
+        this.scale = scale;
+        this.color = color;
         this.customFlags = customFlags;
         this.customValue = customValue;
-        this.dirtyFlags  = ElementUpdateFlags.All;
+        this.dirtyFlags = ElementUpdateFlags.All | ElementUpdateFlags.Color;
+    }
+    
+    public void PrintElementInstanceData()
+    {
+        Debug.Log($"ElementInstanceData entry: {archetypeId}, {layerKind}, {cellCoord}, {color.a}, {dirtyFlags}");
     }
 }
 
@@ -199,6 +204,7 @@ public class ElementStore : ScriptableObject
 
     [Header("Layers (grouped instances)")]
     [Tooltip("Logical layers grouping instances (e.g. Floor, Walls, Props).")]
+    [System.NonSerialized]
     public List<ElementLayer> layers = new List<ElementLayer>();
 
     /// <summary>
@@ -213,6 +219,14 @@ public class ElementStore : ScriptableObject
     /// </summary>
     [NonSerialized] private Dictionary<string, int> archetypeLookup;
 
+    private void OnEnable()
+    {
+        if (Application.isPlaying)
+        {
+            // Start fresh at runtime
+            layers = new List<ElementLayer>(); // clear legacy junk
+        }
+    }
     /// <summary>
     /// Build or rebuild the archetype lookup dictionary.
     /// Call this in ManufactureGO before heavy processing.
@@ -257,8 +271,11 @@ public class ElementStore : ScriptableObject
     /// <summary>
     /// Add a new instance to a named layer, creating the layer if it does not exist.
     /// </summary>
-    public int AddInstance(string layerName, ElementInstanceData instance)
+/*
+    public int AddInstance_old(string layerName, ElementInstanceData instance)
     {
+        Debug.Log($"AddInstance({layerName}) at {instance.position}");
+        
         if (layers == null)
             layers = new List<ElementLayer>();
 
@@ -266,15 +283,78 @@ public class ElementStore : ScriptableObject
         if (layer == null)
         {
             layer = new ElementLayer { name = layerName, kind = instance.layerKind };
+            layer.instances = new();
             layers.Add(layer);
         } else if (layer.kind != instance.layerKind) {
             Debug.LogWarning($"ElementStore: Layer '{layerName}' kind mismatch. Existing: {layer.kind}, New Instance: {instance.layerKind}");
             layer.kind = instance.layerKind; // keep runtime data sane
         }
 
-        instance.dirtyFlags = ElementUpdateFlags.All;
+        instance.dirtyFlags = (ElementUpdateFlags.Color || ElementUpdateFlags.All);
         layer.instances.Add(instance);
         return layer.instances.Count - 1;   // array index of added GO
+    }
+*/
+    public int AddInstance(string layerName, ElementInstanceData instance)
+    {
+        if (string.IsNullOrEmpty(layerName))
+        {
+            Debug.LogError("ElementStore.AddInstance: layerName is null/empty.");
+            return -1;
+        }
+
+        // NEW: brand-new instances should ask the factory to build everything, not just color.
+        instance.dirtyFlags = ElementUpdateFlags.All | ElementUpdateFlags.Color;
+
+        // Ensure layers list
+        layers ??= new List<ElementLayer>();
+
+        // Find (prefer index-based so it works with class or struct)
+        int layerIdx = layers.FindIndex(l => l != null && l.name == layerName);
+        ElementLayer layer;
+
+        if (layerIdx < 0)
+        {
+            layer = new ElementLayer { name = layerName, kind = instance.layerKind, instances = new List<ElementInstanceData>() };
+            layers.Add(layer);
+            layerIdx = layers.Count - 1;
+        }
+        else
+        {
+            layer = layers[layerIdx];
+
+            if (layer.kind != instance.layerKind)
+            {
+                Debug.LogWarning($"ElementStore: Layer '{layerName}' kind mismatch. Existing={layer.kind}, New={instance.layerKind}. Changing layer.kind to match");
+                layer.kind = instance.layerKind; // keep runtime data sane (fix bug somewhere else?)
+                /*
+                // Safer handling of kind mismatch
+                // Create a sibling layer name to keep data sane (or you can abort)
+                string altName = $"{layerName}_{instance.layerKind}";
+                int altIdx = layers.FindIndex(l => l != null && l.name == altName);
+                if (altIdx < 0)
+                {
+                    var newLayer = new ElementLayer { name = altName, kind = instance.layerKind, instances = new List<ElementInstanceData>(64) };
+                    layers.Add(newLayer);
+                    layer = newLayer;
+                    layerIdx = layers.Count - 1;
+                }
+                else
+                {
+                    layer = layers[altIdx];
+                    layerIdx = altIdx;
+                }*/
+            }
+        }
+
+        // Append; ElementInstanceData is a class, no need to copy back data
+        layer.instances.Add(instance);
+
+        // DEBUG: prove it got in
+        Debug.Log($"[AddInstance] layer='{layer.name}', kind={layer.kind}, newCount={layer.instances.Count}");
+
+        // Return stable index within this layer's instance list
+        return layer.instances.Count - 1;
     }
 
     /// <summary>
@@ -437,7 +517,7 @@ public class ElementStore : ScriptableObject
     public int AddScentAir(Cell cell, Color color)
     {
         var inst = new ElementInstanceData(
-            archetypeId: "PF_Fog",
+            archetypeId: "ScentAir",
             layerKind: ElementLayerKind.ScentAir,
             roomIndex: cell.room_number,
             cellCoord: cell.pos,
@@ -450,7 +530,15 @@ public class ElementStore : ScriptableObject
             customValue: 0f
         );
 
-        int GOindex = AddInstance("ScentGround", inst);
+        // Optional: validate before trying to build
+        //if (!elementStore.TryGetArchetype(inst.archetypeId, out _)) {
+        //    Debug.LogError("AddScentGround: archetype {inst.architypeId} not registered. Register it before calling AddScentGround.");
+        //    return -1;
+        //}
+
+        int GOindex = AddInstance("ScentAir", inst);
+        Debug.Log($"AddScentAir(@{cell.pos}, alpha={color.a}) -> GOindex={GOindex}");
+        inst.PrintElementInstanceData();    // more debug
         return GOindex;
 
     }
@@ -458,8 +546,8 @@ public class ElementStore : ScriptableObject
     public int AddScentGround(Cell cell, Color color)
     {
         var inst = new ElementInstanceData(
-            archetypeId: "PF_GroundScent",
-            layerKind: ElementLayerKind.ScentAir,
+            archetypeId: "ScentGround",
+            layerKind: ElementLayerKind.ScentGround,
             roomIndex: cell.room_number,
             cellCoord: cell.pos,
             heightSteps: cell.height,
@@ -472,6 +560,8 @@ public class ElementStore : ScriptableObject
         );
 
         int GOindex = AddInstance("ScentGround", inst);
+        Debug.Log($"AddScentGround(@{cell.pos}, alpha={color.a}) -> GOindex={GOindex}");
+        inst.PrintElementInstanceData();
         return GOindex;
     }
     
@@ -581,34 +671,78 @@ public class ElementStore : ScriptableObject
             Debug.LogError("ChangeColor aborting due to null pointer.");
             return false;
         }
+        Debug.Log($"ChangeColor({kind}, GOindex {GOindex}, @{cell.pos}, alpha={newColor.a})");
 
-        
         // Find the layer
-        // TODO: tun this into one for loop that assigns AirLayer and GroundLayer
         var layer = layers.Find(l => l != null && (l.kind == kind));
         //Error conditions...
         if (layer == null)
         {
-            Debug.Log($"  {kind} layer not found.");
-            return false;
-        } else if (layer.instances == null) {
+            Debug.LogWarning($"  {kind} layer not found. creating one");
+            DumpLayers();
+            // TODO: call layer creation routine in Manufacture.go instead.
+            layer = new();
+            layer.kind = kind;
+            layer.instances = new();
+            layer.name = kind.ToString();
+            layers.Add(layer);
+        }
+        else if (layer.instances == null)
+        {
             Debug.Log($"  {kind} layer.instances is null");
-            return false;
-        } else {
+            layer.instances = new();
+        }
+        else
+        {
             //Debug.Log($"  FOUND: layer.instances count = {layer.instances.Count}");
         }
 
-        if (GOindex >0) 
+        // DEBUG:
+        int count = layer.instances?.Count ?? 0;
+        if (GOindex < 0 || GOindex >= count)
+        {
+            Debug.LogError(
+                $"ChangeColor: kind={kind}, layerName='{layer.name}', GOindex={GOindex}, instanceCount={count}. Cell={cell.pos}");
+            DumpLayers();
+            return false;
+        }
+
+        if (GOindex >= layer.instances.Count)
+            Debug.LogError($"ChangeColor GOindex {GOindex} >= layer.instances {layer.instances.Count}");
+        if (GOindex >= 0)
         {
             var inst = layer.instances[GOindex];
             inst.color = newColor;
             inst.dirtyFlags |= ElementUpdateFlags.Color;
             layer.instances[GOindex] = inst; // copy back
-            Debug.Log($"  {layer} Color changed");
+            Debug.Log($"  {kind} Color changed");
             return true;
         }
-        Debug.Log($"  No matching {layer} instance found");
+        Debug.Log($"  No matching {kind} instance found for GOindex {GOindex}");
         return false;
+    }
+
+    private void DumpLayers()
+    {
+        if (layers == null)
+        {
+            Debug.Log("ElementStore: layers is null");
+            return;
+        }
+
+        Debug.Log($"ElementStore: DumpLayers (count={layers.Count})");
+        for (int i = 0; i < layers.Count; i++)
+        {
+            var l = layers[i];
+            if (l == null)
+            {
+                Debug.Log($"  [{i}] null");
+                continue;
+            }
+
+            int instCount = l.instances?.Count ?? 0;
+            Debug.Log($"  [{i}] name='{l.name}', kind={l.kind}, instances={instCount}");
+        }
     }
     #endregion
 }

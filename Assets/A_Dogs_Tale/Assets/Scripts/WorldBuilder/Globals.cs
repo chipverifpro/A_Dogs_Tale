@@ -25,6 +25,8 @@ public partial class DungeonGenerator : MonoBehaviour
     public GameObject doorClosedPrefab;
     public GameObject doorOpenPrefab;
     public GameObject fogPrefab;
+    public GameObject scentAirPrefb;
+    public GameObject scentGroundPrefab;
     public Transform root;                    // parent for spawned meshes
 
     public static readonly Color colorDefault = new(1f, 0.4f, 0.7f, 0.5f); // semi-transparent pink
@@ -65,7 +67,7 @@ public partial class DungeonGenerator : MonoBehaviour
     public ScentAirGround scent;
 
     public ScentRegistry scentRegistry;
-    
+
 
     // Sets the agent id to a unique number, and returns that value.
     // Can be called without an agent, and caller must assign the number themselves.

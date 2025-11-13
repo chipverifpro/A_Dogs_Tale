@@ -2454,7 +2454,12 @@ MonoBehaviour:
     type: 3}
   doorClosedPrefab: {fileID: 0}
   doorOpenPrefab: {fileID: 0}
-  fogPrefab: {fileID: 0}
+  fogPrefab: {fileID: 6101818331885921959, guid: 8cbf1922b463046768f26c2ef8fc1896,
+    type: 3}
+  scentAirPrefb: {fileID: 6101818331885921959, guid: 739cdb9734dff412ab91a7ae00da6750,
+    type: 3}
+  scentGroundPrefab: {fileID: 2725812093829766248, guid: 97efb2c3f66b8408a8c2078a578dac0a,
+    type: 3}
   root: {fileID: 1448055485}
   perlinSeedX: 0
   perlinSeedY: 0
@@ -2465,8 +2470,8 @@ MonoBehaviour:
   - {x: 0, y: -1}
   - {x: -1, y: 0}
   - {x: 1, y: 0}
-  scent: {fileID: 0}
-  scentRegistry: {fileID: 0}
+  scent: {fileID: 1546545660}
+  scentRegistry: {fileID: 1546545661}
   rootName: DungeonGenerator
   floorsName: Floors3D
   wallsName: Walls3D
@@ -10163,6 +10168,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ScentAirGround
   dir: {fileID: 1920128612}
   gen: {fileID: 409665914}
+  currentAgentId: -1
   airDiffusionRate: 0.15
   airDecayRate: 0.2
   groundDiffusionRate: 0.05
@@ -10171,6 +10177,7 @@ MonoBehaviour:
   groundToAirRate: 0.03
   simulationTimeStep: 0.1
   runOnStart: 1
+  practically_zero: 0.00001
   elementStore: {fileID: 11400000, guid: 12ce8f64c30bc4bbfa007792bc781b21, type: 2}
   scentVisualThreshold: 0.00390625
   maxVisualIntensity: 1

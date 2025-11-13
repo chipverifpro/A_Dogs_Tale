@@ -165,9 +165,9 @@ public partial class Player : MonoBehaviour
         Input_Update();  // this is the update for inputs and resulting movement
                          // Input_Update will call Move_Update with the appropriate parameters.
 
-        if (gen.In((int)agent.pos2.x, (int)agent.pos2.y))
+        if (gen.In((int)agent.pos2.x, (int)agent.pos2.y) && (gen.cellGrid!=null))
         {
-            Cell player_cell = gen.cellGrid[(int)agent.pos2.x, (int)agent.pos2.y];
+            Cell player_cell = gen.cellGrid[(int)agent.pos2.x, (int)agent.pos2.y];  // problem: cellGrid==null
             if (player_cell != null)
             {
                 dir.scents.AddScentToCell(player_cell,

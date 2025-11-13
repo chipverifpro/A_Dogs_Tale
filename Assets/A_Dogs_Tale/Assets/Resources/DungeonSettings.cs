@@ -33,6 +33,7 @@ public class DungeonSettings : ScriptableObject
     public float scentDecayRate = 0.1f;     // decay by percent per ScentInterval
     public float scentSpreadAmount = 0.05f;  // neighbors get this percent added per ScentInterval
     public float scentMinimum = 0.001f;       // amount below which the scent completely disappears
+    public bool scentPhysicsConsistancey = true; // two algorithms are available for dealing with excessive delays, 'true' is more consistant but slower.
 
     [Header("Room Floor Bumpiness Settings")]
     public int perlinFloorHeights = 3;  // Height range of added ripple to the floor.
