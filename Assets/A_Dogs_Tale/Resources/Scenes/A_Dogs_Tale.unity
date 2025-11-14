@@ -10169,10 +10169,14 @@ MonoBehaviour:
   dir: {fileID: 1920128612}
   gen: {fileID: 409665914}
   currentAgentId: -1
-  airDiffusionRate: 0.063
+  airScentVisible: 0
+  airScentDepositRate: 1
+  airDiffusionRate: 0.9
   airDecayRate: 0.6
-  groundDiffusionRate: 0.024
-  groundDecayRate: 0.15
+  groundScentVisible: 0
+  groundScentDepositRate: 1
+  groundDiffusionRate: 0.01
+  groundDecayRate: 0.08
   airToGroundRate: 0.1
   groundToAirRate: 0.03
   simulationTimeStep: 0.2

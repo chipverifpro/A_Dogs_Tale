@@ -435,18 +435,18 @@ public class ScentAirGround : MonoBehaviour
                 // nextDeltas left behind will continue to accumulate in future steps.
 
                 // ----- Apply deltas to intensities ONLY IF change exceeds scentVisualThreshold -----
-
+                //                                           AND delta is heading in a negative direction
                 if (airChanged)
                 {
                     scent.airIntensity += airDelta;
-                    if (scent.airIntensity < practically_zero) scent.airIntensity = 0f;
+                    if ((scent.airIntensity < practically_zero) && airDelta <= 0f) scent.airIntensity = 0f;
                     scent.airNextDelta = 0f;
                 }
 
                 if (groundChanged)
                 {
                     scent.groundIntensity += groundDelta;
-                    if (scent.groundIntensity < practically_zero) scent.groundIntensity = 0f;
+                    if ((scent.groundIntensity < practically_zero) && groundDelta <= 0f) scent.groundIntensity = 0f;
                     scent.groundNextDelta = 0f;
                 }
 
