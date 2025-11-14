@@ -104,8 +104,8 @@ public partial class DungeonGenerator : MonoBehaviour
         UnityEngine.Random.InitState(cfg.seed);
         Debug.Log("DungeonGenerator starting with seed: " + cfg.seed);
 
-        // DOING THIS HANGS/CRASHES UNITY!!!!!!
-        //StopAllCoroutines();
+        // load the mission parameters...
+        
         if (dir.dungeonBuildSettingsUI != null)
             dir.dungeonBuildSettingsUI.LoadMapSettingsByName("01_House_Tutorial");
 

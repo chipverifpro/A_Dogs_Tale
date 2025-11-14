@@ -19,13 +19,20 @@ public class ScentAirGround : MonoBehaviour
     public int currentAgentId = -1;      // if this changes, recreate above list...
 
     [Header("Air Layer Settings")]
+    public bool airScentVisible = true;
+    private bool airScentWasVisible = false; // memory, if changed, then update all
+    [Tooltip("Global multiplier to all external sources for air depositing (usually 1.0).")]
+    public float airScentDepositRate = 1.0f;
     [Range(0f, 1f)]
     public float airDiffusionRate = 0.15f;  // how strongly air mixes between neighbors per tick
-
     [Range(0f, 1f)]
     public float airDecayRate = 0.2f;       // per-second fraction of airborne scent lost
 
     [Header("Ground Layer Settings")]
+    public bool groundScentVisible = true;
+    private bool groundScentWasVisible = false;
+    [Tooltip("Global multiplier to all external sources for ground depositing (usually 1.0).")]
+    public float groundScentDepositRate = 1.0f; // global multiplier to all extenal sources
     [Range(0f, 1f)]
     public float groundDiffusionRate = 0.05f;  // slower spread across surfaces
 
@@ -64,10 +71,10 @@ public class ScentAirGround : MonoBehaviour
     // Adjust/add vertical neighbors if desired.
     private static readonly Vector2Int[] neighborOffsets =  // TODO: Use DirFlags and  DirFlagsEx.ToVector2Int(dirFlags);
     {
-        new Vector2Int( 1,  0),
-        new Vector2Int(-1,  0),
-        new Vector2Int( 0,  1),
-        new Vector2Int( 0, -1),
+        new Vector2Int( 1,  0), // N
+        new Vector2Int( 0,  1), // E
+        new Vector2Int(-1,  0), // S
+        new Vector2Int( 0, -1), // W
     };
 
     private Coroutine _simulationCoroutine;     // keep pointer in order to stop.
@@ -262,7 +269,7 @@ public class ScentAirGround : MonoBehaviour
         int n_sIdx; // loop index: neighbor cell's scent
 
         int agentId;
-        Cell[] neighbors = new Cell[4]; // cache the 4 neighbor cells once per cell examined.  reuse on each scent.
+        Cell[] neighbors = new Cell[4]; // cache the 4 neighbor cells once per cell examined.  reuse on each scent.  Change to 8 if you want diagonals.
         int neighborCount;
         int original_cell_count = scentCells.Count;
 
@@ -288,12 +295,18 @@ public class ScentAirGround : MonoBehaviour
 
             // cache the cells for all this cell's neighbors for use in each agentId scent entry
             neighborCount = 0;  // count them for later averaging or skipping later loop
-            for (nIdx = 0; nIdx < 4; nIdx++)
+            for (nIdx = 0; nIdx < 4; nIdx++)                    // loop 8 times if you want diagonals
             {
-                neighbors[nIdx] = dir.gen.GetCellFromHf(cell.pos3d.x + neighborOffsets[nIdx].x,
-                                                        cell.pos3d.y + neighborOffsets[nIdx].y,
-                                                        cell.pos3d.z,
-                                                        threshold: 50); // returns null if no neighbor. that's ok.
+                DirFlags dirF = DirFlagsEx.AllCardinals[nIdx];  // use All8[nIdx] if you want diagonals
+                DirFlags dDoor = (cell.doors & dirF);
+                DirFlags dWall = (cell.walls & dirF);
+                if (dWall==DirFlags.None && dDoor==DirFlags.None) // TODO: add open doors
+                {
+                    neighbors[nIdx] = dir.gen.GetCellFromHf(cell.pos3d.x + DirFlagsEx.ToVector2Int(dirF).x,
+                                                            cell.pos3d.y + DirFlagsEx.ToVector2Int(dirF).y,
+                                                            cell.pos3d.z,
+                                                            threshold: 50); // returns null if no neighbor. that's ok.
+                }
                 if (neighbors[nIdx] != null) neighborCount++;
                 // if we are going to propogate scents to this cell soon, it better be on the scentCells list.
                 if (i_have_scents && (neighbors[nIdx] != null) && !scentCells.Contains(neighbors[nIdx]))
@@ -438,7 +451,9 @@ public class ScentAirGround : MonoBehaviour
                 }
 
                 // ONLY visualize if this is true...
-                if ((airChanged || groundChanged) && scent.agentId == currentAgentId)
+                if (((airChanged || groundChanged)  && scent.agentId == currentAgentId) 
+                     || (airScentVisible != airScentWasVisible)         // user toggled air on/off
+                     || (groundScentVisible != groundScentWasVisible))  // user toggled ground on/off
                 {
                     ScentVisualization(cell, scent);
                 }
@@ -448,72 +463,94 @@ public class ScentAirGround : MonoBehaviour
 
     private void ScentVisualization(Cell cell, ScentClass scent)
     {
+        Color color;
+        float normalized;
+        bool airUpdateAll = true;
+        bool groundUpdateAll = true;
+
         if (elementStore == null) return;
         //Debug.Log($"Visualize scent at cell {cell.pos}.  Air = {scent.airIntensity}, Ground = {scent.groundIntensity}");
 
         // ----- Create or update visuals -----
 
         // =====Air layer
-        if (scent.airIntensity > 0f)
+        if (airScentVisible != airScentWasVisible)    // airVisible was just toggled on or off
         {
-            float normalized = Mathf.Clamp01(scent.airIntensity) * maxVisualIntensity;
-            Color color = airBaseColor;
-            color.a = normalized;
+            airUpdateAll = true;
+            airScentWasVisible = airScentVisible;
+        }
 
-            if (scent.airGOindex < 0) // intensity>0 and no GO exists
+        if (airScentVisible || airUpdateAll)        // we should update
+        {
+            if ((scent.airIntensity > 0f) && airScentVisible)
             {
-                // First time: create the ScentAir element and store its index
-                scent.airGOindex = elementStore.AddScentAir(cell, color);
+                normalized = Mathf.Clamp01(scent.airIntensity) * maxVisualIntensity;
+                color = airBaseColor;
+                color.a = normalized;
 
-                if (scent.airGOindex < 0)
-                    Debug.LogError($"ScentVisualization: AddScentAir(@{cell.pos}, alpha={color.a}) returned -1");
+                if (scent.airGOindex < 0) // intensity>0 and no GO exists
+                {
+                    // First time: create the ScentAir element and store its index
+                    scent.airGOindex = elementStore.AddScentAir(cell, color);
+
+                    if (scent.airGOindex < 0)
+                        Debug.LogError($"ScentVisualization: AddScentAir(@{cell.pos}, alpha={color.a}) returned -1");
+                }
+                else // intensity>0 and GO already exists
+                {
+                    // Update color of existing instance
+                    elementStore.ChangeColor(ElementLayerKind.ScentAir, scent.airGOindex, cell, color);
+                }
             }
-            else // intensity>0 and GO already exists
+            else if (scent.airGOindex >= 0)     // intensity==0 and GO exists OR !visible
             {
-                // Update color of existing instance
+                // Future: Optionally fade out / hide when intensity hits zero
+                //         (e.g. set alpha to 0 or destroy the element).
+                // For now we just make it fully transparent via ChangeColor.
+                color = airBaseColor;
+                color.a = 0f;
                 elementStore.ChangeColor(ElementLayerKind.ScentAir, scent.airGOindex, cell, color);
             }
         }
-        else if (scent.airGOindex >= 0)     // intensity==0 and GO exists
+        // =======Ground layer
+        if (groundScentVisible != groundScentWasVisible)    // airVisible was just toggled on or off
         {
-            // Future: Optionally fade out / hide when intensity hits zero
-            //         (e.g. set alpha to 0 or destroy the element).
-            // For now we just make it fully transparent via ChangeColor.
-            Color color = airBaseColor;
-            color.a = 0f;
-            elementStore.ChangeColor(ElementLayerKind.ScentAir, scent.airGOindex, cell, color);
+            groundUpdateAll = true;
+            groundScentWasVisible = groundScentVisible;
         }
 
-        // =======Ground layer
-        if (scent.groundIntensity > 0f)
+        if (groundScentVisible || groundUpdateAll)
         {
-            float normalized = Mathf.Clamp01(scent.groundIntensity) * maxVisualIntensity;
-            Color color = groundBaseColor;
-            color.a = normalized;
-
-            if (scent.groundGOindex < 0) // intensity>0 and no GO exists
+            if ((scent.groundIntensity > 0f) && groundScentVisible)
             {
-                // First time: create the ScenGround element and store its index
-                scent.groundGOindex = elementStore.AddScentGround(cell, color);
+                normalized = Mathf.Clamp01(scent.groundIntensity) * maxVisualIntensity;
+                color = groundBaseColor;
+                color.a = normalized;
 
-                if (scent.groundGOindex < 0)
-                    Debug.LogError($"ScentVisualization: AddScentGround(@{cell.pos}, alpha={color.a}) returned -1");
+                if (scent.groundGOindex < 0) // intensity>0 and no GO exists
+                {
+                    // First time: create the ScenGround element and store its index
+                    scent.groundGOindex = elementStore.AddScentGround(cell, color);
 
+                    if (scent.groundGOindex < 0)
+                        Debug.LogError($"ScentVisualization: AddScentGround(@{cell.pos}, alpha={color.a}) returned -1");
+
+                }
+                else // intensity>0 and GO already exists
+                {
+                    // Update color of existing instance
+                    elementStore.ChangeColor(ElementLayerKind.ScentGround, scent.groundGOindex, cell, color);
+                }
             }
-            else // intensity>0 and GO already exists
+            else if (scent.groundGOindex >= 0)     // intensity==0 and GO exists OR !visible
             {
-                // Update color of existing instance
+                // Future: Optionally fade out / hide when intensity hits zero
+                //         (e.g. set alpha to 0 or destroy the element).
+                // For now we just make it fully transparent via ChangeColor.
+                color = groundBaseColor;
+                color.a = 0f;
                 elementStore.ChangeColor(ElementLayerKind.ScentGround, scent.groundGOindex, cell, color);
             }
-        }
-        else if (scent.groundGOindex >= 0)     // intensity==0 and GO exists
-        {
-            // Future: Optionally fade out / hide when intensity hits zero
-            //         (e.g. set alpha to 0 or destroy the element).
-            // For now we just make it fully transparent via ChangeColor.
-            Color color = groundBaseColor;
-            color.a = 0f;
-            elementStore.ChangeColor(ElementLayerKind.ScentGround, scent.groundGOindex, cell, color);
         }
     }
 
@@ -526,7 +563,8 @@ public class ScentAirGround : MonoBehaviour
         if (anyFogCreated)
         {
             dir.manufactureGO.BuildNewInstancesForLayer(ElementLayerKind.ScentAir);
-            dir.manufactureGO.BuildNewInstancesForLayer(ElementLayerKind.ScentGround);        }
+            dir.manufactureGO.BuildNewInstancesForLayer(ElementLayerKind.ScentGround);
+        }
 
         // Then apply all color changes (including newly created ones)
         if (anyFogCreated || anyColorChanged)
