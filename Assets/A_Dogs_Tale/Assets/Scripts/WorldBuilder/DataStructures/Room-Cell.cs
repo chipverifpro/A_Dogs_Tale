@@ -11,89 +11,69 @@ public enum DirFlags : byte
     N = 1 << 0,
     E = 1 << 1,
     S = 1 << 2,
-    W = 1 << 3,
-
-    NE = 1 << 4,    // never used lookups by diagonals.  I only put these in so I dont need to remove the tags from other code.
-    SE = 1 << 5,
-    SW = 1 << 6,
-    NW = 1 << 7,
-    //NE = N | E,   // commented out versions caused unexpected behavior in comparisons and convert to string.
-    //SE = S | E,
-    //SW = S | W,
-    //NW = N | W,
-    //All = N | E | S | W,
+    W = 1 << 3
 }
 
 public static class DirFlagsEx  // extension functions for the DirFlags enum
 {
     // ---- Private cached arrays (no per-call allocations) ----
     private static readonly DirFlags[] kCardinals = { DirFlags.N, DirFlags.E, DirFlags.S, DirFlags.W };
-    private static readonly DirFlags[] kDiagonals = { DirFlags.NE, DirFlags.SE, DirFlags.SW, DirFlags.NW };
-    private static readonly DirFlags[] kAll8 = { DirFlags.N, DirFlags.NE, DirFlags.E, DirFlags.SE,
-                                                       DirFlags.S, DirFlags.SW, DirFlags.W, DirFlags.NW };
+    private static readonly DirFlags[] kDiagonals = { DirFlags.N | DirFlags.E,
+                                                      DirFlags.S | DirFlags.E,
+                                                      DirFlags.S | DirFlags.W,
+                                                      DirFlags.N | DirFlags.W };
+    private static readonly DirFlags[] kAll8 = { DirFlags.N,
+                                                 DirFlags.N | DirFlags.E,
+                                                 DirFlags.E,
+                                                 DirFlags.S | DirFlags.E,
+                                                 DirFlags.S,
+                                                 DirFlags.S | DirFlags.W,
+                                                 DirFlags.W,
+                                                 DirFlags.N | DirFlags.W };
 
-    // Fast, allocation-free accessors (iterate directly).
-    public static DirFlags[] AllCardinals => kCardinals;
-    public static DirFlags[] AllDiagonals => kDiagonals;
-    public static DirFlags[] All8 => kAll8;
+    public static IReadOnlyList<DirFlags> AllCardinals => kCardinals;
+    public static IReadOnlyList<DirFlags> AllDiagonals => kDiagonals;
+    public static IReadOnlyList<DirFlags> All8 => kAll8;
 
     // ---- Classification ----
     public static bool IsCardinal(this DirFlags dir)
-        => dir == DirFlags.N || dir == DirFlags.E || dir == DirFlags.S || dir == DirFlags.W;
+        => Count(dir) == 1;
 
     public static bool IsDiagonal(this DirFlags dir)
-        => dir == DirFlags.NE || dir == DirFlags.NW || dir == DirFlags.SE || dir == DirFlags.SW;
+        => ((dir & (DirFlags.N | DirFlags.S)) != 0) && ((dir & (DirFlags.E | DirFlags.W))!= 0)
+        && Count(dir) == 2;
 
     public static DirFlags Opposite(this DirFlags dir)
     {
-        switch (dir)
-        {
-            case DirFlags.N: return DirFlags.S;
-            case DirFlags.S: return DirFlags.N;
-            case DirFlags.E: return DirFlags.W;
-            case DirFlags.W: return DirFlags.E;
-            case DirFlags.NE: return DirFlags.SW;
-            case DirFlags.SE: return DirFlags.NW;
-            case DirFlags.SW: return DirFlags.NE;
-            case DirFlags.NW: return DirFlags.SE;
-            default: return DirFlags.None;
-        }
+        Vector2Int vect;
+        vect = ToVector2Int(dir);
+        return FromVector2Int(-vect);
     }
 
     // ---- Conversions ----
     public static Vector2Int ToVector2Int(this DirFlags dir)
     {
-        switch (dir)
-        {
-            case DirFlags.N: return new Vector2Int(0, -1);
-            case DirFlags.E: return new Vector2Int(-1, 0);
-            case DirFlags.S: return new Vector2Int(0, 1);
-            case DirFlags.W: return new Vector2Int(1, 0);
+        int x = 0;
+        int y = 0;
 
-            case DirFlags.NE: return new Vector2Int(-1, -1);
-            case DirFlags.SE: return new Vector2Int(-1, 1);
-            case DirFlags.SW: return new Vector2Int(1, 1);
-            case DirFlags.NW: return new Vector2Int(1, -1);
-        }
-        return Vector2Int.zero;
+        if ((dir & DirFlags.E) != 0) x += 1;
+        if ((dir & DirFlags.W) != 0) x -= 1;
+        if ((dir & DirFlags.N) != 0) y += 1;
+        if ((dir & DirFlags.S) != 0) y -= 1;
+
+        return new Vector2Int(x, y);
     }
 
     public static DirFlags FromVector2Int(Vector2Int v)
     {
-        int x = Mathf.Clamp(v.x, -1, 1);
-        int y = Mathf.Clamp(v.y, -1, 1);
+        DirFlags flags = DirFlags.None;
 
-        if (x == 0 && y == 1) return DirFlags.S;
-        if (x == 1 && y == 0) return DirFlags.W;
-        if (x == 0 && y == -1) return DirFlags.N;
-        if (x == -1 && y == 0) return DirFlags.E;
+        if (v.y > 0) flags |= DirFlags.N;
+        if (v.y < 0) flags |= DirFlags.S;
+        if (v.x > 0) flags |= DirFlags.E;
+        if (v.x < 0) flags |= DirFlags.W;
 
-        if (x == 1 && y == 1) return DirFlags.SW;
-        if (x == 1 && y == -1) return DirFlags.NW;
-        if (x == -1 && y == -1) return DirFlags.NE;
-        if (x == -1 && y == 1) return DirFlags.SE;
-
-        return DirFlags.None;
+        return flags;
     }
 
     //CountBits: This uses Brian Kernighan’s algorithm (v &= v-1) to strip one bit
