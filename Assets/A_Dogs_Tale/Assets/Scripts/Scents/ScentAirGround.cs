@@ -456,7 +456,7 @@ public class ScentAirGround : MonoBehaviour
         // =====Air layer
         if (scent.airIntensity > 0f)
         {
-            float normalized = Mathf.Clamp01(scent.airIntensity / maxVisualIntensity);
+            float normalized = Mathf.Clamp01(scent.airIntensity) * maxVisualIntensity;
             Color color = airBaseColor;
             color.a = normalized;
 
@@ -487,7 +487,7 @@ public class ScentAirGround : MonoBehaviour
         // =======Ground layer
         if (scent.groundIntensity > 0f)
         {
-            float normalized = Mathf.Clamp01(scent.groundIntensity / maxVisualIntensity);
+            float normalized = Mathf.Clamp01(scent.groundIntensity) * maxVisualIntensity;
             Color color = groundBaseColor;
             color.a = normalized;
 

@@ -10169,18 +10169,18 @@ MonoBehaviour:
   dir: {fileID: 1920128612}
   gen: {fileID: 409665914}
   currentAgentId: -1
-  airDiffusionRate: 0.15
-  airDecayRate: 0.2
-  groundDiffusionRate: 0.05
-  groundDecayRate: 0.01
+  airDiffusionRate: 0.063
+  airDecayRate: 0.6
+  groundDiffusionRate: 0.024
+  groundDecayRate: 0.15
   airToGroundRate: 0.1
   groundToAirRate: 0.03
-  simulationTimeStep: 0.1
+  simulationTimeStep: 0.2
   runOnStart: 1
   practically_zero: 0.00001
   elementStore: {fileID: 11400000, guid: 12ce8f64c30bc4bbfa007792bc781b21, type: 2}
   scentVisualThreshold: 0.00390625
-  maxVisualIntensity: 1
+  maxVisualIntensity: 0.5
   airBaseColor: {r: 0.2, g: 1, b: 1, a: 1}
   groundBaseColor: {r: 0.5, g: 1, b: 0.2, a: 1}
 --- !u!114 &1546545661

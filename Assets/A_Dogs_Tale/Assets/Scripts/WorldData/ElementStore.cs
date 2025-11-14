@@ -516,15 +516,18 @@ public class ElementStore : ScriptableObject
 
     public int AddScentAir(Cell cell, Color color)
     {
+        Quaternion quadRotate = Quaternion.Euler(-90f, 0f, 0f);
+        Vector3 airFogOffset = new(0f, 1.1f, 0f);
+        Vector3 overlapFuzzyScale = new(1.95f, 2f, 1.95f);
         var inst = new ElementInstanceData(
             archetypeId: "ScentAir",
             layerKind: ElementLayerKind.ScentAir,
             roomIndex: cell.room_number,
             cellCoord: cell.pos,
             heightSteps: cell.height,
-            position: cell.pos3d_world,
-            rotation: Quaternion.identity,
-            scale: Vector3.one,
+            position: cell.pos3d_world + airFogOffset,
+            rotation: quadRotate,
+            scale: overlapFuzzyScale,
             color: color,
             customFlags: 0,
             customValue: 0f
@@ -545,15 +548,19 @@ public class ElementStore : ScriptableObject
 
     public int AddScentGround(Cell cell, Color color)
     {
+        Quaternion quadRotate = Quaternion.Euler(-90f, 0f, 0f);
+        Vector3 groundFogOffset = new(0f, 0.7f, 0f);
+        Vector3 overlapFuzzyScale = new(1.95f, 2f, 1.95f);
+        
         var inst = new ElementInstanceData(
             archetypeId: "ScentGround",
             layerKind: ElementLayerKind.ScentGround,
             roomIndex: cell.room_number,
             cellCoord: cell.pos,
             heightSteps: cell.height,
-            position: cell.pos3d_world,
-            rotation: Quaternion.identity,
-            scale: Vector3.one,
+            position: cell.pos3d_world + groundFogOffset,
+            rotation: quadRotate,
+            scale: overlapFuzzyScale,
             color: color,
             customFlags: 0,
             customValue: 0f
