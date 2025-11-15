@@ -4586,6 +4586,8 @@ MonoBehaviour:
   yawDeg: 0
   targetYawDeg: 0
   prevYawDeg: 0
+  scentAirRate: 1
+  scentGroundRate: 0.1
   DogPrefab: {fileID: 1880613839}
   anim: {fileID: 1880613837}
   next_actualCrumb:
@@ -5154,6 +5156,8 @@ MonoBehaviour:
   yawDeg: 0
   targetYawDeg: 0
   prevYawDeg: 0
+  scentAirRate: 1
+  scentGroundRate: 0.1
   DogPrefab: {fileID: 464182955}
   anim: {fileID: 464182953}
   next_actualCrumb:
@@ -5518,6 +5522,8 @@ MonoBehaviour:
   yawDeg: 0
   targetYawDeg: 0
   prevYawDeg: 0
+  scentAirRate: 1
+  scentGroundRate: 0.1
   DogPrefab: {fileID: 1651296779}
   anim: {fileID: 1651296777}
   next_actualCrumb:
@@ -6661,6 +6667,8 @@ MonoBehaviour:
   yawDeg: 0
   targetYawDeg: 0
   prevYawDeg: 0
+  scentAirRate: 1
+  scentGroundRate: 0.1
   DogPrefab: {fileID: 6544990386685219093}
   anim: {fileID: 5475111281846579140}
   next_actualCrumb:
@@ -10169,12 +10177,12 @@ MonoBehaviour:
   dir: {fileID: 1920128612}
   gen: {fileID: 409665914}
   currentAgentId: -1
-  airScentVisible: 0
-  airScentDepositRate: 1
+  airScentVisible: 1
+  airScentDepositRate: 10
   airDiffusionRate: 0.9
   airDecayRate: 0.6
-  groundScentVisible: 0
-  groundScentDepositRate: 1
+  groundScentVisible: 1
+  groundScentDepositRate: 10
   groundDiffusionRate: 0.01
   groundDecayRate: 0.08
   airToGroundRate: 0.1
@@ -14113,6 +14121,8 @@ MonoBehaviour:
   yawDeg: 0
   targetYawDeg: 0
   prevYawDeg: 0
+  scentAirRate: 1
+  scentGroundRate: 0.1
   DogPrefab: {fileID: 160131188}
   anim: {fileID: 160131186}
   next_actualCrumb:

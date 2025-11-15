@@ -455,13 +455,13 @@ public class ScentAirGround : MonoBehaviour
                      || (airScentVisible != airScentWasVisible)         // user toggled air on/off
                      || (groundScentVisible != groundScentWasVisible))  // user toggled ground on/off
                 {
-                    ScentVisualization(cell, scent);
+                    ScentVisualization(cell, scent, airChanged, groundChanged);
                 }
             }
         }
     }
 
-    private void ScentVisualization(Cell cell, ScentClass scent)
+    private void ScentVisualization(Cell cell, ScentClass scent, bool airChanged, bool groundChanged)
     {
         Color color;
         float normalized;
@@ -480,7 +480,7 @@ public class ScentAirGround : MonoBehaviour
             airScentWasVisible = airScentVisible;
         }
 
-        if (airScentVisible || airUpdateAll)        // we should update
+        if ((airScentVisible && airChanged) || airUpdateAll)        // we should update
         {
             if ((scent.airIntensity > 0f) && airScentVisible)
             {
@@ -519,7 +519,7 @@ public class ScentAirGround : MonoBehaviour
             groundScentWasVisible = groundScentVisible;
         }
 
-        if (groundScentVisible || groundUpdateAll)
+        if ((groundScentVisible && groundChanged) || groundUpdateAll)
         {
             if ((scent.groundIntensity > 0f) && groundScentVisible)
             {
@@ -587,15 +587,24 @@ public class ScentAirGround : MonoBehaviour
         float groundAmount = 0f)
     {
         int sIdx = FindAgentIdScentIndex(cell, agentId, createIfNeeded: true);
+        //Debug.Log($"===>({cell.pos}) sIdx = {sIdx} for agentId = {agentId}");
         //Debug.Log($"Adding scent agentId={agentId} to cell at {cell.pos}. sIdx={sIdx}");
-        if (sIdx < 0) return;
+        if (sIdx < 0)
+        {
+            Debug.Log($"({cell.pos}) sIdx = {sIdx} for agentId = {agentId}");
+            return;
+        } 
 
-        cell.scents[sIdx].airIntensity += airAmount;
-        cell.scents[sIdx].groundIntensity += groundAmount;
-
+        //cell.scents[sIdx].airIntensity += airAmount * airScentDepositRate;
+        //cell.scents[sIdx].groundIntensity += groundAmount * groundScentDepositRate;
+ 
+        cell.scents[sIdx].airNextDelta += airAmount * airScentDepositRate;
+        cell.scents[sIdx].groundNextDelta += groundAmount * groundScentDepositRate;
         // add cell to the list if it isn't there already
-        if (!scentCells.Contains(cell))
+        if (!scentCells.Contains(cell)) {
             scentCells.Add(cell);
+            //Debug.Log($"Added scent cell at {cell.pos} for agent {agentId}");
+        }
     }
 
     /// <summary>
@@ -619,12 +628,15 @@ public class ScentAirGround : MonoBehaviour
         if (cell == null) return -1;    // cannot do anything if the cell doesn't exist.
         if (cell.scents == null)
         {
-            if (createIfNeeded) cell.scents = new();   // create the list if not present.
+            if (createIfNeeded) 
+                cell.scents = new();   // create the list if not present.
             else return -1;
         }
-        for (sIdx = cell.scents.Count - 1; sIdx > 0; sIdx--)    // search the list last to first = optimize for recent scents
+        for (sIdx = cell.scents.Count - 1; sIdx >= 0; sIdx--)    // search the list last to first = optimize for recent scents
+        {
+            //Debug.Log($"find agentId {agentId}: sidx={sIdx} of {cell.scents.Count} agentId={cell.scents[sIdx].agentId}");
             if (cell.scents[sIdx].agentId == agentId) break;
-
+        }
         if (sIdx == -1 && createIfNeeded)
         {
             // create new scent for agentId
@@ -661,7 +673,7 @@ public class ScentAirGround : MonoBehaviour
     }
 
     // adds the cell to the current big scent list if it isn't already there.
-    void AddToScentCells(Cell cell)
+    void AddToScentCellsList(Cell cell)
     {
         if (!scentCells.Contains(cell))
             scentCells.Add(cell);

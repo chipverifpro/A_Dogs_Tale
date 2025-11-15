@@ -170,10 +170,11 @@ public partial class Player : MonoBehaviour
             Cell player_cell = gen.cellGrid[(int)agent.pos2.x, (int)agent.pos2.y];  // problem: cellGrid==null
             if (player_cell != null)
             {
-                dir.scents.AddScentToCell(player_cell,
-                                                agentId: 1,
-                                                airAmount: 1f,
-                                                groundAmount: .1f);
+            //    
+            //    dir.scents.AddScentToCell(player_cell,
+            //                                    agentId: 1,
+            //                                    airAmount: 1f,
+            //                                    groundAmount: .1f);
                 //Debug.LogError($"[AddScent] Player is in cell {agent.pos2.x}, {agent.pos2.y}, room {player_cell.room_number}");
                 //dir.scents.AddToNextScentIntensity(
                 //    player_cell,        // cell

@@ -27,10 +27,15 @@ public partial class Agent : MonoBehaviour
     // current status
     //public Vector3 pos3;// => new() { x=pos2.x, y=pos2.y, z=height};
     public Vector2 pos2;
+    public Vector2Int pos2_int => new(Mathf.FloorToInt(pos2.x),Mathf.FloorToInt(pos2.y));    
     public float height;
+    public int height_int => Mathf.FloorToInt(height);
     public float yawDeg;
     public float targetYawDeg;
     public float prevYawDeg;
+
+    public float scentAirRate = 1.0f;
+    public float scentGroundRate = 0.1f;
 
     // while in a pack formation, these are the target positions as calculated from leader's position.
     //public Vector2 formationTargetPos;     // position we should be at in formation
@@ -70,6 +75,10 @@ public partial class Agent : MonoBehaviour
 
     public bool useXZPlane = true;      // false = XY floor (tilemap), true = XZ floor (3D)
 
+    // For tracking scent deposit, once per second + anytime position changes.
+    private Vector2Int prevScentLocation = new(0,0);
+    private float prevScentTime = 0;
+
     protected virtual void Awake()
     {
         //trail = GetComponent<BreadcrumbTrail>();
@@ -85,16 +94,34 @@ public partial class Agent : MonoBehaviour
 
     protected virtual void Update()
     {
+        if (!pack.gen.buildComplete) return;
+
+        // deposit scent if moved or 1 second passed
+        if ((Time.time - prevScentTime >= 0.1f) || (pos2_int != prevScentLocation))
+        {
+            if (dir.gen.hf!=null) {
+                Cell cell = dir.gen.GetCellFromHf(pos2_int.x, pos2_int.y, height_int, 50);
+                if (cell!=null)
+                {
+                    //dir.scents.AddScentToCell(cell,id,scentAirRate,scentGroundRate);
+                    dir.scents.AddScentToCell(cell,
+                                                agentId: id,
+                                                airAmount: 1f,
+                                                groundAmount: .1f);
+                    prevScentTime = Time.time;
+                    prevScentLocation = pos2_int;
+                    //Debug.Log($"Depositing scent from AgentId = {id} at {pos2_int}: air += {scentAirRate}, ground += {scentGroundRate}");
+                }
+            }
+        }
+
         if (trailLeader) // Leave crumbs
         {
-            if (pack.gen.buildComplete)
-                LeaderTravelToTarget();
+            LeaderTravelToTarget();
         }
         if (trailFollower)
         {
-            //FollowTrail();
-            if (pack.gen.buildComplete)
-                FollowTrailInFormation();
+            FollowTrailInFormation();
         }
     }
 
