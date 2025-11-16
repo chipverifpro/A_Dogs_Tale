@@ -2413,10 +2413,10 @@ public partial class DungeonGenerator : MonoBehaviour
             diffs++;
         }
         // Door sides matching.
-        foreach (DirFlags dir in Enum.GetValues(typeof(DirFlags)))
+        foreach (DirFlags dir in DirFlagsEx.AllCardinals)
         {
             DirFlags opp_dir = DirFlagsEx.Opposite(dir);
-            Vector2Int dirVec = DirFlagsEx.ToVector2Int(opp_dir);
+            Vector2Int dirVec = DirFlagsEx.ToVector2Int(dir);
             if (dirVec == Vector2Int.zero) continue; // skip None
             if (!In(a.pos.x + dirVec.x, a.pos.y + dirVec.y)) continue; // skip off-map  
 

@@ -63,6 +63,12 @@ public class SniffModeVisuals : MonoBehaviour
     [Tooltip("Focal length in sniff mode (higher can exaggerate blur).")]
     public float sniffFocalLength = 50f;
 
+    // This parameter is not implemented.  See comment in the code later in this file.
+    //[Header("ScentFog layer")]
+    //[Tooltip("Brighten scent fog in sniff mode.")]
+    //public float sniffFogBoost = 1.5f;
+
+
     // ----- internal state -----
     private ColorAdjustments colorAdj;
     private Vignette vignette;
@@ -137,6 +143,24 @@ public class SniffModeVisuals : MonoBehaviour
             return;
 
         isInSniffMode = enabled;
+
+        // Apply global shader property for fog boost
+        //if (sniffFogBoost != 1.0)
+        //    Shader.SetGlobalFloat("_SniffFogBoost", enabled ? sniffFogBoost : 1.0f);
+
+        // NOTE: to use the sniffFogBoost above...
+        // In your fog material’s shader (ShaderGraph or HLSL), multiply your final output
+        // by this global float:
+        //
+        /// float _SniffFogBoost;
+        ///
+        /// half4 Frag(Varyings IN) : SV_Target
+        /// {
+        ///     float4 col = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, IN.uv);
+        ///     col.rgb *= _SniffFogBoost;      // boost color
+        ///     col.a   *= _SniffFogBoost;      // boost opacity (optional)
+        ///     return col;
+        /// }
 
         if (transitionRoutine != null)
             StopCoroutine(transitionRoutine);

@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 8832295987892048321}
   - component: {fileID: 5391067926329290909}
   - component: {fileID: 3086161771433559173}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: PF_ScentGround
   m_TagString: Untagged
   m_Icon: {fileID: 0}

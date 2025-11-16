@@ -190,6 +190,17 @@ public class ManufactureGO : MonoBehaviour
         // Apply per-instance color (works for prefab and non-prefab)
         ApplyInstanceColor(go, archetype, inst);
 
+        // If this is a scent layer, force it onto layer ScentFog:
+        if (inst.layerKind == ElementLayerKind.ScentAir || inst.layerKind == ElementLayerKind.ScentGround)
+        {
+            int fogLayer = LayerMask.NameToLayer("ScentFog");
+            go.layer = fogLayer;
+
+            // Optional: also set children
+            //foreach (Transform t in go.transform)
+            //    t.gameObject.layer = fogLayer;
+        }
+        
         // Static batching hint
         if ((archetype.renderFlags & ElementRenderFlags.StaticBatch) != 0)
             go.isStatic = true;
