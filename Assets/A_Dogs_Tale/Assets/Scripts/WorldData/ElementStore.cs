@@ -751,5 +751,12 @@ public class ElementStore : ScriptableObject
             Debug.Log($"  [{i}] name='{l.name}', kind={l.kind}, instances={instCount}");
         }
     }
+
+    public ElementLayer GetLayer(ElementLayerKind kind)
+    {
+        if (layers == null) return null;
+        return layers.Find(l => l != null && l.kind == kind);
+    }
+
     #endregion
 }

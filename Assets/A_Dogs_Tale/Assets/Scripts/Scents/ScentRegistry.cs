@@ -36,10 +36,10 @@ public enum ScentFamiliarity
 public class ScentSource
 {
     // Unique key that ties this scent to your ScentSystem / emitters.
-    public int agentId;
+    public int agentId = -1;
 
     // Broad category: Dog, Human, Food, Machine, etc.
-    public ScentCategory category;
+    public ScentCategory category = ScentCategory.Unknown;
 
     // Display name:
     // - Category-level initially (e.g., "Food")
@@ -50,12 +50,13 @@ public class ScentSource
     public Color categoryColor;
 
     // Individualized color for this particular source (e.g., slightly different red hue).
-    public Color sourceColor;
+    public Color sourceAirColor;
+    public Color sourceGroundColor;
 
     // Default deposit / emission rates for this scent source
     // (can be fed directly into AddScentToCell or used as multipliers).
-    public float defaultAirDepositRate = 1.0f;
-    public float defaultGroundDepositRate = 0.1f;
+    public float airDepositRate = 1.0f;
+    public float groundDepositRate = 0.1f;
 
     // How familiar the pack is with this scent.
     public ScentFamiliarity familiarity = ScentFamiliarity.New;
@@ -78,6 +79,9 @@ public struct ScentDetection
 
 public class ScentRegistry : MonoBehaviour
 {
+    [Header("Reference to Global Directory")]
+    public ObjectDirectory dir;
+
     [Header("Known Scents (Pack-Wide)")]
     public List<ScentSource> knownScents = new List<ScentSource>();
 
@@ -137,8 +141,8 @@ public class ScentRegistry : MonoBehaviour
         int agentId,
         ScentCategory category,
         string defaultName = null,
-        float defaultAirRate = 1.0f,
-        float defaultGroundRate = 0.1f)
+        float airDepositRate = 1.0f,
+        float groundDepositRate = 0.1f)
     {
         if (_byAgentId.TryGetValue(agentId, out var existing))
         {
@@ -151,19 +155,32 @@ public class ScentRegistry : MonoBehaviour
             category = category,
             scentName = string.IsNullOrEmpty(defaultName) ? category.ToString() : defaultName,
             categoryColor = GetCategoryBaseColor(category),
-            defaultAirDepositRate = defaultAirRate,
-            defaultGroundDepositRate = defaultGroundRate,
+            airDepositRate = airDepositRate,
+            groundDepositRate = groundDepositRate,
             familiarity = ScentFamiliarity.New,
             sensitivityBoost = 1.0f,
-            persistentId = $"agent_{agentId}_{category}"
+            persistentId = $"agent_{category}_{agentId}"
         };
 
-        source.sourceColor = GenerateSourceColor(source.categoryColor);
+        // get two shades of the category color for air and ground.
+        source.sourceAirColor = GenerateSourceColor(source.categoryColor);
+        source.sourceGroundColor = GenerateSourceColor(source.categoryColor);
 
         knownScents.Add(source);
         _byAgentId[agentId] = source;
 
         return source;
+    }
+
+    // stripped down version of above function, we assume it has already been created.
+    public ScentSource GetScentSource(int agentId)
+    {
+        if (_byAgentId.TryGetValue(agentId, out var existing))
+        {
+            return existing;
+        }
+        Debug.LogWarning($"GetScentSource(agentId={agentId}) returned null)");
+        return null;
     }
 
     public Color GetCategoryBaseColor(ScentCategory category)
@@ -304,13 +321,14 @@ public class ScentRegistry : MonoBehaviour
 
     /// <summary>
     /// Called by the UI when the player clicks a scent in the list.
-    /// Should trigger the visualization overlay for that specific scent (by sourceColor).
+    /// Should trigger the visualization overlay for that specific scent.
     /// </summary>
-    public void ActivateScentOverlay(ScentSource source)
+    public void ActivateScentOverlay(ScentSource source, ScentAirGround scentSystem)
     {
-        // TODO: Hook into your overlay/ElementStore system:
-        // - Tell ScentSystem/ElementStore to highlight only this source's agentId,
-        //   and tint using source.sourceColor.
+        if (source == null || scentSystem == null)
+            return;
+
+        scentSystem.ActivateOverlayForSource(source);
     }
 
     /// <summary>

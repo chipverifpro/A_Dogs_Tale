@@ -34,8 +34,7 @@ public partial class Agent : MonoBehaviour
     public float targetYawDeg;
     public float prevYawDeg;
 
-    public float scentAirRate = 1.0f;
-    public float scentGroundRate = 0.1f;
+    public ScentSource agentScent;
 
     // while in a pack formation, these are the target positions as calculated from leader's position.
     //public Vector2 formationTargetPos;     // position we should be at in formation
@@ -72,12 +71,13 @@ public partial class Agent : MonoBehaviour
     public float heightCorrection = 1f;
 
     // Tuning internal parameters
+    private bool useXZPlane = true;      // false = XY floor (tilemap), true = XZ floor (3D)
 
-    public bool useXZPlane = true;      // false = XY floor (tilemap), true = XZ floor (3D)
 
     // For tracking scent deposit, once per second + anytime position changes.
     private Vector2Int prevScentLocation = new(0,0);
     private float prevScentTime = 0;
+
 
     protected virtual void Awake()
     {
@@ -88,11 +88,35 @@ public partial class Agent : MonoBehaviour
     {
         if (!dir) dir = FindFirstObjectByType<ObjectDirectory>();
         if (!dir) Debug.LogWarning($"[Agent {name}] ObjectDirectory not found.");
+
+        // create the scent source for this agent
+        agentScent = dir.scentRegistry.GetOrCreateScentSource(
+            agentId: id,
+            category: ScentCategory.Dog,
+            defaultName: name
+        );
+        
         StartCoroutine(CycleAnimations());
     }
 
 
     protected virtual void Update()
+    {
+        AgentScentEmmiter();
+
+        if (trailLeader) // Leave crumbs
+        {
+            LeaderTravelToTarget();
+        }
+        if (trailFollower)
+        {
+            FollowTrailInFormation();
+        }
+    }
+
+    // call this in Update()
+    // scent deposit, once per second + anytime position changes.
+    public void AgentScentEmmiter()
     {
         if (!pack.gen.buildComplete) return;
 
@@ -103,25 +127,12 @@ public partial class Agent : MonoBehaviour
                 Cell cell = dir.gen.GetCellFromHf(pos2_int.x, pos2_int.y, height_int, 50);
                 if (cell!=null)
                 {
-                    //dir.scents.AddScentToCell(cell,id,scentAirRate,scentGroundRate);
-                    dir.scents.AddScentToCell(cell,
-                                                agentId: id,
-                                                airAmount: 1f,
-                                                groundAmount: .1f);
-                    prevScentTime = Time.time;
+                    dir.scents.DepositScentToCell(cell, agentScent, visualizeImmediately: true);
+                    //prevScentTime = Time.time;
                     prevScentLocation = pos2_int;
                     //Debug.Log($"Depositing scent from AgentId = {id} at {pos2_int}: air += {scentAirRate}, ground += {scentGroundRate}");
                 }
             }
-        }
-
-        if (trailLeader) // Leave crumbs
-        {
-            LeaderTravelToTarget();
-        }
-        if (trailFollower)
-        {
-            FollowTrailInFormation();
         }
     }
 
