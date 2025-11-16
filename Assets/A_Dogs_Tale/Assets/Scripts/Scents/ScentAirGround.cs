@@ -687,30 +687,53 @@ public class ScentAirGround : MonoBehaviour
     public int FindAgentIdScentIndex(Cell cell, int agentId, bool createIfNeeded = true)
     {
         // Determine Agent's scent index
+        Agent agent;
         int sIdx;
         if (cell == null) return -1;    // cannot do anything if the cell doesn't exist.
         if (cell.scents == null)
         {
-            if (createIfNeeded) 
+            if (createIfNeeded)
                 cell.scents = new();   // create the list if not present.
-            else return -1;
+            else
+                return -1;
         }
         for (sIdx = cell.scents.Count - 1; sIdx >= 0; sIdx--)    // search the list last to first = optimize for recent scents
         {
             //Debug.Log($"find agentId {agentId}: sidx={sIdx} of {cell.scents.Count} agentId={cell.scents[sIdx].agentId}");
             if (cell.scents[sIdx].agentId == agentId) break;
         }
-        if (sIdx == -1 && createIfNeeded)
+        if ((sIdx == -1) && createIfNeeded)
         {
-            // create new scent for agentId
+            // before creating new scent, we need the agent pointer
+            agent = GetAgentFromAgentId(agentId);
+
             ScentClass newScent = new()
             {
-                agentId = agentId
+                agentId = agentId,
+                agent = agent
             };
             cell.scents.Add(newScent);
             sIdx = cell.scents.Count - 1;
         }
         return sIdx;
+    }
+
+    // returns a pointer to the Agent matching agentId
+    Agent GetAgentFromAgentId(int agentId)
+    {
+        Agent agent;
+        if ((dir.gen.agentRegistry == null) || (dir.gen.agentRegistry.Count-1 < agentId) || (agentId<1))
+        {
+            Debug.LogError($"AgentRegistry doesn't include agentId={agentId}, max={dir.gen.agentRegistry.Count}");
+            return null;
+        }
+
+        agent = dir.gen.agentRegistry[agentId-1];   // (index zero is agent 1)
+        if (agent==null)
+        {
+            Debug.LogError($"AgentRegistry returned null at agentId={agentId}");
+        }
+        return agent;
     }
 
     // adds the cell to the current big scent list if it isn't already there.
@@ -720,20 +743,30 @@ public class ScentAirGround : MonoBehaviour
             scentCells.Add(cell);
     }
 
+
     public void ActivateOverlayForSource(ScentSource source)
     {
-        if (source == null) return; // should we deactivate scent display instead?
-
         // 1) Hide all existing fog by setting alpha to 0 for every instance.
         ClearAllScentVisuals();     // Is this necessary if we do final step below?
 
         // 2) Switch currently visualized agent
-        currentAgentId = source.agentId;
+        if (source == null)
+        {
+            currentAgentId = -1;    // this means none.
+            //groundScentVisible = false;
+            //airScentVisible = false;
+        }
+        else
+        {
+            currentAgentId = source.agentId;
 
-        // 3) Set base colors for this scent
-        airBaseColor    = source.sourceAirColor;
-        groundBaseColor = source.sourceGroundColor;
+            // 3) Set base colors for this scent
+            airBaseColor    = source.sourceAirColor;
+            groundBaseColor = source.sourceGroundColor;
 
+            //groundScentVisible = true;
+            //airScentVisible = true;
+        }
         // 4) Force at least one visualization pass so new fog appears immediately
         ForceFullVisualizationRefresh();
     }

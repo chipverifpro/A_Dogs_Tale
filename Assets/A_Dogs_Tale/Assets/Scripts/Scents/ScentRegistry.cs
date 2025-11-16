@@ -323,12 +323,13 @@ public class ScentRegistry : MonoBehaviour
     /// Called by the UI when the player clicks a scent in the list.
     /// Should trigger the visualization overlay for that specific scent.
     /// </summary>
-    public void ActivateScentOverlay(ScentSource source, ScentAirGround scentSystem)
+    public void ActivateScentOverlay(ScentSource source = null)
     {
-        if (source == null || scentSystem == null)
-            return;
-
-        scentSystem.ActivateOverlayForSource(source);
+        //if (source == null)
+        //{
+        //    return;
+        //}
+        dir.scents.ActivateOverlayForSource(source);
     }
 
     /// <summary>

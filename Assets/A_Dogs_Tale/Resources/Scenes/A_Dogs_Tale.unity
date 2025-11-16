@@ -2740,6 +2740,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
+  - {fileID: 1135862879}
   - {fileID: 1815589285}
   - {fileID: 445485059}
   - {fileID: 1801122502}
@@ -6625,7 +6626,7 @@ GameObject:
   - component: {fileID: 1135862881}
   - component: {fileID: 1135862882}
   m_Layer: 0
-  m_Name: SniffModeVolume
+  m_Name: SniffModeShader
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -6639,12 +6640,12 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1135862878}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 1767335688}
+  m_Father: {fileID: 438825160}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1135862880
 MonoBehaviour:
@@ -12051,7 +12052,6 @@ Transform:
   - {fileID: 603597958}
   - {fileID: 1546545658}
   - {fileID: 93863484}
-  - {fileID: 1135862879}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1790646801

@@ -8,6 +8,7 @@ using System.Collections;
 public class ScentClass             // Everything about ONE scent
 {
     public int agentId;
+    public Agent agent;             // pointer to the agent
 
     // Airborne scent
     public float airIntensity;     // current airborne scent strength

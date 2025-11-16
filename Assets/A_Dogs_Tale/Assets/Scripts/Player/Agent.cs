@@ -89,6 +89,8 @@ public partial class Agent : MonoBehaviour
         if (!dir) dir = FindFirstObjectByType<ObjectDirectory>();
         if (!dir) Debug.LogWarning($"[Agent {name}] ObjectDirectory not found.");
 
+        dir.gen.GetNewAgentId(this);
+
         // create the scent source for this agent
         agentScent = dir.scentRegistry.GetOrCreateScentSource(
             agentId: id,

@@ -68,6 +68,7 @@ public partial class DungeonGenerator : MonoBehaviour
 
     public ScentRegistry scentRegistry;
 
+    public List<Agent> agentRegistry;
 
     // Sets the agent id to a unique number, and returns that value.
     // Can be called without an agent, and caller must assign the number themselves.
@@ -76,6 +77,15 @@ public partial class DungeonGenerator : MonoBehaviour
     {
         lastIssuedAgentId++;
         if (agent != null) agent.id = lastIssuedAgentId;
+
+        // add to the agentRegistry
+        if (agentRegistry==null) agentRegistry=new();   // make sure list exists
+
+        agentRegistry.Add(agent);
+        if (agentRegistry.Count != agent.id)    // consistancy check
+            Debug.LogError($"GetNewAgentId: agentRegistry (size={agentRegistry.Count}) has wrong number of agentIds for new agent {agent.id}");
+
+        Debug.Log($"GetNewAgenId({agent}) = {agent.id})");
         return lastIssuedAgentId;
     }
 }

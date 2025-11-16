@@ -17,6 +17,7 @@ public class ScentGUI : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.F))
         {
             sniffVisuals.SetSniffMode(true);
+            dir.scentRegistry.ActivateScentOverlay();
             // trigger your sniff UI & scent detection
         }
         else if (Input.GetKeyUp(KeyCode.F))
@@ -37,6 +38,6 @@ public class ScentGUI : MonoBehaviour
     // Called when the player clicks a scent in the sniff list UI:
     public void OnScentClicked(ScentDetection detection)
     {
-        dir.scentRegistry.ActivateScentOverlay(detection.source, dir.scents);
+        dir.scentRegistry.ActivateScentOverlay(detection.source);
     }
 }
