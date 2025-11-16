@@ -4,6 +4,7 @@ public class ScentGUI : MonoBehaviour
 {
     [Header("External object references")]
     ObjectDirectory dir;
+    public SniffModeVisuals sniffVisuals;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -11,12 +12,19 @@ public class ScentGUI : MonoBehaviour
         
     }
 
-    // Update is called once per frame
     void Update()
     {
-        
+        if (Input.GetKeyDown(KeyCode.F))
+        {
+            sniffVisuals.SetSniffMode(true);
+            // trigger your sniff UI & scent detection
+        }
+        else if (Input.GetKeyUp(KeyCode.F))
+        {
+            sniffVisuals.SetSniffMode(false);
+            // hide sniff UI
+        }
     }
-
     // In some UI controller:
     public void OnSniff(Cell currentCell)
     {

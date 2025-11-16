@@ -4586,8 +4586,18 @@ MonoBehaviour:
   yawDeg: 0
   targetYawDeg: 0
   prevYawDeg: 0
-  scentAirRate: 1
-  scentGroundRate: 0.1
+  agentScent:
+    agentId: -1
+    category: 0
+    scentName: 
+    categoryColor: {r: 0, g: 0, b: 0, a: 0}
+    sourceAirColor: {r: 0, g: 0, b: 0, a: 0}
+    sourceGroundColor: {r: 0, g: 0, b: 0, a: 0}
+    airDepositRate: 1
+    groundDepositRate: 0.1
+    familiarity: 0
+    sensitivityBoost: 1
+    persistentId: 
   DogPrefab: {fileID: 1880613839}
   anim: {fileID: 1880613837}
   next_actualCrumb:
@@ -4617,7 +4627,6 @@ MonoBehaviour:
   yCorrection: 0.5
   yawCorrection: 90
   heightCorrection: 1
-  useXZPlane: 1
   isPlayer: 0
   selected: 0
   tendencyToWander: 0.1
@@ -5156,8 +5165,18 @@ MonoBehaviour:
   yawDeg: 0
   targetYawDeg: 0
   prevYawDeg: 0
-  scentAirRate: 1
-  scentGroundRate: 0.1
+  agentScent:
+    agentId: -1
+    category: 0
+    scentName: 
+    categoryColor: {r: 0, g: 0, b: 0, a: 0}
+    sourceAirColor: {r: 0, g: 0, b: 0, a: 0}
+    sourceGroundColor: {r: 0, g: 0, b: 0, a: 0}
+    airDepositRate: 1
+    groundDepositRate: 0.1
+    familiarity: 0
+    sensitivityBoost: 1
+    persistentId: 
   DogPrefab: {fileID: 464182955}
   anim: {fileID: 464182953}
   next_actualCrumb:
@@ -5187,7 +5206,6 @@ MonoBehaviour:
   yCorrection: 0.5
   yawCorrection: 90
   heightCorrection: 1
-  useXZPlane: 1
   isPlayer: 0
   selected: 0
   tendencyToWander: 0.1
@@ -5522,8 +5540,18 @@ MonoBehaviour:
   yawDeg: 0
   targetYawDeg: 0
   prevYawDeg: 0
-  scentAirRate: 1
-  scentGroundRate: 0.1
+  agentScent:
+    agentId: -1
+    category: 0
+    scentName: 
+    categoryColor: {r: 0, g: 0, b: 0, a: 0}
+    sourceAirColor: {r: 0, g: 0, b: 0, a: 0}
+    sourceGroundColor: {r: 0, g: 0, b: 0, a: 0}
+    airDepositRate: 1
+    groundDepositRate: 0.1
+    familiarity: 0
+    sensitivityBoost: 1
+    persistentId: 
   DogPrefab: {fileID: 1651296779}
   anim: {fileID: 1651296777}
   next_actualCrumb:
@@ -5553,7 +5581,6 @@ MonoBehaviour:
   yCorrection: 0.5
   yawCorrection: 90
   heightCorrection: 1
-  useXZPlane: 1
   isPlayer: 0
   selected: 0
   tendencyToWander: 0.1
@@ -6585,6 +6612,95 @@ MonoBehaviour:
         m_Calls: []
   m_LegacyBlendHint: 0
   m_ComponentOwner: {fileID: 485032739}
+--- !u!1 &1135862878
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1135862879}
+  - component: {fileID: 1135862880}
+  - component: {fileID: 1135862881}
+  - component: {fileID: 1135862882}
+  m_Layer: 0
+  m_Name: SniffModeVolume
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1135862879
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1135862878}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1767335688}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1135862880
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1135862878}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 172515602e62fb746b5d573b38a5fe58, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.RenderPipelines.Core.Runtime::UnityEngine.Rendering.Volume
+  m_IsGlobal: 1
+  priority: 0
+  blendDistance: 0
+  weight: 1
+  sharedProfile: {fileID: 11400000, guid: cb5e5472574a540508de44633c367306, type: 2}
+--- !u!114 &1135862881
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1135862878}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 02c8b2eb4c221410fb6c396c953c3124, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SniffModeVisuals
+  sniffVolume: {fileID: 1135862880}
+  transitionDuration: 0.35
+  sniffSaturation: -80
+  sniffPostExposure: -0.5
+  sniffHueShift: 20
+  sniffColorFilter: {r: 0.8, g: 0.7, b: 1, a: 1}
+  sniffVignetteIntensity: 0.35
+  sniffVignetteSmoothness: 0.7
+  sniffVignetteColor: {r: 0.1, g: 0, b: 0.15, a: 1}
+  enableBlur: 1
+  sniffFocusDistance: 5
+  sniffAperture: 4
+  sniffFocalLength: 50
+--- !u!114 &1135862882
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1135862878}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 25482a76cfa0045b48cc81a3b0583b89, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ScentGUI
+  sniffVisuals: {fileID: 0}
 --- !u!1 &1153576251
 GameObject:
   m_ObjectHideFlags: 0
@@ -6667,8 +6783,18 @@ MonoBehaviour:
   yawDeg: 0
   targetYawDeg: 0
   prevYawDeg: 0
-  scentAirRate: 1
-  scentGroundRate: 0.1
+  agentScent:
+    agentId: -1
+    category: 0
+    scentName: 
+    categoryColor: {r: 0, g: 0, b: 0, a: 0}
+    sourceAirColor: {r: 0, g: 0, b: 0, a: 0}
+    sourceGroundColor: {r: 0, g: 0, b: 0, a: 0}
+    airDepositRate: 1
+    groundDepositRate: 0.1
+    familiarity: 0
+    sensitivityBoost: 1
+    persistentId: 
   DogPrefab: {fileID: 6544990386685219093}
   anim: {fileID: 5475111281846579140}
   next_actualCrumb:
@@ -6698,7 +6824,6 @@ MonoBehaviour:
   yCorrection: 0.5
   yawCorrection: 90
   heightCorrection: 1
-  useXZPlane: 1
   isPlayer: 0
   selected: 0
   tendencyToWander: 0.1
@@ -10177,17 +10302,18 @@ MonoBehaviour:
   dir: {fileID: 1920128612}
   gen: {fileID: 409665914}
   currentAgentId: -1
+  previousAgentIdVisualized: -1
   airScentVisible: 1
-  airScentDepositRate: 10
+  airScentDepositRate: 1
   airDiffusionRate: 0.9
   airDecayRate: 0.6
   groundScentVisible: 1
-  groundScentDepositRate: 10
+  groundScentDepositRate: 1
   groundDiffusionRate: 0.01
   groundDecayRate: 0.08
-  airToGroundRate: 0.1
+  airToGroundRate: 0.2
   groundToAirRate: 0.03
-  simulationTimeStep: 0.2
+  simulationTimeStep: 0.1
   runOnStart: 1
   practically_zero: 0.00001
   elementStore: {fileID: 11400000, guid: 12ce8f64c30bc4bbfa007792bc781b21, type: 2}
@@ -10207,6 +10333,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5c1a07cc644ab4a6db89132a5148ea95, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ScentRegistry
+  dir: {fileID: 0}
   knownScents: []
   dogBaseColor: {r: 0.3, g: 0.8, b: 1, a: 1}
   otherAnimalBaseColor: {r: 0.7, g: 0.5, b: 0.2, a: 1}
@@ -11787,6 +11914,7 @@ Transform:
   - {fileID: 603597958}
   - {fileID: 1546545658}
   - {fileID: 93863484}
+  - {fileID: 1135862879}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1790646801
@@ -14121,8 +14249,18 @@ MonoBehaviour:
   yawDeg: 0
   targetYawDeg: 0
   prevYawDeg: 0
-  scentAirRate: 1
-  scentGroundRate: 0.1
+  agentScent:
+    agentId: -1
+    category: 0
+    scentName: 
+    categoryColor: {r: 0, g: 0, b: 0, a: 0}
+    sourceAirColor: {r: 0, g: 0, b: 0, a: 0}
+    sourceGroundColor: {r: 0, g: 0, b: 0, a: 0}
+    airDepositRate: 1
+    groundDepositRate: 0.1
+    familiarity: 0
+    sensitivityBoost: 1
+    persistentId: 
   DogPrefab: {fileID: 160131188}
   anim: {fileID: 160131186}
   next_actualCrumb:
@@ -14152,7 +14290,6 @@ MonoBehaviour:
   yCorrection: 0.5
   yawCorrection: 90
   heightCorrection: 1
-  useXZPlane: 1
   isPlayer: 0
   selected: 0
   tendencyToWander: 0.1
