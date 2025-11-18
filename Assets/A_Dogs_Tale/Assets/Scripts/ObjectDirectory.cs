@@ -33,9 +33,11 @@ public class ObjectDirectory : MonoBehaviour
     public ScentRegistry scentRegistry;
 
 
+
     [Header("Game Camearas")]
     public CinemachineBrain brain;
     public CinemachineVirtualCamera vcamFP, vcamPerspective, vcamOverhead;
+    public Camera scentCam;
 
 
     [Header("Game User Interfaces")]
@@ -49,6 +51,7 @@ public class ObjectDirectory : MonoBehaviour
 
     [Header("Rendering Objects")]
     public ElementStore elementStore;
+    public WarehouseGO warehouse;
     public ManufactureGO manufactureGO;
 
     void Awake()

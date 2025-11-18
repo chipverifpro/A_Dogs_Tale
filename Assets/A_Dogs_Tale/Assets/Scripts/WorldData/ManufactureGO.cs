@@ -10,6 +10,10 @@ using UnityEngine.Rendering;
 /// </summary>
 public class ManufactureGO : MonoBehaviour
 {
+    
+    [Header("Input data (logical elements)")]
+    ObjectDirectory dir;
+
     [Header("Input data (logical elements)")]
     [SerializeField] private ElementStore elementStore;
 
@@ -323,4 +327,11 @@ public class ManufactureGO : MonoBehaviour
         }
     }
 
+    void EnableDisableFogCamera(bool enable)
+    {
+        if (dir.scentCam != null)
+        {
+            dir.scentCam.enabled = enable;
+        }
+    }
 }

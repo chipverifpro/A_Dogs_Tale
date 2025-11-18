@@ -2472,6 +2472,7 @@ MonoBehaviour:
   - {x: 1, y: 0}
   scent: {fileID: 1546545660}
   scentRegistry: {fileID: 1546545661}
+  agentRegistry: []
   rootName: DungeonGenerator
   floorsName: Floors3D
   wallsName: Walls3D
@@ -10471,7 +10472,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5c1a07cc644ab4a6db89132a5148ea95, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ScentRegistry
-  dir: {fileID: 0}
+  dir: {fileID: 1920128612}
   knownScents: []
   dogBaseColor: {r: 0.3, g: 0.8, b: 1, a: 1}
   otherAnimalBaseColor: {r: 0.7, g: 0.5, b: 0.2, a: 1}
@@ -12910,10 +12911,12 @@ MonoBehaviour:
   vcamFP: {fileID: 445485060}
   vcamPerspective: {fileID: 1801122503}
   vcamOverhead: {fileID: 705631742}
+  scentCam: {fileID: 1326159950}
   bottomBanner: {fileID: 669106355}
   menuManager: {fileID: 836622446}
   sceneFader: {fileID: 836622445}
   elementStore: {fileID: 11400000, guid: 12ce8f64c30bc4bbfa007792bc781b21, type: 2}
+  warehouse: {fileID: 1398364142}
   manufactureGO: {fileID: 896494468}
 --- !u!4 &1920128613
 Transform:

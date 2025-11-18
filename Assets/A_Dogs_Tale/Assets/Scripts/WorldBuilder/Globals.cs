@@ -68,7 +68,8 @@ public partial class DungeonGenerator : MonoBehaviour
 
     public ScentRegistry scentRegistry;
 
-    public List<Agent> agentRegistry;
+    public List<Agent> agentRegistry; // This list is created in-order, so you can address your
+                                      // agentId at agetRegistry[AgentId-1]
 
     // Sets the agent id to a unique number, and returns that value.
     // Can be called without an agent, and caller must assign the number themselves.
