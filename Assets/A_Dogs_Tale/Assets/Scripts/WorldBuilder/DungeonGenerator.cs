@@ -374,6 +374,10 @@ public partial class DungeonGenerator : MonoBehaviour
                 yield return StartCoroutine(TiltAllFloors(tm: null));
             }
 
+            // Scatter scenery props on floor tiles
+            BottomBanner.Show("Scattering Scenery...");
+            ScatterSceneryOnFloors();
+            
             BottomBanner.Show("Height Map Build...");
             yield return null;
             // FillVoidToWalls(map);
@@ -1156,6 +1160,21 @@ public partial class DungeonGenerator : MonoBehaviour
         int x = Mathf.FloorToInt(position.x);
         int y = Mathf.FloorToInt(position.y);
         return new Vector2Int(x, y);
+    }
+
+    public RandomSceneryScatterer sceneryScatterer;
+
+    public void ScatterSceneryOnFloors()
+    {
+        // After your rooms/floors are built:
+        List<Cell> floorCells = new();
+        int numObjects = 50; // or however many you want
+        foreach (var room in rooms)
+        {
+            floorCells.AddRange(room.cells);
+        }
+
+        sceneryScatterer.Scatter(floorCells, numObjects);
     }
 
 } // End class DungeonGenerator

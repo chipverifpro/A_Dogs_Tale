@@ -25,7 +25,7 @@ MonoBehaviour:
   roundWorld: 1
   maxElevation: 100
   unitHeight: 0.1
-  scentInterval: 1
+  scentInterval: 0.1
   scentDecayRate: 0.1
   scentSpreadAmount: 0.05
   scentMinimum: 0.001

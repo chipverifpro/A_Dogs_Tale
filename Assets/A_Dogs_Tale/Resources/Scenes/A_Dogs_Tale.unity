@@ -1478,6 +1478,54 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 217123029}
   m_CullTransparentMesh: 1
+--- !u!1 &243675087
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 243675088}
+  - component: {fileID: 243675089}
+  m_Layer: 0
+  m_Name: Scenery
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &243675088
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 243675087}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1767335688}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &243675089
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 243675087}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 299a87f777d8f4e4894e1efba90dd3d2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RandomSceneryScatterer
+  sceneryLibrary: {fileID: 11400000, guid: 758ec117cfecd4b89a7093314910217c, type: 2}
+  sceneryParent: {fileID: 243675088}
+  numPropsToPlace: 100
+  minSpacing: 2
 --- !u!1 &265843778
 GameObject:
   m_ObjectHideFlags: 0
@@ -2431,6 +2479,7 @@ MonoBehaviour:
   dir: {fileID: 1920128612}
   cfg: {fileID: 11400000, guid: 2050485d3f2754bfcb547b81523f9099, type: 2}
   buildComplete: 0
+  sceneryScatterer: {fileID: 243675089}
   room_rects: []
   room_rects_heights: 
   room_rects_color: []
@@ -3514,7 +3563,7 @@ MonoBehaviour:
   cellSize: 1
   groundMask:
     serializedVersion: 2
-    m_Bits: 4294967295
+    m_Bits: 247
   rayMaxDistance: 200
   player: {fileID: 556401679}
   turnSpeed: 1
@@ -12053,6 +12102,7 @@ Transform:
   - {fileID: 603597958}
   - {fileID: 1546545658}
   - {fileID: 93863484}
+  - {fileID: 243675088}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1790646801

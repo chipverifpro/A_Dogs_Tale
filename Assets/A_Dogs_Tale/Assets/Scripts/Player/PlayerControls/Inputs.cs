@@ -1,4 +1,3 @@
-using UnityEditor.PackageManager;
 using UnityEngine;
 using UnityEngine.EventSystems; // to ignore UI clicks
 
@@ -15,7 +14,8 @@ public partial class Player : MonoBehaviour
     public float cellSize = 1f;                 // world units per cell
 
     [Header("Raycast")]
-    public LayerMask groundMask = ~0;           // set to your Ground layer(s)
+    public LayerMask groundMask;           // set to your Ground layer(s)
+    private LayerMask navigationMask;           // set in inspector (same as above?)
     public float rayMaxDistance = 200f;
 
     //[Header("Height Sampling (optional)")]
@@ -33,7 +33,7 @@ public partial class Player : MonoBehaviour
     private bool dragging = false;
     public bool leaderTravelling = false;
     private Vector2 lastPos;
-
+    
 
 
     void AwakeMouseInput()
