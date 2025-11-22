@@ -14,7 +14,7 @@ public class ScentAirGround : MonoBehaviour
     public DungeonGenerator gen;
 
     [Tooltip("All cells that participate in scent simulation.")]
-    public List<Cell> scentCells = new List<Cell>(); // Cache a list including only cells with any scent
+    public List<Cell> cellsContainingScents = new List<Cell>(); // Cache a list including only cells with any scent
     
     public int currentAgentId = -1;      // if this changes, redraw all scents
     public int previousAgentIdVisualized = -1;  // used to tell if currentAgentId changed
@@ -52,7 +52,7 @@ public class ScentAirGround : MonoBehaviour
     [Header("Simulation Settings")]
     public float simulationTimeStep = 0.1f; // seconds per step
     public bool runOnStart = true;
-    public float practically_zero = 0.00001f;  // if anything is this tiny, ignore or make it go away
+    public float practically_zero = 0.0001f;  // if anything is this tiny, ignore or make it go away
 
     [Header("Visualization")]
     public ElementStore elementStore;   // ScriptableObject you already use
@@ -69,7 +69,7 @@ public class ScentAirGround : MonoBehaviour
     public Color groundBaseColor = new Color(0.5f, 1f, 0.2f, 0f);
 
     // used repeatedly in ScentPhysicsStepOnce():
-    private Cell[] neighbors = new Cell[4]; // cache the 4 neighbor cells once per cell examined.  reuse on each scent.  Change to 8 if you want diagonals.
+    private Cell[] neighborCells = new Cell[4]; // cache the 4 neighbor cells once per cell examined.  reuse on each scent.  Change to 8 if you want diagonals.
     
     private bool anyScentAirChanged = false;    // tracks whether the GO visuals need updating
     private bool anyScentGroundChanged = false;
@@ -77,17 +77,6 @@ public class ScentAirGround : MonoBehaviour
     private bool anyScentGroundCreated = false;
     private bool scentCamActive = false; // tracks whether scent camera should be on or off
 
-
-    // REPLACED BY DirFlags:
-    // Neighbor offsets in heightfield space (4-connected, HF X/Y; Z stays same)
-    // Adjust/add vertical neighbors if desired.
-    private static readonly Vector2Int[] neighborOffsets =  // TODO: Use DirFlags and  DirFlagsEx.ToVector2Int(dirFlags);
-    {
-        new Vector2Int( 1,  0), // N
-        new Vector2Int( 0,  1), // E
-        new Vector2Int(-1,  0), // S
-        new Vector2Int( 0, -1), // W
-    };
 
     private Coroutine _simulationCoroutine;     // keep pointer in order to stop.
 
@@ -165,8 +154,8 @@ public class ScentAirGround : MonoBehaviour
             // Scent camera is needed, so update everything
             ClearAllScentVisuals();     // clear anything previously visualized
 
-            ScentSource source = dir.scentRegistry.GetScentSource(currentAgentId);
-            ActivateOverlayForSource(source);   // switch agent source
+            ScentSource scentSource = dir.scentRegistry.GetScentSource(currentAgentId);
+            ActivateOverlayForSource(scentSource);   // switch agent scentSource
             
             VisualizeCurrentScents();
             ApplyScentUpdates(); // push to GPU immediately
@@ -216,8 +205,8 @@ public class ScentAirGround : MonoBehaviour
         ClearAllScentVisuals();
 
         // Switch the overlay to the new source for currentAgentId
-        ScentSource source = dir.scentRegistry.GetScentSource(currentAgentId);
-        ActivateOverlayForSource(source);
+        ScentSource scentSource = dir.scentRegistry.GetScentSource(currentAgentId);
+        ActivateOverlayForSource(scentSource);
 
         // Draw the current state for this agent with current visibility flags
         VisualizeCurrentScents();
@@ -257,13 +246,13 @@ public class ScentAirGround : MonoBehaviour
     // Will likely start at nothing unless physics had been running earlier, like a middle of level load.
     public void ScentCellsListCreate()
     {
-        scentCells = new();
+        cellsContainingScents = new();
         foreach (Room room in dir.gen.rooms)
         {
             foreach (Cell cell in room.cells)
             {
                 if ((cell != null) && (cell.scents != null) && (cell.scents.Count != 0))
-                    scentCells.Add(cell);
+                    cellsContainingScents.Add(cell);
             }
         }
     }
@@ -299,22 +288,34 @@ public class ScentAirGround : MonoBehaviour
         // define the wait time per step funtion for repeated use below. (yield return wait;)
         WaitForSeconds wait = new WaitForSeconds(simulationTimeStep);
         
+        
         //////////////////////////////////////////////////////////
         /// Main physics/visualize loop is one of these two... ///
         //////////////////////////////////////////////////////////
+        //dir.cfg.scentPhysicsConsistancey = true;  // TEMPORARY OVERRIDE FOR TESTING
+        float baseTime = Time.realtimeSinceStartup;
+        int iterationsIn10Seconds = 0;
         // recommend using consistancy=true unless performance is a problem.
         if (dir.cfg.scentPhysicsConsistancey == false) // option A is to scale the call by actual time step
         {
             while (true)
             {
-                original_cell_count = scentCells.Count;
+                original_cell_count = cellsContainingScents.Count;
                 var limitedDeltaTime = Mathf.Clamp(Time.deltaTime, 0f, simulationTimeStep * 5f); // prevent huge steps if frame rate drops too low
                 ScentPhysicsStepOnce(limitedDeltaTime);
+                iterationsIn10Seconds++;
 
                 if (scentCamActive) // only update visuals if scent camera is on
                 {
                     VisualizeCurrentScents(original_cell_count);
                     ApplyScentUpdates(); // push to GPU
+                }
+                float realDeltaTime = Time.realtimeSinceStartup - baseTime;
+                if (realDeltaTime >= 10f)
+                {
+                    Debug.Log($"ScentAirGround: (physicsConsistancy false) PhysicsPerSecond = {iterationsIn10Seconds / realDeltaTime}, PhysicsInterval = {1/(iterationsIn10Seconds / realDeltaTime)}");
+                    baseTime = Time.realtimeSinceStartup;
+                    iterationsIn10Seconds = 0;
                 }
                 yield return wait;
             }
@@ -327,15 +328,16 @@ public class ScentAirGround : MonoBehaviour
             {
                 accumulator += Time.deltaTime;
                 accumulator = Mathf.Min(accumulator, step * 5f); // prevents spiral of death if frame rate drops too low, or huge lag spike if game paused.
-
+                //Debug.Log($"ScentAirGround: Accumulator = {accumulator} seconds.");
                 if (accumulator >= step)
                 {
                     // Must run run one or more steps to catch up
                     while (accumulator >= step)
                     {
-                        original_cell_count = scentCells.Count;
+                        original_cell_count = cellsContainingScents.Count;
                         ScentPhysicsStepOnce(step);
                         accumulator -= step;
+                        iterationsIn10Seconds++;
                         // might be nice to yield a frame here if several steps are needed? (only if this is a significantly slow function)
                     }
 
@@ -344,8 +346,16 @@ public class ScentAirGround : MonoBehaviour
                         VisualizeCurrentScents(original_cell_count);  // run only once after all physics steps complete
                         ApplyScentUpdates(); // push to GPU
                     }
+                    float realDeltaTime = Time.realtimeSinceStartup - baseTime;
+                    if (realDeltaTime >= 10f)
+                    {
+                        Debug.Log($"ScentAirGround: (physicsConsistancy true) PhysicsPerSecond = {iterationsIn10Seconds / realDeltaTime}, PhysicsInterval = {1/(iterationsIn10Seconds / realDeltaTime)}");
+                        baseTime = Time.realtimeSinceStartup;
+                        iterationsIn10Seconds = 0;
+                    }
+                
                 }
-                yield return wait;
+                yield return null; // wait until next frame.  Don't use fixed wait here.
             }
         }
     }
@@ -355,12 +365,14 @@ public class ScentAirGround : MonoBehaviour
     /// </summary>
     private void ScentPhysicsStepOnce(float dt)
     {
-        if (scentCells == null || scentCells.Count == 0)
+        float startTime = Time.realtimeSinceStartup;
+        //Debug.Log($"ScentAirGround: ScentPhysicsStepOnce called with dt = {dt} seconds.");
+        if (cellsContainingScents == null || cellsContainingScents.Count == 0)
         {
-            scentCells = new(); // create it empty.
+            cellsContainingScents = new(); // create it empty.
             return;
         }
-        //Debug.Log($"StepOnce: scentCells has {scentCells.Count} entries.");
+        //Debug.Log($"StepOnce: cellsContainingScents has {cellsContainingScents.Count} entries.");
 
         float airDecayFactor = Mathf.Clamp01(1f - airDecayRate * dt);
         float groundDecayFactor = Mathf.Clamp01(1f - groundDecayRate * dt);
@@ -371,23 +383,31 @@ public class ScentAirGround : MonoBehaviour
         int sIdx;   // loop index: scent
         int nIdx;   // loop index: neighbor cell
         int n_sIdx; // loop index: neighbor cell's scent
+        //int aIdx;   // loop index: agent id
 
         int agentId;
         int neighborCount;
-        int original_cell_count = scentCells.Count;
+        int original_cell_count = cellsContainingScents.Count;
+        //Agent agent;
 
+        // Before first pass, initialize flag about scents which are stable.  Any change will set this false.
+ //       for (int i = 0; i < dir.scentRegistry.knownScentSources.Count; i++)
+ //       {
+ //           var scentSource = dir.scentRegistry.knownScentSources[i];
+ //           scentSource.scentNextStabilized = true;
+ //       }
         // FIRST PASS: compute deltas and accumulate into airNextDelta / groundNextDelta
 
         // This loop doesnt include any extra cells we add this pass.
         for (cIdx = 0; cIdx < original_cell_count; cIdx++)
         {
-            Cell cell = scentCells[cIdx];
+            Cell cell = cellsContainingScents[cIdx];
             if (cell == null) continue; // should not happen
 
             // quick check to see if ANY scents in this cell are non-zero
             bool i_have_scents = false;
             if (cell.scents == null) cell.scents = new();
-            foreach (ScentClass scent in cell.scents)
+            foreach (ScentInCell scent in cell.scents)
             {
                 if (scent.airIntensity >= practically_zero || scent.groundIntensity >= practically_zero)
                 {
@@ -405,22 +425,28 @@ public class ScentAirGround : MonoBehaviour
                 DirFlags dWall = (cell.walls & dirF);
                 if (dWall==DirFlags.None && dDoor==DirFlags.None) // TODO: add open doors
                 {
-                    neighbors[nIdx] = dir.gen.GetCellFromHf(cell.pos3d.x + DirFlagsEx.ToVector2Int(dirF).x,
+                    neighborCells[nIdx] = dir.gen.GetCellFromHf(cell.pos3d.x + DirFlagsEx.ToVector2Int(dirF).x,
                                                             cell.pos3d.y + DirFlagsEx.ToVector2Int(dirF).y,
                                                             cell.pos3d.z,
                                                             threshold: 50); // returns null if no neighbor. that's ok.
                 }
-                if (neighbors[nIdx] != null) neighborCount++;
-                // if we are going to propogate scents to this cell soon, it better be on the scentCells list.
-                if (i_have_scents && (neighbors[nIdx] != null) && !scentCells.Contains(neighbors[nIdx])) // WARNING: Contains() is O(N) search, revisit as hashset if many scents coexist.
-                    scentCells.Add(neighbors[nIdx]);           // add neighbor cell to list
+                if (neighborCells[nIdx] != null) neighborCount++;
+                // if we are going to propogate scents to this cell soon, it better be on the cellsContainingScents list.
+                if (i_have_scents && (neighborCells[nIdx] != null) && !cellsContainingScents.Contains(neighborCells[nIdx])) // WARNING: Contains() is O(N) search, revisit as hashset if many scents coexist.
+                    cellsContainingScents.Add(neighborCells[nIdx]);           // add neighbor cell to list
             }
 
             // for each different scent at this location
             for (sIdx = 0; sIdx < cell.scents.Count; sIdx++)
             {
-                ScentClass scent = cell.scents[sIdx];
+                ScentInCell scent = cell.scents[sIdx];
                 if (scent == null) continue;    // should not happen unless we nulled out a scent (which we don't do)
+                if (scent.agent == null) {Debug.LogWarning($"ScentAirGround: scent.agent is null for agentId {scent.agentId} in cell at {cell.pos3d}. Skipping scent processing.");
+                    continue;}   // agent missing, skip further processing
+     //           if (scent.agent.agentScentSource == null) {Debug.LogWarning($"ScentAirGround: scent.agent.agentScentSource is null for agentId {scent.agentId} in cell at {cell.pos3d}. Skipping scent processing.");
+     //               continue;}   // scent source missing, skip further processing
+     //           if (scent.agent.agentScentSource.scentStabilized == true) {Debug.Log($"ScentAirGround: scent.agentId {scent.agentId} in cell at {cell.pos3d} is stabilized, skipping processing.");
+     //               continue;}   // both layers stable, skip further processing
 
                 agentId = scent.agentId;
 
@@ -442,15 +468,15 @@ public class ScentAirGround : MonoBehaviour
                 {
                     for (nIdx = 0; nIdx < 4; nIdx++)   // for each of the 4 neighbors we already looked up at the beginning of the cell loop
                     {
-                        if (neighbors[nIdx] == null) continue; // no neighbor in this direction
+                        if (neighborCells[nIdx] == null) continue; // no neighbor in this direction
 
                         // Look in the neighbor cell's scents for a matching agentId, index returned as n_sIdx
                         // Add it (createIfNeeded: true) if not found and we have non-zero scent here.
-                        n_sIdx = FindAgentIdScentIndex(neighbors[nIdx], agentId, createIfNeeded: false);
+                        n_sIdx = FindAgentIdScentIndex(neighborCells[nIdx], agentId, createIfNeeded: false);
 
                         if (n_sIdx >= 0) // neighbor has a scent with this agentId already, accumulate it
                         {
-                            var neighborScent = neighbors[nIdx].scents[n_sIdx];
+                            var neighborScent = neighborCells[nIdx].scents[n_sIdx];
                             airNeighborSum += neighborScent.airIntensity;
                             groundNeighborSum += neighborScent.groundIntensity;
                         }
@@ -458,15 +484,16 @@ public class ScentAirGround : MonoBehaviour
                         {
                             if (thisCellHasThisScent) // only add agentId if nonzero scent here.
                             {
-                                if (neighbors[nIdx].scents == null) neighbors[nIdx].scents = new(); // create list if needed
+                                if (neighborCells[nIdx].scents == null) neighborCells[nIdx].scents = new(); // create list if needed
                                 // add this scent agentId to neighbor, with zero intensities
-                                ScentClass newScent = new()
+                                ScentInCell newScent = new()
                                 {
                                     agentId = agentId,
+                                    agent = scent.agent,
                                     airGOindex = -1,
                                     groundGOindex = -1
                                 };
-                                neighbors[nIdx].scents.Add(newScent);  // add zero scent to neighbor cell so it can pull in scent next time
+                                neighborCells[nIdx].scents.Add(newScent);  // add zero scent to neighbor cell so it can pull in scent next time
                             }
                         }
                     }
@@ -497,6 +524,7 @@ public class ScentAirGround : MonoBehaviour
                 // accumulate this delta to any existing delta left earlier
                 scent.airNextDelta += airDelta;
                 scent.groundNextDelta += groundDelta;
+
             } // end for sIdx
         } // end foreach cell
 
@@ -504,21 +532,31 @@ public class ScentAirGround : MonoBehaviour
         
         for (cIdx = 0; cIdx < original_cell_count; cIdx++)  // still doesnt include recent additions to list
         {
-            Cell cell = scentCells[cIdx];
+            Cell cell = cellsContainingScents[cIdx];
             if (cell == null) continue;
 
             // for each different scent at this location
             for (sIdx = 0; sIdx < cell.scents.Count; sIdx++)
             {
-                ScentClass scent = cell.scents[sIdx];
+                ScentInCell scent = cell.scents[sIdx];
                 if (scent == null) continue;
+ //               if (scent.agent.agentScentSource.scentStabilized == true)
+ //                   continue;   // both layers stable, skip further processing
 
                 // propogate changes we calculated in first pass above
                 //float airDelta    = scent.airNextDelta;
                 //float groundDelta = scent.groundNextDelta;
 
-                // only limit VisualThreshold for the visualualized currentAgentId
- 
+                // check for stabilization
+ //               if ((Mathf.Abs(scent.airNextDelta) > practically_zero) || (Mathf.Abs(scent.groundNextDelta) > practically_zero))
+ //               {
+ //                   //Debug.Log($"ScentAirGround: Scent scentSource {scent.agentId} is changing. Air delta = {scent.airNextDelta}, Ground delta = {scent.groundNextDelta}");
+ //                   scent.agent.agentScentSource.scentNextStabilized = false;   // scent still changing.
+ //               } 
+ //               else
+ //               {
+ //                   //Debug.Log($"ScentAirGround: Scent scentSource {scent.agentId} appears stable this step.  Air delta = {scent.airNextDelta}, Ground delta = {scent.groundNextDelta}");
+ //               }
                 bool airChanged = scent.airNextDelta != 0;
                 bool groundChanged = scent.groundNextDelta != 0;
 
@@ -537,8 +575,23 @@ public class ScentAirGround : MonoBehaviour
                     if ((scent.groundIntensity < practically_zero) && scent.groundNextDelta <= 0f) scent.groundIntensity = 0f;
                     scent.groundNextDelta = 0f;
                 }
+
             }
+
+            // after second pass, look for stabilied scents.
+ //           for (int i = 0; i < gen.scentRegistry.knownScentSources.Count; i++)
+ //           {
+ //               var scentSource = gen.scentRegistry.knownScentSources[i];
+ //               if ((scentSource.scentNextStabilized == true) &&
+ //                  (scentSource.scentStabilized == false))
+ //               {
+ //                   Debug.Log($"ScentAirGround: Scent scentSource {scentSource.agentId} has stabilized.");
+ //                   scentSource.scentStabilized = true;
+ //               }
+ //           }
         }
+        float endTime = Time.realtimeSinceStartup;
+        //Debug.Log($"ScentAirGround: ScentPhysicsStepOnce completed in {(endTime - startTime)*1000f} ms.");
     }
 
     public void VisualizeCurrentScents(int original_cell_count = -1)
@@ -547,7 +600,7 @@ public class ScentAirGround : MonoBehaviour
         int sIdx;
         bool airChanged;
         bool groundChanged;     
-        ScentClass scent;
+        ScentInCell scent;
         Cell cell;
 
         // Reset needed? We already reset these after changes applied.
@@ -560,20 +613,25 @@ public class ScentAirGround : MonoBehaviour
 
         // If we have the cell count before the previous physics step, we don't need to look at the newly created entries.
         // Or, we can just look at everything.  The last entries should all nave no scents and loop quickly.
-        if (original_cell_count == -1) original_cell_count=scentCells.Count;
+        if (original_cell_count == -1) original_cell_count=cellsContainingScents.Count;
 
         for (cIdx = 0; cIdx < original_cell_count; cIdx++)  // still doesnt include recent additions to list
         {
-            cell = scentCells[cIdx];
+            cell = cellsContainingScents[cIdx];
             if (cell == null) continue;
 
             if (cell.scents==null || cell.scents.Count==0) continue;    // no scents exists for this cell
-
+            
             sIdx = FindAgentIdScentIndex(cell, currentAgentId, createIfNeeded: false);
             if (sIdx>=0)
             {
                 // scent matches currentAgentId
                 scent = cell.scents[sIdx];
+
+                // skip visualization if both layers are stable
+ //               if (scent.agent.agentScentSource.scentStabilized)
+ //                   continue;   // both layers stable, skip further processing
+
                 // check for visible and significant intensity changes:
                 //          scent is visible AND (change since last update large enough
                 //                                OR changed to exactly 0)
@@ -603,7 +661,7 @@ public class ScentAirGround : MonoBehaviour
         //Done.  Don't forget to push all changes with ApplyScentUpdates()!
     }
 
-    private void ScentVisualizationAtCell(Cell cell, ScentClass scent, bool airChanged, bool groundChanged)
+    private void ScentVisualizationAtCell(Cell cell, ScentInCell scent, bool airChanged, bool groundChanged)
     {
         Color color;
         float normalized;
@@ -718,6 +776,12 @@ public class ScentAirGround : MonoBehaviour
     // Use visualizeImmediately=true to see the effect right away (for player deposit, etc), not as part of the mass update.
     public void DepositScentToCell(Cell cell, ScentSource scentSource, bool visualizeImmediately=false)
     {
+        if (cell == null || scentSource == null) return;
+ //       if (scentSource.scentStabilized)
+ //       {
+ //           Debug.LogWarning($"DepositScentToCell: scentSource {scentSource.agentId} is stabilized; no further scent will be deposited.");
+ //           return;
+ //       }
         AddScentToCell(cell, scentSource.agentId, scentSource.airDepositRate, scentSource.groundDepositRate);
         
         if (scentCamActive && visualizeImmediately && (scentSource.agentId == currentAgentId))
@@ -725,7 +789,7 @@ public class ScentAirGround : MonoBehaviour
             int sIdx = FindAgentIdScentIndex(cell, scentSource.agentId, createIfNeeded: false);
             if (sIdx >=0)
             {
-                ScentClass scent = cell.scents[sIdx];
+                ScentInCell scent = cell.scents[sIdx];
 
                 // do a mini propogation of delta to intensity to be visualized immediately
                 cell.scents[sIdx].airIntensity += cell.scents[sIdx].airNextDelta;
@@ -769,8 +833,8 @@ public class ScentAirGround : MonoBehaviour
         cell.scents[sIdx].airNextDelta += airAmount * airScentDepositRate;
         cell.scents[sIdx].groundNextDelta += groundAmount * groundScentDepositRate;
         // add cell to the list if it isn't there already
-        if (!scentCells.Contains(cell)) {
-            scentCells.Add(cell);
+        if (!cellsContainingScents.Contains(cell)) {
+            cellsContainingScents.Add(cell);
             //Debug.Log($"Added scent cell at {cell.pos} for agent {agentId}");
         }
     }
@@ -811,8 +875,8 @@ public class ScentAirGround : MonoBehaviour
         {
             // before creating new scent, we need the agent pointer
             agent = GetAgentFromAgentId(agentId);
-
-            ScentClass newScent = new()
+            if (agent==null) {Debug.LogWarning($"agent = null from GetAgentFromAgentId(agentId={agentId})");}
+            ScentInCell newScent = new()
             {
                 agentId = agentId,
                 agent = agent
@@ -827,7 +891,7 @@ public class ScentAirGround : MonoBehaviour
     Agent GetAgentFromAgentId(int agentId)
     {
         Agent agent;
-        if ((dir.gen.agentRegistry == null) || (dir.gen.agentRegistry.Count-1 <= agentId) || (agentId<1))
+        if ((dir.gen.agentRegistry == null) || (dir.gen.agentRegistry.Count < agentId) || (agentId<1))
         {
             Debug.LogError($"AgentRegistry doesn't include agentId={agentId}, max={dir.gen.agentRegistry.Count}");
             return null;
@@ -844,18 +908,18 @@ public class ScentAirGround : MonoBehaviour
     // adds the cell to the current big scent list if it isn't already there.
     void AddToScentCellsList(Cell cell)
     {
-        if (!scentCells.Contains(cell))
-            scentCells.Add(cell);
+        if (!cellsContainingScents.Contains(cell))
+            cellsContainingScents.Add(cell);
     }
 
 
-    public void ActivateOverlayForSource(ScentSource source)
+    public void ActivateOverlayForSource(ScentSource scentSource)
     {
         // 1) Hide all existing fog by setting alpha to 0 for every instance.
         ClearAllScentVisuals();     // Is this necessary if we do final step below?
 
         // 2) Switch currently visualized agent
-        if ((source == null) || (source.agentId == -1))
+        if ((scentSource == null) || (scentSource.agentId == -1))
         {
             currentAgentId = -1;    // this means none.
             // Next Update(), the scent camera will turn off'
@@ -864,11 +928,11 @@ public class ScentAirGround : MonoBehaviour
         }
         else
         {
-            currentAgentId = source.agentId;
+            currentAgentId = scentSource.agentId;
 
             // 3) Set base colors for this scent
-            airBaseColor    = source.sourceAirColor;
-            groundBaseColor = source.sourceGroundColor;
+            airBaseColor    = scentSource.sourceAirColor;
+            groundBaseColor = scentSource.sourceGroundColor;
 
             //groundScentVisible = true;
             //airScentVisible = true;
@@ -915,14 +979,14 @@ public class ScentAirGround : MonoBehaviour
                 continue;
 
             // Lookup or create the ScentSource metadata for this agentId
-            ScentSource source = dir.scentRegistry.GetScentSource(scent.agentId);
-            if (source == null) continue;   // not a valid scent
+            ScentSource scentSource = dir.scentRegistry.GetScentSource(scent.agentId);
+            if (scentSource == null) continue;   // not a valid scent
 
             float combined = ground * groundWeight + air * airWeight;
 
             results.Add(new ScentDetection
             {
-                source           = source,
+                scentSource      = scentSource,
                 airStrength      = air,
                 groundStrength   = ground,
                 combinedStrength = combined
@@ -934,9 +998,9 @@ public class ScentAirGround : MonoBehaviour
 
         // BEGIN DEBUG
         Debug.Log($"CollectScetsAtCell({cell.pos}) found {results.Count} scents:");
-        foreach (ScentDetection s in results)
+        foreach (ScentDetection scentDetection in results)
         {
-            Debug.Log($"::{s.source.scentName} = {s.airStrength} + {s.groundStrength} -> {s.combinedStrength}");
+            Debug.Log($"::{scentDetection.scentSource.scentName} = {scentDetection.airStrength} + {scentDetection.groundStrength} -> {scentDetection.combinedStrength}");
         }
         // END DEBUG
 
@@ -986,10 +1050,10 @@ public class ScentAirGround : MonoBehaviour
         int cIdx;
         int sIdx;
         Cell cell;
-        ScentClass scent;
-        for (cIdx = 0; cIdx < scentCells.Count; cIdx++)
+        ScentInCell scent;
+        for (cIdx = 0; cIdx < cellsContainingScents.Count; cIdx++)
         {
-            cell = scentCells[cIdx];
+            cell = cellsContainingScents[cIdx];
             if (cell == null) continue;
 
             if (cell.scents==null || cell.scents.Count==0) continue;    // no scents exists for this cell

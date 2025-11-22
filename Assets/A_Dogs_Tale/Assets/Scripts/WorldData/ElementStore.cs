@@ -198,6 +198,10 @@ public class ElementLayer
 [CreateAssetMenu(menuName = "A_Dogs_Tale/Element Store", fileName = "ElementStore")]
 public class ElementStore : ScriptableObject
 {
+    [Header("Scent Fog Settings")]
+    [Tooltip("Max random planar offset (world units) for each scent fog instance.")]
+    public float fogPlacementJitter = 0.0f;
+
     [Header("Archetypes (definitions)")]
     [Tooltip("All known element archetypes (recipes). Instances refer to these by id.")]
     public List<ElementArchetype> archetypes = new List<ElementArchetype>();
@@ -519,13 +523,23 @@ public class ElementStore : ScriptableObject
         Quaternion quadRotate = Quaternion.Euler(-90f, 0f, 0f);
         Vector3 airFogOffset = new(0f, 1.1f, 0f);
         Vector3 overlapFuzzyScale = new(1.95f, 2f, 1.95f);
+        Vector3 jitter_offset = new(0f, 0f, 0f);
+
+        if (fogPlacementJitter > 0f)
+        {
+            float j = fogPlacementJitter;
+            float dx = UnityEngine.Random.Range(-j, j);
+            float dz = UnityEngine.Random.Range(-j, j);
+            jitter_offset = new Vector3(dx, 0f, dz);
+        }
+
         var inst = new ElementInstanceData(
             archetypeId: "ScentAir",
             layerKind: ElementLayerKind.ScentAir,
             roomIndex: cell.room_number,
             cellCoord: cell.pos,
             heightSteps: cell.height,
-            position: cell.pos3d_world + airFogOffset,
+            position: cell.pos3d_world + airFogOffset + jitter_offset,
             rotation: quadRotate,
             scale: overlapFuzzyScale,
             color: color,
@@ -551,14 +565,23 @@ public class ElementStore : ScriptableObject
         Quaternion quadRotate = Quaternion.Euler(-90f, 0f, 0f);
         Vector3 groundFogOffset = new(0f, 0.7f, 0f);
         Vector3 overlapFuzzyScale = new(1.95f, 2f, 1.95f);
-        
+        Vector3 jitter_offset = new(0f, 0f, 0f);
+
+        if (fogPlacementJitter > 0f)
+        {
+            float j = fogPlacementJitter;
+            float dx = UnityEngine.Random.Range(-j, j);
+            float dz = UnityEngine.Random.Range(-j, j);
+            jitter_offset = new Vector3(dx, 0f, dz);
+        }
+
         var inst = new ElementInstanceData(
             archetypeId: "ScentGround",
             layerKind: ElementLayerKind.ScentGround,
             roomIndex: cell.room_number,
             cellCoord: cell.pos,
             heightSteps: cell.height,
-            position: cell.pos3d_world + groundFogOffset,
+            position: cell.pos3d_world + groundFogOffset + jitter_offset,
             rotation: quadRotate,
             scale: overlapFuzzyScale,
             color: color,

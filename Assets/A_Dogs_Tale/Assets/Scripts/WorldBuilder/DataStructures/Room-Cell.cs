@@ -5,7 +5,7 @@ using System;
 using System.Collections;
 
 [System.Serializable]
-public class ScentClass             // Everything about ONE scent
+public class ScentInCell             // Everything about ONE scent at one location
 {
     public int agentId;
     public Agent agent;             // pointer to the agent
@@ -21,6 +21,9 @@ public class ScentClass             // Everything about ONE scent
     public float groundNextDelta;      // next ground value during decay/spread calc
     public float groundLastVisualized = -1f; // for determining whether to bother updating visual cloud
     public int groundGOindex = -1;   // index into ground visual (if any)
+
+    //public bool scentStabilized = false; // airborne scent reached stable state
+    //public bool scentNextStabilized = false; // for current pass in progress
 }
 
 public enum DiagonalOpenDirection
@@ -49,7 +52,7 @@ public class Cell       // one cell in a Room
     // Delegates for behaviors (see notes below)
     public Action<Cell> OnView;     // function triggered when viewed
     public Action<Cell> OnStep;     // function triggered when stepped on
-    public List<ScentClass> scents; // tracks who has passed this way before
+    public List<ScentInCell> scents; // tracks who has passed this way before
     public GameObject[] GOs = new GameObject[Enum.GetValues(typeof(GOtypes)).Length]; // GameObjects for floor, walls, doors, etc.
     //public GameObject scentGO = null; // GameObject for scent fog visualization
 

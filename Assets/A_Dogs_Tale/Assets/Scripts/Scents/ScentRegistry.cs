@@ -64,6 +64,9 @@ public class ScentSource
     // Sensitivity multiplier: >1.0 when trained, applied when dogs sniff for this scent.
     public float sensitivityBoost = 1.0f;
 
+ //   public bool scentStabilized = false;
+ //   public bool scentNextStabilized = false;
+    
     // Optional: persistent ID for saving/loading (if you want something beyond agentId).
     public string persistentId;
 }
@@ -71,7 +74,7 @@ public class ScentSource
 [Serializable]
 public struct ScentDetection
 {
-    public ScentSource source;
+    public ScentSource scentSource;
     public float airStrength;
     public float groundStrength;
     public float combinedStrength;
@@ -83,7 +86,7 @@ public class ScentRegistry : MonoBehaviour
     public ObjectDirectory dir;
 
     [Header("Known Scents (Pack-Wide)")]
-    public List<ScentSource> knownScents = new List<ScentSource>();
+    public List<ScentSource> knownScentSources = new List<ScentSource>();
 
     // Internal map for fast lookup by agentId
     private readonly Dictionary<int, ScentSource> _byAgentId = new Dictionary<int, ScentSource>();
@@ -120,13 +123,13 @@ public class ScentRegistry : MonoBehaviour
     {
         _byAgentId.Clear();
 
-        foreach (var source in knownScents)
+        foreach (var scentSource in knownScentSources)
         {
-            if (source == null) continue;
+            if (scentSource == null) continue;
 
-            if (!_byAgentId.ContainsKey(source.agentId))
+            if (!_byAgentId.ContainsKey(scentSource.agentId))
             {
-                _byAgentId.Add(source.agentId, source);
+                _byAgentId.Add(scentSource.agentId, scentSource);
             }
         }
     }
@@ -149,7 +152,7 @@ public class ScentRegistry : MonoBehaviour
             return existing;
         }
 
-        var source = new ScentSource
+        var scentSource = new ScentSource
         {
             agentId = agentId,
             category = category,
@@ -163,13 +166,13 @@ public class ScentRegistry : MonoBehaviour
         };
 
         // get two shades of the category color for air and ground.
-        source.sourceAirColor = GenerateSourceColor(source.categoryColor);
-        source.sourceGroundColor = GenerateSourceColor(source.categoryColor);
+        scentSource.sourceAirColor = GenerateSourceColor(scentSource.categoryColor);
+        scentSource.sourceGroundColor = GenerateSourceColor(scentSource.categoryColor);
 
-        knownScents.Add(source);
-        _byAgentId[agentId] = source;
+        knownScentSources.Add(scentSource);
+        _byAgentId[agentId] = scentSource;
 
-        return source;
+        return scentSource;
     }
 
     // stripped down version of above function, we assume it has already been created.
@@ -226,13 +229,13 @@ public class ScentRegistry : MonoBehaviour
     /// Called when a dog first notices the scent (e.g., via a sniff command).
     /// Moves from New -> Scented if appropriate.
     /// </summary>
-    public void MarkScentScented(ScentSource source)
+    public void MarkScentScented(ScentSource scentSource)
     {
-        if (source == null) return;
+        if (scentSource == null) return;
 
-        if (source.familiarity == ScentFamiliarity.New)
+        if (scentSource.familiarity == ScentFamiliarity.New)
         {
-            source.familiarity = ScentFamiliarity.Scented;
+            scentSource.familiarity = ScentFamiliarity.Scented;
         }
     }
 
@@ -240,17 +243,17 @@ public class ScentRegistry : MonoBehaviour
     /// Called when the dog finds the actual source object and sniffs it.
     /// Updates the name from generic ("Food") to specific ("Hot Dog").
     /// </summary>
-    public void MarkScentIdentified(ScentSource source, string specificName)
+    public void MarkScentIdentified(ScentSource scentSource, string specificName)
     {
-        if (source == null) return;
+        if (scentSource == null) return;
 
-        source.scentName = string.IsNullOrEmpty(specificName) 
-            ? source.scentName 
+        scentSource.scentName = string.IsNullOrEmpty(specificName) 
+            ? scentSource.scentName 
             : specificName;
 
-        if (source.familiarity < ScentFamiliarity.Identified)
+        if (scentSource.familiarity < ScentFamiliarity.Identified)
         {
-            source.familiarity = ScentFamiliarity.Identified;
+            scentSource.familiarity = ScentFamiliarity.Identified;
         }
     }
 
@@ -258,22 +261,22 @@ public class ScentRegistry : MonoBehaviour
     /// Called when the pack is explicitly trained on this scent.
     /// Boosts sensitivity so dogs pick it up more easily (e.g., lower thresholds).
     /// </summary>
-    public void MarkScentTrained(ScentSource source, float extraSensitivityBoost = 0.5f)
+    public void MarkScentTrained(ScentSource scentSource, float extraSensitivityBoost = 0.5f)
     {
-        if (source == null) return;
+        if (scentSource == null) return;
 
-        source.familiarity = ScentFamiliarity.Trained;
-        source.sensitivityBoost = Mathf.Max(1.0f, source.sensitivityBoost + extraSensitivityBoost);
+        scentSource.familiarity = ScentFamiliarity.Trained;
+        scentSource.sensitivityBoost = Mathf.Max(1.0f, scentSource.sensitivityBoost + extraSensitivityBoost);
     }
 
     /// <summary>
     /// Returns overall sensitivity multiplier for a given scent.
     /// You can factor this into detection thresholds in the dog AI.
     /// </summary>
-    public float GetSensitivityMultiplier(ScentSource source)
+    public float GetSensitivityMultiplier(ScentSource scentSource)
     {
-        if (source == null) return 1.0f;
-        return source.sensitivityBoost;
+        if (scentSource == null) return 1.0f;
+        return scentSource.sensitivityBoost;
     }
 
     #endregion
@@ -298,14 +301,14 @@ public class ScentRegistry : MonoBehaviour
         /*
         foreach (var contributingAgent in cell.contributingAgents)
         {
-            var source = GetOrCreateScentSource(contributingAgent.agentId, contributingAgent.category);
+            var scentSource = GetOrCreateScentSource(contributingAgent.agentId, contributingAgent.category);
             float air = contributingAgent.airIntensity;
             float ground = contributingAgent.groundIntensity;
             float combined = ground * 0.7f + air * 0.3f;
 
             results.Add(new ScentDetection
             {
-                source = source,
+                scentSource = sentSource,
                 airStrength = air,
                 groundStrength = ground,
                 combinedStrength = combined
@@ -323,13 +326,13 @@ public class ScentRegistry : MonoBehaviour
     /// Called by the UI when the player clicks a scent in the list.
     /// Should trigger the visualization overlay for that specific scent.
     /// </summary>
-    public void ActivateScentOverlay(ScentSource source = null)
+    public void ActivateScentOverlay(ScentSource scentSource = null)
     {
-        //if (source == null)
+        //if (scentSource == null)
         //{
         //    return;
         //}
-        dir.scents.ActivateOverlayForSource(source);
+        dir.scents.ActivateOverlayForSource(scentSource);
     }
 
     /// <summary>
@@ -349,12 +352,12 @@ public class ScentRegistry : MonoBehaviour
     /// even if the player isn't actively sniffing.
     /// Should trigger a BottomBanner notice and may influence dog behavior.
     /// </summary>
-    public void NotifyStrongScent(ScentSource source, float strength)
+    public void NotifyStrongScent(ScentSource scentSource, float strength)
     {
-        if (source == null) return;
+        if (scentSource == null) return;
 
         // TODO: Hook up to BottomBanner:
-        // BottomBanner.ShowMessage($"Strong {source.category} scent: {source.scentName}");
+        // BottomBanner.ShowMessage($"Strong {scentSource.category} scent: {scentSource.scentName}");
 
         // TODO: Hook up to dog AI:
         // - Some dogs may lose concentration and wander toward this scent
@@ -365,11 +368,11 @@ public class ScentRegistry : MonoBehaviour
     /// Helper to decide whether a scent is 'distracting' enough for a given dog.
     /// You might call this from your dog behavior tree / state machine.
     /// </summary>
-    public bool IsDistractingScentForDog(ScentSource source, float strength, float dogBaseThreshold)
+    public bool IsDistractingScentForDog(ScentSource scentSource, float strength, float dogBaseThreshold)
     {
-        if (source == null) return false;
+        if (scentSource == null) return false;
 
-        float effectiveStrength = strength * GetSensitivityMultiplier(source);
+        float effectiveStrength = strength * GetSensitivityMultiplier(scentSource);
         return effectiveStrength >= dogBaseThreshold;
     }
 

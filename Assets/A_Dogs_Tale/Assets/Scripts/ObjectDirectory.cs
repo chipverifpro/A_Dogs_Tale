@@ -53,6 +53,7 @@ public class ObjectDirectory : MonoBehaviour
     public ElementStore elementStore;
     public WarehouseGO warehouse;
     public ManufactureGO manufactureGO;
+    public ScentAirGround scentAirGround;
 
     void Awake()
     {

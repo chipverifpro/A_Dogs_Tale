@@ -4637,7 +4637,7 @@ MonoBehaviour:
   yawDeg: 0
   targetYawDeg: 0
   prevYawDeg: 0
-  agentScent:
+  agentScentSource:
     agentId: -1
     category: 0
     scentName: 
@@ -4648,6 +4648,8 @@ MonoBehaviour:
     groundDepositRate: 0.1
     familiarity: 0
     sensitivityBoost: 1
+    scentStabilized: 0
+    scentNextStabilized: 0
     persistentId: 
   DogPrefab: {fileID: 1880613839}
   anim: {fileID: 1880613837}
@@ -5216,7 +5218,7 @@ MonoBehaviour:
   yawDeg: 0
   targetYawDeg: 0
   prevYawDeg: 0
-  agentScent:
+  agentScentSource:
     agentId: -1
     category: 0
     scentName: 
@@ -5227,6 +5229,8 @@ MonoBehaviour:
     groundDepositRate: 0.1
     familiarity: 0
     sensitivityBoost: 1
+    scentStabilized: 0
+    scentNextStabilized: 0
     persistentId: 
   DogPrefab: {fileID: 464182955}
   anim: {fileID: 464182953}
@@ -5591,7 +5595,7 @@ MonoBehaviour:
   yawDeg: 0
   targetYawDeg: 0
   prevYawDeg: 0
-  agentScent:
+  agentScentSource:
     agentId: -1
     category: 0
     scentName: 
@@ -5602,6 +5606,8 @@ MonoBehaviour:
     groundDepositRate: 0.1
     familiarity: 0
     sensitivityBoost: 1
+    scentStabilized: 0
+    scentNextStabilized: 0
     persistentId: 
   DogPrefab: {fileID: 1651296779}
   anim: {fileID: 1651296777}
@@ -6834,7 +6840,7 @@ MonoBehaviour:
   yawDeg: 0
   targetYawDeg: 0
   prevYawDeg: 0
-  agentScent:
+  agentScentSource:
     agentId: -1
     category: 0
     scentName: 
@@ -6845,6 +6851,8 @@ MonoBehaviour:
     groundDepositRate: 0.1
     familiarity: 0
     sensitivityBoost: 1
+    scentStabilized: 0
+    scentNextStabilized: 0
     persistentId: 
   DogPrefab: {fileID: 6544990386685219093}
   anim: {fileID: 5475111281846579140}
@@ -10503,7 +10511,7 @@ MonoBehaviour:
   groundToAirRate: 0.03
   simulationTimeStep: 0.1
   runOnStart: 1
-  practically_zero: 0.00001
+  practically_zero: 0.0001
   elementStore: {fileID: 11400000, guid: 12ce8f64c30bc4bbfa007792bc781b21, type: 2}
   scentVisualThreshold: 0.00390625
   maxVisualIntensity: 0.5
@@ -10522,7 +10530,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ScentRegistry
   dir: {fileID: 1920128612}
-  knownScents: []
+  knownScentSources: []
   dogBaseColor: {r: 0.3, g: 0.8, b: 1, a: 1}
   otherAnimalBaseColor: {r: 0.7, g: 0.5, b: 0.2, a: 1}
   humanBaseColor: {r: 0.3, g: 0.3, b: 1, a: 1}
@@ -14441,7 +14449,7 @@ MonoBehaviour:
   yawDeg: 0
   targetYawDeg: 0
   prevYawDeg: 0
-  agentScent:
+  agentScentSource:
     agentId: -1
     category: 0
     scentName: 
@@ -14452,6 +14460,8 @@ MonoBehaviour:
     groundDepositRate: 0.1
     familiarity: 0
     sensitivityBoost: 1
+    scentStabilized: 0
+    scentNextStabilized: 0
     persistentId: 
   DogPrefab: {fileID: 160131188}
   anim: {fileID: 160131186}

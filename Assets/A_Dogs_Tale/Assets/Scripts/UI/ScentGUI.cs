@@ -38,6 +38,6 @@ public class ScentGUI : MonoBehaviour
     // Called when the player clicks a scent in the sniff list UI:
     public void OnScentClicked(ScentDetection detection)
     {
-        dir.scentRegistry.ActivateScentOverlay(detection.source);
+        dir.scentRegistry.ActivateScentOverlay(detection.scentSource);
     }
 }

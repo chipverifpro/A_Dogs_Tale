@@ -34,7 +34,7 @@ public partial class Agent : MonoBehaviour
     public float targetYawDeg;
     public float prevYawDeg;
 
-    public ScentSource agentScent;
+    public ScentSource agentScentSource;
 
     // while in a pack formation, these are the target positions as calculated from leader's position.
     //public Vector2 formationTargetPos;     // position we should be at in formation
@@ -71,7 +71,7 @@ public partial class Agent : MonoBehaviour
     public float heightCorrection = 1f;
 
     // Tuning internal parameters
-    private bool useXZPlane = true;      // false = XY floor (tilemap), true = XZ floor (3D)
+    //private bool useXZPlane = true; //DELETED, always true.      // false = XY floor (tilemap), true = XZ floor (3D)
 
 
     // For tracking scent deposit, once per second + anytime position changes.
@@ -92,7 +92,7 @@ public partial class Agent : MonoBehaviour
         dir.gen.GetNewAgentId(this);
 
         // create the scent source for this agent
-        agentScent = dir.scentRegistry.GetOrCreateScentSource(
+        agentScentSource = dir.scentRegistry.GetOrCreateScentSource(
             agentId: id,
             category: ScentCategory.Dog,
             defaultName: name
@@ -123,16 +123,21 @@ public partial class Agent : MonoBehaviour
         if (!pack.gen.buildComplete) return;
 
         // deposit scent if moved or 1 second passed
-        if ((Time.time - prevScentTime >= 0.1f) || (pos2_int != prevScentLocation))
+        if (((Time.time - prevScentTime >= 0.1f) /*&& (!agentScentSource.scentStabilized)*/) || (pos2_int != prevScentLocation))
         {
             if (dir.gen.hf!=null) {
                 Cell cell = dir.gen.GetCellFromHf(pos2_int.x, pos2_int.y, height_int, 50);
                 if (cell!=null)
                 {
-                    dir.scents.DepositScentToCell(cell, agentScent, visualizeImmediately: true);
+                    dir.scents.DepositScentToCell(cell, agentScentSource, visualizeImmediately: true);
                     //prevScentTime = Time.time;
                     prevScentLocation = pos2_int;
-                    //Debug.Log($"Depositing scent from AgentId = {id} at {pos2_int}: air += {scentAirRate}, ground += {scentGroundRate}");
+                    //Debug.Log($"Depositing scent from AgentId = {id} at {pos2_int}: air += {agentScentSource.airDepositRate}, ground += {agentScentSource.groundDepositRate}");
+ //                   if (agentScentSource.scentStabilized == true)
+ //                   {
+ //                       agentScentSource.scentStabilized = false;
+ //                       Debug.Log($"AgentScentEmmiter: AgentId {id} scent unstabilized due to new deposit.");
+ //                   }
                 }
             }
         }
@@ -575,44 +580,43 @@ public partial class Agent : MonoBehaviour
         }
 
         Cleanup(ref agent.pos2);
-
-        if (useXZPlane)
+        // useXZPlane is always true, eliminated it.
+//        if (useXZPlane)
+//        {
+        Vector3 t; // = transform.position; // not necessary, we overwrite this value completely
+        Vector2 t_World = Map_to_World(agent.pos2);
+        t.x = t_World.x; t.z = t_World.y; // XZ location
+        t.y = agent.height + 1;
+        agent.transform.position = t;
+        //pack.player.transform.position = t;
+        agent.targetYawDeg = agent.yawDeg;
+        TurnTowards(ref agent.yawDeg, agent.prevYawDeg, agent.targetYawDeg, agent.turnSpeedDegPerSec);
+        agent.prevYawDeg = agent.yawDeg;
+        agent.transform.rotation = Quaternion.Euler(0f, agent.yawDeg + yawCorrection, 0f); // rotate around Y for 3D
+        //pack.player.transform.rotation = Quaternion.Euler(0f, agent.yawDeg + yawCorrection, 0f); // rotate around Y for 3D
+        if (pack.player.agent == agent)
         {
-            Vector3 t; // = transform.position; // not necessary, we overwrite this value completely
-            Vector2 t_World = Map_to_World(agent.pos2);
-            t.x = t_World.x; t.z = t_World.y; // XZ location
-            t.y = agent.height + 1;
-            agent.transform.position = t;
-            //pack.player.transform.position = t;
-            agent.targetYawDeg = agent.yawDeg;
-            TurnTowards(ref agent.yawDeg, agent.prevYawDeg, agent.targetYawDeg, agent.turnSpeedDegPerSec);
-            agent.prevYawDeg = agent.yawDeg;
-            agent.transform.rotation = Quaternion.Euler(0f, agent.yawDeg + yawCorrection, 0f); // rotate around Y for 3D
-            //pack.player.transform.rotation = Quaternion.Euler(0f, agent.yawDeg + yawCorrection, 0f); // rotate around Y for 3D
-            if (pack.player.agent == agent)
-            {
-                pack.player.transform.position = t;
-                pack.player.transform.rotation = Quaternion.Euler(0f, agent.yawDeg + yawCorrection, 0f); // rotate around Y for 3D
-            }
+            pack.player.transform.position = t;
+            pack.player.transform.rotation = Quaternion.Euler(0f, agent.yawDeg + yawCorrection, 0f); // rotate around Y for 3D
         }
-        else
-        {
-            Vector3 t; // = transform.position; // not necessary, we overwrite this value completely
-            Vector2 t_World = Map_to_World(agent.pos2);
-            t.x = t_World.x; t.y = t_World.y; // XY location
-            t.z = agent.height + 1;
-            agent.transform.position = t;
-            agent.targetYawDeg = agent.yawDeg;
-            TurnTowards(ref agent.yawDeg, agent.prevYawDeg, agent.targetYawDeg, agent.turnSpeedDegPerSec);
-            agent.prevYawDeg = agent.yawDeg;
-            agent.transform.rotation = Quaternion.Euler(0f, 0f, agent.yawDeg + yawCorrection); // rotate around Z for XY
-            if (pack.player.agent == agent)
-            {
-                pack.player.transform.position = t;
-                pack.player.transform.rotation = Quaternion.Euler(0f, 0f, agent.yawDeg + yawCorrection); // rotate around Y for 3D
-            }                                                                                       //pack.player.transform.rotation = Quaternion.Euler(0f, 0f, agent.yawDeg + yawCorrection); // rotate around Z for XY
-
-        }
+//        }
+//        else
+//        {
+//            Vector3 t; // = transform.position; // not necessary, we overwrite this value completely
+//            Vector2 t_World = Map_to_World(agent.pos2);
+//            t.x = t_World.x; t.y = t_World.y; // XY location
+//            t.z = agent.height + 1;
+//            agent.transform.position = t;
+//            agent.targetYawDeg = agent.yawDeg;
+//            TurnTowards(ref agent.yawDeg, agent.prevYawDeg, agent.targetYawDeg, agent.turnSpeedDegPerSec);
+//            agent.prevYawDeg = agent.yawDeg;
+//            agent.transform.rotation = Quaternion.Euler(0f, 0f, agent.yawDeg + yawCorrection); // rotate around Z for XY
+//            if (pack.player.agent == agent)
+//            {
+//                pack.player.transform.position = t;
+//                pack.player.transform.rotation = Quaternion.Euler(0f, 0f, agent.yawDeg + yawCorrection); // rotate around Y for 3D
+//            }                                                                                       //pack.player.transform.rotation = Quaternion.Euler(0f, 0f, agent.yawDeg + yawCorrection); // rotate around Z for XY
+//        }
         return true;
     }
 
