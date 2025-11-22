@@ -377,7 +377,7 @@ public partial class DungeonGenerator : MonoBehaviour
             // Scatter scenery props on floor tiles
             BottomBanner.Show("Scattering Scenery...");
             ScatterSceneryOnFloors();
-            
+
             BottomBanner.Show("Height Map Build...");
             yield return null;
             // FillVoidToWalls(map);
@@ -716,13 +716,6 @@ public partial class DungeonGenerator : MonoBehaviour
         tilemap.SetTileFlags(pos, TileFlags.None); // Allow color changes
         tilemap.SetColor(pos, color); // Set room color
         tilemap.SetTransformMatrix(pos, transform_m);  // nudges the sprite within its cell
-
-        
-        //Debug.Log("SetTilemapWithTransforms");
-        //Debug.Log($"pos     ={pos.ToString()}");
-        //Debug.Log($"scale   ={scale.ToString()}");
-        //Debug.Log($"offset  ={offset.ToString()}");
-        //Debug.Log($"rotation={rotation.ToString()}");
     }
 
     // New

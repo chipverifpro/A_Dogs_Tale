@@ -284,7 +284,6 @@ public partial class DungeonGenerator : MonoBehaviour
 
         List<Cell> corridorCells = new(); // to pass to DrawMapByRooms
         Room tmp_room;
-        //Cell tmp_real_cell;
 
         // Simple RNG fallback: use your 'rng' if you have it; else UnityEngine.Random
         System.Func<float> R01 = () => (rng != null) ? (float)rng.NextDouble() : UnityEngine.Random.value;

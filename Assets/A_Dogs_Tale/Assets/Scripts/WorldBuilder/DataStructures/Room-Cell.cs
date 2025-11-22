@@ -156,15 +156,6 @@ public class Room
     public int area = 0;
     public RectInt bounds; // minX, minY, sizeX, sizeY
 
-    // OLD style: quick lookup in multiple lists for floors, walls, heights.
-    // HashSets allow fast check whether room contains something at a position.
-    // See the functions below: bool IsTileInRoom(pos), bool IsWallInRoom(pos)
-    // Dictionaries are also based on a hash but returns a value at that position.
-    // int GetHeightInRoom_OLD(pos)
-    //public HashSet<Vector2Int> floor_hash_room = new();
-    //public HashSet<Vector2Int> wall_hash_room = new();
-    //public Dictionary<Vector2Int, int> heights_lookup_room = new();
-
     // NEW style: After migrating to using class Cell instead of separate lists.
     // GetCellInRoom(pos) returns the index into this room's "cells" list.
     // on not finding the cell, function returns -1.
@@ -177,9 +168,6 @@ public class Room
     // NEW
     public Room(List<Vector2Int> initialTileList, List<int> initialHeightsList)
     {
-        //List<Vector2Int> pos_list = new List<Vector2Int>(initialTileList);
-        //List<int> heights = new List<int>(initialHeightsList);
-
         cells = new List<Cell>();
         for (int i = 0; i < initialTileList.Count; i++)
         {
@@ -187,46 +175,12 @@ public class Room
         }
     }
 
-    // UNUSED
-    public Room(List<Vector2Int> initialTileList)
-    {
-
-        cells = new List<Cell>();
-        for (int i = 0; i < initialTileList.Count; i++)
-        {
-            cells.Add(new Cell(initialTileList[i].x, initialTileList[i].y, 0));
-        }
-    }
-
-    // UNUSED
-    public Room(List<Cell> initialCells)
-    {
-        // Note: not deep copy
-        this.cells = new(initialCells);
-    }
-
-    // UNUSED
-    // copy constructor - buggy - not deep copy
-    public Room(Room other)
-    {
-        cells = new List<Cell>(other.cells);
-        doors = new List<Door>(other.doors);
-        name = other.name;
-        colorFloor = other.colorFloor;
-        isCorridor = other.isCorridor;
-
-        cells = other.cells;
-        // TODO: check what other parameters need copying...
-    }
-
-    // NEW
     public bool IsTileInRoom(Vector2Int pos)
     {
         int cell_num = GetCellInRoom(pos);
         return (cell_num >= 0);
     }
 
-    // NEW
     public int GetCellInRoom(Vector2Int pos)
     {
         if (cell_dictionary_room.Count == 0) // then build cache

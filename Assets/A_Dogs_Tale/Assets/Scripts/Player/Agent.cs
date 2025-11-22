@@ -104,6 +104,9 @@ public partial class Agent : MonoBehaviour
 
     protected virtual void Update()
     {
+        if (dir.gen.buildComplete == false)
+            return; // don't do anything until build is done.
+            
         AgentScentEmmiter();
 
         if (trailLeader) // Leave crumbs
@@ -486,7 +489,7 @@ public partial class Agent : MonoBehaviour
         agent.prevYawDeg = agent.yawDeg;
         if (pack.gen.buildComplete == false)
         {
-            Debug.Log("TransformPosition: Dungeon generation not complete yet.  Don't bother moving agent now.");
+            //Debug.Log("TransformPosition: Dungeon generation not complete yet.  Don't bother moving agent now.");
             return false;
         }
         Cell cell = new(0,0);

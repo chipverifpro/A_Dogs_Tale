@@ -4648,8 +4648,6 @@ MonoBehaviour:
     groundDepositRate: 0.1
     familiarity: 0
     sensitivityBoost: 1
-    scentStabilized: 0
-    scentNextStabilized: 0
     persistentId: 
   DogPrefab: {fileID: 1880613839}
   anim: {fileID: 1880613837}
@@ -5229,8 +5227,6 @@ MonoBehaviour:
     groundDepositRate: 0.1
     familiarity: 0
     sensitivityBoost: 1
-    scentStabilized: 0
-    scentNextStabilized: 0
     persistentId: 
   DogPrefab: {fileID: 464182955}
   anim: {fileID: 464182953}
@@ -5606,8 +5602,6 @@ MonoBehaviour:
     groundDepositRate: 0.1
     familiarity: 0
     sensitivityBoost: 1
-    scentStabilized: 0
-    scentNextStabilized: 0
     persistentId: 
   DogPrefab: {fileID: 1651296779}
   anim: {fileID: 1651296777}
@@ -6851,8 +6845,6 @@ MonoBehaviour:
     groundDepositRate: 0.1
     familiarity: 0
     sensitivityBoost: 1
-    scentStabilized: 0
-    scentNextStabilized: 0
     persistentId: 
   DogPrefab: {fileID: 6544990386685219093}
   anim: {fileID: 5475111281846579140}
@@ -12976,6 +12968,7 @@ MonoBehaviour:
   elementStore: {fileID: 11400000, guid: 12ce8f64c30bc4bbfa007792bc781b21, type: 2}
   warehouse: {fileID: 1398364142}
   manufactureGO: {fileID: 896494468}
+  scentAirGround: {fileID: 1546545660}
 --- !u!4 &1920128613
 Transform:
   m_ObjectHideFlags: 0
@@ -14460,8 +14453,6 @@ MonoBehaviour:
     groundDepositRate: 0.1
     familiarity: 0
     sensitivityBoost: 1
-    scentStabilized: 0
-    scentNextStabilized: 0
     persistentId: 
   DogPrefab: {fileID: 160131188}
   anim: {fileID: 160131186}

@@ -331,23 +331,6 @@ public class ElementStore : ScriptableObject
             {
                 Debug.LogWarning($"ElementStore: Layer '{layerName}' kind mismatch. Existing={layer.kind}, New={instance.layerKind}. Changing layer.kind to match");
                 layer.kind = instance.layerKind; // keep runtime data sane (fix bug somewhere else?)
-                /*
-                // Safer handling of kind mismatch
-                // Create a sibling layer name to keep data sane (or you can abort)
-                string altName = $"{layerName}_{instance.layerKind}";
-                int altIdx = layers.FindIndex(l => l != null && l.name == altName);
-                if (altIdx < 0)
-                {
-                    var newLayer = new ElementLayer { name = altName, kind = instance.layerKind, instances = new List<ElementInstanceData>(64) };
-                    layers.Add(newLayer);
-                    layer = newLayer;
-                    layerIdx = layers.Count - 1;
-                }
-                else
-                {
-                    layer = layers[altIdx];
-                    layerIdx = altIdx;
-                }*/
             }
         }
 
@@ -660,35 +643,6 @@ public class ElementStore : ScriptableObject
     /// ManufactureGO.ApplyPendingUpdates can push it into the live GameObject.
     /// Returns true if an instance was found and changed.
     /// </summary>
-/*    public bool ChangeColor(
-        ElementLayerKind kind,
-        int roomIndex,
-        Vector2Int cellCoord,
-        Color newColor)
-    {
-        if (layers == null) return false;
-
-        // Find the layer
-        var layer = layers.Find(l => l != null && l.kind == kind);
-        if (layer == null || layer.instances == null) return false;
-
-        for (int i = 0; i < layer.instances.Count; i++)
-        {
-            var inst = layer.instances[i];
-            if (inst.roomIndex == roomIndex && inst.cellCoord == cellCoord)
-            {
-                inst.color = newColor;
-                inst.dirtyFlags |= ElementUpdateFlags.Color;
-                layer.instances[i] = inst; // struct copy back
-                return true;
-            }
-        }
-
-        return false;
-    }
-*/
-
-    // variant that takes cell
     // If we have cell and scent, no searching for them needed in ChangeColor()
     public bool ChangeColor(
         ElementLayerKind kind,

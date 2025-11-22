@@ -130,39 +130,11 @@ public class ScentAirGround : MonoBehaviour
     // monitor for changes to who or what is visualized, then clear/update/redraw
     // (this allows developer to change settings on-the-fly and the visuals track that)
     // Normally the redraw could be specified at the place the change is made.
-    private void Update_old()
-    {
-        if ((groundScentVisible != groundScentWasVisible) 
-            || (airScentVisible != airScentWasVisible)
-            || (currentAgentId != previousAgentIdVisualized))
-        {
-            // some visiblity changed...
-
-            // First, check if we need to enable/disable the scent camera
-            scentCamActive = (groundScentVisible || airScentVisible) && (currentAgentId!=-1);
-            if (scentCamActive != dir.scentCam.enabled)
-                dir.scentCam.enabled = scentCamActive; // turn scent camera on/off based on possibly changed need
-            if (!scentCamActive)
-            {
-                // update the previous state trackers so we don't turn things back on that shouldn't
-                previousAgentIdVisualized = currentAgentId;
-                airScentWasVisible        = airScentVisible;
-                groundScentWasVisible     = groundScentVisible;
-
-                return; // scent camera is off, no need to update anything else
-            }
-            // Scent camera is needed, so update everything
-            ClearAllScentVisuals();     // clear anything previously visualized
-
-            ScentSource scentSource = dir.scentRegistry.GetScentSource(currentAgentId);
-            ActivateOverlayForSource(scentSource);   // switch agent scentSource
-            
-            VisualizeCurrentScents();
-            ApplyScentUpdates(); // push to GPU immediately
-        }
-    }
     private void Update()
     {
+        if (dir.gen.buildComplete == false) 
+            return; // don't do anything until build is done.
+            
         bool visibilityOrAgentChanged =
             (groundScentVisible != groundScentWasVisible) ||
             (airScentVisible    != airScentWasVisible)    ||

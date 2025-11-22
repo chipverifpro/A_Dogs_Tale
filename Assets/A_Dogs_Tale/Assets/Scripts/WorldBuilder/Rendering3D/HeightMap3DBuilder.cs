@@ -7,15 +7,6 @@ public partial class DungeonGenerator : MonoBehaviour
 {
     [SerializeField] private ElementStore elementStore;
 
-    //[Header("3D Build Settings")]
-    //    public float unitHeight = 0.1f;             // world Y per step
-    //    public bool useDiagonalCorners = true;
-    //    public bool skipOrthogonalWhenDiagonal = true;
-    //    public int perimeterWallSteps = 30; // height of perimeter walls in steps
-
-    // what is this used for?  0 references.
-    //public Dictionary<Vector2Int, int> idx;  // Build once at the top of Build3DFromOneRoom
-
     // If your ramp mesh "forward" is +Z, map directions to rotations:
     static readonly Vector2Int[] Dir4 = { new(0, 1), new(1, 0), new(0, -1), new(-1, 0) };
 

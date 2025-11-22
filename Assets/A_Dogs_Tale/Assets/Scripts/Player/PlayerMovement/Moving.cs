@@ -453,15 +453,6 @@ public partial class Player : MonoBehaviour
         //Debug.Log($"   Diagonal open direction = {diag}");
         if (diag == DiagonalOpenDirection.None) return false;
 
-        // Cell's world-space min corner (bottom-left in your grid)
-        //float xMin = room.bounds.xMin + (cellXY.x - room.bounds.xMin) * cellSize;
-        //float zMin = room.bounds.yMin + (cellXY.y - room.bounds.yMin) * cellSize;
-        // If you store absolute tile coords (not relative to bounds), use:
-        //float xMin = (startWorld.x % 1f) * cellSize;
-        //float zMin = (startWorld.y % 1f) * cellSize;
-        //CleanupFloat(ref xMin, true);
-        //CleanupFloat(ref zMin, true);
-
         // Build diagonal line in cell-local (u,v) with u=(x-xMin)/s, v=(z-zMin)/s in [0,1]
         // General form: a*u + b*v = c
         float a, b, c;
@@ -496,10 +487,8 @@ public partial class Player : MonoBehaviour
         // Ray/line intersection in WORLD units.
         // Let u = (x - xMin)/s, v = (z - zMin)/s.
         // Solve a*u + b*v = c for T where x = x0 + dir.x*T, z = z0 + dir.z*T.
-        //Vector2 xz0 = new Vector2(startWorld.x, startWorld.z);    // world coords of start
         Vector2 xz0 = new Vector2((startWorld.x - Mathf.Floor(startWorld.x)) * cellSize, (startWorld.z - Mathf.Floor(startWorld.z)) * cellSize); // local coords in cell
         //Cleanup(ref xz0, true);
-        //Vector2 xz0 = new Vector2((startWorld.x - cellXY.x) * cellSize, (startWorld.z - cellXY.y) * cellSize); // same as local coords in cell
 
         Vector2 d = new Vector2(dirWorld.x, dirWorld.z);
 

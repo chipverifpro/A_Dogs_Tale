@@ -155,13 +155,7 @@ public partial class DungeonGenerator : MonoBehaviour  // Tilemap2D
                     {
                         foreach (var t in room.cells)
                         {
-                            //var pos = new Vector3Int(t.x, t.y, 0);
                             map[t.x, t.y] = replacement; // flip to replacement
-                                                         // Clear visuals;
-                                                         //if (replacementTile != null)
-                                                         //tilemap.SetTile(pos, replacementTile);
-                                                         //else
-                                                         //ClearTileAndNeighborWalls(tilemap, pos);
                         }
                         clusters.RemoveAt(i);
                         Done = false;
