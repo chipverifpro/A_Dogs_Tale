@@ -235,8 +235,6 @@ public class ScentAirGround : MonoBehaviour
     private IEnumerator ScentDecayAndSpread()
     {
         int original_cell_count = 0;
-        float physicsCumulativeRuntime = 0f;
-        int numPhysicsSteps = 0;
 
         if (dir == null || dir.gen == null)
         {
@@ -267,8 +265,6 @@ public class ScentAirGround : MonoBehaviour
         /// Main physics/visualize loop is one of these two... ///
         //////////////////////////////////////////////////////////
         //dir.cfg.scentPhysicsConsistancey = true;  // TEMPORARY OVERRIDE FOR TESTING
-        float baseTime = Time.realtimeSinceStartup;
-        int iterationsIn10Seconds = 0;
         // recommend using consistancy=true unless performance is a problem.
         if (dir.cfg.scentPhysicsConsistancey == false) // option A is to scale the call by actual time step
         {
@@ -279,21 +275,13 @@ public class ScentAirGround : MonoBehaviour
                 var limitedDeltaTime = Mathf.Clamp(Time.deltaTime, 0f, simulationTimeStep * 5f); // prevent huge steps if frame rate drops too low
                 ScentPhysicsStepOnce(limitedDeltaTime);
                 float endTime = Time.realtimeSinceStartup;
-                dir.activityStats.scentPhysicsStepOnce_cumulative += (endTime - physicsStartTime);
-                dir.activityStats.scentPhysicsStepOnce_calls += 1;
-                iterationsIn10Seconds++;
+                dir.activityStats.physics_cumulative += (endTime - physicsStartTime);
+                dir.activityStats.physics_calls += 1;
 
                 if (scentCamActive) // only update visuals if scent camera is on
                 {
                     VisualizeCurrentScents(original_cell_count);
                     ApplyScentUpdates(); // push to GPU
-                }
-                float realDeltaTime = Time.realtimeSinceStartup - baseTime;
-                if (realDeltaTime >= 10f)
-                {
-                    Debug.Log($"ScentAirGround: (physicsConsistancy false) PhysicsPerSecond = {iterationsIn10Seconds / realDeltaTime}, PhysicsInterval = {1/(iterationsIn10Seconds / realDeltaTime)}");
-                    baseTime = Time.realtimeSinceStartup;
-                    iterationsIn10Seconds = 0;
                 }
                 yield return wait;
             }
@@ -316,11 +304,10 @@ public class ScentAirGround : MonoBehaviour
                         float physicsStartTime = Time.realtimeSinceStartup;
                         ScentPhysicsStepOnce(step);
                         float endTime = Time.realtimeSinceStartup;
-                        dir.activityStats.scentPhysicsStepOnce_cumulative += (endTime - physicsStartTime);
-                        dir.activityStats.scentPhysicsStepOnce_calls += 1;
+                        dir.activityStats.physics_cumulative += (endTime - physicsStartTime);
+                        dir.activityStats.physics_calls += 1;
                         
                         accumulator -= step;
-                        iterationsIn10Seconds++;
                         // might be nice to yield a frame here if several steps are needed? (only if this is a significantly slow function)
                     }
 
@@ -329,18 +316,8 @@ public class ScentAirGround : MonoBehaviour
                         VisualizeCurrentScents(original_cell_count);  // run only once after all physics steps complete
                         ApplyScentUpdates(); // push to GPU
                     }
-                    float realDeltaTime = Time.realtimeSinceStartup - baseTime;
-                    if (realDeltaTime >= 10f)
-                    {
-                        Debug.Log($"ScentAirGround: (physicsConsistancy true) AveragePhysicsRuntime = {physicsCumulativeRuntime/numPhysicsSteps}, PhysicsInterval = {1/(iterationsIn10Seconds / realDeltaTime)}");
-                        baseTime = Time.realtimeSinceStartup;
-                        iterationsIn10Seconds = 0;
-                        numPhysicsSteps = 0;
-                        physicsCumulativeRuntime = 0f;
-                    }
-                
                 }
-                yield return null; // wait until next frame.  Don't use fixed wait here.
+                yield return null; // wait until next frame.  Don't use fixed wait here or DeltaTime will not be what we want it to be.
             }
         }
     }
@@ -373,6 +350,8 @@ public class ScentAirGround : MonoBehaviour
         int agentId;
         int neighborCount;
         int original_cell_count = cellsContainingScents.Count;
+        dir.activityStats.cellsProcessed = original_cell_count;
+        int scentsProcessed = 0;
         //Agent agent;
 
         // Before first pass, initialize flag about scents which are stable.  Any change will set this false.
@@ -433,6 +412,7 @@ public class ScentAirGround : MonoBehaviour
      //           if (scent.agent.agentScentSource.scentStabilized == true) {Debug.Log($"ScentAirGround: scent.agentId {scent.agentId} in cell at {cell.pos3d} is stabilized, skipping processing.");
      //               continue;}   // both layers stable, skip further processing
 
+                scentsProcessed++;
                 agentId = scent.agentId;
 
                 // grab the values at the beginning of the cycle, then initialize the new values to match.
@@ -574,8 +554,9 @@ public class ScentAirGround : MonoBehaviour
  //                   scentSource.scentStabilized = true;
  //               }
  //           }
+            dir.activityStats.scentsProcessed = scentsProcessed;
         }
-        float endTime = Time.realtimeSinceStartup;
+        //float endTime = Time.realtimeSinceStartup;
         //Debug.Log($"ScentAirGround: ScentPhysicsStepOnce completed in {(endTime - startTime)*1000f} ms.");
     }
 

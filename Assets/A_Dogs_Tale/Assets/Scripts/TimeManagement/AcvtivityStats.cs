@@ -18,9 +18,12 @@ public class AcvtivityStats : MonoBehaviour
 
     [Header("Per function statistics")]
     [Header("Scent physics updates")]
-    public float scentPhysicsStepOnce_cumulative = 0f;
-    public int scentPhysicsStepOnce_calls = 0;
-    public float scentPhysicsStepOnce_avg_per_second = 0;
+    public float physics_cumulative = 0f;
+    public int physics_calls = 0;
+    public float physics_avg_per_second = 0;
+    public int cellsProcessed = 0;
+    public int scentsProcessed = 0;
+
 
 
     [Header("Object updates")]
@@ -59,8 +62,8 @@ public class AcvtivityStats : MonoBehaviour
             frameCount = 0;
 
             // reset per-function stats
-            scentPhysicsStepOnce_cumulative = 0f;
-            scentPhysicsStepOnce_calls = 0;
+            physics_cumulative = 0f;
+            physics_calls = 0;
             BuildNewInstancesForLayer_cumulative = 0f;
             BuildNewInstancesForLayer_calls = 0;
             ApplyPendingUpdates_cumulative = 0f;
@@ -75,7 +78,7 @@ public class AcvtivityStats : MonoBehaviour
     {
         FPS_Interval = runtimeSinceStartup / frameCount;
         FPS = 1f / FPS_Interval;
-        scentPhysicsStepOnce_avg_per_second = (scentPhysicsStepOnce_cumulative / scentPhysicsStepOnce_calls);
+        physics_avg_per_second = (physics_cumulative / physics_calls);
         BuildNewInstancesForLayer_avg_per_second = (BuildNewInstancesForLayer_cumulative / BuildNewInstancesForLayer_calls);
         ApplyPendingUpdates_avg_per_second = (ApplyPendingUpdates_cumulative / ApplyPendingUpdates_calls);
     }
