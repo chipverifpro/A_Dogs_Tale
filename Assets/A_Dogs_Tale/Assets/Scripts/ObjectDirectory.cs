@@ -6,6 +6,7 @@ public class ObjectDirectory : MonoBehaviour
     // This is a catalog of all the objects and scripts in the game for all the
     // modules to share.  They only need a single reference to Directory to find
     // any other object.
+    public static ObjectDirectory Instance { get; private set; }    // singleton
 
     public bool AllReady = false;   // anyone should hold off their start until this is true.
     private int pass_num;           // debug message indicating if object was found first try or later.
@@ -60,6 +61,14 @@ public class ObjectDirectory : MonoBehaviour
 
     void Awake()
     {
+        if (Instance != null && Instance != this)
+        {
+            Debug.LogWarning("Multiple ObjectDirectory instances found. Destroying duplicate.", this);
+            Destroy(gameObject);
+            return;
+        }
+        Instance = this;    // set singleton instance
+
         pass_num = 0;
         AllReady = false;
         InitializeDirectory();
