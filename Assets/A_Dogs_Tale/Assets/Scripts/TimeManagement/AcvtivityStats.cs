@@ -7,6 +7,7 @@ public class AcvtivityStats : MonoBehaviour
     [Header("Enable activity statistics collection.")]
     public bool EnableStatistics = true;
     public bool reset = false;
+    [SerializeField] float smoothing = 0.1f; // 0..1, higher = more responsive
 
     [Header("Measured values")]
     public float FPS = 60f;
@@ -27,14 +28,12 @@ public class AcvtivityStats : MonoBehaviour
 
 
     [Header("Object updates")]
-    public float BuildNewInstancesForLayer_cumulative = 0f;
-    public int BuildNewInstancesForLayer_calls = 0;
-    public float BuildNewInstancesForLayer_avg_per_second = 0;
-    public float ApplyPendingUpdates_cumulative = 0f;
-    public int ApplyPendingUpdates_calls = 0;
-    public float ApplyPendingUpdates_avg_per_second = 0;
-
-
+    public float BuildNewInstances_cumulative = 0f;
+    public int BuildNewInstances_calls = 0;
+    public float BuildNewInstances_avg_per_second = 0;
+    public float ApplyUpdates_cumulative = 0f;
+    public int ApplyUpdates_calls = 0;
+    public float ApplyUpdates_avg_per_second = 0;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -64,22 +63,26 @@ public class AcvtivityStats : MonoBehaviour
             // reset per-function stats
             physics_cumulative = 0f;
             physics_calls = 0;
-            BuildNewInstancesForLayer_cumulative = 0f;
-            BuildNewInstancesForLayer_calls = 0;
-            ApplyPendingUpdates_cumulative = 0f;
-            ApplyPendingUpdates_calls = 0;
+            BuildNewInstances_cumulative = 0f;
+            BuildNewInstances_calls = 0;
+            ApplyUpdates_cumulative = 0f;
+            ApplyUpdates_calls = 0;
         }
 
-        runtimeSinceStartup = Mathf.Min(Time.realtimeSinceStartup-startTime, 0.0001f); // avoid div by zero
+        runtimeSinceStartup = Mathf.Max(Time.realtimeSinceStartup-startTime, 0.0001f); // avoid div by zero
         frameCount += 1;
     }
 
     void CalcStats()
     {
-        FPS_Interval = runtimeSinceStartup / frameCount;
-        FPS = 1f / FPS_Interval;
+        float dt = Time.unscaledDeltaTime;
+        float current = 1f / Mathf.Max(dt, 0.0001f);
+        FPS = Mathf.Lerp(FPS, current, smoothing);
+        FPS_Interval = 1f / FPS;
+        //FPS_Interval = Time.deltaTime;
+        //FPS = 1f / Mathf.Max(FPS_Interval, 0.0001f);
         physics_avg_per_second = (physics_cumulative / physics_calls);
-        BuildNewInstancesForLayer_avg_per_second = (BuildNewInstancesForLayer_cumulative / BuildNewInstancesForLayer_calls);
-        ApplyPendingUpdates_avg_per_second = (ApplyPendingUpdates_cumulative / ApplyPendingUpdates_calls);
+        BuildNewInstances_avg_per_second = (BuildNewInstances_cumulative / BuildNewInstances_calls);
+        ApplyUpdates_avg_per_second = (ApplyUpdates_cumulative / ApplyUpdates_calls);
     }
 }

@@ -17,56 +17,59 @@ public enum WorldObjectKind
 /// Attach this to Agents, Scenery, Traps, etc.
 /// </summary>
 [DisallowMultipleComponent]
+[RequireComponent(typeof(LocationModule))]
+[RequireComponent(typeof(MotionModule))]
+[RequireComponent(typeof(VisualModule))]
+[RequireComponent(typeof(NPCModule))]
+[RequireComponent(typeof(ScentEmitter))]
+[RequireComponent(typeof(ActivatorModule))]
 public class WorldObject : MonoBehaviour
 {
     [Header("Identity")]
-    [Tooltip("Stable ID for this object within the game world / registry.")]
-    [SerializeField]
-    private int objectId = -1;
+    [SerializeField] private int objectId = -1;
+    [SerializeField] private string displayName;
+    [SerializeField] private WorldObjectKind kind = WorldObjectKind.Unknown;
+    [SerializeField] private bool autoRegister = true;
 
-    [Tooltip("Human-readable name for debugging and UI.")]
-    [SerializeField]
-    private string displayName;
+    // --------------------------
+    // MODULE REFERENCES
+    // --------------------------
+    [Header("Modules (auto-populated)")]
+    public LocationModule   Location   { get; private set; }
+    public MotionModule     Motion     { get; private set; }
+    public VisualModule     Visual     { get; private set; }
+    public NPCModule        NPC        { get; private set; }
+    public ScentEmitter     Scent      { get; private set; }
+    public ActivatorModule  Activator  { get; private set; }
 
-    [Tooltip("Rough category of this world object.")]
-    [SerializeField]
-    private WorldObjectKind kind = WorldObjectKind.Unknown;
-
-    [Header("Registration")]
-    [Tooltip("If true, this object registers itself with WorldObjectRegistry on enable.")]
-    [SerializeField]
-    private bool autoRegister = true;
-
-    /// <summary>Unique ID within the WorldObjectRegistry.</summary>
-    public int ObjectId => objectId;
-
-    /// <summary>Category of this object (Agent, Scenery, etc.).</summary>
-    public WorldObjectKind Kind => kind;
-
-    /// <summary>Display name, defaults to GameObject name if not set.</summary>
-    public string DisplayName => string.IsNullOrEmpty(displayName) ? gameObject.name : displayName;
-
-    /// <summary>True if this object is currently registered in the global registry.</summary>
     public bool IsRegistered { get; private set; }
+
+    public int ObjectId => objectId;
+    public WorldObjectKind Kind => kind;
+    public string DisplayName => string.IsNullOrEmpty(displayName) ? name : displayName;
 
     private void Awake()
     {
-        // Ensure we at least have a display name.
+        // Auto-fill modules PER OBJECT
+        Location  = GetComponent<LocationModule>();
+        Motion    = GetComponent<MotionModule>();
+        Visual    = GetComponent<VisualModule>();
+        NPC       = GetComponent<NPCModule>();
+        Scent     = GetComponent<ScentEmitter>();
+        Activator = GetComponent<ActivatorModule>();
+
         if (string.IsNullOrEmpty(displayName))
             displayName = gameObject.name;
     }
 
     private void OnEnable()
     {
-        if (!autoRegister)
-            return;
-
+        if (!autoRegister) return;
         RegisterIfNeeded();
     }
 
     private void OnDisable()
     {
-        // Only unregister if we were previously registered.
         if (IsRegistered && WorldObjectRegistry.HasInstance)
         {
             WorldObjectRegistry.Instance.Unregister(this);
@@ -74,49 +77,36 @@ public class WorldObject : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// Registers this object with the global registry, assigning an ID if needed.
-    /// Safe to call multiple times; it will do nothing if already registered.
-    /// </summary>
     public void RegisterIfNeeded()
     {
-        if (IsRegistered || !autoRegister)
-            return;
-
+        if (IsRegistered || !autoRegister) return;
         if (!WorldObjectRegistry.HasInstance)
         {
-            Debug.LogWarning($"WorldObject '{DisplayName}' cannot register: no WorldObjectRegistry in scene.");
+            Debug.LogWarning($"WorldObject '{DisplayName}' cannot register: no WorldObjectRegistry found.");
             return;
         }
 
-        int assignedId = WorldObjectRegistry.Instance.Register(this);
-        if (assignedId >= 0)
+        int assigned = WorldObjectRegistry.Instance.Register(this);
+        if (assigned >= 0)
         {
-            objectId = assignedId;
+            objectId = assigned;
             IsRegistered = true;
         }
     }
-
-    /// <summary>
-    /// Allows the registry to set / update the ID.
-    /// You generally shouldn’t call this directly.
-    /// </summary>
-    public void SetObjectId(int newId)
-    {
-        objectId = newId;
-    }
-
-#if UNITY_EDITOR
-    private void OnValidate()
-    {
-        // Keep displayName in sync for convenience in editor
-        if (string.IsNullOrEmpty(displayName))
-            displayName = gameObject.name;
-    }
-#endif
 
     public override string ToString()
     {
         return $"WorldObject[{objectId}] {DisplayName} ({kind})";
     }
+    public void SetObjectId(int newId) => objectId = newId;
+
+
+#if UNITY_EDITOR
+    private void OnValidate()
+    {
+        if (string.IsNullOrEmpty(displayName))
+            displayName = gameObject.name;
+    }
+#endif
+
 }

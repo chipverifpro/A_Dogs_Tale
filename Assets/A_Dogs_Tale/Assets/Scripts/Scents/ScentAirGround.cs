@@ -235,6 +235,8 @@ public class ScentAirGround : MonoBehaviour
     private IEnumerator ScentDecayAndSpread()
     {
         int original_cell_count = 0;
+        float physicsStartTime = 0f;
+        float endTime = 0f;
 
         if (dir == null || dir.gen == null)
         {
@@ -270,14 +272,16 @@ public class ScentAirGround : MonoBehaviour
         {
             while (true)
             {
-                float physicsStartTime = Time.realtimeSinceStartup;
+                physicsStartTime = Time.realtimeSinceStartup;
                 original_cell_count = cellsContainingScents.Count;
-                var limitedDeltaTime = Mathf.Clamp(Time.deltaTime, 0f, simulationTimeStep * 5f); // prevent huge steps if frame rate drops too low
+                float limitedDeltaTime = Mathf.Clamp(Time.deltaTime, 0f, simulationTimeStep * 5f); // prevent huge steps if frame rate drops too low
                 ScentPhysicsStepOnce(limitedDeltaTime);
-                float endTime = Time.realtimeSinceStartup;
-                dir.activityStats.physics_cumulative += (endTime - physicsStartTime);
-                dir.activityStats.physics_calls += 1;
-
+                if (dir.activityStats.EnableStatistics)
+                {
+                    endTime = Time.realtimeSinceStartup;
+                    dir.activityStats.physics_cumulative += (endTime - physicsStartTime);
+                    dir.activityStats.physics_calls += 1;
+                }
                 if (scentCamActive) // only update visuals if scent camera is on
                 {
                     VisualizeCurrentScents(original_cell_count);
@@ -301,11 +305,15 @@ public class ScentAirGround : MonoBehaviour
                     while (accumulator >= step)
                     {
                         original_cell_count = cellsContainingScents.Count;
-                        float physicsStartTime = Time.realtimeSinceStartup;
+                        if (dir.activityStats.EnableStatistics) physicsStartTime = Time.realtimeSinceStartup;
                         ScentPhysicsStepOnce(step);
-                        float endTime = Time.realtimeSinceStartup;
-                        dir.activityStats.physics_cumulative += (endTime - physicsStartTime);
-                        dir.activityStats.physics_calls += 1;
+                        
+                        if (dir.activityStats.EnableStatistics)
+                        {
+                            endTime = Time.realtimeSinceStartup;
+                            dir.activityStats.physics_cumulative += (endTime - physicsStartTime);
+                            dir.activityStats.physics_calls += 1;
+                        }
                         
                         accumulator -= step;
                         // might be nice to yield a frame here if several steps are needed? (only if this is a significantly slow function)
