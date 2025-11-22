@@ -12,7 +12,7 @@ public class ManufactureGO : MonoBehaviour
 {
     
     [Header("Input data (logical elements)")]
-    ObjectDirectory dir;
+    public ObjectDirectory dir;
 
     [Header("Input data (logical elements)")]
     [SerializeField] private ElementStore elementStore;
@@ -96,6 +96,7 @@ public class ManufactureGO : MonoBehaviour
     /// </summary>
     public void BuildNewInstancesForLayer(ElementLayerKind kind)
     {
+        float startTime = Time.realtimeSinceStartup;
         //Debug.LogWarning($"BuildNewInstanceForLayer {kind} begins");
         if (elementStore == null || warehouse == null)
             return;
@@ -127,6 +128,9 @@ public class ManufactureGO : MonoBehaviour
             ManufactureInstance(inst, baseParent); // this will RegisterInstance internally
             //Debug.LogWarning("Manufactured instance");
         }
+        float endTime = Time.realtimeSinceStartup;
+        dir.activityStats.BuildNewInstancesForLayer_cumulative += (endTime - startTime);
+        dir.activityStats.BuildNewInstancesForLayer_calls += 1;
     }
 
     /// <summary>
@@ -219,8 +223,7 @@ public class ManufactureGO : MonoBehaviour
     /// </summary>
     public void ApplyPendingUpdates()
     {
-        //BuildAll(); // DEBUG: rebuild everything
-        //return;
+        float startTime = Time.realtimeSinceStartup;
         //Debug.Log("ManufactureGO: Applying pending updates to manufactured GameObjects.");
         if (elementStore == null || warehouse == null)
         {
@@ -294,6 +297,9 @@ public class ManufactureGO : MonoBehaviour
                 dataLayer.instances[i] = inst; // write back
             }
         }
+        float endTime = Time.realtimeSinceStartup;
+        dir.activityStats.ApplyPendingUpdates_cumulative += (endTime - startTime);
+        dir.activityStats.ApplyPendingUpdates_calls += 1;
     }
 
     void ApplyInstanceColor(GameObject go, ElementArchetype archetype, ElementInstanceData inst)

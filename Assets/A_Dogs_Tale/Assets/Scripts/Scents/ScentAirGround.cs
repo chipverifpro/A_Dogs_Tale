@@ -134,7 +134,7 @@ public class ScentAirGround : MonoBehaviour
     {
         if (dir.gen.buildComplete == false) 
             return; // don't do anything until build is done.
-            
+
         bool visibilityOrAgentChanged =
             (groundScentVisible != groundScentWasVisible) ||
             (airScentVisible    != airScentWasVisible)    ||
@@ -235,6 +235,8 @@ public class ScentAirGround : MonoBehaviour
     private IEnumerator ScentDecayAndSpread()
     {
         int original_cell_count = 0;
+        float physicsCumulativeRuntime = 0f;
+        int numPhysicsSteps = 0;
 
         if (dir == null || dir.gen == null)
         {
@@ -272,9 +274,13 @@ public class ScentAirGround : MonoBehaviour
         {
             while (true)
             {
+                float physicsStartTime = Time.realtimeSinceStartup;
                 original_cell_count = cellsContainingScents.Count;
                 var limitedDeltaTime = Mathf.Clamp(Time.deltaTime, 0f, simulationTimeStep * 5f); // prevent huge steps if frame rate drops too low
                 ScentPhysicsStepOnce(limitedDeltaTime);
+                float endTime = Time.realtimeSinceStartup;
+                dir.activityStats.scentPhysicsStepOnce_cumulative += (endTime - physicsStartTime);
+                dir.activityStats.scentPhysicsStepOnce_calls += 1;
                 iterationsIn10Seconds++;
 
                 if (scentCamActive) // only update visuals if scent camera is on
@@ -307,7 +313,12 @@ public class ScentAirGround : MonoBehaviour
                     while (accumulator >= step)
                     {
                         original_cell_count = cellsContainingScents.Count;
+                        float physicsStartTime = Time.realtimeSinceStartup;
                         ScentPhysicsStepOnce(step);
+                        float endTime = Time.realtimeSinceStartup;
+                        dir.activityStats.scentPhysicsStepOnce_cumulative += (endTime - physicsStartTime);
+                        dir.activityStats.scentPhysicsStepOnce_calls += 1;
+                        
                         accumulator -= step;
                         iterationsIn10Seconds++;
                         // might be nice to yield a frame here if several steps are needed? (only if this is a significantly slow function)
@@ -321,9 +332,11 @@ public class ScentAirGround : MonoBehaviour
                     float realDeltaTime = Time.realtimeSinceStartup - baseTime;
                     if (realDeltaTime >= 10f)
                     {
-                        Debug.Log($"ScentAirGround: (physicsConsistancy true) PhysicsPerSecond = {iterationsIn10Seconds / realDeltaTime}, PhysicsInterval = {1/(iterationsIn10Seconds / realDeltaTime)}");
+                        Debug.Log($"ScentAirGround: (physicsConsistancy true) AveragePhysicsRuntime = {physicsCumulativeRuntime/numPhysicsSteps}, PhysicsInterval = {1/(iterationsIn10Seconds / realDeltaTime)}");
                         baseTime = Time.realtimeSinceStartup;
                         iterationsIn10Seconds = 0;
+                        numPhysicsSteps = 0;
+                        physicsCumulativeRuntime = 0f;
                     }
                 
                 }

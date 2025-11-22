@@ -55,6 +55,9 @@ public class ObjectDirectory : MonoBehaviour
     public ManufactureGO manufactureGO;
     public ScentAirGround scentAirGround;
 
+    [Header("Statistics")]
+    public AcvtivityStats activityStats;
+
     void Awake()
     {
         pass_num = 0;
@@ -73,7 +76,7 @@ public class ObjectDirectory : MonoBehaviour
     {
         failures = 0;
         pass_num++;
-        Debug.Log($"[Directory{pass_num}] Begin InitializeConnections");
+        //Debug.Log($"[Directory{pass_num}] Begin InitializeConnections");
 
         // --- DungeonSettings (ScriptableObject) ---
         if (!cfg)
@@ -134,7 +137,7 @@ public class ObjectDirectory : MonoBehaviour
         }
         else
         {
-            Debug.Log($"[Directory{pass_num}] Complete InitializeConnections. {failures} failures");
+            //Debug.Log($"[Directory{pass_num}] Complete InitializeConnections. {failures} failures");
             AllReady = false;
         }
         
