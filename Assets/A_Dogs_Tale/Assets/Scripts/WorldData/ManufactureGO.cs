@@ -27,6 +27,21 @@ public class ManufactureGO : MonoBehaviour
     [Tooltip("Optional root transform for all manufactured objects. If null, WarehouseGO.transform is used.")]
     [SerializeField] private Transform rootParentOverride;
 
+    private void Awake()
+    {
+        // existing singleton / init stuff…
+
+        // Ensure buckets exist for important static layers at startup
+        EnsureBucketForLayer(ElementLayerKind.Wall);
+        EnsureBucketForLayer(ElementLayerKind.Floor);
+        // add others as needed: Ceiling, Props, etc.
+    }
+
+    private void EnsureBucketForLayer(ElementLayerKind kind)
+    {
+        var bucket = warehouse.GetOrCreateLayer(kind);
+    }
+
     /// <summary>
     /// Public entry point: build everything in the ElementStore into the WarehouseGO.
     /// </summary>
