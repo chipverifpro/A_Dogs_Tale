@@ -37,6 +37,7 @@ public class WorldObject : MonoBehaviour
     public NPCModule        NPC        { get; private set; }
     public ScentEmitter     Scent      { get; private set; }
     public ActivatorModule  Activator  { get; private set; }
+    public PlacementModule  Placement  { get; private set; }
 
     public bool IsRegistered { get; private set; }
 
@@ -53,6 +54,7 @@ public class WorldObject : MonoBehaviour
         NPC       = GetComponent<NPCModule>();
         Scent     = GetComponent<ScentEmitter>();
         Activator = GetComponent<ActivatorModule>();
+        Placement = GetComponent<PlacementModule>();
 
         if (string.IsNullOrEmpty(displayName))
             displayName = gameObject.name;
