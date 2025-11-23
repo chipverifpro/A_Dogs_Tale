@@ -1,6 +1,7 @@
 using UnityEngine;
 using Cinemachine;
 
+[DefaultExecutionOrder(-1000)] // big negative = runs very early
 public class ObjectDirectory : MonoBehaviour
 {
     // This is a catalog of all the objects and scripts in the game for all the
@@ -29,7 +30,6 @@ public class ObjectDirectory : MonoBehaviour
     [Header("Game Objects")]
     public Pack pack;
     public Player player;
-    //public Scents scents;     // replaced with ScentAirGround.cs
     public ScentAirGround scents;
     public ScentRegistry scentRegistry;
 

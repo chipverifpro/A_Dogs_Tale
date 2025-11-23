@@ -1155,19 +1155,19 @@ public partial class DungeonGenerator : MonoBehaviour
         return new Vector2Int(x, y);
     }
 
-    public RandomSceneryScatterer sceneryScatterer;
+    public RandomSceneryScatter sceneryScatterer;
 
     public void ScatterSceneryOnFloors()
     {
         // After your rooms/floors are built:
         List<Cell> floorCells = new();
-        int numObjects = 50; // or however many you want
+        //int numObjects = 50; // or however many you want
         foreach (var room in rooms)
         {
             floorCells.AddRange(room.cells);
         }
 
-        sceneryScatterer.Scatter(floorCells, numObjects);
+        sceneryScatterer.ScatterScenery(floorCells);
     }
 
 } // End class DungeonGenerator

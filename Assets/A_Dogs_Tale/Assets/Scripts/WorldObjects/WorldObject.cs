@@ -17,6 +17,8 @@ public enum WorldObjectKind
 /// Attach this to Agents, Scenery, Traps, etc.
 /// </summary>
 [DisallowMultipleComponent]
+
+[DefaultExecutionOrder(100)] // positive = runs late, after most other scripts
 public class WorldObject : MonoBehaviour
 {
     [Header("Identity")]

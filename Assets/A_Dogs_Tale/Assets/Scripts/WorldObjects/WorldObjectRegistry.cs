@@ -5,6 +5,7 @@ using UnityEngine;
 /// Global registry for all WorldObjects in the current scene / level.
 /// Responsible for ID assignment and lookups.
 /// </summary>
+[DefaultExecutionOrder(-900)] // big negative = runs very early
 public class WorldObjectRegistry : MonoBehaviour
 {
     private static WorldObjectRegistry _instance;
@@ -24,7 +25,7 @@ public class WorldObjectRegistry : MonoBehaviour
         }
     }
 
-    public static bool HasInstance => _instance != null;
+    public static bool HasInstance => Instance != null;
 
     [Tooltip("Starting ID value for auto-assigned objects.")]
     [SerializeField]

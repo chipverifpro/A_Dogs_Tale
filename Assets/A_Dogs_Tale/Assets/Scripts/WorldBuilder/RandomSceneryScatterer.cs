@@ -1,6 +1,104 @@
 using UnityEngine;
 using System.Collections.Generic;
 
+public class RandomSceneryScatter : MonoBehaviour
+{
+    [Header("Scattering Settings")]
+    public List<GameObject> sceneryPrefabs;     // prefabs that must include or can auto-add WorldObject + modules
+    public int count = 100;
+    public float randomRotation = 360f;
+    public Vector2 randomScaleRange = new Vector2(0.9f, 1.1f);
+    public float yOffset = 0f;                  // extra adjustment above ground
+    public bool addScentEmitters = false;
+
+    private ObjectDirectory dir;
+
+    private void Awake()
+    {
+        dir = ObjectDirectory.Instance;
+    }
+
+    public void ScatterScenery(List<Cell> validCells)
+    {
+        if (sceneryPrefabs == null || sceneryPrefabs.Count == 0)
+        {
+            Debug.LogWarning("RandomSceneryScatter: No scenery prefabs assigned.");
+            return;
+        }
+
+        if (dir == null || dir.gen == null)
+        {
+            Debug.LogError("RandomSceneryScatter: ObjectDirectory or DungeonGenerator missing.");
+            return;
+        }
+
+        for (int i = 0; i < count; i++)
+        {
+            var cell = validCells[Random.Range(0, validCells.Count)];
+            Vector3 position = cell.pos3d_world; 
+            position.y += yOffset;
+
+            GameObject prefab = sceneryPrefabs[Random.Range(0, sceneryPrefabs.Count)];
+            GameObject instance = Instantiate(prefab, position, Quaternion.identity);
+
+            InitializeWorldObject(instance, cell);
+        }
+    }
+
+    /// <summary>
+    /// Ensure the spawned object has WorldObject + key modules,
+    /// then initialize LocationModule & registry info.
+    /// </summary>
+    private void InitializeWorldObject(GameObject instance, Cell cell)
+    {
+        // --- 1. Ensure a WorldObject exists ---
+        WorldObject wo = instance.GetComponent<WorldObject>();
+        if (wo == null)
+        {
+            wo = instance.AddComponent<WorldObject>();
+        }
+
+        // --- 2. Ensure optional modules or allow auto-add ---
+        // LocationModule (recommended for all scenery)
+        LocationModule loc = instance.GetComponent<LocationModule>();
+        if (loc == null)
+            loc = instance.AddComponent<LocationModule>();
+
+        // VisualModule auto-add if prefab doesn't have it
+        VisualModule visual = instance.GetComponent<VisualModule>();
+        if (visual == null)
+            visual = instance.AddComponent<VisualModule>();
+
+        // Optional: add ScentEmitter if desired
+        if (addScentEmitters)
+        {
+            ScentEmitter scent = instance.GetComponent<ScentEmitter>();
+            if (scent == null)
+                scent = instance.AddComponent<ScentEmitter>();
+        }
+
+        // --- 3. Initialize LocationModule based on the cell ---
+        loc.cell = cell;
+        loc.pos3d_f = cell.pos3d_f;             // loc pos3d_f is in grid space
+        loc.yawDeg = Random.Range(0f, 360f);
+
+        // Random rotation applied to transform
+        instance.transform.rotation = Quaternion.Euler(0f, loc.yawDeg, 0f);
+
+        // Random uniform scale
+        float scale = Random.Range(randomScaleRange.x, randomScaleRange.y);
+        instance.transform.localScale = new Vector3(scale, scale, scale);
+
+        // --- 4. Register with WorldObjectRegistry ---
+        wo.RegisterIfNeeded();
+
+        // (The WorldObject.Awake() has already populated Location, Motion, Visual modules)
+
+        // Debug convenience:
+        // Debug.Log($"Placed WorldObject '{wo.displayName}' at {loc.pos3d} cell.");
+    }
+}
+/*
 public class RandomSceneryScatterer : MonoBehaviour
 {
     [Tooltip("Library of tree/rock prefabs to scatter.")]
@@ -65,7 +163,8 @@ public class RandomSceneryScatterer : MonoBehaviour
             // Optional: random slight scale variation for organic feel
             float scaleJitter = Random.Range(0.9f, 1.1f);
             instance.transform.localScale *= scaleJitter;
-            
+
         }
     }
 }
+*/
