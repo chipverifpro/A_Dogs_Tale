@@ -17,12 +17,6 @@ public enum WorldObjectKind
 /// Attach this to Agents, Scenery, Traps, etc.
 /// </summary>
 [DisallowMultipleComponent]
-[RequireComponent(typeof(LocationModule))]
-[RequireComponent(typeof(MotionModule))]
-[RequireComponent(typeof(VisualModule))]
-[RequireComponent(typeof(NPCModule))]
-[RequireComponent(typeof(ScentEmitter))]
-[RequireComponent(typeof(ActivatorModule))]
 public class WorldObject : MonoBehaviour
 {
     [Header("Identity")]
