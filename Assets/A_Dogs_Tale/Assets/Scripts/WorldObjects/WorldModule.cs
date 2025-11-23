@@ -15,27 +15,3 @@ public abstract class WorldModule : MonoBehaviour
 
     // future hook: OnWorldObjectAttached(), OnWorldObjectDetached(), etc.
 }
-
-
-// Placeholders for other WorldModule types:
-public class MotionModule : WorldModule
-{
-    public Vector3? Destination;
-    public float MoveSpeed = 3f;
-}
-
-public class NPCModule : WorldModule
-{
-    public enum State { Idle, Patrol, Attack }
-    public State CurrentState = State.Idle;
-}
-
-public class ScentEmitter : WorldModule
-{
-    public ScentSource scentSource;
-}
-
-public class ActivatorModule : WorldModule
-{
-    public UnityEngine.Events.UnityEvent OnActivate;
-}
