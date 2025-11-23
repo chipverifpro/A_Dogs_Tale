@@ -15,6 +15,8 @@ public enum PlacementRoomTypeFlags
     Hallway   = 1 << 4,
     Utility   = 1 << 5,
     Generic   = 1 << 6,
+    Corridor  = 1 << 7,
+    Outdoor   = 1 << 8,
     Any       = ~0
 }
 

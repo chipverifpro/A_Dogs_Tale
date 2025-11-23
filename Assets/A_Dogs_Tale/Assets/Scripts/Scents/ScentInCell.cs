@@ -19,7 +19,4 @@ public class ScentInCell             // Everything about ONE scent at one locati
     public float groundNextDelta;      // next ground value during decay/spread calc
     public float groundLastVisualized = -1f; // for determining whether to bother updating visual cloud
     public int groundGOindex = -1;   // index into ground visual (if any)
-
-    //public bool scentStabilized = false; // airborne scent reached stable state
-    //public bool scentNextStabilized = false; // for current pass in progress
 }

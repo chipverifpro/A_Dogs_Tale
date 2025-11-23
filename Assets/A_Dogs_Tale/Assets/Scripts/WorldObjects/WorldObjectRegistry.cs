@@ -8,24 +8,60 @@ using UnityEngine;
 [DefaultExecutionOrder(-900)] // big negative = runs very early
 public class WorldObjectRegistry : MonoBehaviour
 {
+
     private static WorldObjectRegistry _instance;
+    private static bool _shuttingDown;
+
+    // Begin a bunch of crap for starting up and shutting down safely.
     public static WorldObjectRegistry Instance
     {
         get
         {
+            // If we're quitting / tearing down, don't try to find anything or log errors.
+            if (_shuttingDown || !Application.isPlaying)
+                return _instance;
+
             if (_instance == null)
             {
                 _instance = FindFirstObjectByType<WorldObjectRegistry>();
                 if (_instance == null)
                 {
+                    // This should only be an error during normal play,
+                    // not during exit when _shuttingDown is true.
                     Debug.LogError("WorldObjectRegistry: No instance found in scene. Please add one.");
                 }
             }
+
             return _instance;
         }
     }
 
-    public static bool HasInstance => Instance != null;
+    public static bool HasInstance => Instance != null && Application.isPlaying && !_shuttingDown;
+
+    private void Awake()
+    {
+        if (_instance != null && _instance != this)
+        {
+            Debug.LogWarning($"Duplicate WorldObjectRegistry found. Destroying {gameObject.name}.", this);
+            Destroy(gameObject);
+            return;
+        }
+
+        _instance = this;
+        nextId = startingId;
+    }
+
+    private void OnApplicationQuit()
+    {
+        _shuttingDown = true;
+    }
+
+    private void OnDestroy()
+    {
+        if (_instance == this)
+            _instance = null;
+    }
+    // End a bunch of crap for shutting down safely.
 
     [Tooltip("Starting ID value for auto-assigned objects.")]
     [SerializeField]
@@ -36,19 +72,6 @@ public class WorldObjectRegistry : MonoBehaviour
     private readonly Dictionary<WorldObject, int> idByObject = new();
 
     private int nextId;
-
-    private void Awake()
-    {
-        if (_instance != null && _instance != this)
-        {
-            Debug.LogWarning("Multiple WorldObjectRegistry instances found. Destroying duplicate.");
-            Destroy(gameObject);
-            return;
-        }
-
-        _instance = this;
-        nextId = startingId;
-    }
 
     /// <summary>
     /// Register a WorldObject. If it already has a valid ID and that ID is free, we honor it.

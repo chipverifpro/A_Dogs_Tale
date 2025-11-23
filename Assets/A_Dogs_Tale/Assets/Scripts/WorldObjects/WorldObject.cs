@@ -68,6 +68,10 @@ public class WorldObject : MonoBehaviour
 
     private void OnDisable()
     {
+        // Don't bother with registry during teardown or in edit-time
+        if (!Application.isPlaying)
+            return;
+
         if (IsRegistered && WorldObjectRegistry.HasInstance)
         {
             WorldObjectRegistry.Instance.Unregister(this);

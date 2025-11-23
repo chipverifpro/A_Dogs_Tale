@@ -86,6 +86,8 @@ public partial class DungeonGenerator : MonoBehaviour
         DrawMapByRooms(rooms);
         yield return null;
 
+        AssignRoomUses();
+
         CheckRoomsToGridConsistancy();
         
         BottomBanner.Show($"Done seed={seed} in {(Time.realtimeSinceStartup - t0):F2}s");
@@ -2176,6 +2178,117 @@ public partial class DungeonGenerator : MonoBehaviour
         return result;
     }
 
+    void AssignRoomUses()
+    {
+        foreach (Room room in rooms)
+        {
+            AssignRandomRoomUse(room);
+            //AssignRandomRoomUse_insane(room);
+        }
+    }
+
+    void AssignRandomRoomUse(Room room)
+    {
+        if (room == null) return;
+
+        // Corridors are a special case
+        if (room.isCorridor)
+        {
+            room.placementTypes = PlacementRoomTypeFlags.Corridor;
+            return;
+        }
+
+        // You can tune these weights (higher = more common)
+        // A room may become: Bedroom, Kitchen, Living, Bathroom, Hallway, Utility, Generic, Outdoor
+        // Any/None are intentionally not chosen here.
+        var weightedTypes = new (PlacementRoomTypeFlags type, int weight)[]
+        {
+            (PlacementRoomTypeFlags.Bedroom,   3),
+            (PlacementRoomTypeFlags.Living,    3),
+            (PlacementRoomTypeFlags.Kitchen,   2),
+            (PlacementRoomTypeFlags.Bathroom,  2),
+            (PlacementRoomTypeFlags.Utility,   1),
+            (PlacementRoomTypeFlags.Hallway,   1),
+            (PlacementRoomTypeFlags.Generic,   4),
+            (PlacementRoomTypeFlags.Outdoor,   1),
+        };
+
+        room.placementTypes = PickWeightedRandom(weightedTypes);
+    }
+
+    // this version assigns multiple random types to rooms for "insane millionaire's mansion" mode
+    void AssignRandomRoomUse_insane(Room room)
+    {
+        if (room == null) return;
+
+        // Corridors are a special case
+        if (room.isCorridor)
+        {
+            room.placementTypes = PlacementRoomTypeFlags.Corridor;
+            return;
+        }
+
+        // All the "interesting" non-special room types
+        PlacementRoomTypeFlags[] baseTypes =
+        {
+            PlacementRoomTypeFlags.Bedroom,
+            PlacementRoomTypeFlags.Kitchen,
+            PlacementRoomTypeFlags.Living,
+            PlacementRoomTypeFlags.Bathroom,
+            PlacementRoomTypeFlags.Hallway,
+            PlacementRoomTypeFlags.Utility,
+            PlacementRoomTypeFlags.Generic,
+            PlacementRoomTypeFlags.Outdoor
+        };
+
+        // How many different uses should this room pretend to have?
+        // 70% chance single-type, 25% chance 2 types, 5% chance 3 types.
+        int comboCountRoll = UnityEngine.Random.Range(0, 100);
+        int comboCount;
+        if (comboCountRoll < 70) comboCount = 1;
+        else if (comboCountRoll < 95) comboCount = 2;
+        else comboCount = 3;
+
+        // Clamp to available types
+        comboCount = Mathf.Clamp(comboCount, 1, baseTypes.Length);
+
+        // Build a random combination
+        PlacementRoomTypeFlags result = PlacementRoomTypeFlags.None;
+
+        for (int i = 0; i < comboCount; i++)
+        {
+            // Pick a random base type
+            var type = baseTypes[UnityEngine.Random.Range(0, baseTypes.Length)];
+            result |= type;
+        }
+
+        // Just in case something went weird, fall back to Generic.
+        if (result == PlacementRoomTypeFlags.None)
+            result = PlacementRoomTypeFlags.Generic;
+
+        room.placementTypes = result;
+    }
+
+    PlacementRoomTypeFlags PickWeightedRandom((PlacementRoomTypeFlags type, int weight)[] entries)
+    {
+        int total = 0;
+        foreach (var e in entries)
+            total += Mathf.Max(0, e.weight);
+
+        if (total == 0)
+            return PlacementRoomTypeFlags.Generic;
+
+        int roll = UnityEngine.Random.Range(0, total);
+
+        foreach (var e in entries)
+        {
+            roll -= Mathf.Max(0, e.weight);
+            if (roll < 0)
+                return e.type;
+        }
+
+        return entries[entries.Length - 1].type; // fallback
+    }
 
     // ======================= Shared Utility functions =======================
     // shared functions pulled out of above
@@ -2482,4 +2595,6 @@ public partial class DungeonGenerator : MonoBehaviour
         // Handles double-cover and tiny numerical differences.
         return Quaternion.Angle(a, b) <= maxAngleDeg;
     }
+
+    // ======================= End of Shared Utility functions =======================
 }

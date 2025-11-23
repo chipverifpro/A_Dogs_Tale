@@ -69,7 +69,7 @@ public partial class DungeonGenerator : MonoBehaviour
 
     void OnDestroy()
     {
-        Debug.LogWarning($"[DG] OnDestroy in scene '{gameObject.scene.name}' (id {GetInstanceID()})");
+        Debug.Log($"[DG] OnDestroy in scene '{gameObject.scene.name}' (id {GetInstanceID()})");
         SceneManager.sceneLoaded -= OnSceneLoaded;
         OnDestroy_Tilemap();
     }
