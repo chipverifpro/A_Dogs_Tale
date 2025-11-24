@@ -49,6 +49,8 @@ public partial class DungeonGenerator : MonoBehaviour
     [Header("Directory Object")]
     public ObjectDirectory dir;
 
+    public RandomSceneryScatter sceneryScatterer;
+
     // Reference to external classes is maintained here
     public DungeonSettings cfg;     // This is used lots of places!
 
@@ -1155,8 +1157,7 @@ public partial class DungeonGenerator : MonoBehaviour
         return new Vector2Int(x, y);
     }
 
-    public RandomSceneryScatter sceneryScatterer;
-
+    
     public void ScatterSceneryOnFloors()
     {
         // After your rooms/floors are built:

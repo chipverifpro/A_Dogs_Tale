@@ -20,7 +20,7 @@ public class FurniturePlacer : MonoBehaviour
 
     [Header("Placement Offsets")]
     [Tooltip("Extra Y offset above the cell's world position for placement.")]
-    public float baseYOffset = 0f;
+    public float baseYOffset = 1f;
 
     private ObjectDirectory dir;
 

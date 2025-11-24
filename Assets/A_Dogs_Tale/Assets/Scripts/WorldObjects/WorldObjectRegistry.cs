@@ -36,7 +36,7 @@ public class WorldObjectRegistry : MonoBehaviour
         }
     }
 
-    public static bool HasInstance => Instance != null && Application.isPlaying && !_shuttingDown;
+    public static bool HasInstance => _instance != null && Application.isPlaying && !_shuttingDown;
 
     private void Awake()
     {

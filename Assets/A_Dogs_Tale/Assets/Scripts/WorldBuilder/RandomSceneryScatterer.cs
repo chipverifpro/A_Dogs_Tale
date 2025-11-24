@@ -8,7 +8,7 @@ public class RandomSceneryScatter : MonoBehaviour
     public int count = 100;
     public float randomRotation = 360f;
     public Vector2 randomScaleRange = new Vector2(0.9f, 1.1f);
-    public float yOffset = 0f;                  // extra adjustment above ground
+    public float yOffset = 10f;                  // extra adjustment above ground
     public bool addScentEmitters = false;
 
     private ObjectDirectory dir;
@@ -79,7 +79,7 @@ public class RandomSceneryScatter : MonoBehaviour
 
         // --- 3. Initialize LocationModule based on the cell ---
         loc.cell = cell;
-        loc.pos3d_f = cell.pos3d_f;             // loc pos3d_f is in grid space
+        loc.pos3d_f = cell.pos3d_f;          // loc pos3d_f is in grid space
         loc.yawDeg = Random.Range(0f, 360f);
 
         // Random rotation applied to transform

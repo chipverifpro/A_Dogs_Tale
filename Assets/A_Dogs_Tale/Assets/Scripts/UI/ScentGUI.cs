@@ -17,6 +17,15 @@ public class ScentGUI : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.F))
         {
             sniffVisuals.SetSniffMode(true);
+            if (dir == null)
+            {
+                dir = ObjectDirectory.Instance;
+            }
+            if (dir.scentRegistry == null)
+            {
+                Debug.LogError("ScentGUI: scentRegistry is null!");
+                return;
+            }
             dir.scentRegistry.ActivateScentOverlay();
             // trigger your sniff UI & scent detection
         }
