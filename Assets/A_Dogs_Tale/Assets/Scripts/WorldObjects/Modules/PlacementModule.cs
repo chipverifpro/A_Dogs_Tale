@@ -59,8 +59,8 @@ public class PlacementModule : WorldModule
     [Tooltip("If true, approximate sizeInCells from Renderer bounds using cellSize.")]
     public bool autoSizeFromMesh = true;
 
-    [Tooltip("Size in grid cells (X,Y,Z). Used by placement to ensure fit.")]
-    public Vector3Int sizeInCells = Vector3Int.one;
+    [Tooltip("Exact object size in grid units (X,Y,Z). Auto-filled from mesh bounds.")]
+    public Vector3 sizeInCells = Vector3.one;
 
     [Tooltip("Size of one grid cell in world units. Used when auto-sizing from mesh.")]
     public float cellSize = 1.0f;
@@ -133,7 +133,7 @@ public class PlacementModule : WorldModule
     /// Approximate sizeInCells from the attached renderer's bounds and cellSize.
     /// Safe to call multiple times.
     /// </summary>
-    public void AutoComputeSizeFromMesh()
+    public void AutoComputeSizeFromMesh_OLD_INT()
     {
         if (_mainRenderer == null)
             _mainRenderer = GetComponentInChildren<Renderer>();
@@ -160,6 +160,30 @@ public class PlacementModule : WorldModule
             Mathf.Max(1, Mathf.CeilToInt(sizeY / cellSize)),
             Mathf.Max(1, Mathf.CeilToInt(sizeZ / cellSize))
         );
+    }
+
+    public void AutoComputeSizeFromMesh()
+    {
+        if (_mainRenderer == null)
+            _mainRenderer = GetComponentInChildren<Renderer>();
+
+        if (_mainRenderer == null)
+        {
+            Debug.LogWarning($"{name}: PlacementModule.AutoComputeSizeFromMesh found no Renderer.", this);
+            return;
+        }
+
+        if (cellSize <= 0f)
+            cellSize = 1f;
+
+        Bounds bounds = _mainRenderer.bounds; // world bounds
+
+        // Convert world-space meters → grid-space units
+        float sizeX = bounds.size.x / cellSize;
+        float sizeY = bounds.size.y / cellSize;
+        float sizeZ = bounds.size.z / cellSize;
+
+        sizeInCells = new Vector3(sizeX, sizeY, sizeZ);
     }
 
     /// <summary>
@@ -306,33 +330,24 @@ public class PlacementModule : WorldModule
         if (wallDir == DirFlags.None)
             return Vector3.zero;
 
-        // Inward direction = away from wall, into the room
         Vector3 inward = GetForwardFromWall(wallDir, awayFromWall: true);
         if (inward.sqrMagnitude < 0.0001f)
             return Vector3.zero;
 
-        // Decide which axis is "depth" based on dominant component
-        // world X corresponds to grid X, world Z to grid Y.
-        int depthCells;
+        inward.Normalize();
+
+        // Determine “depth” of the object in the direction we are pushing
+        // Based on whether X or Z component dominates
+        float depth;
+
         if (Mathf.Abs(inward.x) > Mathf.Abs(inward.z))
-        {
-            // Pushing along +/-X → depth uses sizeInCells.x
-            depthCells = Mathf.Max(1, sizeInCells.x);
-        }
+            depth = Mathf.Abs(sizeInCells.x) * cellSize;
         else
-        {
-            // Pushing along +/-Z → depth uses sizeInCells.z (grid Y)
-            depthCells = Mathf.Max(1, sizeInCells.z);
-        }
+            depth = Mathf.Abs(sizeInCells.z) * cellSize;
 
-        if (cellSize <= 0f)
-            cellSize = 1f;
+        float halfDepth = 0.5f * depth;
 
-        float halfDepth = 0.5f * depthCells * cellSize;
-
-        // Final offset = half the depth + padding, along inward direction
-        float distance = halfDepth + wallPadding;
-        return inward * distance;
+        return inward * (halfDepth + wallPadding);
     }
 
 }
