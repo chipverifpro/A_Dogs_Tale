@@ -100,6 +100,7 @@ public class FurniturePlacer : MonoBehaviour
         if (compatible.Count == 0)
         {
             // Nothing suitable for this room type
+            Debug.LogWarning($"FurniturePlacer: No compatible furniture for room {room.my_room_number} with types {room.placementTypes}.", this);
             return;
         }
 

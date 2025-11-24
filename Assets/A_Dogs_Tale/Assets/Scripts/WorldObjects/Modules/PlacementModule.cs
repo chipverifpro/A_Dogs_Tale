@@ -79,6 +79,10 @@ public class PlacementModule : WorldModule
     [Tooltip("If true, object should be touching a wall (NearWall / AgainstWall).")]
     public bool mustTouchWall = false;
 
+    [Header("Wall Clearance")]
+    [Tooltip("Extra world-space margin from the wall, on top of half the object depth.")]
+    public float wallPadding = 0.05f;
+
     // Optional cached references
     private Renderer _mainRenderer;
     private LocationModule _location;
@@ -224,7 +228,7 @@ public class PlacementModule : WorldModule
     /// based on a chosen cell and wall direction. Caller is responsible for choosing
     /// an appropriate cell/wall for the edgeHint.
     /// </summary>
-    public void ApplyPlacement(Cell cell, DirFlags wallDir, float yOffset = 0f)
+    public void ApplyPlacement_old(Cell cell, DirFlags wallDir, float yOffset = 0f)
     {
         Vector3 worldPos = ComputeBaseWorldPosition(cell, yOffset);
         Quaternion rot = ChooseRotation(wallDir);
@@ -238,6 +242,29 @@ public class PlacementModule : WorldModule
             _location.cell = cell;
             _location.pos3d_f = cell.pos3d_f; // grid-space master
             _location.yawDeg = transform.eulerAngles.y;
+        }
+    }
+
+    public void ApplyPlacement(Cell cell, DirFlags wallDir, float yOffset = 0f)
+    {
+        Vector3 worldPos = ComputeBaseWorldPosition(cell, yOffset);
+
+        // If this object is meant to be near/against a wall, nudge it inward
+        if (edgeHint == EdgeHint.NearWall || edgeHint == EdgeHint.AgainstWall || mustTouchWall)
+        {
+            worldPos += ComputeWallClearanceOffset(wallDir);
+        }
+
+        Quaternion rot = ChooseRotation(wallDir);
+
+        transform.position = worldPos;
+        transform.rotation = rot;
+
+        if (_location != null)
+        {
+            _location.cell    = cell;
+            _location.pos3d_f = cell.pos3d_f;
+            _location.yawDeg  = transform.eulerAngles.y;
         }
     }
 
@@ -268,4 +295,44 @@ public class PlacementModule : WorldModule
         // If it's the other way around in your layout, swap the sign.
         return awayFromWall ? -normal : normal;
     }
+
+    /// <summary>
+    /// Compute an inward offset to keep this object from intersecting a wall,
+    /// based on its sizeInCells and cellSize. wallDir is the wall this object
+    /// is placed against; inward is assumed to be away-from-wall (into the room).
+    /// </summary>
+    public Vector3 ComputeWallClearanceOffset(DirFlags wallDir)
+    {
+        if (wallDir == DirFlags.None)
+            return Vector3.zero;
+
+        // Inward direction = away from wall, into the room
+        Vector3 inward = GetForwardFromWall(wallDir, awayFromWall: true);
+        if (inward.sqrMagnitude < 0.0001f)
+            return Vector3.zero;
+
+        // Decide which axis is "depth" based on dominant component
+        // world X corresponds to grid X, world Z to grid Y.
+        int depthCells;
+        if (Mathf.Abs(inward.x) > Mathf.Abs(inward.z))
+        {
+            // Pushing along +/-X → depth uses sizeInCells.x
+            depthCells = Mathf.Max(1, sizeInCells.x);
+        }
+        else
+        {
+            // Pushing along +/-Z → depth uses sizeInCells.z (grid Y)
+            depthCells = Mathf.Max(1, sizeInCells.z);
+        }
+
+        if (cellSize <= 0f)
+            cellSize = 1f;
+
+        float halfDepth = 0.5f * depthCells * cellSize;
+
+        // Final offset = half the depth + padding, along inward direction
+        float distance = halfDepth + wallPadding;
+        return inward * distance;
+    }
+
 }

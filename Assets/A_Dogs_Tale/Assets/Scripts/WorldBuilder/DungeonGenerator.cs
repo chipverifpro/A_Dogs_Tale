@@ -49,7 +49,7 @@ public partial class DungeonGenerator : MonoBehaviour
     [Header("Directory Object")]
     public ObjectDirectory dir;
 
-    public RandomSceneryScatter sceneryScatterer;
+    //public RandomSceneryScatter sceneryScatterer;
 
     // Reference to external classes is maintained here
     public DungeonSettings cfg;     // This is used lots of places!
@@ -1168,7 +1168,7 @@ public partial class DungeonGenerator : MonoBehaviour
             floorCells.AddRange(room.cells);
         }
 
-        sceneryScatterer.ScatterScenery(floorCells);
+        //sceneryScatterer.ScatterScenery(floorCells);
     }
 
 } // End class DungeonGenerator
