@@ -46,8 +46,8 @@ public class ScentRegistry : MonoBehaviour
     [Header("Reference to Global Directory")]
     public ObjectDirectory dir;
 
-    [Header("Known Scents (Pack-Wide)")]
-    public List<ScentSource> knownScentSources = new List<ScentSource>();
+    [Header("All Scent Sources")]
+    public List<ScentSource> allScentSources = new List<ScentSource>();
 
     // Internal map for fast lookup by agentId
     private readonly Dictionary<int, ScentSource> _byAgentId = new Dictionary<int, ScentSource>();
@@ -84,7 +84,7 @@ public class ScentRegistry : MonoBehaviour
     {
         _byAgentId.Clear();
 
-        foreach (var scentSource in knownScentSources)
+        foreach (var scentSource in allScentSources)
         {
             if (scentSource == null) continue;
 
@@ -130,7 +130,7 @@ public class ScentRegistry : MonoBehaviour
         scentSource.sourceAirColor = GenerateSourceColor(scentSource.categoryColor);
         scentSource.sourceGroundColor = GenerateSourceColor(scentSource.categoryColor);
 
-        knownScentSources.Add(scentSource);
+        allScentSources.Add(scentSource);
         _byAgentId[agentId] = scentSource;
 
         return scentSource;

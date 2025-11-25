@@ -23,7 +23,7 @@ public partial class Player : MonoBehaviour
 
 
     [Header("Input Control Settings")]
-    public Transform player;        // the object to rotate
+    public Transform playerTransform;        // the object to rotate
     public float turnSpeed = 1f;    // sensitivity multiplier
     public bool smooth = true;
     public float smoothTime = 4f;
@@ -38,8 +38,13 @@ public partial class Player : MonoBehaviour
 
     void AwakeMouseInput()
     {
-        if (!player)
-            player = transform;  // Fallback to self
+        if (mainCamera == null)
+        {
+            mainCamera = Camera.main;
+        }
+
+        if (!playerTransform)
+            playerTransform = transform;  // Fallback to self
     
         dragging = false;
         startTimeMouseDown = 0f;
@@ -71,11 +76,16 @@ public partial class Player : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.Alpha5)) ChangePlayerAgentById(4);
 
         UpdateMouseInput();  // Click/tap to move
-        //MoveTowardMouseTarget();   // move toward clicked location
+
+        Update_Selectable();
     }
 
     void UpdateMouseInput()
     {
+        // If shift is held, this click is for selection, not movement
+        if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift))
+            return;
+
         bool turning = false;
         // mouse/touch start
         if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject())
@@ -243,4 +253,125 @@ public partial class Player : MonoBehaviour
         return y;
     }
 
+
+    [Header("References")]
+    [SerializeField] private Camera mainCamera;          // assign Main Camera
+    //[SerializeField] private Transform playerTransform;  // player / dog root transform
+
+    [Header("Selection Settings")]
+    [SerializeField] private LayerMask selectableMask;   // layers that can be selected
+    [SerializeField] private float maxSelectDistanceTiles = 5f;
+    [SerializeField] private float tileSize = 1f;        // world units per tile (probably 1.0f)
+
+    [Header("Highlight Settings")]
+    [SerializeField] private Color highlightColor = Color.yellow;
+
+    private WorldObject currentSelection;
+    private SelectableHighlight currentHighlight;
+
+    private float MaxSelectDistanceWorld => maxSelectDistanceTiles * tileSize;
+
+
+    private void Update_Selectable()
+    {
+        HandleSelectionClick();
+        CheckSelectionDistance();
+    }
+
+    private void HandleSelectionClick()
+    {
+        // Shift + Left Click
+        bool shift =
+            Input.GetKey(KeyCode.LeftShift) ||
+            Input.GetKey(KeyCode.RightShift);
+
+        if (!shift) return;
+        if (!Input.GetMouseButtonDown(0)) return;
+
+        if (mainCamera == null) return;
+
+        Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
+
+        if (Physics.Raycast(ray, out RaycastHit hit, 1000f, selectableMask, QueryTriggerInteraction.Ignore))
+        {
+            // Find the WorldObject on this hit (or its parents)
+            WorldObject wo = hit.collider.GetComponentInParent<WorldObject>();
+            if (wo == null)
+            {
+                // Clicked something that isn't a WorldObject; treat as deselect
+                Deselect();
+                return;
+            }
+
+            // Distance check from player to object
+            if (playerTransform != null)
+            {
+                float dist = Vector3.Distance(playerTransform.position, wo.transform.position);
+                if (dist > MaxSelectDistanceWorld)
+                {
+                    // Too far to select
+                    // Debug.Log($"Object {wo.DisplayName} is too far to select ({dist:F1}m).");
+                    return;
+                }
+            }
+
+            Select(wo);
+        }
+        else
+        {
+            // Clicked empty space; optional: deselect
+            Deselect();
+        }
+    }
+
+    private void CheckSelectionDistance()
+    {
+        if (currentSelection == null || playerTransform == null)
+            return;
+
+        float dist = Vector3.Distance(playerTransform.position, currentSelection.transform.position);
+        if (dist > MaxSelectDistanceWorld)
+        {
+            // Auto-unselect when we walk away
+            Deselect();
+        }
+    }
+
+    private void Select(WorldObject wo)
+    {
+        if (currentSelection == wo)
+            return;
+
+        // Clear previous
+        Deselect();
+
+        currentSelection = wo;
+
+        currentHighlight = wo.GetComponent<SelectableHighlight>();
+        if (currentHighlight == null)
+        {
+            currentHighlight = wo.gameObject.AddComponent<SelectableHighlight>();
+        }
+
+        currentHighlight.SetHighlighted(true, highlightColor);
+
+        // TODO: hook here for future interactions UI (inspect panel, context menu, etc.)
+        // e.g. dir.ui.ShowObjectInfo(wo);
+        Debug.Log($"Selected: {wo.DisplayName}");
+    }
+
+    private void Deselect()
+    {
+        if (currentHighlight != null)
+        {
+            currentHighlight.SetHighlighted(false, highlightColor);
+            currentHighlight = null;
+        }
+
+        currentSelection = null;
+
+        // TODO: hide selection UI if you add one later
+        // dir.ui.HideObjectInfo();
+        Debug.Log($"Deselected");
+    }
 }
