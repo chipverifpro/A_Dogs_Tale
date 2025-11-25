@@ -39,6 +39,7 @@ public class ObjectDirectory : MonoBehaviour
     public CinemachineBrain brain;
     public CinemachineVirtualCamera vcamFP, vcamPerspective, vcamOverhead;
     public Camera scentCam;
+    public CameraModeSwitcher cameraModeSwitcher;
 
 
     [Header("Game User Interfaces")]

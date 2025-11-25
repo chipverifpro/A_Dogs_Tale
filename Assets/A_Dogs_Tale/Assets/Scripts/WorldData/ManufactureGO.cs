@@ -205,14 +205,14 @@ public class ManufactureGO : MonoBehaviour
         inst.dirtyFlags = ElementUpdateFlags.All; // mark dirty to apply changes
 
         // Layer / tag from archetype
-        if (archetype.unityLayer >= 0 && archetype.unityLayer < 32)
-            go.layer = archetype.unityLayer;
+       // if (archetype.unityLayer >= 0 && archetype.unityLayer < 32)
+       //     go.layer = archetype.unityLayer;
 
-        if (!string.IsNullOrEmpty(archetype.unityTag))
-        {
-            try { go.tag = archetype.unityTag; }
-            catch { /* tag might not exist; ignore */ }
-        }
+       // if (!string.IsNullOrEmpty(archetype.unityTag))
+       // {
+       //     try { go.tag = archetype.unityTag; }
+       //     catch { /* tag might not exist; ignore */ }
+       // }
 
         // Apply per-instance color (works for prefab and non-prefab)
         ApplyInstanceColor(go, archetype, inst);

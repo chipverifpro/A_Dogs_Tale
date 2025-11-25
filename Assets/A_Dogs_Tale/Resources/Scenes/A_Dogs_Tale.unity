@@ -1487,7 +1487,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 243675088}
-  - component: {fileID: 243675091}
+  - component: {fileID: 243675092}
   m_Layer: 0
   m_Name: Scenery
   m_TagString: Untagged
@@ -1510,7 +1510,7 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1767335688}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &243675091
+--- !u!114 &243675092
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -1519,10 +1519,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 243675087}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 299a87f777d8f4e4894e1efba90dd3d2, type: 3}
+  m_Script: {fileID: 11500000, guid: 836a5f8d5897f4702a636be6160c47b2, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::RandomSceneryScatter
-  sceneryPrefabs:
+  m_EditorClassIdentifier: Assembly-CSharp::FurniturePlacer
+  furniturePrefabs:
   - {fileID: 777657613197372084, guid: 8f233bb653c30bb4295d0d5dd595b22d, type: 3}
   - {fileID: 8354605738710675445, guid: 708faea70e0a35c4f895785050e0790b, type: 3}
   - {fileID: 7958227791878072094, guid: 761e24fa02fc69e4e949b9f5547dc4e2, type: 3}
@@ -1888,11 +1888,10 @@ MonoBehaviour:
   - {fileID: 7525915734565588, guid: 464dbb36be77f7b40a0d1e9659621647, type: 3}
   - {fileID: 8048318294784803485, guid: c262610eb7c39e347be2b49303dba854, type: 3}
   - {fileID: 8795397239066734551, guid: 63ccff811e99d7347b2437ddd8805e5a, type: 3}
-  count: 100
-  randomRotation: 360
-  randomScaleRange: {x: 0.9, y: 1.1}
-  yOffset: 0.5
-  addScentEmitters: 0
+  minPerRoom: 0
+  maxPerRoom: 3
+  maxAttemptsPerItem: 20
+  baseYOffset: 0.5
 --- !u!1 &265843778
 GameObject:
   m_ObjectHideFlags: 0
@@ -2844,7 +2843,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   hf_valid: 0
   dir: {fileID: 1920128612}
-  sceneryScatterer: {fileID: 243675091}
   cfg: {fileID: 11400000, guid: 2050485d3f2754bfcb547b81523f9099, type: 2}
   buildComplete: 0
   room_rects: []
@@ -2895,6 +2893,7 @@ MonoBehaviour:
   doorsName: Doors3D
   rngSeed: 0
   elementStore: {fileID: 11400000, guid: 12ce8f64c30bc4bbfa007792bc781b21, type: 2}
+  ceilingZOffset: 0
 --- !u!1 &428731488
 GameObject:
   m_ObjectHideFlags: 0
@@ -3928,7 +3927,10 @@ MonoBehaviour:
   constraintIters: 3
   origin: {x: 0, y: 0, z: 0}
   cellSize: 1
-  groundMask:
+  FP_BlockingMask:
+    serializedVersion: 2
+    m_Bits: 759
+  Overhead_BlockingMask:
     serializedVersion: 2
     m_Bits: 247
   rayMaxDistance: 200
@@ -12927,6 +12929,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 914c9f5b3db0f43f49534db3f1f1276f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  cameraMode: 2
+  playerVisible: 1
   brain: {fileID: 1815589289}
   vcamFP: {fileID: 445485060}
   vcamPerspective: {fileID: 1801122503}
@@ -12935,7 +12939,6 @@ MonoBehaviour:
   toggleKey: 9
   player: {fileID: 0}
   height: 20
-  playerVisible: 1
   zoomStep: 2
   minZoom: 2
   maxZoom: 50
@@ -13429,6 +13432,7 @@ MonoBehaviour:
   vcamPerspective: {fileID: 1801122503}
   vcamOverhead: {fileID: 705631742}
   scentCam: {fileID: 1326159950}
+  cameraModeSwitcher: {fileID: 1815589288}
   bottomBanner: {fileID: 669106355}
   menuManager: {fileID: 836622446}
   sceneFader: {fileID: 836622445}

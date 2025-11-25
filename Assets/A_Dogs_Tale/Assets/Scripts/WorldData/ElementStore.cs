@@ -9,6 +9,7 @@ using UnityEngine;
 public enum ElementLayerKind
 {
     Floor,
+    Ceiling,
     TriangleFloor,
     Wall,
     DiagonalWall,
@@ -464,6 +465,67 @@ public class ElementStore : ScriptableObject
         );
 
         AddInstance("FloorTile", inst);
+    }
+
+    public void AddCeilingTile(
+            string archetypeId,
+            int roomIndex,
+            Vector2Int cellCoord,
+            Vector3 worldPos,
+            Quaternion rotation,
+            Vector3 scale,
+            Color color)
+    {
+        var inst = new ElementInstanceData(
+            archetypeId: archetypeId,
+            layerKind: ElementLayerKind.Ceiling,
+            roomIndex: roomIndex,
+            cellCoord: cellCoord,
+            heightSteps: 0,
+            position: worldPos,
+            rotation: rotation,
+            scale: scale,
+            color: color,
+            customFlags: 0,
+            customValue: 0f
+        );
+
+        AddInstance("CeilingTile", inst);
+    }
+
+    public int AddCeiling(Cell cell, float ceilingHeight, Color color)
+    {
+        if (cell == null)
+        {
+            Debug.LogError("ElementStore.AddCeiling: cell is null.");
+            return -1;
+        }
+
+        // Work in GRID space: x,y = room plane, z = height.
+        // We ignore floor tilt for now: ceiling is a flat slab at (cell.height + ceilingHeight).
+        Vector3 pos = cell.pos3d_f;
+        pos.z += ceilingHeight;  // vertical offset in grid units
+
+        // If you prefer ceilingHeight in world units and grid z==world y, this is still fine.
+        int heightSteps = Mathf.RoundToInt(pos.z);
+
+        var inst = new ElementInstanceData(
+            archetypeId: "PF_Ceiling",           // must match your archetype / warehouse ID
+            layerKind: ElementLayerKind.Ceiling,
+            roomIndex: cell.room_number,
+            cellCoord: cell.pos,
+            heightSteps: heightSteps,
+            position: pos,
+            rotation: Quaternion.identity,
+            scale: Vector3.one,
+            color: color,
+            customFlags: 0,
+            customValue: 0f
+        );
+
+        int index = AddInstance("Ceiling", inst); // "Ceiling" = layerName; can be whatever convention you use
+        // Debug.Log($"AddCeiling(@{cell.pos}, z={pos.z}) -> idx={index}");
+        return index;
     }
 
     /// <summary>

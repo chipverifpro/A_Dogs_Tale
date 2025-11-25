@@ -26,6 +26,12 @@ public class Room
     public Color colorFloor = new(1f, 0.4f, 0.7f, 0.5f); // semi-transparent pink; // Color for the whole room, cell may override this
     public List<int> neighbors = new(); // List of neighboring rooms by index into global "rooms" list
     public bool isCorridor = false;     // Indicate if this room was generated as a corridor
+    
+    [Header("Ceiling / Environment")]
+    public float ceilingHeight = 2.5f;   // world units above floor
+    public bool isOutdoor = false;       // or infer from placementTypes
+    public Color colorCeiling = new(.076f, 0.75f, 0.63f, 1f); // Light Olive Grey
+       
     public PlacementRoomTypeFlags placementTypes = PlacementRoomTypeFlags.Generic;
     public int area = 0;
     public RectInt bounds; // minX, minY, sizeX, sizeY

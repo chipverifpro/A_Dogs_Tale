@@ -57,8 +57,8 @@ public partial class DungeonGenerator : MonoBehaviour
     public bool buildComplete = false;
     public Coroutine regenerateCoroutine = null;
 
-    void OnEnable()  => Debug.Log($"[DG] OnEnable in scene '{gameObject.scene.name}' (id {GetInstanceID()})");
-    void OnDisable() => Debug.Log($"[DG] OnDisable in scene '{gameObject.scene.name}' (id {GetInstanceID()})");
+    //void OnEnable()  => Debug.Log($"[DG] OnEnable in scene '{gameObject.scene.name}' (id {GetInstanceID()})");
+    //void OnDisable() => Debug.Log($"[DG] OnDisable in scene '{gameObject.scene.name}' (id {GetInstanceID()})");
     //void OnDestroy() => Debug.LogWarning($"[DG] OnDestroy in scene '{gameObject.scene.name}' (id {GetInstanceID()})");
 
     void Awake()
@@ -71,7 +71,7 @@ public partial class DungeonGenerator : MonoBehaviour
 
     void OnDestroy()
     {
-        Debug.Log($"[DG] OnDestroy in scene '{gameObject.scene.name}' (id {GetInstanceID()})");
+        //Debug.Log($"[DG] OnDestroy in scene '{gameObject.scene.name}' (id {GetInstanceID()})");
         SceneManager.sceneLoaded -= OnSceneLoaded;
         OnDestroy_Tilemap();
     }

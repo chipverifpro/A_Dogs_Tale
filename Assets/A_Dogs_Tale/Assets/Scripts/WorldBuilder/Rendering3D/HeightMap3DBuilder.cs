@@ -7,6 +7,11 @@ public partial class DungeonGenerator : MonoBehaviour
 {
     [SerializeField] private ElementStore elementStore;
 
+    [Header("Ceiling Appearance")]
+
+    [Tooltip("Tiny extra z-offset in grid units if you want ceilings slightly above nominal height.")]
+    public float ceilingZOffset = 0f;
+
     // If your ramp mesh "forward" is +Z, map directions to rotations:
     static readonly Vector2Int[] Dir4 = { new(0, 1), new(1, 0), new(0, -1), new(-1, 0) };
 
@@ -413,12 +418,74 @@ public partial class DungeonGenerator : MonoBehaviour
                         );
                     }
                 }
+                // -------- Ceiling tiles --------
+                if (rooms[room_number].ceilingHeight > 0f)
+                {
+                    float ceilingY = rooms[room_number].ceilingHeight + ceilingZOffset;
+                    Vector3 ceilingPos = world + new Vector3(0f, ceilingY, 0f);
+
+                    elementStore.AddCeilingTile(
+                        archetypeId: "Ceiling",
+                        roomIndex: room_number,
+                        cellCoord: new Vector2Int(x, z),
+                        worldPos: ceilingPos,
+                        rotation: Quaternion.Euler(90f, 0f, 0f),
+                        scale: new Vector3(1f, 1f, 1f),
+                        color: rooms[room_number].colorCeiling
+                    );
+                }
             } // end cell loop
         }
         finally
         {
             if (local_tm) tm.End();
         }
+    }
+
+
+
+
+    public void BuildCeilings()
+    {
+        var rooms = dir.gen.rooms;
+        if (rooms == null || rooms.Count == 0)
+        {
+            Debug.LogWarning("CeilingBuilder: No rooms found to build ceilings.");
+            return;
+        }
+
+        int addedCount = 0;
+
+        foreach (var room in rooms)
+        {
+            if (room == null || room.cells == null || room.cells.Count == 0)
+                continue;
+
+            // Rule: no ceiling if height <= 0, or if room is outdoor.
+            // If you have IsOutdoorRoom, use it here.
+            if (room.ceilingHeight <= 0f)
+                continue;
+
+            // If you added an Outdoor flag:
+            // if ((room.placementTypes & PlacementRoomTypeFlags.Outdoor) != 0)
+            //     continue;
+
+            foreach (var cell in room.cells)
+            {
+                if (cell == null) continue;
+
+                float zHeight = room.ceilingHeight + ceilingZOffset;
+
+                int idx = dir.elementStore.AddCeiling(cell, zHeight, room.colorCeiling);
+                if (idx >= 0) addedCount++;
+            }
+        }
+
+        // Now ask ManufactureGO to actually build the GameObjects for this layer
+        dir.manufactureGO.BuildNewInstancesForLayer(ElementLayerKind.Ceiling);
+        dir.manufactureGO.ApplyPendingUpdates();
+
+        Debug.Log($"CeilingBuilder: Created {addedCount} ceiling instances via ElementStore.");
     }
 
 } // End class HeightMap3DBuilder

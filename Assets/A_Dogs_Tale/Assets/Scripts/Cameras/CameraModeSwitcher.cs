@@ -5,20 +5,23 @@ using UnityEngine.SceneManagement;
 
 public class CameraModeSwitcher : MonoBehaviour
 {
+    public enum CameraModes { FP, Overhead, Perspective };
+
+    [Header("Current Modes")]
+    public CameraModes cameraMode = CameraModes.Perspective;    // More readable version of current_camera for use in other systems
+    //public bool scentFogVisible = false;  //TODO: move contols/setup into camera script
+    public bool playerVisible = true;
+
     public CinemachineBrain brain;
     public CinemachineVirtualCamera vcamFP, vcamPerspective, vcamOverhead;
     public GameObject playerModel;
     public KeyCode toggleKey = KeyCode.Tab;
-    int current_camera;
+    int current_camera;                     //TODO: replace with cameraMode above.
     //public Transform player;
     public Player player;
     public float height = 20f;
-    public bool playerVisible = true;
 
     private Coroutine waiter = null;
-
-
-
 
 
     void Awake()
@@ -97,13 +100,16 @@ public class CameraModeSwitcher : MonoBehaviour
             {
                 case 0:
                     vcamPerspective.Priority = 10;
+                    cameraMode = CameraModes.Perspective;
                     break;
                 case 1:
                     vcamFP.Priority = 10;
+                    cameraMode = CameraModes.FP;
                     //playerVisible = false;   // hide player in first person mode
                     break;
                 case 2:
                     vcamOverhead.Priority = 10;
+                    cameraMode = CameraModes.Overhead;
                     break;
             }
         }
@@ -123,6 +129,8 @@ public class CameraModeSwitcher : MonoBehaviour
             {
                 //playerModel.SetActive(true);
                 player.agent.DogPrefab.SetActive(true);
+                var mainCam = Camera.main;
+                mainCam.cullingMask &= ~(1 << LayerMask.NameToLayer("Ceiling")); // hide ceiling in non-first person
             }
             player.camera_refresh_needed = false;
         }
@@ -142,8 +150,9 @@ public class CameraModeSwitcher : MonoBehaviour
 
     void onArrivedAtFP()
     {
-        //playerModel.SetActive(false);
+        var mainCam = Camera.main;
         player.agent.DogPrefab.SetActive(playerVisible);
+        mainCam.cullingMask |= (1<<LayerMask.NameToLayer("Ceiling")); // show ceiling in first person
         return;
     }
 

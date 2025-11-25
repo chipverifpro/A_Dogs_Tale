@@ -146,3 +146,15 @@ MonoBehaviour:
     renderFlags: 0
     unityLayer: 0
     unityTag: 
+  - id: Ceiling
+    displayName: Ceiling
+    kind: 1
+    prefab: {fileID: 2725812093829766248, guid: 8a4e74726a0094e60895bda141f25ab6,
+      type: 3}
+    mesh: {fileID: 0}
+    material: {fileID: 0}
+    defaultScale: {x: 0, y: 0, z: 0}
+    defaultColor: {r: 0, g: 0, b: 0, a: 0}
+    renderFlags: 0
+    unityLayer: 0
+    unityTag: 

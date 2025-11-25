@@ -4,7 +4,6 @@ using UnityEngine.EventSystems; // to ignore UI clicks
 public partial class Player : MonoBehaviour
 {
 
-
     //[Header("Leader & Routing")]
     //public Transform leader;                    // your leader's Transform
     //public Player player;              // optional: your routing component with SetDestination(Vector3)
@@ -14,8 +13,9 @@ public partial class Player : MonoBehaviour
     public float cellSize = 1f;                 // world units per cell
 
     [Header("Raycast")]
-    public LayerMask groundMask;           // set to your Ground layer(s)
-    private LayerMask navigationMask;           // set in inspector (same as above?)
+    public LayerMask FP_BlockingMask;           // FirstPerson view: set to your targetable layers, including ceilings
+    public LayerMask Overhead_BlockingMask;     // Overhead views: set to your targetable layers, exclude invisible ceilings
+    private LayerMask navigationMask;           // we don't use this for navigation.
     public float rayMaxDistance = 200f;
 
     //[Header("Height Sampling (optional)")]
@@ -161,6 +161,7 @@ public partial class Player : MonoBehaviour
 
         // Raycast to ground
         Ray ray = Camera.main.ScreenPointToRay(screenPosition);
+        LayerMask groundMask = (dir.cameraModeSwitcher.cameraMode == CameraModeSwitcher.CameraModes.FP) ? FP_BlockingMask : Overhead_BlockingMask;
         if (!Physics.Raycast(ray, out var hit, rayMaxDistance, groundMask))
         {
             // Optional: debug to see where you clicked
@@ -197,8 +198,8 @@ public partial class Player : MonoBehaviour
             valid = true
         };
         //Vector2 crumbpos2 = crumb.pos2;
-        Vector2 dir = (agent.pos2 - crumb.pos2).normalized;
-        crumb.yawDeg = Mathf.Atan2(dir.x, dir.y) * Mathf.Rad2Deg - yawCorrection; // face target
+        Vector2 dir_to_crumb = (agent.pos2 - crumb.pos2).normalized;
+        crumb.yawDeg = Mathf.Atan2(dir_to_crumb.x, dir_to_crumb.y) * Mathf.Rad2Deg - yawCorrection; // face target
         agent.yawDeg = crumb.yawDeg;
         agent.next_formationCrumb = crumb;
         leaderTravelling = true;
