@@ -190,6 +190,10 @@ GameObject:
   - component: {fileID: 36613906960885955}
   - component: {fileID: 2839206678504594441}
   - component: {fileID: 3651966197742019746}
+  - component: {fileID: 1180042479083031757}
+  - component: {fileID: 4112646271195211417}
+  - component: {fileID: 7155385862659443399}
+  - component: {fileID: 6878848282818832712}
   m_Layer: 0
   m_Name: Prop_Stove
   m_TagString: Untagged
@@ -295,6 +299,71 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1.1981896, y: 1.3642633, z: 0.766966}
   m_Center: {x: -0.00000011920929, y: 0.67541134, z: -0.016517296}
+--- !u!114 &1180042479083031757
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4352200305128078812}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b112db3959c164550975dd26677f8e8e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::WorldObject
+  objectId: -1
+  displayName: Prop_Stove
+  kind: 0
+  autoRegister: 1
+--- !u!114 &4112646271195211417
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4352200305128078812}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2272e4992677c4977b85dbef83406534, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::LocationModule
+  pos3d_f: {x: 0, y: 0, z: 0}
+  yawDeg: 0
+  tilt: {x: 0, y: 0, z: 0, w: 1}
+--- !u!114 &7155385862659443399
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4352200305128078812}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a84846d553e584223b8e8df5ef2d7381, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::VisualModule
+  mainRenderer: {fileID: 2839206678504594441}
+  extraRenderers: []
+--- !u!114 &6878848282818832712
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4352200305128078812}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3f6cda250b193442c9f59a935c554f95, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlacementModule
+  allowedRooms: 2
+  autoSizeFromMesh: 1
+  sizeInCells: {x: 2, y: 2, z: 1}
+  cellSize: 1
+  edgeHint: 0
+  rotationRule: 1
+  minClearCellsAround: 0
+  mustTouchWall: 0
 --- !u!1 &4814346929221450670
 GameObject:
   m_ObjectHideFlags: 0
