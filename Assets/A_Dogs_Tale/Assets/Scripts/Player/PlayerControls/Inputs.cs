@@ -181,7 +181,9 @@ public partial class Player : MonoBehaviour
         }
 
         // Convert world → cell
-        Vector3 p = hit.point;
+        //Vector3 p = hit.point;
+        // Bias hit point toward camera so clicking walls always targets near cell
+        Vector3 p = hit.point - ray.direction.normalized * 0.05f;  // bias amount adjustable
         int cx = Mathf.FloorToInt((p.x - origin.x) / cellSize);
         int cz = Mathf.FloorToInt((p.z - origin.z) / cellSize);
 
