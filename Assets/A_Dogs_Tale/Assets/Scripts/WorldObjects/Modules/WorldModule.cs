@@ -5,12 +5,24 @@ using UnityEngine;
 public abstract class WorldModule : MonoBehaviour
 {
     protected ObjectDirectory dir;
+    protected WorldObject worldObject;
 
     protected virtual void Awake()
     {
         dir = ObjectDirectory.Instance;
         if (dir == null)
             Debug.LogError("WorldModule: ObjectDirectory.Instance is null!", this);
+    }
+
+    // each WorldModule belongs to a WorldObject
+    public virtual void Initialize(WorldObject owner)
+    {
+        worldObject = owner;
+    }
+
+    protected virtual void Update()
+    {
+
     }
 
     // future hook: OnWorldObjectAttached(), OnWorldObjectDetached(), etc.

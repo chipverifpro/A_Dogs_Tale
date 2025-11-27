@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace DogGame.AI
 {
-    public class AgentSenses : MonoBehaviour
+    public class AgentSensesModule : MonoBehaviour
     {
         [Header("Sub-sensors")]
         public ScentSensor scentSensor;

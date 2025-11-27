@@ -1,4 +1,5 @@
 using System;
+using UnityEditorInternal.Profiling.Memory.Experimental;
 using UnityEngine;
 
 
@@ -41,5 +42,23 @@ public class ScentSource
     
     // Optional: persistent ID for saving/loading (if you want something beyond agentId).
     public string persistentId;
+
+    // Pointer to the scent physics system where we can deposit scent.
+    private ScentAirGround scentAirGround;
+
+    public void Emit(Cell cell, float dt, float decayed = 1.0f)
+    {
+        if (cell==null) return; // need location
+        if (scentAirGround == null) // need physics controller
+            scentAirGround = UnityEngine.Object.FindFirstObjectByType<ScentAirGround>();
+        if (scentAirGround == null)
+        {
+            Debug.LogWarning("ScentAirGround instance not found in scene.");
+            return;
+        }
+
+        // deposit the scent. dt is the time interval, decayed is fraction of full scent to deposit.
+        scentAirGround.DepositScentToCell(cell, this, dt, decayed, visualizeImmediately: true);    
+    }
 }
 

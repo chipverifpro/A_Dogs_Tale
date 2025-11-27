@@ -2,9 +2,11 @@ using UnityEngine;
 
 namespace DogGame.AI
 {
-    [RequireComponent(typeof(AgentMovement))]
-    [RequireComponent(typeof(AgentSenses))]
-    [RequireComponent(typeof(AgentPackMember))]
+    [RequireComponent(typeof(AgentMovementModule))]
+    [RequireComponent(typeof(AgentSensesModule))]
+    [RequireComponent(typeof(AgentPackMemberModule))]
+    [RequireComponent(typeof(BlackboardModule))]
+    
     public class AgentController : MonoBehaviour
     {
         [Header("Debug / Identity")]
@@ -13,22 +15,25 @@ namespace DogGame.AI
         [Header("Initial Decision Type")]
         public AgentDecisionType initialDecisionType = AgentDecisionType.Wanderer;
 
-        [HideInInspector] public AgentMovement movement;
-        [HideInInspector] public AgentSenses senses;
-        [HideInInspector] public AgentPackMember packMember;
-        [HideInInspector] public AgentBlackboard blackboard;
+        [HideInInspector] public AgentMovementModule movement;
+        [HideInInspector] public AgentSensesModule senses;
+        [HideInInspector] public AgentPackMemberModule packMember;
+        [HideInInspector] public AgentBlackboardView blackboard;
+        [HideInInspector] public BlackboardModule bb_raw;
 
         private AgentDecisionModuleBase currentDecisionModule;
 
         private void Awake()
         {
-            movement = GetComponent<AgentMovement>();
-            senses = GetComponent<AgentSenses>();
-            packMember = GetComponent<AgentPackMember>();
+            movement = GetComponent<AgentMovementModule>();
+            senses = GetComponent<AgentSensesModule>();
+            packMember = GetComponent<AgentPackMemberModule>();
+            bb_raw = GetComponent<BlackboardModule>();
 
-            if (blackboard == null)
+            if (bb_raw == null)
             {
-                blackboard = new AgentBlackboard();
+                bb_raw = GetComponent<BlackboardModule>();
+                blackboard = new AgentBlackboardView(bb_raw);
             }
         }
 

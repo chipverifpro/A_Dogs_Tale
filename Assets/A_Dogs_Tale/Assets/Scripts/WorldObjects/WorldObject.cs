@@ -1,15 +1,29 @@
+using System.Collections.Generic;
+using DogGame.AI;
 using UnityEngine;
 
+/// <summary>
+/// Use Kind as:
+///	  classification tag for world systems
+///	  helper for editors / level tools
+///	  query filter
+///	  default prefab archetype
+///	  save system hint
+/// </summary>
 public enum WorldObjectKind
 {
     Unknown = 0,
-    Agent   = 1,
-    Scenery = 2,
-    Trap    = 3,
-    Gizmo   = 4,
-    Item    = 5,
-    Portal  = 6,
-    UI      = 7, // if you ever want world-linked UI, optional
+    Agent   ,    // Brain, high level controller, join, control directly
+    Scenery ,    // static objects
+    Trigger ,    // environmental triggered location (trap, etc)
+    Lever   ,    // usable fixed place item
+    Movable ,    // can be pushed
+    Obstacle,    // collider
+    Item    ,    // pick up, use, food
+    Portal  ,    // transport to other places or levels
+    UI      ,    // if you ever want world-linked UI, optional
+    Puzzle  ,    // World monitor/controller to tell stories
+    // More...
 }
 
 /// <summary>
@@ -21,6 +35,9 @@ public enum WorldObjectKind
 [DefaultExecutionOrder(100)] // positive = runs late, after most other scripts
 public class WorldObject : MonoBehaviour
 {
+    [Header("GameObject directory")]
+    public ObjectDirectory dir;
+
     [Header("Identity")]
     [SerializeField] private int objectId = -1;
     [SerializeField] private string displayName;
@@ -29,16 +46,34 @@ public class WorldObject : MonoBehaviour
 
     // --------------------------
     // MODULE REFERENCES
+    // Use Modules as:
+	//   Behavior definition
+	//   Interaction logic
+	//   Ability providers
+	//   Puzzle drivers
+	//   Agent intelligence
     // --------------------------
     [Header("Modules (auto-populated)")]
+    // Brain:
+    public AgentController  AgentBrain { get; private set; }
+
+    // Physical world controls:
     public LocationModule   Location   { get; private set; }
     public MotionModule     Motion     { get; private set; }
+
+    // senses
     public VisualModule     Visual     { get; private set; }
-    public NPCModule        NPC        { get; private set; }
-    public ScentEmitter     Scent      { get; private set; }
+    public ScentEmitterModule Scent      { get; private set; }
     public ActivatorModule  Activator  { get; private set; }
+
+    // dynamic state data
+    public AgentBlackboardView Blackboard { get; private set; }
+
+    // generator instructions, not used after level generator
     public PlacementModule  Placement  { get; private set; }
 
+
+    // Registration management functions
     public bool IsRegistered { get; private set; }
 
     public int ObjectId => objectId;
@@ -47,17 +82,45 @@ public class WorldObject : MonoBehaviour
 
     private void Awake()
     {
+        dir = FindFirstObjectByType<ObjectDirectory>();
+        if (dir == null)
+        {
+            Debug.LogError($"WorldObject.Awake() was unable to find ObjectDirectory.");
+        }
         // Auto-fill modules PER OBJECT
+        AgentBrain= GetComponent<AgentController>();
         Location  = GetComponent<LocationModule>();
         Motion    = GetComponent<MotionModule>();
         Visual    = GetComponent<VisualModule>();
-        NPC       = GetComponent<NPCModule>();
-        Scent     = GetComponent<ScentEmitter>();
+        Scent     = GetComponent<ScentEmitterModule>();
         Activator = GetComponent<ActivatorModule>();
         Placement = GetComponent<PlacementModule>();
 
         if (string.IsNullOrEmpty(displayName))
             displayName = gameObject.name;
+
+        List<WorldModule> modules = new();
+        // Find all attached modules
+        modules.AddRange(GetComponents<WorldModule>());
+
+        // Initialize each module
+        foreach (var module in modules)
+        {
+            module.Initialize(this);    // save this pointer to me in all my modules
+        }
+    }
+
+    public T GetModule<T>() where T : WorldModule
+    {
+        List<WorldModule> modules = new();
+        // Find all attached modules
+        modules.AddRange(GetComponents<WorldModule>());
+
+        foreach (var module in modules)
+        {
+            if (module is T typed) return typed;
+        }
+        return null;
     }
 
     private void OnEnable()

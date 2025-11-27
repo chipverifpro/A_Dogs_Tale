@@ -132,7 +132,7 @@ public partial class Agent : MonoBehaviour
                 Cell cell = dir.gen.GetCellFromHf(pos2_int.x, pos2_int.y, height_int, 50);
                 if (cell!=null)
                 {
-                    dir.scents.DepositScentToCell(cell, agentScentSource, visualizeImmediately: true);
+                    dir.scents.DepositScentToCell(cell, agentScentSource, dt:1f, fade_amount:1f, visualizeImmediately: true);
                     //prevScentTime = Time.time;
                     prevScentLocation = pos2_int;
                     //Debug.Log($"Depositing scent from AgentId = {id} at {pos2_int}: air += {agentScentSource.airDepositRate}, ground += {agentScentSource.groundDepositRate}");

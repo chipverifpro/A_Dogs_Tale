@@ -3,10 +3,10 @@ namespace DogGame.AI
     public abstract class AgentDecisionModuleBase
     {
         protected AgentController agent;
-        protected AgentMovement movement;
-        protected AgentSenses senses;
-        protected AgentPackMember packMember;
-        protected AgentBlackboard blackboard;
+        protected AgentMovementModule movement;
+        protected AgentSensesModule senses;
+        protected AgentPackMemberModule packMember;
+        protected AgentBlackboardView blackboard;
 
         public virtual void Initialize(AgentController agentController)
         {

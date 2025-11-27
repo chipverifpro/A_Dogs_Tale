@@ -3,7 +3,7 @@ using UnityEngine;
 namespace DogGame.AI
 {
     [RequireComponent(typeof(CharacterController))]
-    public class AgentMovement : MonoBehaviour
+    public class AgentMovementModule : WorldModule
     {
         public float maxMoveSpeed = 3.5f;
         public float rotationSpeedDegreesPerSecond = 720f;
@@ -12,7 +12,7 @@ namespace DogGame.AI
 
         private Vector3 currentVelocity;
 
-        private void Awake()
+        protected override void Awake()
         {
             characterController = GetComponent<CharacterController>();
         }

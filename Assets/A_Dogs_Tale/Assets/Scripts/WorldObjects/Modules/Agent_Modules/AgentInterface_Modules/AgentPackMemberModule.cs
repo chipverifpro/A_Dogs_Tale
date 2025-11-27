@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace DogGame.AI
 {
-    public class AgentPackMember : MonoBehaviour
+    public class AgentPackMemberModule : MonoBehaviour
     {
         public Pack currentPack;
         public bool isLeaderOverride; // For debugging / forced leader.

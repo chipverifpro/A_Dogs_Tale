@@ -748,7 +748,7 @@ public class ScentAirGround : MonoBehaviour
     #region Public API
 
     // Use visualizeImmediately=true to see the effect right away (for player deposit, etc), not as part of the mass update.
-    public void DepositScentToCell(Cell cell, ScentSource scentSource, bool visualizeImmediately=false)
+    public void DepositScentToCell(Cell cell, ScentSource scentSource, float dt, float fade_amount = 1.0f, bool visualizeImmediately=false)
     {
         if (cell == null || scentSource == null) return;
  //       if (scentSource.scentStabilized)
@@ -756,7 +756,7 @@ public class ScentAirGround : MonoBehaviour
  //           Debug.LogWarning($"DepositScentToCell: scentSource {scentSource.agentId} is stabilized; no further scent will be deposited.");
  //           return;
  //       }
-        AddScentToCell(cell, scentSource.agentId, scentSource.airDepositRate, scentSource.groundDepositRate);
+        AddScentToCell(cell, scentSource.agentId, scentSource.airDepositRate * dt * fade_amount, scentSource.groundDepositRate * dt * fade_amount);
         
         if (scentCamActive && visualizeImmediately && (scentSource.agentId == currentAgentId))
         {
