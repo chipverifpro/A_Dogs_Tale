@@ -150,7 +150,7 @@ public partial class Player : MonoBehaviour
 
     void Start()
     {
-        StartCoroutine(DetermineStartPosition());   // background task waits for generator to complete before choosing starting location
+        //StartCoroutine(DetermineStartPosition());   // background task waits for generator to complete before choosing starting location
         Move_Start();           // grab initial position from Unity object
                                 //agent.trail = GetComponent<BreadcrumbTrail>();
                                 //BuildPackObjects(3);    // This exists in Pack class.

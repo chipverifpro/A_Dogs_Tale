@@ -92,7 +92,7 @@ public sealed class TimeManager : MonoBehaviour
 
     void OnDestroy()
     {
-        if (Instance == this)
+        if (_instance == this)
             SceneManager.sceneLoaded -= OnSceneLoaded;
     }
 
