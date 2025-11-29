@@ -538,6 +538,7 @@ public partial class DungeonGenerator : MonoBehaviour
         Vector3 door_rotation;  // determined by tile rotation: rotate vertical to lay flat.
         Vector3 door_scale;  
 
+        if (!cfg.showBuildProcess) return;
         //Debug.Log("Drawing Map by " + rooms.Count + " rooms...");
         if (clearscreen)
         {

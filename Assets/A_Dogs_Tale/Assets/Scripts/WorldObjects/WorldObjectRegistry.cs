@@ -40,6 +40,7 @@ public class WorldObjectRegistry : MonoBehaviour
     {
         get
         {
+            //Debug.Log($"WorldObjectRegistry Instance accessed.  _shuttingDown={_shuttingDown}, Application.isPlaying={Application.isPlaying}, _instance={_instance}");
             if (_shuttingDown || !Application.isPlaying)
                 return _instance;
 

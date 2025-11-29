@@ -6925,9 +6925,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d9ee26534211046eaaf7bf4849439735, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.AI.AgentSensesModule
-  scentSensor: {fileID: 0}
-  visionSensor: {fileID: 0}
-  hearingSensor: {fileID: 0}
 --- !u!114 &9058620029262858386
 MonoBehaviour:
   m_ObjectHideFlags: 0

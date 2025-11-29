@@ -4,6 +4,7 @@ using UnityEngine;
 
 
 //[RequireComponent(typeof(BreadcrumbTrail))]
+[RequireComponent(typeof(Animator))]
 public partial class Agent : MonoBehaviour
 {
     // ==============================================================
@@ -79,11 +80,22 @@ public partial class Agent : MonoBehaviour
     private float prevScentTime = 0;
 
 
-    protected virtual void Awake()
+    protected virtual void Awake_old()
     {
         //trail = GetComponent<BreadcrumbTrail>();
+        
     }
-
+    protected virtual void Awake()
+    {
+        if (anim == null)
+        {
+            anim = GetComponent<Animator>();
+            if (anim == null)
+            {
+                Debug.LogError($"Agent on {name} has no Animator attached.", this);
+            }
+        }
+    }
     protected virtual void Start()
     {
         if (!dir) dir = FindFirstObjectByType<Directory>();
@@ -123,6 +135,7 @@ public partial class Agent : MonoBehaviour
     // scent deposit, once per second + anytime position changes.
     public void AgentScentEmmiter()
     {
+        //Debug.Log($"AgentScentEmitter: pack={pack}, gen={pack.gen}, buildComplete={pack.gen.buildComplete}");
         if (!pack.gen.buildComplete) return;
 
         // deposit scent if moved or 1 second passed

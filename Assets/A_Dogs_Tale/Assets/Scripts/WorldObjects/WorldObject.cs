@@ -146,11 +146,11 @@ public class WorldObject : MonoBehaviour
     public void RegisterIfNeeded()
     {
         if (IsRegistered || !autoRegister) return;
-        if (!WorldObjectRegistry.HasInstance)
-        {
-            Debug.LogWarning($"WorldObject '{DisplayName}' cannot register: no WorldObjectRegistry found.");
-            return;
-        }
+        //if (!WorldObjectRegistry.HasInstance)
+        //{
+        //    Debug.LogWarning($"WorldObject '{DisplayName}' cannot register: no WorldObjectRegistry found.");
+        //    return;
+        //}
 
         int assigned = WorldObjectRegistry.Instance.Register(this);
         if (assigned >= 0)
