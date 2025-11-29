@@ -3,7 +3,7 @@ using UnityEngine;
 public class ScentGUI : MonoBehaviour
 {
     [Header("External object references")]
-    ObjectDirectory dir;
+    Directory dir;
     public SniffModeVisuals sniffVisuals;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
@@ -19,7 +19,7 @@ public class ScentGUI : MonoBehaviour
             sniffVisuals.SetSniffMode(true);
             if (dir == null)
             {
-                dir = ObjectDirectory.Instance;
+                dir = Directory.Instance;
             }
             if (dir.scentRegistry == null)
             {

@@ -15,7 +15,7 @@ using UnityEngine.UIElements;
 public partial class Player : MonoBehaviour
 {
     [Header("Refs")]
-    public ObjectDirectory dir;
+    public Directory dir;
     public DungeonGenerator gen;         // assign in Inspector (has cellGrid, rooms, etc.)
     public BottomBanner bottomBanner;
 

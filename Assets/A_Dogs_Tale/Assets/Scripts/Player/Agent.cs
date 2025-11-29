@@ -15,7 +15,7 @@ public partial class Agent : MonoBehaviour
     //public bool enabled;  // already inherited from MonoBehavior
 
     //DungeonSettings cfg;
-    public ObjectDirectory dir;
+    public Directory dir;
 
     public int id;                          // unique id number
 
@@ -86,7 +86,7 @@ public partial class Agent : MonoBehaviour
 
     protected virtual void Start()
     {
-        if (!dir) dir = FindFirstObjectByType<ObjectDirectory>();
+        if (!dir) dir = FindFirstObjectByType<Directory>();
         if (!dir) Debug.LogWarning($"[Agent {name}] ObjectDirectory not found.");
 
         dir.gen.GetNewAgentId(this);

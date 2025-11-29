@@ -5,7 +5,7 @@ using UnityEngine.SceneManagement;
 
 public class DungeonGUISelector : MonoBehaviour
 {
-    public ObjectDirectory dir;
+    public Directory dir;
     public DungeonSettings cfg; // Reference to the DungeonSettings ScriptableObject
     public TMP_Dropdown roomAlgorithmDropdown;
     public TMP_Dropdown tunnelsAlgorithmDropdown;
@@ -88,16 +88,14 @@ public class DungeonGUISelector : MonoBehaviour
         if (roomAlgorithmDropdown)
         {
             _roomAlgValues = System.Enum.GetValues(typeof(DungeonSettings.RoomAlgorithm_e));
-            PopulateDropdownFromEnum(roomAlgorithmDropdown, _roomAlgValues);
-            roomAlgorithmDropdown.value = IndexOfEnum(_roomAlgValues, cfg.RoomAlgorithm);
+            PopulateDropdownFromEnum(roomAlgorithmDropdown, _roomAlgValues, IndexOfEnum(_roomAlgValues, cfg.RoomAlgorithm));
             roomAlgorithmDropdown.RefreshShownValue();
         }
 
         if (tunnelsAlgorithmDropdown)
         {
             _tunnelAlgValues = System.Enum.GetValues(typeof(DungeonSettings.TunnelsAlgorithm_e));
-            PopulateDropdownFromEnum(tunnelsAlgorithmDropdown, _tunnelAlgValues);
-            tunnelsAlgorithmDropdown.value = IndexOfEnum(_tunnelAlgValues, cfg.TunnelsAlgorithm);
+            PopulateDropdownFromEnum(tunnelsAlgorithmDropdown, _tunnelAlgValues, IndexOfEnum(_tunnelAlgValues, cfg.TunnelsAlgorithm));
             tunnelsAlgorithmDropdown.RefreshShownValue();
         }
     }
@@ -128,6 +126,7 @@ public class DungeonGUISelector : MonoBehaviour
     void OnRoomAlgorithmChanged(int index)
     {
         if (!cfg || _roomAlgValues == null) return;
+        Debug.LogWarning($"OnRoomAlgorithmChanged (index = {index})");
         cfg.RoomAlgorithm = (DungeonSettings.RoomAlgorithm_e)_roomAlgValues.GetValue(index);
         // If using string path, set cfg.roomAlgorithmName = roomAlgorithmDropdown.options[index].text;
         // Optionally: mark settings dirty in editor with UnityEditor.EditorUtility.SetDirty(cfg);
@@ -149,7 +148,18 @@ public class DungeonGUISelector : MonoBehaviour
 
     // --- Helpers ---
 
-    static void PopulateDropdownFromEnum(TMP_Dropdown dd, System.Array enumValues)
+    void PopulateDropdownFromEnum(TMP_Dropdown dropdown, System.Array enumValues, int currentIndex)
+    {
+        dropdown.ClearOptions();
+        // ... add options from enumValues ...
+        foreach (var v in enumValues)
+            dropdown.options.Add(new TMP_Dropdown.OptionData(v.ToString()));
+
+        // Set initial value WITHOUT firing onValueChanged
+        dropdown.SetValueWithoutNotify(currentIndex);
+        dropdown.RefreshShownValue();
+    }
+    static void PopulateDropdownFromEnum_old(TMP_Dropdown dd, System.Array enumValues)
     {
         dd.options.Clear();
         foreach (var v in enumValues)

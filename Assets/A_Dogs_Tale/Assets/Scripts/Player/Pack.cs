@@ -3,7 +3,7 @@ using UnityEngine;
 
 public class Pack : MonoBehaviour
 {
-    public ObjectDirectory dir;
+    public Directory dir;
     public Player player;   // reference to player class, which handles all the player inputs
     public DungeonGenerator gen;
     public Transform PackParentObject;  // Parent object that already exists in the scene.  All the PlayerAgents will be attached under it.

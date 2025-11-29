@@ -2,12 +2,12 @@ using UnityEngine;
 using Cinemachine;
 
 [DefaultExecutionOrder(-1000)] // big negative = runs very early
-public class ObjectDirectory : MonoBehaviour
+public class Directory : MonoBehaviour
 {
     // This is a catalog of all the objects and scripts in the game for all the
     // modules to share.  They only need a single reference to Directory to find
     // any other object.
-    public static ObjectDirectory Instance { get; private set; }    // singleton
+    public static Directory Instance { get; private set; }    // singleton
 
     public bool AllReady = false;   // anyone should hold off their start until this is true.
     private int pass_num;           // debug message indicating if object was found first try or later.

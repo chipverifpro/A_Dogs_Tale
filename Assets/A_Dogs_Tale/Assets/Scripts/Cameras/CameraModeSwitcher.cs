@@ -3,10 +3,10 @@ using Cinemachine;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
+public enum CameraModes { Unchanged = 0, FP, Overhead, Perspective };   // Unchanged is not a valid camera, just means leave as-is
+
 public class CameraModeSwitcher : MonoBehaviour
 {
-    public enum CameraModes { FP, Overhead, Perspective };
-
     [Header("Current Modes")]
     public CameraModes cameraMode = CameraModes.Perspective;    // More readable version of current_camera for use in other systems
     //public bool scentFogVisible = false;  //TODO: move contols/setup into camera script

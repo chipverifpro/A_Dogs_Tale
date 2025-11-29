@@ -171,7 +171,7 @@ public partial class Player : MonoBehaviour
 
         // Raycast to ground
         Ray ray = Camera.main.ScreenPointToRay(screenPosition);
-        LayerMask groundMask = (dir.cameraModeSwitcher.cameraMode == CameraModeSwitcher.CameraModes.FP) ? FP_BlockingMask : Overhead_BlockingMask;
+        LayerMask groundMask = (dir.cameraModeSwitcher.cameraMode == CameraModes.FP) ? FP_BlockingMask : Overhead_BlockingMask;
         if (!Physics.Raycast(ray, out var hit, rayMaxDistance, groundMask))
         {
             // Optional: debug to see where you clicked

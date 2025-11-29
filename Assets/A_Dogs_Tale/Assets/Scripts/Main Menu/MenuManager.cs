@@ -10,7 +10,7 @@ public class MenuManager : MonoBehaviour
 
     public AudioMixerGroups audioMixerGroups;           // mixer channels
     public AudioPlayer audioPlayer;                     // play controls
-    public ObjectDirectory dir;
+    public Directory dir;
 
     [Header("Bottom Banner")]
     public BottomBanner bottomBanner;  // assign your existing BottomBanner

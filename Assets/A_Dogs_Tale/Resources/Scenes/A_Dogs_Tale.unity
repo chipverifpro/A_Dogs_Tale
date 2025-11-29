@@ -1097,6 +1097,37 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: -20, y: -20}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!1 &196505885
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 196505886}
+  m_Layer: 0
+  m_Name: WorldObjecs
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &196505886
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 196505885}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1767335688}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &200283689
 GameObject:
   m_ObjectHideFlags: 0
@@ -2497,7 +2528,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!156049354 &367847097
 Grid:
   m_ObjectHideFlags: 0
@@ -6774,7 +6805,7 @@ PrefabInstance:
     - target: {fileID: 7970140317087810869, guid: e2802ce6b21f34344bc910cf30e9b3a8,
         type: 3}
       propertyPath: m_Name
-      value: PlayerCrate
+      value: FlyingCrate
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -8340,16 +8371,7 @@ MonoBehaviour:
   movement: {fileID: 0}
   senses: {fileID: 0}
   packMember: {fileID: 0}
-  blackboard:
-    currentTarget: {fileID: 0}
-    lastKnownTargetPosition: {x: 0, y: 0, z: 0}
-    hasTarget: 0
-    lastInterestingScentPosition: {x: 0, y: 0, z: 0}
-    hasInterestingScent: 0
-    fearLevel: 0
-    curiosityLevel: 0
-    hungerLevel: 0
-    loyaltyLevel: 0
+  bb_raw: {fileID: 0}
 --- !u!114 &1253610021
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -8362,9 +8384,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d9ee26534211046eaaf7bf4849439735, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.AI.AgentSenses
-  scentSensor: {fileID: 0}
-  visionSensor: {fileID: 0}
-  hearingSensor: {fileID: 0}
 --- !u!114 &1253610022
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -8434,7 +8453,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d0bb071cfa65b4c558ffceeb89516773, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NPCModule
-  CurrentState: 0
 --- !u!114 &1253610026
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -8489,6 +8507,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b112db3959c164550975dd26677f8e8e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::WorldObject
+  dir: {fileID: 0}
   objectId: -1
   displayName: PlayerCrate
   kind: 1
@@ -10060,7 +10079,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 2147483647
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!154 &1448055483
 TerrainCollider:
   m_ObjectHideFlags: 0
@@ -12804,6 +12823,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
+  - {fileID: 1920128613}
   - {fileID: 838293513}
   - {fileID: 367847098}
   - {fileID: 1448055485}
@@ -12812,11 +12832,11 @@ Transform:
   - {fileID: 1642226070}
   - {fileID: 408055402}
   - {fileID: 438825160}
-  - {fileID: 1920128613}
   - {fileID: 603597958}
   - {fileID: 1546545658}
   - {fileID: 93863484}
   - {fileID: 243675088}
+  - {fileID: 196505886}
   - {fileID: 2140542027}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -13642,9 +13662,8 @@ GameObject:
   - component: {fileID: 1920128613}
   - component: {fileID: 1920128612}
   - component: {fileID: 1920128614}
-  - component: {fileID: 1920128615}
   m_Layer: 0
-  m_Name: ObjectDirectory
+  m_Name: Directory
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -13717,20 +13736,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::WorldObjectRegistry
   startingId: 1
---- !u!114 &1920128615
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1920128611}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 779b9a7d3fa14487d86b16df44d6926d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::SelectableHighlight
-  defaultHighlightColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
-  emissionBoost: 2
+  nextId: 0
 --- !u!1 &1921388083
 GameObject:
   m_ObjectHideFlags: 0
@@ -15195,7 +15201,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d6696766e16dd4e389fdb4043143ac36, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.AI.DemoSceneBootstrap
-  playerPackTactics: {fileID: 0}
 --- !u!1 &2142269742
 GameObject:
   m_ObjectHideFlags: 0
@@ -15394,6 +15399,6 @@ SceneRoots:
   - {fileID: 1554749956}
   - {fileID: 2103636774}
   - {fileID: 1826263888}
-  - {fileID: 1767335688}
   - {fileID: 215243008}
   - {fileID: 1618901363}
+  - {fileID: 1767335688}

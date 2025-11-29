@@ -13,7 +13,7 @@ public class WorldObjectRegistry : MonoBehaviour
     private static bool _shuttingDown;
 
     // Begin a bunch of crap for starting up and shutting down safely.
-    public static WorldObjectRegistry Instance
+    public static WorldObjectRegistry Instance_OLD
     {
         get
         {
@@ -36,8 +36,35 @@ public class WorldObjectRegistry : MonoBehaviour
         }
     }
 
-    public static bool HasInstance => _instance != null && Application.isPlaying && !_shuttingDown;
+    public static WorldObjectRegistry Instance
+    {
+        get
+        {
+            if (_shuttingDown || !Application.isPlaying)
+                return _instance;
 
+            if (_instance == null)
+            {
+                _instance = FindFirstObjectByType<WorldObjectRegistry>();
+                if (_instance == null)
+                {
+                    // Auto-create instead of logging error
+                    var go = new GameObject("WorldObjectRegistry");
+                    _instance = go.AddComponent<WorldObjectRegistry>();
+                    //DontDestroyOnLoad(go);
+                    Debug.LogWarning("WorldObjectRegistry: No instance found, created one automatically.");
+                }
+            }
+
+            return _instance;
+        }
+    }
+
+    public static bool HasInstance_old => Instance != null && _instance != null && Application.isPlaying && !_shuttingDown;
+    
+    public static bool HasInstance =>
+        _instance != null && Application.isPlaying && !_shuttingDown;
+        
     private void Awake()
     {
         if (_instance != null && _instance != this)
@@ -71,6 +98,7 @@ public class WorldObjectRegistry : MonoBehaviour
     private readonly Dictionary<int, WorldObject> objectsById = new();
     private readonly Dictionary<WorldObject, int> idByObject = new();
 
+    [SerializeField]
     private int nextId;
 
     /// <summary>

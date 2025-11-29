@@ -7,7 +7,7 @@ namespace DogGame.AI
         public Pack currentPack;
         public bool isLeaderOverride; // For debugging / forced leader.
 
-        private AgentController agent;
+        private AgentModule agent;
 
         public bool IsLeader
         {
@@ -20,7 +20,7 @@ namespace DogGame.AI
 
         private void Awake()
         {
-            agent = GetComponent<AgentController>();
+            agent = GetComponent<AgentModule>();
         }
 
         public void JoinPack(Pack packToJoin, bool setAsLeader = false)

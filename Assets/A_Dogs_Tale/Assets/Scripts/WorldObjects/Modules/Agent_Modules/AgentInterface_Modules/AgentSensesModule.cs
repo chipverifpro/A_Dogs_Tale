@@ -2,18 +2,17 @@ using UnityEngine;
 
 namespace DogGame.AI
 {
-    public class AgentSensesModule : MonoBehaviour
+    public class AgentSensesModule : WorldModule
     {
-        [Header("Sub-sensors")]
-        public ScentSensor scentSensor;
-        public VisionSensor visionSensor;
-        public HearingSensor hearingSensor;
+        //[Header("Sub-sensors")]
+        //public ScentSensor scentSensor;
+        //public VisionSensor visionSensor;
+        //public HearingSensor hearingSensor;
 
-        private void Awake()
+        protected override void Awake()
         {
-            if (scentSensor == null) scentSensor = GetComponentInChildren<ScentSensor>();
-            if (visionSensor == null) visionSensor = GetComponentInChildren<VisionSensor>();
-            if (hearingSensor == null) hearingSensor = GetComponentInChildren<HearingSensor>();
+            // Use accesses like this instead...???
+            // worldObject.Vision
         }
     }
 

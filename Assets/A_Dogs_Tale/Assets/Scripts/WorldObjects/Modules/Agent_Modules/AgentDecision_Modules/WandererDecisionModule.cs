@@ -11,7 +11,7 @@ namespace DogGame.AI
         public float minTimeBetweenTargets = 1.5f;
         public float maxTimeBetweenTargets = 4f;
 
-        public override void Initialize(AgentController agentController)
+        public override void Initialize(AgentModule agentController)
         {
             base.Initialize(agentController);
             PickNewTarget();

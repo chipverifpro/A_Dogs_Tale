@@ -1,8 +1,8 @@
 using UnityEngine;
 
-public class VisualModule : WorldModule
+public class VisionModule : WorldModule
 {
-    [Header("Visual Module")]
+    [Header("Vision Module")]
     [Tooltip("Primary renderer for this object. If left empty, will try GetComponentInChildren<Renderer>().")]
     public Renderer mainRenderer;
 

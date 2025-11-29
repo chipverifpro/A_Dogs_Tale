@@ -3,7 +3,7 @@ using UnityEngine;
 
 public class SceneFader : MonoBehaviour
 {
-    public ObjectDirectory dir;
+    public Directory dir;
     //public AudioPlayer sfx;
     public AudioPlayer audioPlayer;
     public AudioCatalog audioCatalog;

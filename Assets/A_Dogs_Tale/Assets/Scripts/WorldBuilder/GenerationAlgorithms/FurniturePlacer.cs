@@ -22,11 +22,11 @@ public class FurniturePlacer : MonoBehaviour
     [Tooltip("Extra Y offset above the cell's world position for placement.")]
     public float baseYOffset = 1f;
 
-    private ObjectDirectory dir;
+    private Directory dir;
 
     private void Awake()
     {
-        dir = ObjectDirectory.Instance;
+        dir = Directory.Instance;
         if (dir == null)
         {
             Debug.LogError("FurniturePlacer: ObjectDirectory.Instance is null. Cannot place furniture.", this);
@@ -267,9 +267,9 @@ public class FurniturePlacer : MonoBehaviour
             loc = instance.AddComponent<LocationModule>();
 
         // VisualModule (nice to have for tints, visibility, etc.)
-        VisualModule visual = instance.GetComponent<VisualModule>();
+        VisionModule visual = instance.GetComponent<VisionModule>();
         if (visual == null)
-            visual = instance.AddComponent<VisualModule>();
+            visual = instance.AddComponent<VisionModule>();
 
         // Sync location from cell
         loc.cell = cell;

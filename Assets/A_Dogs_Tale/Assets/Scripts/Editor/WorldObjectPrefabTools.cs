@@ -100,10 +100,10 @@ public static class WorldObjectPrefabTools
         }
 
         // --- Ensure VisualModule on root (or child) ---
-        var visual = root.GetComponent<VisualModule>();
+        var visual = root.GetComponent<VisionModule>();
         if (visual == null)
         {
-            visual = root.AddComponent<VisualModule>();
+            visual = root.AddComponent<VisionModule>();
             changed = true;
         }
 

@@ -7,7 +7,7 @@ namespace DogGame.AI
     [RequireComponent(typeof(AgentPackMemberModule))]
     [RequireComponent(typeof(BlackboardModule))]
     
-    public class AgentController : MonoBehaviour
+    public class AgentModule : MonoBehaviour
     {
         [Header("Debug / Identity")]
         public string agentName = "Unnamed Agent";

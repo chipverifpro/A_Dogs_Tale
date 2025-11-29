@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+[System.Serializable]
 public class DurationScentSource    // scent fades over duration
 {
     public ScentSource scentSource;
@@ -22,7 +23,7 @@ public class ScentEmitterModule : WorldModule
     protected override void Update()
     {
         float dt = Time.deltaTime;
-        
+
         // deposit normal scent
         normalScentSource.Emit(worldObject.Location.cell, dt, decayed: 1.0f);
 

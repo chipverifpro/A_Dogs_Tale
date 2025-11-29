@@ -64,13 +64,13 @@ public class AudioCatalog : MonoBehaviour
     [Header("Audio Catalog Object References")]
     public AudioMixerGroups audioMixerGroups;           // mixer channels
     public AudioPlayer audioPlayer;                     // play controls
-    public ObjectDirectory dir;
+    public Directory dir;
 
     // call this from AudioPlayer.Awake()
     public void StartAudioCatalog()
     {
         // Initialize class references...
-        if (dir == null) dir = FindFirstObjectByType<ObjectDirectory>(FindObjectsInactive.Include);
+        if (dir == null) dir = FindFirstObjectByType<Directory>(FindObjectsInactive.Include);
         if (dir == null)
         {
             Debug.LogError($"AudioCatalog: ObjectDirectory not found");

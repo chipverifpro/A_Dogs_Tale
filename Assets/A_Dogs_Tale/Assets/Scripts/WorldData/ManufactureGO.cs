@@ -12,7 +12,7 @@ public class ManufactureGO : MonoBehaviour
 {
     
     [Header("Input data (logical elements)")]
-    public ObjectDirectory dir;
+    public Directory dir;
 
     [Header("Input data (logical elements)")]
     [SerializeField] private ElementStore elementStore;

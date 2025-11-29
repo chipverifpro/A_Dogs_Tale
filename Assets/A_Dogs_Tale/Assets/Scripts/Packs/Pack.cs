@@ -8,12 +8,12 @@ namespace DogGame.AI
     {
         public string packName = "Unnamed Pack";
 
-        public AgentController leader;
+        public AgentModule leader;
         public PackTacticsProfile tacticsProfile;
 
-        public List<AgentController> members = new List<AgentController>();
+        public List<AgentModule> members = new List<AgentModule>();
 
-        public Pack(AgentController leader, PackTacticsProfile tacticsProfile)
+        public Pack(AgentModule leader, PackTacticsProfile tacticsProfile)
         {
             this.leader = leader;
             this.tacticsProfile = tacticsProfile;
@@ -23,7 +23,7 @@ namespace DogGame.AI
             }
         }
 
-        public void AddMember(AgentController agent, bool setAsLeader = false)
+        public void AddMember(AgentModule agent, bool setAsLeader = false)
         {
             if (agent == null) return;
 
@@ -36,7 +36,7 @@ namespace DogGame.AI
             }
         }
 
-        public void RemoveMember(AgentController agent)
+        public void RemoveMember(AgentModule agent)
         {
             if (agent == null) return;
 
@@ -49,7 +49,7 @@ namespace DogGame.AI
             }
         }
 
-        public bool Contains(AgentController agent)
+        public bool Contains(AgentModule agent)
         {
             return members.Contains(agent);
         }

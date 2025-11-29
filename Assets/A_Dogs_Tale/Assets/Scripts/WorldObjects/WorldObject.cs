@@ -36,7 +36,7 @@ public enum WorldObjectKind
 public class WorldObject : MonoBehaviour
 {
     [Header("GameObject directory")]
-    public ObjectDirectory dir;
+    public Directory dir;
 
     [Header("Identity")]
     [SerializeField] private int objectId = -1;
@@ -55,16 +55,17 @@ public class WorldObject : MonoBehaviour
     // --------------------------
     [Header("Modules (auto-populated)")]
     // Brain:
-    public AgentController  AgentBrain { get; private set; }
+    public AgentModule  AgentBrain { get; private set; }
 
     // Physical world controls:
     public LocationModule   Location   { get; private set; }
     public MotionModule     Motion     { get; private set; }
 
     // senses
-    public VisualModule     Visual     { get; private set; }
-    public ScentEmitterModule Scent      { get; private set; }
+    public VisionModule     Vision     { get; private set; }
+    public ScentEmitterModule ScentEmitter      { get; private set; }
     public ActivatorModule  Activator  { get; private set; }
+    //public ScentSensorModule scentSensorModule  { get; private set; }
 
     // dynamic state data
     public AgentBlackboardView Blackboard { get; private set; }
@@ -82,17 +83,17 @@ public class WorldObject : MonoBehaviour
 
     private void Awake()
     {
-        dir = FindFirstObjectByType<ObjectDirectory>();
+        dir = FindFirstObjectByType<Directory>();
         if (dir == null)
         {
             Debug.LogError($"WorldObject.Awake() was unable to find ObjectDirectory.");
         }
         // Auto-fill modules PER OBJECT
-        AgentBrain= GetComponent<AgentController>();
+        AgentBrain= GetComponent<AgentModule>();
         Location  = GetComponent<LocationModule>();
         Motion    = GetComponent<MotionModule>();
-        Visual    = GetComponent<VisualModule>();
-        Scent     = GetComponent<ScentEmitterModule>();
+        Vision    = GetComponent<VisionModule>();
+        ScentEmitter = GetComponent<ScentEmitterModule>();
         Activator = GetComponent<ActivatorModule>();
         Placement = GetComponent<PlacementModule>();
 

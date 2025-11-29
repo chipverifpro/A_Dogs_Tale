@@ -4,12 +4,12 @@ using UnityEngine;
 // Based on WorldModule, are a variety of specialized modules like LocationModule, MotionModule, VisualModule, etc.
 public abstract class WorldModule : MonoBehaviour
 {
-    protected ObjectDirectory dir;
+    protected Directory dir;
     protected WorldObject worldObject;
 
     protected virtual void Awake()
     {
-        dir = ObjectDirectory.Instance;
+        dir = Directory.Instance;
         if (dir == null)
             Debug.LogError("WorldModule: ObjectDirectory.Instance is null!", this);
     }

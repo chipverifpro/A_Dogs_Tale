@@ -17,7 +17,7 @@ MonoBehaviour:
   showBuildProcess: 0
   stepDelay: 0.1
   randomizeSeed: 1
-  seed: -1524356450
+  seed: 1771007122
   useThinWalls: 1
   mapWidth: 100
   mapHeight: 100
@@ -45,7 +45,7 @@ MonoBehaviour:
   roomsMax: 15
   minRoomSize: 30
   maxRoomSize: 60
-  generateOverlappingRooms: 1
+  generateOverlappingRooms: 0
   MergeScatteredRooms: 1
   allowVerticalStacking: 1
   minVerticalStackHeight: 5
@@ -53,7 +53,7 @@ MonoBehaviour:
   useCellularAutomata: 0
   cellularFillPercent: 45
   CellularGrowthSteps: 5
-  usePerlin: 1
+  usePerlin: 0
   perlinWavelength: 0.05
   perlin2Wavelength: 0.01
   perlin2Amplitude: 1
@@ -112,3 +112,4 @@ MonoBehaviour:
     minDoorSpacing: 20
     maxDoorsPerRoom: 10
     deadEndReach: 6
+  debugLastAlgorithm: 5
