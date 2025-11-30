@@ -9,16 +9,16 @@ namespace DogGame.AI
 
         public override void Tick(float deltaTime)
         {
-            if (packMember == null || packMember.currentPack == null || packMember.currentPack.leader == null)
+            if (worldObject.agentModule.agentPackMemberModule == null || worldObject.agentModule.agentPackMemberModule.currentPack == null || worldObject.agentModule.agentPackMemberModule.currentPack.leader == null)
             {
                 // No pack or no leader: fallback to wandering for now.
                 // TODO: later, we might idle instead of wander.
-                movement.Stop();
+                worldObject.agentModule.agentMovementModule.Stop();
                 return;
             }
 
-            Transform leaderTransform = packMember.currentPack.leader.transform;
-            Vector3 toLeader = leaderTransform.position - agent.transform.position;
+            Transform leaderTransform = worldObject.agentModule.agentPackMemberModule.currentPack.leader.transform;
+            Vector3 toLeader = leaderTransform.position - worldObject.transform.position;
             toLeader.y = 0f;
 
             float distanceToLeader = toLeader.magnitude;
@@ -27,18 +27,18 @@ namespace DogGame.AI
             {
                 // We are far behind: hurry up.
                 Vector3 targetPosition = leaderTransform.position;
-                movement.MoveTowards(targetPosition, deltaTime);
+                worldObject.agentModule.agentMovementModule.MoveTowards(targetPosition, deltaTime);
             }
             else if (distanceToLeader > followDistance)
             {
                 // Adjust gap a bit.
                 Vector3 targetPosition = leaderTransform.position - toLeader.normalized * followDistance;
-                movement.MoveTowards(targetPosition, deltaTime);
+                worldObject.agentModule.agentMovementModule.MoveTowards(targetPosition, deltaTime);
             }
             else
             {
                 // Close enough: maybe look at what leader is looking at.
-                movement.Stop();
+                worldObject.agentModule.agentMovementModule.Stop();
                 // TODO: orientation / idle animation / sniff behaviors.
             }
 

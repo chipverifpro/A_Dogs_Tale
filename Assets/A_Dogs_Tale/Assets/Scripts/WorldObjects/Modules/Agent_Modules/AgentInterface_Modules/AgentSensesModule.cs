@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace DogGame.AI
 {
-    public class AgentSensesModule : WorldModule
+    public class AgentSensesModule : AgentModule
     {
         //[Header("Sub-sensors")]
         //public ScentSensor scentSensor;
@@ -24,7 +24,7 @@ namespace DogGame.AI
         public string scentTag;
     }
 
-    public class ScentSensor : MonoBehaviour
+    public class ScentSensor : AgentModule
     {
         // TODO: hook into your scent field / grid system.
 
@@ -36,7 +36,7 @@ namespace DogGame.AI
         }
     }
 
-    public class VisionSensor : MonoBehaviour
+    public class VisionSensor : AgentModule
     {
         public float visionRange = 10f;
         public float visionAngle = 120f;
@@ -44,7 +44,7 @@ namespace DogGame.AI
         // TODO: Add visible targets list, raycasts, etc.
     }
 
-    public class HearingSensor : MonoBehaviour
+    public class HearingSensor : AgentModule
     {
         public float hearingRadius = 8f;
         // TODO: Add hooks for noise events.

@@ -85,7 +85,7 @@ public class CameraModeSwitcher : MonoBehaviour
 
     void Update()
     {
-        UpdateZoom();
+        //UpdateZoom(0f);
 
         if (Input.GetKeyDown(toggleKey))
         {
@@ -135,6 +135,57 @@ public class CameraModeSwitcher : MonoBehaviour
             player.camera_refresh_needed = false;
         }
     }
+
+    public void SelectView(CameraModes newMode)
+    {
+        if ((newMode != cameraMode) && (newMode != CameraModes.Unchanged))
+        {
+            cameraMode = newMode;
+            vcamPerspective.Priority = 0;
+            vcamFP.Priority = 0;
+            vcamOverhead.Priority = 0;
+            playerVisible = true;
+            player.camera_refresh_needed = true;
+
+            switch (cameraMode)
+            {
+                case CameraModes.Perspective:
+                    vcamPerspective.Priority = 10;
+                    cameraMode = CameraModes.Perspective;
+                    break;
+                case CameraModes.FP:
+                    vcamFP.Priority = 10;
+                    cameraMode = CameraModes.FP;
+                    //playerVisible = false;   // hide player in first person mode
+                    break;
+                case CameraModes.Overhead:
+                    vcamOverhead.Priority = 10;
+                    cameraMode = CameraModes.Overhead;
+                    break;
+            }
+        }
+
+        if (true)
+        {
+            //if (waiter!=null) StopCoroutine(waiter);  // in case WaitForArrival was already running, kill it.
+
+            playerVisible = (cameraMode == CameraModes.FP) ? false : true; // hide player in first person mode
+
+            if (!playerVisible)
+            {
+                // Wait for camera to arrive at first person before disabling player visibility
+                waiter = StartCoroutine(WaitForArrival(vcamFP, onArrived: onArrivedAtFP));
+            }
+            else
+            {
+                //playerModel.SetActive(true);
+                player.agent.DogPrefab.SetActive(true);
+                var mainCam = Camera.main;
+                mainCam.cullingMask &= ~(1 << LayerMask.NameToLayer("Ceiling")); // hide ceiling in non-first person
+            }
+            player.camera_refresh_needed = false;
+        }
+    }  
 
     IEnumerator WaitForArrival(ICinemachineCamera target, System.Action onArrived)
     {
@@ -251,15 +302,15 @@ public class CameraModeSwitcher : MonoBehaviour
     public float maxFOV = 60f;       // widest FOV
 
 
-    void UpdateZoom()
+    public void ApplyZoomDelta(float delta)
     {
-        float delta = 0f;
+        //float delta = 0f;
 
         // '+' = zoom in (closer), '-' = zoom out (farther)
-        if (Input.GetKey(KeyCode.Equals) || Input.GetKey(KeyCode.Plus))
-            delta -= zoomStep * Time.deltaTime * 10f;
-        if (Input.GetKey(KeyCode.Minus) || Input.GetKey(KeyCode.Underscore))
-            delta += zoomStep * Time.deltaTime * 10f;
+        //if (Input.GetKey(KeyCode.Equals) || Input.GetKey(KeyCode.Plus))
+        //    delta -= zoomStep * Time.deltaTime * 10f;
+        //if (Input.GetKey(KeyCode.Minus) || Input.GetKey(KeyCode.Underscore))
+        //    delta += zoomStep * Time.deltaTime * 10f;
 
         if (Mathf.Approximately(delta, 0f))
             return;

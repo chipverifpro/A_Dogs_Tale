@@ -8,33 +8,16 @@ using UnityEngine;
 [DefaultExecutionOrder(-900)] // big negative = runs very early
 public class WorldObjectRegistry : MonoBehaviour
 {
+    [Header("Hierarchy")]
+    [Tooltip("Optional explicit root for all WorldObjects. If null, one named 'WorldObjects' will be created.")]
+    [SerializeField] private Transform worldObjectsRoot;
+
+    private readonly Dictionary<WorldObjectKind, Transform> _kindParents = new();
 
     private static WorldObjectRegistry _instance;
     private static bool _shuttingDown;
 
     // Begin a bunch of crap for starting up and shutting down safely.
-    public static WorldObjectRegistry Instance_OLD
-    {
-        get
-        {
-            // If we're quitting / tearing down, don't try to find anything or log errors.
-            if (_shuttingDown || !Application.isPlaying)
-                return _instance;
-
-            if (_instance == null)
-            {
-                _instance = FindFirstObjectByType<WorldObjectRegistry>();
-                if (_instance == null)
-                {
-                    // This should only be an error during normal play,
-                    // not during exit when _shuttingDown is true.
-                    Debug.LogError("WorldObjectRegistry: No instance found in scene. Please add one.");
-                }
-            }
-
-            return _instance;
-        }
-    }
 
     public static WorldObjectRegistry Instance
     {
@@ -77,6 +60,26 @@ public class WorldObjectRegistry : MonoBehaviour
 
         _instance = this;
         nextId = startingId;
+
+        EnsureHierarchyRoot();
+    }
+
+    private void EnsureHierarchyRoot()
+    {
+        if (worldObjectsRoot != null)
+            return;
+
+        // Try to find an existing one first
+        var existing = GameObject.Find("WorldObjects");
+        if (existing != null)
+        {
+            worldObjectsRoot = existing.transform;
+            return;
+        }
+
+        // Otherwise create a new root
+        var rootGo = new GameObject("WorldObjects");
+        worldObjectsRoot = rootGo.transform;
     }
 
     private void OnApplicationQuit()
@@ -117,6 +120,7 @@ public class WorldObjectRegistry : MonoBehaviour
         {
             // ensure mapping consistency
             objectsById[existingId] = obj;
+            // AssignParentForWorldObject(obj); // Don't move an existing object.
             return existingId;
         }
 
@@ -130,6 +134,7 @@ public class WorldObjectRegistry : MonoBehaviour
             // Keep nextId ahead so we don't collide later
             if (requestedId >= nextId)
                 nextId = requestedId + 1;
+            AssignParentForWorldObject(obj);
             return requestedId;
         }
 
@@ -139,6 +144,7 @@ public class WorldObjectRegistry : MonoBehaviour
         idByObject[obj] = newId;
         obj.SetObjectId(newId);
 
+        AssignParentForWorldObject(obj);
         return newId;
     }
 
@@ -194,6 +200,40 @@ public class WorldObjectRegistry : MonoBehaviour
             nextId++;
         }
         return nextId++;
+    }
+
+    private Transform GetParentForKind(WorldObjectKind kind)
+    {
+        if (worldObjectsRoot == null)
+            return null;
+
+        if (_kindParents.TryGetValue(kind, out var parent) && parent != null)
+            return parent;
+
+        // Create a new child folder under WorldObjects
+        string childName = kind.ToString(); // e.g. "Agent", "Scenery", etc.
+        var childGo = new GameObject(childName);
+        childGo.transform.SetParent(worldObjectsRoot, false);
+
+        parent = childGo.transform;
+        _kindParents[kind] = parent;
+        return parent;
+    }
+
+    private void AssignParentForWorldObject(WorldObject wo)
+    {
+        // Only reparent during play, so we don't mess with edit-time layout unless you want that too.
+        if (!Application.isPlaying)
+            return;
+
+        if (wo.transform == null)
+            return;
+
+        var parent = GetParentForKind(wo.Kind);  // or wo.worldObjectKind / wo.kind – use your actual field
+        if (parent == null)
+            return;
+
+        wo.transform.SetParent(parent, true); // keep world position
     }
 
 #if UNITY_EDITOR

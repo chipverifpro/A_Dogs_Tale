@@ -54,24 +54,34 @@ public class WorldObject : MonoBehaviour
 	//   Agent intelligence
     // --------------------------
     [Header("Modules (auto-populated)")]
-    // Brain:
-    public AgentModule  AgentBrain { get; private set; }
+    // Agent: (agentModule will add more Module types exclusively for agents)
+    public AgentModule  agentModule { get; private set; }
 
-    // Physical world controls:
-    public LocationModule   Location   { get; private set; }
-    public MotionModule     Motion     { get; private set; }
+    // Sensory:
+    public EatModule eatModule { get; private set; }
+    public HearingModule hearingModule { get; private set; }
+    public SmellModule smellModule { get; private set; }
+    public VisionModule visionModule { get; private set; }
 
-    // senses
-    public VisionModule     Vision     { get; private set; }
-    public ScentEmitterModule ScentEmitter      { get; private set; }
-    public ActivatorModule  Activator  { get; private set; }
-    //public ScentSensorModule scentSensorModule  { get; private set; }
+    // Output:
+    public AppearanceModule appearanceModule { get; private set; }
+    public NoiseMakerModule noiseMakerModule { get; private set; }
+    public ScentEmitterModule scentEmitterModule { get; private set; }
 
-    // dynamic state data
-    public AgentBlackboardView Blackboard { get; private set; }
+    // Ability:
+    public ActivatorModule activatorModule { get; private set; }
+    public ContainerModule containerModule { get; private set; }
+    public InteractionModule interactionModule { get; private set; }
+    public LocationModule locationModule { get; private set; }
+    public MotionModule motionModule { get; private set; }
+    
+    // Data:
+    public BlackboardModule blackboardModule { get; private set; }
+    public PlacementModule placementModule { get; private set; }
+    public StatusModule statusModule { get; private set; }
 
-    // generator instructions, not used after level generator
-    public PlacementModule  Placement  { get; private set; }
+    // Quest:
+    public QuestModuleBase questModuleBase { get; private set; }
 
 
     // Registration management functions
@@ -89,13 +99,34 @@ public class WorldObject : MonoBehaviour
             Debug.LogError($"WorldObject.Awake() was unable to find ObjectDirectory.");
         }
         // Auto-fill modules PER OBJECT
-        AgentBrain= GetComponent<AgentModule>();
-        Location  = GetComponent<LocationModule>();
-        Motion    = GetComponent<MotionModule>();
-        Vision    = GetComponent<VisionModule>();
-        ScentEmitter = GetComponent<ScentEmitterModule>();
-        Activator = GetComponent<ActivatorModule>();
-        Placement = GetComponent<PlacementModule>();
+        // --- Agent ---
+        agentModule = GetComponent<AgentModule>();
+
+        // --- Sensory ---
+        eatModule     = GetComponent<EatModule>();
+        hearingModule = GetComponent<HearingModule>();
+        smellModule   = GetComponent<SmellModule>();
+        visionModule  = GetComponent<VisionModule>();
+
+        // --- Output ---
+        appearanceModule  = GetComponent<AppearanceModule>();
+        noiseMakerModule  = GetComponent<NoiseMakerModule>();
+        scentEmitterModule= GetComponent<ScentEmitterModule>();
+
+        // --- Ability ---
+        activatorModule   = GetComponent<ActivatorModule>();
+        containerModule   = GetComponent<ContainerModule>();
+        interactionModule = GetComponent<InteractionModule>();
+        locationModule    = GetComponent<LocationModule>();
+        motionModule      = GetComponent<MotionModule>();
+
+        // --- Data ---
+        blackboardModule  = GetComponent<BlackboardModule>();
+        placementModule   = GetComponent<PlacementModule>();
+        statusModule      = GetComponent<StatusModule>();
+
+        // --- Quest ---
+        questModuleBase   = GetComponent<QuestModuleBase>();
 
         if (string.IsNullOrEmpty(displayName))
             displayName = gameObject.name;

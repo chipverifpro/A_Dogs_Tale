@@ -14,10 +14,12 @@ public class ScentEmitterModule : WorldModule
     public ScentSource normalScentSource;       // constant scent
     public ScentSource onDemandScentSource;     // mark territory
     public List<DurationScentSource> durationScentSources;  // from contact: skunk spray, muddy
+    public float deposit_time_left;
 
     protected override void Awake()
     {
         base.Awake();
+        deposit_time_left = 0f;
     }
 
     protected override void Update()
@@ -25,7 +27,7 @@ public class ScentEmitterModule : WorldModule
         float dt = Time.deltaTime;
 
         // deposit normal scent
-        normalScentSource.Emit(worldObject.Location.cell, dt, decayed: 1.0f);
+        normalScentSource.Emit(worldObject.locationModule.cell, dt, decayed: 1.0f);
 
         // emit all temporary scents
         DurationScentSource dss;
@@ -37,21 +39,25 @@ public class ScentEmitterModule : WorldModule
             dss = durationScentSources[dss_index];
             if (dss==null) continue; // should never happen
             float decayed = dss.time_remaining / dss.duration; // scent decays over time
-            dss.scentSource.Emit(worldObject.Location.cell, dt, decayed: 1.0f);
+            dss.scentSource.Emit(worldObject.locationModule.cell, dt, decayed: decayed);
             dss.time_remaining -= dt;
             if (dss.duration <= dss.time_remaining) // faded away
             {
                 durationScentSources.RemoveAt(dss_index);
             }
         }
+        
+        if ((onDemandScentSource!=null) && (deposit_time_left>0f))
+        {
+            onDemandScentSource.Emit(worldObject.locationModule.cell, dt, decayed: 1.0f);
+        }
     }
 
-    public bool MarkScent(float dt)
+    public bool EmitOnDemandScent(float duration)
     {
-        // deposit onDemandScentSource
         if (onDemandScentSource==null) return false;
-        onDemandScentSource.Emit(worldObject.Location.cell, dt, decayed: 1.0f);    // TODO: make this a coroutine so action will consume time.
+
+        deposit_time_left = duration;
         return true;
     }
-
 }

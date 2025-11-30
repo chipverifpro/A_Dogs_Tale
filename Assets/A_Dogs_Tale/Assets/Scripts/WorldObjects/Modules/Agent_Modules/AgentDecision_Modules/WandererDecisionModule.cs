@@ -22,18 +22,18 @@ namespace DogGame.AI
             timeUntilNewTarget -= deltaTime;
 
             if (timeUntilNewTarget <= 0f ||
-                (agent.transform.position - currentWanderTarget).sqrMagnitude < 0.25f)
+                (worldObject.agentModule.transform.position - currentWanderTarget).sqrMagnitude < 0.25f)
             {
                 PickNewTarget();
             }
 
-            movement.MoveTowards(currentWanderTarget, deltaTime);
+            agentMovementModule.MoveTowards(currentWanderTarget, deltaTime);
         }
 
         private void PickNewTarget()
         {
             Vector2 randomCircle = Random.insideUnitCircle * wanderRadius;
-            Vector3 origin = agent.transform.position;
+            Vector3 origin = worldObject.transform.position;
 
             currentWanderTarget = new Vector3(
                 origin.x + randomCircle.x,

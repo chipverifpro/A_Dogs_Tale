@@ -112,4 +112,3 @@ MonoBehaviour:
     minDoorSpacing: 20
     maxDoorsPerRoom: 10
     deadEndReach: 6
-  debugLastAlgorithm: 5

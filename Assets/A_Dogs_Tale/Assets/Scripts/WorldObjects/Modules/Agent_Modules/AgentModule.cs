@@ -6,44 +6,52 @@ namespace DogGame.AI
     [RequireComponent(typeof(AgentSensesModule))]
     [RequireComponent(typeof(AgentPackMemberModule))]
     [RequireComponent(typeof(BlackboardModule))]
-    
-    public class AgentModule : MonoBehaviour
+    [RequireComponent(typeof(AgentDecisionModuleBase))]
+    public class AgentModule : WorldModule
     {
         [Header("Debug / Identity")]
         public string agentName = "Unnamed Agent";
 
+        [Header("Agent Specific Modules")]
+        // Agent Specific modules (most build on other modules):
+        public AgentMovementModule agentMovementModule { get; private set; }
+        public AgentPackMemberModule agentPackMemberModule { get; private set; }
+        public AgentSensesModule agentSensesModule { get; private set; }
+
+        [Header("Customized Module Views")]
+        public AgentBlackboardView agentBlackboard;
+        private AgentDecisionModuleBase currentDecisionModule;
+
         [Header("Initial Decision Type")]
         public AgentDecisionType initialDecisionType = AgentDecisionType.Wanderer;
 
-        [HideInInspector] public AgentMovementModule movement;
-        [HideInInspector] public AgentSensesModule senses;
-        [HideInInspector] public AgentPackMemberModule packMember;
-        [HideInInspector] public AgentBlackboardView blackboard;
-        [HideInInspector] public BlackboardModule bb_raw;
 
-        private AgentDecisionModuleBase currentDecisionModule;
 
-        private void Awake()
+        protected override void Awake()
         {
-            movement = GetComponent<AgentMovementModule>();
-            senses = GetComponent<AgentSensesModule>();
-            packMember = GetComponent<AgentPackMemberModule>();
-            bb_raw = GetComponent<BlackboardModule>();
+            base.Awake();
 
-            if (bb_raw == null)
-            {
-                bb_raw = GetComponent<BlackboardModule>();
-                blackboard = new AgentBlackboardView(bb_raw);
-            }
+            agentMovementModule   = GetComponent<AgentMovementModule>();
+            agentPackMemberModule = GetComponent<AgentPackMemberModule>();
+            agentSensesModule     = GetComponent<AgentSensesModule>();
+
+
         }
 
-        private void Start()
+        private void OnEnable()
         {
-            SwitchDecisionModule(initialDecisionType);
+//            if (worldObject.blackboardModule != null)
+//            {
+//                agentBlackboard = new AgentBlackboardView(worldObject.blackboardModule);
+//            }
+
+//            SwitchDecisionModule(initialDecisionType);
         }
 
-        private void Update()
+        protected override void Update()
         {
+            base.Update();
+
             float deltaTime = Time.deltaTime;
 
             if (currentDecisionModule != null)

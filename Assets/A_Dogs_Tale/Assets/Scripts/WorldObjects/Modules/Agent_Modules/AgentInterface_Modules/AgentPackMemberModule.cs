@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace DogGame.AI
 {
-    public class AgentPackMemberModule : MonoBehaviour
+    public class AgentPackMemberModule : AgentModule
     {
         public Pack currentPack;
         public bool isLeaderOverride; // For debugging / forced leader.
@@ -18,7 +18,7 @@ namespace DogGame.AI
             }
         }
 
-        private void Awake()
+        protected override void Awake()
         {
             agent = GetComponent<AgentModule>();
         }
@@ -42,6 +42,15 @@ namespace DogGame.AI
 
             currentPack.RemoveMember(agent);
             currentPack = null;
+        }
+
+        public void RequestBecomeControlledAgent(int agentIndex)
+        {
+            
+        }
+        public void CycleFormation()
+        {
+            
         }
     }
 }

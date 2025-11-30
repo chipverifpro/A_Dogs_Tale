@@ -197,23 +197,5 @@ public class DungeonSettings : ScriptableObject
     [Header("Door Params")]
     public DoorParams doors = new DoorParams { loopiness=0.25f, minDoorSpacing=3, maxDoorsPerRoom=6, deadEndReach=6 };
 
-#if UNITY_EDITOR
-public RoomAlgorithm_e debugLastAlgorithm;
-
-private void OnValidate()
-{
-    if (debugLastAlgorithm != RoomAlgorithm)
-    {
-        Debug.Log($"DungeonSettings: Algorithm changed from {debugLastAlgorithm} to {RoomAlgorithm}", this);
-        debugLastAlgorithm = RoomAlgorithm;
-    }
-}
-#endif
-
-public void LogMe(string context)
-{
-    Debug.Log($"{context}: DungeonSettings instance '{name}', id={GetInstanceID()}, RoomAlgorithm={RoomAlgorithm}", this);
-}
-
 }
 

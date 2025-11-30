@@ -32,6 +32,7 @@ public class AgentBlackboardView
     }
 }
 
+/*
 public class PuzzleBlackboardView
 {
     private readonly BlackboardModule bb;
@@ -56,3 +57,4 @@ public class PuzzleBlackboardView
         set => bb.Set(KidHappyKey, value);
     }
 }
+*/
