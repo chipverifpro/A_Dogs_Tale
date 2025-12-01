@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public struct PlayerInputState
+public class PlayerInputState
 {
     public Vector2 moveAxis;                    // float vector direction and speed (-1.0 to 1.0)
 
@@ -30,9 +30,3 @@ public struct PlayerInputState
     // Skip delay
     public bool anyKeyOrButtonDown;             // skips delay in title screen / interraction / cutscene
 }
-
-public interface IPlayerInputSource
-{
-    PlayerInputState CurrentState { get; }
-}
-    

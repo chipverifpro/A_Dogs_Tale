@@ -1,14 +1,18 @@
 using UnityEngine;
 using DogGame.AI;  // if your AgentDecisionModuleBase lives here
+using DogGame.Input;
 // using DogGame.World; // if you need WorldObject, etc.
 
 public class PlayerDecisionModule : AgentDecisionModuleBase
 {
-    [Header("Input Source")]
-    [Tooltip("Component that provides PlayerInputState (e.g. NewInputAdapter). Must implement IPlayerInputSource.")]
-    [SerializeField] private MonoBehaviour inputSourceBehaviour;
+//    [Header("Input Source")]
+//    [Tooltip("Component that provides PlayerInputState (e.g. NewInputAdapter). Must implement IPlayerInputSource.")]
+//    [SerializeField] private MonoBehaviour inputSourceBehaviour;
 
-    private IPlayerInputSource inputSource;
+//    private IPlayerInputSource inputSource;
+
+    [SerializeField] private NewInputAdapter inputAdapter;
+    private PlayerInputState inputState;
 
     [Header("Movement")]
     [SerializeField] private float moveSpeed = 3.5f;
@@ -24,6 +28,11 @@ public class PlayerDecisionModule : AgentDecisionModuleBase
     {
         base.Initialize(agent);
 
+        if (inputAdapter == null)
+            inputAdapter = FindFirstObjectByType<NewInputAdapter>();
+
+        inputState = inputAdapter.InputState;
+/*        
         // Resolve input source
         if (inputSourceBehaviour == null)
         {
@@ -38,7 +47,7 @@ public class PlayerDecisionModule : AgentDecisionModuleBase
         {
             Debug.LogError($"PlayerDecisionModule on {agent.agentName}: inputSourceBehaviour does not implement IPlayerInputSource.", this);
         }
-
+*/
         // Resolve movement module if not wired
     //    if (agentMovementModule == null)
     //        agentMovementModule = worldObject.GetModule<AgentMovementModule>();
@@ -55,15 +64,15 @@ public class PlayerDecisionModule : AgentDecisionModuleBase
 
     public override void Tick(float deltaTime)
     {
-        if (inputSource == null)
-        {
-            // No input = no movement
-            if (agentMovementModule != null)
-                agentMovementModule.SetMoveVector(Vector3.zero);
-            return;
-        }
+        //if (inputSource == null)
+        //{
+        //    // No input = no movement
+        //    if (agentMovementModule != null)
+        //        agentMovementModule.SetMoveVector(Vector3.zero);
+        //    return;
+        //}
 
-        PlayerInputState state = inputSource.CurrentState;
+        PlayerInputState state = inputState;
 
         HandleCamera(state, deltaTime);
         HandleOneShotActions(state);
@@ -81,11 +90,13 @@ public class PlayerDecisionModule : AgentDecisionModuleBase
         {
             if (Mathf.Abs(state.zoomDelta) > 0.0001f)
             {
+                Debug.Log($"ApplyZoomDelta: {state.zoomDelta}");
                 dir.cameraModeSwitcher.ApplyZoomDelta(state.zoomDelta);
             }
 
             if (state.cameraViewSelect >= 0)
             {
+                Debug.Log($"SelectView: {state.cameraViewSelect}");
                 dir.cameraModeSwitcher.SelectView(state.cameraViewSelect);
             }
         }

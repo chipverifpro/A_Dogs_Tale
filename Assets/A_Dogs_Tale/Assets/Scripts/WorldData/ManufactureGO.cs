@@ -268,7 +268,8 @@ public class ManufactureGO : MonoBehaviour
             }
 
             // Matching GO bucket in Warehouse
-            var bucket = warehouse.GetLayerBucket(dataLayer.kind);
+            //var bucket = warehouse.GetLayerBucket(dataLayer.kind);
+            var bucket = warehouse.GetOrCreateLayer(dataLayer.kind);
             if (bucket == null)
             {
                 Debug.LogWarning($"ManufactureGO: No warehouse bucket found for layer {dataLayer.kind}. Skipping.");

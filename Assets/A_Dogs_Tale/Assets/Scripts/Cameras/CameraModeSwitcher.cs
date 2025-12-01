@@ -87,7 +87,7 @@ public class CameraModeSwitcher : MonoBehaviour
     {
         //UpdateZoom(0f);
 
-        if (Input.GetKeyDown(toggleKey))
+        /*if (Input.GetKeyDown(toggleKey))
         {
             current_camera = (current_camera + 1) % 3;
             vcamPerspective.Priority = 0;
@@ -112,7 +112,7 @@ public class CameraModeSwitcher : MonoBehaviour
                     cameraMode = CameraModes.Overhead;
                     break;
             }
-        }
+        }*/
 
         if (player.camera_refresh_needed)
         {

@@ -11,7 +11,7 @@ public class ScentGUI : MonoBehaviour
     {
         
     }
-
+/*
     void Update()
     {
         if (Input.GetKeyDown(KeyCode.F))
@@ -35,6 +35,7 @@ public class ScentGUI : MonoBehaviour
             // hide sniff UI
         }
     }
+*/
     // In some UI controller:
     public void OnSniff(Cell currentCell)
     {

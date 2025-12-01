@@ -6766,11 +6766,14 @@ GameObject:
   - component: {fileID: 8971052136719718842}
   - component: {fileID: -4966681747246804322}
   - component: {fileID: -7798522703535172865}
+  - component: {fileID: -6413587772214851339}
+  - component: {fileID: 931491610566122535}
   - component: {fileID: 2549317176851541455}
   - component: {fileID: 9058620029262858386}
   - component: {fileID: -2579705691123128087}
   - component: {fileID: -8992318729994084145}
   - component: {fileID: 2416597344580093698}
+  - component: {fileID: 5489688820212678968}
   m_Layer: 0
   m_Name: germanshepherd
   m_TagString: Untagged
@@ -6911,8 +6914,53 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: adf93bac058004cf3a0148ddf57312e4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.AI.AgentMovementModule
+  agentName: Unnamed Agent
+  initialDecisionType: 0
   maxMoveSpeed: 3.5
   rotationSpeedDegreesPerSecond: 720
+--- !u!114 &-6413587772214851339
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8843402266763018810}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 40e29a7f84b4b443a858e5012f88be27, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerDecisionModule
+  agentName: Unnamed Agent
+  initialDecisionType: 0
+  inputSourceBehaviour: {fileID: 0}
+  moveSpeed: 3.5
+  rotateSpeed: 720
+  useCameraRelativeMovement: 1
+  cameraForMovement: {fileID: 0}
+  cameraModeSwitcher: {fileID: 0}
+--- !u!114 &931491610566122535
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8843402266763018810}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 386fd5f90ca914698a256c30abcc9bd3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::NewInputAdapter
+  playerInput: {fileID: 0}
+  moveActionName: Move
+  barkActionName: Bark
+  markTerritoryActionName: MarkTerritory
+  zoomActionName: Zoom
+  changeFormationActionName: ChangeFormation
+  interactActionName: Interact
+  selectObjectActionName: SelectObject
+  skipAnyKeyActionName: Skip
+  cameraViewActionName: 
+  nextAgentActionName: 
 --- !u!114 &2549317176851541455
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -6925,6 +6973,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d9ee26534211046eaaf7bf4849439735, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.AI.AgentSensesModule
+  agentName: Unnamed Agent
+  initialDecisionType: 2
 --- !u!114 &9058620029262858386
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -6937,6 +6987,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 591141ee4c2194d7cb0450a047c4dacd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.AI.AgentPackMemberModule
+  agentName: Unnamed Agent
+  initialDecisionType: 2
   currentPack:
     packName: PlayerPack
     leader: {fileID: 0}
@@ -6957,10 +7009,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.AI.AgentModule
   agentName: GermanShepherd
   initialDecisionType: 2
-  movement: {fileID: 0}
-  senses: {fileID: 0}
-  packMember: {fileID: 0}
-  bb_raw: {fileID: 0}
 --- !u!114 &-8992318729994084145
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -7012,6 +7060,38 @@ MonoBehaviour:
     sensitivityBoost: 1
     persistentId: 
   durationScentSources: []
+  deposit_time_left: 0
+--- !u!114 &5489688820212678968
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8843402266763018810}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 62899f850307741f2a39c98a8b639597, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.InputSystem::UnityEngine.InputSystem.PlayerInput
+  m_Actions: {fileID: -944628639613478452, guid: f967729473cd0444e832e82627561b18,
+    type: 3}
+  m_NotificationBehavior: 0
+  m_UIInputModule: {fileID: 0}
+  m_DeviceLostEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  m_DeviceRegainedEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  m_ControlsChangedEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  m_ActionEvents: []
+  m_NeverAutoSwitchControlSchemes: 0
+  m_DefaultControlScheme: 
+  m_DefaultActionMap: 
+  m_SplitScreenIndex: -1
+  m_Camera: {fileID: 0}
 --- !u!1 &9013224563457681554
 GameObject:
   m_ObjectHideFlags: 0

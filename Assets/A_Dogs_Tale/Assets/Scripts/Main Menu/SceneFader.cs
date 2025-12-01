@@ -89,6 +89,17 @@ public class SceneFader : MonoBehaviour
             startAfterInterval: true,
             preload: true
         );
+
+        audioCatalog.AddClipToCatalog(
+            name: "Bark_GS_once",
+            filename: "Bark_GermanShepherd",
+            subtitle: "[Bark (German Shepherd)]",
+            channel: "SFX",     // Ambient ?
+            pitchRange: new(.95f, 1.05f),
+            intervalRange: null,
+            startAfterInterval: false,
+            preload: true
+        );
     }
     private IEnumerator CrossFade()
     {
@@ -153,10 +164,10 @@ public class SceneFader : MonoBehaviour
         {
             t += Time.deltaTime;
             // Optional: allow skip after min time
-            if (allowSkip && t >= minSplashSeconds && (Input.anyKeyDown || Input.GetMouseButtonDown(0)))
-            {
-                break;  // skip remaining initial title time and begin crossfade
-            }
+ //           if (allowSkip && t >= minSplashSeconds && (Input.anyKeyDown || Input.GetMouseButtonDown(0)))
+ //           {
+ //               break;  // skip remaining initial title time and begin crossfade
+ //           }
             yield return null;
         }
         yield return null;

@@ -84,6 +84,8 @@ public class Directory : MonoBehaviour
 
     void InitializeDirectory()
     {
+        if (AllReady) return;   // last time everything was good so don't go through it again.
+
         failures = 0;
         pass_num++;
         //Debug.Log($"[Directory{pass_num}] Begin InitializeConnections");

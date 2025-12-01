@@ -57,6 +57,7 @@ public partial class Player : MonoBehaviour
 
     void Input_Update()
     {
+        /*
         // 1) Input: A/D rotate, W/S move forward/back
         float turn = Input.GetAxisRaw("Horizontal"); // A/D
         float thrust = Input.GetAxisRaw("Vertical"); // W/S
@@ -78,6 +79,7 @@ public partial class Player : MonoBehaviour
         UpdateMouseInput();  // Click/tap to move
 
         Update_Selectable();
+        */
     }
 
     void UpdateMouseInput()
