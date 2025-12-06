@@ -42,7 +42,7 @@ public class TempInputStateMover : MonoBehaviour
         if (move3.sqrMagnitude > 0.0001f)
         {
             transform.position += move3 * moveSpeed * Time.deltaTime;
-            Debug.Log($"TempInpuTStateMover: move {move3}");
+            Debug.Log($"TempInputStateMover: move {move3}");
         }
     }
 }

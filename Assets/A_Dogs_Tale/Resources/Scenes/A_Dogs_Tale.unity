@@ -3938,7 +3938,7 @@ MonoBehaviour:
   bottomBanner: {fileID: 669106355}
   PackGameObject: {fileID: 766807146}
   pack: {fileID: 766807147}
-  agent: {fileID: 1159626742}
+  agent: {fileID: 766135307}
   destination: {x: 0, y: 0, z: 0}
   baseSpeed: 6
   turnSpeedDegPerSec: 180
@@ -5234,9 +5234,9 @@ MonoBehaviour:
   agentVisual: {fileID: 4283123491008757125, guid: 8c65657c6138d4d76aa2e7e8aa85c841,
     type: 3}
   trail: {fileID: 1480059014}
-  PackLeader: {fileID: 1159626742}
+  PackLeader: {fileID: 0}
   packList:
-  - {fileID: 1159626742}
+  - {fileID: 0}
   - {fileID: 907681577}
   - {fileID: 841138159}
   - {fileID: 2142269743}
@@ -7013,50 +7013,6 @@ PrefabInstance:
         type: 3}
       insertIndex: -1
       addedObject: {fileID: 1253610028}
-    - targetCorrespondingSourceObject: {fileID: 7970140317087810869, guid: e2802ce6b21f34344bc910cf30e9b3a8,
-        type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 1253610027}
-    - targetCorrespondingSourceObject: {fileID: 7970140317087810869, guid: e2802ce6b21f34344bc910cf30e9b3a8,
-        type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 1253610026}
-    - targetCorrespondingSourceObject: {fileID: 7970140317087810869, guid: e2802ce6b21f34344bc910cf30e9b3a8,
-        type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 1253610025}
-    - targetCorrespondingSourceObject: {fileID: 7970140317087810869, guid: e2802ce6b21f34344bc910cf30e9b3a8,
-        type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 1253610024}
-    - targetCorrespondingSourceObject: {fileID: 7970140317087810869, guid: e2802ce6b21f34344bc910cf30e9b3a8,
-        type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 1253610023}
-    - targetCorrespondingSourceObject: {fileID: 7970140317087810869, guid: e2802ce6b21f34344bc910cf30e9b3a8,
-        type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 1253610022}
-    - targetCorrespondingSourceObject: {fileID: 7970140317087810869, guid: e2802ce6b21f34344bc910cf30e9b3a8,
-        type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 1253610021}
-    - targetCorrespondingSourceObject: {fileID: 7970140317087810869, guid: e2802ce6b21f34344bc910cf30e9b3a8,
-        type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 1253610020}
-    - targetCorrespondingSourceObject: {fileID: 7970140317087810869, guid: e2802ce6b21f34344bc910cf30e9b3a8,
-        type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 1253610039}
-    - targetCorrespondingSourceObject: {fileID: 7970140317087810869, guid: e2802ce6b21f34344bc910cf30e9b3a8,
-        type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 1253610041}
-    - targetCorrespondingSourceObject: {fileID: 7970140317087810869, guid: e2802ce6b21f34344bc910cf30e9b3a8,
-        type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 1253610040}
   m_SourcePrefab: {fileID: 100100000, guid: e2802ce6b21f34344bc910cf30e9b3a8, type: 3}
 --- !u!1 &1066008316
 GameObject:
@@ -7573,7 +7529,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1159626743}
-  - component: {fileID: 1159626742}
   - component: {fileID: 1159626744}
   m_Layer: 0
   m_Name: AgentGermanShepherd
@@ -7582,73 +7537,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &1159626742
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1159626741}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 44d00ea15eef6456fa7f11e2af2422f8, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  dir: {fileID: 1920128612}
-  id: 0
-  baseSpeed: 6
-  turnSpeedDegPerSec: 180
-  radius: 0.4
-  pos2: {x: 0, y: 0}
-  height: 0
-  yawDeg: 0
-  targetYawDeg: 0
-  prevYawDeg: 0
-  agentScentSource:
-    agentId: -1
-    category: 0
-    scentName: 
-    categoryColor: {r: 0, g: 0, b: 0, a: 0}
-    sourceAirColor: {r: 0, g: 0, b: 0, a: 0}
-    sourceGroundColor: {r: 0, g: 0, b: 0, a: 0}
-    airDepositRate: 1
-    groundDepositRate: 0.1
-    familiarity: 0
-    sensitivityBoost: 1
-    persistentId: 
-  DogPrefab: {fileID: 6544990386685219093}
-  anim: {fileID: 5475111281846579140}
-  next_actualCrumb:
-    valid: 0
-    pos2: {x: 0, y: 0}
-    height: 0
-    yawDeg: 0
-    whichFollowersArrived: 
-  next_formationCrumb:
-    valid: 0
-    pos2: {x: 0, y: 0}
-    height: 0
-    yawDeg: 0
-    whichFollowersArrived: 
-  routeWaypoints: []
-  color1: {r: 0, g: 0, b: 0, a: 0}
-  color2: {r: 0, g: 0, b: 0, a: 0}
-  healthPoints: 0
-  racialType: 
-  race: 
-  pack: {fileID: 766807147}
-  trail: {fileID: 1480059014}
-  trailLeader: 1
-  trailFollower: 0
-  camera_refresh_needed: 1
-  xCorrection: 0.5
-  yCorrection: 0.5
-  yawCorrection: 90
-  heightCorrection: 1
-  isPlayer: 0
-  selected: 0
-  tendencyToWander: 0.1
-  isAlpha: 0
 --- !u!4 &1159626743
 Transform:
   m_ObjectHideFlags: 0
@@ -8583,135 +8471,6 @@ GameObject:
     type: 3}
   m_PrefabInstance: {fileID: 1036249802}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &1253610020
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1253610019}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ba2cf7359fae44b0a9386ea1703def7b, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::DogGame.AI.AgentController
-  agentName: Unnamed Agent
-  initialDecisionType: 2
---- !u!114 &1253610021
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1253610019}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d9ee26534211046eaaf7bf4849439735, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::DogGame.AI.AgentSenses
-  agentName: Unnamed Agent
-  initialDecisionType: 2
---- !u!114 &1253610022
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1253610019}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 591141ee4c2194d7cb0450a047c4dacd, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::DogGame.AI.AgentPackMember
-  agentName: Unnamed Agent
-  initialDecisionType: 2
-  currentPack:
-    packName: 
-    leader: {fileID: 0}
-    tacticsProfile: {fileID: 0}
-    members: []
-  isLeaderOverride: 0
---- !u!114 &1253610023
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1253610019}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: adf93bac058004cf3a0148ddf57312e4, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::DogGame.AI.AgentMovement
-  agentName: Unnamed Agent
-  initialDecisionType: 2
-  maxMoveSpeed: 3.5
-  rotationSpeedDegreesPerSecond: 720
---- !u!143 &1253610024
-CharacterController:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1253610019}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Height: 0.48035812
-  m_Radius: 0.2587688
-  m_SlopeLimit: 45
-  m_StepOffset: 0.3
-  m_SkinWidth: 0.08
-  m_MinMoveDistance: 0.001
-  m_Center: {x: 0, y: 0, z: 0}
---- !u!114 &1253610025
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1253610019}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d0bb071cfa65b4c558ffceeb89516773, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::NPCModule
---- !u!114 &1253610026
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1253610019}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: adcf85cdcf1014fbd83a06406dd1f69a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::MotionModule
-  MoveSpeed: 3
---- !u!114 &1253610027
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1253610019}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2272e4992677c4977b85dbef83406534, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::LocationModule
-  pos3d_f: {x: 0, y: 0, z: 0}
-  yawDeg: 0
-  tilt: {x: 0, y: 0, z: 0, w: 1}
 --- !u!114 &1253610028
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -8738,7 +8497,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b112db3959c164550975dd26677f8e8e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::WorldObject
-  dir: {fileID: 0}
+  dir: {fileID: 1920128612}
   objectId: -1
   displayName: PlayerCrate
   kind: 1
@@ -8749,59 +8508,6 @@ Transform:
     type: 3}
   m_PrefabInstance: {fileID: 1036249802}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &1253610039
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1253610019}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4a9f755dd8eef4be79076117627b3add, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::DogGame.AI.WandererDecisionModule
-  agentName: Unnamed Agent
-  initialDecisionType: 2
-  wanderRadius: 4
-  minTimeBetweenTargets: 1.5
-  maxTimeBetweenTargets: 4
---- !u!114 &1253610040
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1253610019}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0477df26e09ec48cfa0792a308d4ce4a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::DogGame.AI.FollowerDecisionModule
-  agentName: Unnamed Agent
-  initialDecisionType: 2
-  followDistance: 2.5
-  rejoinDistance: 7
---- !u!114 &1253610041
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1253610019}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 40e29a7f84b4b443a858e5012f88be27, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::PlayerDecisionModule
-  agentName: Unnamed Agent
-  initialDecisionType: 2
-  inputAdapter: {fileID: 0}
-  moveSpeed: 3.5
-  rotateSpeed: 720
-  useCameraRelativeMovement: 1
-  cameraForMovement: {fileID: 0}
-  cameraModeSwitcher: {fileID: 0}
 --- !u!1 &1255866326
 GameObject:
   m_ObjectHideFlags: 0
@@ -10648,7 +10354,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   dropDistance: 0.5
   maxCrumbs: 256
-  leader: {fileID: 1159626742}
+  leader: {fileID: 0}
   followers:
   - {fileID: 907681577}
   - {fileID: 841138159}
@@ -15820,12 +15526,6 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
---- !u!95 &5475111281846579140 stripped
-Animator:
-  m_CorrespondingSourceObject: {fileID: 5955850347136920745, guid: 2ce0050a816054aaca2a1076f182f7a8,
-    type: 3}
-  m_PrefabInstance: {fileID: 6533885166602815770}
-  m_PrefabAsset: {fileID: 0}
 --- !u!4 &6191479115019793372 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 7997089769847479514, guid: 2ce0050a816054aaca2a1076f182f7a8,
@@ -15850,11 +15550,6 @@ PrefabInstance:
       propertyPath: inputAdapter
       value: 
       objectReference: {fileID: 6544990386685219112}
-    - target: {fileID: -4966681747246804322, guid: 2ce0050a816054aaca2a1076f182f7a8,
-        type: 3}
-      propertyPath: m_IncludeLayers.m_Bits
-      value: 1024
-      objectReference: {fileID: 0}
     - target: {fileID: -2579705691123128087, guid: 2ce0050a816054aaca2a1076f182f7a8,
         type: 3}
       propertyPath: initialDecisionType
@@ -15995,28 +15690,73 @@ PrefabInstance:
         type: 3}
       propertyPath: currentPack.leader
       value: 
-      objectReference: {fileID: 6544990386685219099}
+      objectReference: {fileID: 0}
     - target: {fileID: 9058620029262858386, guid: 2ce0050a816054aaca2a1076f182f7a8,
         type: 3}
       propertyPath: initialDecisionType
       value: 0
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 0}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 8843402266763018810, guid: 2ce0050a816054aaca2a1076f182f7a8,
         type: 3}
-      insertIndex: 2
+      insertIndex: -1
+      addedObject: {fileID: 6544990386685219105}
+    - targetCorrespondingSourceObject: {fileID: 8843402266763018810, guid: 2ce0050a816054aaca2a1076f182f7a8,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 6544990386685219126}
+    - targetCorrespondingSourceObject: {fileID: 8843402266763018810, guid: 2ce0050a816054aaca2a1076f182f7a8,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 6544990386685219125}
+    - targetCorrespondingSourceObject: {fileID: 8843402266763018810, guid: 2ce0050a816054aaca2a1076f182f7a8,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 6544990386685219124}
+    - targetCorrespondingSourceObject: {fileID: 8843402266763018810, guid: 2ce0050a816054aaca2a1076f182f7a8,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 6544990386685219123}
+    - targetCorrespondingSourceObject: {fileID: 8843402266763018810, guid: 2ce0050a816054aaca2a1076f182f7a8,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 6544990386685219122}
+    - targetCorrespondingSourceObject: {fileID: 8843402266763018810, guid: 2ce0050a816054aaca2a1076f182f7a8,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 6544990386685219121}
+    - targetCorrespondingSourceObject: {fileID: 8843402266763018810, guid: 2ce0050a816054aaca2a1076f182f7a8,
+        type: 3}
+      insertIndex: -1
       addedObject: {fileID: 6544990386685219120}
     - targetCorrespondingSourceObject: {fileID: 8843402266763018810, guid: 2ce0050a816054aaca2a1076f182f7a8,
         type: 3}
-      insertIndex: 11
+      insertIndex: -1
       addedObject: {fileID: 6544990386685219119}
     - targetCorrespondingSourceObject: {fileID: 8843402266763018810, guid: 2ce0050a816054aaca2a1076f182f7a8,
         type: 3}
       insertIndex: -1
-      addedObject: {fileID: 6544990386685219105}
+      addedObject: {fileID: 6544990386685219118}
+    - targetCorrespondingSourceObject: {fileID: 8843402266763018810, guid: 2ce0050a816054aaca2a1076f182f7a8,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 6544990386685219117}
+    - targetCorrespondingSourceObject: {fileID: 8843402266763018810, guid: 2ce0050a816054aaca2a1076f182f7a8,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 6544990386685219116}
+    - targetCorrespondingSourceObject: {fileID: 8843402266763018810, guid: 2ce0050a816054aaca2a1076f182f7a8,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 6544990386685219115}
+    - targetCorrespondingSourceObject: {fileID: 8843402266763018810, guid: 2ce0050a816054aaca2a1076f182f7a8,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 6544990386685219114}
   m_SourcePrefab: {fileID: 100100000, guid: 2ce0050a816054aaca2a1076f182f7a8, type: 3}
 --- !u!1 &6544990386685219093 stripped
 GameObject:
@@ -16024,18 +15764,6 @@ GameObject:
     type: 3}
   m_PrefabInstance: {fileID: 6533885166602815770}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &6544990386685219099 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: -7798522703535172865, guid: 2ce0050a816054aaca2a1076f182f7a8,
-    type: 3}
-  m_PrefabInstance: {fileID: 6533885166602815770}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6544990386685219093}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: adf93bac058004cf3a0148ddf57312e4, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::DogGame.AI.AgentMovementModule
 --- !u!114 &6544990386685219105
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -16048,8 +15776,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 40e29a7f84b4b443a858e5012f88be27, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerDecisionModule
-  agentName: Unnamed Agent
-  initialDecisionType: 0
   inputAdapter: {fileID: 6544990386685219112}
   moveSpeed: 3.5
   rotateSpeed: 720
@@ -16080,6 +15806,75 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 386fd5f90ca914698a256c30abcc9bd3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NewInputAdapter
+--- !u!114 &6544990386685219114
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6544990386685219093}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a331d038638764085ab09ba8be98ac41, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SmellModule
+--- !u!114 &6544990386685219115
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6544990386685219093}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6a58844417672410b85570a105ad1e62, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::HearingModule
+--- !u!114 &6544990386685219116
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6544990386685219093}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a84846d553e584223b8e8df5ef2d7381, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::VisionModule
+  mainRenderer: {fileID: 0}
+  extraRenderers: []
+--- !u!114 &6544990386685219117
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6544990386685219093}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0477df26e09ec48cfa0792a308d4ce4a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DogGame.AI.FollowerDecisionModule
+  followTarget: {fileID: 0}
+  followDistanceMeters: 1.5
+  autoFollowPackLeaderOnStart: 1
+  enableDebugLogging: 0
+--- !u!114 &6544990386685219118
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6544990386685219093}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4a9f755dd8eef4be79076117627b3add, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DogGame.AI.WandererDecisionModule
+  wanderRadius: 4
+  minTimeBetweenTargets: 1.5
+  maxTimeBetweenTargets: 4
 --- !u!114 &6544990386685219119
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -16089,11 +15884,15 @@ MonoBehaviour:
   m_GameObject: {fileID: 6544990386685219093}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1e78d91e83aa94adfbc924e585763877, type: 3}
+  m_Script: {fileID: 11500000, guid: 591141ee4c2194d7cb0450a047c4dacd, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::PlayerInputStateDebugger
-  inputAdapter: {fileID: 6544990386685219112}
-  enableDebugLogging: 0
+  m_EditorClassIdentifier: Assembly-CSharp::DogGame.AI.AgentPackMemberModule
+  currentPack:
+    packName: 
+    leader: {fileID: 0}
+    tacticsProfile: {fileID: 0}
+    members: []
+  isLeaderOverride: 0
 --- !u!114 &6544990386685219120
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -16103,11 +15902,108 @@ MonoBehaviour:
   m_GameObject: {fileID: 6544990386685219093}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 187891424eb2041d780b6363bd2140e1, type: 3}
+  m_Script: {fileID: 11500000, guid: d9ee26534211046eaaf7bf4849439735, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::TempInputStateMover
-  inputAdapter: {fileID: 6544990386685219112}
-  moveSpeed: 5
+  m_EditorClassIdentifier: Assembly-CSharp::DogGame.AI.AgentSensesModule
+--- !u!114 &6544990386685219121
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6544990386685219093}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d0bb071cfa65b4c558ffceeb89516773, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BlackboardModule
+--- !u!114 &6544990386685219122
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6544990386685219093}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: adf93bac058004cf3a0148ddf57312e4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DogGame.AI.AgentMovementModule
+  walkSpeedMetersPerSecond: 3
+  runSpeedMetersPerSecond: 6
+  accelerationMetersPerSecondSquared: 12
+  decelerationMetersPerSecondSquared: 16
+  enableDebugLogging: 0
+--- !u!114 &6544990386685219123
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6544990386685219093}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2272e4992677c4977b85dbef83406534, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::LocationModule
+  pos3d_f: {x: 0, y: 0, z: 0}
+  yawDeg: 0
+  tilt: {x: 0, y: 0, z: 0, w: 1}
+--- !u!114 &6544990386685219124
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6544990386685219093}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: adcf85cdcf1014fbd83a06406dd1f69a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DogGame.AI.MotionModule
+  bodyRoot: {fileID: 0}
+  faceMovementDirection: 1
+  rotationSpeedDegreesPerSecond: 720
+  useGravity: 0
+  gravityMetersPerSecondSquared: -9.81
+  maxFallSpeedMetersPerSecond: 50
+--- !u!114 &6544990386685219125
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6544990386685219093}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e486e0d84f00148db8eded1ca333c685, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AppearanceModule
+--- !u!114 &6544990386685219126
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6544990386685219093}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 02c8b2eb4c221410fb6c396c953c3124, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SniffModeVisuals
+  sniffVolume: {fileID: 1135862880}
+  transitionDuration: 0.35
+  sniffSaturation: -80
+  sniffPostExposure: -0.5
+  sniffHueShift: 20
+  sniffColorFilter: {r: 0.8, g: 0.7, b: 1, a: 1}
+  sniffVignetteIntensity: 0.35
+  sniffVignetteSmoothness: 0.7
+  sniffVignetteColor: {r: 0.1, g: 0, b: 0.15, a: 1}
+  enableBlur: 1
+  sniffFocusDistance: 5
+  sniffAperture: 4
+  sniffFocalLength: 50
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

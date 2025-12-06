@@ -1,5 +1,24 @@
 using UnityEngine;
 
+/* 
+LocationModule is the sensor.
+
+It should not move the dog at all.
+It should inform MotionModule and AgentMovementModule.
+
+LocationModule can answer questions MotionModule cannot, such as:
+	•	“What cell am I standing in?”
+	•	“Is this walkable floor?”
+	•	“Is the ground sloped?”
+	•	“Am I on a staircase? Ramp?”
+	•	“Should I perform a landing animation?”
+	•	“What is the world y-offset for snapped ground height?”
+	•	“What objects can I interact with from here?”
+	•	“Am I inside a certain region or zone?”
+	•	“Should the minimap show this spot?”
+	•	“Is the dog’s current pose above/below ground?”
+    */
+
 // LocationModule allows placing an object precisely on the map (or in the world)
 // Lots of helpers for position conversions between 2D/3D, int/float, world/grid space, etc.
 public class LocationModule : WorldModule

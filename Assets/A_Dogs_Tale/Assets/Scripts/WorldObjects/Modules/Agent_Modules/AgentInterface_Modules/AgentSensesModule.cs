@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace DogGame.AI
 {
-    public class AgentSensesModule : AgentModule
+    public class AgentSensesModule : WorldModule
     {
         //[Header("Sub-sensors")]
         //public ScentSensor scentSensor;
@@ -13,6 +13,11 @@ namespace DogGame.AI
         {
             // Use accesses like this instead...???
             // worldObject.Vision
+        }
+
+        public override void Tick(float deltaTime)
+        {
+            Debug.Log($"AgentSensesModule {worldObject.DisplayName}: Tick {deltaTime}");
         }
     }
 

@@ -4,45 +4,179 @@ namespace DogGame.AI
 {
     public class FollowerDecisionModule : AgentDecisionModuleBase
     {
-        public float followDistance = 2.5f;
-        public float rejoinDistance = 7f;
+        public override AgentDecisionType DecisionType => AgentDecisionType.Follower;
 
-        public override void Tick(float deltaTime)
+        [Header("Dependencies")]
+        //[SerializeField] private AgentMovementModule agentMovementModule;
+
+        [Header("Follow Target")]
+        [Tooltip("Current target to follow. Can be pack leader, laser point, etc.")]
+        [SerializeField] private Transform followTarget;
+
+        [Tooltip("Desired following distance in meters.")]
+        [SerializeField] private float followDistanceMeters = 1.5f;
+
+        [Tooltip("If true, will automatically follow pack leader at startup when in a pack.")]
+        [SerializeField] private bool autoFollowPackLeaderOnStart = true;
+
+        [Header("Debug")]
+        [SerializeField] private bool enableDebugLogging = false;
+
+        public override void Initialize(AgentModule owner)
         {
-            if (worldObject.agentModule.agentPackMemberModule == null || worldObject.agentModule.agentPackMemberModule.currentPack == null || worldObject.agentModule.agentPackMemberModule.currentPack.leader == null)
+            base.Initialize(owner);
+
+//            if (worldObject.agentMovementModule == null)
+//            {
+//                worldObject.agentMovementModule = GetComponent<AgentMovementModule>();
+//                if (worldObject.agentMovementModule == null)
+//                {
+//                    Debug.LogError(
+//                        $"[FollowerDecisionModule {worldObject.DisplayName}] No AgentMovementModule found.",
+//                        this);
+//                    enabled = false;
+//                    return;
+//                }
+//            }
+
+            if (autoFollowPackLeaderOnStart && followTarget == null)
             {
-                // No pack or no leader: fallback to wandering for now.
-                // TODO: later, we might idle instead of wander.
-                worldObject.agentModule.agentMovementModule.Stop();
+                TrySetDefaultPackLeaderFollowTarget();
+            }
+        }
+
+        /// <summary>
+        /// Public API: set an explicit follow target and desired distance.
+        /// This can be a pack leader, laser dot, waypoint, etc.
+        /// </summary>
+        public void SetFollowTarget(Transform newTarget, float desiredDistanceMeters)
+        {
+            followTarget = newTarget;
+            if (desiredDistanceMeters > 0f)
+            {
+                followDistanceMeters = desiredDistanceMeters;
+            }
+
+            if (enableDebugLogging)
+            {
+                string targetName = followTarget != null ? followTarget.name : "null";
+                Debug.Log(
+                    $"[FollowerDecisionModule {worldObject.DisplayName}] " +
+                    $"SetFollowTarget: {targetName}, distance={followDistanceMeters}",
+                    this);
+            }
+        }
+
+        /// <summary>
+        /// Public API: clear the current follow target.
+        /// The agent will decelerate to a stop.
+        /// </summary>
+        public void ClearFollowTarget()
+        {
+            followTarget = null;
+            worldObject.agentMovementModule?.ClearDesiredMove();
+
+            if (enableDebugLogging)
+            {
+                Debug.Log(
+                    $"[FollowerDecisionModule {worldObject.DisplayName}] ClearFollowTarget.",
+                    this);
+            }
+        }
+
+        /// <summary>
+        /// Public API: re-evaluate the pack and follow the pack leader if present.
+        /// </summary>
+        public void ResetToPackLeaderIfAvailable()
+        {
+            TrySetDefaultPackLeaderFollowTarget();
+        }
+
+        /// <summary>
+        /// Internal helper: try to get the pack leader from the pack system and use that as follow target.
+        /// </summary>
+        private void TrySetDefaultPackLeaderFollowTarget()
+        {
+            if (worldObject == null ||
+                worldObject.agentModule == null ||
+                worldObject.agentModule.agentPackMemberModule == null)
+            {
                 return;
             }
 
-            Transform leaderTransform = worldObject.agentModule.agentPackMemberModule.currentPack.leader.transform;
-            Vector3 toLeader = leaderTransform.position - worldObject.transform.position;
-            toLeader.y = 0f;
+            var packMember = worldObject.agentModule.agentPackMemberModule;
+            var currentPack = packMember.currentPack;
 
-            float distanceToLeader = toLeader.magnitude;
+            if (currentPack == null || currentPack.leader == null)
+                return;
 
-            if (distanceToLeader > rejoinDistance)
+            followTarget = currentPack.leader.transform;
+
+            if (enableDebugLogging)
             {
-                // We are far behind: hurry up.
-                Vector3 targetPosition = leaderTransform.position;
-                worldObject.agentModule.agentMovementModule.MoveTowards(targetPosition, deltaTime);
+                Debug.Log(
+                    $"[FollowerDecisionModule {worldObject.DisplayName}] " +
+                    $"Default follow target set to pack leader {currentPack.leader.name}.",
+                    this);
             }
-            else if (distanceToLeader > followDistance)
+        }
+
+        public override void Tick(float deltaTime)
+        {
+            if (enableDebugLogging)
             {
-                // Adjust gap a bit.
-                Vector3 targetPosition = leaderTransform.position - toLeader.normalized * followDistance;
-                worldObject.agentModule.agentMovementModule.MoveTowards(targetPosition, deltaTime);
+                Debug.Log(
+                    $"[FollowerDecisionModule {worldObject.DisplayName}] Tick {deltaTime}",
+                    this);
+            }
+
+            // If we lost our follow target (destroyed, disabled, etc.), try to fall back to pack leader
+            if (followTarget == null && autoFollowPackLeaderOnStart)
+            {
+                TrySetDefaultPackLeaderFollowTarget();
+            }
+
+            if (followTarget == null)
+            {
+                // No target to follow; decelerate to a stop
+                worldObject.agentMovementModule.ClearDesiredMove();
+                return;
+            }
+
+            // Compute direction to follow target
+            Vector3 currentPos = worldObject.agentModule.transform.position;
+            Vector3 targetPos = followTarget.position;
+
+            Vector3 toTarget = targetPos - currentPos;
+            toTarget.y = 0f;
+
+            float sqrDistanceToTarget = toTarget.sqrMagnitude;
+            float desiredDistance = followDistanceMeters;
+            float sqrDesiredDistance = desiredDistance * desiredDistance;
+
+            if (sqrDistanceToTarget > sqrDesiredDistance)
+            {
+                // Too far: move toward the follow target
+                Vector3 worldDirection = toTarget.normalized;
+
+                bool run = false;           // Followers walk by default; tweak if needed
+                float speedFactor = 1.0f;   // Use full walk speed from AgentMovementModule
+
+                worldObject.agentMovementModule.SetDesiredMove(worldDirection, speedFactor, run);
+
+                if (enableDebugLogging && Time.frameCount % 30 == 0)
+                {
+                    Debug.Log(
+                        $"[FollowerDecisionModule {worldObject.DisplayName}] " +
+                        $"Following {followTarget.name}, dist={Mathf.Sqrt(sqrDistanceToTarget):F2}",
+                        this);
+                }
             }
             else
             {
-                // Close enough: maybe look at what leader is looking at.
-                worldObject.agentModule.agentMovementModule.Stop();
-                // TODO: orientation / idle animation / sniff behaviors.
+                // Close enough: slow to a stop
+                worldObject.agentMovementModule.ClearDesiredMove();
             }
-
-            // TODO: use PackTacticsProfile to decide flanking positions / roles.
         }
     }
 }

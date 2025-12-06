@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-
+[DisallowMultipleComponent]
 public class BlackboardModule : WorldModule
 {
     private readonly Dictionary<string, object> data = new();

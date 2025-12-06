@@ -1,5 +1,6 @@
 using UnityEngine;
 
+[DisallowMultipleComponent]
 public class NoiseMakerModule : WorldModule
 {
     public void Bark()

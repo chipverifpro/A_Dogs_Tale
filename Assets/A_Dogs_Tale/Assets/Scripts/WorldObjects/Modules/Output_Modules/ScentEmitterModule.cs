@@ -9,6 +9,7 @@ public class DurationScentSource    // scent fades over duration
     public float time_remaining;
 }
 
+[DisallowMultipleComponent]
 public class ScentEmitterModule : WorldModule
 {
     public ScentSource normalScentSource;       // constant scent
@@ -22,12 +23,12 @@ public class ScentEmitterModule : WorldModule
         deposit_time_left = 0f;
     }
 
-    protected override void Update()
+    public override void Tick(float deltaTime)
     {
-        float dt = Time.deltaTime;
+        Debug.Log($"ScentEmitterModule {worldObject.DisplayName}: Tick {deltaTime}");
 
         // deposit normal scent
-        normalScentSource.Emit(worldObject.locationModule.cell, dt, decayed: 1.0f);
+        normalScentSource.Emit(worldObject.locationModule.cell, deltaTime, decayed: 1.0f);
 
         // emit all temporary scents
         DurationScentSource dss;
@@ -39,8 +40,8 @@ public class ScentEmitterModule : WorldModule
             dss = durationScentSources[dss_index];
             if (dss==null) continue; // should never happen
             float decayed = dss.time_remaining / dss.duration; // scent decays over time
-            dss.scentSource.Emit(worldObject.locationModule.cell, dt, decayed: decayed);
-            dss.time_remaining -= dt;
+            dss.scentSource.Emit(worldObject.locationModule.cell, deltaTime, decayed: decayed);
+            dss.time_remaining -= deltaTime;
             if (dss.duration <= dss.time_remaining) // faded away
             {
                 durationScentSources.RemoveAt(dss_index);
@@ -49,7 +50,7 @@ public class ScentEmitterModule : WorldModule
         
         if ((onDemandScentSource!=null) && (deposit_time_left>0f))
         {
-            onDemandScentSource.Emit(worldObject.locationModule.cell, dt, decayed: 1.0f);
+            onDemandScentSource.Emit(worldObject.locationModule.cell, deltaTime, decayed: 1.0f);
         }
     }
 

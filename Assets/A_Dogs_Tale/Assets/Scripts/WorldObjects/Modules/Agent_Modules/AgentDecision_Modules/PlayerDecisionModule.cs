@@ -10,6 +10,7 @@ public class PlayerDecisionModule : AgentDecisionModuleBase
 //    [SerializeField] private MonoBehaviour inputSourceBehaviour;
 
 //    private IPlayerInputSource inputSource;
+    public override AgentDecisionType DecisionType => AgentDecisionType.Player;
 
     [SerializeField] private NewInputAdapter inputAdapter;
     private PlayerInputState inputState;
@@ -24,6 +25,8 @@ public class PlayerDecisionModule : AgentDecisionModuleBase
     [SerializeField] private CameraModeSwitcher cameraModeSwitcher; 
     // CameraControllerBase = your own interface / script that handles zoom + view switching
     
+    //[SerializeField] private AgentMovementModule agentMovementModule;
+
     public override void Initialize(AgentModule agent)
     {
         base.Initialize(agent);
@@ -32,25 +35,11 @@ public class PlayerDecisionModule : AgentDecisionModuleBase
             inputAdapter = FindFirstObjectByType<NewInputAdapter>();
 
         inputState = inputAdapter.InputState;
-/*        
-        // Resolve input source
-        if (inputSourceBehaviour == null)
-        {
-            inputSourceBehaviour = GetComponentInParent<MonoBehaviour>();
-        }
 
-        if (inputSourceBehaviour is IPlayerInputSource src)
+        if (worldObject.agentMovementModule == null)
         {
-            inputSource = src;
+            Debug.LogError($"[PlayerDecisionModule {worldObject.DisplayName}] No AgentagentMovementModule found.", this);
         }
-        else
-        {
-            Debug.LogError($"PlayerDecisionModule on {agent.agentName}: inputSourceBehaviour does not implement IPlayerInputSource.", this);
-        }
-*/
-        // Resolve movement module if not wired
-    //    if (agentMovementModule == null)
-    //        agentMovementModule = worldObject.GetModule<AgentMovementModule>();
 
     //    if (agentPackMemberModule == null)
     //        agentPackMemberModule = worldObject.GetModule<AgentPackMemberModule>();
@@ -64,13 +53,7 @@ public class PlayerDecisionModule : AgentDecisionModuleBase
 
     public override void Tick(float deltaTime)
     {
-        //if (inputSource == null)
-        //{
-        //    // No input = no movement
-        //    if (agentMovementModule != null)
-        //        agentMovementModule.SetMoveVector(Vector3.zero);
-        //    return;
-        //}
+        Debug.Log($"PlayerDecisionModule {worldObject.DisplayName}: Tick {deltaTime}");
 
         PlayerInputState state = inputState;
 
@@ -128,16 +111,16 @@ public class PlayerDecisionModule : AgentDecisionModuleBase
 
     private void HandleAgentSwitchingAndFormation(PlayerInputState state)
     {
-        if (agentPackMemberModule == null) return;
+        if (worldObject.agentPackMemberModule == null) return;
 
         if (state.requestedPlayerAgentIndex >= 0)
         {
-            agentPackMemberModule.RequestBecomeControlledAgent(state.requestedPlayerAgentIndex);
+            worldObject.agentPackMemberModule.RequestBecomeControlledAgent(state.requestedPlayerAgentIndex);
         }
 
         if (state.changeFormationPressed)
         {
-            agentPackMemberModule.CycleFormation();
+            worldObject.agentPackMemberModule.CycleFormation();
         }
     }
 
@@ -147,45 +130,58 @@ public class PlayerDecisionModule : AgentDecisionModuleBase
 
     private void HandleMovement(PlayerInputState state, float deltaTime)
     {
-        if (worldObject.motionModule == null)
+        if (worldObject.agentMovementModule == null)
+        {
+            Debug.LogWarning($"[PlayerDecisionModule {worldObject.DisplayName}] No AgentagentMovementModule found.", this);
             return;
+        }
 
-        Vector3 desiredMove = Vector3.zero;
+        Vector3 desiredWorldDir = Vector3.zero;
 
-        // 1) WASD / stick input
+        // 1) WASD / stick input -> camera-relative world direction
         if (state.moveAxis.sqrMagnitude > 0.0001f)
         {
-            desiredMove = ConvertInputToWorldDirection(state.moveAxis);
+            desiredWorldDir = ConvertInputToWorldDirection(state.moveAxis);
         }
 
         // 2) Click-to-move: if we have a click target location and no interact press,
-        //    you may want to move toward it. This is optional depending on your design.
+        //    steer toward that point. (Very simple version: straight-line steering.)
         if (state.hasClickTargetLocationWorld && !state.interactPressed)
         {
-            worldObject.motionModule.SetMoveTarget(state.clickTargetLocationWorld);
-            // If you want click-to-move to override WASD, you can early return here.
+            Vector3 toTarget = state.clickTargetLocationWorld - worldObject.transform.position;
+            toTarget.y = 0f;
+
+            const float stopDistance = 0.25f; // tweak as needed
+
+            if (toTarget.sqrMagnitude > stopDistance * stopDistance)
+            {
+                desiredWorldDir = toTarget.normalized;
+            }
+            else
+            {
+                // Reached target; clear the desired move so we can stop
+                desiredWorldDir = Vector3.zero;
+                // Optional: you could clear hasClickTargetLocationWorld here in your state
+            }
         }
 
-        // 3) If using analog WASD movement:
-        if (!state.hasClickTargetLocationWorld && desiredMove.sqrMagnitude > 0.0001f)
+        // 3) Feed intent into AgentagentMovementModule
+        if (desiredWorldDir.sqrMagnitude > 0.0001f)
         {
-            worldObject.motionModule.SetMoveVector(desiredMove.normalized * moveSpeed);
+            // If you have a sprint flag in PlayerInputState, use it here.
+            bool run = false; // state.sprintHeld; // <-- adjust to your actual field name
+            worldObject.agentMovementModule.SetDesiredMove(desiredWorldDir, 1.0f, run);
         }
-        else if (!state.hasClickTargetLocationWorld)
+        else
         {
-            // No active target and no input: stop moving
-            worldObject.motionModule.SetMoveVector(Vector3.zero);
+            // No active target and no input: decelerate to stop
+            worldObject.agentMovementModule.ClearDesiredMove();
         }
 
-        // Optional: handle facing / rotation here if movementModule doesn't
-        // e.g., rotate toward movement direction
-        if (desiredMove.sqrMagnitude > 0.0001f)
-        {
-            Quaternion targetRot = Quaternion.LookRotation(desiredMove, Vector3.up);
-            worldObject.transform.rotation = Quaternion.RotateTowards(worldObject.transform.rotation, targetRot, rotateSpeed * Time.deltaTime);
-        }
+        // NOTE:
+        // We do NOT rotate the worldObject here anymore.
+        // MotionModule (called by AgentagentMovementModule) handles facing the move direction.
     }
-
     private Vector3 ConvertInputToWorldDirection(Vector2 moveAxis)
     {
         // If no camera or not camera-relative, just move in world XZ
@@ -213,6 +209,7 @@ public class PlayerDecisionModule : AgentDecisionModuleBase
 
     private void HandleInteraction(PlayerInputState state, float deltaTime)
     {
+        // Only act on frames where the interact button was pressed
         if (!state.interactPressed)
             return;
 
@@ -220,29 +217,45 @@ public class PlayerDecisionModule : AgentDecisionModuleBase
         if (state.hasClickTargetWorldObject && state.clickTargetWorldObject != null)
         {
             // TODO: replace with your own interaction system.
-            // Could be:
-            //   InteractionSystem.Instance.RequestInteract(agentWorldObject, state.clickTargetWorldObject);
-            // Or a message to an AgentActionModule.
-            Debug.Log($"PlayerDecision: interact with object {state.clickTargetWorldObject.name}");
+            // e.g.:
+            // InteractionSystem.Instance.RequestInteract(worldObject, state.clickTargetWorldObject);
+            // or forward to an AgentActionModule on this agent.
+
+            Debug.Log(
+                $"[PlayerDecision {worldObject.DisplayName}] " +
+                $"Interact with object {state.clickTargetWorldObject.name}"
+            );
             return;
         }
 
-        // Priority 2: No object, but clicked location → maybe bark, dig, etc.
+        // Priority 2: No object, but clicked location → contextual interact “at that spot”
         if (state.hasClickTargetLocationWorld)
         {
-            // Example: move to that location and then interact
-            if (worldObject.motionModule != null)
-            {
-                worldObject.motionModule.SetMoveTarget(state.clickTargetLocationWorld);
-            }
+            // At this point, HandleMovement is already responsible for click-to-move
+            // toward state.clickTargetLocationWorld (using AgentMovementModule).
+            // Here we just decide that the player wants a context action AT that location.
 
-            // Later you can chain a "context action" when you arrive (dig, sniff, etc.)
+            Debug.Log(
+                $"[PlayerDecision {worldObject.DisplayName}] " +
+                $"Context interact at location {state.clickTargetLocationWorld}"
+            );
+
+            // Later you might:
+            // - Queue a "when I arrive there, perform dig/sniff/use" action
+            //   via an AgentActionModule or InteractionSystem.
+            // - Set a small state flag like pendingContextActionTarget = state.clickTargetLocationWorld;
+            // and have another module watch for arrival and fire the action.
         }
         else
         {
-            // No click info → generic interact (e.g. interact with nearest object in range)
-            // TODO: hook to proximity interaction system / sniff, etc.
-            Debug.Log("PlayerDecision: generic interact (no target).");
+            // Priority 3: No click info → generic interact
+            // e.g. "interact with nearest object in range", "sniff", etc.
+            Debug.Log(
+                $"[PlayerDecision {worldObject.DisplayName}] " +
+                "Generic interact (no specific target)."
+            );
+
+            // TODO: hook to a proximity-based interaction system.
         }
     }
 

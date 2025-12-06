@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace DogGame.AI
 {
-    public class AgentPackMemberModule : AgentModule
+    public class AgentPackMemberModule : WorldModule
     {
         public Pack currentPack;
         public bool isLeaderOverride; // For debugging / forced leader.
@@ -21,6 +21,11 @@ namespace DogGame.AI
         protected override void Awake()
         {
             agent = GetComponent<AgentModule>();
+        }
+
+        public override void Tick(float deltaTime)
+        {
+            Debug.Log($"AgentPackMemberModule {worldObject.DisplayName}: Tick {deltaTime}");
         }
 
         public void JoinPack(Pack packToJoin, bool setAsLeader = false)

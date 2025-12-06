@@ -304,6 +304,7 @@ public class CameraModeSwitcher : MonoBehaviour
 
     public void ApplyZoomDelta(float delta)
     {
+        Debug.Log($"ApplyZoomDelta({delta}) cameraMode={cameraMode}");
         //float delta = 0f;
 
         // '+' = zoom in (closer), '-' = zoom out (farther)

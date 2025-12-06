@@ -1,6 +1,10 @@
+using UnityEngine;
+
+// ----- ABSTRACT BASE CLASS -----
+
 namespace DogGame.AI
 {
-    public abstract class AgentDecisionModuleBase : AgentModule
+    public abstract class AgentDecisionModuleBase : WorldModule
     {
         //protected AgentModule agent;
         //protected AgentMovementModule movement;
@@ -8,8 +12,13 @@ namespace DogGame.AI
         //protected AgentPackMemberModule packMember;
         //protected AgentBlackboardView blackboard;
 
-        public virtual void Initialize(AgentModule agentController)
+        public abstract AgentDecisionType DecisionType { get; }
+        protected AgentModule agentModule;
+
+        public virtual void Initialize(AgentModule agentModuleOwner)
         {
+            agentModule = agentModuleOwner;
+
             //agent = agentController;
             //movement = agent.movement;
             //senses = agent.senses;
@@ -17,6 +26,9 @@ namespace DogGame.AI
             //blackboard = agent.blackboard;
         }
 
-        public abstract void Tick(float deltaTime);
+        public override void Tick(float deltaTime)
+        {
+            Debug.Log($"AgentDecisionModuleBase {worldObject.DisplayName}: Tick {deltaTime}");
+        }
     }
 }

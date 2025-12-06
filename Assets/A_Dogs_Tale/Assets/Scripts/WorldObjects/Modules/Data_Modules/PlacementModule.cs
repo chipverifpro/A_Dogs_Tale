@@ -49,6 +49,8 @@ public enum RotationRule
 /// within a room, and exposes helpers to compute size, position, and rotation.
 /// Attach this to furniture / scenery prefabs.
 /// </summary>
+
+[DisallowMultipleComponent]
 public class PlacementModule : WorldModule
 {
     [Header("Room Matching")]

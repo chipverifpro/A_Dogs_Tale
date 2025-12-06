@@ -57,6 +57,16 @@ public class WorldObject : MonoBehaviour
     // Agent: (agentModule will add more Module types exclusively for agents)
     public AgentModule  agentModule { get; private set; }
 
+    // --- Agent Decision Modules
+    public PlayerDecisionModule playerDecisionModule { get; private set; }
+    public FollowerDecisionModule followerDecisionModule { get; private set; }
+    public WandererDecisionModule wanderDecisionModule { get; private set; }
+
+    // --- Agent Interface Modules ---
+    public AgentMovementModule agentMovementModule { get; private set; }
+    public AgentPackMemberModule agentPackMemberModule { get; private set; }
+    public AgentSensesModule agentSensesModule { get; private set; }
+
     // Sensory:
     public EatModule eatModule { get; private set; }
     public HearingModule hearingModule { get; private set; }
@@ -98,20 +108,25 @@ public class WorldObject : MonoBehaviour
         {
             Debug.LogError($"WorldObject.Awake() was unable to find ObjectDirectory.");
         }
+
         // Auto-fill modules PER OBJECT
-        // --- Agent ---
-        agentModule = GetComponent<AgentModule>();
+
 
         // --- Sensory ---
-        eatModule     = GetComponent<EatModule>();
         hearingModule = GetComponent<HearingModule>();
         smellModule   = GetComponent<SmellModule>();
         visionModule  = GetComponent<VisionModule>();
+        eatModule     = GetComponent<EatModule>();
 
-        // --- Output ---
-        appearanceModule  = GetComponent<AppearanceModule>();
-        noiseMakerModule  = GetComponent<NoiseMakerModule>();
-        scentEmitterModule= GetComponent<ScentEmitterModule>();
+        // --- Agent Decision Modules
+        playerDecisionModule   = GetComponent<PlayerDecisionModule>();
+        followerDecisionModule = GetComponent<FollowerDecisionModule>();
+        wanderDecisionModule   = GetComponent<WandererDecisionModule>();
+
+        // --- Agent Interface Modules ---
+        agentMovementModule   = GetComponent<AgentMovementModule>();
+        agentPackMemberModule = GetComponent<AgentPackMemberModule>();
+        agentSensesModule     = GetComponent<AgentSensesModule>();
 
         // --- Ability ---
         activatorModule   = GetComponent<ActivatorModule>();
@@ -119,6 +134,12 @@ public class WorldObject : MonoBehaviour
         interactionModule = GetComponent<InteractionModule>();
         locationModule    = GetComponent<LocationModule>();
         motionModule      = GetComponent<MotionModule>();
+
+        // --- Output ---
+        appearanceModule  = GetComponent<AppearanceModule>();
+        noiseMakerModule  = GetComponent<NoiseMakerModule>();
+        scentEmitterModule= GetComponent<ScentEmitterModule>();
+
 
         // --- Data ---
         blackboardModule  = GetComponent<BlackboardModule>();
@@ -142,6 +163,52 @@ public class WorldObject : MonoBehaviour
         }
     }
 
+    private void Update()
+    {
+        TickCallerAllModules();
+    }
+
+    private void TickCallerAllModules()
+    {
+        float dt = Time.deltaTime;
+
+        // SENSES
+        if (visionModule != null) visionModule.Tick(dt);
+        if (hearingModule != null) hearingModule.Tick(dt);
+        if (smellModule != null) smellModule.Tick(dt);
+        if (eatModule != null) eatModule.Tick(dt);
+
+        // AGENT DECISION
+        //if (agentModule != null)  agentModule.Tick(dt);
+        // //if (playerDecisionModule != null)  playerDecisionModule.Tick(dt);
+        // //if (wanderDecisionModule != null)  wanderDecisionModule.Tick(dt);
+        // //if (followerDecisionModule != null) followerDecisionModul.Tick(dt);
+
+        // AGENT INTERFACE
+        //if (agentMovementModule != null) agentMovementModule.Tick(dt);
+        //if (agentPackMemberModule != null) agentPackMemberModule.Tick(dt);
+        //if (agentSensesModule != null) agentSensesModule.Tick(dt);
+
+        // ABILITY
+        //if (motionModule != null)  motionModule.Tick(dt);
+        //if (locationModule != null)  locationModule.Tick(dt);
+        //if (activatorModule != null)  activatorModule.Tick(dt);
+        //if (containerModule != null)  containerModule.Tick(dt);
+        //if (interactionModule != null)  interactionModule.Tick(dt);
+        
+        // DATA
+        //if (blackboardModule != null)  blackboardModule.Tick(dt);
+        //if (placementModule != null)  placementModule.Tick(dt);
+        //if (statusModule != null)  statusModule.Tick(dt);
+
+        // OUTPUT
+        //if (appearanceModule != null)  appearanceModule.Tick(dt);
+        //if (noiseMakerModule != null)  noiseMakerModule.Tick(dt);
+        //if (scentEmitterModule != null)  scentEmitterModule.Tick(dt);
+        
+        // QUEST
+        //if (fetchQuestModule != null)  fetchQuestModule.Tick(dt);
+    }
     public T GetModule<T>() where T : WorldModule
     {
         List<WorldModule> modules = new();

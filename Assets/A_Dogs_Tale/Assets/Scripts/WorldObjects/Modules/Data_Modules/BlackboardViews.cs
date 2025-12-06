@@ -33,11 +33,11 @@ public class AgentBlackboardView
 }
 
 /*
-public class PuzzleBlackboardView
+public class QuestBlackboardView
 {
     private readonly BlackboardModule bb;
 
-    public PuzzleBlackboardView(BlackboardModule blackboard)
+    public QuestBlackboardView(BlackboardModule blackboard)
     {
         bb = blackboard;
     }

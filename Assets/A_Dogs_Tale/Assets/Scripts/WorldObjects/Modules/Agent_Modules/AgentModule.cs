@@ -1,4 +1,7 @@
 using UnityEngine;
+using System.Linq;
+
+// ----- ABSTRACT BASE CLASS -----
 
 namespace DogGame.AI
 {
@@ -7,53 +10,56 @@ namespace DogGame.AI
     [RequireComponent(typeof(AgentPackMemberModule))]
     [RequireComponent(typeof(BlackboardModule))]
     [RequireComponent(typeof(AgentDecisionModuleBase))]
-    public class AgentModule : WorldModule
+    public abstract class AgentModule : WorldModule
     {
         [Header("Debug / Identity")]
         public string agentName = "Unnamed Agent";
 
         [Header("Agent Specific Modules")]
         // Agent Specific modules (most build on other modules):
-        public AgentMovementModule agentMovementModule { get; private set; }
-        public AgentPackMemberModule agentPackMemberModule { get; private set; }
-        public AgentSensesModule agentSensesModule { get; private set; }
+        public AgentMovementModule agentMovementModule { get; protected set; }
+        public AgentPackMemberModule agentPackMemberModule { get; protected set; }
+        public AgentSensesModule agentSensesModule { get; protected set; }
 
         [Header("Customized Module Views")]
         public AgentBlackboardView agentBlackboard;
-        private AgentDecisionModuleBase currentDecisionModule;
-
+        
         [Header("Initial Decision Type")]
         public AgentDecisionType initialDecisionType = AgentDecisionType.Wanderer;
 
+        public AgentDecisionModuleBase currentDecisionModule;
+        private AgentDecisionModuleBase[] allDecisionModules;
 
 
         protected override void Awake()
         {
             base.Awake();
 
-            agentMovementModule   = GetComponent<AgentMovementModule>();
-            agentPackMemberModule = GetComponent<AgentPackMemberModule>();
-            agentSensesModule     = GetComponent<AgentSensesModule>();
+            // Find all decision modules attached to this agent
+            allDecisionModules = GetComponents<AgentDecisionModuleBase>();
 
+            foreach (var module in allDecisionModules)
+            {
+                module.Initialize(this);
+                module.enabled = false; // start disabled; we'll enable the active one
+                Debug.Log($"[AgentModule {agentName}] Found decision module: {module.GetType().Name} ({module.DecisionType})", this);
+            }
 
-        }
-
-        private void OnEnable()
-        {
-//            if (worldObject.blackboardModule != null)
-//            {
-//                agentBlackboard = new AgentBlackboardView(worldObject.blackboardModule);
-//            }
-
-//            SwitchDecisionModule(initialDecisionType);
+            // Pick the initial module
+            SwitchDecisionModule(initialDecisionType);
         }
 
         protected override void Update()
         {
             base.Update();
+            Debug.Log($"AgentModule.Update {agentName}: currentDecisionModule={currentDecisionModule}");
+        }
 
-            float deltaTime = Time.deltaTime;
-
+        // Tick is called by WorldObject, pass it along to the current DecisionModule
+        public override void Tick(float deltaTime)
+        {
+            Debug.Log($"AgentModule {worldObject.DisplayName}: Tick {deltaTime}");
+            
             if (currentDecisionModule != null)
             {
                 currentDecisionModule.Tick(deltaTime);
@@ -65,16 +71,37 @@ namespace DogGame.AI
         /// </summary>
         public void SwitchDecisionModule(AgentDecisionType decisionType)
         {
-            // You can replace this simple switch later with a more data-driven factory.
-            currentDecisionModule = decisionType switch
-            {
-                AgentDecisionType.Player    => new PlayerDecisionModule(),
-                AgentDecisionType.Follower  => new FollowerDecisionModule(),
-                AgentDecisionType.Wanderer  => new WandererDecisionModule(),
-                _                           => new WandererDecisionModule()
-            };
+            Debug.Log($"SwitchDecisionModule {agentName}: decisionType = {decisionType}", this);
 
-            currentDecisionModule.Initialize(this);
+            // Disable the current one if any
+            if (currentDecisionModule != null)
+            {
+                currentDecisionModule.enabled = false;
+            }
+
+            // Find a module with matching DecisionType
+            var nextModule = allDecisionModules
+                .FirstOrDefault(m => m.DecisionType == decisionType);
+
+            // Fallback: if not found, use any Wanderer, or first module
+            if (nextModule == null)
+            {
+                nextModule = allDecisionModules
+                    .FirstOrDefault(m => m.DecisionType == AgentDecisionType.Wanderer)
+                    ?? allDecisionModules.FirstOrDefault();
+            }
+
+            currentDecisionModule = nextModule;
+
+            if (currentDecisionModule != null)
+            {
+                currentDecisionModule.enabled = true;
+                Debug.Log($"[AgentModule {agentName}] Switched to module {currentDecisionModule.GetType().Name}", this);
+            }
+            else
+            {
+                Debug.LogWarning($"[AgentModule {agentName}] No decision module found to switch to!", this);
+            }
         }
 
         /// <summary>

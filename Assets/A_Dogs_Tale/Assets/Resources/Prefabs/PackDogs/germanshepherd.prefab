@@ -6764,7 +6764,6 @@ GameObject:
   - component: {fileID: -4873416234776960712}
   - component: {fileID: -4243637288210049263}
   - component: {fileID: 8971052136719718842}
-  - component: {fileID: -4966681747246804322}
   - component: {fileID: -7798522703535172865}
   - component: {fileID: -6413587772214851339}
   - component: {fileID: 931491610566122535}
@@ -6864,7 +6863,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: adcf85cdcf1014fbd83a06406dd1f69a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MotionModule
-  MoveSpeed: 3
+  bodyRoot: {fileID: 0}
+  faceMovementDirection: 1
+  rotationSpeedDegreesPerSecond: 720
+  useGravity: 0
+  gravityMetersPerSecondSquared: -9.81
+  maxFallSpeedMetersPerSecond: 50
 --- !u!114 &8971052136719718842
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -6877,31 +6881,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d0bb071cfa65b4c558ffceeb89516773, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BlackboardModule
---- !u!143 &-4966681747246804322
-CharacterController:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8843402266763018810}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Height: 2
-  m_Radius: 0.5
-  m_SlopeLimit: 45
-  m_StepOffset: 0.3
-  m_SkinWidth: 0.08
-  m_MinMoveDistance: 0.001
-  m_Center: {x: 0, y: 0, z: 0}
 --- !u!114 &-7798522703535172865
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -6916,8 +6895,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.AI.AgentMovementModule
   agentName: Unnamed Agent
   initialDecisionType: 0
-  maxMoveSpeed: 3.5
-  rotationSpeedDegreesPerSecond: 720
+  currentDecisionModule: {fileID: 0}
+  motion: {fileID: 0}
+  walkSpeedMetersPerSecond: 3
+  runSpeedMetersPerSecond: 6
+  accelerationMetersPerSecondSquared: 12
+  decelerationMetersPerSecondSquared: 16
+  enableDebugLogging: 0
 --- !u!114 &-6413587772214851339
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -6932,7 +6916,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PlayerDecisionModule
   agentName: Unnamed Agent
   initialDecisionType: 0
-  inputSourceBehaviour: {fileID: 0}
+  currentDecisionModule: {fileID: 0}
+  inputAdapter: {fileID: 0}
   moveSpeed: 3.5
   rotateSpeed: 720
   useCameraRelativeMovement: 1
@@ -6975,6 +6960,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.AI.AgentSensesModule
   agentName: Unnamed Agent
   initialDecisionType: 2
+  currentDecisionModule: {fileID: 0}
 --- !u!114 &9058620029262858386
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -6989,6 +6975,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.AI.AgentPackMemberModule
   agentName: Unnamed Agent
   initialDecisionType: 2
+  currentDecisionModule: {fileID: 0}
   currentPack:
     packName: PlayerPack
     leader: {fileID: 0}
@@ -7009,6 +6996,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.AI.AgentModule
   agentName: GermanShepherd
   initialDecisionType: 2
+  currentDecisionModule: {fileID: 0}
 --- !u!114 &-8992318729994084145
 MonoBehaviour:
   m_ObjectHideFlags: 0

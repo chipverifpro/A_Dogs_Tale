@@ -1,5 +1,6 @@
 using UnityEngine;
 
+[DisallowMultipleComponent]
 public class VisionModule : WorldModule
 {
     [Header("Vision Module")]
@@ -28,6 +29,11 @@ public class VisionModule : WorldModule
         }
 
         CacheOriginalColors();
+    }
+
+    public override void Tick(float deltaTime)
+    {
+        Debug.Log($"Vision Module {worldObject.DisplayName}: Tick {deltaTime}");
     }
 
     private void CacheOriginalColors()

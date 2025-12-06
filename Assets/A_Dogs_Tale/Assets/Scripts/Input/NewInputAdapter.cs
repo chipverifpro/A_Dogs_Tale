@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.Controls;
+using UnityEngine.EventSystems;
 
 /// <summary>
 /// Bridges Unity's new Input System (PlayerInput + InputActions)
@@ -245,6 +246,11 @@ public class NewInputAdapter : MonoBehaviour
         bool markTerritoryPressed   = map.MarkTerritory.WasPressedThisFrame();
         bool barkPressed   = map.Bark.WasPressedThisFrame();
 
+        if (IsPointerOverUI())
+        {
+            // Ignore zoom while mouse is over Inspector/Console/etc.
+            zoomAxis = 0f;
+        }
         // *** CRITICAL: write directly into the shared instance ***
         playerInputState.moveAxis           = moveVector;
         playerInputState.zoomDelta            = zoomAxis;
@@ -261,5 +267,9 @@ public class NewInputAdapter : MonoBehaviour
         }
     }
 
-
+    private bool IsPointerOverUI()
+    {
+        return EventSystem.current != null 
+            && EventSystem.current.IsPointerOverGameObject();
+    }
 }
