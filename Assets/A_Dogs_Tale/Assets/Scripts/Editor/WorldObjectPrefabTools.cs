@@ -6,7 +6,7 @@ using DogGame.Modules;
 
 public static class WorldObjectPrefabTools
 {
-    [MenuItem("A Dog's Tale/World Objects/Setup WorldObject + Modules On Selected Prefabs")]
+    [MenuItem("Tools/DogGame/Setup WorldObject + Modules On Selected Prefabs")]
     public static void SetupWorldObjectsOnSelectedPrefabs()
     {
         var selected = Selection.objects;

@@ -28,12 +28,12 @@ public class Directory : MonoBehaviour
 
 
     [Header("Game Objects")]
-    public Pack pack;
+    public Pack playerPack;
+    public PackManager packManager;
     public Player player;
     public PackFormations packFormations;
     public ScentAirGround scents;
     public ScentRegistry scentRegistry;
-
 
 
     [Header("Game Camearas")]
@@ -58,8 +58,10 @@ public class Directory : MonoBehaviour
     public ManufactureGO manufactureGO;
     public ScentAirGround scentAirGround;
 
+
     [Header("Statistics")]
     public AcvtivityStats activityStats;
+
 
     void Awake()
     {
@@ -128,7 +130,7 @@ public class Directory : MonoBehaviour
             if (!bottomBanner) failures++;
         }
 
-        if (!pack) Debug.LogWarning($"[Directory{pass_num}] pack not assigned.");
+        if (!playerPack) Debug.LogWarning($"[Directory{pass_num}] playerPack not assigned.");
         if (!player) Debug.LogWarning($"[Directory{pass_num}] player not assigned.");
         if (!brain) Debug.LogWarning($"[Directory{pass_num}] brain not assigned.");
         if (!vcamFP) Debug.LogWarning($"[Directory{pass_num}] vcamFP not assigned.");

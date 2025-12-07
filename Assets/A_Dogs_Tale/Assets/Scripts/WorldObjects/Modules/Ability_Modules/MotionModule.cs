@@ -55,10 +55,24 @@ namespace DogGame.Modules
 
         protected override void Awake()
         {
+            if (worldObject == null)
+            {
+                worldObject = GetComponent<WorldObject>();
+                if (worldObject == null)
+                {
+                    Debug.LogError($"MotionModule Awake: worldObject not found");
+                }
+            }
             if (bodyRoot == null)
             {
-                bodyRoot = transform;
+                bodyRoot = worldObject.transform;
             }
+        }
+
+        public override void Tick(float deltaTime)
+        {
+            Debug.Log($"MotionModule {worldObject.DisplayName}: Tick {deltaTime}");
+        
         }
 
         /// <summary>

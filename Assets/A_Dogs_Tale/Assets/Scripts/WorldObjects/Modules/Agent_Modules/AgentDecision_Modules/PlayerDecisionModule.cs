@@ -15,7 +15,7 @@ namespace DogGame.Modules
         public override AgentDecisionType DecisionType => AgentDecisionType.Player;
 
         [SerializeField] private NewInputAdapter inputAdapter;
-        private PlayerInputState inputState;
+        [SerializeField] private PlayerInputState inputState;
 
         [Header("Movement")]
         [SerializeField] private float moveSpeed = 3.5f;

@@ -5,6 +5,7 @@ public partial class Player : MonoBehaviour
 {
     void Move_Start()
     {
+        return; // DO NOTHING HERE ANY MORE, move to worldModules.
         var p = agent.transform.position;   // grab object position and set it in variable
         if (useXZPlane) agent.pos2 = World_to_Map(new Vector2(p.x, p.z));
         else agent.pos2 = World_to_Map(new Vector2(p.x, p.y));

@@ -41,7 +41,7 @@ public class BreadcrumbTrail : MonoBehaviour
 
     void Update()
     {
-        RecordIfNeeded();
+        //RecordIfNeeded();
     }
 
     public void ClearCrumbs()

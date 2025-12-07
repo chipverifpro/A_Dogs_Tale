@@ -6,7 +6,7 @@ public class FindPrefabsWithModule : EditorWindow
 {
     private string moduleTypeName = "AgentMovementModule";
 
-    [MenuItem("Tools/Find Prefabs With Module")]
+    [MenuItem("Tools/DogGame/Find Prefabs With Module")]
     public static void ShowWindow()
     {
         GetWindow<FindPrefabsWithModule>("Find Prefabs With Module");

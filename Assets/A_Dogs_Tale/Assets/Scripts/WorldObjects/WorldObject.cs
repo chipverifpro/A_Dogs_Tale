@@ -125,6 +125,7 @@ public class WorldObject : MonoBehaviour
         wanderDecisionModule   = GetComponent<WandererDecisionModule>();
 
         // --- Agent Interface Modules ---
+        agentModule           = GetComponent<AgentModule>();
         agentMovementModule   = GetComponent<AgentMovementModule>();
         agentPackMemberModule = GetComponent<AgentPackMemberModule>();
         agentSensesModule     = GetComponent<AgentSensesModule>();
@@ -174,24 +175,25 @@ public class WorldObject : MonoBehaviour
         float dt = Time.deltaTime;
 
         // SENSES
-        if (visionModule != null) visionModule.Tick(dt);
-        if (hearingModule != null) hearingModule.Tick(dt);
-        if (smellModule != null) smellModule.Tick(dt);
-        if (eatModule != null) eatModule.Tick(dt);
+
+        //visionModule?.Tick(dt);
+        //hearingModule?.Tick(dt);
+        //smellModule?.Tick(dt);
+        //eatModule?.Tick(dt);
 
         // AGENT DECISION
-        //if (agentModule != null)  agentModule.Tick(dt);
-        // //if (playerDecisionModule != null)  playerDecisionModule.Tick(dt);
-        // //if (wanderDecisionModule != null)  wanderDecisionModule.Tick(dt);
-        // //if (followerDecisionModule != null) followerDecisionModul.Tick(dt);
+        agentModule?.Tick(dt);
+        //playerDecisionModule?.Tick(dt);
+        //wanderDecisionModule?.Tick(dt);
+        //followerDecisionModule?.Tick(dt);
 
         // AGENT INTERFACE
-        //if (agentMovementModule != null) agentMovementModule.Tick(dt);
-        //if (agentPackMemberModule != null) agentPackMemberModule.Tick(dt);
-        //if (agentSensesModule != null) agentSensesModule.Tick(dt);
+        agentMovementModule?.Tick(dt);
+        agentPackMemberModule?.Tick(dt);
+        //agentSensesModule?.Tick(dt);
 
         // ABILITY
-        //if (motionModule != null)  motionModule.Tick(dt);
+        motionModule?.Tick(dt);
         //if (locationModule != null)  locationModule.Tick(dt);
         //if (activatorModule != null)  activatorModule.Tick(dt);
         //if (containerModule != null)  containerModule.Tick(dt);
@@ -204,8 +206,8 @@ public class WorldObject : MonoBehaviour
 
         // OUTPUT
         //if (appearanceModule != null)  appearanceModule.Tick(dt);
-        //if (noiseMakerModule != null)  noiseMakerModule.Tick(dt);
-        //if (scentEmitterModule != null)  scentEmitterModule.Tick(dt);
+        noiseMakerModule?.Tick(dt);
+        scentEmitterModule?.Tick(dt);
         
         // QUEST
         //if (fetchQuestModule != null)  fetchQuestModule.Tick(dt);

@@ -172,28 +172,47 @@ public partial class Player : MonoBehaviour
         // wait until build completes
         yield return null;
         yield return new WaitUntil(() => gen.buildComplete);
-
+        if (dir.gen.hf==null)
+        {
+            Debug.LogError($"DetermineStartPosition needs a valid heightfield (dir.gen.hf==null).  Fallback to 0,0");
+            agentObject?.motionModule?.Teleport(new(0f,0f,0.5f));   // move to near origin
+            yield break;    // exit
+        }
         // randomly pick a start location and direction.
-        int x = -1;
-        int y = -1;
-        int newYawDeg = 0;
-        bool facingWall = true;
-        //TODO fix this to use Heightmap instead of cellGrid
+        int x = -1;             // random
+        int y = -1;             // random
+        int nearHeight = 0;     // random: heightfield will look for the floor nearest to this height.
+        int height = 0;         // this is the found height.
+        int newYawDeg = 0;      // random: facing direction
+        bool facingWall = true; // heightfield will determine if there is a wall in facing direction.
+        DungeonGenerator.NeighborMatch match; // heightfield result
+        int iterations = 0;
+        int max_iterations = 100;
         while ((!gen.In(x, y)) || (gen.cellGrid[x, y].room_number < 0) || (facingWall))
         {
+            iterations++;
+            if (iterations>=max_iterations)
+            {
+                Debug.LogError($"DetermineStartPosition failed {iterations} times.  Fallback to 0,0");
+                agentObject?.motionModule?.Teleport(new(0f,0f,0.5f));   // move to near origin
+                yield break;    // exit
+            }
             // try a new random location
             x = UnityEngine.Random.Range(0, gen.cfg.mapWidth);
             y = UnityEngine.Random.Range(0, gen.cfg.mapHeight);
+            nearHeight = UnityEngine.Random.Range(-200, 200);   // should be reasonable min/max height
             newYawDeg = UnityEngine.Random.Range(0, 4) * 90;
             // check if yawDeg is facing a wall
             DirFlags facingDirFlag = DirFlagsEx.YawToDirFlag(newYawDeg);
-            DungeonGenerator.NeighborMatch match;
             DirFlags wallFlags = DirFlags.None;
-            bool success = dir.gen.hf.TryQueryAt(x,y,0,9999, out match);
-            if (success) wallFlags=match.walls;
-            facingWall = (facingDirFlag & wallFlags) != DirFlags.None;
+            bool success = dir.gen.hf.TryQueryAt(x, y, nearHeight, 9999, out match);
+            if (success)
+            {
+                height = match.z;
+                wallFlags = match.walls;
+                facingWall = (facingDirFlag & wallFlags) != DirFlags.None;
+            }
         }
-        float height = Agent.SampleAgentHeight(agent.pos2, gen.cellGrid, gen.cfg.unitHeight);
         
         Vector3 worldPosition = new(x+0.5f, height, y+0.5f);
         Quaternion yawQuat = Quaternion.Euler(0, newYawDeg, 0);

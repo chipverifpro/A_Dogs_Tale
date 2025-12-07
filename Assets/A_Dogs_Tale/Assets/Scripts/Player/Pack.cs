@@ -21,9 +21,9 @@ public class Pack : MonoBehaviour
     //public List<Agent> packListLegacy;        // LEGACY: All pack members
     public WorldObject packLeader;            // WorldObjects
     public List<WorldObject> packAgentList;   // WorldObjects
-    public bool inFollowFormation = true;
-    public bool inGroupFormation = false;
-    public bool soloMode = false;       // not travelling as a pack
+    //public bool inFollowFormation = true;
+    //public bool inGroupFormation = false;
+    //public bool soloMode = false;       // not travelling as a pack
     public FormationsEnum formation = FormationsEnum.Wedge;
     public float formationSpacing = 1.5f;  // spacing between members in formation
     

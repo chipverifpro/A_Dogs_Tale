@@ -3914,7 +3914,7 @@ MonoBehaviour:
   bottomBanner: {fileID: 669106355}
   PackGameObject: {fileID: 766807146}
   pack: {fileID: 766807147}
-  agent: {fileID: 2140542028}
+  agent: {fileID: 0}
   agentObject: {fileID: 0}
   destination: {x: 0, y: 0, z: 0}
   baseSpeed: 6
@@ -5095,8 +5095,9 @@ GameObject:
   - component: {fileID: 766807148}
   - component: {fileID: 766807147}
   - component: {fileID: 766807149}
+  - component: {fileID: 766807150}
   m_Layer: 0
-  m_Name: Pack
+  m_Name: PlayerPack
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -5120,12 +5121,9 @@ MonoBehaviour:
   PackParentObject: {fileID: 766807148}
   trail: {fileID: 1480059014}
   packName: Player Pack
-  packLeader: {fileID: 0}
+  packLeader: {fileID: 6544990386685219154}
   packAgentList:
   - {fileID: 0}
-  inFollowFormation: 1
-  inGroupFormation: 0
-  soloMode: 0
   formation: 3
   formationSpacing: 1.5
 --- !u!4 &766807148
@@ -5161,6 +5159,21 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 63dafdb328c574e22b074feeff20468b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PackFormations
+--- !u!114 &766807150
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 766807146}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ddc49c08688544332a425a1143b323cf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PackManager
+  dir: {fileID: 1920128612}
+  playerPack: {fileID: 766807147}
+  packs: []
 --- !u!1 &805874265
 GameObject:
   m_ObjectHideFlags: 0
@@ -5997,6 +6010,7 @@ GameObject:
   - component: {fileID: 942637343}
   - component: {fileID: 942637344}
   - component: {fileID: 942637345}
+  - component: {fileID: 942637346}
   m_Layer: 0
   m_Name: Input
   m_TagString: Untagged
@@ -6031,7 +6045,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 386fd5f90ca914698a256c30abcc9bd3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NewInputAdapter
-  playerInput: {fileID: 0}
+  playerInput: {fileID: 942637345}
+  playerInputState: {fileID: 942637346}
   moveActionName: Move
   barkActionName: Bark
   markTerritoryActionName: MarkTerritory
@@ -6073,6 +6088,33 @@ MonoBehaviour:
   m_DefaultActionMap: Player
   m_SplitScreenIndex: -1
   m_Camera: {fileID: 1815589284}
+--- !u!114 &942637346
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 942637342}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 92d3014ce485d42d887169625d940231, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerInputState
+  moveAxis: {x: 0, y: 0}
+  barkPressed: 0
+  markTerritoryPressed: 0
+  zoomDelta: 0
+  cameraViewSelect: 0
+  requestedPlayerAgentIndex: 0
+  requestedPlayerAgentDelta: 0
+  changeFormationPressed: 0
+  interactPressed: 0
+  selectObjectPressed: 0
+  hasClickTargetLocationWorld: 0
+  clickTargetLocationWorld: {x: 0, y: 0, z: 0}
+  hasClickTargetWorldObject: 0
+  clickTargetWorldObject: {fileID: 0}
+  anyKeyOrButtonDown: 0
 --- !u!1 &976222952
 GameObject:
   m_ObjectHideFlags: 0
@@ -6223,7 +6265,7 @@ GameObject:
   - component: {fileID: 994010404}
   - component: {fileID: 994010407}
   m_Layer: 0
-  m_Name: Camera
+  m_Name: BattleCamera
   m_TagString: MainCamera
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -12978,6 +13020,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 914c9f5b3db0f43f49534db3f1f1276f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  dir: {fileID: 1920128612}
   cameraMode: 2
   playerVisible: 1
   brain: {fileID: 1815589289}
@@ -13460,7 +13503,8 @@ MonoBehaviour:
   audioPlayer: {fileID: 215243009}
   audioCatalog: {fileID: 215243011}
   audioMixerGroups: {fileID: 215243010}
-  pack: {fileID: 766807147}
+  playerPack: {fileID: 766807147}
+  packManager: {fileID: 766807150}
   player: {fileID: 556401680}
   packFormations: {fileID: 766807149}
   scents: {fileID: 1546545660}
@@ -14937,8 +14981,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2140542027}
-  - component: {fileID: 2140542028}
-  - component: {fileID: 2140542029}
   m_Layer: 0
   m_Name: Agents
   m_TagString: Untagged
@@ -14962,92 +15004,6 @@ Transform:
   - {fileID: 1253610034}
   m_Father: {fileID: 1767335688}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &2140542028
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2140542026}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 63891f80d1e69460a97f31efd92b9a1e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::DogGame.AI.DemoSceneBootstrap
-  dir: {fileID: 1920128612}
-  id: 0
-  worldObject: {fileID: 0}
-  baseSpeed: 6
-  turnSpeedDegPerSec: 180
-  radius: 0.3
-  pos2: {x: 0, y: 0}
-  height: 0
-  yawDeg: 0
-  targetYawDeg: 0
-  prevYawDeg: 0
-  agentScentSource:
-    agentId: -1
-    category: 0
-    scentName: 
-    categoryColor: {r: 0, g: 0, b: 0, a: 0}
-    sourceAirColor: {r: 0, g: 0, b: 0, a: 0}
-    sourceGroundColor: {r: 0, g: 0, b: 0, a: 0}
-    airDepositRate: 1
-    groundDepositRate: 0.1
-    familiarity: 0
-    sensitivityBoost: 1
-    persistentId: 
-  DogPrefab: {fileID: 0}
-  anim: {fileID: 0}
-  next_actualCrumb:
-    valid: 0
-    pos2: {x: 0, y: 0}
-    height: 0
-    yawDeg: 0
-    whichFollowersArrived: 
-  next_formationCrumb:
-    valid: 0
-    pos2: {x: 0, y: 0}
-    height: 0
-    yawDeg: 0
-    whichFollowersArrived: 
-  routeWaypoints: []
-  color1: {r: 0, g: 0, b: 0, a: 0}
-  color2: {r: 0, g: 0, b: 0, a: 0}
-  healthPoints: 0
-  racialType: 
-  race: 
-  pack: {fileID: 766807147}
-  trail: {fileID: 1480059014}
-  trailLeader: 0
-  trailFollower: 0
-  camera_refresh_needed: 1
-  xCorrection: 0.5
-  yCorrection: 0.5
-  yawCorrection: 90
-  heightCorrection: 1
---- !u!95 &2140542029
-Animator:
-  serializedVersion: 7
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2140542026}
-  m_Enabled: 1
-  m_Avatar: {fileID: 0}
-  m_Controller: {fileID: 9100000, guid: d27fe57c52a2f7341b9c47dfefa06420, type: 2}
-  m_CullingMode: 0
-  m_UpdateMode: 0
-  m_ApplyRootMotion: 0
-  m_LinearVelocityBlending: 0
-  m_StabilizeFeet: 0
-  m_AnimatePhysics: 0
-  m_WarningMessage: 
-  m_HasTransformHierarchy: 1
-  m_AllowConstantClipSamplingOptimization: 1
-  m_KeepAnimatorStateOnDisable: 0
-  m_WriteDefaultValuesOnDisable: 0
 --- !u!1 &2142269742
 GameObject:
   m_ObjectHideFlags: 0
@@ -15163,8 +15119,309 @@ PrefabInstance:
     - {fileID: 0}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 8843402266763018810, guid: 2ce0050a816054aaca2a1076f182f7a8,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 6544990386685219154}
+    - targetCorrespondingSourceObject: {fileID: 8843402266763018810, guid: 2ce0050a816054aaca2a1076f182f7a8,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 6544990386685219153}
+    - targetCorrespondingSourceObject: {fileID: 8843402266763018810, guid: 2ce0050a816054aaca2a1076f182f7a8,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 6544990386685219156}
+    - targetCorrespondingSourceObject: {fileID: 8843402266763018810, guid: 2ce0050a816054aaca2a1076f182f7a8,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 6544990386685219155}
+    - targetCorrespondingSourceObject: {fileID: 8843402266763018810, guid: 2ce0050a816054aaca2a1076f182f7a8,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 6544990386685219152}
+    - targetCorrespondingSourceObject: {fileID: 8843402266763018810, guid: 2ce0050a816054aaca2a1076f182f7a8,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 6544990386685219151}
+    - targetCorrespondingSourceObject: {fileID: 8843402266763018810, guid: 2ce0050a816054aaca2a1076f182f7a8,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 6544990386685219150}
+    - targetCorrespondingSourceObject: {fileID: 8843402266763018810, guid: 2ce0050a816054aaca2a1076f182f7a8,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 6544990386685219149}
+    - targetCorrespondingSourceObject: {fileID: 8843402266763018810, guid: 2ce0050a816054aaca2a1076f182f7a8,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 6544990386685219148}
+    - targetCorrespondingSourceObject: {fileID: 8843402266763018810, guid: 2ce0050a816054aaca2a1076f182f7a8,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 6544990386685219147}
+    - targetCorrespondingSourceObject: {fileID: 8843402266763018810, guid: 2ce0050a816054aaca2a1076f182f7a8,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 6544990386685219146}
+    - targetCorrespondingSourceObject: {fileID: 8843402266763018810, guid: 2ce0050a816054aaca2a1076f182f7a8,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 6544990386685219145}
+    - targetCorrespondingSourceObject: {fileID: 8843402266763018810, guid: 2ce0050a816054aaca2a1076f182f7a8,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 6544990386685219144}
+    - targetCorrespondingSourceObject: {fileID: 8843402266763018810, guid: 2ce0050a816054aaca2a1076f182f7a8,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 6544990386685219143}
+    - targetCorrespondingSourceObject: {fileID: 8843402266763018810, guid: 2ce0050a816054aaca2a1076f182f7a8,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 6544990386685219157}
   m_SourcePrefab: {fileID: 100100000, guid: 2ce0050a816054aaca2a1076f182f7a8, type: 3}
+--- !u!1 &6544990386685219093 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 8843402266763018810, guid: 2ce0050a816054aaca2a1076f182f7a8,
+    type: 3}
+  m_PrefabInstance: {fileID: 6533885166602815770}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &6544990386685219143
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6544990386685219093}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ba2cf7359fae44b0a9386ea1703def7b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.AgentModule
+  agentName: German Shepherd
+  initialDecisionType: 0
+  currentDecisionModule: {fileID: 6544990386685219152}
+--- !u!114 &6544990386685219144
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6544990386685219093}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d0bb071cfa65b4c558ffceeb89516773, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.BlackboardModule
+--- !u!114 &6544990386685219145
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6544990386685219093}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d9ee26534211046eaaf7bf4849439735, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.AgentSensesModule
+--- !u!114 &6544990386685219146
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6544990386685219093}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2272e4992677c4977b85dbef83406534, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.LocationModule
+  pos3d_f: {x: 0, y: 0, z: 0}
+  yawDeg: 0
+  tilt: {x: 0, y: 0, z: 0, w: 1}
+--- !u!114 &6544990386685219147
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6544990386685219093}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: adcf85cdcf1014fbd83a06406dd1f69a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.MotionModule
+  bodyRoot: {fileID: 0}
+  faceMovementDirection: 1
+  rotationSpeedDegreesPerSecond: 720
+  useGravity: 0
+  gravityMetersPerSecondSquared: -9.81
+  maxFallSpeedMetersPerSecond: 50
+--- !u!114 &6544990386685219148
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6544990386685219093}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 591141ee4c2194d7cb0450a047c4dacd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.AgentPackMemberModule
+  currentPack: {fileID: 766807147}
+--- !u!114 &6544990386685219149
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6544990386685219093}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: adf93bac058004cf3a0148ddf57312e4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.AgentMovementModule
+  next_actualCrumb:
+    valid: 0
+    pos2: {x: 0, y: 0}
+    height: 0
+    yawDeg: 0
+    whichFollowersArrived: 
+  next_formationCrumb:
+    valid: 0
+    pos2: {x: 0, y: 0}
+    height: 0
+    yawDeg: 0
+    whichFollowersArrived: 
+  walkSpeedMetersPerSecond: 3
+  runSpeedMetersPerSecond: 6
+  accelerationMetersPerSecondSquared: 12
+  decelerationMetersPerSecondSquared: 16
+  enableDebugLogging: 0
+--- !u!114 &6544990386685219150
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6544990386685219093}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0477df26e09ec48cfa0792a308d4ce4a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.FollowerDecisionModule
+  followTarget: {fileID: 0}
+  followDistanceMeters: 1.5
+  autoFollowPackLeaderOnStart: 1
+  enableDebugLogging: 0
+--- !u!114 &6544990386685219151
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6544990386685219093}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4a9f755dd8eef4be79076117627b3add, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.WandererDecisionModule
+  wanderRadius: 4
+  minTimeBetweenTargets: 1.5
+  maxTimeBetweenTargets: 4
+--- !u!114 &6544990386685219152
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6544990386685219093}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 40e29a7f84b4b443a858e5012f88be27, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.PlayerDecisionModule
+  inputAdapter: {fileID: 942637344}
+  inputState: {fileID: 942637346}
+  moveSpeed: 3.5
+  rotateSpeed: 720
+  useCameraRelativeMovement: 1
+  cameraForMovement: {fileID: 1815589284}
+  cameraModeSwitcher: {fileID: 1815589288}
+--- !u!114 &6544990386685219153
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6544990386685219093}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a331d038638764085ab09ba8be98ac41, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.SmellModule
+  debugMode: 0
+--- !u!114 &6544990386685219154
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6544990386685219093}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b112db3959c164550975dd26677f8e8e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::WorldObject
+  dir: {fileID: 1920128612}
+  objectId: -1
+  displayName: germanshepherd
+  kind: 1
+  autoRegister: 1
+--- !u!114 &6544990386685219155
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6544990386685219093}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6a58844417672410b85570a105ad1e62, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.HearingModule
+  debugMode: 0
+--- !u!114 &6544990386685219156
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6544990386685219093}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a84846d553e584223b8e8df5ef2d7381, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.VisionModule
+  debugMode: 0
+  mainRenderer: {fileID: 0}
+  extraRenderers: []
+--- !u!114 &6544990386685219157
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6544990386685219093}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e486e0d84f00148db8eded1ca333c685, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.AppearanceModule
+  camera_refresh_needed: 1
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

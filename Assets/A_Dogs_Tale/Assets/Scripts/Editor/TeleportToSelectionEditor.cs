@@ -5,7 +5,7 @@ using UnityEngine;
 public static class TeleportToSelectionEditor
 {
     // Menu item with hotkey: Tools/Teleport Player To Selection  (Ctrl/Cmd+Alt+T)
-    [MenuItem("Tools/Teleport Player To Selection %#t")]
+    [MenuItem("Tools/DogGame/Teleport Player To Selection %#t")]
     private static void TeleportPlayerToSelection()
     {
         if (!Application.isPlaying)

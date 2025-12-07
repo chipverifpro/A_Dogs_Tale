@@ -1,7 +1,7 @@
 using UnityEngine;
 using System.Linq;
 
-// ----- ABSTRACT BASE CLASS -----
+// ----- Not a BASE CLASS -----
 
 namespace DogGame.Modules
 {
@@ -10,7 +10,7 @@ namespace DogGame.Modules
     [RequireComponent(typeof(AgentPackMemberModule))]
     [RequireComponent(typeof(BlackboardModule))]
     [RequireComponent(typeof(AgentDecisionModuleBase))]
-    public abstract class AgentModule : WorldModule
+    public class AgentModule : WorldModule
     {
         [Header("Debug / Identity")]
         public string agentName = "Unnamed Agent";
@@ -40,7 +40,7 @@ namespace DogGame.Modules
 
             foreach (var module in allDecisionModules)
             {
-                module.Initialize(this);
+                //module.Initialize(this);
                 module.enabled = false; // start disabled; we'll enable the active one
                 Debug.Log($"[AgentModule {agentName}] Found decision module: {module.GetType().Name} ({module.DecisionType})", this);
             }
@@ -52,7 +52,7 @@ namespace DogGame.Modules
         protected override void Update()
         {
             base.Update();
-            Debug.Log($"AgentModule.Update {agentName}: currentDecisionModule={currentDecisionModule}");
+            //Debug.Log($"AgentModule.Update {agentName}: currentDecisionModule={currentDecisionModule}");
         }
 
         // Tick is called by WorldObject, pass it along to the current DecisionModule

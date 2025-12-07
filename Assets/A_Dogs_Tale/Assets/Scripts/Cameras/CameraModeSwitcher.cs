@@ -7,6 +7,9 @@ public enum CameraModes { Unchanged = 0, FP, Overhead, Perspective };   // Uncha
 
 public class CameraModeSwitcher : MonoBehaviour
 {
+    [Header("Game Directory")]
+    public Directory dir;
+
     [Header("Current Modes")]
     public CameraModes cameraMode = CameraModes.Perspective;    // More readable version of current_camera for use in other systems
     //public bool scentFogVisible = false;  //TODO: move contols/setup into camera script
@@ -128,7 +131,8 @@ public class CameraModeSwitcher : MonoBehaviour
             else
             {
                 //playerModel.SetActive(true);
-                player.agent.DogPrefab.SetActive(true);
+                //player.agent.DogPrefab.SetActive(true);
+                dir.playerPack.packLeader.appearanceModule.SetVisible(true);
                 var mainCam = Camera.main;
                 mainCam.cullingMask &= ~(1 << LayerMask.NameToLayer("Ceiling")); // hide ceiling in non-first person
             }
@@ -179,7 +183,8 @@ public class CameraModeSwitcher : MonoBehaviour
             else
             {
                 //playerModel.SetActive(true);
-                player.agent.DogPrefab.SetActive(true);
+                //player.agent.DogPrefab.SetActive(true);
+                dir.playerPack.packLeader.appearanceModule.SetVisible(true);
                 var mainCam = Camera.main;
                 mainCam.cullingMask &= ~(1 << LayerMask.NameToLayer("Ceiling")); // hide ceiling in non-first person
             }
@@ -202,7 +207,8 @@ public class CameraModeSwitcher : MonoBehaviour
     void onArrivedAtFP()
     {
         var mainCam = Camera.main;
-        player.agent.DogPrefab.SetActive(playerVisible);
+        //player.agent.DogPrefab.SetActive(playerVisible);
+        dir.playerPack.packLeader.appearanceModule.SetVisible(playerVisible);
         mainCam.cullingMask |= (1<<LayerMask.NameToLayer("Ceiling")); // show ceiling in first person
         return;
     }
@@ -213,12 +219,12 @@ public class CameraModeSwitcher : MonoBehaviour
     void LateUpdate()
     {
         // all cameras point to current agent
-        if (player == null) return;
+        if (player == null || player.agent == null) return;
+        
         vcamPerspective.transform.position = new Vector3(
-            player.agent.transform.position.x,
-            player.agent.height,
-            player.agent.transform.position.z
-        );
+                player.agent.transform.position.x,
+                player.agent.height,
+                player.agent.transform.position.z);
         // top camera override angle so north is top of screen
         vcamPerspective.transform.rotation = Quaternion.Euler(90f, 0f, 0f); // always north up
     }
