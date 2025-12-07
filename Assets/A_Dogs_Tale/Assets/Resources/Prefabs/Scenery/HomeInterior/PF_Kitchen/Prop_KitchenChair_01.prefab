@@ -12,8 +12,6 @@ GameObject:
   - component: {fileID: 5349861894004666327}
   - component: {fileID: 7915762740329388829}
   - component: {fileID: 8798879064501356443}
-  - component: {fileID: 5313621880560026870}
-  - component: {fileID: 4136319146595897461}
   - component: {fileID: 7337213297803337062}
   - component: {fileID: 4680014917090893270}
   m_Layer: 0
@@ -116,37 +114,6 @@ MeshCollider:
   m_Convex: 1
   m_CookingOptions: 30
   m_Mesh: {fileID: -8743743041132954545, guid: b6a3841d4690d0c49912999cf48cac9b, type: 3}
---- !u!114 &5313621880560026870
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8564311804437904072}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b112db3959c164550975dd26677f8e8e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::WorldObject
-  objectId: -1
-  displayName: Prop_KitchenChair_01
-  kind: 0
-  autoRegister: 1
---- !u!114 &4136319146595897461
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8564311804437904072}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2272e4992677c4977b85dbef83406534, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::LocationModule
-  pos3d_f: {x: 0, y: 0, z: 0}
-  yawDeg: 0
-  tilt: {x: 0, y: 0, z: 0, w: 1}
 --- !u!114 &7337213297803337062
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -159,6 +126,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a84846d553e584223b8e8df5ef2d7381, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::VisualModule
+  debugMode: 0
   mainRenderer: {fileID: 7915762740329388829}
   extraRenderers: []
 --- !u!114 &4680014917090893270
@@ -181,3 +149,4 @@ MonoBehaviour:
   rotationRule: 1
   minClearCellsAround: 0
   mustTouchWall: 0
+  wallPadding: 0.05

@@ -12,8 +12,6 @@ GameObject:
   - component: {fileID: 4535097151443290999}
   - component: {fileID: 1804555442366005181}
   - component: {fileID: 1065809659171676987}
-  - component: {fileID: 6037724686448991679}
-  - component: {fileID: 1541579702871303489}
   - component: {fileID: 8586037513501530910}
   - component: {fileID: 571015265088550986}
   m_Layer: 0
@@ -116,37 +114,6 @@ MeshCollider:
   m_Convex: 1
   m_CookingOptions: 30
   m_Mesh: {fileID: -3867103860850398454, guid: 9ca5e5b75cb58824a98eab3c894819c1, type: 3}
---- !u!114 &6037724686448991679
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 147473015269400168}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b112db3959c164550975dd26677f8e8e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::WorldObject
-  objectId: -1
-  displayName: Prop_Bed_09
-  kind: 0
-  autoRegister: 1
---- !u!114 &1541579702871303489
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 147473015269400168}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2272e4992677c4977b85dbef83406534, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::LocationModule
-  pos3d_f: {x: 0, y: 0, z: 0}
-  yawDeg: 0
-  tilt: {x: 0, y: 0, z: 0, w: 1}
 --- !u!114 &8586037513501530910
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -159,6 +126,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a84846d553e584223b8e8df5ef2d7381, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::VisualModule
+  debugMode: 0
   mainRenderer: {fileID: 1804555442366005181}
   extraRenderers: []
 --- !u!114 &571015265088550986
@@ -181,3 +149,4 @@ MonoBehaviour:
   rotationRule: 2
   minClearCellsAround: 0
   mustTouchWall: 0
+  wallPadding: 0.05

@@ -188,22 +188,6 @@ PrefabInstance:
         type: 3}
       insertIndex: -1
       addedObject: {fileID: -5630447670582651252}
-    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: d04ca0f9bec41e34993cafe223821069,
-        type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 4985219247905039473}
-    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: d04ca0f9bec41e34993cafe223821069,
-        type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 2401993829504542475}
-    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: d04ca0f9bec41e34993cafe223821069,
-        type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 6714244183628864570}
-    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: d04ca0f9bec41e34993cafe223821069,
-        type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 7021958229920073428}
     - targetCorrespondingSourceObject: {fileID: -3559909895095799887, guid: d04ca0f9bec41e34993cafe223821069,
         type: 3}
       insertIndex: -1
@@ -342,77 +326,6 @@ MeshCollider:
   m_Convex: 0
   m_CookingOptions: 30
   m_Mesh: {fileID: -5539357819512116934, guid: d04ca0f9bec41e34993cafe223821069, type: 3}
---- !u!114 &4985219247905039473
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2612625725839387992}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b112db3959c164550975dd26677f8e8e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::WorldObject
-  objectId: -1
-  displayName: Wardrobe 3
-  kind: 0
-  autoRegister: 1
---- !u!114 &2401993829504542475
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2612625725839387992}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2272e4992677c4977b85dbef83406534, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::LocationModule
-  pos3d_f: {x: 0, y: 0, z: 0}
-  yawDeg: 0
-  tilt: {x: 0, y: 0, z: 0, w: 1}
---- !u!114 &6714244183628864570
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2612625725839387992}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a84846d553e584223b8e8df5ef2d7381, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::VisualModule
-  mainRenderer: {fileID: 4557947599836646541}
-  extraRenderers: []
---- !u!114 &7021958229920073428
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2612625725839387992}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3f6cda250b193442c9f59a935c554f95, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::PlacementModule
-  allowedRooms: 1
-  autoSizeFromMesh: 1
-  sizeInCells: {x: 2, y: 4, z: 2}
-  cellSize: 1
-  edgeHint: 2
-  rotationRule: 2
-  minClearCellsAround: 0
-  mustTouchWall: 0
---- !u!23 &4557947599836646541 stripped
-MeshRenderer:
-  m_CorrespondingSourceObject: {fileID: -7511558181221131132, guid: d04ca0f9bec41e34993cafe223821069,
-    type: 3}
-  m_PrefabInstance: {fileID: 2918473917649195017}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1 &5171783833771496966 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 8017917440253478415, guid: d04ca0f9bec41e34993cafe223821069,

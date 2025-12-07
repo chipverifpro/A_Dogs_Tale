@@ -12,8 +12,6 @@ GameObject:
   - component: {fileID: 3654609335317831956}
   - component: {fileID: 1536625336691906014}
   - component: {fileID: 185392211267963204}
-  - component: {fileID: 3366448932010888355}
-  - component: {fileID: 368972537394925035}
   - component: {fileID: 3576344958512877001}
   - component: {fileID: 7877577257672916307}
   m_Layer: 0
@@ -116,37 +114,6 @@ MeshCollider:
   m_Convex: 1
   m_CookingOptions: 30
   m_Mesh: {fileID: 1814845343000671544, guid: dfe40a9004ecb404d94c32063b25ff7f, type: 3}
---- !u!114 &3366448932010888355
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1032394045072962571}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b112db3959c164550975dd26677f8e8e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::WorldObject
-  objectId: -1
-  displayName: Prop_BagChair_01
-  kind: 0
-  autoRegister: 1
---- !u!114 &368972537394925035
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1032394045072962571}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2272e4992677c4977b85dbef83406534, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::LocationModule
-  pos3d_f: {x: 0, y: 0, z: 0}
-  yawDeg: 0
-  tilt: {x: 0, y: 0, z: 0, w: 1}
 --- !u!114 &3576344958512877001
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -159,6 +126,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a84846d553e584223b8e8df5ef2d7381, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::VisualModule
+  debugMode: 0
   mainRenderer: {fileID: 1536625336691906014}
   extraRenderers: []
 --- !u!114 &7877577257672916307
@@ -181,3 +149,4 @@ MonoBehaviour:
   rotationRule: 1
   minClearCellsAround: 0
   mustTouchWall: 0
+  wallPadding: 0.05

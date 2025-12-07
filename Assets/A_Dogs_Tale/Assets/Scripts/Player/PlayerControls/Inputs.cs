@@ -64,7 +64,7 @@ public partial class Player : MonoBehaviour
 
         if ((Mathf.Abs(turn) > .001) || (Mathf.Abs(thrust) > .001))   // reject tiny movements
         {
-            pack.PackLeader.next_formationCrumb.valid = false;
+            pack.packLeaderLegacy.next_formationCrumb.valid = false;
             Move_Update(turn, thrust);  // Only needed if we want to move
             leaderTravelling = false; // if keyboard input, stop travelling to click target
         }

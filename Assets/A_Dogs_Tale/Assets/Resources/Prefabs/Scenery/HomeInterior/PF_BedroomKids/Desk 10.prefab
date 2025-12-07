@@ -89,22 +89,6 @@ PrefabInstance:
         type: 3}
       insertIndex: -1
       addedObject: {fileID: 9117137817405741472}
-    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 12733546754b3764c8589a0980754c40,
-        type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 2464934195717745628}
-    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 12733546754b3764c8589a0980754c40,
-        type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 3688474298412062842}
-    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 12733546754b3764c8589a0980754c40,
-        type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 799465217051703573}
-    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 12733546754b3764c8589a0980754c40,
-        type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 2528923383770105850}
     - targetCorrespondingSourceObject: {fileID: -3559909895095799887, guid: 12733546754b3764c8589a0980754c40,
         type: 3}
       insertIndex: -1
@@ -114,12 +98,6 @@ PrefabInstance:
       insertIndex: -1
       addedObject: {fileID: 7140258889068215079}
   m_SourcePrefab: {fileID: 100100000, guid: 12733546754b3764c8589a0980754c40, type: 3}
---- !u!23 &862795696296987275 stripped
-MeshRenderer:
-  m_CorrespondingSourceObject: {fileID: -7511558181221131132, guid: 12733546754b3764c8589a0980754c40,
-    type: 3}
-  m_PrefabInstance: {fileID: 2033605839778354703}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1223211554131618654 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 12733546754b3764c8589a0980754c40,
@@ -177,71 +155,6 @@ MonoBehaviour:
     value: {fileID: 8699201650898568421}
   - key: 1
     value: {fileID: 7140258889068215079}
---- !u!114 &2464934195717745628
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1223211554131618654}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b112db3959c164550975dd26677f8e8e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::WorldObject
-  objectId: -1
-  displayName: Desk 10
-  kind: 0
-  autoRegister: 1
---- !u!114 &3688474298412062842
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1223211554131618654}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2272e4992677c4977b85dbef83406534, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::LocationModule
-  pos3d_f: {x: 0, y: 0, z: 0}
-  yawDeg: 0
-  tilt: {x: 0, y: 0, z: 0, w: 1}
---- !u!114 &799465217051703573
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1223211554131618654}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a84846d553e584223b8e8df5ef2d7381, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::VisualModule
-  mainRenderer: {fileID: 862795696296987275}
-  extraRenderers: []
---- !u!114 &2528923383770105850
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1223211554131618654}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3f6cda250b193442c9f59a935c554f95, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::PlacementModule
-  allowedRooms: 1
-  autoSizeFromMesh: 1
-  sizeInCells: {x: 2, y: 1, z: 1}
-  cellSize: 1
-  edgeHint: 0
-  rotationRule: 1
-  minClearCellsAround: 0
-  mustTouchWall: 0
 --- !u!1 &5953892243743750590 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: -3559909895095799887, guid: 12733546754b3764c8589a0980754c40,

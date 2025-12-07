@@ -12,8 +12,6 @@ GameObject:
   - component: {fileID: 8369151710048026237}
   - component: {fileID: 6035320937729166007}
   - component: {fileID: 4900006328047605297}
-  - component: {fileID: 1051291880091913020}
-  - component: {fileID: 8472397594157397723}
   - component: {fileID: 1913184394682887956}
   - component: {fileID: 6890708889572234488}
   m_Layer: 0
@@ -115,37 +113,6 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 0.5139023, y: 0.30268118, z: 0.3642261}
   m_Center: {x: -0.000002875924, y: 0.15134059, z: 0.035754986}
---- !u!114 &1051291880091913020
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5242533128248798050}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b112db3959c164550975dd26677f8e8e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::WorldObject
-  objectId: -1
-  displayName: Prop_Microwave_01
-  kind: 0
-  autoRegister: 1
---- !u!114 &8472397594157397723
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5242533128248798050}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2272e4992677c4977b85dbef83406534, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::LocationModule
-  pos3d_f: {x: 0, y: 0, z: 0}
-  yawDeg: 0
-  tilt: {x: 0, y: 0, z: 0, w: 1}
 --- !u!114 &1913184394682887956
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -158,6 +125,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a84846d553e584223b8e8df5ef2d7381, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::VisualModule
+  debugMode: 0
   mainRenderer: {fileID: 6035320937729166007}
   extraRenderers: []
 --- !u!114 &6890708889572234488
@@ -180,3 +148,4 @@ MonoBehaviour:
   rotationRule: 1
   minClearCellsAround: 0
   mustTouchWall: 0
+  wallPadding: 0.05

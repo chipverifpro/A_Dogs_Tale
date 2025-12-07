@@ -12,8 +12,6 @@ GameObject:
   - component: {fileID: 7144564362293257125}
   - component: {fileID: 4954628260470675311}
   - component: {fileID: 5981894690815200237}
-  - component: {fileID: 7345470979591212909}
-  - component: {fileID: 5213948501435390121}
   - component: {fileID: 8537830540461247713}
   - component: {fileID: 3582161738582870608}
   m_Layer: 0
@@ -115,37 +113,6 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 0.87177503, y: 0.7977356, z: 1.1868343}
   m_Center: {x: 0.07336213, y: 0.39448136, z: 0}
---- !u!114 &7345470979591212909
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6900249475585472186}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b112db3959c164550975dd26677f8e8e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::WorldObject
-  objectId: -1
-  displayName: Prop_BabyBed_02
-  kind: 0
-  autoRegister: 1
---- !u!114 &5213948501435390121
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6900249475585472186}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2272e4992677c4977b85dbef83406534, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::LocationModule
-  pos3d_f: {x: 0, y: 0, z: 0}
-  yawDeg: 0
-  tilt: {x: 0, y: 0, z: 0, w: 1}
 --- !u!114 &8537830540461247713
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -158,6 +125,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a84846d553e584223b8e8df5ef2d7381, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::VisualModule
+  debugMode: 0
   mainRenderer: {fileID: 4954628260470675311}
   extraRenderers: []
 --- !u!114 &3582161738582870608
@@ -180,3 +148,4 @@ MonoBehaviour:
   rotationRule: 2
   minClearCellsAround: 0
   mustTouchWall: 0
+  wallPadding: 0.05

@@ -12,8 +12,6 @@ GameObject:
   - component: {fileID: 5226369066012571246}
   - component: {fileID: 8026326789021500068}
   - component: {fileID: 8692695024505626158}
-  - component: {fileID: 8421658910370009613}
-  - component: {fileID: 9082968186042789489}
   - component: {fileID: 173106901877100148}
   - component: {fileID: 8461230107214535049}
   m_Layer: 0
@@ -116,37 +114,6 @@ MeshCollider:
   m_Convex: 1
   m_CookingOptions: 30
   m_Mesh: {fileID: 7232688162551182631, guid: cee4b3a4b344ccf4d93a30a1ddce1344, type: 3}
---- !u!114 &8421658910370009613
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8386759962553721713}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b112db3959c164550975dd26677f8e8e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::WorldObject
-  objectId: -1
-  displayName: Prop_Toy_01
-  kind: 0
-  autoRegister: 1
---- !u!114 &9082968186042789489
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8386759962553721713}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2272e4992677c4977b85dbef83406534, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::LocationModule
-  pos3d_f: {x: 0, y: 0, z: 0}
-  yawDeg: 0
-  tilt: {x: 0, y: 0, z: 0, w: 1}
 --- !u!114 &173106901877100148
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -159,6 +126,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a84846d553e584223b8e8df5ef2d7381, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::VisualModule
+  debugMode: 0
   mainRenderer: {fileID: 8026326789021500068}
   extraRenderers: []
 --- !u!114 &8461230107214535049
@@ -181,3 +149,4 @@ MonoBehaviour:
   rotationRule: 1
   minClearCellsAround: 0
   mustTouchWall: 0
+  wallPadding: 0.05

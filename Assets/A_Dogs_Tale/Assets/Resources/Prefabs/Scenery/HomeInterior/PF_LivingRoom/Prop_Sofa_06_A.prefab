@@ -13,8 +13,6 @@ GameObject:
   - component: {fileID: 611199390710790629}
   - component: {fileID: 2286420386908398950}
   - component: {fileID: 2286420386908398951}
-  - component: {fileID: 1099224224822097805}
-  - component: {fileID: 8000399980755814296}
   - component: {fileID: 535208033759647137}
   - component: {fileID: 3132200112957480793}
   m_Layer: 0
@@ -137,37 +135,6 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 0.72509515, y: 0.8951021, z: 1.3555372}
   m_Center: {x: 0.07389307, y: 0.44832554, z: 1.0197939}
---- !u!114 &1099224224822097805
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1403881648087357488}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b112db3959c164550975dd26677f8e8e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::WorldObject
-  objectId: -1
-  displayName: Prop_Sofa_06_A
-  kind: 0
-  autoRegister: 1
---- !u!114 &8000399980755814296
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1403881648087357488}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2272e4992677c4977b85dbef83406534, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::LocationModule
-  pos3d_f: {x: 0, y: 0, z: 0}
-  yawDeg: 0
-  tilt: {x: 0, y: 0, z: 0, w: 1}
 --- !u!114 &535208033759647137
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -180,6 +147,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a84846d553e584223b8e8df5ef2d7381, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::VisualModule
+  debugMode: 0
   mainRenderer: {fileID: 611199390710790629}
   extraRenderers: []
 --- !u!114 &3132200112957480793
@@ -202,3 +170,4 @@ MonoBehaviour:
   rotationRule: 2
   minClearCellsAround: 0
   mustTouchWall: 0
+  wallPadding: 0.05
