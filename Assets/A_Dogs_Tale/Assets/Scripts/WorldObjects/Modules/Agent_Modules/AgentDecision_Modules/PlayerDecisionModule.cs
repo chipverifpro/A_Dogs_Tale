@@ -55,7 +55,7 @@ namespace DogGame.Modules
 
         public override void Tick(float deltaTime)
         {
-            Debug.Log($"PlayerDecisionModule {worldObject.DisplayName}: Tick {deltaTime}");
+            //Debug.Log($"PlayerDecisionModule {worldObject.DisplayName}: Tick {deltaTime}");
 
             PlayerInputState state = inputState;
 
@@ -79,7 +79,7 @@ namespace DogGame.Modules
                     dir.cameraModeSwitcher.ApplyZoomDelta(state.zoomDelta);
                 }
 
-                if (state.cameraViewSelect >= 0)
+                if (state.cameraViewSelect != CameraModes.Unchanged)
                 {
                     Debug.Log($"SelectView: {state.cameraViewSelect}");
                     dir.cameraModeSwitcher.SelectView(state.cameraViewSelect);

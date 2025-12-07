@@ -143,7 +143,7 @@ namespace DogGame.Modules
         /// </summary>
         public override void Tick(float deltaTime)
         {
-            Debug.Log($"AgentMovementModule {worldObject.DisplayName}: Tick {deltaTime}");
+            //Debug.Log($"AgentMovementModule {worldObject.DisplayName}: Tick {deltaTime}");
 
             if (motion == null)
                 return;

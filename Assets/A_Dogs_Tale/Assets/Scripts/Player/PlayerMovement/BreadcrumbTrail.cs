@@ -54,6 +54,7 @@ public class BreadcrumbTrail : MonoBehaviour
     /// Can be forced in the case of a sharp turn that we want included.
     public void RecordIfNeeded(bool forceDrop = false)
     {
+        if (leader==null || leader.locationModule==null) return;
         Vector3 leader_pos3 = new(leader.locationModule.pos2.x, leader.locationModule.height, leader.locationModule.pos2.y);
         //Debug.Log($"RecordIfNeeded: numFollowers = {numFollowers}, numCrumbs = {crumbs.Count}, hasAny={hasAny}, forceDrop={forceDrop}");
         if (numFollowers == 0) return;

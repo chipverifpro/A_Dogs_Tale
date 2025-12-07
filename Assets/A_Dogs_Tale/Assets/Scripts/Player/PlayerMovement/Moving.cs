@@ -6,12 +6,13 @@ public partial class Player : MonoBehaviour
     void Move_Start()
     {
         return; // DO NOTHING HERE ANY MORE, move to worldModules.
-        var p = agent.transform.position;   // grab object position and set it in variable
-        if (useXZPlane) agent.pos2 = World_to_Map(new Vector2(p.x, p.z));
-        else agent.pos2 = World_to_Map(new Vector2(p.x, p.y));
+    
+    //    var p = agent.transform.position;   // grab object position and set it in variable
+    //    if (useXZPlane) agent.pos2 = World_to_Map(new Vector2(p.x, p.z));
+    //    else agent.pos2 = World_to_Map(new Vector2(p.x, p.y));
 
         // Initialize yaw from current rotation
-        agent.yawDeg = useXZPlane ? agent.transform.eulerAngles.y - yawCorrection : agent.transform.eulerAngles.z - yawCorrection;
+    //    agent.yawDeg = useXZPlane ? agent.transform.eulerAngles.y - yawCorrection : agent.transform.eulerAngles.z - yawCorrection;
     }
 
     // called by Input_Update to move in response to inputs.

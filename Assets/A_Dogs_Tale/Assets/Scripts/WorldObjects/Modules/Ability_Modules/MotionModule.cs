@@ -65,13 +65,13 @@ namespace DogGame.Modules
             }
             if (bodyRoot == null)
             {
-                bodyRoot = worldObject.transform;
+                bodyRoot = transform;
             }
         }
 
         public override void Tick(float deltaTime)
         {
-            Debug.Log($"MotionModule {worldObject.DisplayName}: Tick {deltaTime}");
+            //Debug.Log($"MotionModule {worldObject.DisplayName}: Tick {deltaTime}");
         
         }
 

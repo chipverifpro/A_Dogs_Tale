@@ -121,7 +121,7 @@ public class Pack : MonoBehaviour
 
         foreach (var member in packAgentList)
         {
-            if (member != packLeader)
+            if (member != null && member != packLeader)
             {
                 member.motionModule.Teleport(new Vector3(leaderPos2.x, leaderHeight, leaderPos2.y));
                 member.appearanceModule.camera_refresh_needed = true;

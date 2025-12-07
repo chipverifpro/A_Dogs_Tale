@@ -58,7 +58,7 @@ namespace DogGame.Modules
         // Tick is called by WorldObject, pass it along to the current DecisionModule
         public override void Tick(float deltaTime)
         {
-            Debug.Log($"AgentModule {worldObject.DisplayName}: Tick {deltaTime}");
+            //Debug.Log($"AgentModule {worldObject.DisplayName}: Tick {deltaTime}");
             
             if (currentDecisionModule != null)
             {
