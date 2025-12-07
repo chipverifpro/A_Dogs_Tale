@@ -1,10 +1,13 @@
 using UnityEngine;
 
-[DisallowMultipleComponent]
-public class FetchQuestModule : QuestModuleBase
+namespace DogGame.Modules
 {
-    public override void Tick(float deltaTime)
+    [DisallowMultipleComponent]
+    public class FetchQuestModule : QuestModuleBase
     {
-        Debug.Log($"FetchQuestModule {worldObject.DisplayName}: Tick {deltaTime}");
+        public override void Tick(float deltaTime)
+        {
+            Debug.Log($"FetchQuestModule {worldObject.DisplayName}: Tick {deltaTime}");
+        }
     }
 }

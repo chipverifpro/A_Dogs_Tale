@@ -30,6 +30,7 @@ public class Directory : MonoBehaviour
     [Header("Game Objects")]
     public Pack pack;
     public Player player;
+    public PackFormations packFormations;
     public ScentAirGround scents;
     public ScentRegistry scentRegistry;
 

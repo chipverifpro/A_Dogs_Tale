@@ -1,10 +1,15 @@
 using UnityEngine;
 
-[DisallowMultipleComponent]
-public class HearingModule : WorldModule
+namespace DogGame.Modules
 {
-    public override void Tick(float deltaTime)
+    [DisallowMultipleComponent]
+    public class HearingModule : WorldModule
     {
-        Debug.Log($"HearingModule {worldObject.DisplayName}: Tick {deltaTime}");
+        public bool debugMode = false;
+
+        public override void Tick(float deltaTime)
+        {
+            if (debugMode) Debug.Log($"HearingModule {worldObject.DisplayName}: Tick {deltaTime}");
+        }
     }
 }

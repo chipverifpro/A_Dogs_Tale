@@ -16,7 +16,7 @@ Responsibilities:
 	•	Does not know about CharacterController, rigidbodies, etc.
 */
 
-namespace DogGame.AI
+namespace DogGame.Modules
 {
     /// <summary>
     /// High-level locomotion module that converts "movement intent" into an actual
@@ -36,6 +36,11 @@ namespace DogGame.AI
         [Header("Dependencies")]
         [Tooltip("Low-level motion executor. Auto assigned.")]
         private MotionModule motion;
+
+        [Header("For following and routing")]
+        // next crumb in trail we are following
+        public Crumb next_actualCrumb;
+        public Crumb next_formationCrumb;
 
         [Header("Speed Settings")]
         [Tooltip("Maximum walking speed in meters per second.")]

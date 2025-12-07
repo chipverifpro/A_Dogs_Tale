@@ -1,7 +1,10 @@
 using UnityEngine;
 
-[DisallowMultipleComponent]
-public class InteractionModule : WorldModule
+namespace DogGame.Modules
 {
+    [DisallowMultipleComponent]
+    public class InteractionModule : WorldModule
+    {
 
+    }
 }

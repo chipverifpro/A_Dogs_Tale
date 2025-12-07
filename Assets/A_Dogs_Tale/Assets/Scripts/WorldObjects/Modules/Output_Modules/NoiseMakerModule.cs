@@ -1,10 +1,13 @@
 using UnityEngine;
 
-[DisallowMultipleComponent]
-public class NoiseMakerModule : WorldModule
+namespace DogGame.Modules
 {
-    public void Bark()
+    [DisallowMultipleComponent]
+    public class NoiseMakerModule : WorldModule
     {
-        dir.audioPlayer.PlayClip("Bark_GS_once");
+        public void Bark()
+        {
+            dir.audioPlayer.PlayClip("Bark_GS_once");
+        }
     }
 }

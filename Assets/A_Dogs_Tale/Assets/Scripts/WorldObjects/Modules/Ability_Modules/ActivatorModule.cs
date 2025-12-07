@@ -1,7 +1,10 @@
 using UnityEngine;
 
-[DisallowMultipleComponent]
-public class ActivatorModule : WorldModule
+namespace DogGame.Modules
 {
-    public UnityEngine.Events.UnityEvent OnActivate;
+    [DisallowMultipleComponent]
+    public class ActivatorModule : WorldModule
+    {
+        public UnityEngine.Events.UnityEvent OnActivate;
+    }
 }

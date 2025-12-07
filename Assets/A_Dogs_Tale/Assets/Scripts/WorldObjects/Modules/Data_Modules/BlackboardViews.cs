@@ -1,60 +1,63 @@
 using UnityEngine;
 
-public class AgentBlackboardView
+namespace DogGame.Modules
 {
-    private readonly BlackboardModule bb;
-
-    public AgentBlackboardView(BlackboardModule blackboard)
+    public class AgentBlackboardView
     {
-        bb = blackboard;
+        private readonly BlackboardModule bb;
+
+        public AgentBlackboardView(BlackboardModule blackboard)
+        {
+            bb = blackboard;
+        }
+
+        const string TargetKey = "Agent.Target";
+        const string FearKey = "Agent.FearLevel";
+        const string HungerKey = "Agent.HungerLevel";
+
+        public Transform CurrentTarget
+        {
+            get => bb.TryGet<Transform>(TargetKey, out var t) ? t : null;
+            set => bb.Set(TargetKey, value);
+        }
+
+        public float FearLevel
+        {
+            get => bb.TryGet<float>(FearKey, out var f) ? f : 0f;
+            set => bb.Set(FearKey, value);
+        }
+
+        public float HungerLevel
+        {
+            get => bb.TryGet<float>(HungerKey, out var h) ? h : 0f;
+            set => bb.Set(HungerKey, value);
+        }
     }
 
-    const string TargetKey = "Agent.Target";
-    const string FearKey   = "Agent.FearLevel";
-    const string HungerKey = "Agent.HungerLevel";
-
-    public Transform CurrentTarget
+    /*
+    public class QuestBlackboardView
     {
-        get => bb.TryGet<Transform>(TargetKey, out var t) ? t : null;
-        set => bb.Set(TargetKey, value);
-    }
+        private readonly BlackboardModule bb;
 
-    public float FearLevel
-    {
-        get => bb.TryGet<float>(FearKey, out var f) ? f : 0f;
-        set => bb.Set(FearKey, value);
-    }
+        public QuestBlackboardView(BlackboardModule blackboard)
+        {
+            bb = blackboard;
+        }
 
-    public float HungerLevel
-    {
-        get => bb.TryGet<float>(HungerKey, out var h) ? h : 0f;
-        set => bb.Set(HungerKey, value);
+        const string HasBallKey = "Puzzle.HasBall";
+        const string KidHappyKey = "Puzzle.KidHappy";
+
+        public bool HasBall
+        {
+            get => bb.TryGet<bool>(HasBallKey, out var v) && v;
+            set => bb.Set(HasBallKey, value);
+        }
+
+        public bool KidHappy
+        {
+            get => bb.TryGet<bool>(KidHappyKey, out var v) && v;
+            set => bb.Set(KidHappyKey, value);
+        }
     }
+    */
 }
-
-/*
-public class QuestBlackboardView
-{
-    private readonly BlackboardModule bb;
-
-    public QuestBlackboardView(BlackboardModule blackboard)
-    {
-        bb = blackboard;
-    }
-
-    const string HasBallKey = "Puzzle.HasBall";
-    const string KidHappyKey = "Puzzle.KidHappy";
-
-    public bool HasBall
-    {
-        get => bb.TryGet<bool>(HasBallKey, out var v) && v;
-        set => bb.Set(HasBallKey, value);
-    }
-
-    public bool KidHappy
-    {
-        get => bb.TryGet<bool>(KidHappyKey, out var v) && v;
-        set => bb.Set(KidHappyKey, value);
-    }
-}
-*/

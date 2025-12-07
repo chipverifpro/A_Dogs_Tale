@@ -2,6 +2,7 @@
 using System.Linq;
 using UnityEditor;
 using UnityEngine;
+using DogGame.Modules;
 
 public static class WorldObjectPrefabTools
 {

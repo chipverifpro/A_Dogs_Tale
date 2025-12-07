@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
-using DogGame.AI;           // adjust to your namespaces
+using DogGame.Modules;           // adjust to your namespaces
 // using DogGame.World;    // if WorldObject is in another namespace
 
 [CustomEditor(typeof(WorldObject), true)]

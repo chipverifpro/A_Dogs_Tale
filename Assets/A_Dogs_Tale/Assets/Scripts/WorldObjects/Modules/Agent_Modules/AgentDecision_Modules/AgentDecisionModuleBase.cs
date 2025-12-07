@@ -2,7 +2,7 @@ using UnityEngine;
 
 // ----- ABSTRACT BASE CLASS -----
 
-namespace DogGame.AI
+namespace DogGame.Modules
 {
     public abstract class AgentDecisionModuleBase : WorldModule
     {

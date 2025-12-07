@@ -3,7 +3,7 @@ using UnityEditor;
 using UnityEngine;
 
 //using DogGame.World;       // WorldObject, LocationModule, MotionModule, BlackboardModule, etc.
-using DogGame.AI;          // AgentModule, AgentMovementModule, AgentSenseModule, AgentPackMemberModule, AgentBlackboardView
+using DogGame.Modules;          // AgentModule, AgentMovementModule, AgentSenseModule, AgentPackMemberModule, AgentBlackboardView
 //using DogGame.Sensory;     // VisionModule, HearingModule, SmellModule, ScentEmitterModule, SoundEmitterModule
 // using DogGame.Visuals;  // If you have a VisualModule namespace
 

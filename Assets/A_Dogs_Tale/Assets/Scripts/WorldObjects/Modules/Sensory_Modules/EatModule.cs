@@ -1,10 +1,15 @@
 using UnityEngine;
 
-[DisallowMultipleComponent]
-public class EatModule : WorldModule
+namespace DogGame.Modules
 {
-    public override void Tick(float deltaTime)
+    [DisallowMultipleComponent]
+    public class EatModule : WorldModule
     {
-        Debug.Log($"EatModule {worldObject.DisplayName}: Tick {deltaTime}");
+        public bool debugMode = false;
+
+        public override void Tick(float deltaTime)
+        {
+            if (debugMode) Debug.Log($"EatModule {worldObject.DisplayName}: Tick {deltaTime}");
+        }
     }
 }

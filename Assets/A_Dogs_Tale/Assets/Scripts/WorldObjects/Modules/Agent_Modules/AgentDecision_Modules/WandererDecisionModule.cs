@@ -1,7 +1,7 @@
 using System.ComponentModel;
 using UnityEngine;
 
-namespace DogGame.AI
+namespace DogGame.Modules
 {
     public class WandererDecisionModule : AgentDecisionModuleBase
     {

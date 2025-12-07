@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace DogGame.AI
+namespace DogGame.Modules
 {
     public class FollowerDecisionModule : AgentDecisionModuleBase
     {
@@ -107,16 +107,16 @@ namespace DogGame.AI
             var packMember = worldObject.agentModule.agentPackMemberModule;
             var currentPack = packMember.currentPack;
 
-            if (currentPack == null || currentPack.leader == null)
+            if (currentPack == null || currentPack.packLeader == null)
                 return;
 
-            followTarget = currentPack.leader.transform;
+            followTarget = currentPack.packLeader.transform;
 
             if (enableDebugLogging)
             {
                 Debug.Log(
                     $"[FollowerDecisionModule {worldObject.DisplayName}] " +
-                    $"Default follow target set to pack leader {currentPack.leader.name}.",
+                    $"Default follow target set to pack leader {currentPack.packLeader.name}.",
                     this);
             }
         }

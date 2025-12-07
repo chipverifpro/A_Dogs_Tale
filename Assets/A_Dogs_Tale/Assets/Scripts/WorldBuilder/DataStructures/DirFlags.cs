@@ -73,6 +73,23 @@ public static class DirFlagsEx  // extension functions for the DirFlags enum
 
         return flags;
     }
+    
+    public static DirFlags YawToDirFlag(int yawDegrees)
+    {
+        // yaw is known to be 0,90,180,270 — otherwise normalize:
+        yawDegrees = ((yawDegrees % 360) + 360) % 360;
+
+        switch (yawDegrees)
+        {
+            case 0:   return DirFlags.N;
+            case 90:  return DirFlags.E;
+            case 180: return DirFlags.S;
+            case 270: return DirFlags.W;
+            default:
+                Debug.LogWarning($"Unexpected yawDegrees {yawDegrees}: expected 0/90/180/270.");
+                return DirFlags.None;
+        }
+    }
 
     //CountBits: This uses Brian Kernighan’s algorithm (v &= v-1) to strip one bit
     //           per loop → very fast for small bitfields like a byte.

@@ -19,7 +19,7 @@ public partial class Agent : MonoBehaviour
     public Directory dir;
 
     public int id;                          // unique id number
-
+    public WorldObject worldObject;
     // controls map movement:
     public float baseSpeed = 6.0f;          // W/S movement world units per second
     public float turnSpeedDegPerSec = 180f; // A/D rotate speed
@@ -95,7 +95,16 @@ public partial class Agent : MonoBehaviour
                 Debug.LogError($"Agent on {name} has no Animator attached.", this);
             }
         }
+        if (worldObject == null)
+        {
+            worldObject = GetComponent<WorldObject>();
+            if (worldObject == null)
+            {
+                Debug.LogError($"Agent on {name} has no WorldObject");
+            }
+        }
     }
+
     protected virtual void Start()
     {
         if (!dir) dir = FindFirstObjectByType<Directory>();
@@ -281,8 +290,8 @@ public partial class Agent : MonoBehaviour
         // if we have no valid destination, see if we can get a new crumb, else abort
         if (next_formationCrumb.valid == false)
         {
-            next_actualCrumb = trail.GetNextCrumb(this);
-            next_formationCrumb = GetFormationPosition(pack, id, next_actualCrumb);
+            next_actualCrumb = trail.GetNextCrumb(this.worldObject);
+            next_formationCrumb = dir.packFormations.GetFormationPosition(pack, id, next_actualCrumb);
             if (next_formationCrumb.valid == false) return; // no trail to follow, do nothing
         }
 
@@ -303,8 +312,8 @@ public partial class Agent : MonoBehaviour
             if (dist_to_target < .001)
             {
                 // arrived at crumb target, get next crumb
-                next_actualCrumb = trail.GetNextCrumb(this);    // this is the leader crumb
-                next_formationCrumb = GetFormationPosition(pack, id, next_actualCrumb); // shift it by follower offset
+                next_actualCrumb = trail.GetNextCrumb(this.worldObject);    // this is the leader crumb
+                next_formationCrumb = dir.packFormations.GetFormationPosition(pack, id, next_actualCrumb); // shift it by follower offset
                 if (next_formationCrumb.valid == false)
                 {
                     use_crumb_yaw = true;
@@ -315,7 +324,7 @@ public partial class Agent : MonoBehaviour
                 if (dist_to_target < .01)
                 {
                     use_crumb_yaw = true;
-                    //if (next_formationCrumb.yawDeg == pack.PackLeader.yawDeg)
+                    //if (next_formationCrumb.yawDeg == pack.packLeaderLegacy.yawDeg)
                         //return;
                     //Debug.LogWarning($"Two sequential crumbs on top of each other.  At leader, who isn't moving.");
                     break; // we are also at the next crumb. This happens when fallback was to leader position, but leader didn't move.
@@ -351,12 +360,12 @@ public partial class Agent : MonoBehaviour
         {
             if (pack.formation == FormationsEnum.Circle) // face outwards only in this formation
             {
-                unit_vector = (pos2 - pack.PackLeader.pos2).normalized;
+                unit_vector = (pos2 - pack.packLeader.locationModule.pos2).normalized;
                 yawDeg = UnitVectorToYaw(unit_vector);
             }
             else
             {
-                yawDeg = pack.PackLeader.yawDeg; // face the leader's direction on arrival
+                yawDeg = pack.packLeader.locationModule.yawDeg; // face the leader's direction on arrival
             }
         }
         else
@@ -483,15 +492,15 @@ public partial class Agent : MonoBehaviour
         //int ahead_id = -1;
         int i;
 
-        for (i = 1; i < pack.packList.Count; i++)
+        for (i = 1; i < pack.packAgentList.Count; i++)
         {
-            if (pack.packList[i].id == my_id)
+            if (pack.packAgentList[i].ObjectId == my_id)
                 break;
-            //ahead_id = pack.packList[i].id;
+            //ahead_id = pack.packListLegacy[i].id;
         }
-        ahead_pos.x = pack.packList[i - 1].pos2.x;
-        ahead_pos.y = pack.packList[i - 1].height;
-        ahead_pos.z = pack.packList[i - 1].pos2.y;
+        ahead_pos.x = pack.packAgentList[i - 1].locationModule.pos2.x;
+        ahead_pos.y = pack.packAgentList[i - 1].locationModule.height;
+        ahead_pos.z = pack.packAgentList[i - 1].locationModule.pos2.y;
 
         return ahead_pos;
     }

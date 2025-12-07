@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using DogGame.AI;
 using UnityEngine;
+using DogGame.Modules;
 
 /// <summary>
 /// Use Kind as:

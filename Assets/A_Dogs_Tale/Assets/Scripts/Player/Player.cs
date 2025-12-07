@@ -1,8 +1,7 @@
 using System;
 using System.Collections;
 using UnityEngine;
-using UnityEngine.AI;
-using UnityEngine.UIElements;
+
 
 // TODO list:
 //   DONE: add movement on diagonal walls
@@ -25,7 +24,9 @@ public partial class Player : MonoBehaviour
     public Pack pack;                   // pack structure
 
     [Header("Current Player position")]
-    public Agent agent;             // Everything to do with the currently active player
+    public Agent agent;             // LEGACY: Everything to do with the currently active player
+    public WorldObject agentObject; // module based
+
     //public Vector2 pos2;          // XY or XZ (depending on useXZPlane)
     //public float yawDeg;          // facing yaw in degrees (around Z for XY, around Y for XZ)
     //public int floorHeight = 1;   // height of current tile.
@@ -70,7 +71,7 @@ public partial class Player : MonoBehaviour
         if (!bottomBanner)
             bottomBanner = FindAnyObjectByType<BottomBanner>();
         //if (agent == null)
-        //ChangePlayerAgent(pack.PackLeader);
+        //ChangePlayerAgent(pack.packLeaderLegacy);
         AwakeMouseInput();
     }
 
@@ -154,8 +155,8 @@ public partial class Player : MonoBehaviour
         Move_Start();           // grab initial position from Unity object
                                 //agent.trail = GetComponent<BreadcrumbTrail>();
                                 //BuildPackObjects(3);    // This exists in Pack class.
-        //pack.packList.Add(pack.PackLeader); // leader agent needs to be added to the packlist.
-        ChangePlayerAgent(pack.PackLeader);
+        //pack.packAgentList.Add(pack.packLeaderLegacy); // leader agent needs to be added to the packlist.
+        ChangePlayerAgent(pack.packLeader);
     }
 
     void Update()
@@ -172,44 +173,60 @@ public partial class Player : MonoBehaviour
         yield return null;
         yield return new WaitUntil(() => gen.buildComplete);
 
-        // randomly pick a start location.
+        // randomly pick a start location and direction.
         int x = -1;
         int y = -1;
+        int newYawDeg = 0;
+        bool facingWall = true;
         //TODO fix this to use Heightmap instead of cellGrid
-        while ((!gen.In(x, y)) || (gen.cellGrid[x, y].room_number < 0))
+        while ((!gen.In(x, y)) || (gen.cellGrid[x, y].room_number < 0) || (facingWall))
         {
             // try a new random location
             x = UnityEngine.Random.Range(0, gen.cfg.mapWidth);
             y = UnityEngine.Random.Range(0, gen.cfg.mapHeight);
+            newYawDeg = UnityEngine.Random.Range(0, 4) * 90;
+            // check if yawDeg is facing a wall
+            DirFlags facingDirFlag = DirFlagsEx.YawToDirFlag(newYawDeg);
+            DungeonGenerator.NeighborMatch match;
+            DirFlags wallFlags = DirFlags.None;
+            bool success = dir.gen.hf.TryQueryAt(x,y,0,9999, out match);
+            if (success) wallFlags=match.walls;
+            facingWall = (facingDirFlag & wallFlags) != DirFlags.None;
         }
-        agent.pos2.x = x + 0.5f;  // center of cell
-        agent.pos2.y = y + 0.5f;
+        float height = Agent.SampleAgentHeight(agent.pos2, gen.cellGrid, gen.cfg.unitHeight);
+        
+        Vector3 worldPosition = new(x+0.5f, height, y+0.5f);
+        Quaternion yawQuat = Quaternion.Euler(0, newYawDeg, 0);
+        agentObject?.motionModule?.TeleportUpright(worldPosition, yawQuat);
+
+        //agentObject.locationModule.pos2.x = x + 0.5f;  // center of cell
+        //agentObject.locationModule.pos2.y = y + 0.5f;
 
         //agent.height = gen.cellGrid[x, y].height + (int)heightCorrection;  // height of current cell floor.
-        agent.height = Agent.SampleAgentHeight(agent.pos2, gen.cellGrid, gen.cfg.unitHeight);
          //Debug.Log($"Start pos = {agent.pos2.x}, {agent.pos2.y}, height={agent.height}");
-        agent.TransformPosition(agent);    // move the player's agent
+        //agentObject.motionModule.Teleport(agentObject.locationModule.pos3d_world);    // move the player's agent
         
-        agent.camera_refresh_needed=true;
-        Debug.Log($"Set StartPosition to {agent.pos2.x}, {agent.pos2.y}, {agent.height}");
+        //agentObject.appearanceModule.camera_refresh_needed=true;
+        Debug.Log($"Set StartPosition to Grid {x}, {y}, {height}");
         pack.TeleportToLeader();
     }
 
     // Change which agent the player is controlling...
-    void ChangePlayerAgent(Agent new_agent)
+    void ChangePlayerAgent(WorldObject new_agent)
     {
-        bool old_active = agent.DogPrefab.activeSelf;
-        agent.DogPrefab.SetActive(true);    // if old prefab was hidden by the first-person camera, bring it back
-        agent = new_agent;
-        agent.trailLeader = true;
-        agent.trailFollower = false;
-        agent.camera_refresh_needed = true;   // camera visibility refresh
-        agent.DogPrefab.SetActive(old_active);  // if old was invisible, make new one also invisible.
-        pack.PackLeader = agent;
-        pack.trail.leader = agent;
-        agent.TransformPosition(agent);    // move the player's agent
+        if (agentObject==null || new_agent==null) return;
+        bool old_active = agentObject.appearanceModule.IsEnabled();
+        agentObject = new_agent;
+        //agentObject.appearanceModule.SetVisible(true);    // if old prefab was hidden by the first-person camera, bring it back
+        agentObject.agentPackMemberModule.RequestBecomeLeader();
+        //agentObject.agentPackMemberModule.trailFollower = false;
+        agentObject.appearanceModule.camera_refresh_needed = true;   // camera visibility refresh
+        agentObject.appearanceModule.SetVisible(old_active);  // if old was invisible, make new one also invisible.
+        pack.packLeader = agentObject;
+        pack.trail.leader = agentObject;
+        agentObject.motionModule.Teleport(agentObject.locationModule.pos3d_world);    // move the player's agent
         //Move_Update(0f, 0f);    // screen refresh
-        BottomBanner.ShowFor($"New leader = {agent.name}", 5f);
+        BottomBanner.ShowFor($"New leader = {agentObject.DisplayName}", 5f);
     }
 
     // Change which agent the player is controlling...
@@ -219,31 +236,32 @@ public partial class Player : MonoBehaviour
     {
         int old_leader_id = 0;
         int old_leader_index = -1;
-        for (int i = 0; i < pack.packList.Count; i++)
-            if (pack.packList[i].trailLeader == true)   // old trailLeader
+        for (int i = 0; i < pack.packAgentList.Count; i++)
+            if (pack.packAgentList[i].agentPackMemberModule.IsLeader == true)   // old trailLeader
             {
-                old_leader_id = pack.packList[i].id;
+                old_leader_id = pack.packAgentList[i].ObjectId;
                 old_leader_index = i;
 
-                //pack.packList[i].trailLeader = false;
-                //pack.packList[i].trailFollower = true;
+                //pack.packAgentList[i].trailLeader = false;
+                //pack.packAgentList[i].trailFollower = true;
                 break;
             }
 
-        for (int i = 0; i < pack.packList.Count; i++)
-            if (pack.packList[i].id == new_agent_id)    // new agent becomes leader
+        for (int i = 0; i < pack.packAgentList.Count; i++)
+            if (pack.packAgentList[i].ObjectId == new_agent_id)    // new agent becomes leader
             {
                 // remove old leader from trailLeader
-                pack.packList[old_leader_index].trailLeader = false;
-                pack.packList[old_leader_index].trailFollower = true;
+                pack.packAgentList[old_leader_index].agentModule.BecomeFollower();
 
-                Agent new_leader_agent = pack.packList[i];
+                WorldObject new_leader_agent = pack.packAgentList[i];
                 // move new leader to front of list.
-                pack.packList.RemoveAt(i);
-                pack.packList.Insert(0, new_leader_agent);
+                pack.packAgentList.RemoveAt(i);
+                pack.packAgentList.Insert(0, new_leader_agent);
                 ChangeTrailEater(new_agent_id, old_leader_id);
 
-                ChangePlayerAgent(pack.packList[0]);    // player agent is now front of list
+                pack.packAgentList[0].agentPackMemberModule.RequestBecomeLeader();
+
+                ChangePlayerAgent(pack.packAgentList[0]);    // player agent is now front of list
                 break;
             }
     }
@@ -263,7 +281,7 @@ public partial class Player : MonoBehaviour
                 pack.trail.crumbs[c].whichFollowersArrived.Add(new_leader_id);
 
             // remove the crumb if all followers have seen it.
-            if (pack.trail.crumbs[c].whichFollowersArrived.Count == pack.packList.Count)
+            if (pack.trail.crumbs[c].whichFollowersArrived.Count == pack.packAgentList.Count)
             {
                 pack.trail.crumbs.RemoveAt(c);
                 c--;

@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace DogGame.AI
+namespace DogGame.Modules
 {
     public class AgentSensesModule : WorldModule
     {

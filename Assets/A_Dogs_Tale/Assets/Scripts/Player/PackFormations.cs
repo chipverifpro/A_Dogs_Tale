@@ -1,6 +1,10 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+// PackFormations is a MonoBheavior class that sits at the top,
+// and does formation to position translations.  You must pass in
+// all relevant data from your pack, as this has no local storage
+// for anything but arrangements of positions.
 
 public enum FormationsEnum
 {
@@ -11,7 +15,7 @@ public enum FormationsEnum
     Circle
 }
 
-public partial class Agent
+public class PackFormations : MonoBehaviour
 {
     readonly List<Vector2> LineAbreastPos = new()
     {
@@ -94,6 +98,7 @@ public partial class Agent
 
     public Vector2 RotateAndScaleOffset(Vector2 offset, float yawDeg, float scale)
     {
+        float yawCorrection = 90f;  // TODO: should not hardcode thi here.
         // rotate the offset vector by yawDeg degrees clockwise.
         float yawRad = -(yawDeg + yawCorrection) * Mathf.Deg2Rad;
         float cosYaw = Mathf.Cos(yawRad);
@@ -105,31 +110,31 @@ public partial class Agent
     }
 
     // return the coordinates for the agent in pack formation.
-    Crumb GetFormationPosition(Pack pack, int agent_id, Crumb crumb)
+    public Crumb GetFormationPosition(Pack pack, int agent_id, Crumb crumb)
     {
         Vector2 normalized = Vector2.zero;
 
         FormationsEnum formation = pack.formation;
         Vector2 crumbPos2 = crumb.pos2;
         float crumbYawDeg = crumb.yawDeg;
-        int position_in_pack = pack.packList.FindIndex(a => a.id == agent_id);
-        int number_in_pack = pack.packList.Count;
+        int position_in_pack = pack.packAgentList.FindIndex(a => a.ObjectId == agent_id);
+        int number_in_pack = pack.packAgentList.Count;
         float scale = pack.formationSpacing;
-        Agent agent = pack.packList[position_in_pack];
+        WorldObject agent = pack.packAgentList[position_in_pack];
 
         if (position_in_pack == 0 || crumb.valid == false)
         {
-            agent.next_formationCrumb.valid = false; // leader does not have a target.
-            return agent.next_formationCrumb;
+            agent.agentMovementModule.next_formationCrumb.valid = false; // leader does not have a target.
+            return agent.agentMovementModule.next_formationCrumb;
         }
         
         // get the offset for this formation and position in pack.
         Vector2 offset = GetOffsetForFormation(formation, position_in_pack, number_in_pack);
         Vector2 rotated_offset = RotateAndScaleOffset(offset, crumbYawDeg, scale);
 
-        agent.next_formationCrumb.pos2 = crumbPos2 + rotated_offset;
-        agent.next_formationCrumb.yawDeg = crumbYawDeg; // todo: for circle formation, face outwards.
-        agent.next_formationCrumb.valid = true;
-        return agent.next_formationCrumb;
+        agent.agentMovementModule.next_formationCrumb.pos2 = crumbPos2 + rotated_offset;
+        agent.agentMovementModule.next_formationCrumb.yawDeg = crumbYawDeg; // todo: for circle formation, face outwards.
+        agent.agentMovementModule.next_formationCrumb.valid = true;
+        return agent.agentMovementModule.next_formationCrumb;
     }
 }

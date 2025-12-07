@@ -1,6 +1,4 @@
-using System;
 using System.Collections.Generic;
-using System.Data.Common;
 using UnityEngine;
 
 
@@ -25,8 +23,8 @@ public class BreadcrumbTrail : MonoBehaviour
     [Tooltip("Hard cap on stored crumbs (acts as ring buffer ceiling).")]
     public int maxCrumbs = 256;
 
-    public Agent leader;                // who is making the trail
-    public List<Agent> followers;       // who is following the trail (in order)
+    public WorldObject leader;                // who is making the trail
+    public List<WorldObject> followers;       // who is following the trail (in order)
     public int numFollowers => followers.Count;     // shortcut
 
 
@@ -56,29 +54,29 @@ public class BreadcrumbTrail : MonoBehaviour
     /// Can be forced in the case of a sharp turn that we want included.
     public void RecordIfNeeded(bool forceDrop = false)
     {
-        Vector3 leader_pos3 = new(leader.pos2.x, leader.height, leader.pos2.y);
+        Vector3 leader_pos3 = new(leader.locationModule.pos2.x, leader.locationModule.height, leader.locationModule.pos2.y);
         //Debug.Log($"RecordIfNeeded: numFollowers = {numFollowers}, numCrumbs = {crumbs.Count}, hasAny={hasAny}, forceDrop={forceDrop}");
         if (numFollowers == 0) return;
 
         if (!hasAny)
         {
             AddCrumb();
-            lastDropPos = leader.pos2;
+            lastDropPos = leader.locationModule.pos2;
             hasAny = true;
             return;
         }
 
-        if (forceDrop && (leader.pos2 != lastDropPos))
+        if (forceDrop && (leader.locationModule.pos2 != lastDropPos))
         {
             AddCrumb();
-            lastDropPos = leader.pos2;
+            lastDropPos = leader.locationModule.pos2;
             return;
         }
         //Debug.Log($"RecordIfNeeded: leader.pos3={leader_pos3}, lastDropPos={lastDropPos}, distSquared = {(leader_pos3 - lastDropPos).sqrMagnitude}");
-        if ((leader.pos2 - lastDropPos).sqrMagnitude >= dropDistance * dropDistance)
+        if ((leader.locationModule.pos2 - lastDropPos).sqrMagnitude >= dropDistance * dropDistance)
         {
             AddCrumb();
-            lastDropPos = leader.pos2;
+            lastDropPos = leader.locationModule.pos2;
         }
     }
 
@@ -92,7 +90,7 @@ public class BreadcrumbTrail : MonoBehaviour
             crumbs.RemoveAt(0);
         }
         //Vector3 agent_pos_3 = new(leader.pos2.x, leader.height, leader.pos2.y);
-        Crumb new_crumb = new() { pos2 = leader.pos2, height = leader.height, yawDeg = leader.yawDeg, valid = true };
+        Crumb new_crumb = new() { pos2 = leader.locationModule.pos2, height = leader.locationModule.height, yawDeg = leader.locationModule.yawDeg, valid = true };
         new_crumb.whichFollowersArrived = new();
         crumbs.Add(new_crumb);
     }
@@ -106,12 +104,12 @@ public class BreadcrumbTrail : MonoBehaviour
         }
     */
 
-    public void AddFollower(Agent agent)
+    public void AddFollower(WorldObject agent)
     {
         FindFollowerIndex(agent, addIfNotFollowing: true); // if not found, adds missing follower
     }
 
-    public void RemoveFollower(Agent agent)
+    public void RemoveFollower(WorldObject agent)
     {
         int index = FindFollowerIndex(agent, addIfNotFollowing: false);
         if (index >= 0)
@@ -125,16 +123,16 @@ public class BreadcrumbTrail : MonoBehaviour
         }
     }
 
-    public int FindFollowerIndex(Agent agent, bool addIfNotFollowing = true)
+    public int FindFollowerIndex(WorldObject agent, bool addIfNotFollowing = true)
     {
         int eater_index;
-        int eater_id = agent.id;
+        int eater_id = agent.ObjectId;
 
         if (followers == null) followers = new();
 
         for (eater_index = 0; eater_index < numFollowers; eater_index++)
         {
-            if (eater_id == followers[eater_index].id)
+            if (eater_id == followers[eater_index].ObjectId)
             {
                 break;
             }
@@ -156,7 +154,7 @@ public class BreadcrumbTrail : MonoBehaviour
         return eater_index;
     }
 
-    public Crumb GetNextCrumb(Agent agent)
+    public Crumb GetNextCrumb(WorldObject agent)
     {
         int eater_index;
         int crumb_index;
@@ -171,11 +169,11 @@ public class BreadcrumbTrail : MonoBehaviour
         Crumb leader_pos_crumb = new()
         {
             valid = true,
-            pos2 = new(leader.pos2.x, leader.pos2.y),
-            height = leader.height,
-            yawDeg = leader.yawDeg
+            pos2 = new(leader.locationModule.pos2.x, leader.locationModule.pos2.y),
+            height = leader.locationModule.height,
+            yawDeg = leader.locationModule.yawDeg
         };
-        agent.next_actualCrumb = leader_pos_crumb; // default to leader position if no crumbs
+        agent.agentMovementModule.next_actualCrumb = leader_pos_crumb; // default to leader position if no crumbs
         //return agent.next_actualCrumb;
         
 
@@ -190,7 +188,7 @@ public class BreadcrumbTrail : MonoBehaviour
             if (crumbs[crumb_index].whichFollowersArrived == null)
                 crumbs[crumb_index].whichFollowersArrived = new();
 
-            agent.next_actualCrumb = crumbs[crumb_index];
+            agent.agentMovementModule.next_actualCrumb = crumbs[crumb_index];
 
             if (!crumbs[crumb_index].whichFollowersArrived.Contains(eater_index))
             {
@@ -214,7 +212,7 @@ public class BreadcrumbTrail : MonoBehaviour
                     crumbs.RemoveAt(crumb_index);
                 }
                 // return that position
-                return agent.next_actualCrumb;
+                return agent.agentMovementModule.next_actualCrumb;
             }
         }
         return invalid_crumb;   // did not find an uneaten crumb.

@@ -1,7 +1,10 @@
 using UnityEngine;
 
-[DisallowMultipleComponent]
-public class StatusModule : WorldModule
+namespace DogGame.Modules
 {
+    [DisallowMultipleComponent]
+    public class StatusModule : WorldModule
+    {
 
+    }
 }

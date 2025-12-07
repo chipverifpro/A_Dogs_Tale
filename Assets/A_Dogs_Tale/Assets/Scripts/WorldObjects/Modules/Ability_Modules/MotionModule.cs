@@ -17,7 +17,7 @@ Typical responsibilities:
 MotionModule is the motor.
 */
 
-namespace DogGame.AI
+namespace DogGame.Modules
 {
     /// <summary>
     /// Lowest-level movement: applies velocity and rotation to the agent's body.
@@ -137,16 +137,73 @@ namespace DogGame.AI
         }
 
         /// <summary>
+        /// Clear any motion-related cached state (e.g., gravity / vertical speed).
+        /// Call this after teleporting or hard-resetting the agent.
+        /// 
+        /// Since we only manage vertical velocity in this module,
+        /// ResetMotion() is the same as ResetVerticalVelocity()
+        /// </summary>
+        public void ResetMotion()
+        {
+            // Stop any vertical movement (no more falling from previous position)
+            verticalVelocity = Vector3.zero;
+
+            // If you later add cached horizontal velocity here, clear it too.
+            // e.g. currentHorizontalVelocity = Vector3.zero;
+
+            // We do NOT change position or rotation here; Teleport already did that.
+        }
+
+
+        // ===== Teleport family of commands =====
+
+        /// <summary>
         /// Convenience: instantly teleport the body to a new position without any velocity.
         /// Useful for respawns, teleports, etc.
         /// </summary>
-        public void Teleport(Vector3 worldPosition)
+        public void Teleport(Vector3 worldPosition, bool resetMotion = true)
         {
             if (bodyRoot == null)
                 return;
 
             bodyRoot.position = worldPosition;
-            verticalVelocity = Vector3.zero;
+            if (resetMotion)
+            {
+                ResetMotion();
+                worldObject.agentMovementModule?.ClearDesiredMove();
+            }
         }
+
+        // teleport with full control of rotation and angle.
+        public void Teleport(Vector3 worldPosition, Quaternion worldRotation, bool resetMotion = true)
+        {
+            transform.SetPositionAndRotation(worldPosition, worldRotation);
+
+            if (resetMotion)
+            {
+                ResetMotion();
+                worldObject.agentMovementModule?.ClearDesiredMove();
+            }
+        }
+
+        // only uses rotation around vertical axis.
+        public void TeleportUpright(Vector3 position, Quaternion rotation, bool resetMotion = true)
+        {
+            rotation = Quaternion.FromToRotation(rotation * Vector3.up, Vector3.up) * rotation;
+            Teleport(position, rotation, resetMotion);
+        }
+
+        // if ground is tilted, we might want to do this...
+        public void TeleportAlignToGround(Vector3 position, Vector3 groundNormal, float extraYaw = 0f, bool resetMotion = true)
+        {
+            // Create rotation aligned to surface normal
+            Quaternion align = Quaternion.FromToRotation(Vector3.up, groundNormal);
+
+            // Add optional yaw (turning left/right relative to ground plane)
+            Quaternion finalRotation = Quaternion.Euler(0, extraYaw, 0) * align;
+
+            Teleport(position, finalRotation, resetMotion);
+        }
+
     }
 }

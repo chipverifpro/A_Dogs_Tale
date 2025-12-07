@@ -2,11 +2,14 @@ using UnityEngine;
 
 // ----- ABSTRACT BASE CLASS -----
 
-public abstract class QuestModuleBase : WorldModule
+namespace DogGame.Modules
 {
-    public override void Tick(float deltaTime)
+    public abstract class QuestModuleBase : WorldModule
     {
-        Debug.Log($"QuestModuleBase {worldObject.DisplayName}: Tick {deltaTime}");
-    }
+        public override void Tick(float deltaTime)
+        {
+            Debug.Log($"QuestModuleBase {worldObject.DisplayName}: Tick {deltaTime}");
+        }
 
+    }
 }

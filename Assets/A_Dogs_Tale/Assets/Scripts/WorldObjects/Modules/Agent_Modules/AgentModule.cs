@@ -3,7 +3,7 @@ using System.Linq;
 
 // ----- ABSTRACT BASE CLASS -----
 
-namespace DogGame.AI
+namespace DogGame.Modules
 {
     [RequireComponent(typeof(AgentMovementModule))]
     [RequireComponent(typeof(AgentSensesModule))]
