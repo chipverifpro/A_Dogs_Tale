@@ -15,8 +15,9 @@ namespace DogGame.Modules
         public override AgentDecisionType DecisionType => AgentDecisionType.Player;
 
         //[SerializeField] private NewInputAdapter inputAdapter;
-        [SerializeField] private PlayerInputState inputState;   // a pointer, not a local copy
-        private GameInputRouter inputRouter;
+        private PlayerInputState inputState;   // a pointer, not a local copy
+        private GameInputRouter gameInputRouter;
+
         [Header("Movement")]
         [SerializeField] private float moveSpeed = 3.5f;
         [SerializeField] private float rotateSpeed = 720f;
@@ -28,6 +29,34 @@ namespace DogGame.Modules
         // CameraControllerBase = your own interface / script that handles zoom + view switching
 
         //[SerializeField] private AgentMovementModule agentMovementModule;
+    
+    private void Start()
+    {
+        if (gameInputRouter == null)
+        {
+            gameInputRouter = GameInputRouter.Instance;
+            if (gameInputRouter == null)
+            {
+                Debug.LogError("[PlayerDecisionModule] No GameInputRouter in scene.", this);
+                enabled = false;
+                return;
+            }
+
+            if (inputState == null)
+                inputState = gameInputRouter.InputState;  // keep a reference, not a copy
+            
+            if (inputState == null)
+            {
+                Debug.LogError($"[PlayerDecisionModule {worldObject.DisplayName}] inputState is null.", this);
+            }
+
+        }
+
+        if (gameInputRouter.InputState == null)
+        {
+            Debug.LogError($"[PlayerInputStateDebugger] gameInputRouter.InputState is null.", this);
+        }
+    }
 
         public override void Initialize(AgentModule agent)
         {
@@ -36,15 +65,16 @@ namespace DogGame.Modules
             //if (inputAdapter == null)
             //    inputAdapter = FindFirstObjectByType<NewInputAdapter>();
 
-            inputRouter = GameInputRouter.Instance;
-            if (inputRouter == null)
+            gameInputRouter = GameInputRouter.Instance;
+            if (gameInputRouter == null)
             {
                 Debug.LogError("[PlayerDecisionModule] No GameInputRouter in scene.", this);
                 enabled = false;
                 return;
             }
 
-            inputState = inputRouter.InputState;  // keep a reference, not a copy
+            if (inputState == null)
+                inputState = gameInputRouter.InputState;  // keep a reference, not a copy
             
             if (inputState == null)
             {
@@ -69,24 +99,33 @@ namespace DogGame.Modules
         public override void Tick(float deltaTime)
         {
             //Debug.Log($"PlayerDecisionModule {worldObject.DisplayName}: Tick {deltaTime}");
-            if (inputRouter == null)
+            if (gameInputRouter == null)
+            {
+                Debug.LogWarning("Tick: gameInputRouter == null");
                 return;
+            }
 
             // Only act if THIS worldObject is the one currently controlled
-            if (!inputRouter.IsControlled(worldObject))
+            if (!gameInputRouter.IsControlled(worldObject))
+            {
+                Debug.LogWarning("Tick: IsControlled == false");
                 return;
+            }
 
             if (inputState == null)
+            {
+                Debug.LogWarning("Tick: inputState == null");
                 return;
-                
-            PlayerInputState state = inputState;
+            }
 
-            HandleCamera(state, deltaTime);
-            HandleOneShotActions(state);
-            HandleAgentSwitchingAndFormation(state);
+            //Debug.Log($"PlayerDecisionModule: ready to process inputState");
 
-            HandleMovement(state, deltaTime);
-            HandleInteraction(state, deltaTime);
+            HandleCamera(inputState, deltaTime);
+            HandleOneShotActions(inputState);
+            HandleAgentSwitchingAndFormation(inputState);
+
+            HandleMovement(inputState, deltaTime);
+            HandleInteraction(inputState, deltaTime);
         }
 
         #region Camera

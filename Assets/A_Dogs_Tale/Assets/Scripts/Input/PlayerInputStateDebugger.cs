@@ -6,14 +6,14 @@ public class PlayerInputStateDebugger : MonoBehaviour
     //[SerializeField] private NewInputAdapter inputAdapter;
     public bool enableDebugLogging = false;
     //[SerializeField] private PlayerInputState inputState;   // a pointer, not a local copy
-    private GameInputRouter inputRouter;
+    private GameInputRouter gameInputRouter;
     
     private void Start()
     {
-        if (inputRouter == null)
+        if (gameInputRouter == null)
         {
-            inputRouter = GameInputRouter.Instance;
-            if (inputRouter == null)
+            gameInputRouter = GameInputRouter.Instance;
+            if (gameInputRouter == null)
             {
                 Debug.LogError("[PlayerDecisionModule] No GameInputRouter in scene.", this);
                 enabled = false;
@@ -21,9 +21,9 @@ public class PlayerInputStateDebugger : MonoBehaviour
             }
         }
 
-        if (inputRouter.InputState == null)
+        if (gameInputRouter.InputState == null)
         {
-            Debug.LogError($"[PlayerInputStateDebugger] inputRouter.InputState is null.", this);
+            Debug.LogError($"[PlayerInputStateDebugger] gameInputRouter.InputState is null.", this);
         }
     }
 
@@ -35,39 +35,39 @@ public class PlayerInputStateDebugger : MonoBehaviour
         if (Time.frameCount % 500 == 0)
             Debug.Log($"[PlayerInputStateDebugger] monitor running... {Time.frameCount}");
 
-        if (inputRouter.InputState == null)
+        if (gameInputRouter.InputState == null)
         {
             Debug.LogWarning("[PlayerInputStateDebugger] InputState is null on NewInputAdapter.", this);
             return;
         }
 
-        if (inputRouter.InputState.moveAxis != new Vector2(0f, 0f))
-            Debug.Log($"Move={inputRouter.InputState.moveAxis}");
-        if (inputRouter.InputState.zoomDelta != 0f)
-            Debug.Log($"Zoom={inputRouter.InputState.zoomDelta:F2}");
-        if (inputRouter.InputState.cameraViewSelect != CameraModes.Unchanged)
-            Debug.Log($"Camera={inputRouter.InputState.cameraViewSelect}");
-        if (inputRouter.InputState.barkPressed)
+        if (gameInputRouter.InputState.moveAxis != new Vector2(0f, 0f))
+            Debug.Log($"Move={gameInputRouter.InputState.moveAxis}");
+        if (gameInputRouter.InputState.zoomDelta != 0f)
+            Debug.Log($"Zoom={gameInputRouter.InputState.zoomDelta:F2}");
+        if (gameInputRouter.InputState.cameraViewSelect != CameraModes.Unchanged)
+            Debug.Log($"Camera={gameInputRouter.InputState.cameraViewSelect}");
+        if (gameInputRouter.InputState.barkPressed)
             Debug.Log($"Bark");
-        if (inputRouter.InputState.markTerritoryPressed)
+        if (gameInputRouter.InputState.markTerritoryPressed)
             Debug.Log($"MarkTerritory");
-        if (inputRouter.InputState.changeFormationPressed)
+        if (gameInputRouter.InputState.changeFormationPressed)
             Debug.Log($"Formation Change");
-        if (inputRouter.InputState.interactPressed)
+        if (gameInputRouter.InputState.interactPressed)
             Debug.Log($"Interract");
-        if (inputRouter.InputState.selectObjectPressed)
-            Debug.Log($"SelectObject location={inputRouter.InputState.clickTargetLocationWorld}");
-        if (inputRouter.InputState.hasClickTargetWorldObject)
-            Debug.Log($"SelectObject name={inputRouter.InputState.clickTargetWorldObject.DisplayName}");
+        if (gameInputRouter.InputState.selectObjectPressed)
+            Debug.Log($"SelectObject location={gameInputRouter.InputState.clickTargetLocationWorld}");
+        if (gameInputRouter.InputState.hasClickTargetWorldObject)
+            Debug.Log($"SelectObject name={gameInputRouter.InputState.clickTargetWorldObject.DisplayName}");
 
-        if (inputRouter.InputState.anyKeyOrButtonDown)
+        if (gameInputRouter.InputState.anyKeyOrButtonDown)
             Debug.Log($"AnyKey");
         
-        if (inputRouter.InputState.requestedPlayerAgentDelta != 0)
+        if (gameInputRouter.InputState.requestedPlayerAgentDelta != 0)
         {
-            Debug.Log($"PlayerAgentDelta={inputRouter.InputState.requestedPlayerAgentDelta}");
+            Debug.Log($"PlayerAgentDelta={gameInputRouter.InputState.requestedPlayerAgentDelta}");
             // Note: Index below is just an example of potential usage.  Only use Delta.
-            Debug.Log($"PlayerAgentIndex={inputRouter.InputState.requestedPlayerAgentIndex}");
+            Debug.Log($"PlayerAgentIndex={gameInputRouter.InputState.requestedPlayerAgentIndex}");
         }
     }
 }
