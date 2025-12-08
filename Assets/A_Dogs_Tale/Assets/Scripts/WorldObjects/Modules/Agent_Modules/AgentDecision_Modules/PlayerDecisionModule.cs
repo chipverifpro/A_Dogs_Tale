@@ -14,9 +14,9 @@ namespace DogGame.Modules
         //    private IPlayerInputSource inputSource;
         public override AgentDecisionType DecisionType => AgentDecisionType.Player;
 
-        [SerializeField] private NewInputAdapter inputAdapter;
-        [SerializeField] private PlayerInputState inputState;
-
+        //[SerializeField] private NewInputAdapter inputAdapter;
+        [SerializeField] private PlayerInputState inputState;   // a pointer, not a local copy
+        private GameInputRouter inputRouter;
         [Header("Movement")]
         [SerializeField] private float moveSpeed = 3.5f;
         [SerializeField] private float rotateSpeed = 720f;
@@ -33,10 +33,23 @@ namespace DogGame.Modules
         {
             base.Initialize(agent);
 
-            if (inputAdapter == null)
-                inputAdapter = FindFirstObjectByType<NewInputAdapter>();
+            //if (inputAdapter == null)
+            //    inputAdapter = FindFirstObjectByType<NewInputAdapter>();
 
-            inputState = inputAdapter.InputState;
+            inputRouter = GameInputRouter.Instance;
+            if (inputRouter == null)
+            {
+                Debug.LogError("[PlayerDecisionModule] No GameInputRouter in scene.", this);
+                enabled = false;
+                return;
+            }
+
+            inputState = inputRouter.InputState;  // keep a reference, not a copy
+            
+            if (inputState == null)
+            {
+                Debug.LogError($"[PlayerDecisionModule {worldObject.DisplayName}] inputState is null.", this);
+            }
 
             if (worldObject.agentMovementModule == null)
             {
@@ -56,7 +69,16 @@ namespace DogGame.Modules
         public override void Tick(float deltaTime)
         {
             //Debug.Log($"PlayerDecisionModule {worldObject.DisplayName}: Tick {deltaTime}");
+            if (inputRouter == null)
+                return;
 
+            // Only act if THIS worldObject is the one currently controlled
+            if (!inputRouter.IsControlled(worldObject))
+                return;
+
+            if (inputState == null)
+                return;
+                
             PlayerInputState state = inputState;
 
             HandleCamera(state, deltaTime);

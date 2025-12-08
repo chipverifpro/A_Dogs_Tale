@@ -12,15 +12,16 @@ public class NewInputAdapter : MonoBehaviour
 {
     [Header("Input System")]
     [SerializeField] private PlayerInput playerInput;
+    public GameInputRouter gameInputRouter;
 
-    // This is your game-side state container
+    // This is your game-side state container (a C# class, so will not show in Unity Editor)
     [Header("Adapter Output")]
-    [SerializeField] private PlayerInputState playerInputState;
+    private PlayerInputState playerInputState;
 
     // Public read-only accessor so other scripts (and debugger) can use it
     public PlayerInputState InputState => playerInputState;
 
-    private DogInputActions inputActions;
+    //private DogInputActions inputActions;
 
     [Header("Action Names (must match your InputAction asset)")]
     [SerializeField] private string moveActionName            = "Move";
@@ -52,35 +53,74 @@ public class NewInputAdapter : MonoBehaviour
     private InputAction cameraViewAction;
     private InputAction nextAgentAction;
 
-
+    private CameraModes cameraMode = CameraModes.Perspective;
+    private int prevPlayerAgentIndex = 1;
+    
     private void Awake()
     {
         // Ensure we have the PlayerInput component
         if (playerInput == null)
             playerInput = GetComponent<PlayerInput>();
-
-        // Create the state instance if not already assigned
-        if (playerInputState == null)
+        
+        if (playerInput == null)
         {
-            playerInputState = new PlayerInputState();
-            Debug.Log("[NewInputAdapter] Created new PlayerInputState instance.", this);
+            Debug.LogError("[NewInputAdapter] Missing PlayerInput component.", this);
+            enabled = false;
         }
 
-        // Create & enable our generated actions wrapper
-        inputActions = new DogInputActions();
-        inputActions.Enable();
-
+        if (GameInputRouter.Instance == null)
+        {
+            Debug.LogError("[NewInputAdapter] No GameInputRouter in scene.", this);
+            enabled = false;
+            return;
+        }
+        
+        playerInputState = GameInputRouter.Instance.InputState;
+        
         CacheActions();
 
         Debug.Log("[NewInputAdapter] Awake: InputAdapter initialized.", this);
     }
 
-    private void OLD_Awake()
+    private void Start()
     {
         if (playerInput == null)
-            playerInput = GetComponent<PlayerInput>();
+            return;
 
-        CacheActions();
+        if (playerInput.actions == null)
+        {
+            Debug.LogError("[NewInputAdapter] PlayerInput has no Actions asset assigned.", this);
+            return;
+        }
+
+        var maps = playerInput.actions.actionMaps;
+        foreach (var m in maps)
+            m.Disable();
+
+        var gameplayMap = playerInput.actions.FindActionMap("Player", false);
+        if (gameplayMap == null)
+        {
+            Debug.LogError("[NewInputAdapter] Could not find 'Player' action map in actions asset.", this);
+            return;
+        }
+
+        gameplayMap.Enable();
+
+        if (gameInputRouter == null)
+        {
+            gameInputRouter = GameInputRouter.Instance;
+            if (gameInputRouter == null)
+            {
+                Debug.LogError("[PlayerDecisionModule] No GameInputRouter in scene.", this);
+                enabled = false;
+                return;
+            }
+        }
+
+        if (gameInputRouter.InputState == null)
+        {
+            Debug.LogError($"[PlayerInputStateDebugger] gameInputRouter.InputState is null.", this);
+        }
     }
 
     private void OnEnable()
@@ -101,6 +141,8 @@ public class NewInputAdapter : MonoBehaviour
         var asset = playerInput.actions;
         // Use the currently active map; if none, let PlayerInput manage it.
         var map = playerInput.currentActionMap ?? asset.FindActionMap(playerInput.defaultActionMap, true);
+
+        if (map==null) Debug.LogError($"NewInputAdapter.CacheActions: map == null");
 
         moveAction            = FindAction(map, moveActionName);
         barkAction            = FindAction(map, barkActionName);
@@ -137,9 +179,9 @@ public class NewInputAdapter : MonoBehaviour
             playerInput.actions.Disable();
     }
 
-    private void Update_old()
+    private void Update()
     {
-        var state = new PlayerInputState();
+        var state = gameInputRouter.InputState;
 
         // --- Movement axis ---
         state.moveAxis = moveAction != null
@@ -158,28 +200,38 @@ public class NewInputAdapter : MonoBehaviour
         // cameraViewSelect:
         // By default, leave as "unchanged". If you have a dedicated action,
         // you can interpret its value here.
-        state.cameraViewSelect = CameraModes.Unchanged;
+        //state.cameraViewSelect = CameraModes.Unchanged;
         if (cameraViewAction != null && cameraViewAction.triggered)
         {
             // Example: if cameraViewAction is a cycle-next-view button,
             // you might have another system interpret this trigger.
             // For now we just flag that a change was requested:
-            if (state.cameraViewSelect == CameraModes.FP)
-                state.cameraViewSelect = CameraModes.Overhead;
-            else if (state.cameraViewSelect == CameraModes.Overhead)
-                state.cameraViewSelect = CameraModes.Perspective;
-            else if (state.cameraViewSelect == CameraModes.Perspective)
-                state.cameraViewSelect = CameraModes.FP;
+            if (cameraMode == CameraModes.FP)
+                cameraMode = CameraModes.Overhead;
+            else if (cameraMode == CameraModes.Overhead)
+                cameraMode = CameraModes.Perspective;
+            else if (cameraMode == CameraModes.Perspective)
+                cameraMode = CameraModes.FP;
+            else cameraMode = CameraModes.FP;
+            
+            state.cameraViewSelect = cameraMode;
+        } else
+        {
+            state.cameraViewSelect = CameraModes.Unchanged;
         }
 
         // --- Player/pack changes ---
+        state.requestedPlayerAgentDelta = 0;
         // If you have a "next agent" action, you can treat this as "please change":
-        state.requestedPlayerAgentIndex = -1; // -1 = no change
+        //state.requestedPlayerAgentDelta = +1 / -1
+        //state.requestedPlayerAgentIndex = example accumulator
         if (nextAgentAction != null && nextAgentAction.triggered)
         {
+            state.requestedPlayerAgentDelta = (int)nextAgentAction.ReadValue<float>();
             // Let your pack/party manager decide what index this means.
             // Here we just signal "some change" with 0 as a placeholder.
-            state.requestedPlayerAgentIndex = 0;
+            prevPlayerAgentIndex += state.requestedPlayerAgentDelta;
+            state.requestedPlayerAgentIndex = prevPlayerAgentIndex;
         }
 
         state.changeFormationPressed = changeFormationAction != null && changeFormationAction.triggered;
@@ -221,25 +273,16 @@ public class NewInputAdapter : MonoBehaviour
 
         // Commit snapshot
         CurrentState = state;
-
-        bool enableDebugLogging=true;
-        if (enableDebugLogging && Time.frameCount % 15 == 0)
-            {
-                Debug.Log(
-                    $"[NewInputAdapter] " +
-                    $"Move={state.moveAxis} Zoom={state.zoomDelta:F2} " +
-                    $"MarkTerritory={state.markTerritoryPressed} BarkDown={state.barkPressed}",
-                    this);
-            }
     }
 
+/*
     private void Update()
     {
-        if (inputActions == null || playerInputState == null)
+        if (playerInput.actions == null || playerInputState == null)
             return;
 
         // Use your actual map name: Player or Gameplay
-        var map = inputActions.Player;
+        var map = playerInput.actions;
 
         Vector2 moveVector = map.Move.ReadValue<Vector2>();
         float zoomAxis     = map.Zoom.ReadValue<float>();
@@ -266,6 +309,7 @@ public class NewInputAdapter : MonoBehaviour
                 this);
         }
     }
+*/
 
     private bool IsPointerOverUI()
     {

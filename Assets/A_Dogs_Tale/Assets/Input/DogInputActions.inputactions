@@ -125,12 +125,12 @@
                 },
                 {
                     "name": "NextAgent",
-                    "type": "Button",
+                    "type": "Value",
                     "id": "0f7f7fc3-8abc-4975-a225-2fa1e201c7ab",
-                    "expectedControlType": "",
+                    "expectedControlType": "Integer",
                     "processors": "",
                     "interactions": "",
-                    "initialStateCheck": false
+                    "initialStateCheck": true
                 }
             ],
             "bindings": [
@@ -575,15 +575,37 @@
                     "isPartOfComposite": false
                 },
                 {
-                    "name": "",
-                    "id": "a74b9dc9-f889-4d8a-9b83-682552b124b8",
-                    "path": "<Keyboard>/tab",
+                    "name": "1D Axis",
+                    "id": "3d8641b0-f053-4abb-8b43-389a9d8aee22",
+                    "path": "1DAxis",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "NextAgent",
+                    "isComposite": true,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "negative",
+                    "id": "51321b1e-33e6-4c7f-a000-63b6669053f8",
+                    "path": "<Keyboard>/minus",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
                     "action": "NextAgent",
                     "isComposite": false,
-                    "isPartOfComposite": false
+                    "isPartOfComposite": true
+                },
+                {
+                    "name": "positive",
+                    "id": "e274ab9a-cfb8-4c92-973d-b696677048cd",
+                    "path": "<Keyboard>/equals",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "NextAgent",
+                    "isComposite": false,
+                    "isPartOfComposite": true
                 }
             ]
         },

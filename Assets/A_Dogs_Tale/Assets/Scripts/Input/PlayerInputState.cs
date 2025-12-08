@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class PlayerInputState : MonoBehaviour
+public class PlayerInputState
 {
     public Vector2 moveAxis;                    // float vector direction and speed (-1.0 to 1.0)
 

@@ -22,7 +22,7 @@ namespace DogGame.Modules
 
     public override void Tick(float deltaTime)
     {
-        Debug.Log($"WanderDecisionModule {worldObject.DisplayName}: Tick {deltaTime}");
+        //Debug.Log($"WanderDecisionModule {worldObject.DisplayName}: Tick {deltaTime}");
 
         if (worldObject.agentMovementModule == null)
         {
