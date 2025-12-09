@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using UnityEngine.EventSystems; // to ignore UI clicks
 
@@ -117,7 +118,10 @@ public partial class Player : MonoBehaviour
             if (durationMouseDown < 0.2f)
             {
                 //UpdateMouseClick(initialDownEvent, lastPos); // short press = click
-                UpdateMouseClick(lastPos); // short press = click
+                //UpdateMouseClick(lastPos); // short press = click
+                Vector3 ?worldPos = getWorldPointFromRaycast(lastPos);
+                if (worldPos != null)
+                    RouteLeaderAgentToPosition((Vector3)worldPos); // legacy agent movement
             }
             return; // ok to return here
         }
@@ -159,16 +163,17 @@ public partial class Player : MonoBehaviour
         }
     }
 
-    void UpdateMouseClick(Vector3 screenPosition)
+    // takes in a screen position, returns a world position (Y is height), or null if no hit.
+    Vector3 ?getWorldPointFromRaycast(Vector3 screenPosition)
     {
         // Ignore if pointer is over UI
         if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject())
-            return;
+            return null;
 
         if (Camera.main == null)
         {
             Debug.LogWarning("No Camera.main set; cannot raycast click.");
-            return;
+            return null;
         }
 
         // Raycast to ground
@@ -179,7 +184,7 @@ public partial class Player : MonoBehaviour
             // Optional: debug to see where you clicked
             Debug.DrawRay(ray.origin, ray.direction * 10f, Color.red, 0.25f);
             // Debug.Log("Click raycast missed ground.");
-            return;
+            return null;
         }
 
         // Convert world → cell
@@ -191,7 +196,7 @@ public partial class Player : MonoBehaviour
 
         // Bounds check
         if (cx < 0 || cz < 0 || cx >= gen.cfg.mapWidth || cz >= gen.cfg.mapHeight)
-            return;
+            return null;
 
         // Cell center (X,Z)
         float centerX = origin.x + (cx + 0.5f) * cellSize;
@@ -203,12 +208,17 @@ public partial class Player : MonoBehaviour
             y = SampleTiltedFloorY(new Vector2(centerX, centerZ), gen.cellGrid);
 
         Vector3 dest = new Vector3(centerX, y, centerZ);
+        return dest;    // successful
+    }
 
+    void RouteLeaderAgentToPosition(Vector3 dest)
+    {
         // Route the leader
+
         var crumb = new Crumb
         {
-            pos2 = new(centerX, centerZ),
-            height = y,
+            pos2 = new(dest.x, dest.z),
+            height = dest.y,
             valid = true
         };
         //Vector2 crumbpos2 = crumb.pos2;
@@ -218,9 +228,9 @@ public partial class Player : MonoBehaviour
         agent.next_formationCrumb = crumb;
         leaderTravelling = true;
 
-        Debug.DrawLine(Camera.main.transform.position, hit.point, Color.cyan, 0.25f);
-        Debug.DrawRay(dest, Vector3.up * 1.5f, Color.yellow, 0.5f);
-        Debug.Log($"Clicked cell: ({cx},{cz}) world: {dest}");
+        //Debug.DrawLine(Camera.main.transform.position, hit.point, Color.cyan, 0.25f);
+        //Debug.DrawRay(dest, Vector3.up * 1.5f, Color.yellow, 0.5f);
+        Debug.Log($"Clicked cell: ({Mathf.FloorToInt(dest.x)},{Mathf.FloorToInt(dest.z)}) world: {dest}");
     }
 
 
@@ -278,23 +288,25 @@ public partial class Player : MonoBehaviour
 
     private void Update_Selectable()
     {
-        HandleSelectionClick();
-        CheckSelectionDistance();
+        WorldObject wo;
+        wo = GetWorldObjectFromRaycast(Input.mousePosition);
+        CheckSelectionDistance(wo);
     }
 
-    private void HandleSelectionClick()
+    public WorldObject GetWorldObjectFromRaycast(Vector3 screenPosition)
     {
         // Shift + Left Click
-        bool shift =
-            Input.GetKey(KeyCode.LeftShift) ||
-            Input.GetKey(KeyCode.RightShift);
+    //    bool shift =
+    //        Input.GetKey(KeyCode.LeftShift) ||
+    //        Input.GetKey(KeyCode.RightShift);
+    //
+    //    if (!shift) return;
+    //    if (!Input.GetMouseButtonDown(0)) return;
+    //
+        if (mainCamera == null) return null;
 
-        if (!shift) return;
-        if (!Input.GetMouseButtonDown(0)) return;
-
-        if (mainCamera == null) return;
-
-        Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
+        //Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
+        Ray ray = mainCamera.ScreenPointToRay(screenPosition);
 
         if (Physics.Raycast(ray, out RaycastHit hit, 1000f, selectableMask, QueryTriggerInteraction.Ignore))
         {
@@ -304,31 +316,21 @@ public partial class Player : MonoBehaviour
             {
                 // Clicked something that isn't a WorldObject; treat as deselect
                 Deselect();
-                return;
+                return null;
             }
 
-            // Distance check from player to object
-            if (playerTransform != null)
-            {
-                float dist = Vector3.Distance(playerTransform.position, wo.transform.position);
-                if (dist > MaxSelectDistanceWorld)
-                {
-                    // Too far to select
-                    // Debug.Log($"Object {wo.DisplayName} is too far to select ({dist:F1}m).");
-                    return;
-                }
-            }
-
-            Select(wo);
+            //Select(wo);
+            return wo;
         }
         else
         {
             // Clicked empty space; optional: deselect
-            Deselect();
+            //Deselect();
+            return null;
         }
     }
 
-    private void CheckSelectionDistance()
+    private void CheckSelectionDistance(WorldObject currentSelection)
     {
         if (currentSelection == null || playerTransform == null)
             return;

@@ -6012,6 +6012,7 @@ GameObject:
   - component: {fileID: 942637345}
   - component: {fileID: 942637346}
   - component: {fileID: 942637347}
+  - component: {fileID: 942637348}
   m_Layer: 0
   m_Name: Input
   m_TagString: Untagged
@@ -6046,7 +6047,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 386fd5f90ca914698a256c30abcc9bd3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NewInputAdapter
-  playerInput: {fileID: 0}
+  dir: {fileID: 1920128612}
+  convertScreenToWorld: {fileID: 942637348}
+  playerInput: {fileID: 942637345}
+  gameInputRouter: {fileID: 942637346}
   moveActionName: Move
   barkActionName: Bark
   markTerritoryActionName: MarkTerritory
@@ -6113,8 +6117,43 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1e78d91e83aa94adfbc924e585763877, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerInputStateDebugger
-  inputAdapter: {fileID: 0}
-  enableDebugLogging: 1
+  enableDebugLogging: 0
+--- !u!114 &942637348
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 942637342}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b3e200191d81546538b67c4d5f2ed2f6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ConvertScreenToWorld
+  dir: {fileID: 1920128612}
+  mainCamera: {fileID: 1815589284}
+  origin: {x: 0, y: 0, z: 0}
+  cellSize: 1
+  maxSelectDistanceTiles: 5
+  FP_BlockingMask:
+    serializedVersion: 2
+    m_Bits: 0
+  Overhead_BlockingMask:
+    serializedVersion: 2
+    m_Bits: 0
+  navigationMask:
+    serializedVersion: 2
+    m_Bits: 0
+  objectsMask:
+    serializedVersion: 2
+    m_Bits: 0
+  rayMaxDistance: 200
+  screenPos: {x: 0, y: 0, z: 0}
+  mapWorldPos_valid: 0
+  mapWorldPosCenter: {x: 0, y: 0, z: 0}
+  mapWorldPos: {x: 0, y: 0, z: 0}
+  targetedWorldObject_valid: 0
+  targetedWorldObject: {fileID: 0}
 --- !u!1 &976222952
 GameObject:
   m_ObjectHideFlags: 0

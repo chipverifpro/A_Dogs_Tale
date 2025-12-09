@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.Controls;
 using UnityEngine.EventSystems;
+using UnityEditor;
 
 /// <summary>
 /// Bridges Unity's new Input System (PlayerInput + InputActions)
@@ -10,6 +11,11 @@ using UnityEngine.EventSystems;
 [RequireComponent(typeof(PlayerInput))]
 public class NewInputAdapter : MonoBehaviour
 {
+    [Header("References")]
+    public Directory dir;
+    public ConvertScreenToWorld convertScreenToWorld;  // move to directory
+
+        
     [Header("Input System")]
     [SerializeField] private PlayerInput playerInput;
     public GameInputRouter gameInputRouter;
@@ -183,21 +189,33 @@ public class NewInputAdapter : MonoBehaviour
     {
         var state = gameInputRouter.InputState;
 
+
         // --- Movement axis ---
         state.moveAxis = moveAction != null
             ? moveAction.ReadValue<Vector2>()
             : Vector2.zero;
 
+
         // --- One-shot commands (per-frame triggers) ---
         state.barkPressed = barkAction != null && barkAction.triggered;
         state.markTerritoryPressed = markTerritoryAction != null && markTerritoryAction.triggered;
 
-        // --- Camera commands ---
-        state.zoomDelta = zoomAction != null
-            ? zoomAction.ReadValue<float>()
-            : 0f;
 
-        // cameraViewSelect:
+        // --- Camera commands (zoom / change view) ---
+        if (IsMouseOverGameView())
+        {
+            state.zoomDelta = zoomAction != null
+                ? zoomAction.ReadValue<float>()
+                : 0f;    
+        }
+        else
+        {
+            // Ignore zoom while mouse is over Inspector/Console/etc.
+            state.zoomDelta = 0f;        
+        }
+
+
+        // --- Camera View Select ---
         // By default, leave as "unchanged". If you have a dedicated action,
         // you can interpret its value here.
         //state.cameraViewSelect = CameraModes.Unchanged;
@@ -205,7 +223,7 @@ public class NewInputAdapter : MonoBehaviour
         {
             // Example: if cameraViewAction is a cycle-next-view button,
             // you might have another system interpret this trigger.
-            // For now we just flag that a change was requested:
+            // Instead, we cycle it here, probably shouldn't do it here.
             if (cameraMode == CameraModes.FP)
                 cameraMode = CameraModes.Overhead;
             else if (cameraMode == CameraModes.Overhead)
@@ -220,32 +238,27 @@ public class NewInputAdapter : MonoBehaviour
             state.cameraViewSelect = CameraModes.Unchanged;
         }
 
-        // --- Player/pack changes ---
+
+        // --- Player change (next/previous) ---
         state.requestedPlayerAgentDelta = 0;
         // If you have a "next agent" action, you can treat this as "please change":
         //state.requestedPlayerAgentDelta = +1 / -1
-        //state.requestedPlayerAgentIndex = example accumulator
         if (nextAgentAction != null && nextAgentAction.triggered)
         {
             state.requestedPlayerAgentDelta = (int)nextAgentAction.ReadValue<float>();
             // Let your pack/party manager decide what index this means.
-            // Here we just signal "some change" with 0 as a placeholder.
-            prevPlayerAgentIndex += state.requestedPlayerAgentDelta;
-            state.requestedPlayerAgentIndex = prevPlayerAgentIndex;
+            // Note that I specified it as a float in the GUI, but actually need an integer, thus the cast.
+            // Here we just signal "+/- change" with 0 as no change.
+
+            // example usage:
+            //prevPlayerAgentIndex += state.requestedPlayerAgentDelta;
+            //state.requestedPlayerAgentIndex = prevPlayerAgentIndex;
         }
 
+
+        // --- Pack Formation change (next) ---
         state.changeFormationPressed = changeFormationAction != null && changeFormationAction.triggered;
 
-        // --- World & object targeting ---
-        // These are left for another system (raycaster / selection) to fill in.
-        state.interactPressed      = interactAction != null && interactAction.triggered;
-        state.selectObjectPressed  = selectObjectAction != null && selectObjectAction.triggered;
-
-        state.hasClickTargetLocationWorld = false;
-        state.clickTargetLocationWorld    = Vector3.zero;
-
-        state.hasClickTargetWorldObject   = false;
-        state.clickTargetWorldObject      = null;
 
         // --- Skip / any key-or-button ---
         bool anyKeyLogical = false;
@@ -268,52 +281,158 @@ public class NewInputAdapter : MonoBehaviour
                 }
             }
         }
-
         state.anyKeyOrButtonDown = anyKeyLogical;
 
-        // Commit snapshot
+
+        // --- State Modifiers (ie. Shift / RightMouse / TwoFingers / FaceButtonNorth) ---
+        UpdateModifiers(state);
+
+
+        // --- World & object targeting ---
+        if (TryGetMouseClickScreenPosition(out Vector2 screenPosition))
+        {
+            Vector3 screenPosition3 = new(screenPosition.x, screenPosition.y, 0);
+            Debug.Log($"TryGetMouseClickScreenPosition returned {screenPosition:0}");
+            // These are left for another system (raycaster / selection) to fill in.
+            state.interactPressed      = interactAction != null && interactAction.triggered;
+            state.selectObjectPressed  = selectObjectAction != null && selectObjectAction.triggered;
+
+            state.screenCoordinateClicked = screenPosition;
+
+            // (1) convert screen to world location and cell
+            Vector3 ?worldLocation = convertScreenToWorld.getWorldPointFromRaycast(screenPosition3);
+            if (worldLocation != null)
+            {
+                state.hasClickTargetLocationWorld = true;
+                state.clickTargetLocationWorld    = (Vector3)worldLocation;
+                state.clickTargetLocationCell     = convertScreenToWorld.ConvertWorldLocationToCell((Vector3)worldLocation);
+                Debug.Log($"Clicked on worldLocation {state.clickTargetLocationWorld} in cell at {state.clickTargetLocationCell}");
+            }
+            else
+            {
+                state.hasClickTargetLocationWorld = false;
+                state.clickTargetLocationWorld    = Vector3.zero;
+                state.clickTargetLocationCell     = null;
+            }
+
+            // (2) convert screen to targeted object
+            WorldObject worldObject = convertScreenToWorld.GetWorldObjectFromRaycast(screenPosition);
+            if (worldObject!=null)
+            {
+                // If we want to limit the selection distance...
+                // USE: bool CheckSelectionDistance(WorldObject currentSelection, WorldObject player)
+                // then, hasClick = returned value
+                state.hasClickTargetWorldObject   = true;
+                state.clickTargetWorldObject      = worldObject;
+                Debug.Log($"Clicked on worldObject {worldObject.name}");
+            }
+            else
+            {
+                state.hasClickTargetWorldObject   = false;
+                state.clickTargetWorldObject      = null;
+            }
+        }
+        // --- Commit snapshot ---
         CurrentState = state;
     }
 
-/*
-    private void Update()
+    public static bool TryGetMouseClickScreenPosition(out Vector2 screenPos)
     {
-        if (playerInput.actions == null || playerInputState == null)
-            return;
+        screenPos = default;
 
-        // Use your actual map name: Player or Gameplay
-        var map = playerInput.actions;
+        if (Mouse.current == null)
+            return false;
 
-        Vector2 moveVector = map.Move.ReadValue<Vector2>();
-        float zoomAxis     = map.Zoom.ReadValue<float>();
-        bool markTerritoryPressed   = map.MarkTerritory.WasPressedThisFrame();
-        bool barkPressed   = map.Bark.WasPressedThisFrame();
-
-        if (IsPointerOverUI())
+        if (Mouse.current.leftButton.wasPressedThisFrame ||
+            Mouse.current.rightButton.wasPressedThisFrame)
         {
-            // Ignore zoom while mouse is over Inspector/Console/etc.
-            zoomAxis = 0f;
+            screenPos = Mouse.current.position.ReadValue();
+            return true;
         }
-        // *** CRITICAL: write directly into the shared instance ***
-        playerInputState.moveAxis           = moveVector;
-        playerInputState.zoomDelta            = zoomAxis;
-        playerInputState.markTerritoryPressed = markTerritoryPressed;
-        playerInputState.barkPressed = barkPressed;
 
-        bool enableDebugLogging=false;
-        if (enableDebugLogging && Time.frameCount % 15 == 0)
+        if (Touchscreen.current != null &&
+            Touchscreen.current.primaryTouch.press.wasPressedThisFrame)
         {
-            Debug.Log(
-                $"[NewInputAdapter] Move={moveVector} Zoom={zoomAxis:F2} " +
-                $"MarkTerritory={markTerritoryPressed} Bark={barkPressed}",
-                this);
+            screenPos = Touchscreen.current.primaryTouch.position.ReadValue();
         }
+        return false;
     }
-*/
 
     private bool IsPointerOverUI()
     {
         return EventSystem.current != null 
             && EventSystem.current.IsPointerOverGameObject();
+    }
+
+    private bool IsMouseOverGameView()
+    {
+    #if UNITY_EDITOR
+        var w = UnityEditor.EditorWindow.mouseOverWindow;
+
+        // Not over any Unity window at all?
+        if (w == null)
+            return false;
+
+        // Game view type name is "GameView"
+        return w.GetType().Name == "GameView";
+    #else
+        // In a build, the only window is the game itself
+        return (Application.isFocused && !IsPointerOverUI());
+    #endif
+    }
+
+
+    private void UpdateModifiers(PlayerInputState state)
+    {
+        InputModifiers mods = InputModifiers.None;
+
+        // --- Keyboard checks ---
+        if (Keyboard.current != null)
+        {
+            if (Keyboard.current.shiftKey.isPressed)
+                mods |= InputModifiers.Shift;
+
+            if (Keyboard.current.ctrlKey.isPressed)
+                mods |= InputModifiers.Ctrl;
+
+            if (Keyboard.current.altKey.isPressed)
+                mods |= InputModifiers.Alt;
+
+#if UNITY_EDITOR_OSX || UNITY_STANDALONE_OSX
+            if (Keyboard.current.leftCommandKey.isPressed || Keyboard.current.rightCommandKey.isPressed)
+                mods |= InputModifiers.Command;
+#endif
+        }
+
+        // --- Mouse button checks ---
+        if (Mouse.current != null)
+        {
+            if (Mouse.current.leftButton.isPressed)
+                mods |= InputModifiers.LeftMouse;
+
+            if (Mouse.current.rightButton.isPressed)
+                mods |= InputModifiers.RightMouse;
+
+            if (Mouse.current.middleButton.isPressed)
+                mods |= InputModifiers.MiddleMouse;
+        }
+
+        // --- Touch checks ---
+        int activeTouches = 0;
+        if (Touchscreen.current != null)
+        {
+            foreach (var touch in Touchscreen.current.touches)
+            {
+                if (touch.isInProgress)
+                    activeTouches++;
+            }
+        }
+
+        if (activeTouches == 1) mods |= InputModifiers.OneFinger;
+        if (activeTouches == 2) mods |= InputModifiers.TwoFingers;
+        if (activeTouches == 3) mods |= InputModifiers.ThreeFingers;
+
+        // Assign
+        state.inputModifiers = mods;
     }
 }
