@@ -25,6 +25,7 @@ public partial class DungeonGenerator : MonoBehaviour
     {
         public int z;             // matched z (or clamped inside segment)
         public int roomId;        // representative room id in that column/segment
+        public int cellId;        // ADDED cell id
         public int segmentIndex;  // -1 if not a segment kind
         public bool isSegment;    // true when match came from a merged vertical segment
         public DirFlags walls;    // directions of detected walls
@@ -51,11 +52,13 @@ public partial class DungeonGenerator : MonoBehaviour
             // Single
             public int zSingle;
             public int roomIdSingle;
+            public int cellIdSingle;
 
             // SmallVec (sorted by z)
             public int smallCount;
             public int[] zInline;      // length SMALL_CAP
             public int[] roomInline;   // length SMALL_CAP
+            public int[] cellInline;
 
             // SegmentVec (sorted by zLo)
             public int segCount;
@@ -63,17 +66,22 @@ public partial class DungeonGenerator : MonoBehaviour
             public int[] zHi;          // length SEG_CAP
             // For each segment, track up to SEG_ROOM_CAP contributing roomIds (de-duplicated):
             public int[,] segRoomIds;      // [SEG_CAP, SEG_ROOM_CAP]
+            public int[,] segCellIds;
             public byte[] segRoomCounts;   // length SEG_CAP
+            public byte[] segCellCounts;
 
             public Column()
             {
                 kind = ColumnKind.Empty;
                 zInline = new int[SMALL_CAP];
                 roomInline = new int[SMALL_CAP];
+                cellInline = new int[SMALL_CAP];
                 zLo = new int[SEG_CAP];
                 zHi = new int[SEG_CAP];
                 segRoomIds = new int[SEG_CAP, SEG_ROOM_CAP];
+                segCellIds = new int[SEG_CAP, SEG_ROOM_CAP];
                 segRoomCounts = new byte[SEG_CAP];
+                segCellCounts = new byte[SEG_CAP];
             }
         }
 
@@ -113,10 +121,10 @@ public partial class DungeonGenerator : MonoBehaviour
             => (uint)x < (uint)w && (uint)y < (uint)h && x >= 0 && y >= 0;
 
         /// <summary>
-        /// Insert a single cell (x,y,z,roomId).
+        /// Insert a single cell (x,y,z,roomId,cellId).
         /// Call this for all cells before FinalizeColumns().
         /// </summary>
-        public void Insert(int x, int y, int z, int roomId)
+        public void Insert(int x, int y, int z, int roomId, int cellId)
         {
             if (!InBounds(x, y, width, height)) return;
             var c = cols[x, y];
@@ -126,6 +134,7 @@ public partial class DungeonGenerator : MonoBehaviour
                 c.kind = ColumnKind.Single;
                 c.zSingle = z;
                 c.roomIdSingle = roomId;
+                c.cellIdSingle = cellId;
                 return;
             }
 
@@ -142,13 +151,21 @@ public partial class DungeonGenerator : MonoBehaviour
                 c.smallCount = 2;
                 if (z < c.zSingle)
                 {
-                    c.zInline[0] = z; c.roomInline[0] = roomId;
-                    c.zInline[1] = c.zSingle; c.roomInline[1] = c.roomIdSingle;
+                    c.zInline[0] = z; 
+                    c.roomInline[0] = roomId;
+                    c.cellInline[0] = cellId;
+                    c.zInline[1] = c.zSingle; 
+                    c.roomInline[1] = c.roomIdSingle;
+                    c.cellInline[1] = c.cellIdSingle;
                 }
                 else
                 {
-                    c.zInline[0] = c.zSingle; c.roomInline[0] = c.roomIdSingle;
-                    c.zInline[1] = z; c.roomInline[1] = roomId;
+                    c.zInline[0] = c.zSingle; 
+                    c.roomInline[0] = c.roomIdSingle;
+                    c.cellInline[0] = c.cellIdSingle;
+                    c.zInline[1] = z; 
+                    c.roomInline[1] = roomId;
+                    c.cellInline[1] = cellId;
                 }
                 return;
             }
@@ -172,6 +189,7 @@ public partial class DungeonGenerator : MonoBehaviour
                     }
                     c.zInline[idx] = z;
                     c.roomInline[idx] = roomId;
+                    c.cellInline[idx] = cellId;
                     c.smallCount = n + 1;
                     return;
                 }
@@ -184,6 +202,7 @@ public partial class DungeonGenerator : MonoBehaviour
                 int replace = (Mathf.Abs(z - c.zInline[0]) > Mathf.Abs(z - c.zInline[n - 1])) ? 0 : n - 1;
                 c.zInline[replace] = z;
                 c.roomInline[replace] = roomId;
+                c.cellInline[replace] = cellId;
                 // Keep smallCount unchanged; Finalize will normalize/segment.
                 return;
             }
@@ -194,8 +213,8 @@ public partial class DungeonGenerator : MonoBehaviour
                 // Try to place into an existing segment immediately (fast path if already finalized)
                 int segIdx = LowerBound(c.zLo, c.segCount, z);
                 bool matched = false;
-                if (segIdx < c.segCount && z >= c.zLo[segIdx] && z <= c.zHi[segIdx]) { matched = true; AddRoomToSeg(c, segIdx, roomId); }
-                else if (segIdx > 0 && z >= c.zLo[segIdx - 1] && z <= c.zHi[segIdx - 1]) { matched = true; AddRoomToSeg(c, segIdx - 1, roomId); }
+                if (segIdx < c.segCount && z >= c.zLo[segIdx] && z <= c.zHi[segIdx]) { matched = true; AddRoomToSeg(c, segIdx, roomId, cellId); }
+                else if (segIdx > 0 && z >= c.zLo[segIdx - 1] && z <= c.zHi[segIdx - 1]) { matched = true; AddRoomToSeg(c, segIdx - 1, roomId, cellId); }
 
                 if (!matched)
                 {
@@ -212,14 +231,14 @@ public partial class DungeonGenerator : MonoBehaviour
                         }
                         c.zLo[segIdx] = z; c.zHi[segIdx] = z;
                         c.segRoomCounts[segIdx] = 0;
-                        AddRoomToSeg(c, segIdx, roomId);
+                        AddRoomToSeg(c, segIdx, roomId, cellId);
                         c.segCount++;
                     }
                     else
                     {
                         // Exhausted capacity; attach to closest segment by expanding it by 0 (no effect) and record room
                         int attach = Mathf.Clamp(segIdx, 0, c.segCount - 1);
-                        AddRoomToSeg(c, attach, roomId);
+                        AddRoomToSeg(c, attach, roomId, cellId);
                     }
                 }
             }
@@ -328,6 +347,7 @@ public partial class DungeonGenerator : MonoBehaviour
                         {
                             match.z = c.zSingle;
                             match.roomId = c.roomIdSingle;
+                            match.cellId = c.cellIdSingle;
                             match.segmentIndex = -1;
                             match.isSegment = false;
                             return true;
@@ -353,6 +373,7 @@ public partial class DungeonGenerator : MonoBehaviour
                         {
                             match.z = c.zInline[bestIdx];
                             match.roomId = c.roomInline[bestIdx];
+                            match.cellId = c.cellInline[bestIdx];
                             match.segmentIndex = -1;
                             match.isSegment = false;
                             return true;
@@ -370,6 +391,7 @@ public partial class DungeonGenerator : MonoBehaviour
                         {
                             match.z = Mathf.Clamp(z, c.zLo[i], c.zHi[i]);
                             match.roomId = (c.segRoomCounts[i] > 0) ? c.segRoomIds[i, 0] : -1;
+                            match.cellId = (c.segCellCounts[i] > 0) ? c.segCellIds[i, 0] : -1;
                             match.segmentIndex = i;
                             match.isSegment = true;
                             return true;
@@ -379,6 +401,7 @@ public partial class DungeonGenerator : MonoBehaviour
                             int j = i - 1;
                             match.z = Mathf.Clamp(z, c.zLo[j], c.zHi[j]);
                             match.roomId = (c.segRoomCounts[j] > 0) ? c.segRoomIds[j, 0] : -1;
+                            match.cellId = (c.segCellCounts[j] > 0) ? c.segCellIds[j, 0] : -1;
                             match.segmentIndex = j;
                             match.isSegment = true;
                             return true;
@@ -430,7 +453,7 @@ public partial class DungeonGenerator : MonoBehaviour
             {
                 //if (!In(c.x, c.y)) continue; // next line is equivalent.
                 if (c.x < 0 || c.y < 0 || c.x >= hf.Width || c.y >= hf.Height) continue;
-                hf.Insert(c.x, c.y, c.z, c.roomId);
+                hf.Insert(c.x, c.y, c.z, c.roomId, c.cellId);
             }
             hf.FinalizeColumns(minRoomHeight);
             return hf;
@@ -456,7 +479,7 @@ public partial class DungeonGenerator : MonoBehaviour
             if (count < dst.Length) dst[count++] = roomId;
         }
 
-        private static void AddRoomToSeg(Column c, int segIdx, int roomId)
+        private static void AddRoomToSeg(Column c, int segIdx, int roomId, int cellId)
         {
             int cnt = c.segRoomCounts[segIdx];
             for (int i = 0; i < cnt; ++i) if (c.segRoomIds[segIdx, i] == roomId) return;
