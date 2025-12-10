@@ -9,6 +9,7 @@ using UnityEditor;
 /// into a single PlayerInputState struct that the rest of the game can consume.
 /// </summary>
 [RequireComponent(typeof(PlayerInput))]
+[DefaultExecutionOrder(0)]
 public class NewInputAdapter : MonoBehaviour
 {
     [Header("References")]
@@ -77,7 +78,7 @@ public class NewInputAdapter : MonoBehaviour
         if (GameInputRouter.Instance == null)
         {
             Debug.LogError("[NewInputAdapter] No GameInputRouter in scene.", this);
-            enabled = false;
+            //enabled = false;
             return;
         }
         

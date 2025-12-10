@@ -1,5 +1,6 @@
 using UnityEngine;
 
+[DefaultExecutionOrder(-150)]
 public class GameInputRouter : MonoBehaviour
 {
     // Simple singleton pattern; you can make this fancier if you like

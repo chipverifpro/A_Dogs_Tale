@@ -10,7 +10,7 @@ public partial class DungeonGenerator : MonoBehaviour
     [Header("Ceiling Appearance")]
 
     [Tooltip("Tiny extra z-offset in grid units if you want ceilings slightly above nominal height.")]
-    public float ceilingZOffset = 0f;
+    public float ceilingZOffset = 20f;
 
     // If your ramp mesh "forward" is +Z, map directions to rotations:
     static readonly Vector2Int[] Dir4 = { new(0, 1), new(1, 0), new(0, -1), new(-1, 0) };
