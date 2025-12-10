@@ -13,7 +13,7 @@ public class NewInputAdapter : MonoBehaviour
 {
     [Header("References")]
     public Directory dir;
-    public ConvertScreenToWorld convertScreenToWorld;  // move to directory
+    //public ConvertScreenToWorld convertScreenToWorld;  // move to directory
 
         
     [Header("Input System")]
@@ -60,7 +60,7 @@ public class NewInputAdapter : MonoBehaviour
     private InputAction nextAgentAction;
 
     private CameraModes cameraMode = CameraModes.Perspective;
-    private int prevPlayerAgentIndex = 1;
+
     
     private void Awake()
     {
@@ -291,7 +291,7 @@ public class NewInputAdapter : MonoBehaviour
         // --- World & object targeting ---
         if (TryGetMouseClickScreenPosition(out Vector2 screenPosition))
         {
-            Vector3 screenPosition3 = new(screenPosition.x, screenPosition.y, 0);
+            Vector3 screenPosition3 = new(screenPosition.x, screenPosition.y, 0f);
             Debug.Log($"TryGetMouseClickScreenPosition returned {screenPosition:0}");
             // These are left for another system (raycaster / selection) to fill in.
             state.interactPressed      = interactAction != null && interactAction.triggered;
@@ -300,13 +300,16 @@ public class NewInputAdapter : MonoBehaviour
             state.screenCoordinateClicked = screenPosition;
 
             // (1) convert screen to world location and cell
-            Vector3 ?worldLocation = convertScreenToWorld.getWorldPointFromRaycast(screenPosition3);
+            Vector3 ?worldLocation = dir.convertScreenToWorld.getWorldPointFromRaycast(screenPosition3);
             if (worldLocation != null)
             {
                 state.hasClickTargetLocationWorld = true;
                 state.clickTargetLocationWorld    = (Vector3)worldLocation;
-                state.clickTargetLocationCell     = convertScreenToWorld.ConvertWorldLocationToCell((Vector3)worldLocation);
-                Debug.Log($"Clicked on worldLocation {state.clickTargetLocationWorld} in cell at {state.clickTargetLocationCell}");
+                state.clickTargetLocationCell     = dir.convertScreenToWorld.ConvertWorldLocationToCell((Vector3)worldLocation);
+                if (state.clickTargetLocationCell!=null)
+                    Debug.Log($"Clicked on worldLocation {state.clickTargetLocationWorld} in cell at {state.clickTargetLocationCell.pos3d_world}");
+                else
+                    Debug.Log($"Clicked on worldLocation {state.clickTargetLocationWorld} but cell is null");
             }
             else
             {
@@ -316,7 +319,7 @@ public class NewInputAdapter : MonoBehaviour
             }
 
             // (2) convert screen to targeted object
-            WorldObject worldObject = convertScreenToWorld.GetWorldObjectFromRaycast(screenPosition);
+            WorldObject worldObject = dir.convertScreenToWorld.GetWorldObjectFromRaycast(screenPosition);
             if (worldObject!=null)
             {
                 // If we want to limit the selection distance...

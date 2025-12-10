@@ -34,7 +34,7 @@ public class Directory : MonoBehaviour
     public PackFormations packFormations;
     public ScentAirGround scents;
     public ScentRegistry scentRegistry;
-
+    public ConvertScreenToWorld convertScreenToWorld;
 
     [Header("Game Camearas")]
     public CinemachineBrain brain;

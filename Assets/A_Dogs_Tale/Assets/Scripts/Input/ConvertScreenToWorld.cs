@@ -1,5 +1,4 @@
 using UnityEngine;
-using UnityEngine.Analytics;
 
 public class ConvertScreenToWorld : MonoBehaviour
 {
@@ -166,7 +165,7 @@ public class ConvertScreenToWorld : MonoBehaviour
         int x = Mathf.FloorToInt(worldLocation.x);
         int y = Mathf.FloorToInt(worldLocation.y);
         int z = Mathf.FloorToInt(worldLocation.z);
-        int threshold = 20;     // how tolerant should we be?  Maybe as high as a tall object or wall?
+        int threshold = 100;     // how tolerant should we be?  Maybe as high as a tall object or wall?
                                 // TODO: maybe only allow actualZ to be 'below' clicked on z for tall objects?
         DungeonGenerator.NeighborMatch match;   // heightfield search result
         bool success;
@@ -174,16 +173,17 @@ public class ConvertScreenToWorld : MonoBehaviour
         Vector2Int pos2int = new(x,y);
         int actualZ;
         Cell cell = null;                       // return result from this variable
-        success = dir.gen.hf.TryQueryAt(x, y, z, threshold, out match);
+        success = dir.gen.hf.TryQueryAt(x, z, y, threshold, out match);     // SWAPPED
         if (success)
         {
             room = dir.gen.rooms[match.roomId]; // found room number that contains the Cell
             actualZ = match.z;                  // exact cell height.  Use it?
-            cell = room.cells.Find(c => c.pos == pos2int);  // find just by (x,y)
+            cell = room.cells[match.cellId];
+            //cell = room.cells.Find(c => c.pos == pos2int);  // find just by (x,y)
             if(cell==null) 
-                Debug.LogWarning($"[ConvertWorldLocationToCell] Heightfield.TryQueryAt({x},{y},{z}) returned roomId={match.roomId} with actualZ={actualZ} but we couldn't find a matching cell in that room.");
+                Debug.LogWarning($"[ConvertWorldLocationToCell] Heightfield.TryQueryAt({x},{y},{z}) returned roomId={match.roomId}, cellId={match.cellId} with actualZ={actualZ} but we couldn't find a matching cell in that room.");
             else 
-                Debug.Log($"[ConvertWorldLocationToCell] Heightfield.TryQueryAt({x},{y},{z}) returned roomId={match.roomId} with actualZ={actualZ} where we found a cell at ({cell.pos3d.x},{cell.pos3d.y},{cell.pos3d.z})");
+                Debug.Log($"[ConvertWorldLocationToCell] Heightfield.TryQueryAt({x},{y},{z}) returned roomId={match.roomId}, cellId={match.cellId} with actualZ={actualZ} where we found a cell at ({cell.pos})");
         }
         return cell;    // may return null if not found, but the heightfield said it is there.
     }

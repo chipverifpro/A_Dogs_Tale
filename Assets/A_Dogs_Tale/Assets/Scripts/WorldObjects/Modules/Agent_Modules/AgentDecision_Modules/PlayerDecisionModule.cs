@@ -19,8 +19,8 @@ namespace DogGame.Modules
         private GameInputRouter gameInputRouter;
 
         [Header("Movement")]
-        [SerializeField] private float moveSpeed = 3.5f;
-        [SerializeField] private float rotateSpeed = 720f;
+        //[SerializeField] private float moveSpeed = 3.5f;
+        //[SerializeField] private float rotateSpeed = 720f;
         [SerializeField] private bool useCameraRelativeMovement = true;
 
         [Header("Camera Control")]
