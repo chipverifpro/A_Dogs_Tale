@@ -11988,6 +11988,7 @@ GameObject:
   - component: {fileID: 1642226069}
   - component: {fileID: 1642226068}
   - component: {fileID: 1642226067}
+  - component: {fileID: 1642226071}
   m_Layer: 5
   m_Name: HUDCanvas
   m_TagString: Untagged
@@ -12079,6 +12080,19 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0, y: 0}
+--- !u!114 &1642226071
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1642226064}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 223941a986b4e4f96b56a4eb2fceb829, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Demo_Speech
+  bottomBanner: {fileID: 669106355}
 --- !u!1001 &1651296776
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -12151,6 +12165,10 @@ PrefabInstance:
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 4477274621950385561, guid: da33ad6d2d1f9483faa117084b30e547,
+        type: 3}
+      insertIndex: 1
+      addedObject: {fileID: 1651296795}
     - targetCorrespondingSourceObject: {fileID: 4477274621950385561, guid: da33ad6d2d1f9483faa117084b30e547,
         type: 3}
       insertIndex: -1
@@ -12445,6 +12463,27 @@ MonoBehaviour:
   displayName: cur
   kind: 1
   autoRegister: 1
+--- !u!65 &1651296795
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1651296779}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 1, y: 1, z: 1}
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &1653904421
 GameObject:
   m_ObjectHideFlags: 0
@@ -14093,6 +14132,7 @@ MonoBehaviour:
   warehouse: {fileID: 1398364142}
   manufactureGO: {fileID: 896494468}
   scentAirGround: {fileID: 1546545660}
+  demo_Speech: {fileID: 1642226071}
   activityStats: {fileID: 603597960}
 --- !u!4 &1920128613
 Transform:

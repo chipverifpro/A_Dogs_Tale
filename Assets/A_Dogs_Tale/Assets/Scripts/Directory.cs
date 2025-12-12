@@ -59,6 +59,10 @@ public class Directory : MonoBehaviour
     public ScentAirGround scentAirGround;
 
 
+    [Header("Communication")]
+    public Demo_Speech demo_Speech;
+    
+
     [Header("Statistics")]
     public AcvtivityStats activityStats;
 

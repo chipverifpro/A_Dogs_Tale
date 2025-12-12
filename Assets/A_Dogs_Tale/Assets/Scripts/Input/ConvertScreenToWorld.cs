@@ -1,5 +1,6 @@
 using UnityEngine;
 using System;
+using DogGame.Language;
 
 public class ConvertScreenToWorld : MonoBehaviour
 {
@@ -133,7 +134,7 @@ public class ConvertScreenToWorld : MonoBehaviour
         int ceiling_bit_num = LayerMask.NameToLayer("Ceiling");
         int ceiling_set_mask = ceiling_check.value & 1<<ceiling_bit_num; 
         int finalMask = objectsMask.value & ~(1<<ceiling_bit_num) | ceiling_set_mask;
-        Debug.Log($"CeilingCheck: ObjectsMask before: {Convert.ToString(objectsMask.value, 2)}. ceiling_bit_num: {ceiling_bit_num}. ceiling_set_mask: {Convert.ToString(ceiling_set_mask, 2)}. final_mask: {Convert.ToString(finalMask,2)}.");        
+        //Debug.Log($"CeilingCheck: ObjectsMask before: {Convert.ToString(objectsMask.value, 2)}. ceiling_bit_num: {ceiling_bit_num}. ceiling_set_mask: {Convert.ToString(ceiling_set_mask, 2)}. final_mask: {Convert.ToString(finalMask,2)}.");        
         objectsMask.value = finalMask;
             // end ugly code
 
@@ -157,6 +158,8 @@ public class ConvertScreenToWorld : MonoBehaviour
             }
             targetedWorldObject_valid = true;
             Debug.Log($"Returning wo = {wo.DisplayName}");
+            
+            dir.demo_Speech.TestSpeak(wo,null);
             return wo;
         }
         else
