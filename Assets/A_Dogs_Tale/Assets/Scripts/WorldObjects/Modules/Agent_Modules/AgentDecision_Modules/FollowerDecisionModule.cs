@@ -22,6 +22,7 @@ namespace DogGame.Modules
         [Header("Debug")]
         [SerializeField] private bool enableDebugLogging = false;
 
+        // Initialize called from WorldObject.Awake phase
         public override void Initialize(AgentModule owner)
         {
             base.Initialize(owner);

@@ -8404,11 +8404,16 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.MotionModule
   bodyRoot: {fileID: 0}
-  faceMovementDirection: 1
   rotationSpeedDegreesPerSecond: 720
   useGravity: 0
   gravityMetersPerSecondSquared: -9.81
   maxFallSpeedMetersPerSecond: 50
+  motionControlMode: 0
+  isBackpedaling: 0
+  facingMode: 0
+  facingTarget: {fileID: 0}
+  maxHorizontalAcceleration: 40
+  maxHorizontalSpeed: 8
 --- !u!114 &1253610044
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -8463,6 +8468,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4a9f755dd8eef4be79076117627b3add, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.WandererDecisionModule
+  navigationSource: 0
   wanderRadius: 4
   minTimeBetweenTargets: 1.5
   maxTimeBetweenTargets: 4
@@ -12265,11 +12271,16 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.MotionModule
   bodyRoot: {fileID: 0}
-  faceMovementDirection: 1
   rotationSpeedDegreesPerSecond: 720
   useGravity: 0
   gravityMetersPerSecondSquared: -9.81
   maxFallSpeedMetersPerSecond: 50
+  motionControlMode: 0
+  isBackpedaling: 0
+  facingMode: 0
+  facingTarget: {fileID: 0}
+  maxHorizontalAcceleration: 40
+  maxHorizontalSpeed: 8
 --- !u!114 &1651296784
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -12339,6 +12350,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0477df26e09ec48cfa0792a308d4ce4a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.FollowerDecisionModule
+  navigationSource: 0
   followTarget: {fileID: 6191479115019793372}
   followDistanceMeters: 1.5
   autoFollowPackLeaderOnStart: 1
@@ -12355,6 +12367,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4a9f755dd8eef4be79076117627b3add, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.WandererDecisionModule
+  navigationSource: 0
   wanderRadius: 4
   minTimeBetweenTargets: 1.5
   maxTimeBetweenTargets: 4
@@ -12370,7 +12383,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 40e29a7f84b4b443a858e5012f88be27, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.PlayerDecisionModule
-  useCameraRelativeMovement: 1
+  navigationSource: 0
   cameraForMovement: {fileID: 1815589284}
   cameraModeSwitcher: {fileID: 1815589288}
 --- !u!114 &1651296790
@@ -15824,11 +15837,16 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.MotionModule
   bodyRoot: {fileID: 0}
-  faceMovementDirection: 1
-  rotationSpeedDegreesPerSecond: 720
+  rotationSpeedDegreesPerSecond: 360
   useGravity: 0
   gravityMetersPerSecondSquared: -9.81
   maxFallSpeedMetersPerSecond: 50
+  motionControlMode: 0
+  isBackpedaling: 0
+  facingMode: 0
+  facingTarget: {fileID: 0}
+  maxHorizontalAcceleration: 40
+  maxHorizontalSpeed: 8
 --- !u!114 &6544990386685219148
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -15883,6 +15901,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0477df26e09ec48cfa0792a308d4ce4a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.FollowerDecisionModule
+  navigationSource: 0
   followTarget: {fileID: 0}
   followDistanceMeters: 1.5
   autoFollowPackLeaderOnStart: 1
@@ -15899,6 +15918,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4a9f755dd8eef4be79076117627b3add, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.WandererDecisionModule
+  navigationSource: 0
   wanderRadius: 4
   minTimeBetweenTargets: 1.5
   maxTimeBetweenTargets: 4
@@ -15914,7 +15934,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 40e29a7f84b4b443a858e5012f88be27, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.PlayerDecisionModule
-  useCameraRelativeMovement: 1
+  navigationSource: 0
   cameraForMovement: {fileID: 1815589284}
   cameraModeSwitcher: {fileID: 1815589288}
 --- !u!114 &6544990386685219153

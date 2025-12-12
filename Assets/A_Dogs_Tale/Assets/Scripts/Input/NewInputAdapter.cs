@@ -196,6 +196,12 @@ public class NewInputAdapter : MonoBehaviour
             ? moveAction.ReadValue<Vector2>()
             : Vector2.zero;
 
+        if (state.moveAxis != Vector2.zero)
+        {
+            // moveAxis will interrupt travel to destination
+            state.hasClickTargetWorldObject   = false;
+            state.hasClickTargetLocationWorld = false;
+        }
 
         // --- One-shot commands (per-frame triggers) ---
         state.barkPressed = barkAction != null && barkAction.triggered;
@@ -336,6 +342,11 @@ public class NewInputAdapter : MonoBehaviour
                 state.clickTargetWorldObject      = null;
             }
         }
+        else
+        {
+
+        }
+
         // --- Commit snapshot ---
         CurrentState = state;
     }

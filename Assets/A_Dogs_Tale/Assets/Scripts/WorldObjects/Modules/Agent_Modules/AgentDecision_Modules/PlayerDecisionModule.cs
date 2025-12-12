@@ -14,22 +14,20 @@ namespace DogGame.Modules
         //    private IPlayerInputSource inputSource;
         public override AgentDecisionType DecisionType => AgentDecisionType.Player;
 
-        //[SerializeField] private NewInputAdapter inputAdapter;
         private PlayerInputState inputState;   // a pointer, not a local copy
         private GameInputRouter gameInputRouter;
 
         [Header("Movement")]
-        //[SerializeField] private float moveSpeed = 3.5f;
-        //[SerializeField] private float rotateSpeed = 720f;
-        [SerializeField] private bool useCameraRelativeMovement = true;
+        //[SerializeField] private float moveSpeed = 3.5f;  // now in agentMovementModule
+        //[SerializeField] private float rotateSpeed = 720f; // now in agentMovementModule
 
         [Header("Camera Control")]
         [SerializeField] private Camera cameraForMovement;
         [SerializeField] private CameraModeSwitcher cameraModeSwitcher;
-        // CameraControllerBase = your own interface / script that handles zoom + view switching
-
-        //[SerializeField] private AgentMovementModule agentMovementModule;
     
+        //public NavigationSource navigationSource;     // moved to AgentDecisionModuleBase
+        //public MotionControlMode motionControlMode;   // moved to MotionModule
+
     private void Start()
     {
         if (gameInputRouter == null)
@@ -58,6 +56,7 @@ namespace DogGame.Modules
         }
     }
 
+        // Initialize called from WorldObject.Awake phase
         public override void Initialize(AgentModule agent)
         {
             base.Initialize(agent);
@@ -205,6 +204,10 @@ namespace DogGame.Modules
             if (state.moveAxis.sqrMagnitude > 0.0001f)
             {
                 desiredWorldDir = ConvertInputToWorldDirection(state.moveAxis);
+                navigationSource = NavigationSource.PlayerDirection;
+                worldObject.motionModule.motionControlMode = MotionControlMode.DirectInput;
+                worldObject.motionModule.facingMode = FacingMode.FaceMovementDirection;
+                UpdateFacingModeForDirectInput(desiredWorldDir);    // handles strafe/backpedalling.
             }
 
             // 2) Click-to-move: if we have a click target location and no interact press,
@@ -219,11 +222,17 @@ namespace DogGame.Modules
                 if (toTarget.sqrMagnitude > stopDistance * stopDistance)
                 {
                     desiredWorldDir = toTarget.normalized;
+                    navigationSource = NavigationSource.ClickToMove;
+                    worldObject.motionModule.motionControlMode = MotionControlMode.GoalDirected;
+                    worldObject.motionModule.facingMode = FacingMode.FaceMovementDirection;
                 }
                 else
                 {
                     // Reached target; clear the desired move so we can stop
                     desiredWorldDir = Vector3.zero;
+                    navigationSource = NavigationSource.None;
+                    worldObject.motionModule.motionControlMode = MotionControlMode.GoalDirected;
+                    worldObject.motionModule.facingMode = FacingMode.FaceMovementDirection;
                     // Optional: you could clear hasClickTargetLocationWorld here in your state
                 }
             }
@@ -231,6 +240,7 @@ namespace DogGame.Modules
             // 3) Feed intent into AgentagentMovementModule
             if (desiredWorldDir.sqrMagnitude > 0.0001f)
             {
+
                 // If you have a sprint flag in PlayerInputState, use it here.
                 bool run = false; // state.sprintHeld; // <-- adjust to your actual field name
                 worldObject.agentMovementModule.SetDesiredMove(desiredWorldDir, 1.0f, run);
@@ -245,27 +255,76 @@ namespace DogGame.Modules
             // We do NOT rotate the worldObject here anymore.
             // MotionModule (called by AgentagentMovementModule) handles facing the move direction.
         }
-        private Vector3 ConvertInputToWorldDirection(Vector2 moveAxis)
+
+        private void UpdateFacingModeForDirectInput(Vector3 worldMoveDir)
         {
-            // If no camera or not camera-relative, just move in world XZ
-            Vector3 dir = new Vector3(moveAxis.x, 0f, moveAxis.y);
+            var motion = worldObject.motionModule;
 
-            if (!useCameraRelativeMovement || cameraForMovement == null)
-                return dir;
+            // No movement? Don’t change facing.
+            Vector3 flatMove = new Vector3(worldMoveDir.x, 0f, worldMoveDir.z);
+            if (flatMove.sqrMagnitude < 0.0001f)
+                return;
 
-            // Convert input relative to camera orientation
-            Vector3 camForward = cameraForMovement.transform.forward;
-            camForward.y = 0f;
-            camForward.Normalize();
+            flatMove.Normalize();
 
-            Vector3 camRight = cameraForMovement.transform.right;
-            camRight.y = 0f;
-            camRight.Normalize();
+            // Current facing on the XZ plane
+            Transform bodyRoot = motion.bodyRoot; // or however you access it
+            Vector3 flatForward = bodyRoot.forward;
+            flatForward.y = 0f;
+            if (flatForward.sqrMagnitude < 0.0001f)
+                flatForward = Vector3.forward;
+            else
+                flatForward.Normalize();
 
-            Vector3 worldDir = camForward * moveAxis.y + camRight * moveAxis.x;
-            return worldDir;
+            float alignment = Vector3.Dot(flatForward, flatMove);
+            // alignment:
+            //  +1  = moving straight forward
+            //   0  = pure strafe
+            //  -1  = straight backward
+
+            //const float forwardThreshold   =  0.4f;  // > this = "mostly forward"
+            const float backpedalThreshold = -0.4f;  // < this = "mostly backward"
+
+            //if (alignment > forwardThreshold)
+            if (alignment > backpedalThreshold)
+            {
+                // Moving mostly forward: let MotionModule rotate with movement
+                motion.facingMode = FacingMode.FaceMovementDirection;
+            }
+            else
+            {
+                // Strafing or backpedalling: keep facing where we already are
+                motion.facingMode = FacingMode.Manual;
+            }
+
+            // If you want to treat strafe vs backpedal differently:
+            // if (alignment < backpedalThreshold) { ... }
         }
 
+
+        private Vector3 ConvertInputToWorldDirection(Vector2 moveAxis)
+        {
+            // If no input, early out
+            if (moveAxis.sqrMagnitude < 0.0001f)
+                return Vector3.zero;
+
+            // 1. If overhead mode → use player-relative movement
+            if (this.transform != null)
+            {
+                Vector3 forward = this.transform.forward;
+                forward.y = 0f;
+                forward.Normalize();
+
+                Vector3 right = this.transform.right;
+                right.y = 0f;
+                right.Normalize();
+
+                return forward * moveAxis.y + right * moveAxis.x;
+            }
+
+            // 3. Fallback: world-relative XZ
+            return new Vector3(moveAxis.x, 0f, moveAxis.y);  // not what we want, so don't let above code fail!
+        }
         #endregion
 
         #region Interaction
@@ -323,5 +382,6 @@ namespace DogGame.Modules
         }
 
         #endregion
+        
     }
 }

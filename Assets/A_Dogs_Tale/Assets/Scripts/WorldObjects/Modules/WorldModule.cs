@@ -18,6 +18,7 @@ namespace DogGame.Modules
                 Debug.LogError("WorldModule: ObjectDirectory.Instance is null!", this);
         }
 
+        // Initialize called from WorldObject.Awake phase
         // each WorldModule belongs to a WorldObject
         public virtual void Initialize(WorldObject owner)
         {

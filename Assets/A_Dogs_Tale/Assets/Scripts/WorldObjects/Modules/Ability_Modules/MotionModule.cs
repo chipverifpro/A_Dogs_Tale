@@ -1,3 +1,6 @@
+using System;
+using NUnit.Framework.Internal.Filters;
+using UnityEditor.EditorTools;
 using UnityEngine;
 
 /*
@@ -27,18 +30,33 @@ namespace DogGame.Modules
     ///   - Compute a desired world-space velocity
     ///   - Call Move(desiredVelocity, deltaTime) every frame
     /// </summary>
+    
+    public enum MotionControlMode
+    {
+        DirectInput,   // WASD / stick, immediate control
+        GoalDirected,  // Anything that produces a destination / path (click, pathfinding)
+    }
+
+    public enum FacingMode
+    {
+        FaceMovementDirection,
+        FaceTarget,
+        Strafe,     // don't rotate, just move sideways.
+        Manual   // e.g. animation or some other system controls rotation (or do not turn)
+    }
+    
     public class MotionModule : WorldModule
     {
         [Header("Body Setup")]
         [Tooltip("Transform that represents the root of the dog body. If null, this.transform is used.")]
-        [SerializeField] private Transform bodyRoot;
+        [SerializeField] public Transform bodyRoot;
 
         [Header("Rotation")]
-        [Tooltip("Rotate to face the horizontal movement direction.")]
-        [SerializeField] private bool faceMovementDirection = true;
+        //[Tooltip("Rotate to face the horizontal movement direction.")]
+        //[SerializeField] private bool faceMovementDirection = true;   // now handled by facingMode
 
         [Tooltip("Degrees per second to turn toward the movement direction.")]
-        [SerializeField] private float rotationSpeedDegreesPerSecond = 720f;
+        [SerializeField] private float rotationSpeedDegreesPerSecond = 360f;
 
         [Header("Gravity (optional)")]
         [Tooltip("If true, apply gravity to vertical motion.")]
@@ -52,6 +70,39 @@ namespace DogGame.Modules
 
         // Internal vertical velocity (for gravity, jumps, etc.)
         private Vector3 verticalVelocity = Vector3.zero;
+
+
+
+        [Header("Control player facing")]
+        [Tooltip("Assigned based on type of travel (is there a destination or are we just moving?)")]
+        public MotionControlMode motionControlMode;
+        [Tooltip("Assigned by DecisionModule based on desire to strafe or walk backwards")]
+        public bool isBackpedaling;
+
+        [Tooltip("Assigned based on current driver")]
+        public FacingMode facingMode;
+        [Tooltip("Used if facingMode = FaceTarget")]
+        public Transform facingTarget;
+
+        //public bool isStrafing;     // MOVED TO PLAYERAGENT MODE temporarily disables rotation for FaceMovementDirection.
+
+        //[NonSerialized] public Transform bodyRoot;
+
+        //public bool useGravity = true;
+        //public float gravityMetersPerSecondSquared = -25f;
+        //public float maxFallSpeedMetersPerSecond = 40f;
+
+        public float maxHorizontalAcceleration = 40f;
+        public float maxHorizontalSpeed = 8f;
+
+        //public float rotationSpeedDegreesPerSecond = 720f;
+
+        //public FacingMode facingMode = FacingMode.FaceMovementDirection;
+        //public Transform facingTarget;
+
+        private Vector3 horizontalVelocity = Vector3.zero;
+        //private Vector3 verticalVelocity = Vector3.zero;
+
 
         protected override void Awake()
         {
@@ -86,69 +137,7 @@ namespace DogGame.Modules
         /// Y component is ignored here; vertical movement is handled by gravity / verticalVelocity.
         /// </param>
         /// <param name="deltaTime">Time step (usually Time.deltaTime).</param>
-        public void Move(Vector3 desiredHorizontalVelocity, float deltaTime)
-        {
-            if (bodyRoot == null)
-                return;
 
-            // Ensure horizontal only for the input velocity
-            desiredHorizontalVelocity.y = 0f;
-
-            // 1. Update vertical velocity with gravity, if enabled
-            if (useGravity)
-            {
-                verticalVelocity.y += gravityMetersPerSecondSquared * deltaTime;
-
-                if (maxFallSpeedMetersPerSecond > 0f &&
-                    verticalVelocity.y < -maxFallSpeedMetersPerSecond)
-                {
-                    verticalVelocity.y = -maxFallSpeedMetersPerSecond;
-                }
-            }
-            else
-            {
-                // If we are not using gravity, don't accumulate vertical velocity
-                verticalVelocity = Vector3.zero;
-            }
-
-            // 2. Combine horizontal and vertical components
-            Vector3 frameVelocity = desiredHorizontalVelocity + verticalVelocity;
-
-            // 3. Apply rotation to face movement direction (horizontal plane only)
-            if (faceMovementDirection)
-            {
-                Vector3 flatDirection = new Vector3(desiredHorizontalVelocity.x, 0f, desiredHorizontalVelocity.z);
-                if (flatDirection.sqrMagnitude > 0.0001f)
-                {
-                    Quaternion targetRotation = Quaternion.LookRotation(flatDirection.normalized, Vector3.up);
-                    bodyRoot.rotation = Quaternion.RotateTowards(
-                        bodyRoot.rotation,
-                        targetRotation,
-                        rotationSpeedDegreesPerSecond * deltaTime);
-                }
-            }
-
-            // 4. Apply position change
-            Vector3 displacement = frameVelocity * deltaTime;
-            bodyRoot.position += displacement;
-        }
-
-        /// <summary>
-        /// Directly sets vertical velocity (e.g., for jumps).
-        /// Positive values go upward, negative downward.
-        /// </summary>
-        public void SetVerticalVelocity(float newVerticalSpeed)
-        {
-            verticalVelocity.y = newVerticalSpeed;
-        }
-
-        /// <summary>
-        /// Clears any stored vertical velocity (for example after grounding).
-        /// </summary>
-        public void ResetVerticalVelocity()
-        {
-            verticalVelocity = Vector3.zero;
-        }
 
         /// <summary>
         /// Clear any motion-related cached state (e.g., gravity / vertical speed).
@@ -217,6 +206,135 @@ namespace DogGame.Modules
             Quaternion finalRotation = Quaternion.Euler(0, extraYaw, 0) * align;
 
             Teleport(position, finalRotation, resetMotion);
+        }
+
+        public void Move(Vector3 desiredHorizontalVelocity, float deltaTime)
+        {
+            if (bodyRoot == null)
+                return;
+
+            // --- 0. Enforce horizontal-only for input ---
+            desiredHorizontalVelocity.y = 0f;
+
+            // Clamp desired speed if you like
+            if (maxHorizontalSpeed > 0f)
+            {
+                float desiredSpeed = desiredHorizontalVelocity.magnitude;
+                if (desiredSpeed > maxHorizontalSpeed)
+                {
+                    desiredHorizontalVelocity = desiredHorizontalVelocity.normalized * maxHorizontalSpeed;
+                }
+            }
+
+            // --- 1. Update horizontal velocity via acceleration ---
+            horizontalVelocity = ComputeHorizontalVelocity(horizontalVelocity,
+                                                        desiredHorizontalVelocity,
+                                                        maxHorizontalAcceleration,
+                                                        deltaTime);
+
+            // --- 2. Apply rotation based on facing mode ---
+            ApplyHorizontalRotation(horizontalVelocity, deltaTime);
+
+            // --- 3. Update vertical velocity (gravity) ---
+            UpdateVerticalVelocity(deltaTime);
+
+            // --- 4. Apply total displacement ---
+            Vector3 frameVelocity = horizontalVelocity + verticalVelocity;
+            bodyRoot.position += frameVelocity * deltaTime;
+        }
+
+        private Vector3 ComputeHorizontalVelocity(
+            Vector3 currentVelocity,
+            Vector3 desiredVelocity,
+            float maxAcceleration,
+            float deltaTime)
+        {
+            // Ignore any vertical in both
+            currentVelocity.y = 0f;
+            desiredVelocity.y = 0f;
+
+            Vector3 delta = desiredVelocity - currentVelocity;
+            float maxDelta = maxAcceleration * deltaTime;
+
+            if (delta.sqrMagnitude > maxDelta * maxDelta)
+            {
+                delta = delta.normalized * maxDelta;
+            }
+
+            Vector3 newVelocity = currentVelocity + delta;
+
+            // Keep strictly horizontal
+            newVelocity.y = 0f;
+            return newVelocity;
+        }
+
+        private void ApplyHorizontalRotation(Vector3 effectiveHorizontalVelocity, float deltaTime)
+        {
+            // No rotation if there's effectively no movement
+            Vector3 flatVel = new Vector3(effectiveHorizontalVelocity.x, 0f, effectiveHorizontalVelocity.z);
+            if (flatVel.sqrMagnitude < 0.0001f)
+                return;
+
+            if (facingMode == FacingMode.FaceMovementDirection)
+            {
+                Vector3 moveDir = flatVel.normalized;
+                Vector3 forward = bodyRoot.forward;
+                forward.y = 0f;
+                forward.Normalize();
+
+                float dot = Vector3.Dot(moveDir, forward); // 1 = forward, 0 = strafe, -1 = backward
+
+                bool isBackpedaling = dot < -0.25f;   // tweak threshold as needed
+
+                // If you want to allow strafing without rotation:
+                bool isStrafing = Mathf.Abs(dot) < 0.25f;
+
+                isBackpedaling=false;
+                isStrafing=false;
+
+                if (!isBackpedaling && !isStrafing)   // only rotate when mostly moving forward-ish
+                {
+                    Quaternion targetRotation = Quaternion.LookRotation(moveDir, Vector3.up);
+                    bodyRoot.rotation = Quaternion.RotateTowards(
+                        bodyRoot.rotation,
+                        targetRotation,
+                        rotationSpeedDegreesPerSecond * deltaTime);
+                }
+                // else: we are backpedaling or strafing → don't auto-rotate
+            }
+            else if (facingMode == FacingMode.FaceTarget && facingTarget != null)
+            {
+                Vector3 toTarget = facingTarget.position - bodyRoot.position;
+                toTarget.y = 0f;
+                if (toTarget.sqrMagnitude > 0.0001f)
+                {
+                    Quaternion targetRotation = Quaternion.LookRotation(toTarget.normalized, Vector3.up);
+                    bodyRoot.rotation = Quaternion.RotateTowards(
+                        bodyRoot.rotation,
+                        targetRotation,
+                        rotationSpeedDegreesPerSecond * deltaTime);
+                }
+            }
+            // FacingMode.Strafe → no rotation here
+            // FacingMode.Manual → no rotation here
+        }
+
+        private void UpdateVerticalVelocity(float deltaTime)
+        {
+            if (useGravity)
+            {
+                verticalVelocity.y += gravityMetersPerSecondSquared * deltaTime;
+
+                if (maxFallSpeedMetersPerSecond > 0f &&
+                    verticalVelocity.y < -maxFallSpeedMetersPerSecond)
+                {
+                    verticalVelocity.y = -maxFallSpeedMetersPerSecond;
+                }
+            }
+            else
+            {
+                verticalVelocity = Vector3.zero;
+            }
         }
 
     }

@@ -1,5 +1,6 @@
 using UnityEngine;
 
+/* OBSOLETE
 public class TempInputStateMover : MonoBehaviour
 {
     [SerializeField] private NewInputAdapter inputAdapter;
@@ -46,3 +47,4 @@ public class TempInputStateMover : MonoBehaviour
         }
     }
 }
+*/
