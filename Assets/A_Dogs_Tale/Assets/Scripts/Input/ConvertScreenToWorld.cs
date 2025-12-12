@@ -1,4 +1,5 @@
 using UnityEngine;
+using System;
 
 public class ConvertScreenToWorld : MonoBehaviour
 {
@@ -13,9 +14,13 @@ public class ConvertScreenToWorld : MonoBehaviour
     private float MaxSelectDistanceWorld => maxSelectDistanceTiles * cellSize;
 
     [Header("Raycast")]
+    [Tooltip("FirstPerson blocking mask should include ceiling")]
     [SerializeField] public LayerMask FP_BlockingMask;           // FirstPerson view: set to your targetable layers, including ceilings
+    [Tooltip("Overhead/Perspective blocking mask should NOT include ceilings")]
     [SerializeField] public LayerMask Overhead_BlockingMask;     // Overhead views: set to your targetable layers, exclude invisible ceilings
+    [Tooltip("NavigationMask isn't used yet, but would control what we can walk on (floors, some items)")]
     [SerializeField] public LayerMask navigationMask;           // we don't use this for navigation. (yet)
+    [Tooltip("ObjectMask should include layers where selectable objects sit")]
     [SerializeField] public LayerMask objectsMask;   // layers where objects can be selected (objects, not walls/floors)
     public float rayMaxDistance = 200f;
     
@@ -119,22 +124,38 @@ public class ConvertScreenToWorld : MonoBehaviour
             Debug.LogError("[ConvertScreenToWorld] No mainCamera set; cannot use raycast to convert screen cooudinates to world object.");
             return null;
         }
+            // YES, this is an ugly chunk of code.  Someday it will be cleaned up, but it works for now...
+            // This cleaned up code could also be used to unify FP_BlockingMask and Overhead_BlockingMask which is basically this same function.
+        // Tweak objectsMask
+        // if we are in FP(FirstPerson) view, then ceilings should block ray.
+        // if we are Overhead or Perspective view, then ceilings shoul NOT block ray (looking down through them)
+        LayerMask ceiling_check = (dir.cameraModeSwitcher.cameraMode == CameraModes.FP) ? FP_BlockingMask : Overhead_BlockingMask;
+        int ceiling_bit_num = LayerMask.NameToLayer("Ceiling");
+        int ceiling_set_mask = ceiling_check.value & 1<<ceiling_bit_num; 
+        int finalMask = objectsMask.value & ~(1<<ceiling_bit_num) | ceiling_set_mask;
+        Debug.Log($"CeilingCheck: ObjectsMask before: {Convert.ToString(objectsMask.value, 2)}. ceiling_bit_num: {ceiling_bit_num}. ceiling_set_mask: {Convert.ToString(ceiling_set_mask, 2)}. final_mask: {Convert.ToString(finalMask,2)}.");        
+        objectsMask.value = finalMask;
+            // end ugly code
 
         Ray ray = mainCamera.ScreenPointToRay(screenPosition);
         //if (ray==null) Debug.LogError("ray == null");
         if (Physics.Raycast(ray, out RaycastHit hit, 1000f, objectsMask, QueryTriggerInteraction.Ignore))
         {
+            // we should block/unblock ceiling based on 
             // this is the GameObject's name
             Debug.Log($"hit.collider = {hit.collider.name}");
 
             // Find the WorldObject on this hit (or its parents)
             WorldObject wo = hit.collider.GetComponentInParent<WorldObject>();
+            targetedWorldObject = wo;
             if (wo == null)
             {
                 // Clicked something that isn't a WorldObject
                 //Debug.Log("worldObject is null");
+                targetedWorldObject_valid = false;
                 return null;
             }
+            targetedWorldObject_valid = true;
             Debug.Log($"Returning wo = {wo.DisplayName}");
             return wo;
         }
