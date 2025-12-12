@@ -43,6 +43,8 @@ public class PlayerInputStateDebugger : MonoBehaviour
 
         if (gameInputRouter.InputState.moveAxis != new Vector2(0f, 0f))
             Debug.Log($"Move={gameInputRouter.InputState.moveAxis}");
+        if (gameInputRouter.InputState.strafeAxis != 0f)
+            Debug.Log($"Strafe={gameInputRouter.InputState.strafeAxis}");
         if (gameInputRouter.InputState.zoomDelta != 0f)
             Debug.Log($"Zoom={gameInputRouter.InputState.zoomDelta:F2}");
         if (gameInputRouter.InputState.cameraViewSelect != CameraModes.Unchanged)

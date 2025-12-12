@@ -199,16 +199,44 @@ namespace DogGame.Modules
             }
 
             Vector3 desiredWorldDir = Vector3.zero;
+            
+            // --- Combine moveAxis and strafeAxis into combinedMoveAxis
+            //     WASD / stick input -> moveAxis         (x and y)
+            //     QE keboard / stick input -> strafeAxis (x only)
+
+            Vector2 combinedMoveAxis = state.moveAxis;
+
+            // combine moveAxis and strafeAxis into one
+            if (state.moveAxis.sqrMagnitude > 0.0001f || Mathf.Abs(state.strafeAxis) > 0.0001f)
+            {
+                if (state.moveAxis.x <= 0f && state.strafeAxis <= 0f)
+                {
+                    // both movements are negative, take the Min
+                    combinedMoveAxis.x = Mathf.Min(state.moveAxis.x, state.strafeAxis);
+                }
+                else if (state.moveAxis.x >= 0f && state.strafeAxis >= 0f)
+                {
+                    // both movements are positive, take the Max
+                    combinedMoveAxis.x = Mathf.Max(state.moveAxis.x, state.strafeAxis);
+                }
+                else // strafe is opposite direction to move, add both, let them cancel each other out
+                {
+                    combinedMoveAxis.x = state.moveAxis.x + state.strafeAxis;
+                }
+            }
+
 
             // 1) WASD / stick input -> camera-relative world direction
-            if (state.moveAxis.sqrMagnitude > 0.0001f)
+            if (combinedMoveAxis.sqrMagnitude > 0.0001f)
             {
-                desiredWorldDir = ConvertInputToWorldDirection(state.moveAxis);
+                desiredWorldDir = ConvertInputToWorldDirection(combinedMoveAxis);
                 navigationSource = NavigationSource.PlayerDirection;
                 worldObject.motionModule.motionControlMode = MotionControlMode.DirectInput;
-                worldObject.motionModule.facingMode = FacingMode.FaceMovementDirection;
-                UpdateFacingModeForDirectInput(desiredWorldDir);    // handles strafe/backpedalling.
-            }
+                if (Mathf.Abs(state.strafeAxis) > 0.0001f)  // any strafe element, set Strafe
+                    worldObject.motionModule.facingMode = FacingMode.Strafe; 
+                else
+                    UpdateFacingModeForDirectInput(desiredWorldDir);    // handles strafe/backpedalling.
+           }
 
             // 2) Click-to-move: if we have a click target location and no interact press,
             //    steer toward that point. (Very simple version: straight-line steering.)

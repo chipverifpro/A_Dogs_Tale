@@ -32,6 +32,7 @@ public class NewInputAdapter : MonoBehaviour
 
     [Header("Action Names (must match your InputAction asset)")]
     [SerializeField] private string moveActionName            = "Move";
+    [SerializeField] private string strafeActionName          = "Strafe";
     [SerializeField] private string barkActionName            = "Bark";
     [SerializeField] private string markTerritoryActionName   = "MarkTerritory";
     [SerializeField] private string zoomActionName            = "Zoom";
@@ -49,6 +50,7 @@ public class NewInputAdapter : MonoBehaviour
 
     // cached actions
     private InputAction moveAction;
+    private InputAction strafeAction;
     private InputAction barkAction;
     private InputAction markTerritoryAction;
     private InputAction zoomAction;
@@ -152,6 +154,7 @@ public class NewInputAdapter : MonoBehaviour
         if (map==null) Debug.LogError($"NewInputAdapter.CacheActions: map == null");
 
         moveAction            = FindAction(map, moveActionName);
+        strafeAction          = FindAction(map, strafeActionName);
         barkAction            = FindAction(map, barkActionName);
         markTerritoryAction   = FindAction(map, markTerritoryActionName);
         zoomAction            = FindAction(map, zoomActionName);
@@ -199,6 +202,17 @@ public class NewInputAdapter : MonoBehaviour
         if (state.moveAxis != Vector2.zero)
         {
             // moveAxis will interrupt travel to destination
+            state.hasClickTargetWorldObject   = false;
+            state.hasClickTargetLocationWorld = false;
+        }
+        // -- Strafe Movement ---
+        state.strafeAxis = strafeAction != null
+            ? strafeAction.ReadValue<float>()
+            : 0f;
+
+        if (state.strafeAxis != 0f)
+        {
+            // like moveAxis, strafeAcis will also interrupt travel to destination
             state.hasClickTargetWorldObject   = false;
             state.hasClickTargetLocationWorld = false;
         }

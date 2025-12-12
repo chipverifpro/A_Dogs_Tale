@@ -275,6 +275,9 @@ namespace DogGame.Modules
             if (flatVel.sqrMagnitude < 0.0001f)
                 return;
 
+            if (facingMode == FacingMode.Strafe)
+                return; // no turning while strafing
+
             if (facingMode == FacingMode.FaceMovementDirection)
             {
                 Vector3 moveDir = flatVel.normalized;

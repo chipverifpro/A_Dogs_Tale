@@ -6103,6 +6103,7 @@ MonoBehaviour:
   playerInput: {fileID: 942637345}
   gameInputRouter: {fileID: 942637346}
   moveActionName: Move
+  strafeActionName: Strafe
   barkActionName: Bark
   markTerritoryActionName: MarkTerritory
   zoomActionName: Zoom
