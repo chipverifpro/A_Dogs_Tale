@@ -27,10 +27,10 @@ namespace DogGame.Language
 
         public static bool IsKnown(string word) => knownWords.Contains(word);
 
-        public static void Teach(string word)
+        public static bool Teach(string word)
         {
-            if (string.IsNullOrWhiteSpace(word)) return;
-            knownWords.Add(word.Trim());
+            if (string.IsNullOrWhiteSpace(word)) return false;
+            return knownWords.Add(word.Trim());
         }
 
         /// <summary>
@@ -60,6 +60,13 @@ namespace DogGame.Language
                     // Token was only punctuation.
                     builder.Append(token);
                 }
+                else if (IsUntranslatedPlaceholder(coreWord))
+                {
+                    // ✅ Preserve placeholder so it can be reinserted later
+                    builder.Append(leadingPunct);
+                    builder.Append(coreWord);
+                    builder.Append(trailingPunct);
+                }
                 else
                 {
                     string translatedCore = IsKnown(coreWord) ? coreWord : substituteUnknown;
@@ -76,6 +83,32 @@ namespace DogGame.Language
             final = CombineRepeatedSubstitutions(final);
             return final;
         }
+
+        private static bool IsUntranslatedPlaceholder(string coreWord)
+        {
+            // Matches our protected block markers from the processor:
+            // \uE000{digits}\uE001
+            if (string.IsNullOrEmpty(coreWord))
+                return false;
+
+            if (coreWord.Length < 3)
+                return false;
+
+            if (coreWord[0] != '\uE000')
+                return false;
+
+            if (coreWord[coreWord.Length - 1] != '\uE001')
+                return false;
+
+            for (int i = 1; i < coreWord.Length - 1; i++)
+            {
+                if (!char.IsDigit(coreWord[i]))
+                    return false;
+            }
+
+            return true;
+        }
+
 
         private static void SplitToken(string token, out string leading, out string core, out string trailing)
         {
@@ -94,7 +127,7 @@ namespace DogGame.Language
         }
 
 
-        private static string CombineRepeatedSubstitutions(string s_input)
+        public static string CombineRepeatedSubstitutions(string s_input)
         {
             if (string.IsNullOrEmpty(s_input))
                 return s_input;
@@ -177,20 +210,21 @@ namespace DogGame.Language
             }
 
             return builder.ToString();
+        }
 
-            static bool MatchesAt(string text, int index, string pattern)
+        
+        static bool MatchesAt(string text, int index, string pattern)
+        {
+            if (index + pattern.Length > text.Length)
+                return false;
+
+            for (int j = 0; j < pattern.Length; j++)
             {
-                if (index + pattern.Length > text.Length)
+                if (text[index + j] != pattern[j])
                     return false;
-
-                for (int j = 0; j < pattern.Length; j++)
-                {
-                    if (text[index + j] != pattern[j])
-                        return false;
-                }
-
-                return true;
             }
+
+            return true;
         }
     }
 }

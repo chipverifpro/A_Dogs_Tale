@@ -4484,6 +4484,7 @@ MonoBehaviour:
   sidePadding: 24
   useSafeArea: 1
   BottomBannerCanvas: {fileID: 669106351}
+  defaultDisplayUsesRichText: 1
 --- !u!1 &676370303
 GameObject:
   m_ObjectHideFlags: 3
@@ -12092,6 +12093,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 223941a986b4e4f96b56a4eb2fceb829, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Demo_Speech
+  demoMessages: []
   bottomBanner: {fileID: 669106355}
 --- !u!1001 &1651296776
 PrefabInstance:

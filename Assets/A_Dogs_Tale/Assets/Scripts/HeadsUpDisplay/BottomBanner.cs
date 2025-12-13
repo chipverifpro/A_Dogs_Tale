@@ -2,7 +2,11 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using System.Collections;
-using UnityEngine.SceneManagement;
+using System;
+using System.Collections.Generic;
+using System.Text;
+
+
 
 public class BottomBanner : MonoBehaviour
 {
@@ -44,10 +48,17 @@ public class BottomBanner : MonoBehaviour
             //  var scaler = c.GetComponent<CanvasScaler>();
             //  scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
             //  scaler.referenceResolution = new Vector2(800, 800);
+
+            label.richText = true;
+            label.textWrappingMode = TextWrappingModes.NoWrap;
+            label.overflowMode = TextOverflowModes.Ellipsis;
+
+            label.richText = true;
+            label.textWrappingMode = TextWrappingModes.Normal;  // ✅ wrap
+            label.overflowMode = TextOverflowModes.Overflow;    // ✅ allow multiple lines (or Ellipsis)
+            label.alignment = TextAlignmentOptions.MidlineLeft;
         }
-        //else
-        //{
-        //canvas = go.GetComponent<Canvas>();
+
         BottomBannerCanvas.renderMode = RenderMode.ScreenSpaceOverlay;
         BottomBannerCanvas.overrideSorting = true;
         BottomBannerCanvas.sortingOrder = 5000;     // high so it sits on top
@@ -55,7 +66,6 @@ public class BottomBanner : MonoBehaviour
         var scaler = BottomBannerCanvas.GetComponent<CanvasScaler>();
         scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
         scaler.referenceResolution = new Vector2(800, 800);
-        //}
 
         // Panel background
         panel = new GameObject("BannerPanel", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
@@ -135,9 +145,52 @@ public class BottomBanner : MonoBehaviour
         Instance._Clear();
     }
 
-    // ----- Implementation -----
+    // ----- Rich Text additions -----
+
+
+    // Choose your default behavior:
+    [SerializeField] private bool defaultDisplayUsesRichText = true;
+
+    public void Display(string message)
+    {
+        if (defaultDisplayUsesRichText)
+            DisplayRich(message);
+        else
+            DisplayPlain(message);
+    }
+
+    public void DisplayPlain(string message)
+    {
+        _Show(EscapeTMP(message));
+    }
+
+    public void DisplayRich(string richMessage)
+    {
+        _Show(richMessage ?? "");
+    }
 
     void _Show(string message)
+    {
+        if (hideRoutine != null) { StopCoroutine(hideRoutine); hideRoutine = null; }
+        if (label == null) BuildUIIfNeeded();
+
+        // Ensure TMP is configured for rich text (harmless even if already set)
+        label.richText = true;
+
+        label.text = message ?? "";
+        panelRT.gameObject.SetActive(!string.IsNullOrEmpty(label.text));
+    }
+
+    private static string EscapeTMP(string input)
+    {
+        if (string.IsNullOrEmpty(input)) return input;
+        // Prevent accidental TMP tag injection in plain text.
+        return input.Replace("<", "&lt;").Replace(">", "&gt;");
+    }
+
+    // ----- Implementation -----
+
+    void _Show_OLD(string message)
     {
         if (hideRoutine != null) { StopCoroutine(hideRoutine); hideRoutine = null; }
         if (label == null) BuildUIIfNeeded();
@@ -172,4 +225,6 @@ public class BottomBanner : MonoBehaviour
         go.AddComponent<BottomBanner>(); // Awake builds the UI
     }
 
+
+    
 }

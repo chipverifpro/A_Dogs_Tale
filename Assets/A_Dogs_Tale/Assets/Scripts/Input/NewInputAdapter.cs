@@ -313,7 +313,7 @@ public class NewInputAdapter : MonoBehaviour
         if (TryGetMouseClickScreenPosition(out Vector2 screenPosition))
         {
             Vector3 screenPosition3 = new(screenPosition.x, screenPosition.y, 0f);
-            Debug.Log($"TryGetMouseClickScreenPosition returned {screenPosition:0}");
+            //Debug.Log($"TryGetMouseClickScreenPosition returned {screenPosition:0}");
             // These are left for another system (raycaster / selection) to fill in.
             state.interactPressed      = interactAction != null && interactAction.triggered;
             state.selectObjectPressed  = selectObjectAction != null && selectObjectAction.triggered;

@@ -144,7 +144,7 @@ public class ConvertScreenToWorld : MonoBehaviour
         {
             // we should block/unblock ceiling based on 
             // this is the GameObject's name
-            Debug.Log($"hit.collider = {hit.collider.name}");
+          //  Debug.Log($"hit.collider = {hit.collider.name}");
 
             // Find the WorldObject on this hit (or its parents)
             WorldObject wo = hit.collider.GetComponentInParent<WorldObject>();
@@ -157,7 +157,7 @@ public class ConvertScreenToWorld : MonoBehaviour
                 return null;
             }
             targetedWorldObject_valid = true;
-            Debug.Log($"Returning wo = {wo.DisplayName}");
+          //  Debug.Log($"Returning wo = {wo.DisplayName}");
             
             dir.demo_Speech.TestSpeak(wo,null);
             return wo;
