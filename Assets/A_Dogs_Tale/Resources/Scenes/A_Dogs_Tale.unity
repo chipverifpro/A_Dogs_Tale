@@ -11990,6 +11990,7 @@ GameObject:
   - component: {fileID: 1642226068}
   - component: {fileID: 1642226067}
   - component: {fileID: 1642226071}
+  - component: {fileID: 1642226072}
   m_Layer: 5
   m_Name: HUDCanvas
   m_TagString: Untagged
@@ -12095,6 +12096,22 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Demo_Speech
   demoMessages: []
   bottomBanner: {fileID: 669106355}
+  dogSpeechDictionary: {fileID: 1642226072}
+--- !u!114 &1642226072
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1642226064}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9f8cf60c6fc0649e7ba17d74b4c4e346, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DogGame.Language.DogSpeechDictionary
+  dir: {fileID: 1920128612}
+  substituteUnknown: ...
+  combineSubstitutions: 1
 --- !u!1001 &1651296776
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -14121,6 +14138,7 @@ MonoBehaviour:
   scents: {fileID: 1546545660}
   scentRegistry: {fileID: 1546545661}
   convertScreenToWorld: {fileID: 942637348}
+  dogSpeechDictionary: {fileID: 0}
   brain: {fileID: 1815589289}
   vcamFP: {fileID: 445485060}
   vcamPerspective: {fileID: 1801122503}

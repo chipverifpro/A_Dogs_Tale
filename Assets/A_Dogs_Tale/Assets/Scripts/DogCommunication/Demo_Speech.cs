@@ -1,5 +1,5 @@
 using System.Collections.Generic;
-using DogGame.Comms;
+using DogGame.Language;
 using UnityEngine;
 
 public class Demo_Speech : MonoBehaviour
@@ -7,11 +7,12 @@ public class Demo_Speech : MonoBehaviour
     public List<string> demoMessages;
     [SerializeField] private BottomBanner bottomBanner;
 
-    private DogGame.Comms.SpeechService speechService;
+    public DogSpeechDictionary dogSpeechDictionary;
+    //private DogGame.Comms.SpeechService speechService;
 
     private void Awake()
     {
-        speechService = new DogGame.Comms.SpeechService(bottomBanner);
+        //speechService = new DogGame.Comms.SpeechService(bottomBanner);
         demoMessages = new();
         // example of speech
         demoMessages.Add ("Come Fido, <+>you are a good dog!</+");
@@ -37,6 +38,6 @@ public class Demo_Speech : MonoBehaviour
     public void TestSpeak(WorldObject npcHuman, WorldObject intendedDog)
     {
         int message_number = UnityEngine.Random.Range(0,demoMessages.Count);
-        speechService.Speak(npcHuman, intendedDog, demoMessages[message_number]);
+        dogSpeechDictionary.Speak(npcHuman, intendedDog, demoMessages[message_number]);
     }
 }

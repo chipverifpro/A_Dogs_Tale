@@ -1,8 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using DogGame.Modules;
-using NUnit.Framework;
 using UnityEngine;
 
 namespace DogGame.Language
@@ -11,7 +9,7 @@ namespace DogGame.Language
     /// Global pack dictionary (not per-dog).
     /// Fast lookup using HashSet.
     /// </summary>
-    public static class DogSpeechDictionary
+    public class DogSpeechDictionary : MonoBehaviour
     {
         // Case-insensitive lookup, so "Come" and "come" match.
         private static readonly HashSet<string> knownWords =
@@ -26,8 +24,26 @@ namespace DogGame.Language
             };
 
         // Parameters...
-        public static string substituteUnknown = "..."; // "[blah]";
-        public static bool combineSubstitutions = false;
+
+        public Directory dir;
+
+        private BottomBanner bottomBanner;
+
+        void Awake()
+        {
+            if (dir==null)
+            {
+                Debug.LogError("Dog Speech Dictionary does not have dir define.");
+                return;
+            }
+            if (bottomBanner == null)
+            {
+                bottomBanner = dir.bottomBanner;
+            }  
+        }
+
+        public string substituteUnknown = "..."; // "[blah]";
+        public bool combineSubstitutions = false;
 
         // Configure colors
         // How to style untranslated stage directions
@@ -39,12 +55,39 @@ namespace DogGame.Language
         private const string TAG_Gold               = "<color=#FFD700>";
         private const string TAG_ColorClose         = "</color>";
 
-        public static bool IsKnown(string word) => knownWords.Contains(word);
 
-        public static bool Teach(string word)
+        public bool IsKnown(string word) => knownWords.Contains(word);
+
+        public bool Teach(string word)
         {
             if (string.IsNullOrWhiteSpace(word)) return false;
             return knownWords.Add(word.Trim());
+        }
+
+        /// <summary>
+        /// speaker: who said it (can be null for narration/system)
+        /// listener: intended target (can be null). Not necessarily the only one who hears it.
+        /// message: human text
+        /// </summary>
+        public void Speak(WorldObject speaker, WorldObject listener, string message)
+        {
+            if (bottomBanner == null)
+            {
+                Debug.LogWarning("Speak called but bottomBanner is null.");
+                return;
+            }
+            List<string> learnedWords = new();
+
+            string richText = TranslateHumanToDogSimple(message);
+
+            bottomBanner.DisplayRich(richText);
+            Debug.Log($"Speech {message} -> {richText}");
+            if (learnedWords != null && learnedWords.Count > 0)
+            {
+                // Later: play a sound and show a floating cloud UI.
+                // For now, at least log:
+                Debug.Log("Learned words: " + string.Join(", ", learnedWords));
+            }
         }
 
 
@@ -52,16 +95,14 @@ namespace DogGame.Language
         /// Translates human text into dog-perceived text by replacing unknown words with "blah".
         /// Preserves punctuation attached to words (e.g., "dog!" stays "dog!").
         /// </summary>
-        public static string TranslateHumanToDogSimple(string humanText)
+        public string TranslateHumanToDogSimple(string humanText)
         {
             bool is_tag=false;          // this token is part of a tag
             bool end_tag=false;         // has >
             bool mid_untranslated=false; // between <untranslated> and </untranslated>
             bool mid_learn=false;        // between <learn> and </learn>
-            bool close_tag=false;       // has </
             string change_tag="";       // replacement tag, replaces built_tag at end_tag
             bool strip_tag=false;       // don't keep current tag in output
-            int tone=0;                 // +1 or -1 between <+/-> and end tone tag
             string built_tag="";        // built copy of the current tag.  Used at end_tag
 
             if (string.IsNullOrWhiteSpace(humanText))
@@ -92,7 +133,7 @@ namespace DogGame.Language
                 if (token[0]=='<') 
                     { 
                         is_tag=true; strip_tag=false; built_tag="";
-                        if (token[1]=='/') close_tag = true;    // close_tag is unused
+                        //if (token[1]=='/') close_tag = true;    // close_tag is unused
                     }
                 
                 if (token[token.Length-1]=='>') 
@@ -107,12 +148,12 @@ namespace DogGame.Language
                         { mid_untranslated=true;        change_tag=TAG_UntranslatedOpen; }
                     if (token.Equals("</untranslated>",StringComparison.OrdinalIgnoreCase))
                         { mid_untranslated=false;       change_tag=TAG_UntranslatedClose; }
-                    if (token.Equals("<+>")) { tone=1;  change_tag=TAG_Positive; }
-                    if (token.Equals("<->")) { tone=-1; change_tag=TAG_Negative; }
-                    if (token.Equals("<.>")) { tone=0;  change_tag=TAG_Neutral; }
-                    if (token.Equals("</+>")) { tone=0; change_tag=TAG_ColorClose; }
-                    if (token.Equals("</->")) { tone=0; change_tag=TAG_ColorClose; }
-                    if (token.Equals("</.>")) { tone=0; change_tag=TAG_ColorClose; }
+                    if (token.Equals("<+>")) {          change_tag=TAG_Positive; }
+                    if (token.Equals("<->")) {          change_tag=TAG_Negative; }
+                    if (token.Equals("<.>")) {          change_tag=TAG_Neutral; }
+                    if (token.Equals("</+>")) {         change_tag=TAG_ColorClose; }
+                    if (token.Equals("</->")) {         change_tag=TAG_ColorClose; }
+                    if (token.Equals("</.>")) {         change_tag=TAG_ColorClose; }
                     if (token.Equals("<learn>")) { mid_learn=true; strip_tag=true; }
                     if (token.Equals("</learn>")) { mid_learn=false; strip_tag=true; }
 
@@ -186,7 +227,10 @@ namespace DogGame.Language
             return final;
         }
 
-        private static void SplitToken(string token, out string leading, out string core, out string trailing)
+        // Splits a "puctuation/word/puctuation" into three parts.
+        // This allows the core word to be translated
+        // while being able to add back on the punctuations when done.
+        private void SplitToken(string token, out string leading, out string core, out string trailing)
         {
             int start = 0;
             int end = token.Length - 1;
@@ -202,8 +246,8 @@ namespace DogGame.Language
             core = (start <= end) ? token.Substring(start, end - start + 1) : string.Empty;
         }
 
-
-        public static string CombineRepeatedSubstitutions(string s_input)
+        // merges sequential fillers into one: "I am a dog" > "... ... ... dog" > "... dog"
+        private string CombineRepeatedSubstitutions(string s_input)
         {
             if (string.IsNullOrEmpty(s_input))
                 return s_input;
@@ -289,7 +333,7 @@ namespace DogGame.Language
         }
 
         // used in CombineRepeatedSubstitutions()
-        static bool MatchesAt(string text, int index, string pattern)
+        private bool MatchesAt(string text, int index, string pattern)
         {
             if (index + pattern.Length > text.Length)
                 return false;

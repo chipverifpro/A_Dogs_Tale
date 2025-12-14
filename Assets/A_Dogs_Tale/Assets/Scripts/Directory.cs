@@ -1,5 +1,6 @@
 using UnityEngine;
 using Cinemachine;
+using DogGame.Language;
 
 [DefaultExecutionOrder(-1000)] // big negative = runs very early
 public class Directory : MonoBehaviour
@@ -35,6 +36,8 @@ public class Directory : MonoBehaviour
     public ScentAirGround scents;
     public ScentRegistry scentRegistry;
     public ConvertScreenToWorld convertScreenToWorld;
+    public DogSpeechDictionary dogSpeechDictionary;
+    
 
     [Header("Game Camearas")]
     public CinemachineBrain brain;
@@ -61,7 +64,7 @@ public class Directory : MonoBehaviour
 
     [Header("Communication")]
     public Demo_Speech demo_Speech;
-    
+
 
     [Header("Statistics")]
     public AcvtivityStats activityStats;
