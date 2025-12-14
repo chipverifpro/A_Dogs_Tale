@@ -42,9 +42,11 @@ namespace DogGame.Comms
                 Debug.LogWarning("SpeechService.Speak called but bottomBanner is null.");
                 return;
             }
+            List<string> learnedWords = new();
 
-            List<string> learnedWords;
+            string richText = DogSpeechDictionary.TranslateHumanToDogSimple(message);
 
+/*
             string richText = ProcessForDogDisplay(
                 originalText: message,
                 deleteLearnwordFromSource: true,
@@ -53,7 +55,7 @@ namespace DogGame.Comms
                 combineRepeatedSubstitutionsOrNull: (text) => DogSpeechDictionary.CombineRepeatedSubstitutions(text),
                 out learnedWords
             );
-
+*/
             bottomBanner.DisplayRich(richText);
             Debug.Log($"Speech {message} -> {richText}");
             if (learnedWords != null && learnedWords.Count > 0)
@@ -232,10 +234,16 @@ namespace DogGame.Comms
                 "untranslated",
                 untranslatedBlocks);
 
+            var toneBlocks = new List<ToneBlock>();
+            string protectedTextWithTone = ReplaceToneBlocksWithPlaceholders(protectedText, toneBlocks);
+
             // 3) Translate the protected text (placeholders should survive unchanged)
             string translated = translateHumanToDog != null
-                ? translateHumanToDog(protectedText)
+                ? translateHumanToDog(protectedTextWithTone)
                 : protectedText;
+
+            // reinsert tone segments (inner translated + colored)
+            translated = ReinsertTonePlaceholders(translated, toneBlocks, translateHumanToDog);
 
             // Optionally collapse repeats (your "... ... ..." combiner)
             if (combineRepeatedSubstitutionsOrNull != null)
@@ -248,9 +256,9 @@ namespace DogGame.Comms
                 content => $"{UntranslatedOpen}{EscapeTMP(content)}{UntranslatedClose}");
 
             // 5) Convert tone tags to TMP color tags (do this after translation)
-            withUntranslated = ReplaceToneTag(withUntranslated, "positive", PositiveColor);
-            withUntranslated = ReplaceToneTag(withUntranslated, "neutral",  NeutralColor);
-            withUntranslated = ReplaceToneTag(withUntranslated, "negative", NegativeColor);
+            //withUntranslated = ReplaceToneTag(withUntranslated, "positive", PositiveColor);
+            //withUntranslated = ReplaceToneTag(withUntranslated, "neutral",  NeutralColor);
+            //withUntranslated = ReplaceToneTag(withUntranslated, "negative", NegativeColor);
 
             return withUntranslated;
         }
@@ -510,6 +518,119 @@ namespace DogGame.Comms
 
             return sb.ToString();
         }
+
+
+private struct ToneBlock
+{
+    public string toneTag;   // "negative" / "positive" / "neutral"
+    public string content;   // inner text
+}
+
+private static string ReplaceToneBlocksWithPlaceholders(
+    string input,
+    List<ToneBlock> toneBlocks)
+{
+    input = ReplaceOneToneTag(input, "positive", toneBlocks);
+    input = ReplaceOneToneTag(input, "neutral", toneBlocks);
+    input = ReplaceOneToneTag(input, "negative", toneBlocks);
+    return input;
+}
+
+private static string ReplaceOneToneTag(string input, string tagName, List<ToneBlock> toneBlocks)
+{
+    if (string.IsNullOrEmpty(input)) return input;
+
+    string openTag = "<" + tagName + ">";
+    string closeTag = "</" + tagName + ">";
+
+    int searchIndex = 0;
+    int lastCopyIndex = 0;
+    var builder = new System.Text.StringBuilder(input.Length);
+
+    while (searchIndex < input.Length)
+    {
+        int openIndex = input.IndexOf(openTag, searchIndex, StringComparison.OrdinalIgnoreCase);
+        if (openIndex < 0) break;
+
+        int contentStart = openIndex + openTag.Length;
+        int closeIndex = input.IndexOf(closeTag, contentStart, StringComparison.OrdinalIgnoreCase);
+        if (closeIndex < 0) break;
+
+        builder.Append(input, lastCopyIndex, openIndex - lastCopyIndex);
+
+        string content = input.Substring(contentStart, closeIndex - contentStart);
+        int placeholderIndex = toneBlocks.Count;
+        toneBlocks.Add(new ToneBlock { toneTag = tagName, content = content });
+
+        builder.Append('\uE010');                 // different sentinel than untranslated
+        builder.Append(placeholderIndex.ToString());
+        builder.Append('\uE011');
+
+        int afterClose = closeIndex + closeTag.Length;
+        lastCopyIndex = afterClose;
+        searchIndex = afterClose;
+    }
+
+    if (lastCopyIndex < input.Length)
+        builder.Append(input, lastCopyIndex, input.Length - lastCopyIndex);
+
+    return builder.ToString();
+}
+
+private static string ReinsertTonePlaceholders(
+    string input,
+    List<ToneBlock> toneBlocks,
+    Func<string, string> translateHumanToDog)
+{
+    if (string.IsNullOrEmpty(input) || toneBlocks == null || toneBlocks.Count == 0)
+        return input;
+
+    var builder = new System.Text.StringBuilder(input.Length + 32);
+
+    int i = 0;
+    while (i < input.Length)
+    {
+        if (input[i] == '\uE010')
+        {
+            int j = i + 1;
+            int numberStart = j;
+
+            while (j < input.Length && char.IsDigit(input[j]))
+                j++;
+
+            if (j < input.Length && input[j] == '\uE011')
+            {
+                string numberText = input.Substring(numberStart, j - numberStart);
+                if (int.TryParse(numberText, out int idx) && idx >= 0 && idx < toneBlocks.Count)
+                {
+                    ToneBlock block = toneBlocks[idx];
+
+                    // ✅ Translate the *content* normally so known words work
+                    string translatedInner = translateHumanToDog != null
+                        ? translateHumanToDog(block.content)
+                        : block.content;
+
+                    // Wrap in TMP color based on tone
+                    Color toneColor = block.toneTag.Equals("positive", StringComparison.OrdinalIgnoreCase) ? PositiveColor :
+                                      block.toneTag.Equals("negative", StringComparison.OrdinalIgnoreCase) ? NegativeColor :
+                                      NeutralColor;
+
+                    string hex = ColorUtility.ToHtmlStringRGB(toneColor);
+                    builder.Append($"<color=#{hex}>{translatedInner}</color>");
+
+                    i = j + 1;
+                    continue;
+                }
+            }
+        }
+
+        builder.Append(input[i]);
+        i++;
+    }
+
+    return builder.ToString();
+}
+
 
     }
 }

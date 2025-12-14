@@ -1,6 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using DogGame.Modules;
+using NUnit.Framework;
+using UnityEngine;
 
 namespace DogGame.Language
 {
@@ -22,8 +25,19 @@ namespace DogGame.Language
                 // "fido",
             };
 
+        // Parameters...
         public static string substituteUnknown = "..."; // "[blah]";
-        public static bool combineSubstitutions = true;
+        public static bool combineSubstitutions = false;
+
+        // Configure colors
+        // How to style untranslated stage directions
+        private const string TAG_UntranslatedOpen   = "<i><color=#A0A0A0>";
+        private const string TAG_UntranslatedClose  = "</color></i>";
+        private const string TAG_Neutral            = "<color=white>";
+        private const string TAG_Positive           = "<color=green>";
+        private const string TAG_Negative           = "<color=red>";
+        private const string TAG_Gold               = "<color=#FFD700>";
+        private const string TAG_ColorClose         = "</color>";
 
         public static bool IsKnown(string word) => knownWords.Contains(word);
 
@@ -33,39 +47,125 @@ namespace DogGame.Language
             return knownWords.Add(word.Trim());
         }
 
+
         /// <summary>
         /// Translates human text into dog-perceived text by replacing unknown words with "blah".
         /// Preserves punctuation attached to words (e.g., "dog!" stays "dog!").
         /// </summary>
-        public static string TranslateHumanToDog(string humanText)
+        public static string TranslateHumanToDogSimple(string humanText)
         {
+            bool is_tag=false;          // this token is part of a tag
+            bool end_tag=false;         // has >
+            bool mid_untranslated=false; // between <untranslated> and </untranslated>
+            bool mid_learn=false;        // between <learn> and </learn>
+            bool close_tag=false;       // has </
+            string change_tag="";       // replacement tag, replaces built_tag at end_tag
+            bool strip_tag=false;       // don't keep current tag in output
+            int tone=0;                 // +1 or -1 between <+/-> and end tone tag
+            string built_tag="";        // built copy of the current tag.  Used at end_tag
+
             if (string.IsNullOrWhiteSpace(humanText))
                 return string.Empty;
 
+            // first, make sure there is whitespace around tags so they don't merge with text
+            string temp1 = humanText.Replace("<", " <", StringComparison.OrdinalIgnoreCase);
+            humanText = temp1.Replace(">", "> ", StringComparison.OrdinalIgnoreCase);
+            
             // Simple whitespace tokenization.
             // Later you can improve this to handle quotes, em-dashes, etc.
             string[] tokens = humanText.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
-
+            
+            // start processing humanText, one word at a time
+            string token = "";
             var builder = new StringBuilder(humanText.Length + 16);
 
             for (int i = 0; i < tokens.Length; i++)
             {
-                string token = tokens[i];
+                token = tokens[i];
 
+                // ----------------
                 // Separate leading/trailing punctuation from the core word.
                 SplitToken(token, out string leadingPunct, out string coreWord, out string trailingPunct);
 
+                // ----------------
+                // is this a complete tag, or even a start or end of tag?
+                if (token[0]=='<') 
+                    { 
+                        is_tag=true; strip_tag=false; built_tag="";
+                        if (token[1]=='/') close_tag = true;    // close_tag is unused
+                    }
+                
+                if (token[token.Length-1]=='>') 
+                    { end_tag = true; }
+
+
+                // ----------------
+                // Parse special tag contents
+                if (is_tag)
+                {
+                    if (token.Equals("<untranslated>",StringComparison.OrdinalIgnoreCase))
+                        { mid_untranslated=true;        change_tag=TAG_UntranslatedOpen; }
+                    if (token.Equals("</untranslated>",StringComparison.OrdinalIgnoreCase))
+                        { mid_untranslated=false;       change_tag=TAG_UntranslatedClose; }
+                    if (token.Equals("<+>")) { tone=1;  change_tag=TAG_Positive; }
+                    if (token.Equals("<->")) { tone=-1; change_tag=TAG_Negative; }
+                    if (token.Equals("<.>")) { tone=0;  change_tag=TAG_Neutral; }
+                    if (token.Equals("</+>")) { tone=0; change_tag=TAG_ColorClose; }
+                    if (token.Equals("</->")) { tone=0; change_tag=TAG_ColorClose; }
+                    if (token.Equals("</.>")) { tone=0; change_tag=TAG_ColorClose; }
+                    if (token.Equals("<learn>")) { mid_learn=true; strip_tag=true; }
+                    if (token.Equals("</learn>")) { mid_learn=false; strip_tag=true; }
+
+                    built_tag += token;
+                    
+                    // ----------------
+                    // Act on the tag if we have seen the end of it.
+                    // process the tag: things to do when current tag contains >
+                    if (end_tag)
+                    {
+                        if (!string.IsNullOrEmpty(change_tag)) 
+                            { built_tag=change_tag; change_tag=""; strip_tag=false; }
+                        if (strip_tag) { built_tag=""; strip_tag=false; }
+                        if (!string.IsNullOrEmpty(built_tag))
+                            { 
+                                builder.Append(built_tag);
+                                if (i < tokens.Length - 1)
+                                    builder.Append(' ');
+                            }
+                        end_tag=false;
+                        built_tag="";
+                        is_tag=false; 
+                        continue;
+                    } // end end_tag
+                    continue;
+                } // end is_tag
+
+                // ----------------
+                // process learn word
+                if (mid_learn)
+                {
+                    Debug.Log($":: Learn word :: {token}");
+                    Teach(token);
+                    continue;
+                }
+                
+                // ----------------
+                // keep untranslated word
+                if (mid_untranslated)  // don't translate this word
+                {
+                    // don't translate, just pass it through.
+                    builder.Append(token);
+                    if (i < tokens.Length - 1)
+                        builder.Append(' ');
+                    continue;
+                } // end untranslated
+
+                // ----------------
+                // translate this word
                 if (coreWord.Length == 0)
                 {
                     // Token was only punctuation.
                     builder.Append(token);
-                }
-                else if (IsUntranslatedPlaceholder(coreWord))
-                {
-                    // ✅ Preserve placeholder so it can be reinserted later
-                    builder.Append(leadingPunct);
-                    builder.Append(coreWord);
-                    builder.Append(trailingPunct);
                 }
                 else
                 {
@@ -74,41 +174,17 @@ namespace DogGame.Language
                     builder.Append(translatedCore);
                     builder.Append(trailingPunct);
                 }
-
                 if (i < tokens.Length - 1)
                     builder.Append(' ');
+                continue;
+                // end translated token
             }
+            // TODO close any open tags (color)
 
             string final = builder.ToString();
             final = CombineRepeatedSubstitutions(final);
             return final;
         }
-
-        private static bool IsUntranslatedPlaceholder(string coreWord)
-        {
-            // Matches our protected block markers from the processor:
-            // \uE000{digits}\uE001
-            if (string.IsNullOrEmpty(coreWord))
-                return false;
-
-            if (coreWord.Length < 3)
-                return false;
-
-            if (coreWord[0] != '\uE000')
-                return false;
-
-            if (coreWord[coreWord.Length - 1] != '\uE001')
-                return false;
-
-            for (int i = 1; i < coreWord.Length - 1; i++)
-            {
-                if (!char.IsDigit(coreWord[i]))
-                    return false;
-            }
-
-            return true;
-        }
-
 
         private static void SplitToken(string token, out string leading, out string core, out string trailing)
         {
@@ -212,7 +288,7 @@ namespace DogGame.Language
             return builder.ToString();
         }
 
-        
+        // used in CombineRepeatedSubstitutions()
         static bool MatchesAt(string text, int index, string pattern)
         {
             if (index + pattern.Length > text.Length)
@@ -226,5 +302,6 @@ namespace DogGame.Language
 
             return true;
         }
+        
     }
 }
