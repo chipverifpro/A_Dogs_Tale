@@ -24,7 +24,7 @@ public partial class Player : MonoBehaviour
     public Pack pack;                   // pack structure
 
     [Header("Current Player position")]
-    public Agent agent;             // LEGACY: Everything to do with the currently active player
+//    public Agent agent;             // LEGACY: Everything to do with the currently active player
     public WorldObject agentObject; // module based
 
     //public Vector2 pos2;          // XY or XZ (depending on useXZPlane)
@@ -72,7 +72,7 @@ public partial class Player : MonoBehaviour
             bottomBanner = FindAnyObjectByType<BottomBanner>();
         //if (agent == null)
         //ChangePlayerAgent(pack.packLeaderLegacy);
-        AwakeMouseInput();
+        //AwakeMouseInput();
     }
 
     void InitializeConnections()
@@ -133,26 +133,26 @@ public partial class Player : MonoBehaviour
                 Debug.Log("[Player] Created new Pack component on PackParent.");
             }
 
-            if (pack)
-            {
-                pack.player = this;   // link player reference
-                //if (gen && !pack.gen)
-                //    pack.gen = gen;       // link generator
-                pack.PackParentObject = PackGameObject.transform;
-                //pack.InitializeConnections?.Invoke(); // optional if Pack has its own init
-                Debug.Log($"[Player] Linked Pack: {pack.name}");
-            }
-            else
-            {
-                Debug.LogWarning("[Player] Pack could not be found or created!");
-            }
+//            if (pack)
+//            {
+//                pack.player = this;   // link player reference
+//                //if (gen && !pack.gen)
+//                //    pack.gen = gen;       // link generator
+//                pack.PackParentObject = PackGameObject.transform;
+//                //pack.InitializeConnections?.Invoke(); // optional if Pack has its own init
+//                Debug.Log($"[Player] Linked Pack: {pack.name}");
+//            }
+//            else
+//            {
+//                Debug.LogWarning("[Player] Pack could not be found or created!");
+//            }
         }
     }
 
     void Start()
     {
         //StartCoroutine(DetermineStartPosition());   // background task waits for generator to complete before choosing starting location
-        Move_Start();           // grab initial position from Unity object
+        //Move_Start();           // grab initial position from Unity object
                                 //agent.trail = GetComponent<BreadcrumbTrail>();
                                 //BuildPackObjects(3);    // This exists in Pack class.
         //pack.packAgentList.Add(pack.packLeaderLegacy); // leader agent needs to be added to the packlist.
@@ -163,7 +163,7 @@ public partial class Player : MonoBehaviour
     {
         if (!gen.buildComplete) return; // wait until build is complete
 
-        Input_Update();  // this is the update for inputs and resulting movement
+        //Input_Update();  // this is the update for inputs and resulting movement
                          // Input_Update will call Move_Update with the appropriate parameters.
     }
 

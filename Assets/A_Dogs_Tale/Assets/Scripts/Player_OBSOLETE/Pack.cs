@@ -6,7 +6,7 @@ using System;
 public class Pack : MonoBehaviour
 {
     public Directory dir;
-    public Player player;   // reference to player class, which handles all the player inputs
+    //public Player player;   // reference to player class, which handles all the player inputs
     public DungeonGenerator gen;
     public Transform PackParentObject;  // Parent object that already exists in the scene.  All the PlayerAgents will be attached under it.
     //public GameObject agentVisual;  // Optional visual (e.g., Capsule/Cube). Can be null.
@@ -52,16 +52,6 @@ public class Pack : MonoBehaviour
 
     public void InitializeConnections()
     {
-        // --- Player ---
-        if (!player)
-        {
-            player = FindFirstObjectByType<Player>();
-            if (!player)
-                Debug.LogError("[Pack] Could not find Player in scene!");
-            else
-                Debug.Log($"[Pack] Connected to Player: {player.name}");
-        }
-
         // --- Dungeon Generator ---
         if (!gen)
         {

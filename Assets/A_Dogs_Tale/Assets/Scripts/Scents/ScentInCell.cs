@@ -6,7 +6,7 @@ using System;
 public class ScentInCell             // Everything about ONE scent at one location
 {
     public int agentId;
-    public Agent agent;             // pointer to the agent
+//    public Agent agent;             // pointer to the agent
 
     // Airborne scent
     public float airIntensity;     // current airborne scent strength

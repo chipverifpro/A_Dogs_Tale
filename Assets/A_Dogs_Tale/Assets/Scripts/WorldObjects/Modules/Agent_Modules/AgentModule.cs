@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Linq;
+using DogGame.AI;
 
 // ----- Not a BASE CLASS -----
 
@@ -10,6 +11,7 @@ namespace DogGame.Modules
     [RequireComponent(typeof(AgentPackMemberModule))]
     [RequireComponent(typeof(BlackboardModule))]
     [RequireComponent(typeof(AgentDecisionModuleBase))]
+    [RequireComponent(typeof(MotivationModule))]
     public class AgentModule : WorldModule
     {
         [Header("Debug / Identity")]
@@ -20,6 +22,7 @@ namespace DogGame.Modules
         public AgentMovementModule agentMovementModule { get; protected set; }
         public AgentPackMemberModule agentPackMemberModule { get; protected set; }
         public AgentSensesModule agentSensesModule { get; protected set; }
+        //public MotivationModule motivationModule { get; protected set; }
 
         [Header("Customized Module Views")]
         public AgentBlackboardView agentBlackboard;
@@ -30,6 +33,7 @@ namespace DogGame.Modules
         public AgentDecisionModuleBase currentDecisionModule;
         private AgentDecisionModuleBase[] allDecisionModules;
 
+        public IAgentHandle iAgentHandle;
 
         protected override void Awake()
         {
@@ -38,9 +42,24 @@ namespace DogGame.Modules
             // Find all decision modules attached to this agent
             allDecisionModules = GetComponents<AgentDecisionModuleBase>();
 
+            // Pseudocode inside AgentModule.Initialize
+            //motivationModule = GetComponent<MotivationModule>();
+            //motivationModule.Initialize(this);
+            //currentDecisionModule.Initialize(this); // decision module can read motivationModule.latestPackLoyalty
+
+            // If AgentModule *is* the IAgentHandle, just use "this".
+            //IAgentHandle selfHandle = this as IAgentHandle;
+            //if (selfHandle == null)
+            //{
+            //    Debug.LogError($"{name}: AgentModule does not implement IAgentHandle (or selfHandle not set).", this);
+            //    enabled = false;
+            //    return;
+            //}
+            // Don't call Initialize until dependencies exist (see next section).
+
             foreach (var module in allDecisionModules)
             {
-                //module.Initialize(this);
+                module.Initialize(this);
                 module.enabled = false; // start disabled; we'll enable the active one
                 Debug.Log($"[AgentModule {agentName}] Found decision module: {module.GetType().Name} ({module.DecisionType})", this);
             }
@@ -59,7 +78,6 @@ namespace DogGame.Modules
         public override void Tick(float deltaTime)
         {
             //Debug.Log($"AgentModule {worldObject.DisplayName}: Tick {deltaTime}");
-            
             if (currentDecisionModule != null)
             {
                 currentDecisionModule.Tick(deltaTime);

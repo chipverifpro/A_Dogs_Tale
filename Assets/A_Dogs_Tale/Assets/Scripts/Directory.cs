@@ -19,7 +19,7 @@ public class Directory : MonoBehaviour
     public DungeonGenerator gen;
     public DungeonGUISelector dungeonGUISelector;
     public DungeonBuildSettingsUI dungeonBuildSettingsUI;
-    public Pathfinding pathfinding;
+    //public Pathfinding pathfinding;
 
 
     [Header("Audio Objects")]
@@ -37,7 +37,7 @@ public class Directory : MonoBehaviour
     public ScentRegistry scentRegistry;
     public ConvertScreenToWorld convertScreenToWorld;
     public DogSpeechDictionary dogSpeechDictionary;
-    
+
 
     [Header("Game Camearas")]
     public CinemachineBrain brain;

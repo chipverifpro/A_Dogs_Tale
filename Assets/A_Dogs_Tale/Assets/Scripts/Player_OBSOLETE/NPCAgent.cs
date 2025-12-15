@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 
-
+/*
 //   NPCAgent is a non-player-character (friendly / neutral / hostile).
 public class NPCAgent : Agent
 {
@@ -18,3 +18,4 @@ public class NPCAgent : Agent
         base.Update();
     }
 }
+*/

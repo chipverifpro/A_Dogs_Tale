@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 using DogGame.Modules;           // adjust to your namespaces
+using DogGame.AI;
 // using DogGame.World;    // if WorldObject is in another namespace
 
 [CustomEditor(typeof(WorldObject), true)]
@@ -43,6 +44,8 @@ public class WorldObjectModulesInspector : Editor
     {
         typeof(AgentMovementModule),
         typeof(AgentPackMemberModule),
+        typeof(AgentSensesModule),
+        typeof(MotivationModule),
         // typeof(AgentActionModule),
         // typeof(AgentAnimationModule),
     };

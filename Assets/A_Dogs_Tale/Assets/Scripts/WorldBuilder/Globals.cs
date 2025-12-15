@@ -52,7 +52,7 @@ public partial class DungeonGenerator : MonoBehaviour
     [HideInInspector] public string failure;    // global failure description string
 
     // globally incremented counter across all Agents.
-    private int lastIssuedAgentId = 0;      // allows giving agents unique ID's
+//    private int lastIssuedAgentId = 0;      // allows giving agents unique ID's
 
     // list of directions for neighbor checks
     public Vector2Int[] directions_xy = { Vector2Int.up,
@@ -68,6 +68,7 @@ public partial class DungeonGenerator : MonoBehaviour
 
     public ScentRegistry scentRegistry;
 
+/*
     public List<Agent> agentRegistry; // This list is created in-order, so you can address your
                                       // agentId at agetRegistry[AgentId-1]
 
@@ -89,9 +90,9 @@ public partial class DungeonGenerator : MonoBehaviour
         Debug.Log($"GetNewAgenId({agent}) = {agent.id})");
         return lastIssuedAgentId;
     }
+
+*/
 }
-
-
 
 public partial class DungeonGenerator : MonoBehaviour
 {

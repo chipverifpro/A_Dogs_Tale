@@ -22,6 +22,7 @@ namespace DogGame.Modules
         // each WorldModule belongs to a WorldObject
         public virtual void Initialize(WorldObject owner)
         {
+            Debug.Log($"[{owner.DisplayName}] Initialize WorldModule {this}");
             worldObject = owner;
         }
 

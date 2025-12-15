@@ -413,8 +413,8 @@ public class ScentAirGround : MonoBehaviour
             {
                 ScentInCell scent = cell.scents[sIdx];
                 if (scent == null) continue;    // should not happen unless we nulled out a scent (which we don't do)
-                if (scent.agent == null) {Debug.LogWarning($"ScentAirGround: scent.agent is null for agentId {scent.agentId} in cell at {cell.pos3d}. Skipping scent processing.");
-                    continue;}   // agent missing, skip further processing
+//                if (scent.agent == null) {Debug.LogWarning($"ScentAirGround: scent.agent is null for agentId {scent.agentId} in cell at {cell.pos3d}. Skipping scent processing.");
+//                    continue;}   // agent missing, skip further processing
      //           if (scent.agent.agentScentSource == null) {Debug.LogWarning($"ScentAirGround: scent.agent.agentScentSource is null for agentId {scent.agentId} in cell at {cell.pos3d}. Skipping scent processing.");
      //               continue;}   // scent source missing, skip further processing
      //           if (scent.agent.agentScentSource.scentStabilized == true) {Debug.Log($"ScentAirGround: scent.agentId {scent.agentId} in cell at {cell.pos3d} is stabilized, skipping processing.");
@@ -462,7 +462,7 @@ public class ScentAirGround : MonoBehaviour
                                 ScentInCell newScent = new()
                                 {
                                     agentId = agentId,
-                                    agent = scent.agent,
+//                                    agent = scent.agent,
                                     airGOindex = -1,
                                     groundGOindex = -1
                                 };
@@ -830,7 +830,7 @@ public class ScentAirGround : MonoBehaviour
     public int FindAgentIdScentIndex(Cell cell, int agentId, bool createIfNeeded = true)
     {
         // Determine Agent's scent index
-        Agent agent;
+//        Agent agent;
         int sIdx;
         if (cell == null) return -1;    // cannot do anything if the cell doesn't exist.
         if (cell.scents == null)
@@ -848,21 +848,21 @@ public class ScentAirGround : MonoBehaviour
         if ((sIdx == -1) && createIfNeeded)
         {
             // before creating new scent, we need the agent pointer
-            agent = GetAgentFromAgentId(agentId);
-            if (agent==null) {Debug.LogWarning($"agent = null from GetAgentFromAgentId(agentId={agentId})");}
-            ScentInCell newScent = new()
-            {
-                agentId = agentId,
-                agent = agent
-            };
-            cell.scents.Add(newScent);
+//            agent = null; //GetAgentFromAgentId(agentId);
+//            if (agent==null) {Debug.LogWarning($"agent = null from GetAgentFromAgentId(agentId={agentId})");}
+//            ScentInCell newScent = new()
+//            {
+//                agentId = agentId,
+//                agent = agent
+//            };
+//            cell.scents.Add(newScent);
             sIdx = cell.scents.Count - 1;
         }
         return sIdx;
     }
 
     // returns a pointer to the Agent matching agentId
-    Agent GetAgentFromAgentId(int agentId)
+/*    Agent GetAgentFromAgentId(int agentId)
     {
         Agent agent;
         if ((dir.gen.agentRegistry == null) || (dir.gen.agentRegistry.Count < agentId) || (agentId<1))
@@ -878,7 +878,7 @@ public class ScentAirGround : MonoBehaviour
         }
         return agent;
     }
-
+*/
     // adds the cell to the current big scent list if it isn't already there.
     void AddToScentCellsList(Cell cell)
     {

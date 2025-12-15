@@ -215,7 +215,7 @@ public class CameraModeSwitcher : MonoBehaviour
 
 
 
-
+/*
     void LateUpdate()
     {
         // all cameras point to current agent
@@ -228,7 +228,7 @@ public class CameraModeSwitcher : MonoBehaviour
         // top camera override angle so north is top of screen
         vcamPerspective.transform.rotation = Quaternion.Euler(90f, 0f, 0f); // always north up
     }
-
+*/
 
     void Update_CameraHeight()
     {

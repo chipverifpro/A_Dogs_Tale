@@ -41,6 +41,7 @@ namespace DogGame.Modules
         // next crumb in trail we are following
         public Crumb next_actualCrumb;
         public Crumb next_formationCrumb;
+        public WorldObject targetObject;
 
         [Header("Speed Settings")]
         [Tooltip("Maximum walking speed in meters per second.")]
@@ -93,6 +94,14 @@ namespace DogGame.Modules
                     return;
                 }
             }
+        }
+
+        public void SetDesiredTargetWorldObject(WorldObject target)
+        {
+            targetObject = target;
+            Vector3 targetLocation_world = target.transform.position;
+
+            SetDesiredMove(targetLocation_world);
         }
 
         /// <summary>

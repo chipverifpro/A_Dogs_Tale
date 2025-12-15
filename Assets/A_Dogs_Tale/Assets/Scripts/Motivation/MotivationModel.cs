@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace DogsTale.AI
+namespace DogGame.AI
 {
     #region enums
     // Keep names stable for save-files and tuning tables.
@@ -33,7 +33,7 @@ namespace DogsTale.AI
         InternalState = 1 << 5
     }
     #endregion
-    
+
     #region TrainingProfile
     // Training can be a single number, or split into skills.
     [Serializable]

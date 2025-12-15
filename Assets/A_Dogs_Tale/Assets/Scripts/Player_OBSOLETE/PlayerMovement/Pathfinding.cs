@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 public enum Dir8 { N=0, NE=1, E=2, SE=3, S=4, SW=5, W=6, NW=7 }
 
-public class Pathfinding : MonoBehaviour
+public class Pathfinding_OLD : MonoBehaviour
 {
     public Directory dir;
 
@@ -282,7 +282,7 @@ public class Pathfinding : MonoBehaviour
                 return 0f;
         }
     }
-
+/*
     public void TrySkippingWaypoints(Agent agent)
     {
         Vector3 startPos3;
@@ -315,7 +315,7 @@ public class Pathfinding : MonoBehaviour
             }
         }
     }
-
+*/
     // GPT produced two versions of the Line-of-Sight algorithm.
     // One works on tile coordinates within a Room (RoomLOS).
 

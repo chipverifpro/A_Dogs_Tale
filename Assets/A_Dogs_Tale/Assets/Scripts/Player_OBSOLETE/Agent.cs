@@ -3,6 +3,7 @@ using System.Collections;
 using UnityEngine;
 
 
+/*
 //[RequireComponent(typeof(BreadcrumbTrail))]
 [RequireComponent(typeof(Animator))]
 public partial class Agent : MonoBehaviour
@@ -148,7 +149,7 @@ public partial class Agent : MonoBehaviour
         if (!pack.gen.buildComplete) return;
 
         // deposit scent if moved or 1 second passed
-        if (((Time.time - prevScentTime >= 0.1f) /*&& (!agentScentSource.scentStabilized)*/) || (pos2_int != prevScentLocation))
+        if (((Time.time - prevScentTime >= 0.1f) /*&& (!agentScentSource.scentStabilized)*//*) || (pos2_int != prevScentLocation))
         {
             if (dir.gen.hf!=null) {
                 Cell cell = dir.gen.GetCellFromHf(pos2_int.x, pos2_int.y, height_int, 50);
@@ -774,3 +775,4 @@ public partial class Agent : MonoBehaviour
     }
 
 }
+*/

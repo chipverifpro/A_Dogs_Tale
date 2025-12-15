@@ -1,6 +1,6 @@
 using System;
 using UnityEngine;
-
+/*
 //   PlayerAgent is a member of the player's party.
 public class PlayerAgent : Agent
 {
@@ -17,3 +17,4 @@ public class PlayerAgent : Agent
         base.Update();
     }
 }
+*/

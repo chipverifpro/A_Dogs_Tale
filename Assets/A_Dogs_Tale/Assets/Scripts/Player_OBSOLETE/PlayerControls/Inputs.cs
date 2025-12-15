@@ -2,6 +2,7 @@ using System;
 using UnityEngine;
 using UnityEngine.EventSystems; // to ignore UI clicks
 
+/*
 public partial class Player : MonoBehaviour
 {
 
@@ -81,7 +82,7 @@ public partial class Player : MonoBehaviour
 
         Update_Selectable();
         */
-    }
+/*    }
 
     void UpdateMouseInput()
     {
@@ -381,3 +382,4 @@ public partial class Player : MonoBehaviour
         Debug.Log($"Deselected");
     }
 }
+*/

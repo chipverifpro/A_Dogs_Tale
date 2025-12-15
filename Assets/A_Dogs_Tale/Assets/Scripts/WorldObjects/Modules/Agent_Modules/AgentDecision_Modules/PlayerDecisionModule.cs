@@ -1,6 +1,5 @@
 using UnityEngine;
 using DogGame.AI;  // if your AgentDecisionModuleBase lives here
-using DogGame.Input;
 // using DogGame.World; // if you need WorldObject, etc.
 
 namespace DogGame.Modules
@@ -60,7 +59,12 @@ namespace DogGame.Modules
         public override void Initialize(AgentModule agent)
         {
             base.Initialize(agent);
-
+            if (worldObject==null)
+            {
+                worldObject = GetComponent<WorldObject>();
+                if (worldObject == null)
+                    Debug.LogError($"[PlayerDecisionModule] could not get worldObject.");
+            }
             //if (inputAdapter == null)
             //    inputAdapter = FindFirstObjectByType<NewInputAdapter>();
 
@@ -82,7 +86,7 @@ namespace DogGame.Modules
 
             if (worldObject.agentMovementModule == null)
             {
-                Debug.LogError($"[PlayerDecisionModule {worldObject.DisplayName}] No AgentagentMovementModule found.", this);
+                Debug.LogError($"[PlayerDecisionModule {worldObject.DisplayName}] No agentMovementModule found.", this);
             }
 
             //    if (agentPackMemberModule == null)
@@ -107,7 +111,7 @@ namespace DogGame.Modules
             // Only act if THIS worldObject is the one currently controlled
             if (!gameInputRouter.IsControlled(worldObject))
             {
-                Debug.LogWarning("Tick: IsControlled == false");
+                Debug.LogWarning($"[{worldObject.DisplayName}] Tick: IsControlled == false");
                 return;
             }
 
@@ -408,8 +412,49 @@ namespace DogGame.Modules
                 // TODO: hook to a proximity-based interaction system.
             }
         }
-
         #endregion
         
+        #region PackLoyalty
+        // Mode A: Soft influence (blend / bias movement)
+        // If the player is controlling movement, just bias desired velocity slightly back toward pack.
+        public static Vector3 ApplyPackLoyaltyBias(
+            Vector3 desiredWorldVelocity,
+            Vector3 selfPosition,
+            PackLoyaltyResult packLoyalty,
+            float maxBiasStrength = 0.65f)
+        {
+            if (!packLoyalty.isActive || packLoyalty.directive == PackLoyaltyDirective.None)
+                return desiredWorldVelocity;
+
+            Vector3 toTarget = (packLoyalty.targetPosition - selfPosition);
+            if (toTarget.sqrMagnitude < 0.001f)
+                return desiredWorldVelocity;
+
+            Vector3 loyaltyDirection = toTarget.normalized;
+
+            // Blend: higher urge means more pull.
+            float bias = Mathf.Clamp01(packLoyalty.urge01) * maxBiasStrength;
+
+            Vector3 biased = Vector3.Lerp(desiredWorldVelocity, loyaltyDirection * desiredWorldVelocity.magnitude, bias);
+            return biased;
+        }
+
+        // Mode B: Hard interrupt (autopilot overrides)
+        // If separation is extreme, ignore player input and set a “return-to-pack” goal.
+        
+        // In your DecisionModule tick:
+        public void ApplyPackLoyaltyOverride()
+        {
+            var pack = worldObject.motivationModule.latestPackLoyalty;
+
+            if (pack.isActive && pack.urge01 > 0.85f) // tune later
+            {
+                worldObject.motionModule.motionControlMode = MotionControlMode.Autopilot;
+                worldObject.agentMovementModule.SetDesiredTargetWorldObject(worldObject.agentPackMemberModule.currentPack.packLeader); // whatever your API is
+                worldObject.motionModule.facingMode = FacingMode.FaceMovementDirection;
+                return;
+            }
+        }
+        #endregion
     }
 }

@@ -1,6 +1,7 @@
 using System;
 using UnityEngine;
 
+/*
 public partial class Player : MonoBehaviour
 {
     void Move_Start()
@@ -592,3 +593,4 @@ public partial class Player : MonoBehaviour
         }
     }
 }
+*/

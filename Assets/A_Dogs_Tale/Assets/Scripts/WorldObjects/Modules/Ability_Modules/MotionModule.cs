@@ -35,6 +35,7 @@ namespace DogGame.Modules
     {
         DirectInput,   // WASD / stick, immediate control
         GoalDirected,  // Anything that produces a destination / path (click, pathfinding)
+        Autopilot,     // takeover by motivations
     }
 
     public enum FacingMode

@@ -2905,7 +2905,6 @@ MonoBehaviour:
   - {x: 1, y: 0}
   scent: {fileID: 1546545660}
   scentRegistry: {fileID: 1546545661}
-  agentRegistry: []
   rootName: DungeonGenerator
   floorsName: Floors3D
   wallsName: Walls3D
@@ -3913,7 +3912,6 @@ MonoBehaviour:
   bottomBanner: {fileID: 669106355}
   PackGameObject: {fileID: 766807146}
   pack: {fileID: 766807147}
-  agent: {fileID: 0}
   agentObject: {fileID: 0}
   destination: {x: 0, y: 0, z: 0}
   baseSpeed: 6
@@ -3932,27 +3930,6 @@ MonoBehaviour:
   camera_refresh_needed: 1
   useXZPlane: 1
   constraintIters: 3
-  origin: {x: 0, y: 0, z: 0}
-  cellSize: 1
-  FP_BlockingMask:
-    serializedVersion: 2
-    m_Bits: 3831
-  Overhead_BlockingMask:
-    serializedVersion: 2
-    m_Bits: 3319
-  rayMaxDistance: 200
-  playerTransform: {fileID: 0}
-  turnSpeed: 1
-  smooth: 0
-  smoothTime: 4
-  leaderTravelling: 0
-  mainCamera: {fileID: 1815589284}
-  selectableMask:
-    serializedVersion: 2
-    m_Bits: 247
-  maxSelectDistanceTiles: 5
-  tileSize: 1
-  highlightColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
 --- !u!1 &572427359
 GameObject:
   m_ObjectHideFlags: 0
@@ -5169,7 +5146,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   dir: {fileID: 1920128612}
-  player: {fileID: 556401680}
   gen: {fileID: 409665914}
   PackParentObject: {fileID: 766807148}
   trail: {fileID: 1480059014}
@@ -6887,6 +6863,10 @@ PrefabInstance:
         type: 3}
       insertIndex: -1
       addedObject: {fileID: 1253610039}
+    - targetCorrespondingSourceObject: {fileID: 7970140317087810869, guid: e2802ce6b21f34344bc910cf30e9b3a8,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1253610051}
   m_SourcePrefab: {fileID: 100100000, guid: e2802ce6b21f34344bc910cf30e9b3a8, type: 3}
 --- !u!1 &1066008316
 GameObject:
@@ -8453,6 +8433,7 @@ MonoBehaviour:
     height: 0
     yawDeg: 0
     whichFollowersArrived: 
+  targetObject: {fileID: 0}
   walkSpeedMetersPerSecond: 3
   runSpeedMetersPerSecond: 6
   accelerationMetersPerSecondSquared: 12
@@ -8474,6 +8455,29 @@ MonoBehaviour:
   wanderRadius: 4
   minTimeBetweenTargets: 1.5
   maxTimeBetweenTargets: 4
+--- !u!114 &1253610051
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1253610019}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dcf508356ad0d42d8a13c39a1beb322f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DogsTale.AI.MotivationModule
+  agentName: Unnamed Agent
+  initialDecisionType: 2
+  currentDecisionModule: {fileID: 0}
+  packLoyaltyTuning: {fileID: 0}
+  showDebug: 0
+  trainingProfile:
+    obedience: 0
+    focus: 0
+    scentDiscipline: 0
+    noiseDiscipline: 0
+    bravery: 0
 --- !u!1 &1255866326
 GameObject:
   m_ObjectHideFlags: 0
@@ -12244,6 +12248,10 @@ PrefabInstance:
         type: 3}
       insertIndex: -1
       addedObject: {fileID: 1651296780}
+    - targetCorrespondingSourceObject: {fileID: 4477274621950385561, guid: da33ad6d2d1f9483faa117084b30e547,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1651296796}
   m_SourcePrefab: {fileID: 100100000, guid: da33ad6d2d1f9483faa117084b30e547, type: 3}
 --- !u!4 &1651296778 stripped
 Transform:
@@ -12371,6 +12379,7 @@ MonoBehaviour:
     height: 0
     yawDeg: 0
     whichFollowersArrived: 
+  targetObject: {fileID: 0}
   walkSpeedMetersPerSecond: 3
   runSpeedMetersPerSecond: 6
   accelerationMetersPerSecondSquared: 12
@@ -12503,6 +12512,29 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1, y: 1, z: 1}
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &1651296796
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1651296779}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dcf508356ad0d42d8a13c39a1beb322f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DogsTale.AI.MotivationModule
+  agentName: Unnamed Agent
+  initialDecisionType: 2
+  currentDecisionModule: {fileID: 0}
+  packLoyaltyTuning: {fileID: 0}
+  showDebug: 0
+  trainingProfile:
+    obedience: 0
+    focus: 0
+    scentDiscipline: 0
+    noiseDiscipline: 0
+    bravery: 0
 --- !u!1 &1653904421
 GameObject:
   m_ObjectHideFlags: 0
@@ -14127,7 +14159,6 @@ MonoBehaviour:
   gen: {fileID: 409665914}
   dungeonGUISelector: {fileID: 2032406100}
   dungeonBuildSettingsUI: {fileID: 2015256706}
-  pathfinding: {fileID: 1480059015}
   audioPlayer: {fileID: 215243009}
   audioCatalog: {fileID: 215243011}
   audioMixerGroups: {fileID: 215243010}
@@ -15828,6 +15859,10 @@ PrefabInstance:
         type: 3}
       insertIndex: -1
       addedObject: {fileID: 6544990386685219159}
+    - targetCorrespondingSourceObject: {fileID: 8843402266763018810, guid: 2ce0050a816054aaca2a1076f182f7a8,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 6544990386685219162}
   m_SourcePrefab: {fileID: 100100000, guid: 2ce0050a816054aaca2a1076f182f7a8, type: 3}
 --- !u!1 &6544990386685219093 stripped
 GameObject:
@@ -15949,6 +15984,7 @@ MonoBehaviour:
     height: 0
     yawDeg: 0
     whichFollowersArrived: 
+  targetObject: {fileID: 0}
   walkSpeedMetersPerSecond: 3
   runSpeedMetersPerSecond: 6
   accelerationMetersPerSecondSquared: 12
@@ -16125,6 +16161,29 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1, y: 1, z: 1}
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &6544990386685219162
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6544990386685219093}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dcf508356ad0d42d8a13c39a1beb322f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DogsTale.AI.MotivationModule
+  agentName: Unnamed Agent
+  initialDecisionType: 2
+  currentDecisionModule: {fileID: 0}
+  packLoyaltyTuning: {fileID: 0}
+  showDebug: 0
+  trainingProfile:
+    obedience: 0
+    focus: 0
+    scentDiscipline: 0
+    noiseDiscipline: 0
+    bravery: 0
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

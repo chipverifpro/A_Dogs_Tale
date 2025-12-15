@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using DogGame.Modules;
+using DogGame.AI;
 
 /// <summary>
 /// Use Kind as:
@@ -31,8 +32,7 @@ public enum WorldObjectKind
 /// Attach this to Agents, Scenery, Traps, etc.
 /// </summary>
 [DisallowMultipleComponent]
-
-[DefaultExecutionOrder(100)] // positive = runs late, after most other scripts
+[DefaultExecutionOrder(-100)] // positive = runs early, before modules try to access their worldObject
 public class WorldObject : MonoBehaviour
 {
     [Header("GameObject directory")]
@@ -78,6 +78,9 @@ public class WorldObject : MonoBehaviour
     public NoiseMakerModule noiseMakerModule { get; private set; }
     public ScentEmitterModule scentEmitterModule { get; private set; }
 
+    // Motivation:
+    public MotivationModule motivationModule { get; private set; }
+    
     // Ability:
     public ActivatorModule activatorModule { get; private set; }
     public ContainerModule containerModule { get; private set; }
@@ -129,6 +132,9 @@ public class WorldObject : MonoBehaviour
         agentPackMemberModule = GetComponent<AgentPackMemberModule>();
         agentSensesModule     = GetComponent<AgentSensesModule>();
 
+        // --- Motivation ---
+        motivationModule   = GetComponent<MotivationModule>();
+            
         // --- Ability ---
         activatorModule   = GetComponent<ActivatorModule>();
         containerModule   = GetComponent<ContainerModule>();
@@ -181,7 +187,7 @@ public class WorldObject : MonoBehaviour
         //eatModule?.Tick(dt);
 
         // AGENT DECISION
-        agentModule?.Tick(dt);
+        agentModule?.Tick(dt);  // forwards to appropriate active DecisionModule...
         //playerDecisionModule?.Tick(dt);
         //wanderDecisionModule?.Tick(dt);
         //followerDecisionModule?.Tick(dt);
@@ -190,6 +196,9 @@ public class WorldObject : MonoBehaviour
         agentMovementModule?.Tick(dt);
         agentPackMemberModule?.Tick(dt);
         //agentSensesModule?.Tick(dt);
+
+        // MOTIVATION
+        motivationModule?.Tick(dt);
 
         // ABILITY
         motionModule?.Tick(dt);

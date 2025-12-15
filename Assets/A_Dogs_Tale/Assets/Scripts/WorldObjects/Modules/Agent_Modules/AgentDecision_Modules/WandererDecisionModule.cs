@@ -17,7 +17,7 @@ namespace DogGame.Modules
         public override void Initialize(AgentModule agentController)
         {
             base.Initialize(agentController);
-            PickNewTarget();
+            //PickNewTarget();  // Don't do here, not everything needed has been initialized yet.
         }
 
     public override void Tick(float deltaTime)
