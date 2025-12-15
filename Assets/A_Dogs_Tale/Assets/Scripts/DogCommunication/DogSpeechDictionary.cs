@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using UnityEngine;
+using System.Text.RegularExpressions;
 
 namespace DogGame.Language
 {
@@ -55,8 +56,10 @@ namespace DogGame.Language
         private const string TAG_Gold               = "<color=#FFD700>";
         private const string TAG_ColorClose         = "</color>";
 
+        List<string> justLearnedWords;
 
         public bool IsKnown(string word) => knownWords.Contains(word);
+
 
         public bool Teach(string word)
         {
@@ -76,20 +79,18 @@ namespace DogGame.Language
                 Debug.LogWarning("Speak called but bottomBanner is null.");
                 return;
             }
-            List<string> learnedWords = new();
 
             string richText = TranslateHumanToDogSimple(message);
 
             bottomBanner.DisplayRich(richText);
             Debug.Log($"Speech {message} -> {richText}");
-            if (learnedWords != null && learnedWords.Count > 0)
+            if (justLearnedWords != null && justLearnedWords.Count > 0)
             {
                 // Later: play a sound and show a floating cloud UI.
                 // For now, at least log:
-                Debug.Log("Learned words: " + string.Join(", ", learnedWords));
+                Debug.Log("Just learned words: " + string.Join(", ", justLearnedWords));
             }
         }
-
 
         /// <summary>
         /// Translates human text into dog-perceived text by replacing unknown words with "blah".
@@ -105,6 +106,19 @@ namespace DogGame.Language
             bool strip_tag=false;       // don't keep current tag in output
             string built_tag="";        // built copy of the current tag.  Used at end_tag
 
+            // -----------------------
+            // Before parsing the whole string, extract all the known words first so we can colorize them inline.
+            justLearnedWords = new();
+            
+            string pattern = @"<learn>\s*(.*?)\s*</learn>";
+            MatchCollection matches = Regex.Matches(humanText, pattern, RegexOptions.Singleline);
+            foreach (Match match in matches)
+            {
+                string learnedText = match.Groups[1].Value;
+                if (Teach(learnedText))
+                    justLearnedWords.Add(learnedText);
+            }
+            // ----------------------
             if (string.IsNullOrWhiteSpace(humanText))
                 return string.Empty;
 
@@ -186,7 +200,7 @@ namespace DogGame.Language
                 if (mid_learn)
                 {
                     Debug.Log($":: Learn word :: {token}");
-                    Teach(token);
+                    //Teach(token); // now already being done in PreLearnWords
                     continue;
                 }
                 
@@ -210,10 +224,18 @@ namespace DogGame.Language
                 }
                 else
                 {
+                    if (justLearnedWords.Contains(token))
+                    {
+                        builder.Append(TAG_Gold);
+                    }
                     string translatedCore = IsKnown(coreWord) ? coreWord : substituteUnknown;
                     builder.Append(leadingPunct);
                     builder.Append(translatedCore);
                     builder.Append(trailingPunct);
+                    if (justLearnedWords.Contains(token))
+                    {
+                        builder.Append(TAG_ColorClose);
+                    }
                 }
                 if (i < tokens.Length - 1)
                     builder.Append(' ');
