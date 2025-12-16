@@ -59,12 +59,12 @@ namespace DogGame.Modules
         public override void Initialize(AgentModule agent)
         {
             base.Initialize(agent);
-            if (worldObject==null)
-            {
-                worldObject = GetComponent<WorldObject>();
+            //if (worldObject==null)
+            //{
+                //worldObject = GetComponent<WorldObject>();
                 if (worldObject == null)
                     Debug.LogError($"[PlayerDecisionModule] could not get worldObject.");
-            }
+            //}
             //if (inputAdapter == null)
             //    inputAdapter = FindFirstObjectByType<NewInputAdapter>();
 

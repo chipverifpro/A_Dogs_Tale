@@ -2,6 +2,9 @@ using System.Collections.Generic;
 using UnityEngine;
 using DogGame.Modules;
 using DogGame.AI;
+using System;
+using System.Linq;
+
 
 /// <summary>
 /// Use Kind as:
@@ -27,6 +30,74 @@ public enum WorldObjectKind
     // More...
 }
 
+[Flags]
+public enum ModuleFlags : ulong
+{
+    none          = 0UL,
+    // --- Sensory ---
+    hearingModule = 1UL << 1,
+    smellModule   = 1UL << 2,
+    visionModule  = 1UL << 3,
+    eatModule     = 1UL << 4,
+
+    // --- Agent Decision Modules
+    playerDecisionModule   = 1UL << 5,
+    followerDecisionModule = 1UL << 6,
+    wanderDecisionModule   = 1UL << 7,
+
+    // --- Agent Interface Modules ---
+    agentMovementModule   = 1UL << 8,
+    agentPackMemberModule = 1UL << 9,
+    agentSensesModule     = 1UL << 10,
+    agentModule           = 1UL << 11,
+
+    // --- Motivation ---
+    motivationModule   = 1UL << 12,
+        
+    // --- Ability ---
+    activatorModule   = 1UL << 13,
+    containerModule   = 1UL << 14,
+    interactionModule = 1UL << 15,
+    locationModule    = 1UL << 16,
+    motionModule      = 1UL << 17,
+
+    // --- Output ---
+    appearanceModule  = 1UL << 18,
+    noiseMakerModule  = 1UL << 19,
+    scentEmitterModule= 1UL << 20,
+
+
+    // --- Data ---
+    blackboardModule  = 1UL << 21,
+    placementModule   = 1UL << 22,
+    statusModule      = 1UL << 23,
+
+    // --- Quest ---
+    questModuleBase   = 1UL << 24,
+}
+
+// The following templates can be used for configuring new WorldModule instantiations...
+public static class ModuleFlagsTemplates  // extension functions for the ModuleFlags enum
+{
+    public static ModuleFlags All { get {
+            ModuleFlags all = 0;
+            foreach (ModuleFlags flag in Enum.GetValues(typeof(ModuleFlags)))
+                all |= flag;
+            return all;
+        }
+    }
+    // Some examples of handy configurations...
+    private static readonly ModuleFlags FullAgent =  All
+                                                     & ~ModuleFlags.questModuleBase
+                                                     & ~ModuleFlags.placementModule;
+    private static readonly ModuleFlags ScatterTerrain = ModuleFlags.placementModule
+                                                       | ModuleFlags.scentEmitterModule
+                                                       | ModuleFlags.appearanceModule;
+    private static readonly ModuleFlags TreasureChest = ScatterTerrain
+                                                      | ModuleFlags.containerModule;
+}
+
+
 /// <summary>
 /// Root identity for anything that participates in the game world.
 /// Attach this to Agents, Scenery, Traps, etc.
@@ -36,7 +107,7 @@ public enum WorldObjectKind
 public class WorldObject : MonoBehaviour
 {
     [Header("GameObject directory")]
-    public Directory dir;
+    public Directory dir => Directory.Instance;
 
     [Header("Identity")]
     [SerializeField] private int objectId = -1;
@@ -54,18 +125,19 @@ public class WorldObject : MonoBehaviour
 	//   Agent intelligence
     // --------------------------
     [Header("Modules (auto-populated)")]
-    // Agent: (agentModule will add more Module types exclusively for agents)
-    public AgentModule  agentModule { get; private set; }
 
     // --- Agent Decision Modules
     public PlayerDecisionModule playerDecisionModule { get; private set; }
     public FollowerDecisionModule followerDecisionModule { get; private set; }
-    public WandererDecisionModule wanderDecisionModule { get; private set; }
+    public WandererDecisionModule wandererDecisionModule { get; private set; }
 
     // --- Agent Interface Modules ---
     public AgentMovementModule agentMovementModule { get; private set; }
     public AgentPackMemberModule agentPackMemberModule { get; private set; }
     public AgentSensesModule agentSensesModule { get; private set; }
+
+    // Agent: (agentModule will add more Module types exclusively for agents)
+    public AgentModule  agentModule { get; private set; }
 
     // Sensory:
     public EatModule eatModule { get; private set; }
@@ -106,14 +178,13 @@ public class WorldObject : MonoBehaviour
 
     private void Awake()
     {
-        dir = FindFirstObjectByType<Directory>();
+        //dir = FindFirstObjectByType<Directory>();
         if (dir == null)
         {
-            Debug.LogError($"WorldObject.Awake() was unable to find ObjectDirectory.");
+            Debug.LogError($"WorldObject.Awake() was unable to find Directory.");
         }
 
         // Auto-fill modules PER OBJECT
-
 
         // --- Sensory ---
         hearingModule = GetComponent<HearingModule>();
@@ -124,13 +195,13 @@ public class WorldObject : MonoBehaviour
         // --- Agent Decision Modules
         playerDecisionModule   = GetComponent<PlayerDecisionModule>();
         followerDecisionModule = GetComponent<FollowerDecisionModule>();
-        wanderDecisionModule   = GetComponent<WandererDecisionModule>();
+        wandererDecisionModule = GetComponent<WandererDecisionModule>();
 
         // --- Agent Interface Modules ---
-        agentModule           = GetComponent<AgentModule>();
         agentMovementModule   = GetComponent<AgentMovementModule>();
         agentPackMemberModule = GetComponent<AgentPackMemberModule>();
         agentSensesModule     = GetComponent<AgentSensesModule>();
+        agentModule           = GetComponent<AgentModule>();
 
         // --- Motivation ---
         motivationModule   = GetComponent<MotivationModule>();
@@ -274,6 +345,161 @@ public class WorldObject : MonoBehaviour
         return $"WorldObject[{objectId}] {DisplayName} ({kind})";
     }
     public void SetObjectId(int newId) => objectId = newId;
+
+
+
+    // Allows for creating a template of enables for a particular
+    // type of WorldObject, and all the appropriate modules get created.
+    // Obviously, to run this, you already created the WorldObject we are in.
+    public void CreateModulesIfNeeded(ModuleFlags enables)
+    {
+        // ===============================
+        // Sensory
+        // ===============================
+        if (enables.HasFlag(ModuleFlags.hearingModule))
+            hearingModule = EnsureComponent<HearingModule>();
+        if (hearingModule == null) Debug.LogWarning($"hearingModule = null");
+
+        if (enables.HasFlag(ModuleFlags.smellModule))
+            smellModule = EnsureComponent<SmellModule>();
+        if (smellModule == null) Debug.LogWarning($"smellModule = null");
+
+        if (enables.HasFlag(ModuleFlags.visionModule))
+            visionModule = EnsureComponent<VisionModule>();
+        if (visionModule == null) Debug.LogWarning($"visionModule = null");
+
+        if (enables.HasFlag(ModuleFlags.eatModule))
+            eatModule = EnsureComponent<EatModule>();
+        if (eatModule == null) Debug.LogWarning($"eatModule = null");
+
+
+        // ===============================
+        // Agent Decision Modules
+        // ===============================
+        if (enables.HasFlag(ModuleFlags.playerDecisionModule))
+            playerDecisionModule = EnsureComponent<PlayerDecisionModule>();
+        if (playerDecisionModule == null) Debug.LogWarning($"playerDecisionModule = null");
+
+        if (enables.HasFlag(ModuleFlags.followerDecisionModule))
+            followerDecisionModule = EnsureComponent<FollowerDecisionModule>();
+        if (followerDecisionModule == null) Debug.LogWarning($"followerDecisionModule = null");
+
+        if (enables.HasFlag(ModuleFlags.wanderDecisionModule))
+            wandererDecisionModule = EnsureComponent<WandererDecisionModule>();
+        if (wandererDecisionModule == null) Debug.LogWarning($"wandererDecisionModule = null");
+
+
+        // ===============================
+        // Agent Interface Modules
+        // ===============================
+        if (enables.HasFlag(ModuleFlags.agentMovementModule))
+            agentMovementModule = EnsureComponent<AgentMovementModule>();
+        if (agentMovementModule == null) Debug.LogWarning($"agentMovementModule = null");
+
+        if (enables.HasFlag(ModuleFlags.agentPackMemberModule))
+            agentPackMemberModule = EnsureComponent<AgentPackMemberModule>();
+        if (agentPackMemberModule == null) Debug.LogWarning($"agentPackMemberModule = null");
+
+        if (enables.HasFlag(ModuleFlags.agentSensesModule))
+            agentSensesModule = EnsureComponent<AgentSensesModule>();
+        if (agentSensesModule == null) Debug.LogWarning($"agentSensesModule = null");
+
+        if (enables.HasFlag(ModuleFlags.agentModule))
+            agentModule = EnsureComponent<AgentModule>();
+        if (agentModule == null) Debug.LogWarning($"agentModule = null");
+
+
+        // ===============================
+        // Motivation
+        // ===============================
+        if (enables.HasFlag(ModuleFlags.motivationModule))
+            motivationModule = EnsureComponent<MotivationModule>();
+        if (motivationModule == null) Debug.LogWarning($"motivationModule = null");
+
+
+        // ===============================
+        // Ability
+        // ===============================
+        if (enables.HasFlag(ModuleFlags.activatorModule))
+            activatorModule = EnsureComponent<ActivatorModule>();
+        if (activatorModule == null) Debug.LogWarning($"activatorModule = null");
+
+        if (enables.HasFlag(ModuleFlags.containerModule))
+            containerModule = EnsureComponent<ContainerModule>();
+        if (containerModule == null) Debug.LogWarning($"containerModule = null");
+
+        if (enables.HasFlag(ModuleFlags.interactionModule))
+            interactionModule = EnsureComponent<InteractionModule>();
+        if (interactionModule == null) Debug.LogWarning($"interactionModule = null");
+
+        if (enables.HasFlag(ModuleFlags.locationModule))
+            locationModule = EnsureComponent<LocationModule>();
+        if (locationModule == null) Debug.LogWarning($"locationModule = null");
+
+        if (enables.HasFlag(ModuleFlags.motionModule))
+            motionModule = EnsureComponent<MotionModule>();
+        if (motionModule == null) Debug.LogWarning($"motionModule = null");
+
+
+        // ===============================
+        // Output
+        // ===============================
+        if (enables.HasFlag(ModuleFlags.appearanceModule))
+            appearanceModule = EnsureComponent<AppearanceModule>();
+        if (appearanceModule == null) Debug.LogWarning($"appearanceModule = null");
+
+        if (enables.HasFlag(ModuleFlags.noiseMakerModule))
+            noiseMakerModule = EnsureComponent<NoiseMakerModule>();
+        if (noiseMakerModule == null) Debug.LogWarning($"noiseMakerModule = null");
+
+        if (enables.HasFlag(ModuleFlags.scentEmitterModule))
+            scentEmitterModule = EnsureComponent<ScentEmitterModule>();
+        if (scentEmitterModule == null) Debug.LogWarning($"scentEmitterModule = null");
+
+
+        // ===============================
+        // Data
+        // ===============================
+        if (enables.HasFlag(ModuleFlags.blackboardModule))
+            blackboardModule = EnsureComponent<BlackboardModule>();
+        if (blackboardModule == null) Debug.LogWarning($"blackboardModule = null");
+
+        if (enables.HasFlag(ModuleFlags.placementModule))
+            placementModule = EnsureComponent<PlacementModule>();
+        if (placementModule == null) Debug.LogWarning($"placementModule = null");
+
+        if (enables.HasFlag(ModuleFlags.statusModule))
+            statusModule = EnsureComponent<StatusModule>();
+        if (statusModule == null) Debug.LogWarning($"statusModule = null");
+
+
+        // ===============================
+        // Quest
+        // ===============================
+        if (enables.HasFlag(ModuleFlags.questModuleBase))
+            questModuleBase = EnsureComponent<QuestModuleBase>();
+        if (questModuleBase == null) Debug.LogWarning($"questModuleBase = null");
+    }
+
+    private T EnsureComponent<T>() where T : Component
+    {
+        GameObject go = this.gameObject;
+        var component = go.GetComponent<T>();
+        if (component != null) return component;
+        
+        Type componentType = typeof(T);
+        
+        // Prevent Unity from trying to add abstract behaviours
+        if (typeof(MonoBehaviour).IsAssignableFrom(componentType) && componentType.IsAbstract)
+        {
+            Debug.Log(
+                $"Cannot AddComponent for abstract MonoBehaviour type '{componentType.Name}'. " +
+                $"You must add a concrete subclass instead.",
+                go);
+            return null;
+        }
+        return go.AddComponent<T>();
+    }
 
 
 #if UNITY_EDITOR

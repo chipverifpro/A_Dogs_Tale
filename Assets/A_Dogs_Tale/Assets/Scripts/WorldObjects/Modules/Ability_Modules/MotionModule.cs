@@ -109,7 +109,7 @@ namespace DogGame.Modules
         {
             if (worldObject == null)
             {
-                worldObject = GetComponent<WorldObject>();
+                //worldObject = GetComponent<WorldObject>();
                 if (worldObject == null)
                 {
                     Debug.LogError($"MotionModule Awake: worldObject not found");

@@ -72,6 +72,7 @@ public class Directory : MonoBehaviour
 
     void Awake()
     {
+        Debug.Log("Directory Awake");
         if (Instance != null && Instance != this)
         {
             Debug.LogWarning("Multiple ObjectDirectory instances found. Destroying duplicate.", this);
@@ -82,17 +83,23 @@ public class Directory : MonoBehaviour
 
         pass_num = 0;
         AllReady = false;
-        InitializeDirectory();
+        ValidateDirectory();
     }
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
         // verify that all required objects have been created and configured.
-        InitializeDirectory();
+        ValidateDirectory();
     }
 
-    void InitializeDirectory()
+    private void OnDestroy()
+    {
+        if (Instance == this)
+            Instance = null;
+    }
+    
+    void ValidateDirectory()
     {
         if (AllReady) return;   // last time everything was good so don't go through it again.
 
@@ -100,56 +107,71 @@ public class Directory : MonoBehaviour
         pass_num++;
         //Debug.Log($"[Directory{pass_num}] Begin InitializeConnections");
 
-        // --- DungeonSettings (ScriptableObject) ---
-        if (!cfg)
-        {
-            // Prefer a scene instance if you have one
-            cfg = FindFirstObjectByType<DungeonSettings>(FindObjectsInactive.Include);
-            //if (!cfg)
-            //    cfg = Resources.Load<DungeonSettings>("DungeonSettings"); // put an asset in Resources/
-            if (!cfg)
-                Debug.LogWarning($"[Directory{pass_num}] cfg not found.");
-            else
-                Debug.Log($"[Directory{pass_num}] cfg = {cfg.name}");
-            if (!cfg) failures++;
-        }
+        // ===============================
+        // World Builder Objects
+        // ===============================
+        if (!cfg)                     Debug.LogError($"[Directory{pass_num}] DungeonSettings (cfg) not assigned.");
+        if (!gen)                     Debug.LogError($"[Directory{pass_num}] DungeonGenerator (gen) not assigned.");
+        if (!dungeonGUISelector)      Debug.LogError($"[Directory{pass_num}] DungeonGUISelector not assigned.");
+        if (!dungeonBuildSettingsUI)  Debug.LogError($"[Directory{pass_num}] DungeonBuildSettingsUI not assigned.");
 
-        // --- DungeonGenerator (Monobehavior) ---
-        if (!gen)
-        {
-            // Prefer a scene instance if you have one
-            gen = FindFirstObjectByType<DungeonGenerator>(FindObjectsInactive.Include);
-            if (!gen)
-                Debug.LogWarning($"[Directory{pass_num}] gen not found.");
-            else
-                Debug.Log($"[Directory{pass_num}] gen = {gen.name}");
-            if (!gen) failures++;
-        }
+        // ===============================
+        // Audio Objects
+        // ===============================
+        if (!audioPlayer)             Debug.LogError($"[Directory{pass_num}] AudioPlayer not assigned.");
+        if (!audioCatalog)            Debug.LogError($"[Directory{pass_num}] AudioCatalog not assigned.");
+        if (!audioMixerGroups)        Debug.LogError($"[Directory{pass_num}] AudioMixerGroups not assigned.");
 
-        // --- BottomBanner (scene UI) ---
-        if (!bottomBanner)
-        {
-            bottomBanner = FindFirstObjectByType<BottomBanner>(FindObjectsInactive.Include);
-            if (!bottomBanner)
-                Debug.LogWarning($"[Directory{pass_num}] bottomBanner not found.");
-            else
-                Debug.Log($"[Directory{pass_num}] bottomBanner = {bottomBanner.name}");
-            if (!bottomBanner) failures++;
-        }
+        // ===============================
+        // Game Objects
+        // ===============================
+        if (!playerPack)              Debug.LogError($"[Directory{pass_num}] Player Pack not assigned.");
+        if (!packManager)             Debug.LogError($"[Directory{pass_num}] PackManager not assigned.");
+        if (!player)                  Debug.LogError($"[Directory{pass_num}] Player not assigned.");
+        if (!packFormations)          Debug.LogError($"[Directory{pass_num}] PackFormations not assigned.");
+        if (!scents)                  Debug.LogError($"[Directory{pass_num}] ScentAirGround (scents) not assigned.");
+        if (!scentRegistry)           Debug.LogError($"[Directory{pass_num}] ScentRegistry not assigned.");
+        if (!convertScreenToWorld)    Debug.LogError($"[Directory{pass_num}] ConvertScreenToWorld not assigned.");
+        if (!dogSpeechDictionary)     Debug.LogError($"[Directory{pass_num}] DogSpeechDictionary not assigned.");
 
-        if (!playerPack) Debug.LogWarning($"[Directory{pass_num}] playerPack not assigned.");
-        if (!player) Debug.LogWarning($"[Directory{pass_num}] player not assigned.");
-        if (!brain) Debug.LogWarning($"[Directory{pass_num}] brain not assigned.");
-        if (!vcamFP) Debug.LogWarning($"[Directory{pass_num}] vcamFP not assigned.");
-        if (!vcamPerspective) Debug.LogWarning($"[Directory{pass_num}] vcamPerspective not assigned.");
-        if (!vcamOverhead) Debug.LogWarning($"[Directory{pass_num}] vcamOverhead not assigned.");
-        if (!menuManager) Debug.LogWarning($"[Directory{pass_num}] menuManager not assigned.");
-        if (!sceneFader) Debug.LogWarning($"[Directory{pass_num}] sceneFader not assigned.");
-        if (!audioPlayer) Debug.LogWarning($"[Directory{pass_num}] audioPlayer not assigned.");
-        if (!audioCatalog) Debug.LogWarning($"[Directory{pass_num}] audioCatalog not assigned.");
-        if (!audioMixerGroups) Debug.LogWarning($"[Directory{pass_num}] audioMixerGroups not assigned.");
-        if (!dungeonGUISelector) Debug.LogWarning($"[Directory{pass_num}] dungeonGUISelector not assigned.");
-        if (!dungeonBuildSettingsUI) Debug.LogWarning($"[Directory{pass_num}] dungeonBuildSettingsUI not assigned.");
+        // ===============================
+        // Game Cameras
+        // ===============================
+        if (!brain)                   Debug.LogError($"[Directory{pass_num}] CinemachineBrain (brain) not assigned.");
+        if (!vcamFP)                  Debug.LogError($"[Directory{pass_num}] CinemachineVirtualCamera vcamFP not assigned.");
+        if (!vcamPerspective)         Debug.LogError($"[Directory{pass_num}] CinemachineVirtualCamera vcamPerspective not assigned.");
+        if (!vcamOverhead)            Debug.LogError($"[Directory{pass_num}] CinemachineVirtualCamera vcamOverhead not assigned.");
+        if (!scentCam)                Debug.LogError($"[Directory{pass_num}] Scent Camera not assigned.");
+        if (!cameraModeSwitcher)      Debug.LogError($"[Directory{pass_num}] CameraModeSwitcher not assigned.");
+
+        // ===============================
+        // Game User Interfaces
+        // ===============================
+        if (!bottomBanner)            Debug.LogError($"[Directory{pass_num}] BottomBanner not assigned.");
+
+        // ===============================
+        // Splash Screen Objects
+        // ===============================
+        if (!menuManager)             Debug.LogError($"[Directory{pass_num}] MenuManager not assigned.");
+        if (!sceneFader)              Debug.LogError($"[Directory{pass_num}] SceneFader not assigned.");
+
+        // ===============================
+        // Rendering Objects
+        // ===============================
+        if (!elementStore)            Debug.LogError($"[Directory{pass_num}] ElementStore not assigned.");
+        if (!warehouse)               Debug.LogError($"[Directory{pass_num}] WarehouseGO not assigned.");
+        if (!manufactureGO)           Debug.LogError($"[Directory{pass_num}] ManufactureGO not assigned.");
+        if (!scentAirGround)          Debug.LogError($"[Directory{pass_num}] ScentAirGround not assigned.");
+
+        // ===============================
+        // Communication
+        // ===============================
+        if (!demo_Speech)             Debug.LogError($"[Directory{pass_num}] Demo_Speech not assigned.");
+
+        // ===============================
+        // Statistics
+        // ===============================
+        if (!activityStats)           Debug.LogError($"[Directory{pass_num}] ActivityStats not assigned.");
 
         // ------------------ 
         if (failures == 0)

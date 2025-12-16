@@ -33,10 +33,6 @@ namespace DogGame.Modules
     /// </summary>
     public class AgentMovementModule : WorldModule
     {
-        [Header("Dependencies")]
-        [Tooltip("Low-level motion executor. Auto assigned.")]
-        private MotionModule motion;
-
         [Header("For following and routing")]
         // next crumb in trail we are following
         public Crumb next_actualCrumb;
@@ -84,16 +80,16 @@ namespace DogGame.Modules
         {
             base.Awake();
 
-            if (motion == null)
-            {
-                motion = GetComponent<MotionModule>();
-                if (motion == null)
-                {
-                    Debug.LogError($"[AgentMovementModule] No MotionModule found. Movement will be disabled.", this);
-                    enabled = false;
-                    return;
-                }
-            }
+//            if (motion == null)
+//            {
+//                motion = GetComponent<MotionModule>();
+//                if (motion == null)
+//                {
+//                    Debug.LogError($"[AgentMovementModule] No MotionModule found. Movement will be disabled.", this);
+//                    enabled = false;
+//                    return;
+//                }
+//            }
         }
 
         public void SetDesiredTargetWorldObject(WorldObject target)
@@ -154,7 +150,7 @@ namespace DogGame.Modules
         {
             //Debug.Log($"AgentMovementModule {worldObject.DisplayName}: Tick {deltaTime}");
 
-            if (motion == null)
+            if (worldObject.motionModule == null)
                 return;
 
             // Decide which rate to use: acceleration vs deceleration
@@ -180,7 +176,7 @@ namespace DogGame.Modules
             }
 
             // Delegate to MotionModule for actual movement + rotation
-            motion.Move(currentVelocity, deltaTime);
+            worldObject.motionModule.Move(currentVelocity, deltaTime);
         }
     }
 }

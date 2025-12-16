@@ -39,6 +39,8 @@ namespace DogGame.Modules
         {
             base.Awake();
 
+            //if (dir==null) dir=FindFirstObjectByType<Directory>();
+
             // Find all decision modules attached to this agent
             allDecisionModules = GetComponents<AgentDecisionModuleBase>();
 

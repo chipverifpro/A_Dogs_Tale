@@ -8,14 +8,19 @@ namespace DogGame.Modules
     // Based on WorldModule, are a variety of specialized modules like LocationModule, MotionModule, VisualModule, etc.
     public abstract class WorldModule : MonoBehaviour
     {
-        protected Directory dir;            // auto-set in Awake()
-        protected WorldObject worldObject;  // auto-set in Initialize() called by WorldObject
+        private WorldObject _worldObject;
+        public WorldObject worldObject => _worldObject ??= GetComponent<WorldObject>();
+
+        private Directory _dir;
+        public Directory dir => _dir ??= Directory.Instance;
+
 
         protected virtual void Awake()
         {
-            dir = Directory.Instance;
-            if (dir == null)
-                Debug.LogError("WorldModule: ObjectDirectory.Instance is null!", this);
+            //if (worldObject == null)
+            //    worldObject = GetComponent<WorldObject>();
+            if (worldObject == null)
+                Debug.LogError($"[WorldModule] Awake failed to initialize worldObject. {this}");
         }
 
         // Initialize called from WorldObject.Awake phase
@@ -23,7 +28,7 @@ namespace DogGame.Modules
         public virtual void Initialize(WorldObject owner)
         {
             Debug.Log($"[{owner.DisplayName}] Initialize WorldModule {this}");
-            worldObject = owner;
+            //worldObject = owner;
         }
 
         protected virtual void Update()
