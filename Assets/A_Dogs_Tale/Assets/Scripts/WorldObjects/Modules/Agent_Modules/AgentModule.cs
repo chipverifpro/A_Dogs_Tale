@@ -117,6 +117,17 @@ namespace DogGame.Modules
             {
                 currentDecisionModule.enabled = true;
                 Debug.Log($"[AgentModule {agentName}] Switched to module {currentDecisionModule.GetType().Name}", this);
+                if(currentDecisionModule.DecisionType == AgentDecisionType.Follower)
+                {
+                    // cast the decision module
+                    FollowerDecisionModule followerDecisionModule = (FollowerDecisionModule) currentDecisionModule;
+                    // find the leader
+                    Transform leader = worldObject.agentPackMemberModule.currentPack.packLeader.transform;
+                    // distance is set by number of pack members ahead of me.
+                    float distance = worldObject.agentPackMemberModule.currentPack.packAgentList.Count * 1.5f;
+                    // set who to follow and how far.
+                    followerDecisionModule.SetFollowTarget(leader,distance);
+                }
             }
             else
             {

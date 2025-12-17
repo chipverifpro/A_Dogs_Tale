@@ -12,8 +12,6 @@ GameObject:
   - component: {fileID: 8358741442098151711}
   - component: {fileID: 6045168015099049429}
   - component: {fileID: 1060149346528137253}
-  - component: {fileID: 359906215561207476}
-  - component: {fileID: 1710696616588568040}
   m_Layer: 0
   m_Name: WoodStick_02
   m_TagString: Untagged
@@ -114,39 +112,3 @@ MeshCollider:
   m_Convex: 1
   m_CookingOptions: 30
   m_Mesh: {fileID: 4913693991774066596, guid: 61a117646eeebaf4889cfe66ee0455bb, type: 3}
---- !u!114 &359906215561207476
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5252389275649414144}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a84846d553e584223b8e8df5ef2d7381, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::VisualModule
-  debugMode: 0
-  mainRenderer: {fileID: 6045168015099049429}
-  extraRenderers: []
---- !u!114 &1710696616588568040
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5252389275649414144}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3f6cda250b193442c9f59a935c554f95, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::PlacementModule
-  allowedRooms: -1
-  autoSizeFromMesh: 1
-  sizeInCells: {x: 1, y: 1, z: 1}
-  cellSize: 1
-  edgeHint: 0
-  rotationRule: 1
-  minClearCellsAround: 0
-  mustTouchWall: 0
-  wallPadding: 0.05

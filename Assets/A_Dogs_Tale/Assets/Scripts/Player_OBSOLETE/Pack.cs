@@ -7,7 +7,7 @@ public class Pack : MonoBehaviour
 {
     public Directory dir;
     //public Player player;   // reference to player class, which handles all the player inputs
-    public DungeonGenerator gen;
+
     public Transform PackParentObject;  // Parent object that already exists in the scene.  All the PlayerAgents will be attached under it.
     //public GameObject agentVisual;  // Optional visual (e.g., Capsule/Cube). Can be null.
     public BreadcrumbTrail trail;   // The BreadcrumbTrail class
@@ -34,15 +34,6 @@ public class Pack : MonoBehaviour
         {
             Debug.LogError("Pack (parent) is not assigned.");
         }
-        // --- Dungeon Generator ---
-        if (!gen)
-        {
-            gen = FindFirstObjectByType<DungeonGenerator>();
-            if (!gen)
-                Debug.LogError("[Start:Pack] Could not find DungeonGenerator in scene!");
-            else
-                Debug.Log($"[Start:Pack] Connected to DungeonGenerator: {gen.name}");
-        }
     }
 
     void Awake()
@@ -52,16 +43,6 @@ public class Pack : MonoBehaviour
 
     public void InitializeConnections()
     {
-        // --- Dungeon Generator ---
-        if (!gen)
-        {
-            gen = FindFirstObjectByType<DungeonGenerator>();
-            if (!gen)
-                Debug.LogError("[Pack] Could not find DungeonGenerator in scene!");
-            else
-                Debug.Log($"[Pack] Connected to DungeonGenerator: {gen.name}");
-        }
-
         // --- Breadcrumb Trail ---
         if (!trail)
         {
@@ -129,6 +110,7 @@ public class Pack : MonoBehaviour
     // returns true if the new agent was added to the pack.
     public bool AddMember(WorldObject agent, bool setAsLeader)
     {
+        Debug.Log($"AddMember({agent.DisplayName}, {setAsLeader})");
         if ((agent==null) || (agent.agentPackMemberModule==null))
             return false;   // not a valid pack member
 
@@ -138,6 +120,12 @@ public class Pack : MonoBehaviour
             agent.agentPackMemberModule.currentPack = this;
             // TODO: set leader: agent.agentPackMemberModule.IsLeader
             Debug.Log($"Pack added member {agent.DisplayName}. Remaining {this.ToString()}");
+            if(setAsLeader)
+            {
+                // todo
+            } else {
+                agent.agentModule.SwitchDecisionModule(AgentDecisionType.Follower);
+            }
             return true;
         }
         return false;
@@ -145,6 +133,7 @@ public class Pack : MonoBehaviour
 
     public bool RemoveMember(WorldObject agent)
     {
+        Debug.Log($"RemoveMember({agent.DisplayName})");
         if ((agent==null) || (agent.agentPackMemberModule==null))
             return false;   // not a valid pack member
         
@@ -163,6 +152,7 @@ public class Pack : MonoBehaviour
     public override String ToString()
     {
         String str;
+        Debug.Log("Pack.ToString()");
         str = $"Pack {packName}";
         str += $" Leader {packLeader.DisplayName}";
         str += $" [{packAgentList.Count} members]:";

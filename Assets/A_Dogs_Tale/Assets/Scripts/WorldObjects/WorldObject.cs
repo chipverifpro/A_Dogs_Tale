@@ -87,13 +87,13 @@ public static class ModuleFlagsTemplates  // extension functions for the ModuleF
         }
     }
     // Some examples of handy configurations...
-    private static readonly ModuleFlags FullAgent =  All
+    public static readonly ModuleFlags FullAgent =  All
                                                      & ~ModuleFlags.questModuleBase
                                                      & ~ModuleFlags.placementModule;
-    private static readonly ModuleFlags ScatterTerrain = ModuleFlags.placementModule
+    public static readonly ModuleFlags ScatterTerrain = ModuleFlags.placementModule
                                                        | ModuleFlags.scentEmitterModule
                                                        | ModuleFlags.appearanceModule;
-    private static readonly ModuleFlags TreasureChest = ScatterTerrain
+    public static readonly ModuleFlags TreasureChest = ScatterTerrain
                                                       | ModuleFlags.containerModule;
 }
 
@@ -476,9 +476,9 @@ public class WorldObject : MonoBehaviour
         // ===============================
         // Quest
         // ===============================
-        if (enables.HasFlag(ModuleFlags.questModuleBase))
-            questModuleBase = EnsureComponent<QuestModuleBase>();
-        if (questModuleBase == null) Debug.LogWarning($"questModuleBase = null");
+        //if (enables.HasFlag(ModuleFlags.questModuleBase))
+        //    questModuleBase = EnsureComponent<QuestModuleBase>();
+        //if (questModuleBase == null) Debug.LogWarning($"questModuleBase = null");
     }
 
     private T EnsureComponent<T>() where T : Component

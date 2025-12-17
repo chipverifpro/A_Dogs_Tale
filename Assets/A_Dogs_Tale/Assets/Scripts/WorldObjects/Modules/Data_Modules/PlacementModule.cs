@@ -265,12 +265,12 @@ namespace DogGame.Modules
             transform.rotation = rot;
 
             // If we have a LocationModule, keep it in sync with grid position.
-            if (_location != null)
-            {
-                _location.cell = cell;
-                _location.pos3d_f = cell.pos3d_f; // grid-space master
-                _location.yawDeg = transform.eulerAngles.y;
-            }
+            //if (_location != null)
+            //{
+            //    _location.cell = cell;
+            //    _location.pos3d_f = cell.pos3d_f; // grid-space master
+            //    _location.yawDeg = transform.eulerAngles.y;
+            //}
         }
 
         public void ApplyPlacement(Cell cell, DirFlags wallDir, float yOffset = 0f)
@@ -288,12 +288,12 @@ namespace DogGame.Modules
             transform.position = worldPos;
             transform.rotation = rot;
 
-            if (_location != null)
-            {
-                _location.cell = cell;
-                _location.pos3d_f = cell.pos3d_f;
-                _location.yawDeg = transform.eulerAngles.y;
-            }
+            //if (_location != null)
+            //{
+            //    _location.cell = cell;
+            //    _location.pos3d_f = cell.pos3d_f;
+            //    _location.yawDeg = transform.eulerAngles.y;
+            //}
         }
 
         /// <summary>

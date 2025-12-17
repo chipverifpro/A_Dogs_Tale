@@ -273,9 +273,9 @@ public class FurniturePlacer : MonoBehaviour
             visual = instance.AddComponent<VisionModule>();
 
         // Sync location from cell
-        loc.cell = cell;
-        loc.pos3d_f = cell.pos3d_f;                 // grid-space “truth”
-        loc.yawDeg = instance.transform.eulerAngles.y;
+        //loc.cell = cell;
+        //loc.pos3d_f = cell.pos3d_f;                 // grid-space “truth”
+        //loc.yawDeg = instance.transform.eulerAngles.y;
 
         // Make sure the Transform uses WORLD coordinates
         instance.transform.position = cell.pos3d_world + new Vector3(0f, baseYOffset, 0f);

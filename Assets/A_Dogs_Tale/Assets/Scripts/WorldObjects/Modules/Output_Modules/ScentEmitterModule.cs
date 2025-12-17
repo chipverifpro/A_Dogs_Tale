@@ -23,11 +23,15 @@ namespace DogGame.Modules
         {
             base.Awake();
             deposit_time_left = 0f;
+            normalScentSource = new()
+            {
+                agentId = worldObject.ObjectId
+            };
         }
 
         public override void Tick(float deltaTime)
         {
-            Debug.Log($"ScentEmitterModule {worldObject.DisplayName}: Tick {deltaTime}");
+            //Debug.Log($"ScentEmitterModule {worldObject.DisplayName}: Tick {deltaTime}");
 
             // deposit normal scent
             normalScentSource.Emit(worldObject.locationModule.cell, deltaTime, decayed: 1.0f);

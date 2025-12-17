@@ -2,7 +2,6 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.Controls;
 using UnityEngine.EventSystems;
-using UnityEditor;
 
 /// <summary>
 /// Bridges Unity's new Input System (PlayerInput + InputActions)
@@ -340,20 +339,23 @@ public class NewInputAdapter : MonoBehaviour
             }
 
             // (2) convert screen to targeted object
-            WorldObject worldObject = dir.convertScreenToWorld.GetWorldObjectFromRaycast(screenPosition);
-            if (worldObject!=null)
+            Debug.Log($"dir = {dir}, convertScreenToWorld = {dir.convertScreenToWorld}, screenPosition3 = {screenPosition3}");
+
+            WorldObject targetWorldObject = dir.convertScreenToWorld.GetWorldObjectFromRaycast(screenPosition3);
+            if (targetWorldObject!=null)
             {
                 // If we want to limit the selection distance...
                 // USE: bool CheckSelectionDistance(WorldObject currentSelection, WorldObject player)
                 // then, hasClick = returned value
                 state.hasClickTargetWorldObject   = true;
-                state.clickTargetWorldObject      = worldObject;
-                Debug.Log($"Clicked on worldObject {worldObject.name}");
+                state.clickTargetWorldObject      = targetWorldObject;
+                Debug.Log($"Clicked on worldObject {targetWorldObject.name}");
             }
             else
             {
                 state.hasClickTargetWorldObject   = false;
                 state.clickTargetWorldObject      = null;
+                Debug.Log($"Clicked but no worldObject found");
             }
         }
         else

@@ -797,7 +797,7 @@ public class ScentAirGround : MonoBehaviour
         //Debug.Log($"Adding scent agentId={agentId} to cell at {cell.pos}. sIdx={sIdx}");
         if (sIdx < 0)
         {
-            Debug.Log($"({cell.pos}) sIdx = {sIdx} for agentId = {agentId}");
+            //Debug.Log($"({cell.pos}) sIdx = {sIdx} for agentId = {agentId}");
             return;
         } 
 

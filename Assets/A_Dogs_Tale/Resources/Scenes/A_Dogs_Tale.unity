@@ -845,6 +845,54 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 121848814}
   m_CullTransparentMesh: 1
+--- !u!1 &125976610
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 125976611}
+  - component: {fileID: 125976612}
+  m_Layer: 0
+  m_Name: Packs
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &125976611
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 125976610}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 766807148}
+  m_Father: {fileID: 1767335688}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &125976612
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 125976610}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ddc49c08688544332a425a1143b323cf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PackManager
+  dir: {fileID: 1920128612}
+  playerPack: {fileID: 0}
+  packs: []
 --- !u!1 &134909790
 GameObject:
   m_ObjectHideFlags: 0
@@ -5125,7 +5173,6 @@ GameObject:
   - component: {fileID: 766807148}
   - component: {fileID: 766807147}
   - component: {fileID: 766807149}
-  - component: {fileID: 766807150}
   m_Layer: 0
   m_Name: PlayerPack
   m_TagString: Untagged
@@ -5146,13 +5193,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   dir: {fileID: 1920128612}
-  gen: {fileID: 409665914}
   PackParentObject: {fileID: 766807148}
   trail: {fileID: 1480059014}
   packName: Player Pack
   packLeader: {fileID: 6544990386685219154}
   packAgentList:
-  - {fileID: 0}
+  - {fileID: 6544990386685219154}
   formation: 3
   formationSpacing: 1.5
 --- !u!4 &766807148
@@ -5174,7 +5220,7 @@ Transform:
   - {fileID: 841138160}
   - {fileID: 2142269744}
   - {fileID: 766135308}
-  m_Father: {fileID: 1767335688}
+  m_Father: {fileID: 125976611}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &766807149
 MonoBehaviour:
@@ -5188,21 +5234,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 63dafdb328c574e22b074feeff20468b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PackFormations
---- !u!114 &766807150
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 766807146}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ddc49c08688544332a425a1143b323cf, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::PackManager
-  dir: {fileID: 1920128612}
-  playerPack: {fileID: 766807147}
-  packs: []
 --- !u!1 &805874265
 GameObject:
   m_ObjectHideFlags: 0
@@ -8308,7 +8339,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b112db3959c164550975dd26677f8e8e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::WorldObject
-  dir: {fileID: 1920128612}
   objectId: -1
   displayName: PlayerCrate
   kind: 1
@@ -12486,7 +12516,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b112db3959c164550975dd26677f8e8e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::WorldObject
-  dir: {fileID: 1920128612}
   objectId: -1
   displayName: cur
   kind: 1
@@ -13310,7 +13339,7 @@ Transform:
   - {fileID: 838293513}
   - {fileID: 367847098}
   - {fileID: 1448055485}
-  - {fileID: 766807148}
+  - {fileID: 125976611}
   - {fileID: 556401679}
   - {fileID: 1642226070}
   - {fileID: 408055402}
@@ -14163,13 +14192,13 @@ MonoBehaviour:
   audioCatalog: {fileID: 215243011}
   audioMixerGroups: {fileID: 215243010}
   playerPack: {fileID: 766807147}
-  packManager: {fileID: 766807150}
+  packManager: {fileID: 125976612}
   player: {fileID: 556401680}
   packFormations: {fileID: 766807149}
   scents: {fileID: 1546545660}
   scentRegistry: {fileID: 1546545661}
   convertScreenToWorld: {fileID: 942637348}
-  dogSpeechDictionary: {fileID: 0}
+  dogSpeechDictionary: {fileID: 1642226072}
   brain: {fileID: 1815589289}
   vcamFP: {fileID: 445485060}
   vcamPerspective: {fileID: 1801122503}
@@ -16063,7 +16092,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b112db3959c164550975dd26677f8e8e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::WorldObject
-  dir: {fileID: 1920128612}
   objectId: -1
   displayName: germanshepherd
   kind: 1

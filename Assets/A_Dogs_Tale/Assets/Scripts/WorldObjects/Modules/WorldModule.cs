@@ -17,17 +17,20 @@ namespace DogGame.Modules
 
         protected virtual void Awake()
         {
-            //if (worldObject == null)
-            //    worldObject = GetComponent<WorldObject>();
             if (worldObject == null)
-                Debug.LogError($"[WorldModule] Awake failed to initialize worldObject. {this}");
+            {
+                Debug.Log($"[WorldModule] Awake failed to find worldObject.  Creating it. {this}");
+                _worldObject = gameObject.AddComponent<WorldObject>();
+                if (_worldObject == null)
+                    Debug.LogError($"[WorldModule] Awake failed to create missing worldObject. {this}");
+            }
         }
 
-        // Initialize called from WorldObject.Awake phase
+        // OBSOLETE: Initialize called from WorldObject.Awake phase
         // each WorldModule belongs to a WorldObject
         public virtual void Initialize(WorldObject owner)
         {
-            Debug.Log($"[{owner.DisplayName}] Initialize WorldModule {this}");
+            //Debug.Log($"[{owner.DisplayName}] Initialize WorldModule {this}");
             //worldObject = owner;
         }
 
@@ -38,7 +41,7 @@ namespace DogGame.Modules
 
         public virtual void Tick(float deltaTime)
         {
-            Debug.Log($"WorldModule {worldObject.DisplayName}: Tick {deltaTime}");
+            //Debug.Log($"WorldModule {worldObject.DisplayName}: Tick {deltaTime}");
         }
 
         // future hook: OnWorldObjectAttached(), OnWorldObjectDetached(), etc.

@@ -12,8 +12,6 @@ GameObject:
   - component: {fileID: 1041334602241533978}
   - component: {fileID: 2996977345408867536}
   - component: {fileID: 3141884451220419052}
-  - component: {fileID: 3399932914521848928}
-  - component: {fileID: 5416762061771302394}
   m_Layer: 0
   m_Name: BonesCollection
   m_TagString: Untagged
@@ -114,39 +112,3 @@ MeshCollider:
   m_Convex: 1
   m_CookingOptions: 30
   m_Mesh: {fileID: -762053736167977236, guid: 290d6408170d27241b172a364ad9315e, type: 3}
---- !u!114 &3399932914521848928
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3645553347749133573}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a84846d553e584223b8e8df5ef2d7381, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::VisualModule
-  debugMode: 0
-  mainRenderer: {fileID: 2996977345408867536}
-  extraRenderers: []
---- !u!114 &5416762061771302394
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3645553347749133573}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3f6cda250b193442c9f59a935c554f95, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::PlacementModule
-  allowedRooms: -1
-  autoSizeFromMesh: 1
-  sizeInCells: {x: 1, y: 1, z: 1}
-  cellSize: 1
-  edgeHint: 0
-  rotationRule: 1
-  minClearCellsAround: 0
-  mustTouchWall: 0
-  wallPadding: 0.05

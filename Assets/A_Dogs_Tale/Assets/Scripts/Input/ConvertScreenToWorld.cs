@@ -120,6 +120,7 @@ public class ConvertScreenToWorld : MonoBehaviour
 
     public WorldObject GetWorldObjectFromRaycast(Vector3 screenPosition)
     {
+        Debug.Log($"GetWorldObjectFromRaycast({screenPosition})");
         if (mainCamera == null)
         {
             Debug.LogError("[ConvertScreenToWorld] No mainCamera set; cannot use raycast to convert screen cooudinates to world object.");
@@ -147,7 +148,7 @@ public class ConvertScreenToWorld : MonoBehaviour
           //  Debug.Log($"hit.collider = {hit.collider.name}");
 
             // Find the WorldObject on this hit (or its parents)
-            WorldObject wo = hit.collider.GetComponentInParent<WorldObject>();
+            WorldObject wo = hit.collider.GetComponent<WorldObject>();
             targetedWorldObject = wo;
             if (wo == null)
             {
@@ -157,9 +158,12 @@ public class ConvertScreenToWorld : MonoBehaviour
                 return null;
             }
             targetedWorldObject_valid = true;
-          //  Debug.Log($"Returning wo = {wo.DisplayName}");
+            Debug.Log($"Hit wo = {wo.DisplayName}");
             
             dir.demo_Speech.TestSpeak(wo,null);
+            PromoteToPackMemberOptions options = new();
+            WorldObjectAgentPromoter.PromoteToFollower(wo.gameObject, options);
+
             return wo;
         }
         else

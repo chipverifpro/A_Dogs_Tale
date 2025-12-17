@@ -25,7 +25,7 @@ namespace DogGame.Modules
     // Lots of helpers for position conversions between 2D/3D, int/float, world/grid space, etc.
     public class LocationModule : WorldModule
     {
-        public Cell cell;           // current cell occupied
+        public Cell cell => dir.gen.GetCellFromHf(x, y, z, 50);           // current cell occupied
         public Vector3 pos3d_f;     // master position in map grid space (z=height)
         public float yawDeg = 0f;   // facing direction in degrees, 0 = north (+y), clockwise
         public Quaternion tilt = Quaternion.identity; // optional tilt (when on a slope, etc.)
@@ -48,12 +48,17 @@ namespace DogGame.Modules
         public void SetGridPosition(float x, float y, float z)
         {
             pos3d_f = new Vector3(x, y, z);
-            cell = dir.gen.GetCellFromHf((int)x, (int)y, (int)z, 50);
+            //cell = dir.gen.GetCellFromHf((int)x, (int)y, (int)z, 50);
         }
 
         public void SetWorldPosition(Vector3 worldPos)
         {
             pos3d_f = new Vector3(worldPos.x, worldPos.z, worldPos.y);
+        }
+
+        public Vector3 GetWorldPosition()
+        {
+            return pos3d_f;
         }
     }
 }

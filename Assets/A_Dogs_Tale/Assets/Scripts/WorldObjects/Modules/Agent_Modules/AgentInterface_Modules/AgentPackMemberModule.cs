@@ -27,6 +27,7 @@ namespace DogGame.Modules
 
         public void JoinPack(Pack packToJoin, bool setAsLeader = false)
         {
+            Debug.Log($"JoinPack ({packToJoin}, {setAsLeader}) this");
             if (packToJoin == null) return;
 
             if (currentPack != null && currentPack != packToJoin)

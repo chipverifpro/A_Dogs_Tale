@@ -407,7 +407,7 @@ public partial class DungeonGenerator : MonoBehaviour
             regenerateCoroutine = null;
 
             // this must be after buildComplete = true;
-            yield return StartCoroutine(dir.player.DetermineStartPosition());
+            //yield return StartCoroutine(dir.player.DetermineStartPosition());
         }
         finally { if (local_tm) tm.End(); }
         TimeManager.Instance.DumpStats();

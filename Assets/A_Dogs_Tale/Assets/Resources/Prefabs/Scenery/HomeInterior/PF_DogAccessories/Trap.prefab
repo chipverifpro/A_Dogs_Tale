@@ -12,8 +12,6 @@ GameObject:
   - component: {fileID: 8993698738272845002}
   - component: {fileID: 6572157117651830784}
   - component: {fileID: 5912983308220390334}
-  - component: {fileID: 5571921323115915766}
-  - component: {fileID: 2970164194955671753}
   m_Layer: 0
   m_Name: Trap
   m_TagString: Untagged
@@ -114,39 +112,3 @@ MeshCollider:
   m_Convex: 1
   m_CookingOptions: 30
   m_Mesh: {fileID: 3954461520349438498, guid: ec0975e48645fd047a4af4696c1003c4, type: 3}
---- !u!114 &5571921323115915766
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4626325344983378389}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a84846d553e584223b8e8df5ef2d7381, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::VisualModule
-  debugMode: 0
-  mainRenderer: {fileID: 6572157117651830784}
-  extraRenderers: []
---- !u!114 &2970164194955671753
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4626325344983378389}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3f6cda250b193442c9f59a935c554f95, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::PlacementModule
-  allowedRooms: -1
-  autoSizeFromMesh: 1
-  sizeInCells: {x: 2, y: 1, z: 2}
-  cellSize: 1
-  edgeHint: 0
-  rotationRule: 1
-  minClearCellsAround: 0
-  mustTouchWall: 0
-  wallPadding: 0.05
