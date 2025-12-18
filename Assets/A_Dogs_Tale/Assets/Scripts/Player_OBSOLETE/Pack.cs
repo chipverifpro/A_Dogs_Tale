@@ -111,14 +111,14 @@ public class Pack : MonoBehaviour
     public bool AddMember(WorldObject agent, bool setAsLeader)
     {
         Debug.Log($"AddMember({agent.DisplayName}, {setAsLeader})");
-        if ((agent==null) || (agent.agentPackMemberModule==null))
+        if ((agent==null) || (agent.packMemberModule==null))
             return false;   // not a valid pack member
 
         if (!packAgentList.Contains(agent))
         {
             packAgentList.Add(agent);
-            agent.agentPackMemberModule.currentPack = this;
-            // TODO: set leader: agent.agentPackMemberModule.IsLeader
+            agent.packMemberModule.currentPack = this;
+            // TODO: set leader: agent.packMemberModule.IsLeader
             Debug.Log($"Pack added member {agent.DisplayName}. Remaining {this.ToString()}");
             if(setAsLeader)
             {
@@ -134,14 +134,14 @@ public class Pack : MonoBehaviour
     public bool RemoveMember(WorldObject agent)
     {
         Debug.Log($"RemoveMember({agent.DisplayName})");
-        if ((agent==null) || (agent.agentPackMemberModule==null))
+        if ((agent==null) || (agent.packMemberModule==null))
             return false;   // not a valid pack member
         
         if (!packAgentList.Contains(agent))
         {
             packAgentList.Remove(agent);
-            agent.agentPackMemberModule.currentPack = null;
-            // TODO: clear leader: agent.agentPackMemberModule.IsLeader
+            agent.packMemberModule.currentPack = null;
+            // TODO: clear leader: agent.packMemberModule.IsLeader
             //.      pick a new leader?
             Debug.Log($"Pack removed member {agent.DisplayName}. Remaining {this.ToString()}");
             return true;

@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace DogGame.Modules
 {
-    public class AgentPackMemberModule : WorldModule
+    public class PackMemberModule : WorldModule
     {
         public Pack currentPack;
 
@@ -22,7 +22,7 @@ namespace DogGame.Modules
 
         public override void Tick(float deltaTime)
         {
-            //Debug.Log($"AgentPackMemberModule {worldObject.DisplayName}: Tick {deltaTime}");
+            //Debug.Log($"PackMemberModule {worldObject.DisplayName}: Tick {deltaTime}");
         }
 
         public void JoinPack(Pack packToJoin, bool setAsLeader = false)

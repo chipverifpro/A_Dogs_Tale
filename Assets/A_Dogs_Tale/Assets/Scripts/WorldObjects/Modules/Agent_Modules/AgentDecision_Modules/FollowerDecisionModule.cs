@@ -100,12 +100,12 @@ namespace DogGame.Modules
         {
             if (worldObject == null ||
                 worldObject.agentModule == null ||
-                worldObject.agentModule.agentPackMemberModule == null)
+                worldObject.packMemberModule == null)
             {
                 return;
             }
 
-            var packMember = worldObject.agentModule.agentPackMemberModule;
+            var packMember = worldObject.packMemberModule;
             var currentPack = packMember.currentPack;
 
             if (currentPack == null || currentPack.packLeader == null)

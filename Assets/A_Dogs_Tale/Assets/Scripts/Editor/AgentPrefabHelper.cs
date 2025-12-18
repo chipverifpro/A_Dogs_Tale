@@ -3,7 +3,7 @@ using UnityEditor;
 using UnityEngine;
 
 //using DogGame.World;       // WorldObject, LocationModule, MotionModule, BlackboardModule, etc.
-using DogGame.Modules;          // AgentModule, AgentMovementModule, AgentSenseModule, AgentPackMemberModule, AgentBlackboardView
+using DogGame.Modules;          // AgentModule, AgentMovementModule, AgentSenseModule, PackMemberModule, AgentBlackboardView
 //using DogGame.Sensory;     // VisionModule, HearingModule, SmellModule, ScentEmitterModule, SoundEmitterModule
 // using DogGame.Visuals;  // If you have a VisualModule namespace
 
@@ -35,8 +35,7 @@ public static class AgentPrefabHelper
         // ---- AGENT BRAIN & INTERFACES ----
         addedCount += EnsureComponent<AgentModule>(root);
         addedCount += EnsureComponent<AgentMovementModule>(root);
-        addedCount += EnsureComponent<AgentSensesModule>(root);
-        addedCount += EnsureComponent<AgentPackMemberModule>(root);
+        addedCount += EnsureComponent<PackMemberModule>(root);
         // AgentBlackboardView is likely a pure C# class, not a MonoBehaviour.
         // If you've made it a component, uncomment this:
         // addedCount += EnsureComponent<AgentBlackboardView>(root);

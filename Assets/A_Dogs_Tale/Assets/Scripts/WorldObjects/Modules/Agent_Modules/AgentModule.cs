@@ -7,8 +7,7 @@ using DogGame.AI;
 namespace DogGame.Modules
 {
     [RequireComponent(typeof(AgentMovementModule))]
-    [RequireComponent(typeof(AgentSensesModule))]
-    [RequireComponent(typeof(AgentPackMemberModule))]
+    [RequireComponent(typeof(PackMemberModule))]
     [RequireComponent(typeof(BlackboardModule))]
     [RequireComponent(typeof(AgentDecisionModuleBase))]
     [RequireComponent(typeof(MotivationModule))]
@@ -17,11 +16,10 @@ namespace DogGame.Modules
         [Header("Debug / Identity")]
         public string agentName = "Unnamed Agent";
 
-        [Header("Agent Specific Modules")]
+        //[Header("Agent Specific Modules")]
         // Agent Specific modules (most build on other modules):
-        public AgentMovementModule agentMovementModule { get; protected set; }
-        public AgentPackMemberModule agentPackMemberModule { get; protected set; }
-        public AgentSensesModule agentSensesModule { get; protected set; }
+        //public AgentMovementModule agentMovementModule { get; protected set; }
+        //public PackMemberModule packMemberModule { get; protected set; }
         //public MotivationModule motivationModule { get; protected set; }
 
         [Header("Customized Module Views")]
@@ -122,9 +120,9 @@ namespace DogGame.Modules
                     // cast the decision module
                     FollowerDecisionModule followerDecisionModule = (FollowerDecisionModule) currentDecisionModule;
                     // find the leader
-                    Transform leader = worldObject.agentPackMemberModule.currentPack.packLeader.transform;
+                    Transform leader = worldObject.packMemberModule.currentPack.packLeader.transform;
                     // distance is set by number of pack members ahead of me.
-                    float distance = worldObject.agentPackMemberModule.currentPack.packAgentList.Count * 1.5f;
+                    float distance = worldObject.packMemberModule.currentPack.packAgentList.Count * 1.5f;
                     // set who to follow and how far.
                     followerDecisionModule.SetFollowTarget(leader,distance);
                 }

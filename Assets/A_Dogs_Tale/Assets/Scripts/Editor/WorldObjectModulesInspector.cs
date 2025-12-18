@@ -43,8 +43,7 @@ public class WorldObjectModulesInspector : Editor
     private static readonly Type[] AgentControlModuleTypes =
     {
         typeof(AgentMovementModule),
-        typeof(AgentPackMemberModule),
-        typeof(AgentSensesModule),
+        typeof(PackMemberModule),
         typeof(MotivationModule),
         // typeof(AgentActionModule),
         // typeof(AgentAnimationModule),

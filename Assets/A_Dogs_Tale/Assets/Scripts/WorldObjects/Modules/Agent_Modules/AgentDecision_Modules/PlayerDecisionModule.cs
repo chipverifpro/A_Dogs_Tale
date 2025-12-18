@@ -89,12 +89,6 @@ namespace DogGame.Modules
                 Debug.LogError($"[PlayerDecisionModule {worldObject.DisplayName}] No agentMovementModule found.", this);
             }
 
-            //    if (agentPackMemberModule == null)
-            //        agentPackMemberModule = worldObject.GetModule<AgentPackMemberModule>();
-
-            //    if (agentSensesModule == null)
-            //        agentSensesModule = worldObject.GetModule<AgentSensesModule>();
-
             if (cameraForMovement == null)
                 cameraForMovement = Camera.main;
         }
@@ -177,16 +171,16 @@ namespace DogGame.Modules
 
         private void HandleAgentSwitchingAndFormation(PlayerInputState state)
         {
-            if (worldObject.agentPackMemberModule == null) return;
+            if (worldObject.packMemberModule == null) return;
 
             if (state.requestedPlayerAgentIndex >= 0)
             {
-                worldObject.agentPackMemberModule.RequestBecomeControlledAgent(state.requestedPlayerAgentIndex);
+                worldObject.packMemberModule.RequestBecomeControlledAgent(state.requestedPlayerAgentIndex);
             }
 
             if (state.changeFormationPressed)
             {
-                worldObject.agentPackMemberModule.CycleFormation();
+                worldObject.packMemberModule.CycleFormation();
             }
         }
 
@@ -450,7 +444,7 @@ namespace DogGame.Modules
             if (pack.isActive && pack.urge01 > 0.85f) // tune later
             {
                 worldObject.motionModule.motionControlMode = MotionControlMode.Autopilot;
-                worldObject.agentMovementModule.SetDesiredTargetWorldObject(worldObject.agentPackMemberModule.currentPack.packLeader); // whatever your API is
+                worldObject.agentMovementModule.SetDesiredTargetWorldObject(worldObject.packMemberModule.currentPack.packLeader); // whatever your API is
                 worldObject.motionModule.facingMode = FacingMode.FaceMovementDirection;
                 return;
             }

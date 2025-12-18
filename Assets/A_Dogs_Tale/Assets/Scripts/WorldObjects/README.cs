@@ -18,7 +18,7 @@ WORLDOBJECTS/
             AGENTINTERFACE_MODULES/
                 AgentMovementModule         --Helpers to PHYSICAL_MODULES
                 AgentSenseModule            --Helpers/Aggregator to SENSORY_MODULES
-                AgentPackMemberModule       --Link to pack, role in pack
+                PackMemberModule       --Link to pack, role in pack
                 AgentBlackboardView         --Blackboard overlay to abstract out lookups
         DATA_MODULES/
             BlackboardModule                --Dictionary of name/value pairs

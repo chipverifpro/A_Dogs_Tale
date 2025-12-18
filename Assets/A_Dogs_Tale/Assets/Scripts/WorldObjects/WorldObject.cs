@@ -47,8 +47,8 @@ public enum ModuleFlags : ulong
 
     // --- Agent Interface Modules ---
     agentMovementModule   = 1UL << 8,
-    agentPackMemberModule = 1UL << 9,
-    agentSensesModule     = 1UL << 10,
+    packMemberModule = 1UL << 9,
+    // OBSOLETE: agentSensesModule     = 1UL << 10,
     agentModule           = 1UL << 11,
 
     // --- Motivation ---
@@ -133,8 +133,7 @@ public class WorldObject : MonoBehaviour
 
     // --- Agent Interface Modules ---
     public AgentMovementModule agentMovementModule { get; private set; }
-    public AgentPackMemberModule agentPackMemberModule { get; private set; }
-    public AgentSensesModule agentSensesModule { get; private set; }
+    public PackMemberModule packMemberModule { get; private set; }
 
     // Agent: (agentModule will add more Module types exclusively for agents)
     public AgentModule  agentModule { get; private set; }
@@ -199,8 +198,7 @@ public class WorldObject : MonoBehaviour
 
         // --- Agent Interface Modules ---
         agentMovementModule   = GetComponent<AgentMovementModule>();
-        agentPackMemberModule = GetComponent<AgentPackMemberModule>();
-        agentSensesModule     = GetComponent<AgentSensesModule>();
+        packMemberModule = GetComponent<PackMemberModule>();
         agentModule           = GetComponent<AgentModule>();
 
         // --- Motivation ---
@@ -265,8 +263,7 @@ public class WorldObject : MonoBehaviour
 
         // AGENT INTERFACE
         agentMovementModule?.Tick(dt);
-        agentPackMemberModule?.Tick(dt);
-        //agentSensesModule?.Tick(dt);
+        packMemberModule?.Tick(dt);
 
         // MOTIVATION
         motivationModule?.Tick(dt);
@@ -396,13 +393,9 @@ public class WorldObject : MonoBehaviour
             agentMovementModule = EnsureComponent<AgentMovementModule>();
         if (agentMovementModule == null) Debug.LogWarning($"agentMovementModule = null");
 
-        if (enables.HasFlag(ModuleFlags.agentPackMemberModule))
-            agentPackMemberModule = EnsureComponent<AgentPackMemberModule>();
-        if (agentPackMemberModule == null) Debug.LogWarning($"agentPackMemberModule = null");
-
-        if (enables.HasFlag(ModuleFlags.agentSensesModule))
-            agentSensesModule = EnsureComponent<AgentSensesModule>();
-        if (agentSensesModule == null) Debug.LogWarning($"agentSensesModule = null");
+        if (enables.HasFlag(ModuleFlags.packMemberModule))
+            packMemberModule = EnsureComponent<PackMemberModule>();
+        if (packMemberModule == null) Debug.LogWarning($"packMemberModule = null");
 
         if (enables.HasFlag(ModuleFlags.agentModule))
             agentModule = EnsureComponent<AgentModule>();

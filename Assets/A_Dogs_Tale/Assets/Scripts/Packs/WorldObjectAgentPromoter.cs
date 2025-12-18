@@ -69,7 +69,7 @@ using DogGame.AI;
         //    if (agentMovementModule==null) Debug.LogWarning($"agentMovementModule = {agentMovementModule}");
         //    var motivationModule  = EnsureComponent<MotivationModule>(targetObject);
         //    if (motivationModule==null) Debug.LogWarning($"motivationModule = {motivationModule}");
-        //    var packMemberModule  = EnsureComponent<AgentPackMemberModule>(targetObject);
+        //    var packMemberModule  = EnsureComponent<PackMemberModule>(targetObject);
         //    if (packMemberModule==null) Debug.LogWarning($"packMemberModule = {packMemberModule}");
 
         //    var agentModule = EnsureComponent<AgentModule>(targetObject);
@@ -142,7 +142,7 @@ using DogGame.AI;
             wo.motivationModule.trainingProfile.focus     = 0.35f;
 
             // packMemberModule.role = PackRole.Follower;
-            //wo.agentPackMemberModule.currentPack = dir.playerPack;
+            //wo.packMemberModule.currentPack = dir.playerPack;
 
             // Mark debug agents clearly
             wo.agentModule.agentName = $"{wo.agentModule.agentName} (DEBUG Follower)";
@@ -152,7 +152,7 @@ using DogGame.AI;
         {
             // Replace this with your actual access path to the pack system.
             // E.g. agentModule.dir.worldModule.packSystem.JoinAsFollower(agentModule)
-            var packMemberModule = agentModule.worldObject.agentPackMemberModule;
+            var packMemberModule = agentModule.worldObject.packMemberModule;
             
             if (packMemberModule == null)
             {

@@ -237,8 +237,8 @@ public partial class Player : MonoBehaviour
         bool old_active = agentObject.appearanceModule.IsEnabled();
         agentObject = new_agent;
         //agentObject.appearanceModule.SetVisible(true);    // if old prefab was hidden by the first-person camera, bring it back
-        agentObject.agentPackMemberModule.RequestBecomeLeader();
-        //agentObject.agentPackMemberModule.trailFollower = false;
+        agentObject.packMemberModule.RequestBecomeLeader();
+        //agentObject.packMemberModule.trailFollower = false;
         agentObject.appearanceModule.camera_refresh_needed = true;   // camera visibility refresh
         agentObject.appearanceModule.SetVisible(old_active);  // if old was invisible, make new one also invisible.
         pack.packLeader = agentObject;
@@ -256,7 +256,7 @@ public partial class Player : MonoBehaviour
         int old_leader_id = 0;
         int old_leader_index = -1;
         for (int i = 0; i < pack.packAgentList.Count; i++)
-            if (pack.packAgentList[i].agentPackMemberModule.IsLeader == true)   // old trailLeader
+            if (pack.packAgentList[i].packMemberModule.IsLeader == true)   // old trailLeader
             {
                 old_leader_id = pack.packAgentList[i].ObjectId;
                 old_leader_index = i;
@@ -278,7 +278,7 @@ public partial class Player : MonoBehaviour
                 pack.packAgentList.Insert(0, new_leader_agent);
                 ChangeTrailEater(new_agent_id, old_leader_id);
 
-                pack.packAgentList[0].agentPackMemberModule.RequestBecomeLeader();
+                pack.packAgentList[0].packMemberModule.RequestBecomeLeader();
 
                 ChangePlayerAgent(pack.packAgentList[0]);    // player agent is now front of list
                 break;

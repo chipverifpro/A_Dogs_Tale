@@ -44,8 +44,8 @@ public enum ModuleFlags : ulong
 
     // --- Agent Interface Modules ---
     agentMovementModule   = 1UL << 8,
-    agentPackMemberModule = 1UL << 9,
-    agentSensesModule     = 1UL << 10,
+    packMemberModule = 1UL << 9,
+    // agentSensesModule     = 1UL << 10, //OBSOLETE
     agentModule           = 1UL << 11,
 
     // --- Motivation ---
