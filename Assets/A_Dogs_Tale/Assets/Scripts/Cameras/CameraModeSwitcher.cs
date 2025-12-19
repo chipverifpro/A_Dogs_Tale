@@ -3,7 +3,7 @@ using Cinemachine;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-public enum CameraModes { Unchanged = 0, FP, Overhead, Perspective };   // Unchanged is not a valid camera, just means leave as-is
+public enum CameraModes { Unchanged = 0, FP, Overhead, Perspective, Nose };   // Unchanged is not a valid camera, just means leave as-is
 
 public class CameraModeSwitcher : MonoBehaviour
 {
@@ -16,7 +16,7 @@ public class CameraModeSwitcher : MonoBehaviour
     public bool playerVisible = true;
 
     public CinemachineBrain brain;
-    public CinemachineVirtualCamera vcamFP, vcamPerspective, vcamOverhead;
+    public CinemachineVirtualCamera vcamFP, vcamPerspective, vcamOverhead, vcamNose;
     public GameObject playerModel;
     public KeyCode toggleKey = KeyCode.Tab;
     int current_camera;                     //TODO: replace with cameraMode above.
@@ -66,6 +66,9 @@ public class CameraModeSwitcher : MonoBehaviour
         if (!vcamOverhead)
             vcamOverhead = GameObject.Find("vcamOverhead")?.GetComponent<CinemachineVirtualCamera>();
 
+        if (!vcamNose)
+            vcamNose = GameObject.Find("vcamNose")?.GetComponent<CinemachineVirtualCamera>();
+
         // --- Find the player model ---
         if (!playerModel)
             playerModel = GameObject.Find("PlayerModel");
@@ -75,6 +78,7 @@ public class CameraModeSwitcher : MonoBehaviour
             $"[CameraModeSwitcher] Initialized in scene '{SceneManager.GetActiveScene().name}'\n" +
             $"Brain: {(brain ? brain.name : "❌ None")}\n" +
             $"FP: {(vcamFP ? vcamFP.name : "❌ None")}\n" +
+            $"FP: {(vcamNose ? vcamNose.name : "❌ None")}\n" +
             $"Top: {(vcamPerspective ? vcamPerspective.name : "❌ None")}\n" +
             $"Overhead: {(vcamOverhead ? vcamOverhead.name : "❌ None")}\n" +
             $"Player: {(playerModel ? playerModel.name : "❌ None")}"
@@ -148,6 +152,7 @@ public class CameraModeSwitcher : MonoBehaviour
             vcamPerspective.Priority = 0;
             vcamFP.Priority = 0;
             vcamOverhead.Priority = 0;
+            vcamNose.Priority = 0;
             playerVisible = true;
             player.camera_refresh_needed = true;
 
@@ -165,6 +170,10 @@ public class CameraModeSwitcher : MonoBehaviour
                 case CameraModes.Overhead:
                     vcamOverhead.Priority = 10;
                     cameraMode = CameraModes.Overhead;
+                    break;
+                case CameraModes.Nose:
+                    vcamNose.Priority = 10;
+                    cameraMode = CameraModes.Nose;
                     break;
             }
         }
@@ -283,11 +292,12 @@ public class CameraModeSwitcher : MonoBehaviour
         if (IsLive(vcamFP)) return vcamFP;
         if (IsLive(vcamPerspective)) return vcamPerspective;
         if (IsLive(vcamOverhead)) return vcamOverhead;
+        if (IsLive(vcamNose)) return vcamNose;
 
         // Fallback: highest Priority
         CinemachineVirtualCamera best = null;
         int bestP = int.MinValue;
-        foreach (var v in new[] { vcamFP, vcamPerspective, vcamOverhead })
+        foreach (var v in new[] { vcamFP, vcamPerspective, vcamOverhead, vcamNose })
         {
             if (v != null && v.Priority > bestP) { best = v; bestP = v.Priority; }
         }

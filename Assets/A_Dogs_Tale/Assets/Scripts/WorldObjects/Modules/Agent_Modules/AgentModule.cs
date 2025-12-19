@@ -42,25 +42,13 @@ namespace DogGame.Modules
             // Find all decision modules attached to this agent
             allDecisionModules = GetComponents<AgentDecisionModuleBase>();
 
-            // Pseudocode inside AgentModule.Initialize
-            //motivationModule = GetComponent<MotivationModule>();
-            //motivationModule.Initialize(this);
-            //currentDecisionModule.Initialize(this); // decision module can read motivationModule.latestPackLoyalty
-
-            // If AgentModule *is* the IAgentHandle, just use "this".
-            //IAgentHandle selfHandle = this as IAgentHandle;
-            //if (selfHandle == null)
-            //{
-            //    Debug.LogError($"{name}: AgentModule does not implement IAgentHandle (or selfHandle not set).", this);
-            //    enabled = false;
-            //    return;
-            //}
-            // Don't call Initialize until dependencies exist (see next section).
-
             foreach (var module in allDecisionModules)
             {
                 module.Initialize(this);
-                module.enabled = false; // start disabled; we'll enable the active one
+                if (module.DecisionType==initialDecisionType)
+                    module.enabled = true;
+                else
+                    module.enabled = false;
                 Debug.Log($"[AgentModule {agentName}] Found decision module: {module.GetType().Name} ({module.DecisionType})", this);
             }
 
@@ -125,6 +113,28 @@ namespace DogGame.Modules
                     float distance = worldObject.packMemberModule.currentPack.packAgentList.Count * 1.5f;
                     // set who to follow and how far.
                     followerDecisionModule.SetFollowTarget(leader,distance);
+                }
+                if(currentDecisionModule.DecisionType == AgentDecisionType.Wanderer)
+                {
+                    // cast the decision module
+                    WandererDecisionModule wandererDecisionModule = (WandererDecisionModule) currentDecisionModule;
+                    // find the leader
+                    //Transform leader = worldObject.packMemberModule.currentPack.packLeader.transform;
+                    // distance is set by number of pack members ahead of me.
+                    //float distance = worldObject.packMemberModule.currentPack.packAgentList.Count * 1.5f;
+                    // set who to follow and how far.
+                    //wandererDecisionModule.SetFollowTarget(leader,distance);
+                }
+                if(currentDecisionModule.DecisionType == AgentDecisionType.Player)
+                {
+                    // cast the decision module
+                    PlayerDecisionModule playerDecisionModule = (PlayerDecisionModule) currentDecisionModule;
+                    // find the leader
+                    //Transform leader = worldObject.packMemberModule.currentPack.packLeader.transform;
+                    // distance is set by number of pack members ahead of me.
+                    //float distance = worldObject.packMemberModule.currentPack.packAgentList.Count * 1.5f;
+                    // set myself to leader
+                    //playerDecisionModule.becomeLeader();
                 }
             }
             else
