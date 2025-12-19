@@ -2,10 +2,12 @@ using UnityEngine;
 
 // ----- ABSTRACT BASE CLASS -----
 
+
 namespace DogGame.Modules
 {
     // WorldModules are components that can be attached to WorldObjects to give them specific functionalities.
     // Based on WorldModule, are a variety of specialized modules like LocationModule, MotionModule, VisualModule, etc.
+    [RequireComponent(typeof(WorldObject))]
     public abstract class WorldModule : MonoBehaviour
     {
         private WorldObject _worldObject;

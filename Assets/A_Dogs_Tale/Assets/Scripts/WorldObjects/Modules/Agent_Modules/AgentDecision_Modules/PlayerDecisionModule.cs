@@ -27,6 +27,11 @@ namespace DogGame.Modules
         //public NavigationSource navigationSource;     // moved to AgentDecisionModuleBase
         //public MotionControlMode motionControlMode;   // moved to MotionModule
 
+        // these store the last given instructions regarding where to go.
+        public Vector3 ?currentDestinationPosition = null;
+        public WorldObject currentDestinationObject = null;
+
+
     private void Start()
     {
         if (gameInputRouter == null)
@@ -227,6 +232,10 @@ namespace DogGame.Modules
             // 1) WASD / stick input -> camera-relative world direction
             if (combinedMoveAxis.sqrMagnitude > 0.0001f)
             {
+                // First, manual controls disable current click-to-move status
+                currentDestinationPosition = null;  // stop heading to location
+                currentDestinationObject = null;    // stop heading to object
+
                 desiredWorldDir = ConvertInputToWorldDirection(combinedMoveAxis);
                 navigationSource = NavigationSource.PlayerDirection;
                 worldObject.motionModule.motionControlMode = MotionControlMode.DirectInput;
@@ -238,9 +247,29 @@ namespace DogGame.Modules
 
             // 2) Click-to-move: if we have a click target location and no interact press,
             //    steer toward that point. (Very simple version: straight-line steering.)
+            
+            // 2A) New click target was a location: new orders
             if (state.hasClickTargetLocationWorld && !state.interactPressed)
             {
-                Vector3 toTarget = state.clickTargetLocationWorld - worldObject.transform.position;
+                currentDestinationPosition = state.clickTargetLocationWorld; // head to location, new orders arrived
+                currentDestinationObject = null;  // stop heading to object if we had been
+            }
+            // 2B) New click target is an object: new orders
+            if (state.hasClickTargetWorldObject && !state.interactPressed)
+            {
+                currentDestinationObject = state.clickTargetWorldObject; // head to object, new orders arrived
+            }
+
+            // current target is an object, let's figure out where it is now.
+            if (currentDestinationObject!=null)
+            {
+                currentDestinationPosition = currentDestinationObject.locationModule.pos3d_world;
+            }
+
+            // fianlly, head to destination location (or object's current location)
+            if (currentDestinationPosition != null)
+            {
+                Vector3 toTarget = (Vector3)currentDestinationPosition - worldObject.transform.position;
                 toTarget.y = 0f;
 
                 const float stopDistance = 0.25f; // tweak as needed
@@ -259,17 +288,37 @@ namespace DogGame.Modules
                     navigationSource = NavigationSource.None;
                     worldObject.motionModule.motionControlMode = MotionControlMode.GoalDirected;
                     worldObject.motionModule.facingMode = FacingMode.FaceMovementDirection;
-                    // Optional: you could clear hasClickTargetLocationWorld here in your state
+
+                    // Send notification of arrival...
+                    if (currentDestinationObject!=null)
+                    {
+                        // Send event Arrived at currentDestinationObject
+                        // use-case: interact with object
+                    }
+                    else if (currentDestinationPosition!=null)
+                    {
+                        // Send event Arrived at currentDestinationPosition
+                        // use-case: patrol between points allows changing to next point.
+                    }
+                    
+                    // clear current destination
+                    currentDestinationPosition = null;
+                    currentDestinationObject = null;
                 }
             }
 
-            // 3) Feed intent into AgentagentMovementModule
-            if (desiredWorldDir.sqrMagnitude > 0.0001f)
+            // 3) Feed intent into agentMovementModule
+            if (currentDestinationObject != null)
             {
-
+                // Move to target object, and keep tracking it.
+                worldObject.agentMovementModule.SetDesiredTargetWorldObject(currentDestinationObject, keepTrackingTarget: true);
+            }
+            else if (desiredWorldDir.sqrMagnitude > 0.0001f)
+            {
+                // Move to target location by 1 step.
                 // If you have a sprint flag in PlayerInputState, use it here.
                 bool run = false; // state.sprintHeld; // <-- adjust to your actual field name
-                worldObject.agentMovementModule.SetDesiredMove(desiredWorldDir, 1.0f, run);
+                worldObject.agentMovementModule.SetDesiredMove(desiredWorldDir, 1.0f, run, keepTrackingTarget: false);
             }
             else
             {
@@ -349,7 +398,8 @@ namespace DogGame.Modules
             }
 
             // 3. Fallback: world-relative XZ
-            return new Vector3(moveAxis.x, 0f, moveAxis.y);  // not what we want, so don't let above code fail!
+            Debug.LogWarning("this.transform == null, maybe not a good thing? ",this);
+            return new Vector3(moveAxis.x, 0f, moveAxis.y);     // probably not what we want, so don't fail above!
         }
         #endregion
 

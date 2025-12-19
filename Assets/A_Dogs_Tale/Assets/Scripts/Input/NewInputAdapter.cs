@@ -360,7 +360,9 @@ public class NewInputAdapter : MonoBehaviour
         }
         else
         {
-
+            // or put these at the top...
+            state.hasClickTargetLocationWorld = false;
+            state.hasClickTargetWorldObject   = false;
         }
 
         // --- Commit snapshot ---

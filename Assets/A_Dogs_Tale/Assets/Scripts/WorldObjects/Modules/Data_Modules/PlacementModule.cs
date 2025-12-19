@@ -93,7 +93,7 @@ namespace DogGame.Modules
 
         protected override void Awake()
         {
-            //base.Awake(); PlacementModule does not need a WorldObject.
+            //base.Awake(); PlacementModule does not need a WorldModule or WorldObject.
 
             // Soft references – fine if missing on some prefabs.
             _mainRenderer = GetComponentInChildren<Renderer>();

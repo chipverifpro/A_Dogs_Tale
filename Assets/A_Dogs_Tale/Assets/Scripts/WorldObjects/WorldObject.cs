@@ -3,7 +3,6 @@ using UnityEngine;
 using DogGame.Modules;
 using DogGame.AI;
 using System;
-using System.Linq;
 
 
 /// <summary>
@@ -198,7 +197,7 @@ public class WorldObject : MonoBehaviour
 
         // --- Agent Interface Modules ---
         agentMovementModule   = GetComponent<AgentMovementModule>();
-        packMemberModule = GetComponent<PackMemberModule>();
+        packMemberModule      = GetComponent<PackMemberModule>();
         agentModule           = GetComponent<AgentModule>();
 
         // --- Motivation ---
@@ -341,9 +340,18 @@ public class WorldObject : MonoBehaviour
     {
         return $"WorldObject[{objectId}] {DisplayName} ({kind})";
     }
+
     public void SetObjectId(int newId) => objectId = newId;
 
-
+    // Pass interaction event to the activatorModule, but create it first if it doesn't exist.
+    public InteractionResult HandleInteraction(InteractionContext context, InteractionRequest request)
+    {
+        if (activatorModule==null && context.promoteTarget)
+            CreateModulesIfNeeded(ModuleFlags.activatorModule);
+        if (activatorModule==null)
+            return new(InteractionResultKind.Failed, message: $"Target {DisplayName} has no activatorModule");
+        return activatorModule.HandleInteraction(context, request);
+    }
 
     // Allows for creating a template of enables for a particular
     // type of WorldObject, and all the appropriate modules get created.
@@ -472,6 +480,30 @@ public class WorldObject : MonoBehaviour
         //if (enables.HasFlag(ModuleFlags.questModuleBase))
         //    questModuleBase = EnsureComponent<QuestModuleBase>();
         //if (questModuleBase == null) Debug.LogWarning($"questModuleBase = null");
+    }
+
+    public void ApplyFollowerDefaults()
+    {
+        Debug.Log("Applying follower defaults");
+        // Safe defaults: avoid null refs / weird behavior.
+        agentModule.enabled = true;
+
+        // Decision module selection should NOT use "new" if it's a MonoBehaviour.
+        // Make decision modules Components or ScriptableObjects (your call).
+        //packMemberModule.JoinPack(dir.playerPack, false);
+
+        motionModule.motionControlMode = DogGame.Modules.MotionControlMode.Autopilot;
+        motionModule.facingMode = DogGame.Modules.FacingMode.FaceMovementDirection;
+
+        // Motivation defaults: mild pack pull, high distraction tolerance
+        motivationModule.trainingProfile.obedience = 0.35f;
+        motivationModule.trainingProfile.focus     = 0.35f;
+
+        // packMemberModule.role = PackRole.Follower;
+        //wo.packMemberModule.currentPack = dir.playerPack;
+
+        // Mark debug agents clearly
+        agentModule.agentName = $"{agentModule.agentName} (Follower Defaults)";
     }
 
     private T EnsureComponent<T>() where T : Component

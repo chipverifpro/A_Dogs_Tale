@@ -1,3 +1,4 @@
+//using System.Numerics;
 using UnityEngine;
 
 /*
@@ -37,7 +38,11 @@ namespace DogGame.Modules
         // next crumb in trail we are following
         public Crumb next_actualCrumb;
         public Crumb next_formationCrumb;
-        public WorldObject targetObject;
+
+        public WorldObject targetObject;        // for continuous tracking of a (possibly moving) target object
+        public Vector3 targetObjectPosition;    // updates every tick so we can head directly to it
+        public bool keepTrackingTarget;         // if not set, we only go for one tick and stop.
+        public bool targetMoved;                // not yet used: is this tick's target objet position different than last?
 
         [Header("Speed Settings")]
         [Tooltip("Maximum walking speed in meters per second.")]
@@ -67,6 +72,17 @@ namespace DogGame.Modules
         private float speedFactor01 = 1.0f; // 0..1 scaling of walk/run speed
 
         /// <summary>
+        /// Usually travel distance = desiredVelocity * deltaTime.  Limit that.
+        /// Never travel farther than maxDistance on a tick.
+        /// A) it could be how far the target is away so we don't overshoot.
+        /// B) it could be how far to a barrier so we don't go through it.
+        /// C) with tile-based bump detector, we only looked 1 tile ahead for collisions.
+        ///    we will want to recalculate bumping into objects the next tile,
+        ///    so don't move beyond that until we have checked again.
+        /// </summary>
+        public float maxDistance = 1f;
+
+        /// <summary>
         /// Exposes the current velocity for other systems (e.g., animation).
         /// </summary>
         public Vector3 CurrentVelocity => currentVelocity;
@@ -76,28 +92,53 @@ namespace DogGame.Modules
         /// </summary>
         public Vector3 DesiredVelocity => desiredVelocity;
 
+
         protected override void Awake()
         {
             base.Awake();
-
-//            if (motion == null)
-//            {
-//                motion = GetComponent<MotionModule>();
-//                if (motion == null)
-//                {
-//                    Debug.LogError($"[AgentMovementModule] No MotionModule found. Movement will be disabled.", this);
-//                    enabled = false;
-//                    return;
-//                }
-//            }
         }
 
-        public void SetDesiredTargetWorldObject(WorldObject target)
+        // Set target once, and we will keep following it.
+        public void SetDesiredTargetWorldObject(WorldObject target, bool keepTrackingTarget=true)
         {
             targetObject = target;
-            Vector3 targetLocation_world = target.transform.position;
+            this.keepTrackingTarget = keepTrackingTarget;
+        }
 
-            SetDesiredMove(targetLocation_world);
+        public void ClearDesiredTargetWorldObject()
+        {
+            targetObject = null;
+            keepTrackingTarget = false;
+        }
+
+        // Called every tick when a target object is not null.  Finds target and heads to it.
+        // (DecisionModule probably should check if we can still see it or still guess it's location)
+        public void GetNewTargetObjectPosition()
+        {
+            if (targetObject==null) 
+            {
+                maxDistance = 1f;
+                return;
+            }
+            // update target location
+            Vector3 targetLocation_world = targetObject.locationModule.pos3d_world;
+            if (targetObjectPosition != targetLocation_world)
+            {
+                targetMoved = true;
+                targetObjectPosition = targetLocation_world;
+            }
+            // find our location
+            Vector3 ourLocation_world = worldObject.locationModule.pos3d_world;
+
+            // direction and distance to target for move command.
+            Vector3 desired_move = targetLocation_world - ourLocation_world;
+            
+            // clamp maxDistance if we are very close to avoid overshoot.
+            maxDistance = Mathf.Min(desired_move.magnitude, 1f);
+
+            // Decision module told us to keep move again, by updating the desired movement.
+            // note: no need to normalize, it will be done in the function.
+            SetDesiredMove(desired_move, keepTrackingTarget: keepTrackingTarget);   
         }
 
         /// <summary>
@@ -107,7 +148,7 @@ namespace DogGame.Modules
         /// speedFactor: 0..1 scale applied to walk/run speed.
         /// run: if true, uses runSpeed, otherwise walkSpeed.
         /// </summary>
-        public void SetDesiredMove(Vector3 worldDirection01, float speedFactor = 1.0f, bool run = false)
+        public void SetDesiredMove(Vector3 worldDirection01, float speedFactor = 1.0f, bool run = false, bool keepTrackingTarget=false)
         {
             worldDirection01.y = 0f;
 
@@ -121,6 +162,10 @@ namespace DogGame.Modules
             float targetSpeed = baseSpeed * speedFactor01;
 
             desiredVelocity = worldDirection01 * targetSpeed;
+
+            // if requested, then we stop heading for the target object.
+            // this is probably because the user gave a manual move command.
+            if (!keepTrackingTarget) ClearDesiredTargetWorldObject();
         }
 
         /// <summary>
@@ -153,6 +198,9 @@ namespace DogGame.Modules
             if (worldObject.motionModule == null)
                 return;
 
+            if (targetObject != null)
+                GetNewTargetObjectPosition();   // calls SetDesiredMove to point to the object.
+
             // Decide which rate to use: acceleration vs deceleration
             float accel = accelerationMetersPerSecondSquared;
             if (desiredVelocity.sqrMagnitude < 0.0001f)
@@ -175,8 +223,8 @@ namespace DogGame.Modules
                     this);
             }
 
-            // Delegate to MotionModule for actual movement + rotation
-            worldObject.motionModule.Move(currentVelocity, deltaTime);
+            // Delegate to MotionModule for actual movement + rotation, clamp at maxDistance.
+            worldObject.motionModule.Move(currentVelocity, deltaTime, 999f);
         }
     }
 }

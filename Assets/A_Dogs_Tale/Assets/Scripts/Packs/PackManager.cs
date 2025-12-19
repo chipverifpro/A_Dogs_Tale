@@ -25,14 +25,14 @@ public class PackManager : MonoBehaviour
         packs.Add(playerPack);
     }
 
-    private Pack FindPackByName(String targetPackName)
+    public Pack FindPackByName(String targetPackName)
     {
         // Search every Pack component in the scene (active or inactive).
-        Pack[] allPacks = FindObjectsByType<Pack>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+        //Pack[] allPacks = FindObjectsByType<Pack>(FindObjectsInactive.Include, FindObjectsSortMode.None);
 
         Pack found = null;
 
-        foreach (var p in allPacks)
+        foreach (var p in packs)
         {
             if (p != null && p.packName == targetPackName)
             {
@@ -59,5 +59,12 @@ public class PackManager : MonoBehaviour
 
         Debug.Log($"[PackManager] Found Player Pack on object '{found.gameObject.name}'.", this);
         return found;
+    }
+
+    public void CreateNewPack(string newPackName, WorldObject leader=null)
+    {
+        Pack pack = new();
+        pack.packName = newPackName;
+        
     }
 }

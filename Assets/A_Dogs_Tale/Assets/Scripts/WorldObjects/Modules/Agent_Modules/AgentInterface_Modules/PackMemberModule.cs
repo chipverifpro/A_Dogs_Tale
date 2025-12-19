@@ -17,7 +17,7 @@ namespace DogGame.Modules
 
         protected override void Awake()
         {
-
+            base.Awake();
         }
 
         public override void Tick(float deltaTime)
@@ -95,6 +95,31 @@ namespace DogGame.Modules
             offset = dir.packFormations.GetOffsetForFormation(formation,position_in_pack,number_in_pack);
             return offset;
         }
+
+        private void ApplyFollowerDefaults()
+        {
+            Debug.Log("Applying follower defaults");
+            // Safe defaults: avoid null refs / weird behavior.
+            //worldObject.agentModule.enabled = true;
+
+            // Decision module selection should NOT use "new" if it's a MonoBehaviour.
+            // Make decision modules Components or ScriptableObjects (your call).
+            //worldObject.packMemberModule.JoinPack(dir.playerPack, false);
+
+            worldObject.motionModule.motionControlMode = MotionControlMode.Autopilot;
+            worldObject.motionModule.facingMode = DogGame.Modules.FacingMode.FaceMovementDirection;
+
+            // Motivation defaults: mild pack pull, high distraction tolerance
+            worldObject.motivationModule.trainingProfile.obedience = 0.35f;
+            worldObject.motivationModule.trainingProfile.focus     = 0.35f;
+
+            // packMemberModule.role = PackRole.Follower;
+            //worldObject.packMemberModule.currentPack = dir.playerPack;
+
+            // Mark debug agents clearly
+            worldObject.agentModule.agentName = $"{worldObject.agentModule.agentName} (Follower Defaults)";
+        }
+
     }
 }
 

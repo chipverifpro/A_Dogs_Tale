@@ -1,60 +1,187 @@
 using System.Collections.Generic;
 using UnityEngine;
 using DogGame.Modules;
+using System;
 
-// There is another file/class Pack.
-//This one seems to have been specific to hooking into the Module system.
-
-/*
-[System.Serializable]
-public class Pack
+public class Pack : MonoBehaviour
 {
-    public string packName = "Unnamed Pack";
+    public Directory dir;
+    //public Player player;   // reference to player class, which handles all the player inputs
 
-    public GameObject leader;
-    public PackTacticsProfile tacticsProfile;
+    public Transform PackParentObject;  // Parent object that already exists in the scene.  All the PlayerAgents will be attached under it.
+    //public GameObject agentVisual;  // Optional visual (e.g., Capsule/Cube). Can be null.
+    public BreadcrumbTrail trail;   // The BreadcrumbTrail class
+    //public BreadcrumbTrail breadcrumbTrailPrefab; // Assign this in the Inspector.  It is a prefab visualization for what?  Breadcrumb trail or each breadcrumb?
+    //public BreadcrumbTrail trailPrefabObj; // An object representing the trail (I think)
 
-    public List<AgentModule> members = new List<AgentModule>();
+    [Header("Current Pack")]
+    public String packName = "Unnamed Pack";
+    // pack related parameters:
+    //public Agent packLeaderLegacy;            // LEGACY current leader, (usually controlled by player)
+    //public List<Agent> packListLegacy;        // LEGACY: All pack members
+    public WorldObject packLeader;            // WorldObjects
+    public List<WorldObject> packAgentList;   // WorldObjects
+    //public bool inFollowFormation = true;
+    //public bool inGroupFormation = false;
+    //public bool soloMode = false;       // not travelling as a pack
+    public FormationsEnum formation = FormationsEnum.Wedge;
+    public float formationSpacing = 1.5f;  // spacing between members in formation
+    
 
-    public Pack(AgentModule leader, PackTacticsProfile tacticsProfile)
+    void Start()
     {
-        this.leader = leader;
-        this.tacticsProfile = tacticsProfile;
-        if (leader != null && !members.Contains(leader))
+        if (PackParentObject == null)
         {
-            members.Add(leader);
+            Debug.LogError("Pack (parent) is not assigned.");
         }
     }
 
-    public void AddMember(AgentModule agent, bool setAsLeader = false)
+    void Awake()
     {
-        if (agent == null) return;
+        InitializeConnections();
+    }
 
-        if (!members.Contains(agent))
-            members.Add(agent);
-
-        if (setAsLeader)
+    public void InitializeConnections()
+    {
+        // --- Breadcrumb Trail ---
+        if (!trail)
         {
-            leader = agent;
+            trail = FindFirstObjectByType<BreadcrumbTrail>();
+            if (!trail)
+                Debug.LogWarning("[Pack] No BreadcrumbTrail found — trail tracking disabled.");
+            else
+                Debug.Log($"[Pack] Connected to BreadcrumbTrail: {trail.name}");
+        }
+
+        // --- Parent object for agents ---
+        if (!PackParentObject)
+        {
+            var parent = GameObject.Find("PackParent");
+            if (parent)
+            {
+                PackParentObject = parent.transform;
+                Debug.Log($"[Pack] Found PackParentObject: {PackParentObject.name}");
+            }
+            else
+            {
+                // Create one if missing
+                GameObject newParent = new GameObject("PackParent");
+                PackParentObject = newParent.transform;
+                Debug.Log($"[Pack] Created PackParentObject: {PackParentObject.name}");
+            }
         }
     }
 
-    public void RemoveMember(AgentModule agent)
+    public void TeleportToLeader()
     {
-        if (agent == null) return;
-
-        if (members.Contains(agent))
-            members.Remove(agent);
-
-        if (leader == agent)
+        if (packLeader == null)
         {
-            leader = members.Count > 0 ? members[0] : null;
+            Debug.LogWarning("packLeader is null; cannot teleport pack members.");
+            return;
         }
+
+        Vector2 leaderPos2 = packLeader.locationModule.pos2;
+        float leaderHeight = packLeader.locationModule.height;
+        Crumb leaderCrumb = new Crumb()
+        {
+            pos2 = leaderPos2,
+            height = leaderHeight,
+            valid = true,
+            yawDeg = packLeader.locationModule.yawDeg
+        };
+
+        foreach (var member in packAgentList)
+        {
+            if (member != null && member != packLeader)
+            {
+                member.motionModule.Teleport(new Vector3(leaderPos2.x, leaderHeight, leaderPos2.y));
+                member.appearanceModule.camera_refresh_needed = true;
+                //member.next_formationCrumb.valid = false; // clear formation target
+                Debug.Log($"Teleported {member.name} to leader at {leaderPos2.x}, {leaderPos2.y}, {leaderHeight}");
+            }
+        }
+        trail.ClearCrumbs();
+        trail.RecordIfNeeded(true); // force record after teleport
+
     }
 
-    public bool Contains(AgentModule agent)
+    // ===== Interface Functions =====
+
+    // returns true if the new agent was added to the pack.
+    public bool AddMember(WorldObject agent, bool setAsLeader)
     {
-        return members.Contains(agent);
+        Debug.Log($"AddMember({agent.DisplayName}, {setAsLeader})");
+        if ((agent==null) || (agent.packMemberModule==null))
+            return false;   // not a valid pack member
+
+        if (!packAgentList.Contains(agent))
+        {
+            packAgentList.Add(agent);
+            agent.packMemberModule.currentPack = this;
+            // TODO: set leader: agent.packMemberModule.IsLeader
+            Debug.Log($"Pack added member {agent.DisplayName}. Remaining {this.ToString()}");
+            if(setAsLeader)
+            {
+                // todo
+            } else {
+                agent.agentModule.SwitchDecisionModule(AgentDecisionType.Follower);
+            }
+            return true;
+        }
+        return false;
     }
+
+    public bool RemoveMember(WorldObject agent)
+    {
+        Debug.Log($"RemoveMember({agent.DisplayName})");
+        if ((agent==null) || (agent.packMemberModule==null))
+            return false;   // not a valid pack member
+        
+        if (!packAgentList.Contains(agent))
+        {
+            packAgentList.Remove(agent);
+            agent.packMemberModule.currentPack = null;
+            // TODO: clear leader: agent.packMemberModule.IsLeader
+            //.      pick a new leader?
+            Debug.Log($"Pack removed member {agent.DisplayName}. Remaining {this.ToString()}");
+            return true;
+        }
+        return false;
+    }
+
+    public override String ToString()
+    {
+        String str;
+        Debug.Log("Pack.ToString()");
+        str = $"Pack {packName}";
+        str += $" Leader {packLeader.DisplayName}";
+        str += $" [{packAgentList.Count} members]:";
+        foreach (var member in packAgentList)
+        {
+            str += $" {member.DisplayName},";
+        }
+        return str;
+    }
+
+    public void SetFormation(FormationsEnum new_formation)
+    {
+        formation = new_formation;
+    }
+
+    public FormationsEnum GetFormation()
+    {
+        return formation;
+    }
+
+    // returns -1 if not in the pack.
+    public int GetPositionInPack(WorldObject agent)
+    {
+        for (int pos=0; pos<packAgentList.Count; pos++)
+        {
+            if (packAgentList[pos] == agent) return pos;
+        }
+        return -1;
+    }
+
 }
-*/
+

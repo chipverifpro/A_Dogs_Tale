@@ -209,7 +209,7 @@ namespace DogGame.Modules
             Teleport(position, finalRotation, resetMotion);
         }
 
-        public void Move(Vector3 desiredHorizontalVelocity, float deltaTime)
+        public void Move(Vector3 desiredHorizontalVelocity, float deltaTime, float maxDistance)
         {
             if (bodyRoot == null)
                 return;
@@ -239,9 +239,12 @@ namespace DogGame.Modules
             // --- 3. Update vertical velocity (gravity) ---
             UpdateVerticalVelocity(deltaTime);
 
-            // --- 4. Apply total displacement ---
+            // --- 4. Determine combined velocity ---
             Vector3 frameVelocity = horizontalVelocity + verticalVelocity;
-            bodyRoot.position += frameVelocity * deltaTime;
+
+            // --- 5. Apply change in position at velocity * deltaT,
+            //     but limit to a maximum of maxDistance.
+            bodyRoot.position += Vector3.ClampMagnitude(frameVelocity * deltaTime, maxDistance);
         }
 
         private Vector3 ComputeHorizontalVelocity(

@@ -891,8 +891,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PackManager
   dir: {fileID: 1920128612}
-  playerPack: {fileID: 0}
-  packs: []
+  playerPack: {fileID: 766807147}
+  packs:
+  - {fileID: 766807147}
 --- !u!1 &134909790
 GameObject:
   m_ObjectHideFlags: 0
@@ -1143,7 +1144,7 @@ GameObject:
   m_Component:
   - component: {fileID: 196505886}
   m_Layer: 0
-  m_Name: WorldObjecs
+  m_Name: WorldObjects
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -5194,7 +5195,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   dir: {fileID: 1920128612}
   PackParentObject: {fileID: 766807148}
-  trail: {fileID: 1480059014}
+  trail: {fileID: 0}
   packName: Player Pack
   packLeader: {fileID: 6544990386685219154}
   packAgentList:
@@ -6165,6 +6166,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GameInputRouter
   currentControlledWorldObject: {fileID: 6544990386685219154}
+  dir: {fileID: 0}
+  currentGameMode: 2
 --- !u!114 &942637347
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -8448,11 +8451,15 @@ MonoBehaviour:
     yawDeg: 0
     whichFollowersArrived: 
   targetObject: {fileID: 0}
+  targetObjectPosition: {x: 0, y: 0, z: 0}
+  keepTrackingTarget: 0
+  targetMoved: 0
   walkSpeedMetersPerSecond: 3
   runSpeedMetersPerSecond: 6
   accelerationMetersPerSecondSquared: 12
   decelerationMetersPerSecondSquared: 16
   enableDebugLogging: 0
+  maxDistance: 1
 --- !u!114 &1253610046
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -10331,8 +10338,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1480059013}
-  - component: {fileID: 1480059014}
-  - component: {fileID: 1480059015}
   m_Layer: 0
   m_Name: PackTrail
   m_TagString: Untagged
@@ -10355,38 +10360,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 766807148}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1480059014
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1480059012}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4f193ce3274844831a0f2a39d226c46f, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  dropDistance: 0.5
-  maxCrumbs: 256
-  leader: {fileID: 1253610029}
-  followers: []
-  crumbs: []
-  lastDropPos: {x: 0, y: 0}
-  hasAny: 0
---- !u!114 &1480059015
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1480059012}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f7cf0fe4b64e84d6f9d720eec854b533, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  dir: {fileID: 1920128612}
 --- !u!1 &1485730646
 GameObject:
   m_ObjectHideFlags: 0
@@ -12378,11 +12351,15 @@ MonoBehaviour:
     yawDeg: 0
     whichFollowersArrived: 
   targetObject: {fileID: 0}
+  targetObjectPosition: {x: 0, y: 0, z: 0}
+  keepTrackingTarget: 0
+  targetMoved: 0
   walkSpeedMetersPerSecond: 3
   runSpeedMetersPerSecond: 6
   accelerationMetersPerSecondSquared: 12
   decelerationMetersPerSecondSquared: 16
   enableDebugLogging: 0
+  maxDistance: 1
 --- !u!114 &1651296787
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -12431,6 +12408,7 @@ MonoBehaviour:
   navigationSource: 0
   cameraForMovement: {fileID: 1815589284}
   cameraModeSwitcher: {fileID: 1815589288}
+  currentDestinationObject: {fileID: 0}
 --- !u!114 &1651296790
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -15966,11 +15944,15 @@ MonoBehaviour:
     yawDeg: 0
     whichFollowersArrived: 
   targetObject: {fileID: 0}
+  targetObjectPosition: {x: 0, y: 0, z: 0}
+  keepTrackingTarget: 0
+  targetMoved: 0
   walkSpeedMetersPerSecond: 3
   runSpeedMetersPerSecond: 6
   accelerationMetersPerSecondSquared: 12
   decelerationMetersPerSecondSquared: 16
   enableDebugLogging: 0
+  maxDistance: 1
 --- !u!114 &6544990386685219150
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -16019,6 +16001,7 @@ MonoBehaviour:
   navigationSource: 0
   cameraForMovement: {fileID: 1815589284}
   cameraModeSwitcher: {fileID: 1815589288}
+  currentDestinationObject: {fileID: 0}
 --- !u!114 &6544990386685219153
 MonoBehaviour:
   m_ObjectHideFlags: 0
