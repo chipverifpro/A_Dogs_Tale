@@ -39,9 +39,8 @@ namespace DogGame.Modules
 
             //if (dir==null) dir=FindFirstObjectByType<Directory>();
 
-            // Find all decision modules attached to this agent
+            // Find all decision modules attached to this agent and initialize them.
             allDecisionModules = GetComponents<AgentDecisionModuleBase>();
-
             foreach (var module in allDecisionModules)
             {
                 module.Initialize(this);
@@ -49,7 +48,7 @@ namespace DogGame.Modules
                     module.enabled = true;
                 else
                     module.enabled = false;
-                Debug.Log($"[AgentModule {agentName}] Found decision module: {module.GetType().Name} ({module.DecisionType})", this);
+                //Debug.Log($"[AgentModule {agentName}] initialized decision module: {module.GetType().Name} ({module.DecisionType})", this);
             }
 
             // Pick the initial module
@@ -77,7 +76,7 @@ namespace DogGame.Modules
         /// </summary>
         public void SwitchDecisionModule(AgentDecisionType decisionType)
         {
-            Debug.Log($"SwitchDecisionModule {agentName}: decisionType = {decisionType}", this);
+            //Debug.Log($"AgentModule.SwitchDecisionModule {agentName}: decisionType = {decisionType}", this);
 
             // Disable the current one if any
             if (currentDecisionModule != null)
@@ -96,13 +95,13 @@ namespace DogGame.Modules
                     .FirstOrDefault(m => m.DecisionType == AgentDecisionType.Wanderer)
                     ?? allDecisionModules.FirstOrDefault();
             }
-
+            if (nextModule.DecisionType != decisionType) Debug.LogError("ERROR A");
             currentDecisionModule = nextModule;
 
             if (currentDecisionModule != null)
             {
                 currentDecisionModule.enabled = true;
-                Debug.Log($"[AgentModule {agentName}] Switched to module {currentDecisionModule.GetType().Name}", this);
+                //Debug.Log($"[AgentModule {agentName}] Switched to module {currentDecisionModule.GetType().Name}", this);
                 if(currentDecisionModule.DecisionType == AgentDecisionType.Follower)
                 {
                     // cast the decision module
@@ -173,9 +172,11 @@ namespace DogGame.Modules
 
     public enum AgentDecisionType
     {
-        Player,
-        Follower,
-        Wanderer,
+        Undefined = 0,
+        Player,         // player controlled
+        Follower,       // simple follower
+        Wanderer,       // simple wanderer
+        Immobile,       // just sits there
         // Add more: Predator, Boss, Civilian, Summoned, etc.
     }
 }

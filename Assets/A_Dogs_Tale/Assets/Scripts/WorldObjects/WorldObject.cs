@@ -16,6 +16,7 @@ using System;
 public enum WorldObjectKind
 {
     Unknown = 0,
+    Player  ,    // Dummy WorldObject representing the player input
     Agent   ,    // Brain, high level controller, join, control directly
     Scenery ,    // static objects
     Trigger ,    // environmental triggered location (trap, etc)
@@ -46,7 +47,7 @@ public enum ModuleFlags : ulong
 
     // --- Agent Interface Modules ---
     agentMovementModule   = 1UL << 8,
-    packMemberModule = 1UL << 9,
+    packMemberModule      = 1UL << 9,
     // OBSOLETE: agentSensesModule     = 1UL << 10,
     agentModule           = 1UL << 11,
 
@@ -182,7 +183,7 @@ public class WorldObject : MonoBehaviour
             Debug.LogError($"WorldObject.Awake() was unable to find Directory.");
         }
 
-        // Auto-fill modules PER OBJECT
+        // Auto-fill module pointers, if they are attached to the same GameObject as this.
 
         // --- Sensory ---
         hearingModule = GetComponent<HearingModule>();
@@ -287,6 +288,7 @@ public class WorldObject : MonoBehaviour
         // QUEST
         //if (fetchQuestModule != null)  fetchQuestModule.Tick(dt);
     }
+
     public T GetModule<T>() where T : WorldModule
     {
         List<WorldModule> modules = new();
@@ -344,13 +346,16 @@ public class WorldObject : MonoBehaviour
     public void SetObjectId(int newId) => objectId = newId;
 
     // Pass interaction event to the activatorModule, but create it first if it doesn't exist.
-    public InteractionResult HandleInteraction(InteractionContext context, InteractionRequest request)
+    public ActivateResult Activate(ActivateContext context, ActivateRequest request)
     {
         if (activatorModule==null && context.promoteTarget)
-            CreateModulesIfNeeded(ModuleFlags.activatorModule);
+        {
+            //CreateModulesIfNeeded(ModuleFlags.activatorModule);
+            CreateModulesIfNeeded(ModuleFlagsTemplates.FullAgent);
+        }
         if (activatorModule==null)
-            return new(InteractionResultKind.Failed, message: $"Target {DisplayName} has no activatorModule");
-        return activatorModule.HandleInteraction(context, request);
+            return new(ActivateResultKind.Failed, message: $"Target {DisplayName} has no activatorModule");
+        return activatorModule.HandleActivate(context, request);
     }
 
     // Allows for creating a template of enables for a particular
@@ -358,120 +363,169 @@ public class WorldObject : MonoBehaviour
     // Obviously, to run this, you already created the WorldObject we are in.
     public void CreateModulesIfNeeded(ModuleFlags enables)
     {
+        //Debug.Log($"[{displayName} worldObject.CreateModulesIfNeeded] verifying these modules: {enables}");
+
         // ===============================
         // Sensory
         // ===============================
         if (enables.HasFlag(ModuleFlags.hearingModule))
+        {
             hearingModule = EnsureComponent<HearingModule>();
-        if (hearingModule == null) Debug.LogWarning($"hearingModule = null");
+            if (hearingModule == null) Debug.LogWarning($"hearingModule = null");
+        }
 
         if (enables.HasFlag(ModuleFlags.smellModule))
+        {
             smellModule = EnsureComponent<SmellModule>();
-        if (smellModule == null) Debug.LogWarning($"smellModule = null");
+            if (smellModule == null) Debug.LogWarning($"smellModule = null");
+        }
 
         if (enables.HasFlag(ModuleFlags.visionModule))
+        {   
             visionModule = EnsureComponent<VisionModule>();
-        if (visionModule == null) Debug.LogWarning($"visionModule = null");
+            if (visionModule == null) Debug.LogWarning($"visionModule = null");
+        }
 
         if (enables.HasFlag(ModuleFlags.eatModule))
+        {
             eatModule = EnsureComponent<EatModule>();
-        if (eatModule == null) Debug.LogWarning($"eatModule = null");
+            if (eatModule == null) Debug.LogWarning($"eatModule = null");
+        }
 
 
         // ===============================
         // Agent Decision Modules
         // ===============================
         if (enables.HasFlag(ModuleFlags.playerDecisionModule))
+        {
             playerDecisionModule = EnsureComponent<PlayerDecisionModule>();
-        if (playerDecisionModule == null) Debug.LogWarning($"playerDecisionModule = null");
+            if (playerDecisionModule == null) Debug.LogWarning($"playerDecisionModule = null");
+        }
 
         if (enables.HasFlag(ModuleFlags.followerDecisionModule))
+        {
             followerDecisionModule = EnsureComponent<FollowerDecisionModule>();
-        if (followerDecisionModule == null) Debug.LogWarning($"followerDecisionModule = null");
+            if (followerDecisionModule == null) Debug.LogWarning($"followerDecisionModule = null");
+        }
 
         if (enables.HasFlag(ModuleFlags.wanderDecisionModule))
+        {
             wandererDecisionModule = EnsureComponent<WandererDecisionModule>();
-        if (wandererDecisionModule == null) Debug.LogWarning($"wandererDecisionModule = null");
+            if (wandererDecisionModule == null) Debug.LogWarning($"wandererDecisionModule = null");
+        }
 
 
         // ===============================
         // Agent Interface Modules
         // ===============================
         if (enables.HasFlag(ModuleFlags.agentMovementModule))
+        {
             agentMovementModule = EnsureComponent<AgentMovementModule>();
-        if (agentMovementModule == null) Debug.LogWarning($"agentMovementModule = null");
+            if (agentMovementModule == null) Debug.LogWarning($"agentMovementModule = null");
+        }
 
         if (enables.HasFlag(ModuleFlags.packMemberModule))
+        {
             packMemberModule = EnsureComponent<PackMemberModule>();
-        if (packMemberModule == null) Debug.LogWarning($"packMemberModule = null");
+            if (packMemberModule == null) Debug.LogWarning($"packMemberModule = null");
+        }
 
         if (enables.HasFlag(ModuleFlags.agentModule))
+        {
             agentModule = EnsureComponent<AgentModule>();
-        if (agentModule == null) Debug.LogWarning($"agentModule = null");
+            if (agentModule == null) Debug.LogWarning($"agentModule = null");
+        }
 
 
         // ===============================
         // Motivation
         // ===============================
         if (enables.HasFlag(ModuleFlags.motivationModule))
+        {
             motivationModule = EnsureComponent<MotivationModule>();
-        if (motivationModule == null) Debug.LogWarning($"motivationModule = null");
+            if (motivationModule == null) Debug.LogWarning($"motivationModule = null");
+        }
 
 
         // ===============================
         // Ability
         // ===============================
         if (enables.HasFlag(ModuleFlags.activatorModule))
+        {
             activatorModule = EnsureComponent<ActivatorModule>();
-        if (activatorModule == null) Debug.LogWarning($"activatorModule = null");
+            if (activatorModule == null) Debug.LogWarning($"activatorModule = null");
+        }
 
         if (enables.HasFlag(ModuleFlags.containerModule))
+        {
             containerModule = EnsureComponent<ContainerModule>();
-        if (containerModule == null) Debug.LogWarning($"containerModule = null");
+            if (containerModule == null) Debug.LogWarning($"containerModule = null");
+        }
 
         if (enables.HasFlag(ModuleFlags.interactionModule))
+        {
             interactionModule = EnsureComponent<InteractionModule>();
-        if (interactionModule == null) Debug.LogWarning($"interactionModule = null");
+            if (interactionModule == null) Debug.LogWarning($"interactionModule = null");
+        }
 
         if (enables.HasFlag(ModuleFlags.locationModule))
+        {
             locationModule = EnsureComponent<LocationModule>();
-        if (locationModule == null) Debug.LogWarning($"locationModule = null");
+            if (locationModule == null) Debug.LogWarning($"locationModule = null");
+        }
 
         if (enables.HasFlag(ModuleFlags.motionModule))
+        {
             motionModule = EnsureComponent<MotionModule>();
-        if (motionModule == null) Debug.LogWarning($"motionModule = null");
+            if (motionModule == null) Debug.LogWarning($"motionModule = null");
+        }
 
 
         // ===============================
         // Output
         // ===============================
         if (enables.HasFlag(ModuleFlags.appearanceModule))
+        {
             appearanceModule = EnsureComponent<AppearanceModule>();
-        if (appearanceModule == null) Debug.LogWarning($"appearanceModule = null");
+            if (appearanceModule == null) Debug.LogWarning($"appearanceModule = null");
+        }
 
         if (enables.HasFlag(ModuleFlags.noiseMakerModule))
+        {
             noiseMakerModule = EnsureComponent<NoiseMakerModule>();
-        if (noiseMakerModule == null) Debug.LogWarning($"noiseMakerModule = null");
+            if (noiseMakerModule == null) Debug.LogWarning($"noiseMakerModule = null");
+        }
 
         if (enables.HasFlag(ModuleFlags.scentEmitterModule))
+        {
             scentEmitterModule = EnsureComponent<ScentEmitterModule>();
-        if (scentEmitterModule == null) Debug.LogWarning($"scentEmitterModule = null");
+            if (scentEmitterModule == null) Debug.LogWarning($"scentEmitterModule = null");
+        }
 
 
         // ===============================
         // Data
         // ===============================
         if (enables.HasFlag(ModuleFlags.blackboardModule))
+        {
             blackboardModule = EnsureComponent<BlackboardModule>();
-        if (blackboardModule == null) Debug.LogWarning($"blackboardModule = null");
+            if (blackboardModule == null) Debug.LogWarning($"blackboardModule = null");
+        }
+
 
         if (enables.HasFlag(ModuleFlags.placementModule))
+        {
             placementModule = EnsureComponent<PlacementModule>();
-        if (placementModule == null) Debug.LogWarning($"placementModule = null");
+            if (placementModule == null) Debug.LogWarning($"placementModule = null");
+        }
+
 
         if (enables.HasFlag(ModuleFlags.statusModule))
+        {
             statusModule = EnsureComponent<StatusModule>();
-        if (statusModule == null) Debug.LogWarning($"statusModule = null");
+            if (statusModule == null) Debug.LogWarning($"statusModule = null");
+        }
+
 
 
         // ===============================

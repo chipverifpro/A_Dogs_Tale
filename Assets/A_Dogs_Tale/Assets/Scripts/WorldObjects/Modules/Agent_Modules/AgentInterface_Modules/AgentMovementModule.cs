@@ -115,13 +115,17 @@ namespace DogGame.Modules
         // (DecisionModule probably should check if we can still see it or still guess it's location)
         public void GetNewTargetObjectPosition()
         {
+            Vector3 targetLocation_world=Vector3.zero;
             if (targetObject==null) 
             {
                 maxDistance = 1f;
                 return;
             }
             // update target location
-            Vector3 targetLocation_world = targetObject.locationModule.pos3d_world;
+            if (targetObject.locationModule!=null)
+                targetLocation_world = targetObject.locationModule.pos3d_world;
+
+            // check target poisition versus where it was last tick
             if (targetObjectPosition != targetLocation_world)
             {
                 targetMoved = true;

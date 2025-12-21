@@ -11,7 +11,7 @@ public class CameraModeSwitcher : MonoBehaviour
     public Directory dir;
 
     [Header("Current Modes")]
-    public CameraModes cameraMode = CameraModes.Perspective;    // More readable version of current_camera for use in other systems
+    public CameraModes cameraMode = CameraModes.Nose;    // More readable version of current_camera for use in other systems
     //public bool scentFogVisible = false;  //TODO: move contols/setup into camera script
     public bool playerVisible = true;
 

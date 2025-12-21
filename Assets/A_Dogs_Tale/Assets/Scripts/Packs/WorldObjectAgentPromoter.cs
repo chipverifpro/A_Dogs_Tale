@@ -26,7 +26,7 @@ using DogGame.AI;
     public static class WorldObjectAgentPromoter
     {
         static Directory dir;
-
+/*
         public static bool PromoteToFollower(GameObject targetObject, PromoteToPackMemberOptions options)
         {
             if (dir == null) dir = Directory.Instance;
@@ -172,7 +172,7 @@ using DogGame.AI;
             
             return true;
         }
-
+*/
 /*
         public static bool PromoteToFollower_SAFE(GameObject targetObject, PromoteToPackMemberOptions options)
         {

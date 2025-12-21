@@ -1,7 +1,7 @@
 using System;
 using System.Collections;
 using UnityEngine;
-
+using DogGame.Modules;
 
 // TODO list:
 //   DONE: add movement on diagonal walls
@@ -241,7 +241,7 @@ public partial class Player : MonoBehaviour
         //agentObject.packMemberModule.trailFollower = false;
         agentObject.appearanceModule.camera_refresh_needed = true;   // camera visibility refresh
         agentObject.appearanceModule.SetVisible(old_active);  // if old was invisible, make new one also invisible.
-        pack.packLeader = agentObject;
+        //pack.packLeader = agentObject;
         pack.trail.leader = agentObject;
         agentObject.motionModule.Teleport(agentObject.locationModule.pos3d_world);    // move the player's agent
         //Move_Update(0f, 0f);    // screen refresh
@@ -270,7 +270,7 @@ public partial class Player : MonoBehaviour
             if (pack.packAgentList[i].ObjectId == new_agent_id)    // new agent becomes leader
             {
                 // remove old leader from trailLeader
-                pack.packAgentList[old_leader_index].agentModule.BecomeFollower();
+                pack.packAgentList[old_leader_index].agentModule.SwitchDecisionModule(AgentDecisionType.Follower);
 
                 WorldObject new_leader_agent = pack.packAgentList[i];
                 // move new leader to front of list.

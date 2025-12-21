@@ -120,7 +120,7 @@ public class ConvertScreenToWorld : MonoBehaviour
 
     public WorldObject GetWorldObjectFromRaycast(Vector3 screenPosition)
     {
-        Debug.Log($"GetWorldObjectFromRaycast({screenPosition})");
+        //Debug.Log($"GetWorldObjectFromRaycast({screenPosition})");
         if (mainCamera == null)
         {
             Debug.LogError("[ConvertScreenToWorld] No mainCamera set; cannot use raycast to convert screen cooudinates to world object.");
@@ -131,7 +131,9 @@ public class ConvertScreenToWorld : MonoBehaviour
         // Tweak objectsMask
         // if we are in FP(FirstPerson) view, then ceilings should block ray.
         // if we are Overhead or Perspective view, then ceilings shoul NOT block ray (looking down through them)
-        LayerMask ceiling_check = (dir.cameraModeSwitcher.cameraMode == CameraModes.FP) ? FP_BlockingMask : Overhead_BlockingMask;
+        LayerMask ceiling_check = (dir.cameraModeSwitcher.cameraMode == CameraModes.FP 
+                                  | dir.cameraModeSwitcher.cameraMode == CameraModes.Nose)
+                                  ? FP_BlockingMask : Overhead_BlockingMask;
         int ceiling_bit_num = LayerMask.NameToLayer("Ceiling");
         int ceiling_set_mask = ceiling_check.value & 1<<ceiling_bit_num; 
         int finalMask = objectsMask.value & ~(1<<ceiling_bit_num) | ceiling_set_mask;
@@ -158,11 +160,12 @@ public class ConvertScreenToWorld : MonoBehaviour
                 return null;
             }
             targetedWorldObject_valid = true;
-            Debug.Log($"Hit wo = {wo.DisplayName}");
+            //Debug.Log($"Hit wo = {wo.DisplayName}");
             
-            dir.demo_Speech.TestSpeak(wo,null);
-            PromoteToPackMemberOptions options = new();
-            WorldObjectAgentPromoter.PromoteToFollower(wo.gameObject, options);
+            // FOR TESTING ONLY...
+            //dir.demo_Speech.TestSpeak(wo,null);
+            //PromoteToPackMemberOptions options = new();
+            //WorldObjectAgentPromoter.PromoteToFollower(wo.gameObject, options);
 
             return wo;
         }
@@ -210,8 +213,8 @@ public class ConvertScreenToWorld : MonoBehaviour
             //cell = room.cells.Find(c => c.pos == pos2int);  // find just by (x,y)
             if(cell==null) 
                 Debug.LogWarning($"[ConvertWorldLocationToCell] Heightfield.TryQueryAt({x},{y},{z}) returned roomId={match.roomId}, cellId={match.cellId} with actualZ={actualZ} but we couldn't find a matching cell in that room.");
-            else 
-                Debug.Log($"[ConvertWorldLocationToCell] Heightfield.TryQueryAt({x},{y},{z}) returned roomId={match.roomId}, cellId={match.cellId} with actualZ={actualZ} where we found a cell at ({cell.pos})");
+            //else 
+                //Debug.Log($"[ConvertWorldLocationToCell] Heightfield.TryQueryAt({x},{y},{z}) returned roomId={match.roomId}, cellId={match.cellId} with actualZ={actualZ} where we found a cell at ({cell.pos})");
         }
         return cell;    // may return null if not found, but the heightfield said it is there.
     }

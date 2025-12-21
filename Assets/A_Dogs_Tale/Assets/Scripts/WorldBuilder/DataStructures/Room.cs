@@ -28,7 +28,7 @@ public class Room
     public bool isCorridor = false;     // Indicate if this room was generated as a corridor
     
     [Header("Ceiling / Environment")]
-    public float ceilingHeight = 2.5f;   // world units above floor
+    public float ceilingHeight = 3.5f;   // world units above floor
     public bool isOutdoor = false;       // or infer from placementTypes
     public Color colorCeiling = new(.076f, 0.75f, 0.63f, 1f); // Light Olive Grey
        

@@ -339,7 +339,7 @@ public class NewInputAdapter : MonoBehaviour
             }
 
             // (2) convert screen to targeted object
-            Debug.Log($"dir = {dir}, convertScreenToWorld = {dir.convertScreenToWorld}, screenPosition3 = {screenPosition3}");
+            //Debug.Log($"dir = {dir}, convertScreenToWorld = {dir.convertScreenToWorld}, screenPosition3 = {screenPosition3}");
 
             WorldObject targetWorldObject = dir.convertScreenToWorld.GetWorldObjectFromRaycast(screenPosition3);
             if (targetWorldObject!=null)
@@ -355,7 +355,7 @@ public class NewInputAdapter : MonoBehaviour
             {
                 state.hasClickTargetWorldObject   = false;
                 state.clickTargetWorldObject      = null;
-                Debug.Log($"Clicked but no worldObject found");
+                //Debug.Log($"Clicked but no worldObject found");
             }
         }
         else

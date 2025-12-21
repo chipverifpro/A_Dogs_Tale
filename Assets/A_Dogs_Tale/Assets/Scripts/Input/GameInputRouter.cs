@@ -1,18 +1,20 @@
 using UnityEngine;
 
-public enum InteractionKind
+public enum ActivateKind
 {
     RequestToJoinPack,
     // later: Talk, PickUp, Open, Attack, Sniff, Etc.
+    
 }
 
-public enum InteractionResultKind
+public enum ActivateResultKind
 {
     Ignored,
     Accepted,
     Rejected,
     Deferred,
-    Failed
+    Failed,
+    Errored     // uses Debug.LogError, not Debug.Log
 }
 
 public enum GameMode
@@ -22,16 +24,18 @@ public enum GameMode
     Explore
 }
 
-public class InteractionContext
+public class ActivateContext
 {
-    public WorldObject instigator;  // who initiated (player dog / player / etc.)
+    public bool userIsInstigator;    // flag identifying user triggered action vs NPC triggered.
+    public WorldObject instigator;   // who initiated (player dog / player / etc.)
     public WorldObject target;       // clicked object
     public GameMode gameMode;        // whatever your game uses
     public Vector3 hitPoint;         // where you clicked
     public bool promoteTarget;       // if target doesn't already have necessary capability, give it more
 
-    public InteractionContext(WorldObject instigator, WorldObject target, GameMode gameMode, Vector3 hitPoint, bool promoteTarget = false)
+    public ActivateContext(bool userIsInstigator, WorldObject instigator, WorldObject target, GameMode gameMode, Vector3 hitPoint, bool promoteTarget = false)
     {
+        this.userIsInstigator = userIsInstigator;
         this.instigator = instigator;
         this.target = target;
         this.gameMode = gameMode;
@@ -40,29 +44,30 @@ public class InteractionContext
     }
 }
 
-public class InteractionRequest
+public class ActivateRequest
 {
-    public InteractionKind kind;
+    public ActivateKind kind;
 
     // optional payload (for future: itemId, dialog node, etc.)
-    public InteractionRequest(InteractionKind kind) => this.kind = kind;
+    public ActivateRequest(ActivateKind kind) => this.kind = kind;
 }
 
-public class InteractionResult
+public class ActivateResult
 {
-    public InteractionResultKind kind;
+    public ActivateResultKind kind;
     public string message;
 
-    public InteractionResult(InteractionResultKind kind, string message = null)
+    public ActivateResult(ActivateResultKind kind, string message = null)
     {
         this.kind = kind;
         this.message = message;
     }
 
-    public static InteractionResult Accepted(string msg = null) => new(InteractionResultKind.Accepted, msg);
-    public static InteractionResult Rejected(string msg = null) => new(InteractionResultKind.Rejected, msg);
-    public static InteractionResult Ignored(string msg = null)  => new(InteractionResultKind.Ignored, msg);
-    public static InteractionResult Failed(string msg = null)   => new(InteractionResultKind.Failed, msg);
+    public static ActivateResult Accepted(string msg = null) => new(ActivateResultKind.Accepted, msg);
+    public static ActivateResult Rejected(string msg = null) => new(ActivateResultKind.Rejected, msg);
+    public static ActivateResult Ignored(string msg = null)  => new(ActivateResultKind.Ignored, msg);
+    public static ActivateResult Failed(string msg = null)   => new(ActivateResultKind.Failed, msg);
+    public static ActivateResult Errored(string msg = null)   => new(ActivateResultKind.Errored, msg);
 }
 
 
@@ -75,7 +80,7 @@ public class GameInputRouter : MonoBehaviour
     public PlayerInputState InputState { get; private set; } = new PlayerInputState();
 
     [Tooltip("The WorldObject currently controlled by the player.")]
-    public WorldObject currentControlledWorldObject;
+    public WorldObject currentControlledWorldObject => dir.playerPack.packLeader;  // pack 0, member 0
     public Directory dir;
 
     public GameMode currentGameMode = GameMode.Explore;
@@ -97,13 +102,6 @@ public class GameInputRouter : MonoBehaviour
         SetGameMode(GameMode.Explore);
     }
 
-    public void SetControlledWorldObject(WorldObject wo)
-    {
-        currentControlledWorldObject = wo;
-        // Optional: tell agents they gained/lost control
-        // wo.agentModule?.OnBecamePlayerControlled();
-    }
-
     public bool IsControlled(WorldObject wo)
     {
         return wo != null && wo == currentControlledWorldObject;
@@ -120,42 +118,73 @@ public class GameInputRouter : MonoBehaviour
 
     public void Update()
     {
+        RouteClickToTarget();
+    }
+
+    // Routes clicked target events to Activate their appropriate WorldObject
+    public void RouteClickToTarget()
+    {
         if (InputState.hasClickTargetWorldObject)
-            // instigator = null means user input was the source.
-            TryClickActivate(InputState.clickTargetWorldObject, InputState.clickTargetWorldObject, InputState.clickTargetLocationWorld);
+        {
+            WorldObject target;
+            Vector3 hitpoint;
+            bool userIsInstigator;
+            WorldObject instigator;
+
+            target = InputState.clickTargetWorldObject;
+            userIsInstigator = true;
+            if (dir.playerPack.packLeader)
+                instigator = dir.playerPack.packLeader; // for user inputs, use the current leader of the player pack.
+            else
+                instigator = target;
+
+            // if hitpoint is not valid, use the world location of the target object.
+            if(InputState.clickTargetLocationWorld == null)
+            {
+                if (target.locationModule==null) target.CreateModulesIfNeeded(ModuleFlags.locationModule);
+                if (target.locationModule==null) Debug.LogError($"GameInputRouter could not get location of {target.DisplayName} because could not create LocationModule.");
+                hitpoint = target.locationModule.pos3d_world;
+            }
+            else
+                hitpoint = InputState.clickTargetLocationWorld;
+
+            //Debug.Log($"GameInputRouter.TryClickActivate(userIsInstigator={userIsInstigator}, instigator={instigator}, target={target}, hitpoint={hitpoint})");
+            TryClickActivate(userIsInstigator, instigator, target, hitpoint);
+        }
+    }
+
+    public void TryClickActivate(bool userIsInstigator, WorldObject instigator, WorldObject target, Vector3 hitPoint)
+    {
+        if (target == null)
+            return;
+
+        // send the Activate command to the target WorldObject where it may
+        // ensure the handler exists and forward it, or reject it.
+
+        var context = new ActivateContext(
+            userIsInstigator: userIsInstigator,  // identifies it was a user event (click, tap, select, etc.) versus an agent (tryting to pick something up, etc.)
+            instigator: instigator,         // who/what is doing the action (for user, it is packLeader of playerPack)
+            target: target,                 // who/what is targeted
+            gameMode: currentGameMode,      // global variable (Explore, Debug, Build, etc)
+            hitPoint: hitPoint,             // pos3d_world of actual contact point
+            promoteTarget: true);           // allow target to add necessary Modules, if false then just fail if not available
+
+        var request = new ActivateRequest(ActivateKind.RequestToJoinPack);
+
+        // send request to the WorldObject target.
+        ActivateResult result = target.Activate(context, request);
+
+        if (result.kind != ActivateResultKind.Ignored && !string.IsNullOrEmpty(result.message))
+            if (result.kind == ActivateResultKind.Errored)
+                Debug.LogError($"Interaction {request.kind} on {target.name}: {result.kind} ({result.message})");
+            else
+                Debug.Log($"Interaction {request.kind} on {target.name}: {result.kind} ({result.message})");
     }
     
+    // --- Global status of what is going on ---
     public void SetGameMode(GameMode value)
     {
         currentGameMode = value;
     }
 
-    public void TryClickActivate(WorldObject instigator, WorldObject target, Vector3 hitPoint)
-    {
-        if (target == null)
-            return;
-
-        // For now, make sure the target can be activated by creating a default activator module if none present.
-        //target.CreateModulesIfNeeded(ModuleFlags.activatorModule);
-        
-        //if (target == null)
-        //{
-        //    Debug.LogWarning($"Clicked '{target.name}' but it has no ActivatorModule.");
-        //    return;
-        //}
-
-        var context = new InteractionContext(
-            instigator: instigator,         // may be null
-            target: target,
-            gameMode: currentGameMode,      // global variable
-            hitPoint: hitPoint,
-            promoteTarget: true);           // allow target to add necessary Modules
-
-        var request = new InteractionRequest(InteractionKind.RequestToJoinPack);
-
-        InteractionResult result = target.HandleInteraction(context, request);
-
-        if (result.kind != InteractionResultKind.Ignored && !string.IsNullOrEmpty(result.message))
-            Debug.Log($"Interaction {request.kind} on {target.name}: {result.kind} ({result.message})");
-    }
 }

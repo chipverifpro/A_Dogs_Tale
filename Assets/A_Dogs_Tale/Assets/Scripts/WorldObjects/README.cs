@@ -25,7 +25,7 @@ WORLDOBJECTS/
             BlackboardViews                 --Abstractions for different uses (maybe move to Agent/Quest/etc.)
             PlacementModule                 --World Builder information
         PHYSICAL_MODULES/
-            ActivatorModule                 --Event driven activators
+            ActivatorModule                 --Event driven activators (an event happened, route it)
             InteractionModule               --Generic use object beyond Activator or including it
             LocationModule                  --Where am I?
             MotionModule                    --Where am I going, how to get there?

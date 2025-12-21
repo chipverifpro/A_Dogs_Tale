@@ -127,7 +127,13 @@ namespace DogGame.Modules
             HandleAgentSwitchingAndFormation(inputState);
 
             HandleMovement(inputState, deltaTime);
-            HandleInteraction(inputState, deltaTime);
+
+            // if player has requested activating an object, it will be sent from a
+            // central location, not here in playerInputModule.  Currently that location
+            // is GameInputRouter.
+
+            //if (worldObject.activatorModule!=null)
+            //    worldObject.activatorModule.HandleActivate(inputState, deltaTime);
         }
 
         #region Camera
@@ -263,7 +269,8 @@ namespace DogGame.Modules
             // current target is an object, let's figure out where it is now.
             if (currentDestinationObject!=null)
             {
-                currentDestinationPosition = currentDestinationObject.locationModule.pos3d_world;
+                if (currentDestinationObject.locationModule != null)
+                    currentDestinationPosition = currentDestinationObject.locationModule.pos3d_world;
             }
 
             // fianlly, head to destination location (or object's current location)
@@ -404,58 +411,7 @@ namespace DogGame.Modules
         #endregion
 
         #region Interaction
-
-        private void HandleInteraction(PlayerInputState state, float deltaTime)
-        {
-            // Only act on frames where the interact button was pressed
-            if (!state.interactPressed)
-                return;
-
-            // Priority 1: Interact with clicked object (if any)
-            if (state.hasClickTargetWorldObject && state.clickTargetWorldObject != null)
-            {
-                // TODO: replace with your own interaction system.
-                // e.g.:
-                // InteractionSystem.Instance.RequestInteract(worldObject, state.clickTargetWorldObject);
-                // or forward to an AgentActionModule on this agent.
-
-                Debug.Log(
-                    $"[PlayerDecision {worldObject.DisplayName}] " +
-                    $"Interact with object {state.clickTargetWorldObject.name}"
-                );
-                return;
-            }
-
-            // Priority 2: No object, but clicked location → contextual interact “at that spot”
-            if (state.hasClickTargetLocationWorld)
-            {
-                // At this point, HandleMovement is already responsible for click-to-move
-                // toward state.clickTargetLocationWorld (using AgentMovementModule).
-                // Here we just decide that the player wants a context action AT that location.
-
-                Debug.Log(
-                    $"[PlayerDecision {worldObject.DisplayName}] " +
-                    $"Context interact at location {state.clickTargetLocationWorld}"
-                );
-
-                // Later you might:
-                // - Queue a "when I arrive there, perform dig/sniff/use" action
-                //   via an AgentActionModule or InteractionSystem.
-                // - Set a small state flag like pendingContextActionTarget = state.clickTargetLocationWorld;
-                // and have another module watch for arrival and fire the action.
-            }
-            else
-            {
-                // Priority 3: No click info → generic interact
-                // e.g. "interact with nearest object in range", "sniff", etc.
-                Debug.Log(
-                    $"[PlayerDecision {worldObject.DisplayName}] " +
-                    "Generic interact (no specific target)."
-                );
-
-                // TODO: hook to a proximity-based interaction system.
-            }
-        }
+        // Not handled here...  GameInputRouter sends target the HandleActivate event.
         #endregion
         
         #region PackLoyalty

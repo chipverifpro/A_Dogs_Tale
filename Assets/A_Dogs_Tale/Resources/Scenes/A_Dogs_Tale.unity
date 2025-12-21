@@ -951,13 +951,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 125976610}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 766807148}
-  m_Father: {fileID: 1767335688}
+  m_Father: {fileID: 196505886}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &125976612
 MonoBehaviour:
@@ -973,6 +973,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PackManager
   dir: {fileID: 1920128612}
   playerPack: {fileID: 766807147}
+  PackParentObject: {fileID: 125976610}
   packs:
   - {fileID: 766807147}
 --- !u!1 &134909790
@@ -1243,7 +1244,8 @@ Transform:
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 125976611}
   m_Father: {fileID: 1767335688}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &200283689
@@ -5336,6 +5338,7 @@ GameObject:
   - component: {fileID: 766807148}
   - component: {fileID: 766807147}
   - component: {fileID: 766807149}
+  - component: {fileID: 766807150}
   m_Layer: 0
   m_Name: PlayerPack
   m_TagString: Untagged
@@ -5356,14 +5359,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   dir: {fileID: 1920128612}
-  PackParentObject: {fileID: 766807148}
-  trail: {fileID: 0}
+  trail: {fileID: 766807150}
   packName: Player Pack
-  packLeader: {fileID: 6544990386685219154}
   packAgentList:
   - {fileID: 6544990386685219154}
   - {fileID: 1651296793}
   formation: 3
+  leadershipType: 1
+  followerType: 2
   formationSpacing: 1.5
 --- !u!4 &766807148
 Transform:
@@ -5398,6 +5401,25 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 63dafdb328c574e22b074feeff20468b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PackFormations
+--- !u!114 &766807150
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 766807146}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a33e305f12fa8440487617817d81a875, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BreadcrumbTrail
+  dropDistance: 0.5
+  maxCrumbs: 256
+  leader: {fileID: 6544990386685219154}
+  followers: []
+  crumbs: []
+  lastDropPos: {x: 0, y: 0}
+  hasAny: 0
 --- !u!1 &805874265
 GameObject:
   m_ObjectHideFlags: 0
@@ -13462,7 +13484,6 @@ Transform:
   - {fileID: 838293513}
   - {fileID: 367847098}
   - {fileID: 1448055485}
-  - {fileID: 125976611}
   - {fileID: 556401679}
   - {fileID: 1642226070}
   - {fileID: 408055402}
@@ -13833,7 +13854,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   dir: {fileID: 1920128612}
-  cameraMode: 2
+  cameraMode: 4
   playerVisible: 1
   brain: {fileID: 1815589289}
   vcamFP: {fileID: 445485060}
@@ -16037,7 +16058,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.AgentModule
   agentName: German Shepherd
-  initialDecisionType: 0
+  initialDecisionType: 1
   currentDecisionModule: {fileID: 6544990386685219152}
 --- !u!114 &6544990386685219144
 MonoBehaviour:
