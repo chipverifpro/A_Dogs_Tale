@@ -18,7 +18,7 @@ using DogGame.Modules;
 
 namespace DogGame.AI
 {
-    public class MotivationModule : AgentModule
+    public class MotivationModule : WorldModule
     {
         [Header("Tuning")]
         [SerializeField] private PackLoyaltyTuning packLoyaltyTuning;

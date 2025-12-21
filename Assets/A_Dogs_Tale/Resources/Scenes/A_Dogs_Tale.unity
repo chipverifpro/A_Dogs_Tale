@@ -6351,7 +6351,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5262a7b9c097f40bd801a6a2f5de8d86, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GameInputRouter
-  currentControlledWorldObject: {fileID: 6544990386685219154}
   dir: {fileID: 0}
   currentGameMode: 2
 --- !u!114 &942637347
@@ -12458,7 +12457,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.AgentModule
   agentName: Agent Cur
-  initialDecisionType: 1
+  initialDecisionType: 2
   currentDecisionModule: {fileID: 1651296789}
 --- !u!114 &1651296781
 MonoBehaviour:
@@ -12547,7 +12546,7 @@ MonoBehaviour:
     height: 0
     yawDeg: 0
     whichFollowersArrived: 
-  targetObject: {fileID: 0}
+  targetObject: {fileID: 6544990386685219154}
   targetObjectPosition: {x: 0, y: 0, z: 0}
   keepTrackingTarget: 0
   targetMoved: 0
@@ -12661,7 +12660,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::WorldObject
   objectId: -1
   displayName: cur
-  kind: 1
+  kind: 2
   autoRegister: 1
 --- !u!65 &1651296795
 BoxCollider:
