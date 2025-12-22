@@ -34,6 +34,11 @@ namespace DogGame.Modules
             var rend = all_renderers[0];    // just grab the first one
             return rend.enabled;
         }
+
+        // TODO:
+        //   add animation controls
+        // ` add camera controls (set view to closeup, set camera follow me)
+
     }
 
     

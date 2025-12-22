@@ -118,6 +118,9 @@ namespace DogGame.Modules
             int packNum = 0;
             //if (context.instigator == null)       // TEMPORARY DISABLE
             //{
+                // LEAVE OLD PACK
+                LeaveCurrentPack();
+
                 // determine a random pack to join.
                 int packCount = dir.packManager.packs.Count;
                 // Random: packnum is 0 to packCount+1-1.  if = packCount, create a new pack.

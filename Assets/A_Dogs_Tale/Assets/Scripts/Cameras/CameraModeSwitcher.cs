@@ -87,7 +87,7 @@ public class CameraModeSwitcher : MonoBehaviour
 
     void Start()
     {
-        if (player == null) player = FindFirstObjectByType<Player>();
+        //if (player == null) player = FindFirstObjectByType<Player>();
     }
 
     void Update()
@@ -121,8 +121,8 @@ public class CameraModeSwitcher : MonoBehaviour
             }
         }*/
 
-        if (player.camera_refresh_needed)
-        {
+        //if (dir.playerPack.packLeader.camera_refresh_needed)
+        //{
             //if (waiter!=null) StopCoroutine(waiter);  // in case WaitForArrival was already running, kill it.
 
             playerVisible = (vcamFP.Priority == 10) ? false : true; // hide player in first person mode
@@ -140,8 +140,8 @@ public class CameraModeSwitcher : MonoBehaviour
                 var mainCam = Camera.main;
                 mainCam.cullingMask &= ~(1 << LayerMask.NameToLayer("Ceiling")); // hide ceiling in non-first person
             }
-            player.camera_refresh_needed = false;
-        }
+        //    player.camera_refresh_needed = false;
+        //}
     }
 
     public void SelectView(CameraModes newMode)

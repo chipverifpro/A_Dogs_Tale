@@ -44,11 +44,11 @@ public enum ModuleFlags : ulong
     playerDecisionModule   = 1UL << 5,
     followerDecisionModule = 1UL << 6,
     wanderDecisionModule   = 1UL << 7,
+    immobileDecisionModule = 1UL << 8,
 
     // --- Agent Interface Modules ---
-    agentMovementModule   = 1UL << 8,
-    packMemberModule      = 1UL << 9,
-    // OBSOLETE: agentSensesModule     = 1UL << 10,
+    agentMovementModule   = 1UL << 9,
+    packMemberModule      = 1UL << 10,
     agentModule           = 1UL << 11,
 
     // --- Motivation ---
@@ -90,6 +90,10 @@ public static class ModuleFlagsTemplates  // extension functions for the ModuleF
     public static readonly ModuleFlags FullAgent =  All
                                                      & ~ModuleFlags.questModuleBase
                                                      & ~ModuleFlags.placementModule;
+    public static readonly ModuleFlags DecisionModules = ModuleFlags.playerDecisionModule
+                                                       | ModuleFlags.followerDecisionModule
+                                                       | ModuleFlags.wanderDecisionModule
+                                                       | ModuleFlags.immobileDecisionModule;
     public static readonly ModuleFlags ScatterTerrain = ModuleFlags.placementModule
                                                        | ModuleFlags.scentEmitterModule
                                                        | ModuleFlags.appearanceModule;

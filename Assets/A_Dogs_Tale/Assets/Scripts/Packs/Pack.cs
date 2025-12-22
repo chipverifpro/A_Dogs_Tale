@@ -177,9 +177,16 @@ public class Pack : MonoBehaviour
         Debug.Log($"RemoveMember({agent.DisplayName})");
         if ((agent==null) || (agent.packMemberModule==null))
             return false;   // not a valid pack member
-        
+
         if (packAgentList.Contains(agent))
         {
+            // don't remove last member of PlayerPack
+            if (isPlayerPack && packAgentList.Count==1)
+            {
+                Debug.Log("Only member of PlayerPack cannot leave the pack");
+                return false;
+            }
+            
             packAgentList.Remove(agent);
             agent.packMemberModule.currentPack = null;
             // TODO: clear leader: agent.packMemberModule.IsLeader

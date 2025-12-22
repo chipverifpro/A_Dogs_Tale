@@ -85,17 +85,15 @@ namespace DogGame.Modules
             }
 
             // Find a module with matching DecisionType
-            var nextModule = allDecisionModules
-                .FirstOrDefault(m => m.DecisionType == decisionType);
+            var nextModule = allDecisionModules.FirstOrDefault(m => m.DecisionType == decisionType);
 
-            // Fallback: if not found, use any Wanderer, or first module
+            // failed to find a matching module.  Add them all and try again.
             if (nextModule == null)
             {
-                nextModule = allDecisionModules
-                    .FirstOrDefault(m => m.DecisionType == AgentDecisionType.Wanderer)
-                    ?? allDecisionModules.FirstOrDefault();
+                worldObject.CreateModulesIfNeeded(ModuleFlagsTemplates.DecisionModules);
+                nextModule = allDecisionModules.FirstOrDefault(m => m.DecisionType == decisionType);
             }
-            if (nextModule.DecisionType != decisionType) Debug.LogError("ERROR A");
+            if (nextModule.DecisionType != decisionType) Debug.LogError($"ERROR A: nextModule.DecisionType={nextModule.DecisionType},decisionType={decisionType},currentDecisionModule.DecisionType={currentDecisionModule.DecisionType}");
             currentDecisionModule = nextModule;
 
             if (currentDecisionModule != null)
