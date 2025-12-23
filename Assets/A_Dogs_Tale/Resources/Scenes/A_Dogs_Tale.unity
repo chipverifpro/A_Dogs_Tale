@@ -976,6 +976,7 @@ MonoBehaviour:
   PackParentObject: {fileID: 125976610}
   packs:
   - {fileID: 766807147}
+  debug_RandomJoin: 1
 --- !u!1 &134909790
 GameObject:
   m_ObjectHideFlags: 0
@@ -1112,7 +1113,7 @@ PrefabInstance:
   serializedVersion: 2
   m_Modification:
     serializedVersion: 3
-    m_TransformParent: {fileID: 2142269744}
+    m_TransformParent: {fileID: 2140542027}
     m_Modifications:
     - target: {fileID: 5412989707248662670, guid: 94f5b811bc2e74a9a992ca995f1f81d3,
         type: 3}
@@ -1137,17 +1138,17 @@ PrefabInstance:
     - target: {fileID: 5412989707248662670, guid: 94f5b811bc2e74a9a992ca995f1f81d3,
         type: 3}
       propertyPath: m_LocalRotation.x
-      value: 0
+      value: -0
       objectReference: {fileID: 0}
     - target: {fileID: 5412989707248662670, guid: 94f5b811bc2e74a9a992ca995f1f81d3,
         type: 3}
       propertyPath: m_LocalRotation.y
-      value: 0
+      value: -0
       objectReference: {fileID: 0}
     - target: {fileID: 5412989707248662670, guid: 94f5b811bc2e74a9a992ca995f1f81d3,
         type: 3}
       propertyPath: m_LocalRotation.z
-      value: 0
+      value: -0
       objectReference: {fileID: 0}
     - target: {fileID: 5412989707248662670, guid: 94f5b811bc2e74a9a992ca995f1f81d3,
         type: 3}
@@ -3625,7 +3626,7 @@ PrefabInstance:
   serializedVersion: 2
   m_Modification:
     serializedVersion: 3
-    m_TransformParent: {fileID: 841138160}
+    m_TransformParent: {fileID: 2140542027}
     m_Modifications:
     - target: {fileID: 840080039950359814, guid: 6210faa9f30844384870719125248e48,
         type: 3}
@@ -3660,17 +3661,17 @@ PrefabInstance:
     - target: {fileID: 6314203209213561298, guid: 6210faa9f30844384870719125248e48,
         type: 3}
       propertyPath: m_LocalRotation.x
-      value: 0
+      value: -0
       objectReference: {fileID: 0}
     - target: {fileID: 6314203209213561298, guid: 6210faa9f30844384870719125248e48,
         type: 3}
       propertyPath: m_LocalRotation.y
-      value: 0
+      value: -0
       objectReference: {fileID: 0}
     - target: {fileID: 6314203209213561298, guid: 6210faa9f30844384870719125248e48,
         type: 3}
       propertyPath: m_LocalRotation.z
-      value: 0
+      value: -0
       objectReference: {fileID: 0}
     - target: {fileID: 6314203209213561298, guid: 6210faa9f30844384870719125248e48,
         type: 3}
@@ -5295,38 +5296,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 752402445}
   m_CullTransparentMesh: 1
---- !u!1 &766135306
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 766135308}
-  m_Layer: 0
-  m_Name: AgentChihuahua
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &766135308
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 766135306}
-  serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children:
-  - {fileID: 1880613838}
-  m_Father: {fileID: 766807148}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &766807146
 GameObject:
   m_ObjectHideFlags: 0
@@ -5381,12 +5350,8 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 1480059013}
-  - {fileID: 1159626743}
-  - {fileID: 907681578}
-  - {fileID: 841138160}
-  - {fileID: 2142269744}
-  - {fileID: 766135308}
+  - {fileID: 6191479115019793372}
+  - {fileID: 1651296778}
   m_Father: {fileID: 125976611}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &766807149
@@ -5415,6 +5380,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::BreadcrumbTrail
   dropDistance: 0.5
   maxCrumbs: 256
+  pack: {fileID: 766807147}
   leader: {fileID: 6544990386685219154}
   followers: []
   crumbs: []
@@ -5831,38 +5797,6 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!1 &841138158
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 841138160}
-  m_Layer: 0
-  m_Name: AgentCorgi
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &841138160
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 841138158}
-  serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children:
-  - {fileID: 464182954}
-  m_Father: {fileID: 766807148}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &869079051
 GameObject:
   m_ObjectHideFlags: 0
@@ -6138,38 +6072,6 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 215243008}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &907681576
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 907681578}
-  m_Layer: 0
-  m_Name: AgentCur
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &907681578
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 907681576}
-  serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children:
-  - {fileID: 1651296778}
-  m_Father: {fileID: 766807148}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &928183480
 GameObject:
@@ -7584,38 +7486,6 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!1 &1159626741
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1159626743}
-  m_Layer: 0
-  m_Name: AgentGermanShepherd
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &1159626743
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1159626741}
-  serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children:
-  - {fileID: 6191479115019793372}
-  m_Father: {fileID: 766807148}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1175813280
 GameObject:
   m_ObjectHideFlags: 0
@@ -8549,7 +8419,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.AgentModule
   agentName: Flying Crate
-  initialDecisionType: 2
+  initialDecisionType: 3
   currentDecisionModule: {fileID: 1253610046}
 --- !u!114 &1253610040
 MonoBehaviour:
@@ -8676,9 +8546,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dcf508356ad0d42d8a13c39a1beb322f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DogsTale.AI.MotivationModule
-  agentName: Unnamed Agent
-  initialDecisionType: 2
-  currentDecisionModule: {fileID: 0}
   packLoyaltyTuning: {fileID: 0}
   showDebug: 0
   trainingProfile:
@@ -10521,37 +10388,6 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   m_IsOn: 1
---- !u!1 &1480059012
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1480059013}
-  m_Layer: 0
-  m_Name: PackTrail
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &1480059013
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1480059012}
-  serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 766807148}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1485730646
 GameObject:
   m_ObjectHideFlags: 0
@@ -12305,7 +12141,7 @@ PrefabInstance:
   serializedVersion: 2
   m_Modification:
     serializedVersion: 3
-    m_TransformParent: {fileID: 907681578}
+    m_TransformParent: {fileID: 766807148}
     m_Modifications:
     - target: {fileID: 4477274621950385561, guid: da33ad6d2d1f9483faa117084b30e547,
         type: 3}
@@ -12340,17 +12176,17 @@ PrefabInstance:
     - target: {fileID: 7941343565711738264, guid: da33ad6d2d1f9483faa117084b30e547,
         type: 3}
       propertyPath: m_LocalRotation.x
-      value: 0
+      value: -0
       objectReference: {fileID: 0}
     - target: {fileID: 7941343565711738264, guid: da33ad6d2d1f9483faa117084b30e547,
         type: 3}
       propertyPath: m_LocalRotation.y
-      value: 0
+      value: -0
       objectReference: {fileID: 0}
     - target: {fileID: 7941343565711738264, guid: da33ad6d2d1f9483faa117084b30e547,
         type: 3}
       propertyPath: m_LocalRotation.z
-      value: 0
+      value: -0
       objectReference: {fileID: 0}
     - target: {fileID: 7941343565711738264, guid: da33ad6d2d1f9483faa117084b30e547,
         type: 3}
@@ -12695,9 +12531,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dcf508356ad0d42d8a13c39a1beb322f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DogsTale.AI.MotivationModule
-  agentName: Unnamed Agent
-  initialDecisionType: 2
-  currentDecisionModule: {fileID: 0}
   packLoyaltyTuning: {fileID: 0}
   showDebug: 0
   trainingProfile:
@@ -13860,9 +13693,8 @@ MonoBehaviour:
   vcamPerspective: {fileID: 1801122503}
   vcamOverhead: {fileID: 705631742}
   vcamNose: {fileID: 225585588}
-  playerModel: {fileID: 556401678}
   toggleKey: 9
-  player: {fileID: 556401680}
+  target: {fileID: 6544990386685219154}
   height: 20
   zoomStep: 2
   minZoom: 2
@@ -14230,7 +14062,7 @@ PrefabInstance:
   serializedVersion: 2
   m_Modification:
     serializedVersion: 3
-    m_TransformParent: {fileID: 766135308}
+    m_TransformParent: {fileID: 2140542027}
     m_Modifications:
     - target: {fileID: 5957909782290826837, guid: e86f8e8e9b1324aecbb31e00a8c49ed2,
         type: 3}
@@ -14346,6 +14178,7 @@ MonoBehaviour:
   dogSpeechDictionary: {fileID: 1642226072}
   brain: {fileID: 1815589289}
   vcamFP: {fileID: 445485060}
+  vcamNose: {fileID: 225585588}
   vcamPerspective: {fileID: 1801122503}
   vcamOverhead: {fileID: 705631742}
   scentCam: {fileID: 1326159950}
@@ -15841,40 +15674,11 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
+  - {fileID: 1880613838}
+  - {fileID: 160131187}
+  - {fileID: 464182954}
   - {fileID: 1253610034}
   m_Father: {fileID: 1767335688}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &2142269742
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 2142269744}
-  m_Layer: 0
-  m_Name: AgentPug
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &2142269744
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2142269742}
-  serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children:
-  - {fileID: 160131187}
-  m_Father: {fileID: 766807148}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!4 &6191479115019793372 stripped
 Transform:
@@ -15888,7 +15692,7 @@ PrefabInstance:
   serializedVersion: 2
   m_Modification:
     serializedVersion: 3
-    m_TransformParent: {fileID: 1159626743}
+    m_TransformParent: {fileID: 766807148}
     m_Modifications:
     - target: {fileID: -2579705691123128087, guid: 2ce0050a816054aaca2a1076f182f7a8,
         type: 3}
@@ -15923,17 +15727,17 @@ PrefabInstance:
     - target: {fileID: 7997089769847479514, guid: 2ce0050a816054aaca2a1076f182f7a8,
         type: 3}
       propertyPath: m_LocalRotation.x
-      value: 0
+      value: -0
       objectReference: {fileID: 0}
     - target: {fileID: 7997089769847479514, guid: 2ce0050a816054aaca2a1076f182f7a8,
         type: 3}
       propertyPath: m_LocalRotation.y
-      value: 0
+      value: -0
       objectReference: {fileID: 0}
     - target: {fileID: 7997089769847479514, guid: 2ce0050a816054aaca2a1076f182f7a8,
         type: 3}
       propertyPath: m_LocalRotation.z
-      value: 0
+      value: -0
       objectReference: {fileID: 0}
     - target: {fileID: 7997089769847479514, guid: 2ce0050a816054aaca2a1076f182f7a8,
         type: 3}
@@ -16274,6 +16078,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e486e0d84f00148db8eded1ca333c685, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.AppearanceModule
+  cameraFollowingMe: 0
+  head: {fileID: 0}
+  eyesForward: {fileID: 0}
   camera_refresh_needed: 1
 --- !u!114 &6544990386685219159
 MonoBehaviour:
@@ -16339,9 +16146,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dcf508356ad0d42d8a13c39a1beb322f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DogsTale.AI.MotivationModule
-  agentName: Unnamed Agent
-  initialDecisionType: 2
-  currentDecisionModule: {fileID: 0}
   packLoyaltyTuning: {fileID: 0}
   showDebug: 0
   trainingProfile:

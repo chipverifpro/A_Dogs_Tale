@@ -36,6 +36,7 @@ public class WorldObjectModulesInspector : Editor
         typeof(PlayerDecisionModule),
         typeof(WandererDecisionModule),
         typeof(FollowerDecisionModule),
+        typeof(ImmobileDecisionModule),
         // typeof(CombatDecisionModule),
         // typeof(FormationDecisionModule),
     };

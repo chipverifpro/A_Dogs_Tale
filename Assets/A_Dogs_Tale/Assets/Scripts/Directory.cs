@@ -41,7 +41,7 @@ public class Directory : MonoBehaviour
 
     [Header("Game Camearas")]
     public CinemachineBrain brain;
-    public CinemachineVirtualCamera vcamFP, vcamPerspective, vcamOverhead;
+    public CinemachineVirtualCamera vcamFP, vcamNose, vcamPerspective, vcamOverhead;
     public Camera scentCam;
     public CameraModeSwitcher cameraModeSwitcher;
 

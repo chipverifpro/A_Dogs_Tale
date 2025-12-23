@@ -23,6 +23,9 @@ public class BreadcrumbTrail : MonoBehaviour
     [Tooltip("Hard cap on stored crumbs (acts as ring buffer ceiling).")]
     public int maxCrumbs = 256;
 
+    public Pack pack;
+
+    // The following should be grabbed directly from pack...
     public WorldObject leader;                // who is making the trail
     public List<WorldObject> followers;       // who is following the trail (in order)
     public int numFollowers => followers.Count;     // shortcut

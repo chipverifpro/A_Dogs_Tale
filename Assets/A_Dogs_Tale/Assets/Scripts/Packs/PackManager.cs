@@ -9,6 +9,8 @@ public class PackManager : MonoBehaviour
     public GameObject PackParentObject;
     public List<Pack> packs;
 
+    public bool debug_RandomJoin = false;    // Makes join pack commands => join object to a random pack including a new pack.
+
     // initialize the packs array, and put playerPack in the first spot if we have one.
     void Start()
     {
@@ -45,6 +47,17 @@ public class PackManager : MonoBehaviour
             }
         }
     }
+
+    public int GetPackNumber(Pack searchFor)
+    {
+        if (searchFor==null) return -1;
+        for (int num = 0; num < packs.Count; num++)
+        {
+            if (packs[num]==searchFor) return num;
+        }
+        return -1;
+    }
+
     public Pack FindPackByName(String targetPackName)
     {
         // Search every Pack component in the scene (active or inactive).
@@ -81,7 +94,7 @@ public class PackManager : MonoBehaviour
         return found;
     }
 
-    public void CreateNewPack(string newPackName, WorldObject leader=null)
+    public Pack CreateNewPack(string newPackName, WorldObject leader=null)
     {
         GameObject new_go = new();
         new_go.name = newPackName;
@@ -93,5 +106,6 @@ public class PackManager : MonoBehaviour
             pack.AddMember(leader,true);
         }
         packs.Add(pack);    // register new pack
+        return pack;
     }
 }

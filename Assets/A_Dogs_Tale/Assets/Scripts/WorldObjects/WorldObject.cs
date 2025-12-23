@@ -134,6 +134,7 @@ public class WorldObject : MonoBehaviour
     public PlayerDecisionModule playerDecisionModule { get; private set; }
     public FollowerDecisionModule followerDecisionModule { get; private set; }
     public WandererDecisionModule wandererDecisionModule { get; private set; }
+    public ImmobileDecisionModule immobileDecisionModule { get; private set; }
 
     // --- Agent Interface Modules ---
     public AgentMovementModule agentMovementModule { get; private set; }
@@ -199,6 +200,7 @@ public class WorldObject : MonoBehaviour
         playerDecisionModule   = GetComponent<PlayerDecisionModule>();
         followerDecisionModule = GetComponent<FollowerDecisionModule>();
         wandererDecisionModule = GetComponent<WandererDecisionModule>();
+        immobileDecisionModule = GetComponent<ImmobileDecisionModule>();
 
         // --- Agent Interface Modules ---
         agentMovementModule   = GetComponent<AgentMovementModule>();
@@ -418,6 +420,11 @@ public class WorldObject : MonoBehaviour
             if (wandererDecisionModule == null) Debug.LogWarning($"wandererDecisionModule = null");
         }
 
+        if (enables.HasFlag(ModuleFlags.immobileDecisionModule))
+        {
+            immobileDecisionModule = EnsureComponent<ImmobileDecisionModule>();
+            if (immobileDecisionModule == null) Debug.LogWarning($"immobileDecisionModule = null");
+        }
 
         // ===============================
         // Agent Interface Modules

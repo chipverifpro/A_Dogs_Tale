@@ -11,7 +11,7 @@ namespace DogGame.Modules
 
         [Header("Follow Target")]
         [Tooltip("Current target to follow. Can be pack leader, laser point, etc.")]
-        [SerializeField] private Transform followTarget;
+        [SerializeField] private WorldObject followTarget;
 
         [Tooltip("Desired following distance in meters.")]
         [SerializeField] private float followDistanceMeters = 1.5f;
@@ -50,7 +50,7 @@ namespace DogGame.Modules
         /// Public API: set an explicit follow target and desired distance.
         /// This can be a pack leader, laser dot, waypoint, etc.
         /// </summary>
-        public void SetFollowTarget(Transform newTarget, float desiredDistanceMeters)
+        public void SetFollowTarget(WorldObject newTarget, float desiredDistanceMeters)
         {
             followTarget = newTarget;
             if (desiredDistanceMeters > 0f)
@@ -111,7 +111,7 @@ namespace DogGame.Modules
             if (currentPack == null || currentPack.packLeader == null)
                 return;
 
-            followTarget = currentPack.packLeader.transform;
+            followTarget = currentPack.packLeader;
 
             if (enableDebugLogging)
             {
@@ -145,8 +145,8 @@ namespace DogGame.Modules
             }
 
             // Compute direction to follow target
-            Vector3 currentPos = worldObject.agentModule.transform.position;
-            Vector3 targetPos = followTarget.position;
+            Vector3 currentPos = worldObject.transform.position;    // TODO, get from LocationModule
+            Vector3 targetPos = followTarget.transform.position;    // TODO, get from LocationModule
 
             Vector3 toTarget = targetPos - currentPos;
             toTarget.y = 0f;

@@ -1,6 +1,8 @@
 using UnityEngine;
 using System.Linq;
 using DogGame.AI;
+using System;
+using Unity.Tutorials.Core.Editor;
 
 // ----- Not a BASE CLASS -----
 
@@ -36,6 +38,7 @@ namespace DogGame.Modules
         protected override void Awake()
         {
             base.Awake();
+            if (agentName.IsNullOrEmpty()) agentName=gameObject.name;
 
             //if (dir==null) dir=FindFirstObjectByType<Directory>();
 
@@ -76,7 +79,7 @@ namespace DogGame.Modules
         /// </summary>
         public void SwitchDecisionModule(AgentDecisionType decisionType)
         {
-            //Debug.Log($"AgentModule.SwitchDecisionModule {agentName}: decisionType = {decisionType}", this);
+            Debug.Log($"AgentModule.SwitchDecisionModule {agentName}: decisionType = {decisionType}", this);
 
             // Disable the current one if any
             if (currentDecisionModule != null)
@@ -91,6 +94,7 @@ namespace DogGame.Modules
             if (nextModule == null)
             {
                 worldObject.CreateModulesIfNeeded(ModuleFlagsTemplates.DecisionModules);
+                allDecisionModules = GetComponents<AgentDecisionModuleBase>();
                 nextModule = allDecisionModules.FirstOrDefault(m => m.DecisionType == decisionType);
             }
             if (nextModule.DecisionType != decisionType) Debug.LogError($"ERROR A: nextModule.DecisionType={nextModule.DecisionType},decisionType={decisionType},currentDecisionModule.DecisionType={currentDecisionModule.DecisionType}");
@@ -105,11 +109,11 @@ namespace DogGame.Modules
                     // cast the decision module
                     FollowerDecisionModule followerDecisionModule = (FollowerDecisionModule) currentDecisionModule;
                     // find the leader
-                    Transform leader = worldObject.packMemberModule.currentPack.packLeader.transform;
+                    WorldObject leader = worldObject.packMemberModule.currentPack.packLeader;
                     // distance is set by number of pack members ahead of me.
                     float distance = worldObject.packMemberModule.currentPack.packAgentList.Count * 1.5f;
                     // set who to follow and how far.
-                    followerDecisionModule.SetFollowTarget(leader,distance);
+                    followerDecisionModule.SetFollowTarget(leader, distance);
                 }
                 if(currentDecisionModule.DecisionType == AgentDecisionType.Wanderer)
                 {
@@ -132,6 +136,11 @@ namespace DogGame.Modules
                     //float distance = worldObject.packMemberModule.currentPack.packAgentList.Count * 1.5f;
                     // set myself to leader
                     //playerDecisionModule.becomeLeader();
+                }
+                if(currentDecisionModule.DecisionType == AgentDecisionType.Immobile)
+                {
+                    // cast the decision module
+                    ImmobileDecisionModule immobileDecisionModule = (ImmobileDecisionModule) currentDecisionModule;
                 }
             }
             else

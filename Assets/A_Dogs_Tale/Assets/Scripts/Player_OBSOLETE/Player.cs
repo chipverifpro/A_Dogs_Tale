@@ -256,7 +256,7 @@ public partial class Player : MonoBehaviour
         int old_leader_id = 0;
         int old_leader_index = -1;
         for (int i = 0; i < pack.packAgentList.Count; i++)
-            if (pack.packAgentList[i].packMemberModule.IsLeader == true)   // old trailLeader
+            if (pack.packAgentList[i].packMemberModule.isLeader == true)   // old trailLeader
             {
                 old_leader_id = pack.packAgentList[i].ObjectId;
                 old_leader_index = i;

@@ -17,15 +17,13 @@ public class CameraModeSwitcher : MonoBehaviour
 
     public CinemachineBrain brain;
     public CinemachineVirtualCamera vcamFP, vcamPerspective, vcamOverhead, vcamNose;
-    public GameObject playerModel;
+    //public GameObject playerModel;
     public KeyCode toggleKey = KeyCode.Tab;
-    int current_camera;                     //TODO: replace with cameraMode above.
-    //public Transform player;
-    public Player player;
+    public WorldObject target;
     public float height = 20f;
 
     private Coroutine waiter = null;
-
+    private bool loggedTargetWarning = false;   // only display ONE target warning instead of spamming every frame.
 
     void Awake()
     {
@@ -70,8 +68,8 @@ public class CameraModeSwitcher : MonoBehaviour
             vcamNose = GameObject.Find("vcamNose")?.GetComponent<CinemachineVirtualCamera>();
 
         // --- Find the player model ---
-        if (!playerModel)
-            playerModel = GameObject.Find("PlayerModel");
+        //if (!playerModel)
+        //    playerModel = GameObject.Find("PlayerModel");
 
         // --- Verify everything was found ---
         Debug.Log(
@@ -80,8 +78,8 @@ public class CameraModeSwitcher : MonoBehaviour
             $"FP: {(vcamFP ? vcamFP.name : "❌ None")}\n" +
             $"FP: {(vcamNose ? vcamNose.name : "❌ None")}\n" +
             $"Top: {(vcamPerspective ? vcamPerspective.name : "❌ None")}\n" +
-            $"Overhead: {(vcamOverhead ? vcamOverhead.name : "❌ None")}\n" +
-            $"Player: {(playerModel ? playerModel.name : "❌ None")}"
+            $"Overhead: {(vcamOverhead ? vcamOverhead.name : "❌ None")}\n"
+            //$"Player: {(playerModel ? playerModel.name : "❌ None")}"
         );
     }
 
@@ -92,36 +90,14 @@ public class CameraModeSwitcher : MonoBehaviour
 
     void Update()
     {
-        //UpdateZoom(0f);
-
-        /*if (Input.GetKeyDown(toggleKey))
+        // Temporary warning during development until we start doing cinematic sequences that would violate this.
+        if(target != dir.playerPack.packLeader && loggedTargetWarning==false)
         {
-            current_camera = (current_camera + 1) % 3;
-            vcamPerspective.Priority = 0;
-            vcamFP.Priority = 0;
-            vcamOverhead.Priority = 0;
-            playerVisible = true;
-            player.camera_refresh_needed = true;
-
-            switch (current_camera)
-            {
-                case 0:
-                    vcamPerspective.Priority = 10;
-                    cameraMode = CameraModes.Perspective;
-                    break;
-                case 1:
-                    vcamFP.Priority = 10;
-                    cameraMode = CameraModes.FP;
-                    //playerVisible = false;   // hide player in first person mode
-                    break;
-                case 2:
-                    vcamOverhead.Priority = 10;
-                    cameraMode = CameraModes.Overhead;
-                    break;
-            }
-        }*/
-
-        //if (dir.playerPack.packLeader.camera_refresh_needed)
+            Debug.LogWarning($"Cameras are NOT configured to target playerPack.packLeader ({dir.playerPack.packLeader.DisplayName}, but instead {target.DisplayName})");
+            loggedTargetWarning = true;
+        }
+        // ===> camera_refresh_needed 
+        //if (target.appearanceModule.camera_refresh_needed)
         //{
             //if (waiter!=null) StopCoroutine(waiter);  // in case WaitForArrival was already running, kill it.
 
@@ -130,7 +106,7 @@ public class CameraModeSwitcher : MonoBehaviour
             if (!playerVisible)
             {
                 // Wait for camera to arrive at first person before disabling player visibility
-                waiter = StartCoroutine(WaitForArrival(vcamFP, onArrived: onArrivedAtFP));
+                //waiter = StartCoroutine(WaitForArrival(vcamFP, onArrived: onArrivedAtFP));
             }
             else
             {
@@ -140,8 +116,44 @@ public class CameraModeSwitcher : MonoBehaviour
                 var mainCam = Camera.main;
                 mainCam.cullingMask &= ~(1 << LayerMask.NameToLayer("Ceiling")); // hide ceiling in non-first person
             }
-        //    player.camera_refresh_needed = false;
+        //    target.appearanceModule.camera_refresh_needed = false;
         //}
+    }
+
+    public void SetViewTarget(WorldObject cameraTarget)
+    {
+        //if (target==cameraTarget) return; // nothing needed
+        
+        if ((target != cameraTarget) && (target != null) && (target.appearanceModule != null))
+        {
+            // tell the old target we aren't following it anymore.
+            target.appearanceModule.cameraFollowingMe = false;
+        }
+
+        if (target.appearanceModule == null) 
+        {
+            Debug.LogError($"Camera target set to WorldObject {target.DisplayName} which has no AppearanceModule attached.  Cameras not changed.");
+            // Note that we could create one, but without the right safeguards, that might end in a nasty recursive loop.
+            return;
+        }
+
+        // set target to new WorldObject (player), update all vcams,
+        // and let agent know it is being followed.
+        target = cameraTarget;
+        
+        dir.vcamFP.Follow = target.appearanceModule.head.transform;
+        dir.vcamFP.LookAt = target.appearanceModule.eyesForward.transform;
+        
+        dir.vcamNose.Follow = target.appearanceModule.eyesForward.transform;
+        dir.vcamNose.LookAt = target.appearanceModule.head.transform;
+
+        dir.vcamOverhead.Follow = target.transform;
+        dir.vcamOverhead.LookAt = target.transform;
+
+        dir.vcamPerspective.Follow = target.transform;
+        dir.vcamPerspective.LookAt = target.transform;
+    
+        target.appearanceModule.cameraFollowingMe = true;
     }
 
     public void SelectView(CameraModes newMode)
@@ -154,7 +166,7 @@ public class CameraModeSwitcher : MonoBehaviour
             vcamOverhead.Priority = 0;
             vcamNose.Priority = 0;
             playerVisible = true;
-            player.camera_refresh_needed = true;
+            target.appearanceModule.camera_refresh_needed = true;
 
             switch (cameraMode)
             {
@@ -193,11 +205,11 @@ public class CameraModeSwitcher : MonoBehaviour
             {
                 //playerModel.SetActive(true);
                 //player.agent.DogPrefab.SetActive(true);
-                dir.playerPack.packLeader.appearanceModule.SetVisible(true);
+                target.appearanceModule.SetVisible(true);
                 var mainCam = Camera.main;
                 mainCam.cullingMask &= ~(1 << LayerMask.NameToLayer("Ceiling")); // hide ceiling in non-first person
             }
-            player.camera_refresh_needed = false;
+            target.appearanceModule.camera_refresh_needed = false;
         }
     }  
 

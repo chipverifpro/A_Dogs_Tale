@@ -3,24 +3,58 @@ using UnityEngine;
 using DogGame.Modules;
 using System;
 
+// Functionality owned by...  (left column is implementation, right is closer to user)
+//
+// CreatePack - PackManager.cs
+// FindPackByName - PackManager.cs
+//
+//* HandleRequestToJoinPack - PackMemberModule.cs << USER
+//          --uses: LeaveCurrentPack - PackMemberModule.cs
+//                  CreateNewPack - PackManager.cs
+//                  AddMember - Pack.cs
+//      * RequestLeavePack - PackMemberModule.cs << USER
+//*  AddMember(isLeader) - Pack.cs
+//*  RemoveMember - Pack.cs
+//      * RequestLeadershipChange - PackMemberModule.cs << USER
+//*  MoveAgentToLeader - Pack.cs
+//*  ResetPackFollowChain - Pack.cs (included after any change)
+//
+//*  SetFormation - Pack.cs << USER
+//*  GetFormation - Pack.cs << USER
+//*  GetPositionInPack - Pack.cs
+//      * RequestFormationOffset - PackMember.cs << Pathfinding.cs
+//   GetFormationOffset - Pack.cs
+//
+//      * RequestGoToLeader(Teleport?) - PackMemberModule.cs << STARTUP / DecosionModule.csd
+//      * RequestDistanceFromLeader - PackMemberModule
+//   GetLeaderPosition - Pack.cs
+//
+// SetCameraFollower - CameraModeSwitcher.cs
+//
+// CreateModulesIfNeeded - WorldObject.cs
+// EnsureComponent - WorldObject.cs
+
+
 public class Pack : MonoBehaviour
 {
     public Directory dir;
 
-    //public GameObject icon;           // Optional visual symbol representing this pack.
+    //public GameObject icon;           // Future visual symbol representing this pack.
     public BreadcrumbTrail trail;       // List of locations to follow.  Normally left by leader, but maybe from pathfinding or patrol points
 
     [Header("Current Pack")]
     public String packName = "Unnamed Pack";
-    // pack related parameters:
     public List<WorldObject> packAgentList;   // list of agents (WorldObjects)
     public FormationsEnum formation = FormationsEnum.Wedge;
-    public AgentDecisionType leadershipType = AgentDecisionType.Immobile;   // DecisionType assigned to leader on re-arrange.
+    public AgentDecisionType leadershipType = AgentDecisionType.Wanderer;   // DecisionType assigned to leader on re-arrange.
     public AgentDecisionType followerType = AgentDecisionType.Follower;     // DecisionType assigned to followers on re-arrange.
     public float formationSpacing = 1.5f;  // spacing between members in formation
-    
+
+    // 'expression-bodied read-only properties' (yeah, that's what they are called)
     public bool isPlayerPack => this==dir.playerPack;   // only one pack is controlled by player
-    public WorldObject packLeader => packAgentList[0];  // Leader is always first pack member           
+    public int agentCount => packAgentList.Count; // number of pack members.
+    public WorldObject packLeader =>
+        packAgentList != null && packAgentList.Count > 0 ? packAgentList[0] : null;
     
     void Start()
     {
@@ -38,17 +72,14 @@ public class Pack : MonoBehaviour
         // --- Breadcrumb Trail ---
         if (!trail)
         {
-            trail = FindFirstObjectByType<BreadcrumbTrail>();
+            trail = GetComponent<BreadcrumbTrail>();  // look for existing one first
             if (!trail)
-                Debug.LogWarning("[Pack] No BreadcrumbTrail found — trail tracking disabled.");
-            //else
-            //    Debug.Log($"[Pack] Connected to BreadcrumbTrail: {trail.name}");
+            {
+                // attach a Breadcrumb trail MonoBehavior
+                trail = gameObject.AddComponent<BreadcrumbTrail>();
+                trail.pack = this;
+            }
         }
-    }
-
-    public void InitializeConnections()
-    {
-
     }
 
     public void TeleportToLeader()
@@ -86,97 +117,86 @@ public class Pack : MonoBehaviour
 
     // ===== Interface Functions =====
 
-    // returns true if the new agent was added to the pack.
-    public bool AddMember(WorldObject agent, bool setAsLeader)
+    // returns true if the agent is now in the pack (including was already there).
+    // if setAsLeader and the agent is already there but wasn't the leader, then moves agent to leader position.
+    public bool AddMember(WorldObject agent, bool setAsLeader = false)
     {
         //Debug.Log($"AddMember({agent.DisplayName}, {setAsLeader})");
         if ((agent==null) || (agent.packMemberModule==null))
             return false;   // not a valid pack member
 
-        //if (packAgentList==null) 
-            //packAgentList=new();
         if (!packAgentList.Contains(agent))
         {
-            packAgentList.Add(agent);
+            // either insert or append agent to pack list.
+            if (setAsLeader) packAgentList.Insert(0,agent);
+            else packAgentList.Add(agent);
+
+            // Notify agent of new pack.
             agent.packMemberModule.currentPack = this;
-            Debug.Log($"Pack {packName} added member {agent.DisplayName}");
-            if(setAsLeader) 
-                SetLeader(agent);
-            else 
-                SetFollower(agent);
-            
             // Move agent under pack in object hierarcy.
             agent.gameObject.transform.SetParent(this.gameObject.transform,false);
+            
+            Debug.Log($"Pack {packName} added member {agent.DisplayName}");
+            
+            SetPackFollowChain();
 
             return true;
+        } 
+        else
+        {
+            if (setAsLeader && GetPositionInPack(agent)!=0)
+            {
+                MoveAgentToLeader(agent);
+                SetPackFollowChain();
+                Debug.Log($"Pack {packName} promoted member {agent.DisplayName} to leader");
+                return true;
+            }
+            
         }
         return false;
     }
 
-    public bool SetFollower(WorldObject agent)
-    {
-        if (agent==null) return false;  // cannot have a null agent.
-        if (agent==packLeader) return false;  // cannot follow self.
-
-        agent.agentModule.SwitchDecisionModule(AgentDecisionType.Follower);
-    
-        int index = GetPositionInPack(agent);
-        float distance = formationSpacing * index;
-        agent.followerDecisionModule.SetFollowTarget(packLeader.transform, distance);
-
-        return true;
-    }
-
-    public bool SetLeader(WorldObject agent)
-    {
-        if (agent==null)
-        {
-            Debug.LogError($"[Pack {packName} SetLeader]  agent==null]");
-            return false;  // cannot have a null agent.
-        }
-        if (!packAgentList.Contains(agent)) 
-        {
-            Debug.LogError($"Agent {agent.DisplayName} requested to be leader, but is not a member of this pack {packName}");
-            return false; // not already part of this pack
-        }
-        // demote current leader to be a follower.
-        if (packLeader != null)
-        {
-            packLeader.agentModule.SwitchDecisionModule(AgentDecisionType.Follower);
-        }
-
-        // set behavior for leader (Player if this is PlayerPack, otherwise Wanderer)
-        agent.agentModule.SwitchDecisionModule(leadershipType);
-        
-        // move leader to front of packList
-        packAgentList.Remove(agent);
-        packAgentList.Insert(0,agent);
-
-        SetPackFollowChain();
-        return true;
-    }
-
     // Changes leader and followers to appropriate types,
     // and to follow at correct interval spacing.
-    public void SetPackFollowChain()
+    // NOTE: If followerType is not Follower, add to the if below.
+    public bool SetPackFollowChain()
     {
+        if (packAgentList.Count == 0) return false;
+
         packLeader.agentModule.SwitchDecisionModule(leadershipType);
+        // make sure cameras are following playerPack.packLeader
+        if (isPlayerPack)
+        {
+            Debug.Log($"SetPackFollowChain: packLeader of playerPack = {packLeader.DisplayName}");
+            if (packLeader.appearanceModule==null)
+            {
+                packLeader.CreateModulesIfNeeded(ModuleFlags.appearanceModule);
+                Debug.Log($"SetPackFollowChain: packLeader of playerPack = {packLeader.DisplayName}.  Added missing appearanceModule");
+            }
+            packLeader.appearanceModule.SetCameraFollow();
+        };
         // change all followers to follow this new leader in order, spaced apart.
         float distance = 0f;
         WorldObject member;
         for (int idx=1; idx<packAgentList.Count; idx++)
         {
             member = packAgentList[idx];
+            member.agentModule.SwitchDecisionModule(followerType);
             distance = formationSpacing * idx;
-            member.followerDecisionModule.SetFollowTarget(packLeader.transform, distance);
+            if (followerType == AgentDecisionType.Follower)
+                member.followerDecisionModule.SetFollowTarget(packLeader, distance);
         }
+        return true;
     }
 
+    // returns true if the pack no longer contains the member (or never did)
+    // returns false if the agent is null or doesn't contain a PackMemberModule.
     public bool RemoveMember(WorldObject agent)
     {
-        Debug.Log($"RemoveMember({agent.DisplayName})");
         if ((agent==null) || (agent.packMemberModule==null))
             return false;   // not a valid pack member
+        
+        Debug.Log($"RemoveMember({agent.DisplayName})");
 
         if (packAgentList.Contains(agent))
         {
@@ -189,14 +209,12 @@ public class Pack : MonoBehaviour
             
             packAgentList.Remove(agent);
             agent.packMemberModule.currentPack = null;
-            // TODO: clear leader: agent.packMemberModule.IsLeader
-            //.      pick a new leader?
             Debug.Log($"Pack removed member {agent.DisplayName}. Remaining {this.ToString()}");
             
-            SetPackFollowChain();
+            SetPackFollowChain();   // do this after any change to packAgentList
             return true;
         }
-        return false;
+        return true;
     }
 
     public override String ToString()
@@ -213,16 +231,19 @@ public class Pack : MonoBehaviour
         return str;
     }
 
+    // called by function of same name in PackMemberModule
     public void SetFormation(FormationsEnum new_formation)
     {
         formation = new_formation;
     }
 
+    // called by function of same name in PackMemberModule
     public FormationsEnum GetFormation()
     {
         return formation;
     }
 
+    // called by function of same name in PackMemberModule
     // returns -1 if not in the pack.
     public int GetPositionInPack(WorldObject agent)
     {
@@ -233,5 +254,39 @@ public class Pack : MonoBehaviour
         return -1;
     }
 
+    // returns true unless agent not found.
+    public bool MoveAgentToLeader(WorldObject agent)
+    {
+        int oldPosition = GetPositionInPack(agent);
+        if (oldPosition==-1) return false;  // agent not found.
+        if (oldPosition==0) return true;    // already leader.
+
+        // Shift [0..index-1] right by one. // faster than remove+insert list operations
+        for (int i = oldPosition; i > 0; i--)
+            packAgentList[i] = packAgentList[i - 1];
+
+        SetPackFollowChain();   // do this after any change to packAgentList
+        
+        return true;
+    }
+
+    public bool MoveLeaderToFollower()
+    {
+        if (agentCount == 0) return false; // no members means no leader
+        if (agentCount == 1) return false; // leader is only member, do nothing
+
+        WorldObject oldLeader = packLeader;
+        // Shift [0..index-2] left by one. // faster than remove+insert list operations
+        for (int i = 0; i < agentCount - 2; i++)
+            packAgentList[i] = packAgentList[i + 1];
+
+        // put leader at the tail.
+        packAgentList[agentCount-1] = oldLeader;
+
+        SetPackFollowChain();   // do this after any change to packAgentList
+        
+        return true;
+
+    }
 }
 
