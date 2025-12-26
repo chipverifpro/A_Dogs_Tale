@@ -4,14 +4,14 @@ using DogGame.AI;  // if your AgentDecisionModuleBase lives here
 
 namespace DogGame.Modules
 {
-    public class PlayerDecisionModule : AgentDecisionModuleBase
+    public class LLMDecisionModule : AgentDecisionModuleBase
     {
         //    [Header("Input Source")]
         //    [Tooltip("Component that provides PlayerInputState (e.g. NewInputAdapter). Must implement IPlayerInputSource.")]
         //    [SerializeField] private MonoBehaviour inputSourceBehaviour;
 
         //    private IPlayerInputSource inputSource;
-        public override AgentDecisionType DecisionType => AgentDecisionType.Player;
+        public override AgentDecisionType DecisionType => AgentDecisionType.LLM;
 
         private PlayerInputState inputState;   // a pointer, not a local copy
         private GameInputRouter gameInputRouter;
@@ -40,7 +40,7 @@ namespace DogGame.Modules
             gameInputRouter = GameInputRouter.Instance;
             if (gameInputRouter == null)
             {
-                Debug.LogError("[PlayerDecisionModule] No GameInputRouter in scene.", this);
+                Debug.LogError("[LLMDecisionModule] No GameInputRouter in scene.", this);
                 enabled = false;
                 return;
             }
@@ -50,14 +50,14 @@ namespace DogGame.Modules
             
             if (inputState == null)
             {
-                Debug.LogError($"[PlayerDecisionModule {worldObject.DisplayName}] inputState is null.", this);
+                Debug.LogError($"[LLMDecisionModule {worldObject.DisplayName}] inputState is null.", this);
             }
 
         }
 
         if (gameInputRouter.InputState == null)
         {
-            Debug.LogError($"[PlayerInputStateDebugger] gameInputRouter.InputState is null.", this);
+            Debug.LogError($"[LLMInputStateDebugger] gameInputRouter.InputState is null.", this);
         }
     }
 
@@ -69,7 +69,7 @@ namespace DogGame.Modules
             //{
                 //worldObject = GetComponent<WorldObject>();
                 if (worldObject == null)
-                    Debug.LogError($"[PlayerDecisionModule] could not get worldObject.");
+                    Debug.LogError($"[LLMDecisionModule] could not get worldObject.");
             //}
             //if (inputAdapter == null)
             //    inputAdapter = FindFirstObjectByType<NewInputAdapter>();
@@ -77,7 +77,7 @@ namespace DogGame.Modules
             gameInputRouter = GameInputRouter.Instance;
             if (gameInputRouter == null)
             {
-                Debug.LogError("[PlayerDecisionModule] No GameInputRouter in scene.", this);
+                Debug.LogError("[LLMDecisionModule] No GameInputRouter in scene.", this);
                 enabled = false;
                 return;
             }
@@ -87,12 +87,12 @@ namespace DogGame.Modules
             
             if (inputState == null)
             {
-                Debug.LogError($"[PlayerDecisionModule {worldObject.DisplayName}] inputState is null.", this);
+                Debug.LogError($"[LLMDecisionModule {worldObject.DisplayName}] inputState is null.", this);
             }
 
             if (worldObject.agentMovementModule == null)
             {
-                Debug.LogError($"[PlayerDecisionModule {worldObject.DisplayName}] No agentMovementModule found.", this);
+                Debug.LogError($"[LLMDecisionModule {worldObject.DisplayName}] No agentMovementModule found.", this);
             }
 
             if (cameraForMovement == null)
@@ -122,93 +122,11 @@ namespace DogGame.Modules
                 return;
             }
 
-            if (inputState == null)
-            {
-                Debug.LogWarning("Tick: inputState == null");
-                return;
-            }
+            //Debug.Log($"LLMDecisionModule: calling HandleMovement");
 
-            //Debug.Log($"PlayerDecisionModule: ready to process inputState");
+            HandleMovement(inputState, deltaTime);
 
-            HandleCamera(inputState, deltaTime);
-            HandleOneShotActions(inputState);
-            HandleAgentSwitchingAndFormation(inputState);
-
-            // Only do player controlled movement if LLM isn't driving movement
-            if (!(llmController != null && llmController.IsDrivingMovement))
-            {
-                HandleMovement(inputState, deltaTime);
-            }
-            
-
-            // if player has requested activating an object, it will be sent from a
-            // central location, not here in playerInputModule.  Currently that location
-            // is GameInputRouter.
-
-            //if (worldObject.activatorModule!=null)
-            //    worldObject.activatorModule.HandleActivate(inputState, deltaTime);
         }
-
-        #region Camera
-
-        private void HandleCamera(PlayerInputState state, float deltaTime)
-        {
-            if (dir.cameraModeSwitcher != null)
-            {
-                if (Mathf.Abs(state.zoomDelta) > 0.0001f)
-                {
-                    Debug.Log($"ApplyZoomDelta: {state.zoomDelta}");
-                    dir.cameraModeSwitcher.ApplyZoomDelta(state.zoomDelta);
-                }
-
-                if (state.cameraViewSelect != CameraModes.Unchanged)
-                {
-                    Debug.Log($"SelectView: {state.cameraViewSelect}");
-                    dir.cameraModeSwitcher.SelectView(state.cameraViewSelect);
-                }
-            }
-        }
-
-        #endregion
-
-        #region One-shot actions
-
-        private void HandleOneShotActions(PlayerInputState state)
-        {
-            if (state.barkPressed && worldObject.noiseMakerModule != null)
-            {
-                worldObject.noiseMakerModule.Bark();
-            }
-
-            if (state.markTerritoryPressed && worldObject.scentEmitterModule != null)
-            {
-                worldObject.scentEmitterModule.EmitOnDemandScent(1.0f); // spread over 1 second
-            }
-
-            // You can also use state.anyKeyOrButtonPressed to skip cutscenes,
-            // advance dialogue, etc. Hook that into your game state manager.
-        }
-
-        #endregion
-
-        #region Pack / player agent selection
-
-        private void HandleAgentSwitchingAndFormation(PlayerInputState state)
-        {
-            if (worldObject.packMemberModule == null) return;
-
-            if (state.requestedPlayerAgentIndex >= 0)
-            {
-                worldObject.packMemberModule.RequestBecomeControlledAgent(state.requestedPlayerAgentIndex);
-            }
-
-            if (state.changeFormationPressed)
-            {
-                worldObject.packMemberModule.CycleFormation();
-            }
-        }
-
-        #endregion
 
         #region Movement
 
@@ -247,33 +165,16 @@ namespace DogGame.Modules
                 }
             }
 
-
-            // 1) WASD / stick input -> camera-relative world direction
-            if (combinedMoveAxis.sqrMagnitude > 0.0001f)
-            {
-                // First, manual controls disable current click-to-move status
-                currentDestinationPosition = null;  // stop heading to location
-                currentDestinationObject = null;    // stop heading to object
-
-                desiredWorldDir = ConvertInputToWorldDirection(combinedMoveAxis);
-                navigationSource = NavigationSource.PlayerDirection;
-                worldObject.motionModule.motionControlMode = MotionControlMode.DirectInput;
-                if (Mathf.Abs(state.strafeAxis) > 0.0001f)  // any strafe element, set Strafe
-                    worldObject.motionModule.facingMode = FacingMode.Strafe; 
-                else
-                    UpdateFacingModeForDirectInput(desiredWorldDir);    // handles strafe/backpedalling.
-           }
-
             // 2) Click-to-move: if we have a click target location and no interact press,
             //    steer toward that point. (Very simple version: straight-line steering.)
             
-            // 2A) New click target was a location: new orders
+            // 2A) New target was a location: new orders
             if (state.hasClickTargetLocationWorld && !state.interactPressed)
             {
                 currentDestinationPosition = state.clickTargetLocationWorld; // head to location, new orders arrived
                 currentDestinationObject = null;  // stop heading to object if we had been
             }
-            // 2B) New click target is an object: new orders
+            // 2B) New target is an object: new orders
             if (state.hasClickTargetWorldObject && !state.interactPressed)
             {
                 currentDestinationObject = state.clickTargetWorldObject; // head to object, new orders arrived
@@ -332,21 +233,19 @@ namespace DogGame.Modules
 
         public void MovementHeadToDestination()
         {
-            // bring in manual input desiredWorldDir
-            Vector3 desiredWorldDir = currentManualWorldMoveDir==null ? Vector3.zero : (Vector3)currentManualWorldMoveDir;
-
             // 3) Feed intent into agentMovementModule
             if (currentDestinationObject != null)
             {
                 // Move to target object, and keep tracking it.
-                worldObject.agentMovementModule.SetDesiredTargetWorldObject(currentDestinationObject, keepTrackingTarget: true);
+                worldObject.agentMovementModule.GoTowardTargetObjectPosition();
             }
-            else if (desiredWorldDir.sqrMagnitude > 0.0001f)
+            else if (currentDestinationPosition != null)
             {
                 // Move to target location by 1 step.
+                worldObject.agentMovementModule.GoTowardTargetPosition();
                 // If you have a sprint flag in PlayerInputState, use it here.
-                bool run = false; // state.sprintHeld; // <-- adjust to your actual field name
-                worldObject.agentMovementModule.SetDesiredMove(desiredWorldDir, 1.0f, run, keepTrackingTarget: false);
+                //bool run = false; // state.sprintHeld; // <-- adjust to your actual field name
+                //worldObject.agentMovementModule.SetDesiredMove(desiredWorldDir, 1.0f, run, keepTrackingTarget: false);
             }
             else
             {
@@ -402,62 +301,6 @@ namespace DogGame.Modules
 
             // If you want to treat strafe vs backpedal differently:
             // if (alignment < backpedalThreshold) { ... }
-        }
-
-
-        private Vector3 ConvertInputToWorldDirection(Vector2 moveAxis)
-        {
-            // If no input, early out
-            if (moveAxis.sqrMagnitude < 0.0001f)
-                return Vector3.zero;
-
-            // 1. If overhead mode → use player-relative movement
-            if (this.transform != null)
-            {
-                Vector3 forward = this.transform.forward;
-                forward.y = 0f;
-                forward.Normalize();
-
-                Vector3 right = this.transform.right;
-                right.y = 0f;
-                right.Normalize();
-
-                return forward * moveAxis.y + right * moveAxis.x;
-            }
-
-            // 3. Fallback: world-relative XZ
-            Debug.LogWarning("this.transform == null, maybe not a good thing? ",this);
-            return new Vector3(moveAxis.x, 0f, moveAxis.y);     // probably not what we want, so don't fail above!
-        }
-        #endregion
-
-        #region Interaction
-        // Not handled here...  GameInputRouter sends target the HandleActivate event.
-        #endregion
-        
-        #region PackLoyalty
-        // Mode A: Soft influence (blend / bias movement)
-        // If the player is controlling movement, just bias desired velocity slightly back toward pack.
-        public static Vector3 ApplyPackLoyaltyBias(
-            Vector3 desiredWorldVelocity,
-            Vector3 selfPosition,
-            PackLoyaltyResult packLoyalty,
-            float maxBiasStrength = 0.65f)
-        {
-            if (!packLoyalty.isActive || packLoyalty.directive == PackLoyaltyDirective.None)
-                return desiredWorldVelocity;
-
-            Vector3 toTarget = (packLoyalty.targetPosition - selfPosition);
-            if (toTarget.sqrMagnitude < 0.001f)
-                return desiredWorldVelocity;
-
-            Vector3 loyaltyDirection = toTarget.normalized;
-
-            // Blend: higher urge means more pull.
-            float bias = Mathf.Clamp01(packLoyalty.urge01) * maxBiasStrength;
-
-            Vector3 biased = Vector3.Lerp(desiredWorldVelocity, loyaltyDirection * desiredWorldVelocity.magnitude, bias);
-            return biased;
         }
 
         // Mode B: Hard interrupt (autopilot overrides)

@@ -179,5 +179,14 @@ namespace DogGame.Modules
                 worldObject.agentMovementModule.ClearDesiredMove();
             }
         }
+
+        public override void BeginDecisionModule(bool resume=false)
+        {
+            
+        }
+        public override void EndDecisionModule()
+        {
+            
+        }
     }
 }

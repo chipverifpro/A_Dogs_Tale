@@ -48,7 +48,7 @@ public class Directory : MonoBehaviour
 
     [Header("Game User Interfaces")]
     public BottomBanner bottomBanner;
-
+    public GameInputRouter gameInputRouter;
 
     [Header("Splash Screen Objects")]
     public MenuManager menuManager;
@@ -81,6 +81,7 @@ public class Directory : MonoBehaviour
         }
         Instance = this;    // set singleton instance
 
+        if (gameInputRouter==null) gameInputRouter=FindFirstObjectByType<GameInputRouter>();
         pass_num = 0;
         AllReady = false;
         ValidateDirectory();

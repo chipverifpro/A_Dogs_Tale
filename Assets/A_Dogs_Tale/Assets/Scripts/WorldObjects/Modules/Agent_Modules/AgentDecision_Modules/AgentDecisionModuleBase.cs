@@ -32,5 +32,10 @@ namespace DogGame.Modules
         {
             Debug.Log($"AgentDecisionModuleBase {worldObject.DisplayName}: Tick {deltaTime}");
         }
+
+        // These functions should be called when decisionModule changes.
+        // Clears / resumes actions in progress.
+        public abstract void BeginDecisionModule(bool resume=false);
+        public abstract void EndDecisionModule();
     }
 }

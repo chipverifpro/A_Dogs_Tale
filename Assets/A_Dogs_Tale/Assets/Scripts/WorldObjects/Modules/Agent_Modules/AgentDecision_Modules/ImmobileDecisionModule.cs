@@ -16,5 +16,14 @@ namespace DogGame.Modules
         {
             //Debug.Log($"ImmobileDecisionModule {worldObject.DisplayName}: Tick {deltaTime}");
         }
+
+        public override void BeginDecisionModule(bool resume=false)
+        {
+            
+        }
+        public override void EndDecisionModule()
+        {
+            
+        }
     }
 }

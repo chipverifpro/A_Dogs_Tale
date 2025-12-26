@@ -44,6 +44,8 @@ namespace DogGame.Modules
         public bool keepTrackingTarget;         // if not set, we only go for one tick and stop.
         public bool targetMoved;                // not yet used: is this tick's target objet position different than last?
 
+        public Vector3? targetPosition;         // for travelling to a destination location instead of a target object above
+
         [Header("Speed Settings")]
         [Tooltip("Maximum walking speed in meters per second.")]
         [SerializeField] private float walkSpeedMetersPerSecond = 3.0f;
@@ -113,7 +115,7 @@ namespace DogGame.Modules
 
         // Called every tick when a target object is not null.  Finds target and heads to it.
         // (DecisionModule probably should check if we can still see it or still guess it's location)
-        public void GetNewTargetObjectPosition()
+        public void GoTowardTargetObjectPosition()
         {
             Vector3 targetLocation_world=Vector3.zero;
             if (targetObject==null) 
@@ -143,6 +145,27 @@ namespace DogGame.Modules
             // Decision module told us to keep move again, by updating the desired movement.
             // note: no need to normalize, it will be done in the function.
             SetDesiredMove(desired_move, keepTrackingTarget: keepTrackingTarget);   
+        }
+
+        public void GoTowardTargetPosition()
+        {
+            if (targetPosition == null) 
+            {
+                return;
+            }
+
+            // find our location
+            Vector3 ourLocation_world = worldObject.locationModule.pos3d_world;
+
+            // direction and distance to target for move command.
+            Vector3 desired_move = (Vector3)targetPosition - ourLocation_world;
+            
+            // clamp maxDistance if we are very close to avoid overshoot.
+            maxDistance = Mathf.Min(desired_move.magnitude, 1f);
+
+            // Decision module told us to keep move again, by updating the desired movement.
+            // note: no need to normalize, it will be done in the function.
+            SetDesiredMove(desired_move, keepTrackingTarget: false);
         }
 
         /// <summary>
@@ -203,7 +226,14 @@ namespace DogGame.Modules
                 return;
 
             if (targetObject != null)
-                GetNewTargetObjectPosition();   // calls SetDesiredMove to point to the object.
+            {
+                GoTowardTargetObjectPosition();   // calls SetDesiredMove to point to the object.
+            }
+            
+            if (targetPosition != null)
+            {
+                GoTowardTargetPosition();
+            }
 
             // Decide which rate to use: acceleration vs deceleration
             float accel = accelerationMetersPerSecondSquared;

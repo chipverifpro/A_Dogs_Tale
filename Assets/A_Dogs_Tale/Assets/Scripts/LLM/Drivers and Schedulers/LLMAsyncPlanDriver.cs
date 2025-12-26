@@ -30,6 +30,7 @@ namespace DogGame.LLM
         private AgentTaskQueue taskQueue = null!;
         private AgentTaskExecutor executor = null!;
         private AgentTaskContext context = null!;
+        private LLMTaskController controller = null!;
 
         // Async state
         private float nextEligibleRequestTime;
@@ -41,6 +42,10 @@ namespace DogGame.LLM
         {
             taskQueue = new AgentTaskQueue();
             executor = new AgentTaskExecutor(taskQueue);
+
+            controller = GetComponent<LLMTaskController>();
+            if (controller == null)
+                controller = gameObject.AddComponent<LLMTaskController>();
 
             // Keep the simple adapter for now; later replace with your real movement adapter.
             var movement = new SimpleMovementAdapter(transform, moveSpeed: 2.5f, cellSize: 1.0f, gridOrigin: Vector3.zero);
@@ -83,6 +88,9 @@ namespace DogGame.LLM
                     return false;
             }
 
+            if (requestOnlyWhenIdle && controller.IsDriving)
+                return false;
+
             return true;
         }
 
@@ -91,20 +99,24 @@ namespace DogGame.LLM
             requestInFlight = true;
             nextEligibleRequestTime = Time.time + minSecondsBetweenRequests;
 
-            // For now, request JSON can be minimal. Later this will be your full request payload.
-            string requestId = Guid.NewGuid().ToString("N");
-            string requestJson = $"{{\"requestId\":\"{requestId}\",\"agentId\":\"{agentId}\",\"note\":\"fake request\"}}";
+            float priority =
+                executor.HasTask ? 0.2f :
+                taskQueue.Count == 0 ? 0.8f :
+                0.4f;
 
-            fakeService.SubmitRequest(
-                requestId: requestId,
-                requestJson: requestJson,
+            var request = new LLMPlanRequest(
                 agentId: agentId,
+                modelTier: LLMModelTier.LocalSmall,
+                priorityScore: priority,
                 onResponseJson: OnPlanResponseJson);
+
+            LLMWorldScheduler.Instance.EnqueueRequest(request);
         }
 
         private void OnPlanResponseJson(string responseJson)
         {
             requestInFlight = false;
+            controller.TryApplyPlanJson(responseJson);
 
             var (plan, validation) = PlanResponseV1Parser.ParseAndValidate(responseJson);
 

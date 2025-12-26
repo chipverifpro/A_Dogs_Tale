@@ -45,6 +45,7 @@ public enum ModuleFlags : ulong
     followerDecisionModule = 1UL << 6,
     wanderDecisionModule   = 1UL << 7,
     immobileDecisionModule = 1UL << 8,
+    llmDecisionModule      = 1UL << 25,
 
     // --- Agent Interface Modules ---
     agentMovementModule   = 1UL << 9,
@@ -73,7 +74,7 @@ public enum ModuleFlags : ulong
     statusModule      = 1UL << 23,
 
     // --- Quest ---
-    questModuleBase   = 1UL << 24,
+    fetchQuestModule  = 1UL << 24,
 }
 
 // The following templates can be used for configuring new WorldModule instantiations...
@@ -88,9 +89,11 @@ public static class ModuleFlagsTemplates  // extension functions for the ModuleF
     }
     // Some examples of handy configurations...
     public static readonly ModuleFlags FullAgent =  All
-                                                     & ~ModuleFlags.questModuleBase
+                                                     & ~QuestModules
                                                      & ~ModuleFlags.placementModule;
+    public static readonly ModuleFlags QuestModules = ModuleFlags.fetchQuestModule;
     public static readonly ModuleFlags DecisionModules = ModuleFlags.playerDecisionModule
+                                                       | ModuleFlags.llmDecisionModule
                                                        | ModuleFlags.followerDecisionModule
                                                        | ModuleFlags.wanderDecisionModule
                                                        | ModuleFlags.immobileDecisionModule;
@@ -135,6 +138,7 @@ public class WorldObject : MonoBehaviour
     public FollowerDecisionModule followerDecisionModule { get; private set; }
     public WandererDecisionModule wandererDecisionModule { get; private set; }
     public ImmobileDecisionModule immobileDecisionModule { get; private set; }
+    public LLMDecisionModule llmDecisionModule { get; private set; }
 
     // --- Agent Interface Modules ---
     public AgentMovementModule agentMovementModule { get; private set; }
@@ -170,7 +174,7 @@ public class WorldObject : MonoBehaviour
     public StatusModule statusModule { get; private set; }
 
     // Quest:
-    public QuestModuleBase questModuleBase { get; private set; }
+    public QuestModuleBase fetchQuestModule { get; private set; }
 
 
     // Registration management functions
@@ -198,6 +202,7 @@ public class WorldObject : MonoBehaviour
 
         // --- Agent Decision Modules
         playerDecisionModule   = GetComponent<PlayerDecisionModule>();
+        llmDecisionModule      = GetComponent<LLMDecisionModule>();
         followerDecisionModule = GetComponent<FollowerDecisionModule>();
         wandererDecisionModule = GetComponent<WandererDecisionModule>();
         immobileDecisionModule = GetComponent<ImmobileDecisionModule>();
@@ -222,14 +227,13 @@ public class WorldObject : MonoBehaviour
         noiseMakerModule  = GetComponent<NoiseMakerModule>();
         scentEmitterModule= GetComponent<ScentEmitterModule>();
 
-
         // --- Data ---
         blackboardModule  = GetComponent<BlackboardModule>();
         placementModule   = GetComponent<PlacementModule>();
         statusModule      = GetComponent<StatusModule>();
 
         // --- Quest ---
-        questModuleBase   = GetComponent<QuestModuleBase>();
+        fetchQuestModule  = GetComponent<FetchQuestModule>();
 
         if (string.IsNullOrEmpty(displayName))
             displayName = gameObject.name;

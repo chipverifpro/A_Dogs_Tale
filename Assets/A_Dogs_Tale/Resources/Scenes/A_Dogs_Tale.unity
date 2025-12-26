@@ -1679,7 +1679,7 @@ MonoBehaviour:
   - m_Script
   m_LockStageInInspector: 
   m_StreamingVersion: 20170927
-  m_Priority: 20
+  m_Priority: 0
   m_StandbyUpdate: 2
   m_LookAt: {fileID: 622207765}
   m_Follow: {fileID: 1443377664}
@@ -3806,6 +3806,53 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ac0b09e7857660247b1477e93731de29, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Cinemachine::Cinemachine.CinemachinePipeline
+--- !u!1 &494970096
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 494970097}
+  - component: {fileID: 494970098}
+  m_Layer: 0
+  m_Name: AI
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &494970097
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 494970096}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1767335688}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &494970098
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 494970096}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7218e3fb1f54040bcb853b10dd1e8ede, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DogGame.LLM.LLMWorldScheduler
+  maxConcurrentLocalRequests: 2
+  maxConcurrentRemoteRequests: 1
+  schedulingIntervalSeconds: 0.25
 --- !u!1 &504165305
 GameObject:
   m_ObjectHideFlags: 0
@@ -13312,6 +13359,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
+  - {fileID: 494970097}
   - {fileID: 1920128613}
   - {fileID: 838293513}
   - {fileID: 367847098}
@@ -13592,7 +13640,7 @@ Camera:
     y: 0
     width: 1
     height: 1
-  near clip plane: 0.01
+  near clip plane: 0.3
   far clip plane: 1000
   field of view: 60.000004
   orthographic: 0
@@ -13620,8 +13668,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1815589282}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 1, z: 0, w: 0}
-  m_LocalPosition: {x: 0, y: 1, z: 1}
+  m_LocalRotation: {x: 0.37081036, y: 0.000000040595154, z: -0.00000001620864, w: 0.9287086}
+  m_LocalPosition: {x: 0, y: 10.5, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -14184,6 +14232,7 @@ MonoBehaviour:
   scentCam: {fileID: 1326159950}
   cameraModeSwitcher: {fileID: 1815589288}
   bottomBanner: {fileID: 669106355}
+  gameInputRouter: {fileID: 942637346}
   menuManager: {fileID: 836622446}
   sceneFader: {fileID: 836622445}
   elementStore: {fileID: 11400000, guid: 12ce8f64c30bc4bbfa007792bc781b21, type: 2}
@@ -15841,6 +15890,14 @@ PrefabInstance:
         type: 3}
       insertIndex: -1
       addedObject: {fileID: 6544990386685219162}
+    - targetCorrespondingSourceObject: {fileID: 8843402266763018810, guid: 2ce0050a816054aaca2a1076f182f7a8,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 6544990386685219165}
+    - targetCorrespondingSourceObject: {fileID: 8843402266763018810, guid: 2ce0050a816054aaca2a1076f182f7a8,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 6544990386685219166}
   m_SourcePrefab: {fileID: 100100000, guid: 2ce0050a816054aaca2a1076f182f7a8, type: 3}
 --- !u!1 &6544990386685219093 stripped
 GameObject:
@@ -16154,6 +16211,49 @@ MonoBehaviour:
     scentDiscipline: 0
     noiseDiscipline: 0
     bravery: 0
+--- !u!114 &6544990386685219165
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6544990386685219093}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 466495a164c7b49d29754ca52036a3b5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::LLMPlanFromJsonHarness
+  agentId: player
+  planResponseJson: "{\n  \"schema\": \"PlanResponseV1\",\n  \"requestId\": \"demo-001\",\n 
+    \"agentId\": \"player\",\n  \"intentions\": [\n    {\n      \"type\": \"add_task\",\n     
+    \"id\": \"t0\",\n      \"priority\": 0.5,\n      \"parameters\": { \"task\":
+    \"wait\", \"seconds\": 5.0 }\n    },\n \n   {\n      \"type\": \"add_task\",\n     
+    \"id\": \"t1\",\n      \"priority\": 0.9,\n      \"rationale\": \"Move to two
+    points with a pause.\",\n      \"parameters\": { \"task\": \"move_to_cell\",
+    \"locationCell\": [5, 3], \"stopRadius\": 0.2 }\n    },\n    {\n      \"type\":
+    \"add_task\",\n      \"id\": \"t2\",\n      \"priority\": 0.5,\n      \"parameters\":
+    { \"task\": \"wait\", \"seconds\": 1.0 }\n    },\n    {\n      \"type\": \"add_task\",\n     
+    \"id\": \"t3\",\n      \"priority\": 0.8,\n      \"parameters\": { \"task\":
+    \"move_to_cell\", \"locationCell\": [2, 8], \"stopRadius\": 0.2 }\n    }\n  ],\n 
+    \"debug\": { \"confidence\": 0.7, \"notes\": [\"json harness\"] }\n}\n"
+  clearQueueBeforeEnqueue: 0
+--- !u!114 &6544990386685219166
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6544990386685219093}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: de31bbcb88f564c3faae069b31ce2d1f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DogGame.LLM.LLMAsyncPlanDriver
+  agentId: player
+  minSecondsBetweenRequests: 6
+  requestOnlyWhenIdle: 1
+  clearQueueOnNewPlan: 1
+  simulatedLatencyRangeSeconds: {x: 0.4, y: 1.4}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

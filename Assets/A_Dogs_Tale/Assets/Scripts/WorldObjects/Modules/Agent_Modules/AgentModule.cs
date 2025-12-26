@@ -84,6 +84,7 @@ namespace DogGame.Modules
             // Disable the current one if any
             if (currentDecisionModule != null)
             {
+                currentDecisionModule.EndDecisionModule();  // notify the old module it is losing control.
                 currentDecisionModule.enabled = false;
             }
 
@@ -103,6 +104,7 @@ namespace DogGame.Modules
             if (currentDecisionModule != null)
             {
                 currentDecisionModule.enabled = true;
+                currentDecisionModule.BeginDecisionModule();  // notify the new module it is gaining control.
                 //Debug.Log($"[AgentModule {agentName}] Switched to module {currentDecisionModule.GetType().Name}", this);
                 if(currentDecisionModule.DecisionType == AgentDecisionType.Follower)
                 {
@@ -115,32 +117,29 @@ namespace DogGame.Modules
                     // set who to follow and how far.
                     followerDecisionModule.SetFollowTarget(leader, distance);
                 }
+
                 if(currentDecisionModule.DecisionType == AgentDecisionType.Wanderer)
                 {
                     // cast the decision module
                     WandererDecisionModule wandererDecisionModule = (WandererDecisionModule) currentDecisionModule;
-                    // find the leader
-                    //Transform leader = worldObject.packMemberModule.currentPack.packLeader.transform;
-                    // distance is set by number of pack members ahead of me.
-                    //float distance = worldObject.packMemberModule.currentPack.packAgentList.Count * 1.5f;
-                    // set who to follow and how far.
-                    //wandererDecisionModule.SetFollowTarget(leader,distance);
                 }
+
                 if(currentDecisionModule.DecisionType == AgentDecisionType.Player)
                 {
                     // cast the decision module
                     PlayerDecisionModule playerDecisionModule = (PlayerDecisionModule) currentDecisionModule;
-                    // find the leader
-                    //Transform leader = worldObject.packMemberModule.currentPack.packLeader.transform;
-                    // distance is set by number of pack members ahead of me.
-                    //float distance = worldObject.packMemberModule.currentPack.packAgentList.Count * 1.5f;
-                    // set myself to leader
-                    //playerDecisionModule.becomeLeader();
                 }
+
                 if(currentDecisionModule.DecisionType == AgentDecisionType.Immobile)
                 {
                     // cast the decision module
                     ImmobileDecisionModule immobileDecisionModule = (ImmobileDecisionModule) currentDecisionModule;
+                }
+
+                if(currentDecisionModule.DecisionType == AgentDecisionType.LLM)
+                {
+                    // cast the decision module
+                    ImmobileDecisionModule LLMDecisionModule = (ImmobileDecisionModule) currentDecisionModule;
                 }
             }
             else
@@ -154,8 +153,10 @@ namespace DogGame.Modules
         /// </summary>
         public void SetDecisionModule(AgentDecisionModuleBase decisionModule)
         {
+            currentDecisionModule.EndDecisionModule();  // notify the old module it is losing control.
             currentDecisionModule = decisionModule;
             currentDecisionModule.Initialize(this);
+            currentDecisionModule.BeginDecisionModule();  // notify the new module it is gaining control.
         }
 
         /// <summary>
@@ -175,6 +176,11 @@ namespace DogGame.Modules
         {
             SwitchDecisionModule(AgentDecisionType.Wanderer);
         }
+
+        public void BecomeLLM()
+        {
+            SwitchDecisionModule(AgentDecisionType.LLM);
+        }
     }
 
     public enum AgentDecisionType
@@ -184,6 +190,7 @@ namespace DogGame.Modules
         Follower,       // simple follower
         Wanderer,       // simple wanderer
         Immobile,       // just sits there
+        LLM,            // driven by LLM
         // Add more: Predator, Boss, Civilian, Summoned, etc.
     }
 }

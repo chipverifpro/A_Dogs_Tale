@@ -34,11 +34,11 @@ namespace DogGame.LLM
                 currentTaskStarted = true;
                 try
                 {
-                    currentTask.Start(context);
+                    currentTask!.Start(context);
                 }
                 catch (System.Exception exception)
                 {
-                    Debug.LogWarning($"Task Start failed for {currentTask.DebugName}: {exception.Message}");
+                    Debug.LogWarning($"Task Start failed for {currentTask!.DebugName}: {exception.Message}");
                     EndCurrentTask(context, succeeded: false);
                     return;
                 }
@@ -48,11 +48,11 @@ namespace DogGame.LLM
             TaskTickResult tickResult;
             try
             {
-                tickResult = currentTask.Tick(context, deltaTimeSeconds);
+                tickResult = currentTask!.Tick(context, deltaTimeSeconds);
             }
             catch (System.Exception exception)
             {
-                Debug.LogWarning($"Task Tick exception for {currentTask.DebugName}: {exception.Message}");
+                Debug.LogWarning($"Task Tick exception for {currentTask!.DebugName}: {exception.Message}");
                 EndCurrentTask(context, succeeded: false);
                 return;
             }
