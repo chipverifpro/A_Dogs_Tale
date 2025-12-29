@@ -1,7 +1,6 @@
-using System;
-using NUnit.Framework.Internal.Filters;
-using UnityEditor.EditorTools;
 using UnityEngine;
+using System;
+using System.Collections.Generic;
 
 /*
 MotionModule responsibilities:
@@ -45,7 +44,26 @@ namespace DogGame.Modules
         Strafe,     // don't rotate, just move sideways.
         Manual   // e.g. animation or some other system controls rotation (or do not turn)
     }
-    
+        public enum WalkMode
+    {
+        None = 0,
+        Walk,
+        Run,
+        Sneak,
+        Cautious,
+        Crawl,
+        Backpedal,
+        Strafe
+        // Trot, Sprint, ...
+    }
+
+    [Serializable]
+    public struct WalkModeSpeed
+    {
+        public WalkMode mode;
+        public float maxSpeed;
+    }
+
     public class MotionModule : WorldModule
     {
         [Header("Body Setup")]
@@ -87,23 +105,41 @@ namespace DogGame.Modules
 
         //public bool isStrafing;     // MOVED TO PLAYERAGENT MODE temporarily disables rotation for FaceMovementDirection.
 
-        //[NonSerialized] public Transform bodyRoot;
-
-        //public bool useGravity = true;
-        //public float gravityMetersPerSecondSquared = -25f;
-        //public float maxFallSpeedMetersPerSecond = 40f;
-
         public float maxHorizontalAcceleration = 40f;
-        public float maxHorizontalSpeed = 8f;
 
-        //public float rotationSpeedDegreesPerSecond = 720f;
-
-        //public FacingMode facingMode = FacingMode.FaceMovementDirection;
-        //public Transform facingTarget;
+        public WalkMode currentWalkMode = WalkMode.Walk;
 
         private Vector3 horizontalVelocity = Vector3.zero;
-        //private Vector3 verticalVelocity = Vector3.zero;
 
+
+
+        [SerializeField] private List<WalkModeSpeed> maxSpeedsByMode = new()
+        {
+            new WalkModeSpeed { mode = WalkMode.None,      maxSpeed = 0f },
+            new WalkModeSpeed { mode = WalkMode.Walk,      maxSpeed = 2.0f },
+            new WalkModeSpeed { mode = WalkMode.Run,       maxSpeed = 4.5f },
+            new WalkModeSpeed { mode = WalkMode.Sneak,     maxSpeed = 1.3f },
+            new WalkModeSpeed { mode = WalkMode.Cautious,  maxSpeed = 1.0f },
+            new WalkModeSpeed { mode = WalkMode.Crawl,     maxSpeed = 0.8f },
+            new WalkModeSpeed { mode = WalkMode.Backpedal, maxSpeed = 1.6f },
+            new WalkModeSpeed { mode = WalkMode.Strafe,    maxSpeed = 1.8f }
+        };
+
+        public float GetMaxSpeedByCurrentWalkMode()
+        {
+            for (int i = 0; i < maxSpeedsByMode.Count; i++)
+            {
+                if (maxSpeedsByMode[i].mode == currentWalkMode)
+                    return maxSpeedsByMode[i].maxSpeed;
+            }
+
+            return maxSpeedsByMode[(int)WalkMode.Walk].maxSpeed;
+        }
+
+        public void SetWalkMode(WalkMode newWalkMode)
+        {
+            currentWalkMode = newWalkMode;
+        }
 
         protected override void Awake()
         {
@@ -218,6 +254,7 @@ namespace DogGame.Modules
             desiredHorizontalVelocity.y = 0f;
 
             // Clamp desired speed if you like
+            float maxHorizontalSpeed = GetMaxSpeedByCurrentWalkMode();
             if (maxHorizontalSpeed > 0f)
             {
                 float desiredSpeed = desiredHorizontalVelocity.magnitude;

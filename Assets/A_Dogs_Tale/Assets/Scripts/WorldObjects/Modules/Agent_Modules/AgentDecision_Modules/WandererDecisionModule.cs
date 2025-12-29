@@ -66,10 +66,10 @@ namespace DogGame.Modules
                 Vector3 worldDir = toTarget.normalized;
 
                 // Wander is usually a walk, not a run
-                bool run = false;
+                //bool run = false;
                 float speedFactor = 1.0f; // full walkSpeed from AgentMovementModule
 
-                worldObject.agentMovementModule.SetDesiredMove(worldDir, speedFactor, run);
+                worldObject.agentMovementModule.SetDesiredMove(worldDir, maxDistance:1.0f, speedFactor:speedFactor, changeWalkMode:WalkMode.Walk);
             }
             else
             {

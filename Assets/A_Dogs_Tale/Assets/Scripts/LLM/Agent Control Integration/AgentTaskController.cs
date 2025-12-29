@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace DogGame.LLM
 {
-    public sealed class LLMTaskController : MonoBehaviour
+    public sealed class AgentTaskController : MonoBehaviour
     {
         Directory? dir;
         WorldObject? worldObject;
@@ -33,8 +33,8 @@ namespace DogGame.LLM
             worldObject = GetComponent<WorldObject>();
             if (worldObject == null)
             {
-                Debug.LogError("[LLMTaskController] WorldObject not found on this GameObject. " +
-                               "Attach LLMTaskController to the same object that has WorldObject, " +
+                Debug.LogError("[AgentTaskController] WorldObject not found on this GameObject. " +
+                               "Attach AgentTaskController to the same object that has WorldObject, " +
                                "or change GetComponent<WorldObject>() to GetComponentInParent<WorldObject>().");
                 enabled = false;
                 return;
@@ -50,7 +50,7 @@ namespace DogGame.LLM
                 arriveSlowRadius: 1.25f);
 
             // 3) Use this adapter in the task context
-            Context = new AgentTaskContext(agentId, transform, motionAdapter);
+            Context = new AgentTaskContext(agentId, worldObject, transform, motionAdapter);
         }
 
         public bool TryApplyPlanJson(string planResponseJson)
@@ -88,7 +88,7 @@ namespace DogGame.LLM
             // If we just took control, kill any leftover player velocity immediately.
             if (isDrivingMovementNow && !wasDrivingMovementLastTick)
             {
-                Debug.Log($"LLMTaskController: Stop movement when LLM gains control.");
+                Debug.Log($"AgentTaskController: Stop movement when LLM gains control.");
                 Context.Movement.StopMoving(); // this calls motionModule.Move(Vector3.zero, ...)
             }
 
@@ -111,15 +111,15 @@ namespace DogGame.LLM
             {
                 if (dir.gameInputRouter.InputState.anyKeyOrButtonDown)
                 {
-                    var llm = worldObject.GetComponent<DogGame.LLM.LLMTaskController>();
+                    var llm = worldObject.GetComponent<DogGame.LLM.AgentTaskController>();
                     //llm?.CancelAllTasks();
-                    Debug.Log($"LLMTaskController: Cancelling tasks due to anyKeyOrButtonDown");
+                    Debug.Log($"AgentTaskController: Cancelling tasks due to anyKeyOrButtonDown");
                     CancelAllTasks();
                 }
             }
             else
             {
-                Debug.LogWarning($"LLMTaskController.Tick: dir or worldObject is null.  Cannot call CancelAllTasks.");
+                Debug.LogWarning($"AgentTaskController.Tick: dir or worldObject is null.  Cannot call CancelAllTasks.");
             }
 
             StopMovementWhenControlGained(deltaTimeSeconds);

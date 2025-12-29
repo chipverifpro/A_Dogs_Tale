@@ -108,7 +108,7 @@ namespace DogGame.Modules
                 return;
             }
 
-            var llmController = worldObject.GetComponent<DogGame.LLM.LLMTaskController>();
+            var llmController = worldObject.GetComponent<DogGame.LLM.AgentTaskController>();
             if (llmController != null && llmController.IsDrivingMovement)
             {
                 llmController.Tick(deltaTime);
@@ -339,14 +339,14 @@ namespace DogGame.Modules
             if (currentDestinationObject != null)
             {
                 // Move to target object, and keep tracking it.
-                worldObject.agentMovementModule.SetDesiredTargetWorldObject(currentDestinationObject, keepTrackingTarget: true);
+                worldObject.agentMovementModule.SetDesiredTargetWorldObject(currentDestinationObject);
             }
             else if (desiredWorldDir.sqrMagnitude > 0.0001f)
             {
                 // Move to target location by 1 step.
                 // If you have a sprint flag in PlayerInputState, use it here.
-                bool run = false; // state.sprintHeld; // <-- adjust to your actual field name
-                worldObject.agentMovementModule.SetDesiredMove(desiredWorldDir, 1.0f, run, keepTrackingTarget: false);
+                //bool run = false; // state.sprintHeld; // <-- adjust to your actual field name
+                worldObject.agentMovementModule.SetDesiredMove(desiredWorldDir, maxDistance:1.0f, speedFactor:1.0f, changeWalkMode:WalkMode.Walk);
             }
             else
             {
@@ -447,7 +447,7 @@ namespace DogGame.Modules
             if (!packLoyalty.isActive || packLoyalty.directive == PackLoyaltyDirective.None)
                 return desiredWorldVelocity;
 
-            Vector3 toTarget = (packLoyalty.targetPosition - selfPosition);
+            Vector3 toTarget = (packLoyalty.targetLocation - selfPosition);
             if (toTarget.sqrMagnitude < 0.001f)
                 return desiredWorldVelocity;
 

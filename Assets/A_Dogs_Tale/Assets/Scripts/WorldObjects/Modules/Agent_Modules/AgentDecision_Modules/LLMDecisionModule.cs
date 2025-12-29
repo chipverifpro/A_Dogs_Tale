@@ -108,7 +108,7 @@ namespace DogGame.Modules
                 return;
             }
 
-            var llmController = worldObject.GetComponent<DogGame.LLM.LLMTaskController>();
+            var llmController = worldObject.GetComponent<DogGame.LLM.AgentTaskController>();
             if (llmController != null && llmController.IsDrivingMovement)
             {
                 llmController.Tick(deltaTime);
@@ -237,15 +237,15 @@ namespace DogGame.Modules
             if (currentDestinationObject != null)
             {
                 // Move to target object, and keep tracking it.
-                worldObject.agentMovementModule.GoTowardTargetObjectPosition();
+                worldObject.agentMovementModule.PointTowardTargetObjectLocation();
             }
             else if (currentDestinationPosition != null)
             {
                 // Move to target location by 1 step.
-                worldObject.agentMovementModule.GoTowardTargetPosition();
+                worldObject.agentMovementModule.PointTowardTargetLocation();
                 // If you have a sprint flag in PlayerInputState, use it here.
                 //bool run = false; // state.sprintHeld; // <-- adjust to your actual field name
-                //worldObject.agentMovementModule.SetDesiredMove(desiredWorldDir, 1.0f, run, keepTrackingTarget: false);
+                //worldObject.agentMovementModule.SetDesiredMove(desiredWorldDir, 1.0f, run, keepFollowingTargetObject: false);
             }
             else
             {

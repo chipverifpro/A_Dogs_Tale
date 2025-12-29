@@ -14,7 +14,7 @@ namespace DogGame.Modules
         [SerializeField] private WorldObject followTarget;
 
         [Tooltip("Desired following distance in meters.")]
-        [SerializeField] private float followDistanceMeters = 1.5f;
+        [SerializeField] private float followDistanceMeters = 0.5f;
 
         [Tooltip("If true, will automatically follow pack leader at startup when in a pack.")]
         [SerializeField] private bool autoFollowPackLeaderOnStart = true;
@@ -152,6 +152,7 @@ namespace DogGame.Modules
             toTarget.y = 0f;
 
             float sqrDistanceToTarget = toTarget.sqrMagnitude;
+            
             float desiredDistance = followDistanceMeters;
             float sqrDesiredDistance = desiredDistance * desiredDistance;
 
@@ -160,11 +161,16 @@ namespace DogGame.Modules
                 // Too far: move toward the follow target
                 Vector3 worldDirection = toTarget.normalized;
 
-                bool run = false;           // Followers walk by default; tweak if needed
                 float speedFactor = 1.0f;   // Use full walk speed from AgentMovementModule
 
-                worldObject.agentMovementModule.SetDesiredMove(worldDirection, speedFactor, run);
+                // only need to do the square root if we are close (<1)
+                float magDistanceToTarget = (sqrDistanceToTarget>1f) ? 1f : Mathf.Sqrt(sqrDistanceToTarget);
 
+                worldObject.agentMovementModule.SetDesiredMove(worldDirection01: worldDirection, 
+                                                               maxDistance: magDistanceToTarget,
+                                                               speedFactor: speedFactor,
+                                                               changeWalkMode: WalkMode.None);
+                
                 if (enableDebugLogging && Time.frameCount % 30 == 0)
                 {
                     Debug.Log(

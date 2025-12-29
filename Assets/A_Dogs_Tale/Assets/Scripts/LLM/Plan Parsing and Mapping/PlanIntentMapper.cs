@@ -2,6 +2,7 @@
 using System;
 using Newtonsoft.Json.Linq;
 using UnityEngine;
+using DogGame.Tasks;
 
 namespace DogGame.LLM
 {
@@ -91,7 +92,7 @@ namespace DogGame.LLM
                 {
                     float seconds = (float)(parameters.Value<double?>("seconds") ?? 1.0);
                     seconds = Mathf.Clamp(seconds, 0f, 30f);
-                    task = new WaitTask(seconds);
+                    task = new Task_Wait(seconds);
                     return true;
                 }
 
@@ -118,7 +119,7 @@ namespace DogGame.LLM
                     float stopRadius = (float)(parameters.Value<double?>("stopRadius") ?? 0.35);
                     stopRadius = Mathf.Clamp(stopRadius, 0.05f, 2.0f);
 
-                    task = new MoveToCellTask(cellX, cellY, stopRadius);
+                    task = new Task_MoveToCell(cellX, cellY, stopRadius);
                     return true;
                 }
 

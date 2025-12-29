@@ -1,6 +1,6 @@
-//using System.Numerics;
 using UnityEngine;
-
+using System;
+using System.Collections.Generic;
 /*
 AgentMovementModule (high-level locomotion)
 
@@ -19,6 +19,7 @@ Responsibilities:
 
 namespace DogGame.Modules
 {
+
     /// <summary>
     /// High-level locomotion module that converts "movement intent" into an actual
     /// velocity and delegates to MotionModule to move the agent.
@@ -39,14 +40,20 @@ namespace DogGame.Modules
         public Crumb next_actualCrumb;
         public Crumb next_formationCrumb;
 
+        // Object or Location we are going towards.
         public WorldObject targetObject;        // for continuous tracking of a (possibly moving) target object
-        public Vector3 targetObjectPosition;    // updates every tick so we can head directly to it
-        public bool keepTrackingTarget;         // if not set, we only go for one tick and stop.
-        public bool targetMoved;                // not yet used: is this tick's target objet position different than last?
+                                                // every tick, update targetLocation to it's current world location
+        public bool keepFollowingTargetObject;  // if (true) then upon arrival, we wait for the target to move and keep following it indefinitely.
+                                                // if (false) then upon arrival, this task is complete.
+        public Vector3? targetLocation;         // for travelling to a destination location or current location of target object
 
-        public Vector3? targetPosition;         // for travelling to a destination location instead of a target object above
+        public bool targetMoved;                // not yet used: is this tick's target objet position different than last?  Use case?
 
-        [Header("Speed Settings")]
+        public float stopDistanceFromObject;    // when heading to an object, don't run inside it.
+                                                //   (should be radius of agent + radius of target)
+                                                // also used as follow distance when continuing to follow agents.
+                                                //   (should be packModule.followDistanceMeters)
+        
         [Tooltip("Maximum walking speed in meters per second.")]
         [SerializeField] private float walkSpeedMetersPerSecond = 3.0f;
 
@@ -100,27 +107,53 @@ namespace DogGame.Modules
             base.Awake();
         }
 
-        // Set target once, and we will keep following it.
-        public void SetDesiredTargetWorldObject(WorldObject target, bool keepTrackingTarget=true)
+        // this just forwards the change to motionModule where it is kept.
+        public void SetWalkMode(WalkMode walkMode)
         {
-            targetObject = target;
-            this.keepTrackingTarget = keepTrackingTarget;
+            worldObject.motionModule.SetWalkMode(walkMode);
+        }
+
+        // Set target in world location space, and we will travel to it until arrived.
+        public void SetDesiredTargetLocation(Vector3 targetLocation_world)
+        {
+            this.targetLocation = targetLocation_world;
+            // clear the target object or targetLocation will get overwritten every tick.
+            this.targetObject = null;
+            this.keepFollowingTargetObject = false;
+        }
+
+        // Set target once, and we will keep following it until we arrive.
+        public void SetDesiredTargetWorldObject(WorldObject target, bool keepFollowing=false)
+        {
+            this.targetObject = target;
+            this.keepFollowingTargetObject = keepFollowing;
+        }
+
+        public void ClearDesiredTarget()
+        {
+            ClearDesiredTargetWorldObject();
+            ClearDesiredTargetLocation();
         }
 
         public void ClearDesiredTargetWorldObject()
         {
             targetObject = null;
-            keepTrackingTarget = false;
+            keepFollowingTargetObject = false;
+        }
+
+        public void ClearDesiredTargetLocation()
+        {
+            targetLocation = null;
         }
 
         // Called every tick when a target object is not null.  Finds target and heads to it.
         // (DecisionModule probably should check if we can still see it or still guess it's location)
-        public void GoTowardTargetObjectPosition()
+        public void PointTowardTargetObjectLocation()
         {
             Vector3 targetLocation_world=Vector3.zero;
+            maxDistance = 1f;
             if (targetObject==null) 
             {
-                maxDistance = 1f;
                 return;
             }
             // update target location
@@ -128,28 +161,21 @@ namespace DogGame.Modules
                 targetLocation_world = targetObject.locationModule.pos3d_world;
 
             // check target poisition versus where it was last tick
-            if (targetObjectPosition != targetLocation_world)
+            if (targetLocation != targetLocation_world)
             {
                 targetMoved = true;
-                targetObjectPosition = targetLocation_world;
+                targetLocation = targetLocation_world;
             }
-            // find our location
-            Vector3 ourLocation_world = worldObject.locationModule.pos3d_world;
 
-            // direction and distance to target for move command.
-            Vector3 desired_move = targetLocation_world - ourLocation_world;
-            
-            // clamp maxDistance if we are very close to avoid overshoot.
-            maxDistance = Mathf.Min(desired_move.magnitude, 1f);
-
-            // Decision module told us to keep move again, by updating the desired movement.
-            // note: no need to normalize, it will be done in the function.
-            SetDesiredMove(desired_move, keepTrackingTarget: keepTrackingTarget);   
+            // we have a new target, so now go to it:
+            PointTowardTargetLocation();
         }
 
-        public void GoTowardTargetPosition()
+        // Called every tick when a target location is not null.
+        // Or, called every tick after target object is found and target location is updated.
+        public void PointTowardTargetLocation()
         {
-            if (targetPosition == null) 
+            if (targetLocation == null) 
             {
                 return;
             }
@@ -158,41 +184,58 @@ namespace DogGame.Modules
             Vector3 ourLocation_world = worldObject.locationModule.pos3d_world;
 
             // direction and distance to target for move command.
-            Vector3 desired_move = (Vector3)targetPosition - ourLocation_world;
+            Vector3 desired_move = (Vector3)targetLocation - ourLocation_world;
             
-            // clamp maxDistance if we are very close to avoid overshoot.
-            maxDistance = Mathf.Min(desired_move.magnitude, 1f);
+            float distanceToTarget = desired_move.magnitude;
 
-            // Decision module told us to keep move again, by updating the desired movement.
+            // determine if we should limit the distance travelled (because we are close)
+            float stopDistanceFromTarget;
+            if (targetObject) // if object, don't bump into it; or use pack's formationSpacing to determine follow distance.
+            {
+                if (keepFollowingTargetObject && worldObject.packMemberModule!=null && worldObject.packMemberModule.currentPack!=null)
+                    stopDistanceFromTarget = worldObject.packMemberModule.currentPack.formationSpacing;
+                else
+                    stopDistanceFromTarget = stopDistanceFromObject;
+            }
+            else // not an object, point all the way to destination.
+                stopDistanceFromTarget = 999f;
+
+            // clamp maxDistance if we are very close to avoid overshoot and stop at correct distance.
+            maxDistance = Mathf.Min(distanceToTarget, distanceToTarget-stopDistanceFromTarget, 1f); // never more than 1.0 per tick or we may end up running THROUGH walls.
+
+            // We now have desired_move = a vector to the destination we want to go.
+            //             
             // note: no need to normalize, it will be done in the function.
-            SetDesiredMove(desired_move, keepTrackingTarget: false);
+            SetDesiredMove(desired_move);
         }
 
         /// <summary>
         /// Called by decision modules to set a desired movement direction and speed.
         ///
         /// worldDirection01: world-space direction, will be normalized and Y set to 0.
-        /// speedFactor: 0..1 scale applied to walk/run speed.
-        /// run: if true, uses runSpeed, otherwise walkSpeed.
+        /// speedFactor: scale applied to walk/run speed. (USE CASE: for up/down slopes?)
+        /// changeWalkMode: if not None, changes walkMode before moving.  Allows simple commands Run(direction) / Walk(direction instead of two separate actions.
         /// </summary>
-        public void SetDesiredMove(Vector3 worldDirection01, float speedFactor = 1.0f, bool run = false, bool keepTrackingTarget=false)
+        public void SetDesiredMove(Vector3 worldDirection01, float maxDistance = 1.0f, float speedFactor = 1.0f, WalkMode changeWalkMode = WalkMode.None)
         {
             worldDirection01.y = 0f;
 
             if (worldDirection01.sqrMagnitude > 1f)
-                worldDirection01.Normalize();
+                worldDirection01.Normalize();               // unit vector
 
-            desireRun = run;
-            speedFactor01 = Mathf.Clamp01(speedFactor);
+            //speedFactor01 = Mathf.Clamp01(speedFactor);  // removed clamp to allow downhill speeds faster than 1.0x
 
-            float baseSpeed = run ? runSpeedMetersPerSecond : walkSpeedMetersPerSecond;
-            float targetSpeed = baseSpeed * speedFactor01;
+            // If requested, change the walk mode
+            if (changeWalkMode != WalkMode.None)
+                worldObject.motionModule.SetWalkMode(changeWalkMode);
 
-            desiredVelocity = worldDirection01 * targetSpeed;
+            // get the agent's current maximum movement speed based on WalkMode.
+            // TODO: determine if we are backpedaling or strafing???
+            float baseSpeed = worldObject.motionModule.GetMaxSpeedByCurrentWalkMode();
 
-            // if requested, then we stop heading for the target object.
-            // this is probably because the user gave a manual move command.
-            if (!keepTrackingTarget) ClearDesiredTargetWorldObject();
+            float targetSpeed = baseSpeed * speedFactor01;  // scale by factor in this call's parameters
+
+            desiredVelocity = worldDirection01 * targetSpeed;   // multiply direction unit vector by speed.
         }
 
         /// <summary>
@@ -227,12 +270,11 @@ namespace DogGame.Modules
 
             if (targetObject != null)
             {
-                GoTowardTargetObjectPosition();   // calls SetDesiredMove to point to the object.
+                PointTowardTargetObjectLocation();   // sets targetLocation to point to the object, then GoTowardLocation.
             }
-            
-            if (targetPosition != null)
+            else if (targetLocation != null)
             {
-                GoTowardTargetPosition();
+                PointTowardTargetLocation();        // moves twoards target
             }
 
             // Decide which rate to use: acceleration vs deceleration
@@ -258,7 +300,19 @@ namespace DogGame.Modules
             }
 
             // Delegate to MotionModule for actual movement + rotation, clamp at maxDistance.
-            worldObject.motionModule.Move(currentVelocity, deltaTime, 999f);
+            worldObject.motionModule.Move(currentVelocity, deltaTime, maxDistance);
+
+            // After moving, Are we there yet?
+            if (targetLocation!=null)
+            {
+                float distanceRemaining = Vector3.Magnitude(worldObject.locationModule.pos3d_world - (Vector3)targetLocation);
+                if (distanceRemaining < 0.01f)
+                {
+                    ClearDesiredTargetLocation();
+                    if (targetObject!=null)
+                        ClearDesiredTargetWorldObject();
+                }
+            }
         }
     }
 }

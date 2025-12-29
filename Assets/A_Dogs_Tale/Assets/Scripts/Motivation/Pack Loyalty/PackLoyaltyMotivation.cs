@@ -50,13 +50,13 @@ namespace DogGame.AI
             // Directive selection (first pass):
             IAgentHandle leader = packProvider.GetLeader(self);
             PackLoyaltyDirective directive = PackLoyaltyDirective.ReturnToPackCentroid;
-            Vector3 targetPosition = packCentroid;
+            Vector3 targetLocation = packCentroid;
             string reason = $"Sep={separationMeters:F1}m sepStim={separationStimulus01:F2} distress={packDistress01:F2}";
 
             if (leader != null && leader.Transform != null)
             {
                 directive = PackLoyaltyDirective.FollowLeader;
-                targetPosition = leader.Transform.position;
+                targetLocation = leader.Transform.position;
                 reason += " -> FollowLeader";
             }
 
@@ -68,7 +68,7 @@ namespace DogGame.AI
                 urge01 = urge01,
                 isActive = isActive,
                 directive = isActive ? directive : PackLoyaltyDirective.None,
-                targetPosition = targetPosition,
+                targetLocation = targetLocation,
                 targetAgent = leader,
                 debugReason = reason
             };

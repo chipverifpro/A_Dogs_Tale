@@ -8,6 +8,8 @@ namespace DogGame.LLM
         [Header("Identity")]
         [SerializeField] private string agentId = "player";
 
+        public WorldObject agent;
+
         [Header("Plan JSON (PlanResponseV1)")]
         [TextArea(8, 30)]
         [SerializeField] private string planResponseJson = DefaultExampleJson;
@@ -27,7 +29,7 @@ namespace DogGame.LLM
             // For now, keep using the simple adapter.
             // Later we swap to your real movement/nav adapter.
             var movement = new SimpleMovementAdapter(transform, moveSpeed: 2.5f, cellSize: 1.0f, gridOrigin: Vector3.zero);
-            context = new AgentTaskContext(agentId, transform, movement);
+            context = new AgentTaskContext(agentId, agent, transform, movement);
         }
 
         private void Start()

@@ -1,6 +1,7 @@
 #nullable enable
 using System;
 using UnityEngine;
+using DogGame.Modules;
 
 namespace DogGame.LLM
 {
@@ -8,7 +9,7 @@ namespace DogGame.LLM
     /// Async plan driver: periodically requests a plan (fake LLM for now),
     /// receives JSON later, validates, maps to tasks, executes tasks.
     /// </summary>
-    public sealed class LLMAsyncPlanDriver : MonoBehaviour
+    public sealed class LLMAsyncPlanDriver : WorldModule
     {
         [Header("Identity")]
         [SerializeField] private string agentId = "player";
@@ -30,7 +31,7 @@ namespace DogGame.LLM
         private AgentTaskQueue taskQueue = null!;
         private AgentTaskExecutor executor = null!;
         private AgentTaskContext context = null!;
-        private LLMTaskController controller = null!;
+        private AgentTaskController controller = null!;
 
         // Async state
         private float nextEligibleRequestTime;
@@ -38,18 +39,18 @@ namespace DogGame.LLM
 
         private FakeLLMService fakeService = null!;
 
-        private void Awake()
+        protected override void Awake()
         {
             taskQueue = new AgentTaskQueue();
             executor = new AgentTaskExecutor(taskQueue);
 
-            controller = GetComponent<LLMTaskController>();
+            controller = GetComponent<AgentTaskController>();
             if (controller == null)
-                controller = gameObject.AddComponent<LLMTaskController>();
+                controller = gameObject.AddComponent<AgentTaskController>();
 
             // Keep the simple adapter for now; later replace with your real movement adapter.
             var movement = new SimpleMovementAdapter(transform, moveSpeed: 2.5f, cellSize: 1.0f, gridOrigin: Vector3.zero);
-            context = new AgentTaskContext(agentId, transform, movement);
+            context = new AgentTaskContext(agentId, worldObject, transform, movement);
 
             // Ensure we have a FakeLLMService on this object (or add one).
             fakeService = GetComponent<FakeLLMService>();
@@ -61,7 +62,7 @@ namespace DogGame.LLM
             nextEligibleRequestTime = Time.time + UnityEngine.Random.Range(0f, 0.5f);
         }
 
-        private void Update()
+        protected override void Update()
         {
             // Always tick tasks
             executor.Tick(context, Time.deltaTime);

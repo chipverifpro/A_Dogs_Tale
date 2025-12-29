@@ -52,12 +52,16 @@ namespace DogGame.LLM
     {
         public readonly string AgentId;
         public readonly Transform AgentTransform;
+        public readonly WorldObject Agent;
 
         public readonly IAgentMovementAdapter Movement;
 
-        public AgentTaskContext(string agentId, Transform agentTransform, IAgentMovementAdapter movement)
+        public Vector2Int CurrentCellPos => new Vector2Int((int)AgentTransform.position.x,(int)AgentTransform.position.z);
+        
+        public AgentTaskContext(string agentId, WorldObject worldObject, Transform agentTransform, IAgentMovementAdapter movement)
         {
             AgentId = agentId;
+            Agent = worldObject;
             AgentTransform = agentTransform;
             Movement = movement;
         }
@@ -88,5 +92,30 @@ namespace DogGame.LLM
         /// Returns whether the agent is considered "at" the destination.
         /// </summary>
         bool IsAt(Vector3 worldPosition, float stopRadius);
+    }
+
+    public enum TaskSource { Player, LLM, SimpleAI, Script }
+
+    public readonly struct TaskRequest
+    {
+        public readonly TaskSource Source;
+        public readonly int Priority;      // 0..100
+        public readonly bool CanInterrupt; // can preempt current?
+        public readonly string? Tag;       // "movement", "dialogue", "interaction"
+        public readonly IAgentTask Task;
+
+        public TaskRequest(
+            TaskSource source,
+            int priority,
+            bool canInterrupt,
+            IAgentTask task,
+            string? tag = null)
+        {
+            Source = source;
+            Priority = priority;
+            CanInterrupt = canInterrupt;
+            Task = task;
+            Tag = tag;
+        }
     }
 }

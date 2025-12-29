@@ -1,9 +1,10 @@
 #nullable enable
 using UnityEngine;
+using DogGame.LLM;
 
-namespace DogGame.LLM
+namespace DogGame.Tasks
 {
-    public sealed class MoveToCellTask : IAgentTask
+    public sealed class Task_MoveToCell : IAgentTask
     {
         public string DebugName => $"MoveToCell([{cellX},{cellY}], r={stopRadius:0.00})";
 
@@ -13,7 +14,7 @@ namespace DogGame.LLM
 
         private Vector3 destinationWorld;
 
-        public MoveToCellTask(int cellX, int cellY, float stopRadius = 0.35f)
+        public Task_MoveToCell(int cellX, int cellY, float stopRadius = 0.35f)
         {
             this.cellX = cellX;
             this.cellY = cellY;

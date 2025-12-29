@@ -1,16 +1,17 @@
 #nullable enable
 using UnityEngine;
+using DogGame.LLM;
 
-namespace DogGame.LLM
+namespace DogGame.Tasks
 {
-    public sealed class WaitTask : IAgentTask
+    public sealed class Task_Wait : IAgentTask
     {
         public string DebugName => $"Wait({durationSeconds:0.00}s)";
 
         private readonly float durationSeconds;
         private float remainingSeconds;
 
-        public WaitTask(float durationSeconds)
+        public Task_Wait(float durationSeconds)
         {
             this.durationSeconds = Mathf.Max(0f, durationSeconds);
             remainingSeconds = this.durationSeconds;
