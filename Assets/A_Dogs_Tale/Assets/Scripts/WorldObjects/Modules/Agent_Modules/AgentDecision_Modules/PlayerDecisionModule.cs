@@ -130,9 +130,10 @@ namespace DogGame.Modules
 
             //Debug.Log($"PlayerDecisionModule: ready to process inputState");
 
-            HandleCamera(inputState, deltaTime);
-            HandleOneShotActions(inputState);
-            HandleAgentSwitchingAndFormation(inputState);
+            // Moved to GameInputRouter.Update:
+            //HandleCamera(inputState, deltaTime);
+            //HandleOneShotActions(inputState);
+            //HandleAgentSwitchingAndFormation(inputState);
 
             // Only do player controlled movement if LLM isn't driving movement
             if (!(llmController != null && llmController.IsDrivingMovement))

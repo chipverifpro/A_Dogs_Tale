@@ -6209,6 +6209,7 @@ GameObject:
   - component: {fileID: 942637346}
   - component: {fileID: 942637347}
   - component: {fileID: 942637348}
+  - component: {fileID: 942637349}
   m_Layer: 0
   m_Name: Input
   m_TagString: Untagged
@@ -6351,6 +6352,19 @@ MonoBehaviour:
   mapWorldPos: {x: 0, y: 0, z: 0}
   targetedWorldObject_valid: 0
   targetedWorldObject: {fileID: 0}
+--- !u!114 &942637349
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 942637342}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: de0d77311f329426288dd977aac6b477, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::NonAgentUserInputHandler
+  dir: {fileID: 1920128612}
 --- !u!1 &976222952
 GameObject:
   m_ObjectHideFlags: 0
@@ -8517,7 +8531,24 @@ MonoBehaviour:
   facingMode: 0
   facingTarget: {fileID: 0}
   maxHorizontalAcceleration: 40
-  maxHorizontalSpeed: 8
+  currentWalkMode: 1
+  maxSpeedsByMode:
+  - mode: 0
+    maxSpeed: 0
+  - mode: 1
+    maxSpeed: 2
+  - mode: 2
+    maxSpeed: 4.5
+  - mode: 3
+    maxSpeed: 1.3
+  - mode: 4
+    maxSpeed: 1
+  - mode: 5
+    maxSpeed: 0.8
+  - mode: 6
+    maxSpeed: 1.6
+  - mode: 7
+    maxSpeed: 1.8
 --- !u!114 &1253610044
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -8556,9 +8587,9 @@ MonoBehaviour:
     yawDeg: 0
     whichFollowersArrived: 
   targetObject: {fileID: 0}
-  targetObjectPosition: {x: 0, y: 0, z: 0}
-  keepTrackingTarget: 0
+  keepFollowingTargetObject: 0
   targetMoved: 0
+  stopDistanceFromObject: 0
   walkSpeedMetersPerSecond: 3
   runSpeedMetersPerSecond: 6
   accelerationMetersPerSecondSquared: 12
@@ -12376,7 +12407,24 @@ MonoBehaviour:
   facingMode: 0
   facingTarget: {fileID: 0}
   maxHorizontalAcceleration: 40
-  maxHorizontalSpeed: 8
+  currentWalkMode: 1
+  maxSpeedsByMode:
+  - mode: 0
+    maxSpeed: 0
+  - mode: 1
+    maxSpeed: 2
+  - mode: 2
+    maxSpeed: 4.5
+  - mode: 3
+    maxSpeed: 1.3
+  - mode: 4
+    maxSpeed: 1
+  - mode: 5
+    maxSpeed: 0.8
+  - mode: 6
+    maxSpeed: 1.6
+  - mode: 7
+    maxSpeed: 1.8
 --- !u!114 &1651296784
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -12430,9 +12478,9 @@ MonoBehaviour:
     yawDeg: 0
     whichFollowersArrived: 
   targetObject: {fileID: 6544990386685219154}
-  targetObjectPosition: {x: 0, y: 0, z: 0}
-  keepTrackingTarget: 0
+  keepFollowingTargetObject: 0
   targetMoved: 0
+  stopDistanceFromObject: 0
   walkSpeedMetersPerSecond: 3
   runSpeedMetersPerSecond: 6
   accelerationMetersPerSecondSquared: 12
@@ -15893,10 +15941,6 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 8843402266763018810, guid: 2ce0050a816054aaca2a1076f182f7a8,
         type: 3}
       insertIndex: -1
-      addedObject: {fileID: 6544990386685219165}
-    - targetCorrespondingSourceObject: {fileID: 8843402266763018810, guid: 2ce0050a816054aaca2a1076f182f7a8,
-        type: 3}
-      insertIndex: -1
       addedObject: {fileID: 6544990386685219166}
   m_SourcePrefab: {fileID: 100100000, guid: 2ce0050a816054aaca2a1076f182f7a8, type: 3}
 --- !u!1 &6544990386685219093 stripped
@@ -15969,7 +16013,24 @@ MonoBehaviour:
   facingMode: 0
   facingTarget: {fileID: 0}
   maxHorizontalAcceleration: 40
-  maxHorizontalSpeed: 8
+  currentWalkMode: 1
+  maxSpeedsByMode:
+  - mode: 0
+    maxSpeed: 0
+  - mode: 1
+    maxSpeed: 2
+  - mode: 2
+    maxSpeed: 4.5
+  - mode: 3
+    maxSpeed: 1.3
+  - mode: 4
+    maxSpeed: 1
+  - mode: 5
+    maxSpeed: 0.8
+  - mode: 6
+    maxSpeed: 1.6
+  - mode: 7
+    maxSpeed: 1.8
 --- !u!114 &6544990386685219148
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -16008,9 +16069,9 @@ MonoBehaviour:
     yawDeg: 0
     whichFollowersArrived: 
   targetObject: {fileID: 0}
-  targetObjectPosition: {x: 0, y: 0, z: 0}
-  keepTrackingTarget: 0
+  keepFollowingTargetObject: 0
   targetMoved: 0
+  stopDistanceFromObject: 0
   walkSpeedMetersPerSecond: 3
   runSpeedMetersPerSecond: 6
   accelerationMetersPerSecondSquared: 12
@@ -16211,32 +16272,6 @@ MonoBehaviour:
     scentDiscipline: 0
     noiseDiscipline: 0
     bravery: 0
---- !u!114 &6544990386685219165
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6544990386685219093}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 466495a164c7b49d29754ca52036a3b5, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::LLMPlanFromJsonHarness
-  agentId: player
-  planResponseJson: "{\n  \"schema\": \"PlanResponseV1\",\n  \"requestId\": \"demo-001\",\n 
-    \"agentId\": \"player\",\n  \"intentions\": [\n    {\n      \"type\": \"add_task\",\n     
-    \"id\": \"t0\",\n      \"priority\": 0.5,\n      \"parameters\": { \"task\":
-    \"wait\", \"seconds\": 5.0 }\n    },\n \n   {\n      \"type\": \"add_task\",\n     
-    \"id\": \"t1\",\n      \"priority\": 0.9,\n      \"rationale\": \"Move to two
-    points with a pause.\",\n      \"parameters\": { \"task\": \"move_to_cell\",
-    \"locationCell\": [5, 3], \"stopRadius\": 0.2 }\n    },\n    {\n      \"type\":
-    \"add_task\",\n      \"id\": \"t2\",\n      \"priority\": 0.5,\n      \"parameters\":
-    { \"task\": \"wait\", \"seconds\": 1.0 }\n    },\n    {\n      \"type\": \"add_task\",\n     
-    \"id\": \"t3\",\n      \"priority\": 0.8,\n      \"parameters\": { \"task\":
-    \"move_to_cell\", \"locationCell\": [2, 8], \"stopRadius\": 0.2 }\n    }\n  ],\n 
-    \"debug\": { \"confidence\": 0.7, \"notes\": [\"json harness\"] }\n}\n"
-  clearQueueBeforeEnqueue: 0
 --- !u!114 &6544990386685219166
 MonoBehaviour:
   m_ObjectHideFlags: 0
