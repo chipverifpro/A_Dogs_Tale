@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 using UnityEngine.SceneManagement;
+using System;
 public partial class DungeonGenerator : MonoBehaviour
 {
     public System.Random rng;
@@ -18,7 +19,7 @@ public partial class DungeonGenerator : MonoBehaviour
     // 3D assets defined in Unity.  These are verified and re-connected if necessary.
     public Grid grid;                         // same Grid as the 2D Tilemap
     public GameObject floorPrefab;
-    public GameObject rampPrefab;             // oriented to face +Z
+    [NonSerialized]public GameObject rampPrefab;             // oriented to face +Z
     public GameObject cliffPrefab;            // a 1x1x1 pillar you can scale in Y
     public GameObject diagonalWallPrefab;    // thin strip or quad oriented along +Z
     public GameObject triangleFloorPrefab;   // half of a floor tile

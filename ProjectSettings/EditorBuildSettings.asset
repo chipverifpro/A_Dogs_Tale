@@ -12,6 +12,8 @@ EditorBuildSettings:
     path: Assets/Fargoaldungeon/Scenes/2D_Fargoal_Map.unity
     guid: feb836705ce2a443a9c1609e165e63bd
   m_configObjects:
+    com.unity.dt.app-ui: {fileID: 11400000, guid: 1b1c20d82303e4b5781c3ef50ac1449f,
+      type: 2}
     com.unity.input.settings: {fileID: 11400000, guid: 10eacbdfcbb5b481fb4f2129105eb5ed,
       type: 2}
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: ccba743ec2a994a05b552500da1f3eca,

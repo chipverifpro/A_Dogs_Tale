@@ -3085,8 +3085,6 @@ MonoBehaviour:
   grid: {fileID: 838293509}
   floorPrefab: {fileID: 2725812093829766248, guid: 652bf12d9907a42fcabf588f2cb74913,
     type: 3}
-  rampPrefab: {fileID: 8466642615260838714, guid: ea6045f8a856b453bbd13fb79679c93f,
-    type: 3}
   cliffPrefab: {fileID: 5414593263697328657, guid: 446ff8d73d23c43a497b71d6b8f08679,
     type: 3}
   diagonalWallPrefab: {fileID: 5414593263697328657, guid: fa009060c907045069328a36886a459a,
@@ -4174,8 +4172,16 @@ MonoBehaviour:
   baseSpeed: 6
   turnSpeedDegPerSec: 180
   radius: 0.4
-  color1: {r: 0, g: 0, b: 0, a: 1}
-  color2: {r: 1, g: 1, b: 1, a: 1}
+  color1:
+    r: 0
+    g: 0
+    b: 0
+    a: 1
+  color2:
+    r: 1
+    g: 1
+    b: 1
+    a: 1
   snapToCardinalDegrees: 10
   snapEightWay: 1
   slopeUphillFactor: 0.85
@@ -8590,8 +8596,6 @@ MonoBehaviour:
   keepFollowingTargetObject: 0
   targetMoved: 0
   stopDistanceFromObject: 0
-  walkSpeedMetersPerSecond: 3
-  runSpeedMetersPerSecond: 6
   accelerationMetersPerSecondSquared: 12
   decelerationMetersPerSecondSquared: 16
   enableDebugLogging: 0
@@ -12481,8 +12485,6 @@ MonoBehaviour:
   keepFollowingTargetObject: 0
   targetMoved: 0
   stopDistanceFromObject: 0
-  walkSpeedMetersPerSecond: 3
-  runSpeedMetersPerSecond: 6
   accelerationMetersPerSecondSquared: 12
   decelerationMetersPerSecondSquared: 16
   enableDebugLogging: 0
@@ -14266,7 +14268,6 @@ MonoBehaviour:
   audioMixerGroups: {fileID: 215243010}
   playerPack: {fileID: 766807147}
   packManager: {fileID: 125976612}
-  player: {fileID: 556401680}
   packFormations: {fileID: 766807149}
   scents: {fileID: 1546545660}
   scentRegistry: {fileID: 1546545661}
@@ -15942,6 +15943,22 @@ PrefabInstance:
         type: 3}
       insertIndex: -1
       addedObject: {fileID: 6544990386685219166}
+    - targetCorrespondingSourceObject: {fileID: 8843402266763018810, guid: 2ce0050a816054aaca2a1076f182f7a8,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 6544990386685219167}
+    - targetCorrespondingSourceObject: {fileID: 8843402266763018810, guid: 2ce0050a816054aaca2a1076f182f7a8,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 6544990386685219168}
+    - targetCorrespondingSourceObject: {fileID: 8843402266763018810, guid: 2ce0050a816054aaca2a1076f182f7a8,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 6544990386685219169}
+    - targetCorrespondingSourceObject: {fileID: 8843402266763018810, guid: 2ce0050a816054aaca2a1076f182f7a8,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 6544990386685219170}
   m_SourcePrefab: {fileID: 100100000, guid: 2ce0050a816054aaca2a1076f182f7a8, type: 3}
 --- !u!1 &6544990386685219093 stripped
 GameObject:
@@ -16072,8 +16089,6 @@ MonoBehaviour:
   keepFollowingTargetObject: 0
   targetMoved: 0
   stopDistanceFromObject: 0
-  walkSpeedMetersPerSecond: 3
-  runSpeedMetersPerSecond: 6
   accelerationMetersPerSecondSquared: 12
   decelerationMetersPerSecondSquared: 16
   enableDebugLogging: 0
@@ -16289,6 +16304,60 @@ MonoBehaviour:
   requestOnlyWhenIdle: 1
   clearQueueOnNewPlan: 1
   simulatedLatencyRangeSeconds: {x: 0.4, y: 1.4}
+--- !u!114 &6544990386685219167
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6544990386685219093}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0f0592814a05846588709e51d13a9888, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.LLMDecisionModule
+  navigationSource: 0
+  cameraForMovement: {fileID: 0}
+  cameraModeSwitcher: {fileID: 0}
+  currentDestinationObject: {fileID: 0}
+--- !u!114 &6544990386685219168
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6544990386685219093}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f4dfcfa59f53c4a01b9bedad690c8d24, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DogGame.LLM.AgentTaskController
+  agentId: player
+--- !u!114 &6544990386685219169
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6544990386685219093}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dd22649b43d8a471494719853c60cf65, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DogGame.LLM.FakeLLMService
+--- !u!114 &6544990386685219170
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6544990386685219093}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7adcf621b06804d44b2f0129468cf217, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.ImmobileDecisionModule
+  navigationSource: 0
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
