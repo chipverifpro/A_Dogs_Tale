@@ -915,7 +915,7 @@ MonoBehaviour:
   m_PreserveMeshAssetOnDestroy: 0
   assetGuid: 
   m_Mesh: {fileID: 0}
-  m_VersionIndex: 81
+  m_VersionIndex: 88
   m_IsSelectable: 1
   m_SelectedFaces: 
   m_SelectedEdges: []
@@ -935,7 +935,7 @@ MonoBehaviour:
   m_Shape:
     rid: 4636622271006376243
   m_ShapeRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_UnmodifiedMeshVersion: 60
+  m_UnmodifiedMeshVersion: 88
   m_Size: {x: 1, y: 1, z: 1}
   m_LocalCenter: {x: 0, y: 0, z: 0}
   references:
@@ -971,6 +971,8 @@ MeshRenderer:
   m_RayTracingAccelStructBuildFlagsOverride: 0
   m_RayTracingAccelStructBuildFlags: 1
   m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -992,9 +994,11 @@ MeshRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
 --- !u!33 &5690982214873476668
 MeshFilter:

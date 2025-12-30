@@ -31,7 +31,7 @@ public class Directory : MonoBehaviour
     [Header("Game Objects")]
     public Pack playerPack;
     public PackManager packManager;
-    public Player player;
+    //public Player player;
     public PackFormations packFormations;
     public ScentAirGround scents;
     public ScentRegistry scentRegistry;
@@ -128,7 +128,7 @@ public class Directory : MonoBehaviour
         // ===============================
         if (!playerPack)              Debug.LogError($"[Directory{pass_num}] Player Pack not assigned.");
         if (!packManager)             Debug.LogError($"[Directory{pass_num}] PackManager not assigned.");
-        if (!player)                  Debug.LogError($"[Directory{pass_num}] Player not assigned.");
+        //if (!player)                  Debug.LogError($"[Directory{pass_num}] Player not assigned.");
         if (!packFormations)          Debug.LogError($"[Directory{pass_num}] PackFormations not assigned.");
         if (!scents)                  Debug.LogError($"[Directory{pass_num}] ScentAirGround (scents) not assigned.");
         if (!scentRegistry)           Debug.LogError($"[Directory{pass_num}] ScentRegistry not assigned.");

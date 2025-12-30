@@ -11,6 +11,7 @@ using DogGame.Modules;
 //   move all params into this file.
 
 
+/*
 public partial class Player : MonoBehaviour
 {
     [Header("Refs")]
@@ -308,3 +309,4 @@ public partial class Player : MonoBehaviour
         }
     }
 }
+*/

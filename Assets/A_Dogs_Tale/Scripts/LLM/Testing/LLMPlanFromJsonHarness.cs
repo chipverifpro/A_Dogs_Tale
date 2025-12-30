@@ -8,7 +8,7 @@ namespace DogGame.LLM
         [Header("Identity")]
         [SerializeField] private string agentId = "player";
 
-        public WorldObject agent;
+        public WorldObject? agent;
 
         [Header("Plan JSON (PlanResponseV1)")]
         [TextArea(8, 30)]
@@ -23,6 +23,12 @@ namespace DogGame.LLM
 
         private void Awake()
         {
+            if (agent == null)
+            {
+                Debug.LogError($"{nameof(LLMTaskHarness)}: Agent not assigned.", this);
+                enabled = false;
+                return;
+            }
             taskQueue = new AgentTaskQueue();
             executor = new AgentTaskExecutor(taskQueue);
 

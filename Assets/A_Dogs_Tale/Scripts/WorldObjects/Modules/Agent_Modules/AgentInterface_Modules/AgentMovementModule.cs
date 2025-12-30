@@ -54,11 +54,11 @@ namespace DogGame.Modules
                                                 // also used as follow distance when continuing to follow agents.
                                                 //   (should be packModule.followDistanceMeters)
         
-        [Tooltip("Maximum walking speed in meters per second.")]
-        [SerializeField] private float walkSpeedMetersPerSecond = 3.0f;
+        //[Tooltip("Maximum walking speed in meters per second.")]
+        //[SerializeField] private float walkSpeedMetersPerSecond = 3.0f;
 
-        [Tooltip("Maximum running speed in meters per second.")]
-        [SerializeField] private float runSpeedMetersPerSecond = 6.0f;
+        //[Tooltip("Maximum running speed in meters per second.")]
+        //[SerializeField] private float runSpeedMetersPerSecond = 6.0f;
 
         [Header("Acceleration")]
         [Tooltip("Acceleration toward desired velocity in meters per second squared.")]
@@ -77,7 +77,7 @@ namespace DogGame.Modules
         private Vector3 desiredVelocity = Vector3.zero;
 
         // Used to choose between walk/run speeds when using SetDesiredMove()
-        private bool desireRun = false;
+        //private bool desireRun = false;
         private float speedFactor01 = 1.0f; // 0..1 scaling of walk/run speed
 
         /// <summary>

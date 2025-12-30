@@ -7,13 +7,20 @@ namespace DogGame.LLM
     public sealed class LLMTaskHarness : MonoBehaviour
     {
         [SerializeField] private string agentId = "npc_023";
-        public WorldObject agent;
+        public WorldObject? agent;
         private AgentTaskQueue taskQueue = null!;
         private AgentTaskExecutor executor = null!;
         private AgentTaskContext context = null!;
 
         private void Awake()
         {
+            if (agent == null)
+            {
+                Debug.LogError($"{nameof(LLMTaskHarness)}: Agent not assigned.", this);
+                enabled = false;
+                return;
+            }
+
             taskQueue = new AgentTaskQueue();
             executor = new AgentTaskExecutor(taskQueue);
 
