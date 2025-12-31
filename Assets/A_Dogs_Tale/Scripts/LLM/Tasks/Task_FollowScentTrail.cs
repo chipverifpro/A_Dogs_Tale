@@ -65,6 +65,7 @@ namespace DogGame.Tasks
             this.stuckAllowReverseAfterTicks = stuckAllowReverseAfterTicks;
             this.maxSteps = maxSteps;
             this.repickIntervalSeconds = repickIntervalSeconds;
+            Debug.Log(DebugName);
         }
 
         public void Awake()

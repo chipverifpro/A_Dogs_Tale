@@ -117,33 +117,26 @@ namespace DogGame.LLM
         private void OnPlanResponseJson(string responseJson)
         {
             requestInFlight = false;
-            controller.TryApplyPlanJson(responseJson);
 
-            var (plan, validation) = PlanResponseV1Parser.ParseAndValidate(responseJson);
-
-            if (plan == null)
+            if (string.IsNullOrWhiteSpace(responseJson))
             {
-                Debug.LogWarning("LLM plan FAILED validation:\n" + string.Join("\n", validation.Errors));
+                Debug.LogWarning("Received empty plan JSON response.");
                 return;
             }
 
-            // Optional strict check: only accept plans for this agent
-            if (!string.Equals(plan.AgentId, agentId, StringComparison.Ordinal))
+            // Single source of truth: controller is responsible for parse/validate/agentId check/queue clearing/mapping/enqueue.
+            // This prevents double-enqueue and keeps the driver as a transport layer.
+            bool applied = controller.TryApplyPlanJson(responseJson);
+
+            if (!applied)
             {
-                Debug.LogWarning($"Received plan for agentId={plan.AgentId} but this driver is agentId={agentId}. Ignoring.");
+                Debug.LogWarning($"LLM plan was not applied for {agentId} (controller rejected or failed).");
                 return;
             }
 
-            if (clearQueueOnNewPlan)
-                taskQueue.Clear();
-
-            if (!PlanIntentMapper.TryEnqueueTasksFromPlan(plan, taskQueue, out var mapError))
-            {
-                Debug.LogWarning("Plan mapped to zero tasks: " + mapError);
-                return;
-            }
-
-            Debug.Log($"LLM plan accepted. Enqueued {taskQueue.Count} tasks for {agentId}.");
+            // Optional: if your controller exposes queue count, you can log it here.
+            // Otherwise keep a generic success log.
+            Debug.Log($"LLM plan applied for {agentId}.");
         }
     }
 }

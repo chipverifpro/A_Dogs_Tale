@@ -19,6 +19,7 @@ namespace DogGame.Tasks
             this.cellX = cellX;
             this.cellY = cellY;
             this.stopRadius = Mathf.Max(0.05f, stopRadius);
+            Debug.Log(DebugName);
         }
 
         public void Start(AgentTaskContext context)

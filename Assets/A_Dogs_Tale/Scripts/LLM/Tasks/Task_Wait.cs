@@ -15,6 +15,7 @@ namespace DogGame.Tasks
         {
             this.durationSeconds = Mathf.Max(0f, durationSeconds);
             remainingSeconds = this.durationSeconds;
+            Debug.Log(DebugName);
         }
 
         public void Start(AgentTaskContext context)

@@ -16,7 +16,7 @@ namespace DogGame.Modules
         private PlayerInputState inputState;   // a pointer, not a local copy
         private GameInputRouter gameInputRouter;
 
-        [Header("Movement")]
+        //[Header("Movement")]
         //[SerializeField] private float moveSpeed = 3.5f;  // now in agentMovementModule
         //[SerializeField] private float rotateSpeed = 720f; // now in agentMovementModule
 
@@ -131,9 +131,7 @@ namespace DogGame.Modules
             //Debug.Log($"PlayerDecisionModule: ready to process inputState");
 
             // Moved to GameInputRouter.Update:
-            //HandleCamera(inputState, deltaTime);
-            //HandleOneShotActions(inputState);
-            //HandleAgentSwitchingAndFormation(inputState);
+            HandleOneShotActions(inputState);
 
             // Only do player controlled movement if LLM isn't driving movement
             if (!(llmController != null && llmController.IsDrivingMovement))
@@ -149,28 +147,6 @@ namespace DogGame.Modules
             //if (worldObject.activatorModule!=null)
             //    worldObject.activatorModule.HandleActivate(inputState, deltaTime);
         }
-
-        #region Camera
-
-        private void HandleCamera(PlayerInputState state, float deltaTime)
-        {
-            if (dir.cameraModeSwitcher != null)
-            {
-                if (Mathf.Abs(state.zoomDelta) > 0.0001f)
-                {
-                    Debug.Log($"ApplyZoomDelta: {state.zoomDelta}");
-                    dir.cameraModeSwitcher.ApplyZoomDelta(state.zoomDelta);
-                }
-
-                if (state.cameraViewSelect != CameraModes.Unchanged)
-                {
-                    Debug.Log($"SelectView: {state.cameraViewSelect}");
-                    dir.cameraModeSwitcher.SelectView(state.cameraViewSelect);
-                }
-            }
-        }
-
-        #endregion
 
         #region One-shot actions
 
@@ -188,25 +164,6 @@ namespace DogGame.Modules
 
             // You can also use state.anyKeyOrButtonPressed to skip cutscenes,
             // advance dialogue, etc. Hook that into your game state manager.
-        }
-
-        #endregion
-
-        #region Pack / player agent selection
-
-        private void HandleAgentSwitchingAndFormation(PlayerInputState state)
-        {
-            if (worldObject.packMemberModule == null) return;
-
-            if (state.requestedPlayerAgentIndex >= 0)
-            {
-                worldObject.packMemberModule.RequestBecomeControlledAgent(state.requestedPlayerAgentIndex);
-            }
-
-            if (state.changeFormationPressed)
-            {
-                worldObject.packMemberModule.CycleFormation();
-            }
         }
 
         #endregion

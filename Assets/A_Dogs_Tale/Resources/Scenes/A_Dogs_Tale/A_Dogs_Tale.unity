@@ -12349,6 +12349,14 @@ PrefabInstance:
         type: 3}
       insertIndex: -1
       addedObject: {fileID: 1651296796}
+    - targetCorrespondingSourceObject: {fileID: 4477274621950385561, guid: da33ad6d2d1f9483faa117084b30e547,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1651296799}
+    - targetCorrespondingSourceObject: {fileID: 4477274621950385561, guid: da33ad6d2d1f9483faa117084b30e547,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1651296798}
   m_SourcePrefab: {fileID: 100100000, guid: da33ad6d2d1f9483faa117084b30e547, type: 3}
 --- !u!4 &1651296778 stripped
 Transform:
@@ -12376,7 +12384,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.AgentModule
   agentName: Agent Cur
   initialDecisionType: 2
-  currentDecisionModule: {fileID: 1651296789}
+  currentDecisionModule: {fileID: 6544990386685219152}
 --- !u!114 &1651296781
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -12636,6 +12644,35 @@ MonoBehaviour:
     scentDiscipline: 0
     noiseDiscipline: 0
     bravery: 0
+--- !u!114 &1651296798
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1651296779}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0f0592814a05846588709e51d13a9888, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.LLMDecisionModule
+  navigationSource: 0
+  cameraForMovement: {fileID: 0}
+  cameraModeSwitcher: {fileID: 0}
+  currentDestinationObject: {fileID: 0}
+--- !u!114 &1651296799
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1651296779}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7adcf621b06804d44b2f0129468cf217, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.ImmobileDecisionModule
+  navigationSource: 0
 --- !u!1 &1653904421
 GameObject:
   m_ObjectHideFlags: 0
