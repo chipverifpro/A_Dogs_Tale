@@ -78,6 +78,7 @@ namespace DogGame.Modules
 
         // Used to choose between walk/run speeds when using SetDesiredMove()
         //private bool desireRun = false;
+        public WalkMode walkMode;
         private float speedFactor01 = 1.0f; // 0..1 scaling of walk/run speed
 
         /// <summary>
@@ -100,7 +101,7 @@ namespace DogGame.Modules
         /// Exposes the desired velocity for debugging or higher-level logic.
         /// </summary>
         public Vector3 DesiredVelocity => desiredVelocity;
-
+        public float desiredWalkSpeed;
 
         protected override void Awake()
         {
@@ -256,6 +257,7 @@ namespace DogGame.Modules
             desiredVelocity = Vector3.zero;
         }
 
+        private int debugDoubleTick = -1;
         /// <summary>
         /// Called once per frame by the AgentModule/AgentDecision system.
         /// This is where we blend current velocity toward desiredVelocity and
@@ -263,7 +265,10 @@ namespace DogGame.Modules
         /// </summary>
         public override void Tick(float deltaTime)
         {
-            //Debug.Log($"AgentMovementModule {worldObject.DisplayName}: Tick {deltaTime}");
+            // Ensure this isn't being called more than once per frame:
+            if (debugDoubleTick == Time.frameCount)
+                Debug.LogError("ERROR: Tick run more than once per frame");
+            debugDoubleTick = Time.frameCount;
 
             if (worldObject.motionModule == null)
                 return;
@@ -313,6 +318,30 @@ namespace DogGame.Modules
                         ClearDesiredTargetWorldObject();
                 }
             }
+        }
+
+        public void ClearDesiredMovement()
+        {
+            targetObject = null;
+            targetLocation = null;
+            desiredVelocity = Vector3.zero;
+        }
+
+        public void SetDesiredTargetLocation(Vector3 targetLocation_world, WalkMode mode = WalkMode.Walk)
+        {
+            targetObject = null;
+            targetLocation = targetLocation_world;
+            walkMode = mode;
+        }
+
+        public void SetDesiredVelocity(Vector3 worldVelocity, WalkMode mode = WalkMode.Walk)
+        {
+            targetObject = null;
+            targetLocation = null;
+            walkMode = mode;
+
+            // Optionally clamp here by mode max speed
+            desiredVelocity = worldVelocity;
         }
     }
 }

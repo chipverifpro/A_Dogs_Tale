@@ -43,7 +43,7 @@ namespace DogGame.Modules
 
         public virtual void Tick(float deltaTime)
         {
-            //Debug.Log($"WorldModule {worldObject.DisplayName}: Tick {deltaTime}");
+            Debug.Log($"WorldModule {worldObject.DisplayName}: Tick {deltaTime}");
         }
 
         // future hook: OnWorldObjectAttached(), OnWorldObjectDetached(), etc.

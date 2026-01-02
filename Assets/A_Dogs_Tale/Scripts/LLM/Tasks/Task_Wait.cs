@@ -24,8 +24,14 @@ namespace DogGame.Tasks
             context.Movement.StopMoving();
         }
 
+        private int debugDoubleTick = -1;
         public TaskTickResult Tick(AgentTaskContext context, float deltaTimeSeconds)
         {
+            // Ensure this isn't being called more than once per frame:
+            if (debugDoubleTick == Time.frameCount)
+                Debug.LogError("ERROR: Tick run more than once per frame");
+            debugDoubleTick = Time.frameCount;
+
             remainingSeconds -= Mathf.Max(0f, deltaTimeSeconds);
             return remainingSeconds <= 0f ? TaskTickResult.Succeeded() : TaskTickResult.Running();
         }

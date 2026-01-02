@@ -254,8 +254,14 @@ public class WorldObject : MonoBehaviour
         TickCallerAllModules();
     }
 
+    private int debugDoubleTick = -1;
     private void TickCallerAllModules()
     {
+        // Ensure this isn't being called more than once per frame:
+            if (debugDoubleTick == Time.frameCount)
+                Debug.LogError("ERROR: TickCallerAllModules run more than once per frame");
+            debugDoubleTick = Time.frameCount;
+
         float dt = Time.deltaTime;
 
         // SENSES
@@ -267,9 +273,10 @@ public class WorldObject : MonoBehaviour
 
         // AGENT DECISION
         agentModule?.Tick(dt);  // forwards to appropriate active DecisionModule...
-        //playerDecisionModule?.Tick(dt);
-        //wanderDecisionModule?.Tick(dt);
-        //followerDecisionModule?.Tick(dt);
+            //playerDecisionModule?.Tick(dt);
+            //wanderDecisionModule?.Tick(dt);
+            //followerDecisionModule?.Tick(dt);
+            //...
 
         // AGENT INTERFACE
         agentMovementModule?.Tick(dt);

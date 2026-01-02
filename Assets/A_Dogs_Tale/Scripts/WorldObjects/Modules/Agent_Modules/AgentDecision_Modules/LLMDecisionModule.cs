@@ -99,8 +99,14 @@ namespace DogGame.Modules
                 cameraForMovement = Camera.main;
         }
 
+        private int debugDoubleTick = -1;
         public override void Tick(float deltaTime)
         {
+            // Ensure this isn't being called more than once per frame:
+            if (debugDoubleTick == Time.frameCount)
+                Debug.LogError("ERROR: Tick run more than once per frame");
+            debugDoubleTick = Time.frameCount;
+
             //Debug.Log($"PlayerDecisionModule {worldObject.DisplayName}: Tick {deltaTime}");
             if (gameInputRouter == null)
             {

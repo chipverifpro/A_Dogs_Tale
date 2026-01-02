@@ -1,5 +1,6 @@
 using UnityEngine;
-using DogGame.AI;  // if your AgentDecisionModuleBase lives here
+using DogGame.AI;
+using DogGame.LLM;  // if your AgentDecisionModuleBase lives here
 // using DogGame.World; // if you need WorldObject, etc.
 
 namespace DogGame.Modules
@@ -32,6 +33,7 @@ namespace DogGame.Modules
         public WorldObject currentDestinationObject = null;
         public Vector3? currentManualWorldMoveDir = null;
 
+        AgentTaskController llmController = null;
 
     private void Start()
     {
@@ -51,14 +53,16 @@ namespace DogGame.Modules
             if (inputState == null)
             {
                 Debug.LogError($"[PlayerDecisionModule {worldObject.DisplayName}] inputState is null.", this);
-            }
-
+            }  
         }
 
         if (gameInputRouter.InputState == null)
         {
             Debug.LogError($"[PlayerInputStateDebugger] gameInputRouter.InputState is null.", this);
         }
+
+        llmController = worldObject.GetComponent<AgentTaskController>();
+
     }
 
         // Initialize called from WorldObject.Awake phase
@@ -99,18 +103,23 @@ namespace DogGame.Modules
                 cameraForMovement = Camera.main;
         }
 
+        private int debugDoubleTick = -1;
         public override void Tick(float deltaTime)
         {
-            //Debug.Log($"PlayerDecisionModule {worldObject.DisplayName}: Tick {deltaTime}");
+            // Ensure this isn't being called more than once per frame:
+            if (debugDoubleTick == Time.frameCount)
+                Debug.LogError("ERROR: Tick run more than once per frame");
+            debugDoubleTick = Time.frameCount;
+
             if (gameInputRouter == null)
             {
                 Debug.LogWarning("Tick: gameInputRouter == null");
                 return;
             }
 
-            var llmController = worldObject.GetComponent<DogGame.LLM.AgentTaskController>();
             if (llmController != null && llmController.IsDrivingMovement)
             {
+                Debug.Log("llmController is driving movement.");
                 llmController.Tick(deltaTime);
                 //return; // IMPORTANT: don't also write motion inputs this tick
             }
@@ -130,7 +139,6 @@ namespace DogGame.Modules
 
             //Debug.Log($"PlayerDecisionModule: ready to process inputState");
 
-            // Moved to GameInputRouter.Update:
             HandleOneShotActions(inputState);
 
             // Only do player controlled movement if LLM isn't driving movement
@@ -152,6 +160,7 @@ namespace DogGame.Modules
 
         private void HandleOneShotActions(PlayerInputState state)
         {
+            //Debug.Log("PlayerDecisionModule HandleOneShotActions");
             if (state.barkPressed && worldObject.noiseMakerModule != null)
             {
                 worldObject.noiseMakerModule.Bark();
@@ -177,6 +186,8 @@ namespace DogGame.Modules
                 Debug.LogWarning($"[PlayerDecisionModule {worldObject.DisplayName}] No AgentagentMovementModule found.", this);
                 return;
             }
+
+            //Debug.Log($"PlayerDecisionModule HandleMovement(anyKey={state.anyKeyOrButtonDown}, {deltaTime})");
 
             Vector3 desiredWorldDir = Vector3.zero;
             

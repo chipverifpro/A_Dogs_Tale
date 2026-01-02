@@ -20,7 +20,7 @@ namespace DogGame.LLM
 
         public void Move(Vector3 desiredVelocity)
         {
-            worldObject.motionModule.Move(desiredVelocity, lastDeltaTime, 999f);
+            worldObject.agentMovementModule.SetDesiredVelocity(desiredVelocity);
         }
     }
 }

@@ -64,10 +64,15 @@ namespace DogGame.Modules
             //Debug.Log($"AgentModule.Update {agentName}: currentDecisionModule={currentDecisionModule}");
         }
 
+        private int debugDoubleTick = -1;
         // Tick is called by WorldObject, pass it along to the current DecisionModule
         public override void Tick(float deltaTime)
         {
-            //Debug.Log($"AgentModule {worldObject.DisplayName}: Tick {deltaTime}");
+            // Ensure this isn't being called more than once per frame:
+            if (debugDoubleTick == Time.frameCount)
+                Debug.LogError("ERROR: Tick run more than once per frame");
+            debugDoubleTick = Time.frameCount;
+
             if (currentDecisionModule != null)
             {
                 currentDecisionModule.Tick(deltaTime);

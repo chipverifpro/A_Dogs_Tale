@@ -1,14 +1,17 @@
 #nullable enable
 using UnityEngine;
+using DogGame.Modules;
 
 namespace DogGame.LLM
 {
-    public sealed class AgentTaskController : MonoBehaviour
+    [DefaultExecutionOrder(-10)]  // create TaskQueue before AgentTaskExecutor tries to use it in Awake   
+    public sealed class AgentTaskController : WorldModule
     {
-        Directory? dir;
-        WorldObject? worldObject;
         [SerializeField] private string agentId = "player";
         public string AgentId => agentId;
+        
+        [Header("Queue behavior")]
+        [SerializeField] private bool clearQueueOnNewPlan = true;
 
         public AgentTaskQueue TaskQueue { get; private set; } = null!;
         public AgentTaskExecutor Executor { get; private set; } = null!;
@@ -21,21 +24,15 @@ namespace DogGame.LLM
         private WorldObjectMotionBridge? motionBridge;
         private MotionModuleMovementAdapter? motionAdapter;
 
-        private void Awake()
+        protected override void Awake()
         {
-            dir = FindFirstObjectByType<Directory>();
-
+            agentId = worldObject.DisplayName;
             TaskQueue = new AgentTaskQueue();
             Executor  = new AgentTaskExecutor(TaskQueue);
 
-            // 1) Get your WorldObject so we can call worldObject.motionModule.Move(...)
-            // If WorldObject is not on this same GO, switch to GetComponentInParent<WorldObject>().
-            worldObject = GetComponent<WorldObject>();
             if (worldObject == null)
             {
-                Debug.LogError("[AgentTaskController] WorldObject not found on this GameObject. " +
-                               "Attach AgentTaskController to the same object that has WorldObject, " +
-                               "or change GetComponent<WorldObject>() to GetComponentInParent<WorldObject>().");
+                Debug.LogError("[AgentTaskController] WorldObject not found on this GameObject.");
                 enabled = false;
                 return;
             }
@@ -44,7 +41,7 @@ namespace DogGame.LLM
             motionBridge = new WorldObjectMotionBridge(worldObject);
 
             motionAdapter = new MotionModuleMovementAdapter(
-                agentTransform: transform,
+                worldObject: worldObject,
                 motionBridge: motionBridge,
                 maxMoveSpeed: 3.0f,
                 arriveSlowRadius: 1.25f);
@@ -68,8 +65,9 @@ namespace DogGame.LLM
                 return false;
             }
 
-            TaskQueue.Clear();
-
+            if (clearQueueOnNewPlan)
+                TaskQueue.Clear();
+            
             if (!PlanIntentMapper.TryEnqueueTasksFromPlan(plan, TaskQueue, out var error))
             {
                 Debug.LogWarning("Plan mapped to zero tasks: " + error);
@@ -92,21 +90,21 @@ namespace DogGame.LLM
                 Context.Movement.StopMoving(); // this calls motionModule.Move(Vector3.zero, ...)
             }
 
-            // Run tasks (may set a target)
-            Executor.Tick(Context, deltaTimeSeconds);
-
-            // Drive motion each tick (writes velocity every frame, including zero when idle)
-            motionAdapter?.Tick(deltaTimeSeconds);
-
             wasDrivingMovementLastTick = isDrivingMovementNow;
         }
 
+        private int debugDoubleTick = -1;
         /// <summary>
         /// Call from your AI update path (DecisionModule / AgentModule). This will run tasks and
         /// drive worldObject.motionModule.Move() via the adapter.
         /// </summary>
-        public void Tick(float deltaTimeSeconds)
+        public override void Tick(float deltaTimeSeconds)
         {
+            // Ensure this isn't being called more than once per frame:
+            if (debugDoubleTick == Time.frameCount)
+                Debug.LogError("ERROR: Tick run more than once per frame");
+            debugDoubleTick = Time.frameCount;
+
             if (dir && worldObject)
             {
                 if (dir.gameInputRouter.InputState.anyKeyOrButtonDown)
@@ -121,7 +119,6 @@ namespace DogGame.LLM
             {
                 Debug.LogWarning($"AgentTaskController.Tick: dir or worldObject is null.  Cannot call CancelAllTasks.");
             }
-
             StopMovementWhenControlGained(deltaTimeSeconds);
 
             // Tasks update the adapter's target (SetMoveTarget)

@@ -4162,37 +4162,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dcdc0a2c1733d440881cfeeedb6fbcf0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  dir: {fileID: 1920128612}
-  gen: {fileID: 409665914}
-  bottomBanner: {fileID: 669106355}
-  PackGameObject: {fileID: 766807146}
-  pack: {fileID: 766807147}
-  agentObject: {fileID: 0}
-  destination: {x: 0, y: 0, z: 0}
-  baseSpeed: 6
-  turnSpeedDegPerSec: 180
-  radius: 0.4
-  color1:
-    r: 0
-    g: 0
-    b: 0
-    a: 1
-  color2:
-    r: 1
-    g: 1
-    b: 1
-    a: 1
-  snapToCardinalDegrees: 10
-  snapEightWay: 1
-  slopeUphillFactor: 0.85
-  slopeDownhillFactor: 1.08
-  xCorrection: 0.5
-  yCorrection: 0.5
-  yawCorrection: 90
-  heightCorrection: 0
-  camera_refresh_needed: 1
-  useXZPlane: 1
-  constraintIters: 3
 --- !u!1 &572427359
 GameObject:
   m_ObjectHideFlags: 0
@@ -15979,15 +15948,7 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 8843402266763018810, guid: 2ce0050a816054aaca2a1076f182f7a8,
         type: 3}
       insertIndex: -1
-      addedObject: {fileID: 6544990386685219166}
-    - targetCorrespondingSourceObject: {fileID: 8843402266763018810, guid: 2ce0050a816054aaca2a1076f182f7a8,
-        type: 3}
-      insertIndex: -1
       addedObject: {fileID: 6544990386685219167}
-    - targetCorrespondingSourceObject: {fileID: 8843402266763018810, guid: 2ce0050a816054aaca2a1076f182f7a8,
-        type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 6544990386685219168}
     - targetCorrespondingSourceObject: {fileID: 8843402266763018810, guid: 2ce0050a816054aaca2a1076f182f7a8,
         type: 3}
       insertIndex: -1
@@ -15996,6 +15957,14 @@ PrefabInstance:
         type: 3}
       insertIndex: -1
       addedObject: {fileID: 6544990386685219170}
+    - targetCorrespondingSourceObject: {fileID: 8843402266763018810, guid: 2ce0050a816054aaca2a1076f182f7a8,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 6544990386685219172}
+    - targetCorrespondingSourceObject: {fileID: 8843402266763018810, guid: 2ce0050a816054aaca2a1076f182f7a8,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 6544990386685219171}
   m_SourcePrefab: {fileID: 100100000, guid: 2ce0050a816054aaca2a1076f182f7a8, type: 3}
 --- !u!1 &6544990386685219093 stripped
 GameObject:
@@ -16324,23 +16293,6 @@ MonoBehaviour:
     scentDiscipline: 0
     noiseDiscipline: 0
     bravery: 0
---- !u!114 &6544990386685219166
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6544990386685219093}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: de31bbcb88f564c3faae069b31ce2d1f, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::DogGame.LLM.LLMAsyncPlanDriver
-  agentId: player
-  minSecondsBetweenRequests: 6
-  requestOnlyWhenIdle: 1
-  clearQueueOnNewPlan: 1
-  simulatedLatencyRangeSeconds: {x: 0.4, y: 1.4}
 --- !u!114 &6544990386685219167
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -16354,22 +16306,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.LLMDecisionModule
   navigationSource: 0
-  cameraForMovement: {fileID: 0}
-  cameraModeSwitcher: {fileID: 0}
-  currentDestinationObject: {fileID: 0}
---- !u!114 &6544990386685219168
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6544990386685219093}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f4dfcfa59f53c4a01b9bedad690c8d24, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::DogGame.LLM.AgentTaskController
-  agentId: player
+  cameraForMovement: {fileID: 1815589284}
+  cameraModeSwitcher: {fileID: 1815589288}
+  currentDestinationObject: {fileID: 6544990386685219154}
 --- !u!114 &6544990386685219169
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -16395,6 +16334,36 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.ImmobileDecisionModule
   navigationSource: 0
+--- !u!114 &6544990386685219171
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6544990386685219093}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 42e203ae1c8eb473e968bb1d3e462217, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DogGame.LLM.LLMAsyncPlanDriver
+  agentId: player
+  minSecondsBetweenRequests: 6
+  requestOnlyWhenIdle: 1
+  simulatedLatencyRangeSeconds: {x: 0.4, y: 1.4}
+--- !u!114 &6544990386685219172
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6544990386685219093}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 125bcf5342852454cb41e5e24582147a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DogGame.LLM.AgentTaskController
+  agentId: player
+  clearQueueOnNewPlan: 1
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

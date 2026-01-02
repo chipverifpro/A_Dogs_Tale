@@ -1,4 +1,7 @@
 #nullable enable
+using System.IO;
+using DogGame.Modules;
+using Mono.Cecil;
 using UnityEngine;
 
 namespace DogGame.LLM
@@ -9,7 +12,8 @@ namespace DogGame.LLM
     /// </summary>
     public sealed class MotionModuleMovementAdapter : IAgentMovementAdapter
     {
-        private readonly Transform agentTransform;
+        //private readonly Transform agentTransform;
+        private readonly WorldObject worldObject;
         private readonly IMotionModuleBridge motionBridge;
 
         private readonly float maxMoveSpeed;
@@ -18,12 +22,14 @@ namespace DogGame.LLM
         private Vector3? currentTargetWorld;
 
         public MotionModuleMovementAdapter(
-            Transform agentTransform,
+            //Transform agentTransform,
+            WorldObject worldObject,
             IMotionModuleBridge motionBridge,
             float maxMoveSpeed = 3.0f,
             float arriveSlowRadius = 1.25f)
         {
-            this.agentTransform = agentTransform;
+            //this.agentTransform = agentTransform;
+            this.worldObject = worldObject;
             this.motionBridge = motionBridge;
             this.maxMoveSpeed = Mathf.Max(0.1f, maxMoveSpeed);
             this.arriveSlowRadius = Mathf.Max(0.1f, arriveSlowRadius);
@@ -31,7 +37,7 @@ namespace DogGame.LLM
 
         public Vector3 CellToWorld(int cellX, int cellY)
         {
-            return new Vector3(cellX, agentTransform.position.y, cellY);
+            return new Vector3(cellX, worldObject.locationModule.height, cellY);
         }
 
         public bool SetMoveTarget(Vector3 worldPosition)
@@ -48,10 +54,12 @@ namespace DogGame.LLM
 
         public bool IsAt(Vector3 worldPosition, float stopRadius)
         {
-            Vector3 delta = worldPosition - agentTransform.position;
+            Vector3 delta = worldPosition - worldObject.locationModule.pos3d_world;
             delta.y = 0f;
             return delta.sqrMagnitude <= stopRadius * stopRadius;
         }
+
+        private int debugDoubleTick = -1;   // detects if Tick is run more than once per frame
 
         /// <summary>
         /// Call every frame after tasks have potentially updated the target.
@@ -59,22 +67,27 @@ namespace DogGame.LLM
         /// </summary>
         public void Tick(float deltaTimeSeconds)
         {
+            // Ensure this isn't being called more than once per frame:
+            if (debugDoubleTick == Time.frameCount)
+                Debug.LogError("ERROR: Tick run more than once per frame");
+            debugDoubleTick = Time.frameCount;
+
             motionBridge.SetDeltaTime(deltaTimeSeconds);
 
             if (currentTargetWorld == null)
             {
-                motionBridge.Move(Vector3.zero);
+                worldObject.agentMovementModule.SetDesiredVelocity(Vector3.zero);
                 return;
             }
 
             Vector3 target = currentTargetWorld.Value;
-            Vector3 toTarget = target - agentTransform.position;
+            Vector3 toTarget = target - worldObject.locationModule.pos3d_world;
             toTarget.y = 0f;
 
             float distance = toTarget.magnitude;
             if (distance < 0.0001f)
             {
-                motionBridge.Move(Vector3.zero);
+                worldObject.agentMovementModule.SetDesiredVelocity(Vector3.zero);
                 return;
             }
 
@@ -86,7 +99,7 @@ namespace DogGame.LLM
 
             Vector3 desiredVelocity = direction * (maxMoveSpeed * speedScale);
 
-            motionBridge.Move(desiredVelocity);
+            worldObject.agentMovementModule.SetDesiredVelocity(desiredVelocity);
         }
     }
 }

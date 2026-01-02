@@ -20,9 +20,13 @@ namespace DogGame.Modules
             //PickNewTarget();  // Don't do here, not everything needed has been initialized yet.
         }
 
+        private int debugDoubleTick = -1;
         public override void Tick(float deltaTime)
         {
-            //Debug.Log($"WanderDecisionModule {worldObject.DisplayName}: Tick {deltaTime}");
+            // Ensure this isn't being called more than once per frame:
+            if (debugDoubleTick == Time.frameCount)
+                Debug.LogError("ERROR: Tick run more than once per frame");
+            debugDoubleTick = Time.frameCount;
 
             if (worldObject.agentMovementModule == null)
             {

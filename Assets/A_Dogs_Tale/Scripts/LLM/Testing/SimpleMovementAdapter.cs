@@ -23,7 +23,7 @@ namespace DogGame.LLM
 
         public Vector3 CellToWorld(int cellX, int cellY)
         {
-            return gridOrigin + new Vector3(cellX * cellSize, 0f, cellY * cellSize);
+            return gridOrigin + new Vector3(cellX * cellSize, 1f, cellY * cellSize);
         }
 
         public bool SetMoveTarget(Vector3 worldPosition)

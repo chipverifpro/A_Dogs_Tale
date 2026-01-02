@@ -27,8 +27,15 @@ namespace DogGame.Tasks
             destinationWorld = context.Movement.CellToWorld(cellX, cellY);
         }
 
+        private int debugDoubleTick = -1;
         public TaskTickResult Tick(AgentTaskContext context, float deltaTimeSeconds)
         {
+            // Ensure this isn't being called more than once per frame:
+            if (debugDoubleTick == Time.frameCount)
+                Debug.LogError("ERROR: Tick run more than once per frame");
+            debugDoubleTick = Time.frameCount;
+
+            Debug.Log ($"Task_MoveToCell.Tick ({context.Agent.DisplayName}, {deltaTimeSeconds})");
             if (context.Movement.IsAt(destinationWorld, stopRadius))
                 return TaskTickResult.Succeeded();
 

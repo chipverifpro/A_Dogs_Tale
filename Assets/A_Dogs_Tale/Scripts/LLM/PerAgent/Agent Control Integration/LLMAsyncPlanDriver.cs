@@ -21,14 +21,10 @@ namespace DogGame.LLM
         [Tooltip("If true, only request when there are no tasks running or queued.")]
         [SerializeField] private bool requestOnlyWhenIdle = true;
 
-        [Header("Queue behavior")]
-        [SerializeField] private bool clearQueueOnNewPlan = true;
-
         [Header("Fake LLM Latency")]
         [SerializeField] private Vector2 simulatedLatencyRangeSeconds = new(0.4f, 1.4f);
 
         // Core runtime
-        private AgentTaskQueue taskQueue = null!;
         private AgentTaskExecutor executor = null!;
         private AgentTaskContext context = null!;
         private AgentTaskController controller = null!;
@@ -41,12 +37,13 @@ namespace DogGame.LLM
 
         protected override void Awake()
         {
-            taskQueue = new AgentTaskQueue();
-            executor = new AgentTaskExecutor(taskQueue);
+            agentId = worldObject.DisplayName;
 
             controller = GetComponent<AgentTaskController>();
             if (controller == null)
                 controller = gameObject.AddComponent<AgentTaskController>();
+                
+            executor = new AgentTaskExecutor(controller.TaskQueue);
 
             // Keep the simple adapter for now; later replace with your real movement adapter.
             var movement = new SimpleMovementAdapter(transform, moveSpeed: 2.5f, cellSize: 1.0f, gridOrigin: Vector3.zero);
@@ -64,14 +61,24 @@ namespace DogGame.LLM
 
         protected override void Update()
         {
-            // Always tick tasks
-            executor.Tick(context, Time.deltaTime);
-
             // Decide whether we should request a new plan
             if (!ShouldRequestPlanNow())
                 return;
 
             SendPlanRequest();
+        }
+
+        private void OnEnable()
+        {
+            //Debug.Log($"[{name}] LLMAsyncPlanDriver ENABLED (activeSelf={gameObject.activeSelf}, enabled={enabled})", this);
+        }
+
+        private void OnDisable()
+        {
+            //Debug.LogWarning(
+            //    $"[{name}] LLMAsyncPlanDriver DISABLED (activeSelf={gameObject.activeSelf}, enabled={enabled})\n" +
+            //    $"Stack:\n{Environment.StackTrace}",
+            //    this);
         }
 
         private bool ShouldRequestPlanNow()
@@ -84,7 +91,7 @@ namespace DogGame.LLM
 
             if (requestOnlyWhenIdle)
             {
-                bool idle = !executor.HasTask && taskQueue.Count == 0;
+                bool idle = !executor.HasTask && controller.TaskQueue.Count == 0;
                 if (!idle)
                     return false;
             }
@@ -102,7 +109,7 @@ namespace DogGame.LLM
 
             float priority =
                 executor.HasTask ? 0.2f :
-                taskQueue.Count == 0 ? 0.8f :
+                controller.TaskQueue.Count == 0 ? 0.8f :
                 0.4f;
 
             var request = new LLMPlanRequest(

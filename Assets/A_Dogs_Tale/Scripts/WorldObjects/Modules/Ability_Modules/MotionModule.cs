@@ -245,8 +245,14 @@ namespace DogGame.Modules
             Teleport(position, finalRotation, resetMotion);
         }
 
+        private int debugDoubleTick = -1;
         public void Move(Vector3 desiredHorizontalVelocity, float deltaTime, float maxDistance)
         {
+            // Ensure this isn't being called more than once per frame:
+            if (debugDoubleTick == Time.frameCount)
+                Debug.LogError("ERROR: Move run more than once per frame");
+            debugDoubleTick = Time.frameCount;
+
             if (bodyRoot == null)
                 return;
 
