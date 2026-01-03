@@ -6,29 +6,35 @@ using UnityEditor;
 using UnityEngine;
 using DogGame.Modules;           // adjust to your namespaces
 using DogGame.AI;
-// using DogGame.World;    // if WorldObject is in another namespace
 
 [CustomEditor(typeof(WorldObject), true)]
 public class WorldObjectModulesInspector : Editor
 {
-    private bool showSenses       = true;
-    private bool showAgents       = true;
-    private bool showAgentControl = true;
-    private bool showBaseControl  = true;
+    private bool showSensory        = true;
+    private bool showAgents         = true;
+    private bool showAgentInterface = true;
+    private bool showOutput         = true;
+    private bool showData           = true;
+    private bool showQuest          = true;
 
-    private int sensesAddIndex       = 0;
+    private int sensoryAddIndex      = 0;
     private int agentsAddIndex       = 0;
-    private int agentControlAddIndex = 0;
-    private int baseControlAddIndex  = 0;
+    private int agentInterfaceAddIndex = 0;
+    private int outputAddIndex       = 0;
+    private int dataAddIndex         = 0;
+    private int questAddIndex        = 0;
+
 
     // Instead of string names + reflection, use direct Type references.
     // Comment out types you don't have yet or add your own here.
 
-    private static readonly Type[] SensesModuleTypes =
+    private static readonly Type[] SensoryModuleTypes =
     {
-        typeof(VisionModule),    // if you don't have it yet, comment this out
-        typeof(HearingModule),   // same here
-        typeof(SmellModule)      // and here
+        typeof(LocationModule),         // World location, orientation
+        typeof(VisionModule),           // What can be seen
+        typeof(HearingModule),          // What can be heard
+        typeof(TasteModule),              // Response to eating/tasting
+        typeof(ScentPerceptionModule),  // What can be smelled
     };
 
     private static readonly Type[] AgentDecisionModuleTypes =
@@ -37,25 +43,45 @@ public class WorldObjectModulesInspector : Editor
         typeof(WandererDecisionModule),
         typeof(FollowerDecisionModule),
         typeof(ImmobileDecisionModule),
-        typeof(LLMDecisionModule),
-        // typeof(CombatDecisionModule),
-        // typeof(FormationDecisionModule),
+        typeof(TaskFollowerDecisionModule),
     };
 
-    private static readonly Type[] AgentControlModuleTypes =
+    private static readonly Type[] AgentInterfaceModuleTypes =
     {
-        typeof(AgentMovementModule),
-        typeof(PackMemberModule),
-        typeof(MotivationModule),
-        // typeof(AgentActionModule),
-        // typeof(AgentAnimationModule),
+        typeof(AgentModule),            // switches DecisionModules
+        typeof(AgentMovementModule),    // Movement intent
+        typeof(PackMemberModule),       // Membership, leader, formation
+        typeof(MotivationModule),       // Combination of senses
+        typeof(LLMRequestResponseModule),   // LLM Interface: request, collect responses, convert to tasks and reactions
+        typeof(ReactionModule),         // detects conditions and trigger response scripts
     };
 
-    private static readonly Type[] BaseControlModuleTypes =
+    private static readonly Type[] AbilityTypes =
     {
-        typeof(MotionModule),
-        typeof(LocationModule),
-        typeof(AgentModule),
+        typeof(ActivatorModule),        // Click on, step on, use, ...
+        typeof(InteractionModule),      // Dialog
+    };
+
+    private static readonly Type[] OutputModuleTypes =
+    {
+        typeof(MotionModule),           // Actual movement
+        typeof(AppearanceModule),       // Animation, SFX
+        typeof(ScentEmitterModule),     // Emit scent including on-demand
+        typeof(NoiseMakerModule),       // Emit noise: bark, run, etc.
+    };
+
+    private static readonly Type[] DataModuleTypes =
+    {
+        typeof(BlackboardModule),   // Generic data storage
+        typeof(PlacementModule),    // Furniture placement definitions
+        typeof(StatusModule),       // Conditions (hungry, tired, alert, training)
+        typeof(TaskListModule),     // Current list of tasks to perform
+        typeof(ContainerModule),    // Inventory management
+    };
+
+    private static readonly Type[] QuestModuleTypes =
+    {
+        typeof(FetchQuestModule),   // simple parameterized quest
     };
 
     public override void OnInspectorGUI()
@@ -77,9 +103,9 @@ public class WorldObjectModulesInspector : Editor
         DrawModuleCategory(
             "Senses",
             go,
-            ref showSenses,
-            SensesModuleTypes,
-            ref sensesAddIndex);
+            ref showSensory,
+            SensoryModuleTypes,
+            ref sensoryAddIndex);
 
         DrawModuleCategory(
             "Agent Decisions",
@@ -91,16 +117,37 @@ public class WorldObjectModulesInspector : Editor
         DrawModuleCategory(
             "Agent Controls (movement, actions)",
             go,
-            ref showAgentControl,
-            AgentControlModuleTypes,
-            ref agentControlAddIndex);
+            ref showAgentInterface,
+            AgentInterfaceModuleTypes,
+            ref agentInterfaceAddIndex);
 
         DrawModuleCategory(
-            "Base Controls (motion, location, core agent)",
+            "Ability (click on, step on, use, talk)",
             go,
-            ref showBaseControl,
-            BaseControlModuleTypes,
-            ref baseControlAddIndex);
+            ref showOutput,
+            OutputModuleTypes,
+            ref outputAddIndex);
+
+        DrawModuleCategory(
+            "Outputs (motion, location, core agent)",
+            go,
+            ref showOutput,
+            OutputModuleTypes,
+            ref outputAddIndex);
+
+        DrawModuleCategory(
+            "DataModules",
+            go,
+            ref showData,
+            DataModuleTypes,
+            ref dataAddIndex);
+
+        DrawModuleCategory(
+            "QuestModules",
+            go,
+            ref showQuest,
+            QuestModuleTypes,
+            ref questAddIndex);
     }
 
     private void DrawModuleCategory(

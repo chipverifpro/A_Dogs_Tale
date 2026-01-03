@@ -8,6 +8,7 @@ namespace DogGame.LLM
         private readonly Queue<IAgentTask> queuedTasks = new();
 
         public int Count => queuedTasks.Count;
+        public bool IsEmpty => queuedTasks.Count == 0;
 
         public void Enqueue(IAgentTask task) => queuedTasks.Enqueue(task);
 

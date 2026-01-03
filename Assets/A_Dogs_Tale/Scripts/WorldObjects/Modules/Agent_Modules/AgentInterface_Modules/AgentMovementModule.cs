@@ -147,36 +147,26 @@ namespace DogGame.Modules
             targetLocation = null;
         }
 
+        public void UpdateDesiredVelocityFromTargetIfAny()
+        {
+            if (targetObject!=null) 
+            {
+                
+            }
+        }
         // Called every tick when a target object is not null.  Finds target and heads to it.
         // (DecisionModule probably should check if we can still see it or still guess it's location)
         public void PointTowardTargetObjectLocation()
         {
-            Vector3 targetLocation_world=Vector3.zero;
+            //Vector3 targetLocation_world=Vector3.zero;
             maxDistance = 1f;
-            if (targetObject==null) 
+            if (targetObject!=null) 
             {
-                return;
-            }
-            // update target location
-            if (targetObject.locationModule!=null)
-                targetLocation_world = targetObject.locationModule.pos3d_world;
-
-            // check target poisition versus where it was last tick
-            if (targetLocation != targetLocation_world)
-            {
-                targetMoved = true;
-                targetLocation = targetLocation_world;
+                if (targetObject.locationModule!=null)
+                targetLocation = targetObject.locationModule.pos3d_world;
             }
 
-            // we have a new target, so now go to it:
-            PointTowardTargetLocation();
-        }
-
-        // Called every tick when a target location is not null.
-        // Or, called every tick after target object is found and target location is updated.
-        public void PointTowardTargetLocation()
-        {
-            if (targetLocation == null) 
+            if (targetLocation != null) 
             {
                 return;
             }
@@ -270,16 +260,19 @@ namespace DogGame.Modules
                 Debug.LogError("ERROR: Tick run more than once per frame");
             debugDoubleTick = Time.frameCount;
 
+            if (enableDebugLogging && Time.frameCount % 30 == 0)
+            {
+                Debug.Log($"[{worldObject.DisplayName}] MoveTick: targetObj={(targetObject? targetObject.DisplayName : "null")} " +
+                        $"targetPos={(targetLocation.HasValue ? targetLocation.Value.ToString() : "null")} " +
+                        $"desiredVel={desiredVelocity} currentVel={currentVelocity} walkMode={walkMode}", this);
+            }
+
             if (worldObject.motionModule == null)
                 return;
 
-            if (targetObject != null)
+            if (targetObject != null || targetLocation != null)
             {
-                PointTowardTargetObjectLocation();   // sets targetLocation to point to the object, then GoTowardLocation.
-            }
-            else if (targetLocation != null)
-            {
-                PointTowardTargetLocation();        // moves twoards target
+                PointTowardTargetObjectLocation();   // sets targetLocation to point to the object if present, then GoTowardLocation.
             }
 
             // Decide which rate to use: acceleration vs deceleration
@@ -305,19 +298,8 @@ namespace DogGame.Modules
             }
 
             // Delegate to MotionModule for actual movement + rotation, clamp at maxDistance.
-            worldObject.motionModule.Move(currentVelocity, deltaTime, maxDistance);
+            worldObject.motionModule.ApplyMotion(currentVelocity, deltaTime, maxDistance);
 
-            // After moving, Are we there yet?
-            if (targetLocation!=null)
-            {
-                float distanceRemaining = Vector3.Magnitude(worldObject.locationModule.pos3d_world - (Vector3)targetLocation);
-                if (distanceRemaining < 0.01f)
-                {
-                    ClearDesiredTargetLocation();
-                    if (targetObject!=null)
-                        ClearDesiredTargetWorldObject();
-                }
-            }
         }
 
         public void ClearDesiredMovement()
@@ -334,6 +316,7 @@ namespace DogGame.Modules
             walkMode = mode;
         }
 
+        // function name is redundant to above function, but this one includes WalkMode.  Which is preferable to use?
         public void SetDesiredVelocity(Vector3 worldVelocity, WalkMode mode = WalkMode.Walk)
         {
             targetObject = null;

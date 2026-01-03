@@ -1,6 +1,7 @@
 #nullable enable
 using UnityEngine;
 using DogGame.Modules;
+using DogGame.Tasks;
 
 namespace DogGame.LLM
 {
@@ -14,11 +15,18 @@ namespace DogGame.LLM
         [SerializeField] private bool clearQueueOnNewPlan = true;
 
         public AgentTaskQueue TaskQueue { get; private set; } = null!;
+            // Task queue: accessed as controller.TaskQueue
+            // owner:    AgentTaskController.cs
+            // consumer: AgentTaskExecutor.cs    consumer (advances tasks by dequeuing)
+            // producer: Decision Modules        producer
+            //           Reaction Module         producer
+            //           LLM plan appier         producer
+            //           Task_Branch             producer
         public AgentTaskExecutor Executor { get; private set; } = null!;
         public AgentTaskContext Context { get; private set; } = null!;
 
         /// <summary>True when LLM tasks should be considered "in control".</summary>
-        public bool IsDriving => Executor.HasTask || TaskQueue.Count > 0;
+        public bool IsDriving => TaskQueue.Count > 0;
         // IsDrivingMovement: For now it’s the same, but later you can drive dialogue/tasks without movement.
         public bool IsDrivingMovement => IsDriving;
         private WorldObjectMotionBridge? motionBridge;
@@ -41,10 +49,7 @@ namespace DogGame.LLM
             motionBridge = new WorldObjectMotionBridge(worldObject);
 
             motionAdapter = new MotionModuleMovementAdapter(
-                worldObject: worldObject,
-                motionBridge: motionBridge,
-                maxMoveSpeed: 3.0f,
-                arriveSlowRadius: 1.25f);
+                worldObject: worldObject);
 
             // 3) Use this adapter in the task context
             Context = new AgentTaskContext(agentId, worldObject, transform, motionAdapter);
@@ -123,9 +128,6 @@ namespace DogGame.LLM
 
             // Tasks update the adapter's target (SetMoveTarget)
             Executor.Tick(Context, deltaTimeSeconds);
-
-            // Adapter converts target -> desired velocity and calls motionModule.Move(...)
-            motionAdapter?.Tick(deltaTimeSeconds);
         }
 
         public void CancelAllTasks()

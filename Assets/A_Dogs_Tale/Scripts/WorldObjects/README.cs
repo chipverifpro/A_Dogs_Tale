@@ -43,7 +43,7 @@ WORLDOBJECTS/
             VisionModule                    --What can be seen
             HearingModule                   --What can be heard
             SmellModule                     --What can be smelled
-            EatModule                       --Manage hunger, food consumption
+            TasteModule                       --Manage hunger, food consumption
             StatusModule                    --Health, hunger, stats
 
 

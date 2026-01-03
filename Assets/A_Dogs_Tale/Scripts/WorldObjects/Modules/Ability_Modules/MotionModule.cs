@@ -70,7 +70,7 @@ namespace DogGame.Modules
         [Tooltip("Transform that represents the root of the dog body. If null, this.transform is used.")]
         [SerializeField] public Transform bodyRoot;
 
-        [Header("Rotation")]
+        //[Header("Rotation")]
         //[Tooltip("Rotate to face the horizontal movement direction.")]
         //[SerializeField] private bool faceMovementDirection = true;   // now handled by facingMode
 
@@ -159,8 +159,9 @@ namespace DogGame.Modules
 
         public override void Tick(float deltaTime)
         {
-            //Debug.Log($"MotionModule {worldObject.DisplayName}: Tick {deltaTime}");
+            Debug.LogWarning($"MotionModule {worldObject.DisplayName}: Tick {deltaTime} DOES NOTHING");
         
+            // Tick Does NOTHING: everything is action calls.
         }
 
         /// <summary>
@@ -181,9 +182,9 @@ namespace DogGame.Modules
         /// Call this after teleporting or hard-resetting the agent.
         /// 
         /// Since we only manage vertical velocity in this module,
-        /// ResetMotion() is the same as ResetVerticalVelocity()
+        /// ResetMotionState() is the same as ResetVerticalVelocity()
         /// </summary>
-        public void ResetMotion()
+        public void ResetMotionState()
         {
             // Stop any vertical movement (no more falling from previous position)
             verticalVelocity = Vector3.zero;
@@ -209,19 +210,19 @@ namespace DogGame.Modules
             bodyRoot.position = worldPosition;
             if (resetMotion)
             {
-                ResetMotion();
+                ResetMotionState();
                 worldObject.agentMovementModule?.ClearDesiredMove();
             }
         }
 
         // teleport with full control of rotation and angle.
-        public void Teleport(Vector3 worldPosition, Quaternion worldRotation, bool resetMotion = true)
+        public void TeleportWithRotate(Vector3 worldPosition, Quaternion worldRotation, bool resetMotion = true)
         {
             transform.SetPositionAndRotation(worldPosition, worldRotation);
 
             if (resetMotion)
             {
-                ResetMotion();
+                ResetMotionState();
                 worldObject.agentMovementModule?.ClearDesiredMove();
             }
         }
@@ -230,7 +231,7 @@ namespace DogGame.Modules
         public void TeleportUpright(Vector3 position, Quaternion rotation, bool resetMotion = true)
         {
             rotation = Quaternion.FromToRotation(rotation * Vector3.up, Vector3.up) * rotation;
-            Teleport(position, rotation, resetMotion);
+            TeleportWithRotate(position, rotation, resetMotion);
         }
 
         // if ground is tilted, we might want to do this...
@@ -242,11 +243,11 @@ namespace DogGame.Modules
             // Add optional yaw (turning left/right relative to ground plane)
             Quaternion finalRotation = Quaternion.Euler(0, extraYaw, 0) * align;
 
-            Teleport(position, finalRotation, resetMotion);
+            TeleportWithRotate(position, finalRotation, resetMotion);
         }
 
         private int debugDoubleTick = -1;
-        public void Move(Vector3 desiredHorizontalVelocity, float deltaTime, float maxDistance)
+        public void ApplyMotion(Vector3 desiredHorizontalVelocity, float deltaTime, float maxDistance)
         {
             // Ensure this isn't being called more than once per frame:
             if (debugDoubleTick == Time.frameCount)
@@ -277,10 +278,10 @@ namespace DogGame.Modules
                                                         deltaTime);
 
             // --- 2. Apply rotation based on facing mode ---
-            ApplyHorizontalRotation(horizontalVelocity, deltaTime);
+            IntegrateHorizontalRotation(horizontalVelocity, deltaTime);
 
             // --- 3. Update vertical velocity (gravity) ---
-            UpdateVerticalVelocity(deltaTime);
+            IntegrateVerticalVelocity(deltaTime);
 
             // --- 4. Determine combined velocity ---
             Vector3 frameVelocity = horizontalVelocity + verticalVelocity;
@@ -315,7 +316,7 @@ namespace DogGame.Modules
             return newVelocity;
         }
 
-        private void ApplyHorizontalRotation(Vector3 effectiveHorizontalVelocity, float deltaTime)
+        private void IntegrateHorizontalRotation(Vector3 effectiveHorizontalVelocity, float deltaTime)
         {
             // No rotation if there's effectively no movement
             Vector3 flatVel = new Vector3(effectiveHorizontalVelocity.x, 0f, effectiveHorizontalVelocity.z);
@@ -369,7 +370,7 @@ namespace DogGame.Modules
             // FacingMode.Manual → no rotation here
         }
 
-        private void UpdateVerticalVelocity(float deltaTime)
+        private void IntegrateVerticalVelocity(float deltaTime)
         {
             if (useGravity)
             {

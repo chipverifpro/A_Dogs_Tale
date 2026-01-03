@@ -186,6 +186,11 @@ namespace DogGame.Modules
         {
             SwitchDecisionModule(AgentDecisionType.LLM);
         }
+
+        public void BecomeTaskFollower()
+        {
+            SwitchDecisionModule(AgentDecisionType.TaskFollower);
+        }
     }
 
     public enum AgentDecisionType
@@ -195,7 +200,9 @@ namespace DogGame.Modules
         Follower,       // simple follower
         Wanderer,       // simple wanderer
         Immobile,       // just sits there
-        LLM,            // driven by LLM
+        LLM,            // driven by LLM (obsolete)
+        TaskFollower,   // drives based on Task list
+
         // Add more: Predator, Boss, Civilian, Summoned, etc.
     }
 }

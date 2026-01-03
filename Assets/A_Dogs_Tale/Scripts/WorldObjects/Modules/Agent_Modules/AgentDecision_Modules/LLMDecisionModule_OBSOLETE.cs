@@ -1,10 +1,8 @@
 using UnityEngine;
-using DogGame.AI;  // if your AgentDecisionModuleBase lives here
-// using DogGame.World; // if you need WorldObject, etc.
 
 namespace DogGame.Modules
 {
-    public class LLMDecisionModule : AgentDecisionModuleBase
+    public class LLMDecisionModule_OBSOLETE : AgentDecisionModuleBase
     {
         //    [Header("Input Source")]
         //    [Tooltip("Component that provides PlayerInputState (e.g. NewInputAdapter). Must implement IPlayerInputSource.")]
@@ -102,6 +100,7 @@ namespace DogGame.Modules
         private int debugDoubleTick = -1;
         public override void Tick(float deltaTime)
         {
+            Debug.LogError("ERROR: For now, LLMDesisionModule is unused, but being 'Tick'ed.");
             // Ensure this isn't being called more than once per frame:
             if (debugDoubleTick == Time.frameCount)
                 Debug.LogError("ERROR: Tick run more than once per frame");
@@ -240,18 +239,10 @@ namespace DogGame.Modules
         public void MovementHeadToDestination()
         {
             // 3) Feed intent into agentMovementModule
-            if (currentDestinationObject != null)
+            if (currentDestinationObject != null || currentDestinationPosition != null)
             {
                 // Move to target object, and keep tracking it.
                 worldObject.agentMovementModule.PointTowardTargetObjectLocation();
-            }
-            else if (currentDestinationPosition != null)
-            {
-                // Move to target location by 1 step.
-                worldObject.agentMovementModule.PointTowardTargetLocation();
-                // If you have a sprint flag in PlayerInputState, use it here.
-                //bool run = false; // state.sprintHeld; // <-- adjust to your actual field name
-                //worldObject.agentMovementModule.SetDesiredMove(desiredWorldDir, 1.0f, run, keepFollowingTargetObject: false);
             }
             else
             {

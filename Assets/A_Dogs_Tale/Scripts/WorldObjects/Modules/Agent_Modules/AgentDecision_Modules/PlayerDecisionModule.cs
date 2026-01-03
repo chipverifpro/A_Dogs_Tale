@@ -144,6 +144,7 @@ namespace DogGame.Modules
             // Only do player controlled movement if LLM isn't driving movement
             if (!(llmController != null && llmController.IsDrivingMovement))
             {
+                Debug.Log("PlayerDecisionModule is driving movement.");
                 HandleMovement(inputState, deltaTime);
             }
             

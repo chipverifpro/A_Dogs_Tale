@@ -35,7 +35,7 @@ public enum ModuleFlags : ulong
     hearingModule = 1UL << 1,
     smellModule   = 1UL << 2,
     visionModule  = 1UL << 3,
-    eatModule     = 1UL << 4,
+    TasteModule     = 1UL << 4,
 
     // --- Agent Decision Modules
     playerDecisionModule   = 1UL << 5,

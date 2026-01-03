@@ -20,6 +20,9 @@ namespace DogGame.LLM
 
         public void Move(Vector3 desiredVelocity)
         {
+            if (true)
+                Debug.Log($"[{worldObject.DisplayName}] WorldObjectMotionBridge.Move calls SetDesiredVelocity({desiredVelocity})");
+            
             worldObject.agentMovementModule.SetDesiredVelocity(desiredVelocity);
         }
     }

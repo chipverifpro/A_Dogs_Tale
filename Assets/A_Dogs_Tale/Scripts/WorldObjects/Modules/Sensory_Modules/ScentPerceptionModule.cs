@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using DogGame.AI.Perception;
 
-namespace DogGame.AI.Perception
+namespace DogGame.Modules
 {
     // You can keep this as a WorldModule if that's your base type.
     // For now I'm showing it as a MonoBehaviour so it compiles anywhere.

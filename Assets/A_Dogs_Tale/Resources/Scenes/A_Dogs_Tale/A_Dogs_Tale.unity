@@ -8481,9 +8481,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2272e4992677c4977b85dbef83406534, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.LocationModule
-  pos3d_f: {x: 0, y: 0, z: 0}
-  yawDeg: 0
-  tilt: {x: 0, y: 0, z: 0, w: 1}
 --- !u!114 &1253610043
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -8568,7 +8565,9 @@ MonoBehaviour:
   accelerationMetersPerSecondSquared: 12
   decelerationMetersPerSecondSquared: 16
   enableDebugLogging: 0
+  walkMode: 0
   maxDistance: 1
+  desiredWalkSpeed: 0
 --- !u!114 &1253610046
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -12418,9 +12417,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2272e4992677c4977b85dbef83406534, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.LocationModule
-  pos3d_f: {x: 0, y: 0, z: 0}
-  yawDeg: 0
-  tilt: {x: 0, y: 0, z: 0, w: 1}
 --- !u!114 &1651296785
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -12465,7 +12461,9 @@ MonoBehaviour:
   accelerationMetersPerSecondSquared: 12
   decelerationMetersPerSecondSquared: 16
   enableDebugLogging: 0
+  walkMode: 0
   maxDistance: 1
+  desiredWalkSpeed: 0
 --- !u!114 &1651296787
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -12527,7 +12525,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a331d038638764085ab09ba8be98ac41, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.SmellModule
+  _worldObject: {fileID: 0}
+  _dir: {fileID: 0}
   debugMode: 0
+  debugDoubleTick: -1
 --- !u!114 &1651296791
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -15940,19 +15941,7 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 8843402266763018810, guid: 2ce0050a816054aaca2a1076f182f7a8,
         type: 3}
       insertIndex: -1
-      addedObject: {fileID: 6544990386685219159}
-    - targetCorrespondingSourceObject: {fileID: 8843402266763018810, guid: 2ce0050a816054aaca2a1076f182f7a8,
-        type: 3}
-      insertIndex: -1
       addedObject: {fileID: 6544990386685219162}
-    - targetCorrespondingSourceObject: {fileID: 8843402266763018810, guid: 2ce0050a816054aaca2a1076f182f7a8,
-        type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 6544990386685219167}
-    - targetCorrespondingSourceObject: {fileID: 8843402266763018810, guid: 2ce0050a816054aaca2a1076f182f7a8,
-        type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 6544990386685219169}
     - targetCorrespondingSourceObject: {fileID: 8843402266763018810, guid: 2ce0050a816054aaca2a1076f182f7a8,
         type: 3}
       insertIndex: -1
@@ -15964,7 +15953,55 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 8843402266763018810, guid: 2ce0050a816054aaca2a1076f182f7a8,
         type: 3}
       insertIndex: -1
+      addedObject: {fileID: 6544990386685219177}
+    - targetCorrespondingSourceObject: {fileID: 8843402266763018810, guid: 2ce0050a816054aaca2a1076f182f7a8,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 6544990386685219176}
+    - targetCorrespondingSourceObject: {fileID: 8843402266763018810, guid: 2ce0050a816054aaca2a1076f182f7a8,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 6544990386685219175}
+    - targetCorrespondingSourceObject: {fileID: 8843402266763018810, guid: 2ce0050a816054aaca2a1076f182f7a8,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 6544990386685219174}
+    - targetCorrespondingSourceObject: {fileID: 8843402266763018810, guid: 2ce0050a816054aaca2a1076f182f7a8,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 6544990386685219159}
+    - targetCorrespondingSourceObject: {fileID: 8843402266763018810, guid: 2ce0050a816054aaca2a1076f182f7a8,
+        type: 3}
+      insertIndex: -1
       addedObject: {fileID: 6544990386685219171}
+    - targetCorrespondingSourceObject: {fileID: 8843402266763018810, guid: 2ce0050a816054aaca2a1076f182f7a8,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 6544990386685219169}
+    - targetCorrespondingSourceObject: {fileID: 8843402266763018810, guid: 2ce0050a816054aaca2a1076f182f7a8,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 6544990386685219183}
+    - targetCorrespondingSourceObject: {fileID: 8843402266763018810, guid: 2ce0050a816054aaca2a1076f182f7a8,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 6544990386685219182}
+    - targetCorrespondingSourceObject: {fileID: 8843402266763018810, guid: 2ce0050a816054aaca2a1076f182f7a8,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 6544990386685219181}
+    - targetCorrespondingSourceObject: {fileID: 8843402266763018810, guid: 2ce0050a816054aaca2a1076f182f7a8,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 6544990386685219180}
+    - targetCorrespondingSourceObject: {fileID: 8843402266763018810, guid: 2ce0050a816054aaca2a1076f182f7a8,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 6544990386685219179}
+    - targetCorrespondingSourceObject: {fileID: 8843402266763018810, guid: 2ce0050a816054aaca2a1076f182f7a8,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 6544990386685219178}
   m_SourcePrefab: {fileID: 100100000, guid: 2ce0050a816054aaca2a1076f182f7a8, type: 3}
 --- !u!1 &6544990386685219093 stripped
 GameObject:
@@ -16011,9 +16048,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2272e4992677c4977b85dbef83406534, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.LocationModule
-  pos3d_f: {x: 0, y: 0, z: 0}
-  yawDeg: 0
-  tilt: {x: 0, y: 0, z: 0, w: 1}
 --- !u!114 &6544990386685219147
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -16098,7 +16132,9 @@ MonoBehaviour:
   accelerationMetersPerSecondSquared: 12
   decelerationMetersPerSecondSquared: 16
   enableDebugLogging: 0
+  walkMode: 0
   maxDistance: 1
+  desiredWalkSpeed: 0
 --- !u!114 &6544990386685219150
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -16160,7 +16196,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a331d038638764085ab09ba8be98ac41, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.SmellModule
+  _worldObject: {fileID: 0}
+  _dir: {fileID: 0}
   debugMode: 0
+  debugDoubleTick: -1
 --- !u!114 &6544990386685219154
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -16293,22 +16332,6 @@ MonoBehaviour:
     scentDiscipline: 0
     noiseDiscipline: 0
     bravery: 0
---- !u!114 &6544990386685219167
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6544990386685219093}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0f0592814a05846588709e51d13a9888, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.LLMDecisionModule
-  navigationSource: 0
-  cameraForMovement: {fileID: 1815589284}
-  cameraModeSwitcher: {fileID: 1815589288}
-  currentDestinationObject: {fileID: 6544990386685219154}
 --- !u!114 &6544990386685219169
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -16364,6 +16387,163 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.LLM.AgentTaskController
   agentId: player
   clearQueueOnNewPlan: 1
+--- !u!114 &6544990386685219174
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6544990386685219093}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 88b41ecba910d449fae619634049787e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.TaskFollowerDecisionModule
+  navigationSource: 0
+--- !u!114 &6544990386685219175
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6544990386685219093}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 210617b5fd4f744bba85c2b6dced64e0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::LLMRequestResponseModule
+--- !u!114 &6544990386685219176
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6544990386685219093}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: aa18621c0f4a44c6c9ed8dddcbed1c83, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ReactionModule
+--- !u!114 &6544990386685219177
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6544990386685219093}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 42d2b00efd2b3458793ba80cc8cdc2c2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TaskListModule
+--- !u!114 &6544990386685219178
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6544990386685219093}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fcb9092686ac74c2b91fa33260000122, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.ContainerModule
+--- !u!114 &6544990386685219179
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6544990386685219093}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 26e02560c9a414e31997b2153c3f7cb0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.StatusModule
+--- !u!114 &6544990386685219180
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6544990386685219093}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 420aabba5d96b4fc0a21c2ebcfc7e2e0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.NoiseMakerModule
+--- !u!114 &6544990386685219181
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6544990386685219093}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 27672672e8d6a41bdb530d870f01d309, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.ScentEmitterModule
+  normalScentSource:
+    agentId: -1
+    category: 0
+    scentName: 
+    categoryColor: {r: 0, g: 0, b: 0, a: 0}
+    sourceAirColor: {r: 0, g: 0, b: 0, a: 0}
+    sourceGroundColor: {r: 0, g: 0, b: 0, a: 0}
+    airDepositRate: 1
+    groundDepositRate: 0.1
+    familiarity: 0
+    sensitivityBoost: 1
+    persistentId: 
+  onDemandScentSource:
+    agentId: -1
+    category: 0
+    scentName: 
+    categoryColor: {r: 0, g: 0, b: 0, a: 0}
+    sourceAirColor: {r: 0, g: 0, b: 0, a: 0}
+    sourceGroundColor: {r: 0, g: 0, b: 0, a: 0}
+    airDepositRate: 1
+    groundDepositRate: 0.1
+    familiarity: 0
+    sensitivityBoost: 1
+    persistentId: 
+  durationScentSources: []
+  deposit_time_left: 0
+--- !u!114 &6544990386685219182
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6544990386685219093}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 34adf64ec2a2442bc923cb803bea1343, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.ScentPerceptionModule
+  dir: {fileID: 0}
+  worldObject: {fileID: 0}
+  scentSystem: {fileID: 0}
+  maxEventsPerTick: 2
+  reNoticeSeconds: 10
+  strengthJumpThreshold01: 0.25
+  minStrength01: 0.02
+  strengthWeight: 0.65
+  noveltyWeight: 0.35
+--- !u!114 &6544990386685219183
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6544990386685219093}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a11cba82e80234c35ab5faf04b1660c0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.TasteModule
+  debugMode: 0
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

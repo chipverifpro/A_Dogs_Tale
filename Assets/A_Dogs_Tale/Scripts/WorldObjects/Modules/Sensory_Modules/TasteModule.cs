@@ -3,7 +3,7 @@ using UnityEngine;
 namespace DogGame.Modules
 {
     [DisallowMultipleComponent]
-    public class SmellModule : WorldModule
+    public class TasteModule : WorldModule
     {
         public bool debugMode = false;
 
@@ -15,7 +15,7 @@ namespace DogGame.Modules
                 Debug.LogError("ERROR: Tick run more than once per frame");
             debugDoubleTick = Time.frameCount;
 
-            if (debugMode) Debug.Log($"SmellModule {worldObject.DisplayName}: Tick {deltaTime}");
+            if (debugMode) Debug.Log($"TasteModule {worldObject.DisplayName}: Tick {deltaTime}");
         }
     }
 }

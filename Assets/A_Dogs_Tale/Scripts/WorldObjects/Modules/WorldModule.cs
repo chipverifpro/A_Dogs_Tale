@@ -2,6 +2,13 @@ using UnityEngine;
 
 // ----- ABSTRACT BASE CLASS -----
 
+// Note on function naming within modules:
+// ---------------------------------------
+// No function that is NOT named Tick, Update, Advance, or Simulate
+// is allowed to take deltaTime as a parameter, nor is it allowed to
+// simulate the passing of time.  It sets things up for lower modules.
+
+
 
 namespace DogGame.Modules
 {
@@ -15,8 +22,7 @@ namespace DogGame.Modules
 
         private Directory _dir;
         public Directory dir => _dir ??= Directory.Instance;
-
-
+        
         protected virtual void Awake()
         {
             if (worldObject == null)

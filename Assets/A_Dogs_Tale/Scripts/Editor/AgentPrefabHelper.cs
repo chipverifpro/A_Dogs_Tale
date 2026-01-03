@@ -49,7 +49,7 @@ public static class AgentPrefabHelper
 
         // ---- OPTIONAL / NICE-TO-HAVE MODULES ----
         // If you have them implemented, you can add them here:
-        // addedCount += EnsureComponent<EatModule>(root);
+        // addedCount += EnsureComponent<TasteModule>(root);
         // addedCount += EnsureComponent<InventoryModule>(root);
 
         // ---- Tag hint (optional) ----

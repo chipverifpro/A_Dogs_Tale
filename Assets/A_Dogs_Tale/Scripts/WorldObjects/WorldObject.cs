@@ -3,6 +3,8 @@ using UnityEngine;
 using DogGame.Modules;
 using DogGame.AI;
 using System;
+using DogGame.LLM;
+using DogGame.Tasks;
 
 
 /// <summary>
@@ -33,48 +35,48 @@ public enum WorldObjectKind
 [Flags]
 public enum ModuleFlags : ulong
 {
-    none          = 0UL,
+    none                    = 0UL,
     // --- Sensory ---
-    hearingModule = 1UL << 1,
-    smellModule   = 1UL << 2,
-    visionModule  = 1UL << 3,
-    eatModule     = 1UL << 4,
+    locationModule          = 1UL << 1,
+    hearingModule           = 1UL << 2,
+    scentPerceptionModule   = 1UL << 3,
+    visionModule            = 1UL << 4,
+    tasteModule             = 1UL << 5,
 
     // --- Agent Decision Modules
-    playerDecisionModule   = 1UL << 5,
-    followerDecisionModule = 1UL << 6,
-    wanderDecisionModule   = 1UL << 7,
-    immobileDecisionModule = 1UL << 8,
-    llmDecisionModule      = 1UL << 25,
+    playerDecisionModule        = 1UL << 11,
+    followerDecisionModule      = 1UL << 12,
+    wanderDecisionModule        = 1UL << 13,
+    immobileDecisionModule      = 1UL << 14,
+    taskFollowerDecisionModule  = 1UL << 15,
 
     // --- Agent Interface Modules ---
-    agentMovementModule   = 1UL << 9,
-    packMemberModule      = 1UL << 10,
-    agentModule           = 1UL << 11,
-
-    // --- Motivation ---
-    motivationModule   = 1UL << 12,
+    agentModule           = 1UL << 21,
+    agentMovementModule   = 1UL << 22,
+    packMemberModule      = 1UL << 23,
+    llmRequestResponseModule = 1UL << 24,
+    reactionModule        = 1UL << 25,
+    motivationModule      = 1UL << 26,
         
     // --- Ability ---
-    activatorModule   = 1UL << 13,
-    containerModule   = 1UL << 14,
-    interactionModule = 1UL << 15,
-    locationModule    = 1UL << 16,
-    motionModule      = 1UL << 17,
-
+    activatorModule     = 1UL << 31,
+    interactionModule   = 1UL << 32,
+    
     // --- Output ---
-    appearanceModule  = 1UL << 18,
-    noiseMakerModule  = 1UL << 19,
-    scentEmitterModule= 1UL << 20,
-
+    motionModule        = 1UL << 41,
+    appearanceModule    = 1UL << 42,
+    noiseMakerModule    = 1UL << 43,
+    scentEmitterModule  = 1UL << 44,
 
     // --- Data ---
-    blackboardModule  = 1UL << 21,
-    placementModule   = 1UL << 22,
-    statusModule      = 1UL << 23,
+    blackboardModule    = 1UL << 51,
+    placementModule     = 1UL << 52,
+    statusModule        = 1UL << 53,
+    taskListModule      = 1UL << 54,
+    containerModule     = 1UL << 55,
 
     // --- Quest ---
-    fetchQuestModule  = 1UL << 24,
+    fetchQuestModule    = 1UL << 61,
 }
 
 // The following templates can be used for configuring new WorldModule instantiations...
@@ -93,11 +95,12 @@ public static class ModuleFlagsTemplates  // extension functions for the ModuleF
                                                      & ~ModuleFlags.placementModule;
     public static readonly ModuleFlags QuestModules = ModuleFlags.fetchQuestModule;
     public static readonly ModuleFlags DecisionModules = ModuleFlags.playerDecisionModule
-                                                       | ModuleFlags.llmDecisionModule
                                                        | ModuleFlags.followerDecisionModule
                                                        | ModuleFlags.wanderDecisionModule
-                                                       | ModuleFlags.immobileDecisionModule;
+                                                       | ModuleFlags.immobileDecisionModule
+                                                       | ModuleFlags.taskFollowerDecisionModule;
     public static readonly ModuleFlags ScatterTerrain = ModuleFlags.placementModule
+                                                       | ModuleFlags.locationModule
                                                        | ModuleFlags.scentEmitterModule
                                                        | ModuleFlags.appearanceModule;
     public static readonly ModuleFlags TreasureChest = ScatterTerrain
@@ -138,19 +141,25 @@ public class WorldObject : MonoBehaviour
     public FollowerDecisionModule followerDecisionModule { get; private set; }
     public WandererDecisionModule wandererDecisionModule { get; private set; }
     public ImmobileDecisionModule immobileDecisionModule { get; private set; }
-    public LLMDecisionModule llmDecisionModule { get; private set; }
-
+    public TaskFollowerDecisionModule taskFollowerDecisionModule { get; private set; }
+    
     // --- Agent Interface Modules ---
+    public AgentModule  agentModule { get; private set; }
     public AgentMovementModule agentMovementModule { get; private set; }
     public PackMemberModule packMemberModule { get; private set; }
-
-    // Agent: (agentModule will add more Module types exclusively for agents)
-    public AgentModule  agentModule { get; private set; }
+    public MotivationModule motivationModule { get; private set; }
+    public LLMRequestResponseModule llmRequestResponseModule { get; private set; }    
+ 
+    public LLMRequestResponseModule lLMRequestResponseModule { get; private set; }
+    public ReactionModule reactionModule { get; private set; }
+    
+    
+    public AgentTaskExecutor  agentTaskExecutor { get; private set; }
 
     // Sensory:
-    public EatModule eatModule { get; private set; }
+    public TasteModule TasteModule { get; private set; }
     public HearingModule hearingModule { get; private set; }
-    public SmellModule smellModule { get; private set; }
+    public ScentPerceptionModule scentPerceptionModule { get; private set; }
     public VisionModule visionModule { get; private set; }
 
     // Output:
@@ -158,9 +167,6 @@ public class WorldObject : MonoBehaviour
     public NoiseMakerModule noiseMakerModule { get; private set; }
     public ScentEmitterModule scentEmitterModule { get; private set; }
 
-    // Motivation:
-    public MotivationModule motivationModule { get; private set; }
-    
     // Ability:
     public ActivatorModule activatorModule { get; private set; }
     public ContainerModule containerModule { get; private set; }
@@ -172,6 +178,7 @@ public class WorldObject : MonoBehaviour
     public BlackboardModule blackboardModule { get; private set; }
     public PlacementModule placementModule { get; private set; }
     public StatusModule statusModule { get; private set; }
+    public TaskListModule taskListModule { get; private set; }
 
     // Quest:
     public QuestModuleBase fetchQuestModule { get; private set; }
@@ -184,6 +191,15 @@ public class WorldObject : MonoBehaviour
     public WorldObjectKind Kind => kind;
     public string DisplayName => string.IsNullOrEmpty(displayName) ? name : displayName;
 
+
+    // This is a copy of the most basic commands in LocationModule.
+    // If you don't need all the fancy features there and just
+    //   want current location, it can be grabbed here without a
+    //   LocationModule.
+    public Vector3 pos3d_world => this.transform.position;
+    public Vector3 pos3d_f => new(pos3d_world.x, pos3d_world.z, pos3d_world.y);
+
+
     private void Awake()
     {
         //dir = FindFirstObjectByType<Directory>();
@@ -195,34 +211,33 @@ public class WorldObject : MonoBehaviour
         // Auto-fill module pointers, if they are attached to the same GameObject as this.
 
         // --- Sensory ---
-        hearingModule = GetComponent<HearingModule>();
-        smellModule   = GetComponent<SmellModule>();
-        visionModule  = GetComponent<VisionModule>();
-        eatModule     = GetComponent<EatModule>();
+        locationModule    = GetComponent<LocationModule>();
+        hearingModule          = GetComponent<HearingModule>();
+        scentPerceptionModule  = GetComponent<ScentPerceptionModule>();
+        visionModule           = GetComponent<VisionModule>();
+        TasteModule              = GetComponent<TasteModule>();
 
         // --- Agent Decision Modules
         playerDecisionModule   = GetComponent<PlayerDecisionModule>();
-        llmDecisionModule      = GetComponent<LLMDecisionModule>();
         followerDecisionModule = GetComponent<FollowerDecisionModule>();
         wandererDecisionModule = GetComponent<WandererDecisionModule>();
         immobileDecisionModule = GetComponent<ImmobileDecisionModule>();
-
+        taskFollowerDecisionModule = GetComponent<TaskFollowerDecisionModule>();
+        
         // --- Agent Interface Modules ---
+        agentModule           = GetComponent<AgentModule>();
         agentMovementModule   = GetComponent<AgentMovementModule>();
         packMemberModule      = GetComponent<PackMemberModule>();
-        agentModule           = GetComponent<AgentModule>();
-
-        // --- Motivation ---
         motivationModule   = GetComponent<MotivationModule>();
-            
+        llmRequestResponseModule = GetComponent<LLMRequestResponseModule>();    
+        reactionModule        = GetComponent<ReactionModule>();
+
         // --- Ability ---
         activatorModule   = GetComponent<ActivatorModule>();
-        containerModule   = GetComponent<ContainerModule>();
         interactionModule = GetComponent<InteractionModule>();
-        locationModule    = GetComponent<LocationModule>();
-        motionModule      = GetComponent<MotionModule>();
-
+        
         // --- Output ---
+        motionModule      = GetComponent<MotionModule>();
         appearanceModule  = GetComponent<AppearanceModule>();
         noiseMakerModule  = GetComponent<NoiseMakerModule>();
         scentEmitterModule= GetComponent<ScentEmitterModule>();
@@ -231,6 +246,8 @@ public class WorldObject : MonoBehaviour
         blackboardModule  = GetComponent<BlackboardModule>();
         placementModule   = GetComponent<PlacementModule>();
         statusModule      = GetComponent<StatusModule>();
+        taskListModule    = GetComponent<TaskListModule>();
+        containerModule   = GetComponent<ContainerModule>();
 
         // --- Quest ---
         fetchQuestModule  = GetComponent<FetchQuestModule>();
@@ -265,18 +282,25 @@ public class WorldObject : MonoBehaviour
         float dt = Time.deltaTime;
 
         // SENSES
-
         //visionModule?.Tick(dt);
         //hearingModule?.Tick(dt);
-        //smellModule?.Tick(dt);
-        //eatModule?.Tick(dt);
+        //scentPerceptionModule?.Tick(dt);
+        //TasteModule?.Tick(dt);
 
-        // AGENT DECISION
+        // PLANNING             // Enqueue tasks
+        // reactionModule       
+        // llmPlanningModule
+
+        // AGENT DECISION       // Enqueue tasks
         agentModule?.Tick(dt);  // forwards to appropriate active DecisionModule...
             //playerDecisionModule?.Tick(dt);
             //wanderDecisionModule?.Tick(dt);
             //followerDecisionModule?.Tick(dt);
+            //immobileDecisionModule?.Tick(dt);
             //...
+
+        // AGENT EXECUTION
+        //agentTaskExecutor?.Tick(context, dt); // needs context
 
         // AGENT INTERFACE
         agentMovementModule?.Tick(dt);
@@ -286,24 +310,24 @@ public class WorldObject : MonoBehaviour
         motivationModule?.Tick(dt);
 
         // ABILITY
-        motionModule?.Tick(dt);
-        //if (locationModule != null)  locationModule.Tick(dt);
-        //if (activatorModule != null)  activatorModule.Tick(dt);
-        //if (containerModule != null)  containerModule.Tick(dt);
-        //if (interactionModule != null)  interactionModule.Tick(dt);
+        //motionModule?.Tick(dt);
+        //locationModule?.Tick(dt);
+        //activatorModule?.Tick(dt);
+        //containerModule?.Tick(dt);
+        //interactionModule?.Tick(dt);
         
-        // DATA
-        //if (blackboardModule != null)  blackboardModule.Tick(dt);
-        //if (placementModule != null)  placementModule.Tick(dt);
-        //if (statusModule != null)  statusModule.Tick(dt);
+        // DATA                             // No need to tick
+        //blackboardModule?.Tick(dt);
+        //placementModule?.Tick(dt);
+        //statusModule?.Tick(dt);
 
         // OUTPUT
-        //if (appearanceModule != null)  appearanceModule.Tick(dt);
+        //appearanceModule?.Tick(dt);
         noiseMakerModule?.Tick(dt);
         scentEmitterModule?.Tick(dt);
         
         // QUEST
-        //if (fetchQuestModule != null)  fetchQuestModule.Tick(dt);
+        //fetchQuestModule?.Tick(dt);
     }
 
     public T GetModule<T>() where T : WorldModule
@@ -391,10 +415,10 @@ public class WorldObject : MonoBehaviour
             if (hearingModule == null) Debug.LogWarning($"hearingModule = null");
         }
 
-        if (enables.HasFlag(ModuleFlags.smellModule))
+        if (enables.HasFlag(ModuleFlags.scentPerceptionModule))
         {
-            smellModule = EnsureComponent<SmellModule>();
-            if (smellModule == null) Debug.LogWarning($"smellModule = null");
+            scentPerceptionModule = EnsureComponent<ScentPerceptionModule>();
+            if (scentPerceptionModule == null) Debug.LogWarning($"scentPerceptionModule = null");
         }
 
         if (enables.HasFlag(ModuleFlags.visionModule))
@@ -403,10 +427,10 @@ public class WorldObject : MonoBehaviour
             if (visionModule == null) Debug.LogWarning($"visionModule = null");
         }
 
-        if (enables.HasFlag(ModuleFlags.eatModule))
+        if (enables.HasFlag(ModuleFlags.tasteModule))
         {
-            eatModule = EnsureComponent<EatModule>();
-            if (eatModule == null) Debug.LogWarning($"eatModule = null");
+            TasteModule = EnsureComponent<TasteModule>();
+            if (TasteModule == null) Debug.LogWarning($"TasteModule = null");
         }
 
 
