@@ -98,6 +98,11 @@ public partial class DungeonGenerator : MonoBehaviour
             cfg = dir.cfg;
             if (!cfg) Debug.LogError($"[DungeonGenerator.InitializeConnections] cfg not valid from dir!");
         }
+
+        if (hf==null)
+        {
+            hf = dir.gen.hf;
+        }
     }
     
     // ------------------------------------- //
@@ -1111,7 +1116,14 @@ public partial class DungeonGenerator : MonoBehaviour
     public Cell GetCellFromHf(int x, int y, int z, int threshold)
     {
         NeighborMatch match;
-        if (hf.TryQueryAt(x, y + 1, z, threshold: 10, out match))
+
+        if (hf==null)
+        {
+            Debug.LogError("Heightfield not available in DungeonGenerator.GetCellFromHf");
+            return null;
+        }
+            
+        if (dir.gen.hf.TryQueryAt(x, y + 1, z, threshold: 10, out match))
         {
             Room nRoom = rooms[match.roomId];
             foreach (Cell cc in nRoom.cells)

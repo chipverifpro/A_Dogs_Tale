@@ -39,6 +39,9 @@ namespace DogGame.Modules
 
             //Debug.Log($"ScentEmitterModule {worldObject.DisplayName}: Tick {deltaTime}");
 
+            if (dir.gen.hf_valid == false || dir.gen.hf==null)
+                return;     // scent cannot be added before heightfield is created.
+            
             // deposit normal scent
             normalScentSource.Emit(worldObject.locationModule.cell, deltaTime, decayed: 1.0f);
 
