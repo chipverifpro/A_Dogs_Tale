@@ -10,8 +10,9 @@ namespace DogGame.LLM
         void Enqueue(AgentTaskContext context, AgentTaskQueue queue, in PerceptionSnapshot snapshot);
     }
 
-    
+/*
     public enum TaskSource { Player, LLM, SimpleAI, Script }
+
 
     public readonly struct TaskRequest
     {
@@ -35,5 +36,5 @@ namespace DogGame.LLM
             Tag = tag;
         }
     }
-
+*/
 }

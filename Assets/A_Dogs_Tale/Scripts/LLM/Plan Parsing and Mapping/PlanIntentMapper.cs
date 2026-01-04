@@ -1,5 +1,4 @@
 #nullable enable
-using System;
 using Newtonsoft.Json.Linq;
 using UnityEngine;
 using DogGame.Tasks;
@@ -8,6 +7,9 @@ namespace DogGame.LLM
 {
     public static class PlanIntentMapper
     {
+        // Reasonable default for LLM-generated "chosen behaviors"
+        private const int DefaultLlmPriority = 60;
+
         public static bool TryEnqueueTasksFromPlan(PlanResponseV1 plan, AgentTaskQueue queue, out string? error)
         {
             error = null;
@@ -28,9 +30,12 @@ namespace DogGame.LLM
                 switch (intention.Type)
                 {
                     case PlanIntentionType.add_task:
+                    {
                         if (TryBuildTaskFromAddTask(intention, out var task, out var taskError))
                         {
-                            queue.Enqueue(task!);
+                            // Build metadata (priority/interrupt/resume) for this task
+                            var request = BuildRequestForAddTask(intention, task!);
+                            queue.Enqueue(new TaskRequest(task!, priority: 60, source: TaskSource.LLM, canInterrupt: false));
                             enqueuedCount++;
                         }
                         else
@@ -38,18 +43,16 @@ namespace DogGame.LLM
                             Debug.LogWarning($"add_task mapping rejected: {taskError}");
                         }
                         break;
+                    }
 
                     case PlanIntentionType.noop:
                         break;
 
-                    // You can decide later whether set_goal becomes an internal goal system,
-                    // or you just treat it as a "hint" for now.
                     case PlanIntentionType.set_goal:
-                        // v1: ignore or log. (Or enqueue a small Wait to simulate.)
+                        // v1: ignore or log
                         break;
 
                     default:
-                        // For v1, ignore other types until you implement them.
                         break;
                 }
             }
@@ -61,6 +64,48 @@ namespace DogGame.LLM
             }
 
             return true;
+        }
+
+        private static TaskRequest BuildRequestForAddTask(PlanIntentionV1 intention, IAgentTask task)
+        {
+            // Defaults for LLM tasks
+            int priority = DefaultPriorityForTask(task);
+            bool canInterrupt = false;          // LLM plans usually should NOT preempt reactions/player
+            bool resumePrevious = false;        // LLM plan steps are typically the plan itself
+            bool clearStackOnStart = false;     // never clear; reserve for panic/player takeover
+            string? tag = "llm_plan";
+
+            // Optional overrides from JSON
+            JObject? parameters = intention.Parameters;
+
+            if (parameters != null)
+            {
+                priority = Mathf.Clamp(parameters.Value<int?>("priority") ?? priority, 0, 100);
+                canInterrupt = parameters.Value<bool?>("canInterrupt") ?? canInterrupt;
+                resumePrevious = parameters.Value<bool?>("resumePrevious") ?? resumePrevious;
+                clearStackOnStart = parameters.Value<bool?>("clearStackOnStart") ?? clearStackOnStart;
+                tag = parameters.Value<string?>("tag") ?? tag;
+            }
+
+            return new TaskRequest(
+                task: task,
+                priority: priority,
+                source: TaskSource.LLM,
+                canInterrupt: canInterrupt,
+                resumePrevious: resumePrevious,
+                clearStackOnStart: clearStackOnStart,
+                tag: tag
+            );
+        }
+
+        private static int DefaultPriorityForTask(IAgentTask task)
+        {
+            // Keep these in the 50–69 band so reflex reactions can interrupt.
+            // Adjust as you add more tasks.
+            if (task is Task_MoveToCell) return 60;
+            if (task is Task_Wait)       return 40;
+
+            return DefaultLlmPriority;
         }
 
         private static bool TryBuildTaskFromAddTask(PlanIntentionV1 intention, out IAgentTask? task, out string? error)
@@ -82,10 +127,8 @@ namespace DogGame.LLM
                 return false;
             }
 
-            // Normalize a bit
             taskName = taskName.Trim();
 
-            // Supported tasks (v1)
             switch (taskName)
             {
                 case "wait":
@@ -98,7 +141,6 @@ namespace DogGame.LLM
 
                 case "move_to_cell":
                 {
-                    // parameters.locationCell: [x,y]
                     var locationCellToken = parameters["locationCell"];
                     if (locationCellToken == null || locationCellToken.Type != JTokenType.Array)
                     {

@@ -5,25 +5,46 @@ namespace DogGame.LLM
 {
     public sealed class AgentTaskQueue
     {
-        private readonly Queue<IAgentTask> queuedTasks = new();
+        private readonly List<TaskRequest> queued = new();
 
-        public int Count => queuedTasks.Count;
-        public bool IsEmpty => queuedTasks.Count == 0;
+        public int Count => queued.Count;
+        public bool IsEmpty => queued.Count == 0;
 
-        public void Enqueue(IAgentTask task) => queuedTasks.Enqueue(task);
+        public void Clear() => queued.Clear();
 
-        public bool TryDequeue(out IAgentTask? task)
+        public void Enqueue(TaskRequest request)
         {
-            if (queuedTasks.Count == 0)
+            // Insert in descending priority order (stable)
+            int index = queued.Count;
+            while (index > 0 && queued[index - 1].Priority < request.Priority)
+                index--;
+
+            queued.Insert(index, request);
+        }
+
+        public bool TryDequeue(out TaskRequest request)
+        {
+            if (queued.Count == 0)
             {
-                task = null;
+                request = default;
                 return false;
             }
 
-            task = queuedTasks.Dequeue();
+            request = queued[0];
+            queued.RemoveAt(0);
             return true;
         }
 
-        public void Clear() => queuedTasks.Clear();
+        public bool Peek(out TaskRequest request)
+        {
+            if (queued.Count == 0)
+            {
+                request = default;
+                return false;
+            }
+
+            request = queued[0];
+            return true;
+        }
     }
 }
