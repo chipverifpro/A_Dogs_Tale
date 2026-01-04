@@ -2,6 +2,7 @@ using UnityEngine;
 using DogGame.AI;
 using DogGame.LLM;  // if your AgentDecisionModuleBase lives here
 // using DogGame.World; // if you need WorldObject, etc.
+using DogGame.Tasks;
 
 namespace DogGame.Modules
 {
@@ -33,7 +34,7 @@ namespace DogGame.Modules
         public WorldObject currentDestinationObject = null;
         public Vector3? currentManualWorldMoveDir = null;
 
-        AgentTaskController llmController = null;
+        AgentTaskController agentTaskController = null;
 
     private void Start()
     {
@@ -61,7 +62,7 @@ namespace DogGame.Modules
             Debug.LogError($"[PlayerInputStateDebugger] gameInputRouter.InputState is null.", this);
         }
 
-        llmController = worldObject.GetComponent<AgentTaskController>();
+        agentTaskController = worldObject.GetComponent<AgentTaskController>();
 
     }
 
@@ -117,10 +118,10 @@ namespace DogGame.Modules
                 return;
             }
 
-            if (llmController != null && llmController.IsDrivingMovement)
+            if (agentTaskController != null && agentTaskController.IsDrivingMovement)
             {
-                Debug.Log("llmController is driving movement.");
-                llmController.Tick(deltaTime);
+                Debug.Log("agentTaskController is driving movement.");
+                agentTaskController.Tick(deltaTime);
                 //return; // IMPORTANT: don't also write motion inputs this tick
             }
 
@@ -142,7 +143,7 @@ namespace DogGame.Modules
             HandleOneShotActions(inputState);
 
             // Only do player controlled movement if LLM isn't driving movement
-            if (!(llmController != null && llmController.IsDrivingMovement))
+            if (!(agentTaskController != null && agentTaskController.IsDrivingMovement))
             {
                 Debug.Log("PlayerDecisionModule is driving movement.");
                 HandleMovement(inputState, deltaTime);
@@ -237,16 +238,20 @@ namespace DogGame.Modules
             // 2) Click-to-move: if we have a click target location and no interact press,
             //    steer toward that point. (Very simple version: straight-line steering.)
             
+            // 2B) New click target is an object: new orders
+            if (state.hasClickTargetWorldObject && !state.interactPressed)
+            {
+                currentDestinationObject = state.clickTargetWorldObject; // head to object, new orders arrived
+                SubmitMoveToTargetObjectTask(currentDestinationObject);
+                return;
+            }
             // 2A) New click target was a location: new orders
             if (state.hasClickTargetLocationWorld && !state.interactPressed)
             {
                 currentDestinationPosition = state.clickTargetLocationWorld; // head to location, new orders arrived
                 currentDestinationObject = null;  // stop heading to object if we had been
-            }
-            // 2B) New click target is an object: new orders
-            if (state.hasClickTargetWorldObject && !state.interactPressed)
-            {
-                currentDestinationObject = state.clickTargetWorldObject; // head to object, new orders arrived
+                SubmitMoveToTargetPositionTask((Vector3)currentDestinationPosition);
+                return;
             }
 
             // current target is an object, let's figure out where it is now.
@@ -310,6 +315,7 @@ namespace DogGame.Modules
             {
                 // Move to target object, and keep tracking it.
                 worldObject.agentMovementModule.SetDesiredTargetWorldObject(currentDestinationObject);
+
             }
             else if (desiredWorldDir.sqrMagnitude > 0.0001f)
             {
@@ -329,6 +335,35 @@ namespace DogGame.Modules
             // MotionModule (called by AgentagentMovementModule) handles facing the move direction.
         }
 
+        public void SubmitMoveToTargetObjectTask(WorldObject targetWorldObject)
+        {
+            if (targetWorldObject != null)
+            {
+                agentTaskController.Submit(new TaskRequest(
+                    task: new Task_MoveToObject(targetWorldObject, stopRadius: 0.6f),
+                    priority: 100,
+                    source: TaskSource.Player,
+                    canInterrupt: true,
+                    resumePrevious: false,
+                    clearStackOnStart: true,
+                    tag: "player_move_to_object"
+                ));
+            } 
+        }
+        public void SubmitMoveToTargetPositionTask(Vector3 targetLocation)
+        {
+            {
+                agentTaskController.Submit(new TaskRequest(
+                    task: new Task_MoveToLocation(targetLocation.x, targetLocation.z, stopRadius: 0.6f),
+                    priority: 100,
+                    source: TaskSource.Player,
+                    canInterrupt: true,
+                    resumePrevious: false,
+                    clearStackOnStart: true,
+                    tag: "player_move_to_location"
+                ));
+            }
+        }
         private void UpdateFacingModeForDirectInput(Vector3 worldMoveDir)
         {
             var motion = worldObject.motionModule;
@@ -452,6 +487,10 @@ namespace DogGame.Modules
         // Run this when THIS decision module becomes active
         public override void BeginDecisionModule(bool resume=false)
         {
+            if (!(agentTaskController != null && agentTaskController.IsDrivingMovement))
+            {
+                Debug.Log("LLM was still driving movement when Player took over.");
+            }
             if (resume)
             {
                 currentManualWorldMoveDir = null;    // no need to resume manual input control.

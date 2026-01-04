@@ -1,3 +1,4 @@
+using DogGame.LLM;
 using UnityEngine;
 
 namespace DogGame.Modules
@@ -113,10 +114,10 @@ namespace DogGame.Modules
                 return;
             }
 
-            var llmController = worldObject.GetComponent<DogGame.LLM.AgentTaskController>();
-            if (llmController != null && llmController.IsDrivingMovement)
+            var agentTaskController = worldObject.GetComponent<DogGame.LLM.AgentTaskController>();
+            if (agentTaskController != null && agentTaskController.IsDrivingMovement)
             {
-                llmController.Tick(deltaTime);
+                agentTaskController.Tick(deltaTime);
                 //return; // IMPORTANT: don't also write motion inputs this tick
             }
 
@@ -322,6 +323,14 @@ namespace DogGame.Modules
         // Run this when THIS decision module becomes active
         public override void BeginDecisionModule(bool resume=false)
         {
+            // TODO: This doesn't stop LLM until user PressAnyKey.  Needs to be done in LLMDriver.
+            var agentTaskController = GetComponent<AgentTaskController>();
+            if (!(agentTaskController != null && agentTaskController.IsDrivingMovement))
+            {
+                Debug.Log("LLM was still driving movement when Player took over.");
+                agentTaskController.StopMovementWhenControlGained();
+            }
+
             if (resume)
             {
                 currentManualWorldMoveDir = null;    // no need to resume manual input control.
