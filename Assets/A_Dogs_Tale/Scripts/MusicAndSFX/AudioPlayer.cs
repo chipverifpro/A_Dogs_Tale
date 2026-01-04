@@ -44,7 +44,7 @@ public partial class AudioPlayer : MonoBehaviour
 
         Instance = this;
         if (dir == null) dir = FindFirstObjectByType<Directory>(FindObjectsInactive.Include);
-        if (dir == null)
+        if (dir != null)
         {
             Debug.LogError($"AudioCatalog: ObjectDirectory not found");
             return;
@@ -67,7 +67,8 @@ public partial class AudioPlayer : MonoBehaviour
     // Each entry in the master catalog (a unique "clipCfg") maintains
     //  a list of currently playing copies so they can be ended
     //  anytime needed.
-    public bool PlayClip(string name)
+    // Can add a percentage volume to indicate source volume or distance.
+    public bool PlayClip(string name, float volumePct=1.0f)
     {
         //Debug.Log($"[PlayClip] '{name}' requested.");
             
@@ -147,7 +148,7 @@ public partial class AudioPlayer : MonoBehaviour
         // 5. Volume and pitch
         float volume_min = (clipCfg.volumeRange?.x) ?? 1f;
         float volume_max = (clipCfg.volumeRange?.y) ?? 1f;
-        src.volume = UnityEngine.Random.Range(volume_min, volume_max);
+        src.volume = UnityEngine.Random.Range(volume_min, volume_max) * volumePct;
 
         float pitch_min = (clipCfg.pitchRange?.x) ?? 1f;
         float pitch_max = (clipCfg.pitchRange?.y) ?? 1f;

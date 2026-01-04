@@ -5,27 +5,27 @@ using DogGame.LLM;
 // The difference between MoveToCell and MoveToLocation is integer x,y vs float x,y,(future z)
 namespace DogGame.Tasks
 {
-    public sealed class Task_MoveToCell : IAgentTask
+    public sealed class Task_MoveToLocation : IAgentTask
     {
-        public string DebugName => $"MoveToCell([{cellX},{cellY}], r={stopRadius:0.00})";
+        public string DebugName => $"MoveToLocation([{mapX},{mapY}], r={stopRadius:0.00})";
 
-        private readonly int cellX;
-        private readonly int cellY;
+        private readonly float mapX;
+        private readonly float mapY;
         private readonly float stopRadius;
 
         private Vector3 destinationWorld;
 
-        public Task_MoveToCell(int cellX, int cellY, float stopRadius = 0.35f)
+        public Task_MoveToLocation(float mapX, float mapY, float stopRadius = 0.35f)
         {
-            this.cellX = cellX;
-            this.cellY = cellY;
+            this.mapX = mapX;
+            this.mapY = mapY;
             this.stopRadius = Mathf.Max(0.05f, stopRadius);
             Debug.Log(DebugName);
         }
 
         public void Start(AgentTaskContext context)
         {
-            destinationWorld = context.Movement.CellToWorld(cellX, cellY);
+            destinationWorld = context.Movement.CellToWorld((int)mapX, (int)mapY);  // TODO: change these back to float, and include height
         }
 
         private int debugDoubleTick = -1;

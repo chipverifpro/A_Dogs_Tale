@@ -37,8 +37,26 @@ public sealed class ReactionEngine : MonoBehaviour
         {
             // For now: move to current cell center or a nearby probe point.
             // Better v2: follow gradient to neighbor cell with higher strength.
-            taskController.TaskQueue.Enqueue(new Task_Wait(0.15f)); // "sniff" beat
-            taskController.TaskQueue.Enqueue(new Task_MoveToCell((int)e.WorldPos.x, (int)e.WorldPos.y, 0.35f)); // if you have cell pos to go to.
+            //taskController.TaskQueue.Enqueue(new Task_Wait(0.15f)); // "sniff" beat
+            //taskController.TaskQueue.Enqueue(new Task_MoveToCell((int)e.WorldPos.x, (int)e.WorldPos.y, 0.35f)); // if you have cell pos to go to.
+
+            // Reaction: bark + sniff, but if sniff fails, just end and resume previous
+            var seq = new Task_Sequence(new IAgentTask[]
+            {
+                new Task_Bark(10),
+                new Task_Try(
+                    tryTask: new Task_Sniff(1.0f),      // your sniff task
+                    onFail: new Task_Wait(0.1f))
+            });
+
+            taskController.Submit(new TaskRequest(
+                task: seq,
+                priority: 80,
+                source: TaskSource.Reaction,
+                canInterrupt: true,
+                resumePrevious: true,
+                tag: "reaction_bark_sniff"
+            ));
         }
     }
 }

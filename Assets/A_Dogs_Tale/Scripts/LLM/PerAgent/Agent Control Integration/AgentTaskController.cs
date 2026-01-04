@@ -85,7 +85,7 @@ namespace DogGame.LLM
 
         private bool wasDrivingMovementLastTick;
 
-        private void StopMovementWhenControlGained()
+        public void StopMovementWhenControlGained()
         {
             bool isDrivingMovementNow = IsDrivingMovement;
 
