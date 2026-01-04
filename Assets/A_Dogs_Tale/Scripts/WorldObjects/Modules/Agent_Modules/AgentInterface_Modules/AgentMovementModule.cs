@@ -40,6 +40,7 @@ namespace DogGame.Modules
         public Crumb next_actualCrumb;
         public Crumb next_formationCrumb;
 
+        [Header("Current Destination")]
         // Object or Location we are going towards.
         public WorldObject targetObject;        // for continuous tracking of a (possibly moving) target object
                                                 // every tick, update targetLocation to it's current world location
@@ -47,19 +48,11 @@ namespace DogGame.Modules
                                                 // if (false) then upon arrival, this task is complete.
         public Vector3? targetLocation;         // for travelling to a destination location or current location of target object
 
-        public bool targetMoved;                // not yet used: is this tick's target objet position different than last?  Use case?
-
         public float stopDistanceFromObject;    // when heading to an object, don't run inside it.
                                                 //   (should be radius of agent + radius of target)
                                                 // also used as follow distance when continuing to follow agents.
                                                 //   (should be packModule.followDistanceMeters)
         
-        //[Tooltip("Maximum walking speed in meters per second.")]
-        //[SerializeField] private float walkSpeedMetersPerSecond = 3.0f;
-
-        //[Tooltip("Maximum running speed in meters per second.")]
-        //[SerializeField] private float runSpeedMetersPerSecond = 6.0f;
-
         [Header("Acceleration")]
         [Tooltip("Acceleration toward desired velocity in meters per second squared.")]
         [SerializeField] private float accelerationMetersPerSecondSquared = 12.0f;
@@ -70,15 +63,18 @@ namespace DogGame.Modules
         [Header("Debug")]
         [SerializeField] private bool enableDebugLogging = false;
 
+        [Header("Velocity")]
         // Current velocity we are actually moving with (world-space, horizontal+vertical from MotionModule)
         private Vector3 currentVelocity = Vector3.zero;
 
         // Desired velocity requested by decision modules (world-space, horizontal only here)
         private Vector3 desiredVelocity = Vector3.zero;
 
+        [Header("Max Speed")]
         // Used to choose between walk/run speeds when using SetDesiredMove()
         //private bool desireRun = false;
         public WalkMode walkMode;
+        public float maxWalkModeSpeed;      // result of lookup WalkMode to Max Speed
         private float speedFactor01 = 1.0f; // 0..1 scaling of walk/run speed
 
         /// <summary>
@@ -90,18 +86,8 @@ namespace DogGame.Modules
         ///    we will want to recalculate bumping into objects the next tile,
         ///    so don't move beyond that until we have checked again.
         /// </summary>
-        public float maxDistance = 1f;
+        public float maxDistance = 1f;      // TODO: Move to MotionModule
 
-        /// <summary>
-        /// Exposes the current velocity for other systems (e.g., animation).
-        /// </summary>
-        public Vector3 CurrentVelocity => currentVelocity;
-
-        /// <summary>
-        /// Exposes the desired velocity for debugging or higher-level logic.
-        /// </summary>
-        public Vector3 DesiredVelocity => desiredVelocity;
-        public float desiredWalkSpeed;
 
         protected override void Awake()
         {
@@ -162,17 +148,17 @@ namespace DogGame.Modules
             maxDistance = 1f;
             if (targetObject!=null) 
             {
-                if (targetObject.locationModule!=null)
-                targetLocation = targetObject.locationModule.pos3d_world;
+                //if (targetObject.locationModule!=null)
+                targetLocation = targetObject.pos3d_world;
             }
 
-            if (targetLocation != null) 
+            if (targetLocation == null) 
             {
                 return;
             }
 
             // find our location
-            Vector3 ourLocation_world = worldObject.locationModule.pos3d_world;
+            Vector3 ourLocation_world = worldObject.pos3d_world;
 
             // direction and distance to target for move command.
             Vector3 desired_move = (Vector3)targetLocation - ourLocation_world;
@@ -269,7 +255,7 @@ namespace DogGame.Modules
 
             if (worldObject.motionModule == null)
                 return;
-
+            //Debug.Log($"{worldObject.DisplayName}:targetObject={targetObject},targetLocation={targetLocation}");
             if (targetObject != null || targetLocation != null)
             {
                 PointTowardTargetObjectLocation();   // sets targetLocation to point to the object if present, then GoTowardLocation.
