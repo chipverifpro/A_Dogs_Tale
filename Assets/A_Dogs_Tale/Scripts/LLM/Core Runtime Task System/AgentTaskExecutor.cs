@@ -34,12 +34,14 @@ namespace DogGame.LLM
                 Debug.LogError("ERROR: AgentTaskExecutor.Tick run more than once per frame");
             debugDoubleTick = Time.frameCount;
 
+            //Debug.Log($"AgentTaskExecutor.Tick: taskQueue = {taskQueue.Count}");
             // Acquire next task if none is running (prefer suspended over queued)
             if (currentTask == null)
             {
                 if (!TryAcquireNextRequest(out var next))
                     return;
 
+                Debug.Log($"AgentTaskExecutor.Tick: Begin Task: {next.Task.DebugName}");
                 BeginRequest(next);
             }
 

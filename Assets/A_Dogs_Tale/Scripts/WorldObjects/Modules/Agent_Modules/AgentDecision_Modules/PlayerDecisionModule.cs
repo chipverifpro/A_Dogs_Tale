@@ -120,7 +120,7 @@ namespace DogGame.Modules
 
             if (agentTaskController != null && agentTaskController.IsDrivingMovement)
             {
-                Debug.Log("agentTaskController is driving movement.");
+                //Debug.Log("agentTaskController is driving movement.");
                 agentTaskController.Tick(deltaTime);
                 //return; // IMPORTANT: don't also write motion inputs this tick
             }
@@ -145,7 +145,7 @@ namespace DogGame.Modules
             // Only do player controlled movement if LLM isn't driving movement
             if (!(agentTaskController != null && agentTaskController.IsDrivingMovement))
             {
-                Debug.Log("PlayerDecisionModule is driving movement.");
+                //Debug.Log("PlayerDecisionModule is driving movement.");
                 HandleMovement(inputState, deltaTime);
             }
             
@@ -254,6 +254,7 @@ namespace DogGame.Modules
                 return;
             }
 
+/*
             // current target is an object, let's figure out where it is now.
             if (currentDestinationObject!=null)
             {
@@ -303,6 +304,7 @@ namespace DogGame.Modules
             }
             currentManualWorldMoveDir = desiredWorldDir;
             MovementHeadToDestination();
+            */
         }
 
         public void MovementHeadToDestination()

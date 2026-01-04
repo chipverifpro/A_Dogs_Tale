@@ -44,7 +44,7 @@ public partial class AudioPlayer : MonoBehaviour
 
         Instance = this;
         if (dir == null) dir = FindFirstObjectByType<Directory>(FindObjectsInactive.Include);
-        if (dir != null)
+        if (dir == null)
         {
             Debug.LogError($"AudioCatalog: ObjectDirectory not found");
             return;

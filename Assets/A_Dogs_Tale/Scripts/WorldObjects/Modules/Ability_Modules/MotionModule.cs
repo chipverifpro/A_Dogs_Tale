@@ -90,8 +90,6 @@ namespace DogGame.Modules
         // Internal vertical velocity (for gravity, jumps, etc.)
         private Vector3 verticalVelocity = Vector3.zero;
 
-
-
         [Header("Control player facing")]
         [Tooltip("Assigned based on type of travel (is there a destination or are we just moving?)")]
         public MotionControlMode motionControlMode;
@@ -110,8 +108,6 @@ namespace DogGame.Modules
         public WalkMode currentWalkMode = WalkMode.Walk;
 
         private Vector3 horizontalVelocity = Vector3.zero;
-
-
 
         [SerializeField] private List<WalkModeSpeed> maxSpeedsByMode = new()
         {
@@ -249,6 +245,8 @@ namespace DogGame.Modules
         private int debugDoubleTick = -1;
         public void ApplyMotion(Vector3 desiredHorizontalVelocity, float deltaTime, float maxDistance)
         {
+            //Debug.Log($"{worldObject.DisplayName}:MotionModule.ApplyMotion({desiredHorizontalVelocity}, {deltaTime}, {maxDistance})");
+            
             // Ensure this isn't being called more than once per frame:
             if (debugDoubleTick == Time.frameCount)
                 Debug.LogError("ERROR: Move run more than once per frame");
@@ -289,6 +287,7 @@ namespace DogGame.Modules
             // --- 5. Apply change in position at velocity * deltaT,
             //     but limit to a maximum of maxDistance.
             bodyRoot.position += Vector3.ClampMagnitude(frameVelocity * deltaTime, maxDistance);
+            //Debug.Log($"{worldObject.DisplayName}:MotionModule.ApplyMotion complete");
         }
 
         private Vector3 ComputeHorizontalVelocity(

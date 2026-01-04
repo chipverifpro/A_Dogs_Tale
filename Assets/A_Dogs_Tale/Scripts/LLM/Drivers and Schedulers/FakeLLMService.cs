@@ -7,7 +7,7 @@ namespace DogGame.LLM
 {
     public sealed class FakeLLMService : MonoBehaviour
     {
-        private Vector2 latencyRangeSeconds = new(0.4f, 1.4f);
+        private Vector2 latencyRangeSeconds = new(0.4f, 10.4f);
         private int planCounter;
 
         public void SetLatencyRange(Vector2 secondsRange)
