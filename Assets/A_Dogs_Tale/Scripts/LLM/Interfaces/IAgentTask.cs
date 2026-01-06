@@ -42,15 +42,16 @@ namespace DogGame.LLM
         public readonly WorldObject Agent;
 
         public readonly IAgentMovementAdapter Movement;
-
+        public readonly IBlackboard blackboard;
         public Vector2Int CurrentCellPos => new Vector2Int((int)AgentTransform.position.x,(int)AgentTransform.position.z);
         
-        public AgentTaskContext(string agentId, WorldObject worldObject, Transform agentTransform, IAgentMovementAdapter movement)
+        public AgentTaskContext(string agentId, WorldObject worldObject, Transform agentTransform, IAgentMovementAdapter movement, IBlackboard blackboard))
         {
             AgentId = agentId;
             Agent = worldObject;
             AgentTransform = agentTransform;
             Movement = movement;
+            Blackboard = blackboard;
         }
     }
 

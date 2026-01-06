@@ -14,7 +14,7 @@ namespace DogGame.Tasks
         private readonly float durationSeconds;
         private float remainingSeconds;
 
-        private Directory? dir;
+        private static Directory? dir;
 
         public Task_Bark(float volume)
         { 

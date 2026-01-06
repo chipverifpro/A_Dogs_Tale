@@ -26,6 +26,8 @@ namespace DogGame.LLM
 
         private MotionModuleMovementAdapter? motionAdapter;
 
+        private DogGame.Tasks.IBlackboard blackboard = null!;
+
         public static TaskRequest Llm(IAgentTask task, int priority = 60, string? tag = "llm_plan")
             => new(task, priority, TaskSource.LLM, canInterrupt: false, tag: tag);
 
@@ -41,16 +43,19 @@ namespace DogGame.LLM
                 return;
             }
 
+            blackboard = new DogGame.Tasks.SimpleBlackboard();
+
             // Use DisplayName as agent id by default
             agentId = worldObject.DisplayName;
 
             TaskQueue = new AgentTaskQueue();
             Executor  = new AgentTaskExecutor(TaskQueue);
 
+        
             // Movement adapter used by tasks (intent-level; no per-frame Tick here)
             motionAdapter = new MotionModuleMovementAdapter(worldObject: worldObject);
 
-            Context = new AgentTaskContext(agentId, worldObject, transform, motionAdapter);
+            Context = new AgentTaskContext(agentId, worldObject, transform, motionAdapter, blackboard);
         }
 
         public bool TryApplyPlanJson(string planResponseJson)
