@@ -2,13 +2,13 @@
 using System.Collections.Generic;
 using UnityEngine;
 using DogGame.AI.Perception;
-using DogGame.LLM; // wherever your AgentTaskController / tasks live
+using DogGame.LLM; // wherever your TaskControler / tasks live
 using DogGame.Tasks;
 
 public sealed class ReactionEngine : MonoBehaviour
 {
     public WorldObject worldObject = null!;
-    public AgentTaskController taskController = null!;
+    public TaskControler taskController = null!;
 
     private void Awake()
     {
@@ -16,7 +16,7 @@ public sealed class ReactionEngine : MonoBehaviour
             worldObject = GetComponentInParent<WorldObject>();
 
         if (taskController == null)
-            taskController = GetComponentInParent<AgentTaskController>();
+            taskController = GetComponentInParent<TaskControler>();
     }
 
     public void HandlePerceptionEvents(List<PerceptionEvent> events)

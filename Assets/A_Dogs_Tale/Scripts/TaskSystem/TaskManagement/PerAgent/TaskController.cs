@@ -6,7 +6,7 @@ using DogGame.Tasks;
 namespace DogGame.LLM
 {
     [DefaultExecutionOrder(-10)]
-    public sealed class AgentTaskController : WorldModule
+    public sealed class TaskControler : WorldModule
     {
         [SerializeField] private string agentId = "player";
         public string AgentId => agentId;
@@ -38,7 +38,7 @@ namespace DogGame.LLM
         {
             if (worldObject == null)
             {
-                Debug.LogError("[AgentTaskController] WorldObject not found on this GameObject.");
+                Debug.LogError("[TaskControler] WorldObject not found on this GameObject.");
                 enabled = false;
                 return;
             }
@@ -97,7 +97,7 @@ namespace DogGame.LLM
             // If we just took control, kill any leftover player intent immediately.
             if (isDrivingMovementNow && !wasDrivingMovementLastTick)
             {
-                Debug.Log("AgentTaskController: Stop movement when task control gains control.");
+                Debug.Log("TaskControler: Stop movement when task control gains control.");
                 taskContext.Movement.StopMoving();
             }
 
@@ -109,13 +109,13 @@ namespace DogGame.LLM
         public override void Tick(float deltaTimeSeconds)
         {
             if (debugDoubleTick == Time.frameCount)
-                Debug.LogError("ERROR: AgentTaskController.Tick run more than once per frame");
+                Debug.LogError("ERROR: TaskControler.Tick run more than once per frame");
             debugDoubleTick = Time.frameCount;
 
             // Temporary dev behavior: any input cancels task control (also blocks Tab, etc.).
             if (dir && worldObject && dir.gameInputRouter.InputState.anyKeyOrButtonDown)
             {
-                Debug.Log("AgentTaskController: Cancelling tasks due to anyKeyOrButtonDown");
+                Debug.Log("TaskControler: Cancelling tasks due to anyKeyOrButtonDown");
                 CancelAllTasks();
                 return;
             }

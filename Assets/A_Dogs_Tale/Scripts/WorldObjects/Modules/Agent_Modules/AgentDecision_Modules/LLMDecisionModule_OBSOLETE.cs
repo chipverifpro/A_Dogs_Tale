@@ -114,10 +114,10 @@ namespace DogGame.Modules
                 return;
             }
 
-            var agentTaskController = worldObject.GetComponent<DogGame.LLM.AgentTaskController>();
-            if (agentTaskController != null && agentTaskController.IsDrivingMovement)
+            var taskControler = worldObject.GetComponent<DogGame.LLM.TaskControler>();
+            if (taskControler != null && taskControler.IsDrivingMovement)
             {
-                agentTaskController.Tick(deltaTime);
+                taskControler.Tick(deltaTime);
                 //return; // IMPORTANT: don't also write motion inputs this tick
             }
 
@@ -324,11 +324,11 @@ namespace DogGame.Modules
         public override void BeginDecisionModule(bool resume=false)
         {
             // TODO: This doesn't stop LLM until user PressAnyKey.  Needs to be done in LLMDriver.
-            var agentTaskController = GetComponent<AgentTaskController>();
-            if (!(agentTaskController != null && agentTaskController.IsDrivingMovement))
+            var taskControler = GetComponent<TaskControler>();
+            if (!(taskControler != null && taskControler.IsDrivingMovement))
             {
                 Debug.Log("LLM was still driving movement when Player took over.");
-                agentTaskController.StopMovementWhenControlGained();
+                taskControler.StopMovementWhenControlGained();
             }
 
             if (resume)

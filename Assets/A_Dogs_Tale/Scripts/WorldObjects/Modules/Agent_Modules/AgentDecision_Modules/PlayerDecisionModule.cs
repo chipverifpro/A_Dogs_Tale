@@ -34,7 +34,7 @@ namespace DogGame.Modules
         public WorldObject currentDestinationObject = null;
         public Vector3? currentManualWorldMoveDir = null;
 
-        AgentTaskController agentTaskController = null;
+        TaskControler taskControler = null;
 
     private void Start()
     {
@@ -62,7 +62,7 @@ namespace DogGame.Modules
             Debug.LogError($"[PlayerInputStateDebugger] gameInputRouter.InputState is null.", this);
         }
 
-        agentTaskController = worldObject.GetComponent<AgentTaskController>();
+        taskControler = worldObject.GetComponent<TaskControler>();
 
     }
 
@@ -118,10 +118,10 @@ namespace DogGame.Modules
                 return;
             }
 
-            if (agentTaskController != null && agentTaskController.IsDrivingMovement)
+            if (taskControler != null && taskControler.IsDrivingMovement)
             {
-                //Debug.Log("agentTaskController is driving movement.");
-                agentTaskController.Tick(deltaTime);
+                //Debug.Log("taskControler is driving movement.");
+                taskControler.Tick(deltaTime);
                 //return; // IMPORTANT: don't also write motion inputs this tick
             }
 
@@ -143,7 +143,7 @@ namespace DogGame.Modules
             HandleOneShotActions(inputState);
 
             // Only do player controlled movement if LLM isn't driving movement
-            if (!(agentTaskController != null && agentTaskController.IsDrivingMovement))
+            if (!(taskControler != null && taskControler.IsDrivingMovement))
             {
                 //Debug.Log("PlayerDecisionModule is driving movement.");
                 HandleMovement(inputState, deltaTime);
@@ -341,7 +341,7 @@ namespace DogGame.Modules
         {
             if (targetWorldObject != null)
             {
-                agentTaskController.Submit(new TaskRequest(
+                taskControler.Submit(new TaskRequest(
                     task: new Task_MoveToObject(targetWorldObject, stopRadius: 0.6f),
                     priority: 100,
                     source: TaskSource.Player,
@@ -355,7 +355,7 @@ namespace DogGame.Modules
         public void SubmitMoveToTargetPositionTask(Vector3 targetLocation)
         {
             {
-                agentTaskController.Submit(new TaskRequest(
+                taskControler.Submit(new TaskRequest(
                     task: new Task_MoveToLocation(targetLocation.x, targetLocation.z, stopRadius: 0.6f),
                     priority: 100,
                     source: TaskSource.Player,
@@ -489,7 +489,7 @@ namespace DogGame.Modules
         // Run this when THIS decision module becomes active
         public override void BeginDecisionModule(bool resume=false)
         {
-            if (!(agentTaskController != null && agentTaskController.IsDrivingMovement))
+            if (!(taskControler != null && taskControler.IsDrivingMovement))
             {
                 Debug.Log("LLM was still driving movement when Player took over.");
             }

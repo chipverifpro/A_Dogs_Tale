@@ -29,7 +29,7 @@ namespace DogGame.LLM
         // Core runtime
         private TaskExecutor executor = null!;
         private TaskContext context = null!;
-        private AgentTaskController controller = null!;
+        private TaskControler controller = null!;
 
         // Async state
         private float nextEligibleRequestTime;
@@ -41,9 +41,9 @@ namespace DogGame.LLM
         {
             agentId = worldObject.DisplayName;
 
-            controller = GetComponent<AgentTaskController>();
+            controller = GetComponent<TaskControler>();
             if (controller == null)
-                controller = gameObject.AddComponent<AgentTaskController>();
+                controller = gameObject.AddComponent<TaskControler>();
                 
             executor = controller.taskExecutor; //new TaskExecutor(controller.taskQueue);
 
