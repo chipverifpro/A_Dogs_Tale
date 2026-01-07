@@ -8,11 +8,11 @@ namespace DogGame.Tasks
     /// Adapter used by tasks. It does NOT integrate movement.
     /// It only writes movement intent into AgentMovementModule.
     /// </summary>
-    public sealed class MotionModuleMovementAdapter : IAgentMovementAdapter
+    public sealed class MotionAdapter : IAgentMovementAdapter
     {
         private readonly WorldObject worldObject;
 
-        public MotionModuleMovementAdapter(WorldObject worldObject)
+        public MotionAdapter(WorldObject worldObject)
         {
             this.worldObject = worldObject;
         }

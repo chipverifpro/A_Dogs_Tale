@@ -1,12 +1,13 @@
 #nullable enable
 using System.Collections.Generic;
 using UnityEngine;
+using DogGame.LLM;
 
-namespace DogGame.LLM
+namespace DogGame.Tasks
 {
-    public sealed class AgentTaskExecutor
+    public sealed class TaskExecutor
     {
-        private readonly AgentTaskQueue taskQueue;
+        private readonly TaskQueue taskQueue;
 
         private TaskRequest? currentRequest;
         private IAgentTask? currentTask;
@@ -21,27 +22,27 @@ namespace DogGame.LLM
         public int CurrentPriority => currentRequest?.Priority ?? -1;
         public int SuspendedCount => suspended.Count;
 
-        public AgentTaskExecutor(AgentTaskQueue taskQueue)
+        public TaskExecutor(TaskQueue taskQueue)
         {
             this.taskQueue = taskQueue;
         }
 
         private int debugDoubleTick = -1;
 
-        public void Tick(AgentTaskContext context, float deltaTimeSeconds)
+        public void Tick(TaskContext context, float deltaTimeSeconds)
         {
             if (debugDoubleTick == Time.frameCount)
-                Debug.LogError("ERROR: AgentTaskExecutor.Tick run more than once per frame");
+                Debug.LogError("ERROR: TaskExecutor.Tick run more than once per frame");
             debugDoubleTick = Time.frameCount;
 
-            //Debug.Log($"AgentTaskExecutor.Tick: taskQueue = {taskQueue.Count}");
+            //Debug.Log($"TaskExecutor.Tick: taskQueue = {taskQueue.Count}");
             // Acquire next task if none is running (prefer suspended over queued)
             if (currentTask == null)
             {
                 if (!TryAcquireNextRequest(out var next))
                     return;
 
-                Debug.Log($"AgentTaskExecutor.Tick: Begin Task: {next.Task.DebugName}");
+                Debug.Log($"TaskExecutor.Tick: Begin Task: {next.Task.DebugName}");
                 BeginRequest(next);
             }
 
@@ -87,7 +88,7 @@ namespace DogGame.LLM
         /// Attempt to interrupt the currently running task with a new request.
         /// If successful, the new request becomes current immediately.
         /// </summary>
-        public bool TryInterruptWith(AgentTaskContext context, TaskRequest incoming)
+        public bool TryInterruptWith(TaskContext context, TaskRequest incoming)
         {
             // If nothing is running, just start immediately.
             if (currentTask == null || currentRequest == null)
@@ -126,7 +127,7 @@ namespace DogGame.LLM
         /// <summary>
         /// Push the current request onto the suspended stack and stop it (so it can be resumed later).
         /// </summary>
-        public bool SuspendCurrent(AgentTaskContext context)
+        public bool SuspendCurrent(TaskContext context)
         {
             if (currentRequest == null || currentTask == null)
                 return false;
@@ -163,7 +164,7 @@ namespace DogGame.LLM
         /// Clears all queued and suspended tasks and stops the current task.
         /// Useful for player takeover / panic / reset.
         /// </summary>
-        public void ClearAll(AgentTaskContext context)
+        public void ClearAll(TaskContext context)
         {
             taskQueue.Clear();
             suspended.Clear();
@@ -188,7 +189,7 @@ namespace DogGame.LLM
             currentTaskStarted = false;
         }
 
-        private void EndCurrentTask(AgentTaskContext context, bool succeeded)
+        private void EndCurrentTask(TaskContext context, bool succeeded)
         {
             SafeStop(context);
 
@@ -203,7 +204,7 @@ namespace DogGame.LLM
             // prefers suspended tasks over queued tasks.
         }
 
-        private void StopAndForgetCurrent(AgentTaskContext context)
+        private void StopAndForgetCurrent(TaskContext context)
         {
             if (currentTask == null)
                 return;
@@ -216,7 +217,7 @@ namespace DogGame.LLM
             currentTaskStarted = false;
         }
 
-        private void SafeStop(AgentTaskContext context)
+        private void SafeStop(TaskContext context)
         {
             try
             {

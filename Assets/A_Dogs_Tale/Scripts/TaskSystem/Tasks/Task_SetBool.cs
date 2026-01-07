@@ -15,12 +15,12 @@ namespace DogGame.Tasks
             this.value = value;
         }
 
-        public void Start(AgentTaskContext context) { }
-        public TaskTickResult Tick(AgentTaskContext context, float dt)
+        public void Start(TaskContext context) { }
+        public TaskTickResult Tick(TaskContext context, float dt)
         {
             context.Blackboard.SetBool(key, value);
             return TaskTickResult.Succeeded();
         }
-        public void Stop(AgentTaskContext context) { }
+        public void Stop(TaskContext context) { }
     }
 }

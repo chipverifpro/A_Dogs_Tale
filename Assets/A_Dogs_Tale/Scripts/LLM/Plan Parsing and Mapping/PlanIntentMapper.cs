@@ -10,7 +10,7 @@ namespace DogGame.LLM
         // Reasonable default for LLM-generated "chosen behaviors"
         private const int DefaultLlmPriority = 60;
 
-        public static bool TryEnqueueTasksFromPlan(PlanResponseV1 plan, AgentTaskQueue queue, out string? error)
+        public static bool TryEnqueueTasksFromPlan(PlanResponseV1 plan, TaskQueue queue, out string? error)
         {
             error = null;
 

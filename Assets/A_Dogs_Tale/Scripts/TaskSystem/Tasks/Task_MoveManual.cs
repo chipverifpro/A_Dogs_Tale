@@ -18,12 +18,12 @@ namespace DogGame.Tasks
             this.maxSpeed = Mathf.Max(0.1f, maxSpeed);
         }
 
-        public void Start(AgentTaskContext context)
+        public void Start(TaskContext context)
         {
             // no-op
         }
 
-        public TaskTickResult Tick(AgentTaskContext context, float deltaTimeSeconds)
+        public TaskTickResult Tick(TaskContext context, float deltaTimeSeconds)
         {
             Vector2 move = readMoveInput();
 
@@ -41,7 +41,7 @@ namespace DogGame.Tasks
             return TaskTickResult.Running();
         }
 
-        public void Stop(AgentTaskContext context)
+        public void Stop(TaskContext context)
         {
             context.Agent.agentMovementModule.SetDesiredVelocity(Vector3.zero);
             context.Movement.StopMoving();

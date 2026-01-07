@@ -14,16 +14,16 @@ namespace DogGame.Tasks
             this.emote = string.IsNullOrWhiteSpace(emote) ? "emote" : emote.Trim();
         }
 
-        public void Start(AgentTaskContext context)
+        public void Start(TaskContext context)
         {
             Debug.Log($"[{context.AgentId}] EMOTE: {emote}");
         }
 
-        public TaskTickResult Tick(AgentTaskContext context, float deltaTimeSeconds)
+        public TaskTickResult Tick(TaskContext context, float deltaTimeSeconds)
         {
             return TaskTickResult.Succeeded();
         }
 
-        public void Stop(AgentTaskContext context) { }
+        public void Stop(TaskContext context) { }
     }
 }

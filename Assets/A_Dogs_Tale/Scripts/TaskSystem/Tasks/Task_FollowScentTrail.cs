@@ -73,7 +73,7 @@ namespace DogGame.Tasks
             if (dir == null) dir = Object.FindFirstObjectByType<Directory>();
         }
 
-        public void Start(AgentTaskContext context)
+        public void Start(TaskContext context)
         {
             stepsTaken = 0;
             nextRepickTime = 0f;
@@ -87,7 +87,7 @@ namespace DogGame.Tasks
         }
 
         private int debugDoubleTick = -1;
-        public TaskTickResult Tick(AgentTaskContext context, float deltaTimeSeconds)
+        public TaskTickResult Tick(TaskContext context, float deltaTimeSeconds)
         {
             // Ensure this isn't being called more than once per frame:
             if (debugDoubleTick == Time.frameCount)
@@ -157,7 +157,7 @@ namespace DogGame.Tasks
             return TaskTickResult.Running();
         }
 
-        public void Stop(AgentTaskContext context)
+        public void Stop(TaskContext context)
         {
             context.Movement.StopMoving();
         }

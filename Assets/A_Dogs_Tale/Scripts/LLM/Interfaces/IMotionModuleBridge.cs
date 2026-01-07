@@ -5,7 +5,7 @@ using UnityEngine;
 //
 //Who uses it
 //	•	Implemented by: WorldObjectMotionBridge (or the newer “intent bridge” if you move to Option B)
-//	•	Used by: your movement adapter (MotionModuleMovementAdapter) and possibly tasks like Task_MoveToCell
+//	•	Used by: your movement adapter (MotionAdapter) and possibly tasks like Task_MoveToCell
 //
 //Why it’s necessary
 //

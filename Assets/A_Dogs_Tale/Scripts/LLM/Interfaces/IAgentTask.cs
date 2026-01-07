@@ -1,4 +1,5 @@
 #nullable enable
+using DogGame.Tasks;
 using UnityEngine;
 
 namespace DogGame.LLM
@@ -8,8 +9,8 @@ namespace DogGame.LLM
 //Who uses it
 //	•	Implemented by: Task_MoveToCell, Task_Wait, future tasks like
 //      Task_Bark, Task_Sniff, Task_Branch, etc.
-//	•	Consumed by: AgentTaskExecutor (it runs Start/Tick/Stop)
-//	•	Stored by: AgentTaskQueue
+//	•	Consumed by: TaskExecutor (it runs Start/Tick/Stop)
+//	•	Stored by: TaskQueue
 //
 //  Why it’s necessary
 //      It gives you a single contract so any producer (Player, Wander AI,
@@ -23,29 +24,29 @@ namespace DogGame.LLM
         string DebugName { get; }
 
         /// <summary>Called once before Tick begins.</summary>
-        void Start(AgentTaskContext context);
+        void Start(TaskContext context);
 
         /// <summary>Called every AI tick until succeeded/failed.</summary>
-        TaskTickResult Tick(AgentTaskContext context, float deltaTimeSeconds);
+        TaskTickResult Tick(TaskContext context, float deltaTimeSeconds);
 
         /// <summary>Called once when the task is ended (success or fail).</summary>
-        void Stop(AgentTaskContext context);
+        void Stop(TaskContext context);
     }
 
     /// <summary>
     /// A small context object you can expand later (agent references, world, nav, etc.)
     /// </summary>
-    public sealed class AgentTaskContext
+    public sealed class TaskContext
     {
         public readonly string AgentId;
         public readonly Transform AgentTransform;
         public readonly WorldObject Agent;
 
         public readonly IAgentMovementAdapter Movement;
-        public readonly IBlackboard blackboard;
+        public readonly IBlackboard Blackboard;
         public Vector2Int CurrentCellPos => new Vector2Int((int)AgentTransform.position.x,(int)AgentTransform.position.z);
         
-        public AgentTaskContext(string agentId, WorldObject worldObject, Transform agentTransform, IAgentMovementAdapter movement, IBlackboard blackboard))
+        public TaskContext(string agentId, WorldObject worldObject, Transform agentTransform, IAgentMovementAdapter movement, IBlackboard blackboard)
         {
             AgentId = agentId;
             Agent = worldObject;

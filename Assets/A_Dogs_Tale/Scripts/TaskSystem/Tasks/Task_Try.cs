@@ -49,14 +49,14 @@ namespace DogGame.Tasks
             this.onSuccess = onSuccess;
         }
 
-        public void Start(AgentTaskContext context)
+        public void Start(TaskContext context)
         {
             phase = Phase.Try;
             current = tryTask;
             currentStarted = false;
         }
 
-        public TaskTickResult Tick(AgentTaskContext context, float deltaTimeSeconds)
+        public TaskTickResult Tick(TaskContext context, float deltaTimeSeconds)
         {
             if (phase == Phase.Done || current == null)
                 return TaskTickResult.Succeeded();
@@ -116,7 +116,7 @@ namespace DogGame.Tasks
             return HandleCurrentFailure(context, result.FailureReason ?? "try_failed");
         }
 
-        public void Stop(AgentTaskContext context)
+        public void Stop(TaskContext context)
         {
             SafeStopCurrent(context);
             phase = Phase.Done;
@@ -124,7 +124,7 @@ namespace DogGame.Tasks
             currentStarted = false;
         }
 
-        private TaskTickResult HandleCurrentFailure(AgentTaskContext context, string reason)
+        private TaskTickResult HandleCurrentFailure(TaskContext context, string reason)
         {
             if (phase == Phase.Try)
             {
@@ -157,7 +157,7 @@ namespace DogGame.Tasks
             return TaskTickResult.Failed(reason);
         }
 
-        private void SafeStopCurrent(AgentTaskContext context)
+        private void SafeStopCurrent(TaskContext context)
         {
             try
             {

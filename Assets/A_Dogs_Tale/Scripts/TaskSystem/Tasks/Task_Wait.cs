@@ -18,14 +18,14 @@ namespace DogGame.Tasks
             Debug.Log(DebugName);
         }
 
-        public void Start(AgentTaskContext context)
+        public void Start(TaskContext context)
         {
             remainingSeconds = durationSeconds;
             context.Movement.StopMoving();
         }
 
         private int debugDoubleTick = -1;
-        public TaskTickResult Tick(AgentTaskContext context, float deltaTimeSeconds)
+        public TaskTickResult Tick(TaskContext context, float deltaTimeSeconds)
         {
             // Ensure this isn't being called more than once per frame:
             if (debugDoubleTick == Time.frameCount)
@@ -36,7 +36,7 @@ namespace DogGame.Tasks
             return remainingSeconds <= 0f ? TaskTickResult.Succeeded() : TaskTickResult.Running();
         }
 
-        public void Stop(AgentTaskContext context)
+        public void Stop(TaskContext context)
         {
             // no-op
         }

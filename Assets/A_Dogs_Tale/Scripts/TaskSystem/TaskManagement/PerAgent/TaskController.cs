@@ -14,17 +14,17 @@ namespace DogGame.LLM
         [Header("Queue behavior")]
         [SerializeField] private bool clearQueueOnNewPlan = true;
 
-        public AgentTaskQueue TaskQueue { get; private set; } = null!;
-        public AgentTaskExecutor Executor { get; private set; } = null!;
-        public AgentTaskContext Context { get; private set; } = null!;
+        public TaskQueue taskQueue { get; private set; } = null!;
+        public TaskExecutor taskExecutor { get; private set; } = null!;
+        public TaskContext taskContext { get; private set; } = null!;
 
         /// <summary>
         /// True when task control is active (either running a task or tasks are queued/suspended).
         /// </summary>
-        public bool IsDriving => Executor.HasTask || TaskQueue.Count > 0 || Executor.SuspendedCount > 0;
+        public bool IsDriving => taskExecutor.HasTask || taskQueue.Count > 0 || taskExecutor.SuspendedCount > 0;
         public bool IsDrivingMovement => IsDriving;
 
-        private MotionModuleMovementAdapter? motionAdapter;
+        private MotionAdapter? motionAdapter;
 
         private DogGame.Tasks.IBlackboard blackboard = null!;
 
@@ -48,14 +48,14 @@ namespace DogGame.LLM
             // Use DisplayName as agent id by default
             agentId = worldObject.DisplayName;
 
-            TaskQueue = new AgentTaskQueue();
-            Executor  = new AgentTaskExecutor(TaskQueue);
+            taskQueue = new TaskQueue();
+            taskExecutor  = new TaskExecutor(taskQueue);
 
         
             // Movement adapter used by tasks (intent-level; no per-frame Tick here)
-            motionAdapter = new MotionModuleMovementAdapter(worldObject: worldObject);
+            motionAdapter = new MotionAdapter(worldObject: worldObject);
 
-            Context = new AgentTaskContext(agentId, worldObject, transform, motionAdapter, blackboard);
+            taskContext = new TaskContext(agentId, worldObject, transform, motionAdapter, blackboard);
         }
 
         public bool TryApplyPlanJson(string planResponseJson)
@@ -76,10 +76,10 @@ namespace DogGame.LLM
             if (clearQueueOnNewPlan)
             {
                 // Cancel all execution state + queued tasks, not just the queue list.
-                Executor.ClearAll(Context);
+                taskExecutor.ClearAll(taskContext);
             }
 
-            if (!PlanIntentMapper.TryEnqueueTasksFromPlan(plan, TaskQueue, out var error))
+            if (!PlanIntentMapper.TryEnqueueTasksFromPlan(plan, taskQueue, out var error))
             {
                 Debug.LogWarning("Plan mapped to zero tasks: " + error);
                 return false;
@@ -98,7 +98,7 @@ namespace DogGame.LLM
             if (isDrivingMovementNow && !wasDrivingMovementLastTick)
             {
                 Debug.Log("AgentTaskController: Stop movement when task control gains control.");
-                Context.Movement.StopMoving();
+                taskContext.Movement.StopMoving();
             }
 
             wasDrivingMovementLastTick = isDrivingMovementNow;
@@ -122,18 +122,18 @@ namespace DogGame.LLM
 
             StopMovementWhenControlGained();
 
-            Executor.Tick(Context, deltaTimeSeconds);
+            taskExecutor.Tick(taskContext, deltaTimeSeconds);
         }
 
         public void CancelAllTasks()
         {
-            Executor.ClearAll(Context);
+            taskExecutor.ClearAll(taskContext);
         }
 
         public void Submit(TaskRequest request)
         {
-            if (!Executor.TryInterruptWith(Context, request))
-                TaskQueue.Enqueue(request);
+            if (!taskExecutor.TryInterruptWith(taskContext, request))
+                taskQueue.Enqueue(request);
         }
     }
 }

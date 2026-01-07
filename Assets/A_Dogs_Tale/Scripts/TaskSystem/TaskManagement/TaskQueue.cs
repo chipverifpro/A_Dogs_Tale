@@ -1,9 +1,10 @@
 #nullable enable
 using System.Collections.Generic;
+using DogGame.LLM;
 
-namespace DogGame.LLM
+namespace DogGame.Tasks
 {
-    public sealed class AgentTaskQueue
+    public sealed class TaskQueue
     {
         private readonly List<TaskRequest> queued = new();
 

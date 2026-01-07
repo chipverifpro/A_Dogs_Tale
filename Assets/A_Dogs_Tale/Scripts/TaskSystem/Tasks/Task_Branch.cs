@@ -13,10 +13,10 @@ namespace DogGame.Tasks
     {
         public string DebugName { get; }
 
-        private readonly Func<AgentTaskContext, bool> condition;
+        private readonly Func<TaskContext, bool> condition;
         private readonly IAgentTask[] thenTasks;
         private readonly IAgentTask[] elseTasks;
-        private readonly AgentTaskQueue queue;
+        private readonly TaskQueue queue;
 
         private readonly int branchPriority;
         private readonly TaskSource branchSource;
@@ -25,8 +25,8 @@ namespace DogGame.Tasks
         private bool evaluated;
 
         public Task_Branch(
-            AgentTaskQueue queue,
-            Func<AgentTaskContext, bool> condition,
+            TaskQueue queue,
+            Func<TaskContext, bool> condition,
             IAgentTask[] thenTasks,
             IAgentTask[] elseTasks,
             string debugName = "Branch",
@@ -46,12 +46,12 @@ namespace DogGame.Tasks
             this.branchTag = branchTag;
         }
 
-        public void Start(AgentTaskContext context)
+        public void Start(TaskContext context)
         {
             // No-op; we evaluate in Tick so it's consistent with "runtime" branching.
         }
 
-        public TaskTickResult Tick(AgentTaskContext context, float deltaTimeSeconds)
+        public TaskTickResult Tick(TaskContext context, float deltaTimeSeconds)
         {
             if (evaluated)
                 return TaskTickResult.Succeeded();
@@ -95,7 +95,7 @@ namespace DogGame.Tasks
             return TaskTickResult.Succeeded();
         }
 
-        public void Stop(AgentTaskContext context)
+        public void Stop(TaskContext context)
         {
             // No-op. We don't own any running subtask.
         }

@@ -18,12 +18,12 @@ namespace DogGame.Tasks
             this.stopRadius = Mathf.Clamp(stopRadius, 0.05f, 5.0f);
         }
 
-        public void Start(AgentTaskContext context)
+        public void Start(TaskContext context)
         {
             // no-op
         }
 
-        public TaskTickResult Tick(AgentTaskContext context, float deltaTimeSeconds)
+        public TaskTickResult Tick(TaskContext context, float deltaTimeSeconds)
         {
             if (target == null || target.locationModule == null)
                 return TaskTickResult.Failed("target_missing");
@@ -37,7 +37,7 @@ namespace DogGame.Tasks
             return TaskTickResult.Running();
         }
 
-        public void Stop(AgentTaskContext context)
+        public void Stop(TaskContext context)
         {
             context.Movement.StopMoving();
         }

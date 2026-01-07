@@ -18,13 +18,13 @@ namespace DogGame.Tasks
             this.timeoutSeconds = Mathf.Max(0.01f, timeoutSeconds);
         }
 
-        public void Start(AgentTaskContext context)
+        public void Start(TaskContext context)
         {
             elapsed = 0f;
             child.Start(context);
         }
 
-        public TaskTickResult Tick(AgentTaskContext context, float dt)
+        public TaskTickResult Tick(TaskContext context, float dt)
         {
             elapsed += Mathf.Max(0f, dt);
             if (elapsed >= timeoutSeconds)
@@ -33,6 +33,6 @@ namespace DogGame.Tasks
             return child.Tick(context, dt);
         }
 
-        public void Stop(AgentTaskContext context) => child.Stop(context);
+        public void Stop(TaskContext context) => child.Stop(context);
     }
 }

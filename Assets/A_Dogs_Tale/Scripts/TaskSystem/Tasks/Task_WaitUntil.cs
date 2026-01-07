@@ -9,23 +9,23 @@ namespace DogGame.Tasks
     {
         public string DebugName => $"WaitUntil(timeout={timeoutSeconds:0.0}s)";
 
-        private readonly Func<AgentTaskContext, bool> predicate;
+        private readonly Func<TaskContext, bool> predicate;
         private readonly float timeoutSeconds;
 
         private float elapsed;
 
-        public Task_WaitUntil(Func<AgentTaskContext, bool> predicate, float timeoutSeconds = 2.0f)
+        public Task_WaitUntil(Func<TaskContext, bool> predicate, float timeoutSeconds = 2.0f)
         {
             this.predicate = predicate ?? throw new ArgumentNullException(nameof(predicate));
             this.timeoutSeconds = Mathf.Max(0.01f, timeoutSeconds);
         }
 
-        public void Start(AgentTaskContext context)
+        public void Start(TaskContext context)
         {
             elapsed = 0f;
         }
 
-        public TaskTickResult Tick(AgentTaskContext context, float deltaTimeSeconds)
+        public TaskTickResult Tick(TaskContext context, float deltaTimeSeconds)
         {
             elapsed += Mathf.Max(0f, deltaTimeSeconds);
 
@@ -48,6 +48,6 @@ namespace DogGame.Tasks
             return TaskTickResult.Running();
         }
 
-        public void Stop(AgentTaskContext context) { }
+        public void Stop(TaskContext context) { }
     }
 }

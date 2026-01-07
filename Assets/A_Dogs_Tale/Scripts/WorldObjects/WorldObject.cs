@@ -154,7 +154,7 @@ public class WorldObject : MonoBehaviour
     public ReactionModule reactionModule { get; private set; }
     
     
-    public AgentTaskExecutor  agentTaskExecutor { get; private set; }
+    public TaskExecutor  taskExecutor { get; private set; }
 
     // Sensory:
     public TasteModule TasteModule { get; private set; }
@@ -300,7 +300,7 @@ public class WorldObject : MonoBehaviour
             //...
 
         // AGENT EXECUTION
-        //agentTaskExecutor?.Tick(context, dt); // needs context
+        //taskExecutor?.Tick(context, dt); // needs context
 
         // AGENT INTERFACE
         agentMovementModule?.Tick(dt);

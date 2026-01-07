@@ -1,11 +1,10 @@
 using System.Collections.Generic;
-using DogGame.Tasks;
 using UnityEngine;
 
 namespace DogGame.Modules
 {
     [DisallowMultipleComponent]
-    public class BlackboardModule : WorldModule, IBlackboard;
+    public class BlackboardModule : WorldModule
     {
         private readonly Dictionary<string, object> data = new();
 

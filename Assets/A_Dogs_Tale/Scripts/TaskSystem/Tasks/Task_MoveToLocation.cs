@@ -23,13 +23,13 @@ namespace DogGame.Tasks
             Debug.Log(DebugName);
         }
 
-        public void Start(AgentTaskContext context)
+        public void Start(TaskContext context)
         {
             destinationWorld = context.Movement.CellToWorld((int)mapX, (int)mapY);  // TODO: change these back to float, and include height
         }
 
         private int debugDoubleTick = -1;
-        public TaskTickResult Tick(AgentTaskContext context, float deltaTimeSeconds)
+        public TaskTickResult Tick(TaskContext context, float deltaTimeSeconds)
         {
             // Ensure this isn't being called more than once per frame:
             if (debugDoubleTick == Time.frameCount)
@@ -47,7 +47,7 @@ namespace DogGame.Tasks
             return TaskTickResult.Running();
         }
 
-        public void Stop(AgentTaskContext context)
+        public void Stop(TaskContext context)
         {
             // executor stops movement for us
         }

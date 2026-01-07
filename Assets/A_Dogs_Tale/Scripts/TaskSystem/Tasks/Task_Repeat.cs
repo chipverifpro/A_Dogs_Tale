@@ -18,14 +18,14 @@ namespace DogGame.Tasks
             this.repeatCount = repeatCount <= 0 ? 0 : repeatCount;
         }
 
-        public void Start(AgentTaskContext context)
+        public void Start(TaskContext context)
         {
             completed = 0;
             if (repeatCount > 0)
                 child.Start(context);
         }
 
-        public TaskTickResult Tick(AgentTaskContext context, float dt)
+        public TaskTickResult Tick(TaskContext context, float dt)
         {
             if (repeatCount == 0) return TaskTickResult.Succeeded();
 
@@ -47,7 +47,7 @@ namespace DogGame.Tasks
             return TaskTickResult.Running();
         }
 
-        public void Stop(AgentTaskContext context)
+        public void Stop(TaskContext context)
         {
             child.Stop(context);
         }

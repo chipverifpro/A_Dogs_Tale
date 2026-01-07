@@ -32,7 +32,7 @@ namespace DogGame.Tasks
             stepIndex = 0;
         }
 
-        public void Start(AgentTaskContext context)
+        public void Start(TaskContext context)
         {
             stepIndex = 0;
             currentStep = null;
@@ -42,7 +42,7 @@ namespace DogGame.Tasks
                 currentStep = steps[0];
         }
 
-        public TaskTickResult Tick(AgentTaskContext context, float deltaTimeSeconds)
+        public TaskTickResult Tick(TaskContext context, float deltaTimeSeconds)
         {
             if (steps.Count == 0)
                 return TaskTickResult.Succeeded();
@@ -102,14 +102,14 @@ namespace DogGame.Tasks
             return TaskTickResult.Running();
         }
 
-        public void Stop(AgentTaskContext context)
+        public void Stop(TaskContext context)
         {
             SafeStopCurrent(context);
             currentStep = null;
             currentStepStarted = false;
         }
 
-        private void SafeStopCurrent(AgentTaskContext context)
+        private void SafeStopCurrent(TaskContext context)
         {
             try
             {

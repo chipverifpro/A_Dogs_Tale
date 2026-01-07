@@ -15,9 +15,9 @@ namespace DogGame.Tasks
             this.walkMode = walkMode;
         }
 
-        public void Start(AgentTaskContext context) { }
+        public void Start(TaskContext context) { }
 
-        public TaskTickResult Tick(AgentTaskContext context, float deltaTimeSeconds)
+        public TaskTickResult Tick(TaskContext context, float deltaTimeSeconds)
         {
             if (context.Agent == null || context.Agent.agentMovementModule == null)
                 return TaskTickResult.Failed("missing_agent_movement_module");
@@ -26,6 +26,6 @@ namespace DogGame.Tasks
             return TaskTickResult.Succeeded();
         }
 
-        public void Stop(AgentTaskContext context) { }
+        public void Stop(TaskContext context) { }
     }
 }

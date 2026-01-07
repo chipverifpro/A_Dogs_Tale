@@ -2,9 +2,11 @@
 using System;
 using UnityEngine;
 using DogGame.Modules;
+using DogGame.Tasks;
 
 namespace DogGame.LLM
 {
+    
     /// <summary>
     /// Async plan driver: periodically requests a plan (fake LLM for now),
     /// receives JSON later, validates, maps to tasks, executes tasks.
@@ -25,8 +27,8 @@ namespace DogGame.LLM
         [SerializeField] private Vector2 simulatedLatencyRangeSeconds = new(0.4f, 1.4f);
 
         // Core runtime
-        private AgentTaskExecutor executor = null!;
-        private AgentTaskContext context = null!;
+        private TaskExecutor executor = null!;
+        private TaskContext context = null!;
         private AgentTaskController controller = null!;
 
         // Async state
@@ -43,11 +45,11 @@ namespace DogGame.LLM
             if (controller == null)
                 controller = gameObject.AddComponent<AgentTaskController>();
                 
-            executor = new AgentTaskExecutor(controller.TaskQueue);
+            executor = controller.taskExecutor; //new TaskExecutor(controller.taskQueue);
 
             // Keep the simple adapter for now; later replace with your real movement adapter.
             var movement = new SimpleMovementAdapter(transform, moveSpeed: 2.5f, cellSize: 1.0f, gridOrigin: Vector3.zero);
-            context = new AgentTaskContext(agentId, worldObject, transform, movement);
+            context = controller.taskContext; //new TaskContext(agentId, worldObject, transform, movement);
 
             // Ensure we have a FakeLLMService on this object (or add one).
             fakeService = GetComponent<FakeLLMService>();
@@ -91,7 +93,7 @@ namespace DogGame.LLM
 
             if (requestOnlyWhenIdle)
             {
-                bool idle = !executor.HasTask && controller.TaskQueue.Count == 0;
+                bool idle = !executor.HasTask && controller.taskQueue.Count == 0;
                 if (!idle)
                     return false;
             }
@@ -109,7 +111,7 @@ namespace DogGame.LLM
 
             float priority =
                 executor.HasTask ? 0.2f :
-                controller.TaskQueue.Count == 0 ? 0.8f :
+                controller.taskQueue.Count == 0 ? 0.8f :
                 0.4f;
 
             var request = new LLMPlanRequest(

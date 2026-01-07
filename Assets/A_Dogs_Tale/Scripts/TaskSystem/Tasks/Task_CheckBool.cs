@@ -15,9 +15,9 @@ namespace DogGame.Tasks
             this.expected = expected;
         }
 
-        public void Start(AgentTaskContext context) { }
+        public void Start(TaskContext context) { }
 
-        public TaskTickResult Tick(AgentTaskContext context, float dt)
+        public TaskTickResult Tick(TaskContext context, float dt)
         {
             if (!context.Blackboard.TryGetBool(key, out var v))
                 return TaskTickResult.Failed("missing_key");
@@ -25,6 +25,6 @@ namespace DogGame.Tasks
             return v == expected ? TaskTickResult.Succeeded() : TaskTickResult.Failed("bool_mismatch");
         }
 
-        public void Stop(AgentTaskContext context) { }
+        public void Stop(TaskContext context) { }
     }
 }

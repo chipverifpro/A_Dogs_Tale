@@ -1,6 +1,7 @@
 #nullable enable
+using DogGame.LLM;
 
-namespace DogGame.LLM
+namespace DogGame.Tasks
 {
     public enum TaskSource
     {
