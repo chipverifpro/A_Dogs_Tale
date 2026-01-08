@@ -1,7 +1,6 @@
 using UnityEngine;
 using System.Linq;
 using DogGame.AI;
-using System;
 using Unity.Tutorials.Core.Editor;
 
 // ----- Not a BASE CLASS -----

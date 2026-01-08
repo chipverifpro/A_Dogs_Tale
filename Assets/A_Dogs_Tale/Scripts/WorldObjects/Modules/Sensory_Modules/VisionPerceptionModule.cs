@@ -11,7 +11,6 @@
 using System.Collections.Generic;
 using UnityEngine;
 using DogGame.AI.Perception;
-using JetBrains.Annotations;
 
 namespace DogGame.Modules
 {
