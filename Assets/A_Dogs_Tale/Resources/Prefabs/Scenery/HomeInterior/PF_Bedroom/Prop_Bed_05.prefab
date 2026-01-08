@@ -12,8 +12,8 @@ GameObject:
   - component: {fileID: 7716418592344887620}
   - component: {fileID: 5544721253761230222}
   - component: {fileID: 6571696593284479252}
-  - component: {fileID: 1323107578927843956}
   - component: {fileID: 6881180721039277663}
+  - component: {fileID: 1666685591652709922}
   m_Layer: 0
   m_Name: Prop_Bed_05
   m_TagString: Untagged
@@ -91,6 +91,7 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
 --- !u!64 &6571696593284479252
 MeshCollider:
@@ -114,21 +115,6 @@ MeshCollider:
   m_Convex: 1
   m_CookingOptions: 30
   m_Mesh: {fileID: -1647199370844907541, guid: 017e3451612d9ca41a1189fb1377da54, type: 3}
---- !u!114 &1323107578927843956
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6337183607648453723}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a84846d553e584223b8e8df5ef2d7381, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::VisualModule
-  debugMode: 0
-  mainRenderer: {fileID: 5544721253761230222}
-  extraRenderers: []
 --- !u!114 &6881180721039277663
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -150,3 +136,19 @@ MonoBehaviour:
   minClearCellsAround: 0
   mustTouchWall: 0
   wallPadding: 0.05
+--- !u!114 &1666685591652709922
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6337183607648453723}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b112db3959c164550975dd26677f8e8e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::WorldObject
+  objectId: -1
+  displayName: Prop_Bed_05
+  kind: 0
+  autoRegister: 1

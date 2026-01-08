@@ -8,47 +8,58 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: -8679921383154817045, guid: 9678867179a79814da43ac1d3c9b12cc, type: 3}
+    - target: {fileID: -8679921383154817045, guid: 9678867179a79814da43ac1d3c9b12cc,
+        type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 9678867179a79814da43ac1d3c9b12cc, type: 3}
+    - target: {fileID: -8679921383154817045, guid: 9678867179a79814da43ac1d3c9b12cc,
+        type: 3}
       propertyPath: m_LocalPosition.y
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 9678867179a79814da43ac1d3c9b12cc, type: 3}
+    - target: {fileID: -8679921383154817045, guid: 9678867179a79814da43ac1d3c9b12cc,
+        type: 3}
       propertyPath: m_LocalPosition.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 9678867179a79814da43ac1d3c9b12cc, type: 3}
+    - target: {fileID: -8679921383154817045, guid: 9678867179a79814da43ac1d3c9b12cc,
+        type: 3}
       propertyPath: m_LocalRotation.w
       value: 1
       objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 9678867179a79814da43ac1d3c9b12cc, type: 3}
+    - target: {fileID: -8679921383154817045, guid: 9678867179a79814da43ac1d3c9b12cc,
+        type: 3}
       propertyPath: m_LocalRotation.x
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 9678867179a79814da43ac1d3c9b12cc, type: 3}
+    - target: {fileID: -8679921383154817045, guid: 9678867179a79814da43ac1d3c9b12cc,
+        type: 3}
       propertyPath: m_LocalRotation.y
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 9678867179a79814da43ac1d3c9b12cc, type: 3}
+    - target: {fileID: -8679921383154817045, guid: 9678867179a79814da43ac1d3c9b12cc,
+        type: 3}
       propertyPath: m_LocalRotation.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 9678867179a79814da43ac1d3c9b12cc, type: 3}
+    - target: {fileID: -8679921383154817045, guid: 9678867179a79814da43ac1d3c9b12cc,
+        type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 9678867179a79814da43ac1d3c9b12cc, type: 3}
+    - target: {fileID: -8679921383154817045, guid: 9678867179a79814da43ac1d3c9b12cc,
+        type: 3}
       propertyPath: m_LocalEulerAnglesHint.y
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 9678867179a79814da43ac1d3c9b12cc, type: 3}
+    - target: {fileID: -8679921383154817045, guid: 9678867179a79814da43ac1d3c9b12cc,
+        type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 919132149155446097, guid: 9678867179a79814da43ac1d3c9b12cc, type: 3}
+    - target: {fileID: 919132149155446097, guid: 9678867179a79814da43ac1d3c9b12cc,
+        type: 3}
       propertyPath: m_Name
       value: Succulent Plant Pot
       objectReference: {fileID: 0}
@@ -56,16 +67,27 @@ PrefabInstance:
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 9678867179a79814da43ac1d3c9b12cc, type: 3}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 9678867179a79814da43ac1d3c9b12cc,
+        type: 3}
       insertIndex: -1
       addedObject: {fileID: 8282251095091848131}
-    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 9678867179a79814da43ac1d3c9b12cc, type: 3}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 9678867179a79814da43ac1d3c9b12cc,
+        type: 3}
       insertIndex: -1
       addedObject: {fileID: 151547023607905051}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 9678867179a79814da43ac1d3c9b12cc,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: -5901831504034501248}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 9678867179a79814da43ac1d3c9b12cc,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 133524801277185672}
   m_SourcePrefab: {fileID: 100100000, guid: 9678867179a79814da43ac1d3c9b12cc, type: 3}
 --- !u!1 &214205879528928702 stripped
 GameObject:
-  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 9678867179a79814da43ac1d3c9b12cc, type: 3}
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 9678867179a79814da43ac1d3c9b12cc,
+    type: 3}
   m_PrefabInstance: {fileID: 1024686344633452783}
   m_PrefabAsset: {fileID: 0}
 --- !u!114 &8282251095091848131
@@ -102,3 +124,40 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 0.17530203, y: 0.20320277, z: 0.14569724}
   m_Center: {x: -0.00092864037, y: 0.101601385, z: 0.00092858076}
+--- !u!114 &-5901831504034501248
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 214205879528928702}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b112db3959c164550975dd26677f8e8e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::WorldObject
+  objectId: -1
+  displayName: Succulent Plant Pot
+  kind: 0
+  autoRegister: 1
+--- !u!114 &133524801277185672
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 214205879528928702}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3f6cda250b193442c9f59a935c554f95, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.PlacementModule
+  allowedRooms: 335
+  autoSizeFromMesh: 1
+  sizeInCells: {x: 0.2254467, y: 0.23312998, z: 0.2144146}
+  cellSize: 1
+  edgeHint: 0
+  rotationRule: 1
+  minClearCellsAround: 0
+  mustTouchWall: 0
+  wallPadding: 0.05

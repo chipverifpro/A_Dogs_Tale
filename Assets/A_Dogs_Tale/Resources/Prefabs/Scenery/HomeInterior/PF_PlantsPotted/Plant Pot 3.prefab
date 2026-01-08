@@ -8,47 +8,58 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: -8679921383154817045, guid: 179ef439c3665714583b28cc87aa6ebf, type: 3}
+    - target: {fileID: -8679921383154817045, guid: 179ef439c3665714583b28cc87aa6ebf,
+        type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 179ef439c3665714583b28cc87aa6ebf, type: 3}
+    - target: {fileID: -8679921383154817045, guid: 179ef439c3665714583b28cc87aa6ebf,
+        type: 3}
       propertyPath: m_LocalPosition.y
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 179ef439c3665714583b28cc87aa6ebf, type: 3}
+    - target: {fileID: -8679921383154817045, guid: 179ef439c3665714583b28cc87aa6ebf,
+        type: 3}
       propertyPath: m_LocalPosition.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 179ef439c3665714583b28cc87aa6ebf, type: 3}
+    - target: {fileID: -8679921383154817045, guid: 179ef439c3665714583b28cc87aa6ebf,
+        type: 3}
       propertyPath: m_LocalRotation.w
       value: 1
       objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 179ef439c3665714583b28cc87aa6ebf, type: 3}
+    - target: {fileID: -8679921383154817045, guid: 179ef439c3665714583b28cc87aa6ebf,
+        type: 3}
       propertyPath: m_LocalRotation.x
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 179ef439c3665714583b28cc87aa6ebf, type: 3}
+    - target: {fileID: -8679921383154817045, guid: 179ef439c3665714583b28cc87aa6ebf,
+        type: 3}
       propertyPath: m_LocalRotation.y
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 179ef439c3665714583b28cc87aa6ebf, type: 3}
+    - target: {fileID: -8679921383154817045, guid: 179ef439c3665714583b28cc87aa6ebf,
+        type: 3}
       propertyPath: m_LocalRotation.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 179ef439c3665714583b28cc87aa6ebf, type: 3}
+    - target: {fileID: -8679921383154817045, guid: 179ef439c3665714583b28cc87aa6ebf,
+        type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 179ef439c3665714583b28cc87aa6ebf, type: 3}
+    - target: {fileID: -8679921383154817045, guid: 179ef439c3665714583b28cc87aa6ebf,
+        type: 3}
       propertyPath: m_LocalEulerAnglesHint.y
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 179ef439c3665714583b28cc87aa6ebf, type: 3}
+    - target: {fileID: -8679921383154817045, guid: 179ef439c3665714583b28cc87aa6ebf,
+        type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 919132149155446097, guid: 179ef439c3665714583b28cc87aa6ebf, type: 3}
+    - target: {fileID: 919132149155446097, guid: 179ef439c3665714583b28cc87aa6ebf,
+        type: 3}
       propertyPath: m_Name
       value: Plant Pot 3
       objectReference: {fileID: 0}
@@ -56,16 +67,27 @@ PrefabInstance:
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 179ef439c3665714583b28cc87aa6ebf, type: 3}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 179ef439c3665714583b28cc87aa6ebf,
+        type: 3}
       insertIndex: -1
       addedObject: {fileID: 6832315142949964558}
-    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 179ef439c3665714583b28cc87aa6ebf, type: 3}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 179ef439c3665714583b28cc87aa6ebf,
+        type: 3}
       insertIndex: -1
       addedObject: {fileID: 3405750293932573968}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 179ef439c3665714583b28cc87aa6ebf,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 3562870924584919263}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 179ef439c3665714583b28cc87aa6ebf,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: -2474739910778590282}
   m_SourcePrefab: {fileID: 100100000, guid: 179ef439c3665714583b28cc87aa6ebf, type: 3}
 --- !u!1 &8651391845238856248 stripped
 GameObject:
-  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 179ef439c3665714583b28cc87aa6ebf, type: 3}
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 179ef439c3665714583b28cc87aa6ebf,
+    type: 3}
   m_PrefabInstance: {fileID: 8416808627224012649}
   m_PrefabAsset: {fileID: 0}
 --- !u!65 &6832315142949964558
@@ -102,3 +124,40 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   hided: 1
+--- !u!114 &3562870924584919263
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8651391845238856248}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b112db3959c164550975dd26677f8e8e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::WorldObject
+  objectId: -1
+  displayName: Plant Pot 3
+  kind: 0
+  autoRegister: 1
+--- !u!114 &-2474739910778590282
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8651391845238856248}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3f6cda250b193442c9f59a935c554f95, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.PlacementModule
+  allowedRooms: 335
+  autoSizeFromMesh: 1
+  sizeInCells: {x: 0.6311979, y: 0.9589013, z: 0.4823718}
+  cellSize: 1
+  edgeHint: 0
+  rotationRule: 1
+  minClearCellsAround: 0
+  mustTouchWall: 0
+  wallPadding: 0.05

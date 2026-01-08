@@ -8,47 +8,58 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: -8679921383154817045, guid: 0dc7d4dc794a3eb419d52b3a812cfb0c, type: 3}
+    - target: {fileID: -8679921383154817045, guid: 0dc7d4dc794a3eb419d52b3a812cfb0c,
+        type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 0dc7d4dc794a3eb419d52b3a812cfb0c, type: 3}
+    - target: {fileID: -8679921383154817045, guid: 0dc7d4dc794a3eb419d52b3a812cfb0c,
+        type: 3}
       propertyPath: m_LocalPosition.y
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 0dc7d4dc794a3eb419d52b3a812cfb0c, type: 3}
+    - target: {fileID: -8679921383154817045, guid: 0dc7d4dc794a3eb419d52b3a812cfb0c,
+        type: 3}
       propertyPath: m_LocalPosition.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 0dc7d4dc794a3eb419d52b3a812cfb0c, type: 3}
+    - target: {fileID: -8679921383154817045, guid: 0dc7d4dc794a3eb419d52b3a812cfb0c,
+        type: 3}
       propertyPath: m_LocalRotation.w
       value: 1
       objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 0dc7d4dc794a3eb419d52b3a812cfb0c, type: 3}
+    - target: {fileID: -8679921383154817045, guid: 0dc7d4dc794a3eb419d52b3a812cfb0c,
+        type: 3}
       propertyPath: m_LocalRotation.x
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 0dc7d4dc794a3eb419d52b3a812cfb0c, type: 3}
+    - target: {fileID: -8679921383154817045, guid: 0dc7d4dc794a3eb419d52b3a812cfb0c,
+        type: 3}
       propertyPath: m_LocalRotation.y
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 0dc7d4dc794a3eb419d52b3a812cfb0c, type: 3}
+    - target: {fileID: -8679921383154817045, guid: 0dc7d4dc794a3eb419d52b3a812cfb0c,
+        type: 3}
       propertyPath: m_LocalRotation.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 0dc7d4dc794a3eb419d52b3a812cfb0c, type: 3}
+    - target: {fileID: -8679921383154817045, guid: 0dc7d4dc794a3eb419d52b3a812cfb0c,
+        type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 0dc7d4dc794a3eb419d52b3a812cfb0c, type: 3}
+    - target: {fileID: -8679921383154817045, guid: 0dc7d4dc794a3eb419d52b3a812cfb0c,
+        type: 3}
       propertyPath: m_LocalEulerAnglesHint.y
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 0dc7d4dc794a3eb419d52b3a812cfb0c, type: 3}
+    - target: {fileID: -8679921383154817045, guid: 0dc7d4dc794a3eb419d52b3a812cfb0c,
+        type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 919132149155446097, guid: 0dc7d4dc794a3eb419d52b3a812cfb0c, type: 3}
+    - target: {fileID: 919132149155446097, guid: 0dc7d4dc794a3eb419d52b3a812cfb0c,
+        type: 3}
       propertyPath: m_Name
       value: Hexagon Rug
       objectReference: {fileID: 0}
@@ -56,16 +67,27 @@ PrefabInstance:
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 0dc7d4dc794a3eb419d52b3a812cfb0c, type: 3}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 0dc7d4dc794a3eb419d52b3a812cfb0c,
+        type: 3}
       insertIndex: -1
       addedObject: {fileID: 2060989890673014561}
-    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 0dc7d4dc794a3eb419d52b3a812cfb0c, type: 3}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 0dc7d4dc794a3eb419d52b3a812cfb0c,
+        type: 3}
       insertIndex: -1
       addedObject: {fileID: -5169884726276107238}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 0dc7d4dc794a3eb419d52b3a812cfb0c,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: -2598239003036110067}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 0dc7d4dc794a3eb419d52b3a812cfb0c,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: -6929165857691885684}
   m_SourcePrefab: {fileID: 100100000, guid: 0dc7d4dc794a3eb419d52b3a812cfb0c, type: 3}
 --- !u!1 &6764621237110739891 stripped
 GameObject:
-  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 0dc7d4dc794a3eb419d52b3a812cfb0c, type: 3}
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 0dc7d4dc794a3eb419d52b3a812cfb0c,
+    type: 3}
   m_PrefabInstance: {fileID: 5846141796282904290}
   m_PrefabAsset: {fileID: 0}
 --- !u!65 &2060989890673014561
@@ -102,3 +124,40 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   hided: 1
+--- !u!114 &-2598239003036110067
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6764621237110739891}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b112db3959c164550975dd26677f8e8e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::WorldObject
+  objectId: -1
+  displayName: Hexagon Rug
+  kind: 0
+  autoRegister: 1
+--- !u!114 &-6929165857691885684
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6764621237110739891}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3f6cda250b193442c9f59a935c554f95, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.PlacementModule
+  allowedRooms: 247
+  autoSizeFromMesh: 1
+  sizeInCells: {x: 1.6979055, y: 0.031888723, z: 1.6979074}
+  cellSize: 1
+  edgeHint: 0
+  rotationRule: 1
+  minClearCellsAround: 0
+  mustTouchWall: 0
+  wallPadding: 0.05

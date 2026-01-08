@@ -12,8 +12,8 @@ GameObject:
   - component: {fileID: 3335624195457693698}
   - component: {fileID: 697622267208977608}
   - component: {fileID: 2193224844932698226}
-  - component: {fileID: 403577700197719113}
   - component: {fileID: 6642979895250593379}
+  - component: {fileID: 7935294813367120415}
   m_Layer: 0
   m_Name: Prop_ToyXylophone
   m_TagString: Untagged
@@ -93,6 +93,7 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
 --- !u!64 &2193224844932698226
 MeshCollider:
@@ -116,21 +117,6 @@ MeshCollider:
   m_Convex: 1
   m_CookingOptions: 30
   m_Mesh: {fileID: -1326516246066676608, guid: 8c3f0ea5912554d4a8a86b56ae1b8a29, type: 3}
---- !u!114 &403577700197719113
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1346171332069125405}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a84846d553e584223b8e8df5ef2d7381, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::VisualModule
-  debugMode: 0
-  mainRenderer: {fileID: 697622267208977608}
-  extraRenderers: []
 --- !u!114 &6642979895250593379
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -152,6 +138,22 @@ MonoBehaviour:
   minClearCellsAround: 0
   mustTouchWall: 0
   wallPadding: 0.05
+--- !u!114 &7935294813367120415
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1346171332069125405}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b112db3959c164550975dd26677f8e8e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::WorldObject
+  objectId: -1
+  displayName: Prop_ToyXylophone
+  kind: 0
+  autoRegister: 1
 --- !u!1 &3813311515866916763
 GameObject:
   m_ObjectHideFlags: 0
@@ -240,6 +242,7 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
 --- !u!1 &3981719633182639359
 GameObject:
@@ -329,4 +332,5 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}

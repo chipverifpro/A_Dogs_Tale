@@ -12,6 +12,8 @@ GameObject:
   - component: {fileID: 3761764771589715384}
   - component: {fileID: 1427797662983127410}
   - component: {fileID: 293046001724071412}
+  - component: {fileID: 5753704724236510593}
+  - component: {fileID: -4415658509153929914}
   m_Layer: 0
   m_Name: Prop_Chair_08
   m_TagString: Untagged
@@ -89,6 +91,7 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
 --- !u!64 &293046001724071412
 MeshCollider:
@@ -112,3 +115,40 @@ MeshCollider:
   m_Convex: 1
   m_CookingOptions: 30
   m_Mesh: {fileID: 9197301653688163993, guid: 7767cc3f17e51d040ac7e62c0519bb4b, type: 3}
+--- !u!114 &5753704724236510593
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 635132998480666791}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b112db3959c164550975dd26677f8e8e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::WorldObject
+  objectId: -1
+  displayName: Prop_Chair_08
+  kind: 0
+  autoRegister: 1
+--- !u!114 &-4415658509153929914
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 635132998480666791}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3f6cda250b193442c9f59a935c554f95, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.PlacementModule
+  allowedRooms: 256
+  autoSizeFromMesh: 1
+  sizeInCells: {x: 1.9790483, y: 0.96038896, z: 0.779635}
+  cellSize: 1
+  edgeHint: 0
+  rotationRule: 1
+  minClearCellsAround: 0
+  mustTouchWall: 0
+  wallPadding: 0.05

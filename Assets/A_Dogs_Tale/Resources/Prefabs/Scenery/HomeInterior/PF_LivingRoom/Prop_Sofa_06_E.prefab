@@ -12,8 +12,8 @@ GameObject:
   - component: {fileID: 6899491388933719648}
   - component: {fileID: 8672558033526731434}
   - component: {fileID: 8041889844780117548}
-  - component: {fileID: 695417353005597859}
   - component: {fileID: 2167072271974633135}
+  - component: {fileID: 7267405277646070615}
   m_Layer: 0
   m_Name: Prop_Sofa_06_E
   m_TagString: Untagged
@@ -91,6 +91,7 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
 --- !u!65 &8041889844780117548
 BoxCollider:
@@ -113,21 +114,6 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 2.0615118, y: 0.8951021, z: 0.75655586}
   m_Center: {x: -0.59431505, y: 0.44832554, z: -0.055372804}
---- !u!114 &695417353005597859
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7159564406919893887}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a84846d553e584223b8e8df5ef2d7381, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::VisualModule
-  debugMode: 0
-  mainRenderer: {fileID: 8672558033526731434}
-  extraRenderers: []
 --- !u!114 &2167072271974633135
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -149,3 +135,19 @@ MonoBehaviour:
   minClearCellsAround: 0
   mustTouchWall: 0
   wallPadding: 0.05
+--- !u!114 &7267405277646070615
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7159564406919893887}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b112db3959c164550975dd26677f8e8e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::WorldObject
+  objectId: -1
+  displayName: Prop_Sofa_06_E
+  kind: 0
+  autoRegister: 1

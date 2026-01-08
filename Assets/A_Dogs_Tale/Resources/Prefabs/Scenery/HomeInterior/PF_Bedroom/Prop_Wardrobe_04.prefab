@@ -12,8 +12,8 @@ GameObject:
   - component: {fileID: 2553865164311908468}
   - component: {fileID: 330400632422704318}
   - component: {fileID: 1392813218845177908}
-  - component: {fileID: 6050925365100321508}
   - component: {fileID: 5922727873102373246}
+  - component: {fileID: 3060710647541025189}
   m_Layer: 0
   m_Name: Prop_Wardrobe_04
   m_TagString: Untagged
@@ -93,6 +93,7 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
 --- !u!65 &1392813218845177908
 BoxCollider:
@@ -115,21 +116,6 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1.0507379, y: 2.0027776, z: 0.5014974}
   m_Center: {x: 0, y: 0.9388253, z: 0}
---- !u!114 &6050925365100321508
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2275775694979007851}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a84846d553e584223b8e8df5ef2d7381, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::VisualModule
-  debugMode: 0
-  mainRenderer: {fileID: 330400632422704318}
-  extraRenderers: []
 --- !u!114 &5922727873102373246
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -151,6 +137,22 @@ MonoBehaviour:
   minClearCellsAround: 0
   mustTouchWall: 0
   wallPadding: 0.05
+--- !u!114 &3060710647541025189
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2275775694979007851}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b112db3959c164550975dd26677f8e8e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::WorldObject
+  objectId: -1
+  displayName: Prop_Wardrobe_04
+  kind: 0
+  autoRegister: 1
 --- !u!1 &3206591503468000553
 GameObject:
   m_ObjectHideFlags: 0
@@ -239,6 +241,7 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
 --- !u!1 &3424156121670105970
 GameObject:
@@ -328,4 +331,5 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}

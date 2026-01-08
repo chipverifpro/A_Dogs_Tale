@@ -12,8 +12,8 @@ GameObject:
   - component: {fileID: 3325684699302493706}
   - component: {fileID: 703621285505174208}
   - component: {fileID: 2162385832010454594}
-  - component: {fileID: 5342458213351969672}
   - component: {fileID: 8668007857220995572}
+  - component: {fileID: 8769996219648546947}
   m_Layer: 0
   m_Name: Prop_Shelve_11
   m_TagString: Untagged
@@ -91,6 +91,7 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
 --- !u!65 &2162385832010454594
 BoxCollider:
@@ -113,21 +114,6 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 0.57960755, y: 1.7026777, z: 0.57960755}
   m_Center: {x: 0, y: 0.85024893, z: 0}
---- !u!114 &5342458213351969672
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1351994290982562581}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a84846d553e584223b8e8df5ef2d7381, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::VisualModule
-  debugMode: 0
-  mainRenderer: {fileID: 703621285505174208}
-  extraRenderers: []
 --- !u!114 &8668007857220995572
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -149,3 +135,19 @@ MonoBehaviour:
   minClearCellsAround: 0
   mustTouchWall: 0
   wallPadding: 0.05
+--- !u!114 &8769996219648546947
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1351994290982562581}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b112db3959c164550975dd26677f8e8e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::WorldObject
+  objectId: -1
+  displayName: Prop_Shelve_11
+  kind: 0
+  autoRegister: 1

@@ -8,47 +8,58 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: -8679921383154817045, guid: 39e7912756fd9c04b9dc509ccb6640dc, type: 3}
+    - target: {fileID: -8679921383154817045, guid: 39e7912756fd9c04b9dc509ccb6640dc,
+        type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 39e7912756fd9c04b9dc509ccb6640dc, type: 3}
+    - target: {fileID: -8679921383154817045, guid: 39e7912756fd9c04b9dc509ccb6640dc,
+        type: 3}
       propertyPath: m_LocalPosition.y
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 39e7912756fd9c04b9dc509ccb6640dc, type: 3}
+    - target: {fileID: -8679921383154817045, guid: 39e7912756fd9c04b9dc509ccb6640dc,
+        type: 3}
       propertyPath: m_LocalPosition.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 39e7912756fd9c04b9dc509ccb6640dc, type: 3}
+    - target: {fileID: -8679921383154817045, guid: 39e7912756fd9c04b9dc509ccb6640dc,
+        type: 3}
       propertyPath: m_LocalRotation.w
       value: 1
       objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 39e7912756fd9c04b9dc509ccb6640dc, type: 3}
+    - target: {fileID: -8679921383154817045, guid: 39e7912756fd9c04b9dc509ccb6640dc,
+        type: 3}
       propertyPath: m_LocalRotation.x
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 39e7912756fd9c04b9dc509ccb6640dc, type: 3}
+    - target: {fileID: -8679921383154817045, guid: 39e7912756fd9c04b9dc509ccb6640dc,
+        type: 3}
       propertyPath: m_LocalRotation.y
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 39e7912756fd9c04b9dc509ccb6640dc, type: 3}
+    - target: {fileID: -8679921383154817045, guid: 39e7912756fd9c04b9dc509ccb6640dc,
+        type: 3}
       propertyPath: m_LocalRotation.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 39e7912756fd9c04b9dc509ccb6640dc, type: 3}
+    - target: {fileID: -8679921383154817045, guid: 39e7912756fd9c04b9dc509ccb6640dc,
+        type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 39e7912756fd9c04b9dc509ccb6640dc, type: 3}
+    - target: {fileID: -8679921383154817045, guid: 39e7912756fd9c04b9dc509ccb6640dc,
+        type: 3}
       propertyPath: m_LocalEulerAnglesHint.y
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 39e7912756fd9c04b9dc509ccb6640dc, type: 3}
+    - target: {fileID: -8679921383154817045, guid: 39e7912756fd9c04b9dc509ccb6640dc,
+        type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 919132149155446097, guid: 39e7912756fd9c04b9dc509ccb6640dc, type: 3}
+    - target: {fileID: 919132149155446097, guid: 39e7912756fd9c04b9dc509ccb6640dc,
+        type: 3}
       propertyPath: m_Name
       value: Skateboard
       objectReference: {fileID: 0}
@@ -56,16 +67,27 @@ PrefabInstance:
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 39e7912756fd9c04b9dc509ccb6640dc, type: 3}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 39e7912756fd9c04b9dc509ccb6640dc,
+        type: 3}
       insertIndex: -1
       addedObject: {fileID: 5719594052353943201}
-    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 39e7912756fd9c04b9dc509ccb6640dc, type: 3}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 39e7912756fd9c04b9dc509ccb6640dc,
+        type: 3}
       insertIndex: -1
       addedObject: {fileID: 1338462559282701185}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 39e7912756fd9c04b9dc509ccb6640dc,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2686310765656309433}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 39e7912756fd9c04b9dc509ccb6640dc,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 5526331793396801782}
   m_SourcePrefab: {fileID: 100100000, guid: 39e7912756fd9c04b9dc509ccb6640dc, type: 3}
 --- !u!1 &7852580371855578486 stripped
 GameObject:
-  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 39e7912756fd9c04b9dc509ccb6640dc, type: 3}
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 39e7912756fd9c04b9dc509ccb6640dc,
+    type: 3}
   m_PrefabInstance: {fileID: 6933452085084366887}
   m_PrefabAsset: {fileID: 0}
 --- !u!114 &5719594052353943201
@@ -102,3 +124,40 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 0.22033668, y: 0.098879695, z: 0.6145712}
   m_Center: {x: -0.00000011920929, y: 0.06090693, z: -0.022205412}
+--- !u!114 &2686310765656309433
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7852580371855578486}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b112db3959c164550975dd26677f8e8e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::WorldObject
+  objectId: -1
+  displayName: Skateboard
+  kind: 0
+  autoRegister: 1
+--- !u!114 &5526331793396801782
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7852580371855578486}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3f6cda250b193442c9f59a935c554f95, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.PlacementModule
+  allowedRooms: 336
+  autoSizeFromMesh: 1
+  sizeInCells: {x: 0.23431206, y: 0.1390591, z: 0.7246281}
+  cellSize: 1
+  edgeHint: 0
+  rotationRule: 1
+  minClearCellsAround: 0
+  mustTouchWall: 0
+  wallPadding: 0.05
