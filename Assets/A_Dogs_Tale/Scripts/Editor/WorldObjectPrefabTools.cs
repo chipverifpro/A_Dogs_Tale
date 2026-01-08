@@ -101,20 +101,20 @@ public static class WorldObjectPrefabTools
         }
 
         // --- Ensure VisualModule on root (or child) ---
-        var visual = root.GetComponent<VisionModule>();
-        if (visual == null)
+        var appearance = root.GetComponent<AppearanceModule>();
+        if (appearance == null)
         {
-            visual = root.AddComponent<VisionModule>();
+            appearance = root.AddComponent<AppearanceModule>();
             changed = true;
         }
 
         // We can optionally assign mainRenderer here if null
-        if (visual != null && visual.mainRenderer == null)
+        if (appearance != null && appearance.mainRenderer == null)
         {
             var renderer = root.GetComponentInChildren<Renderer>();
             if (renderer != null)
             {
-                visual.mainRenderer = renderer;
+                appearance.mainRenderer = renderer;
                 changed = true;
             }
         }

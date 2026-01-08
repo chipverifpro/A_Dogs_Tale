@@ -31,7 +31,7 @@ public class WorldObjectModulesInspector : Editor
     private static readonly Type[] SensoryModuleTypes =
     {
         typeof(LocationModule),         // World location, orientation
-        typeof(VisionModule),           // What can be seen
+        typeof(VisionPerceptionModule),           // What can be seen
         typeof(HearingModule),          // What can be heard
         typeof(TasteModule),              // Response to eating/tasting
         typeof(ScentPerceptionModule),  // What can be smelled

@@ -40,7 +40,7 @@ WORLDOBJECTS/
         SENSORY_MODULES/
             ScentEmitterModule              --Parameters for scent depositing system
             SoundEmitterModule              --What sounds to emit based on current actions
-            VisionModule                    --What can be seen
+            VisionPerceptionModule                    --What can be seen
             HearingModule                   --What can be heard
             SmellModule                     --What can be smelled
             TasteModule                       --Manage hunger, food consumption

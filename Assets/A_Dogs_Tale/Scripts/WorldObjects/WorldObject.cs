@@ -40,7 +40,7 @@ public enum ModuleFlags : ulong
     locationModule          = 1UL << 1,
     hearingModule           = 1UL << 2,
     scentPerceptionModule   = 1UL << 3,
-    visionModule            = 1UL << 4,
+    visionPerceptionModule            = 1UL << 4,
     tasteModule             = 1UL << 5,
 
     // --- Agent Decision Modules
@@ -160,7 +160,7 @@ public class WorldObject : MonoBehaviour
     public TasteModule TasteModule { get; private set; }
     public HearingModule hearingModule { get; private set; }
     public ScentPerceptionModule scentPerceptionModule { get; private set; }
-    public VisionModule visionModule { get; private set; }
+    public VisionPerceptionModule visionPerceptionModule { get; private set; }
 
     // Output:
     public AppearanceModule appearanceModule { get; private set; }
@@ -214,7 +214,7 @@ public class WorldObject : MonoBehaviour
         locationModule    = GetComponent<LocationModule>();
         hearingModule          = GetComponent<HearingModule>();
         scentPerceptionModule  = GetComponent<ScentPerceptionModule>();
-        visionModule           = GetComponent<VisionModule>();
+        visionPerceptionModule           = GetComponent<VisionPerceptionModule>();
         TasteModule              = GetComponent<TasteModule>();
 
         // --- Agent Decision Modules
@@ -282,7 +282,7 @@ public class WorldObject : MonoBehaviour
         float dt = Time.deltaTime;
 
         // SENSES
-        //visionModule?.Tick(dt);
+        //visionPerceptionModule?.Tick(dt);
         //hearingModule?.Tick(dt);
         //scentPerceptionModule?.Tick(dt);
         //TasteModule?.Tick(dt);
@@ -303,6 +303,8 @@ public class WorldObject : MonoBehaviour
         //taskExecutor?.Tick(context, dt); // needs context
 
         // AGENT INTERFACE
+        visionPerceptionModule?.Tick(dt);
+        scentPerceptionModule?.Tick(dt);
         agentMovementModule?.Tick(dt);
         packMemberModule?.Tick(dt);
 
@@ -421,10 +423,10 @@ public class WorldObject : MonoBehaviour
             if (scentPerceptionModule == null) Debug.LogWarning($"scentPerceptionModule = null");
         }
 
-        if (enables.HasFlag(ModuleFlags.visionModule))
+        if (enables.HasFlag(ModuleFlags.visionPerceptionModule))
         {   
-            visionModule = EnsureComponent<VisionModule>();
-            if (visionModule == null) Debug.LogWarning($"visionModule = null");
+            visionPerceptionModule = EnsureComponent<VisionPerceptionModule>();
+            if (visionPerceptionModule == null) Debug.LogWarning($"visionPerceptionModule = null");
         }
 
         if (enables.HasFlag(ModuleFlags.tasteModule))

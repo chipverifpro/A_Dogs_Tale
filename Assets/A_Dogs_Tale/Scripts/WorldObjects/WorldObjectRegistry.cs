@@ -44,11 +44,9 @@ public class WorldObjectRegistry : MonoBehaviour
         }
     }
 
-    public static bool HasInstance => Instance != null && _instance != null && Application.isPlaying && !_shuttingDown;
-    
-    public static bool HasInstance_new =>
+    public static bool HasInstance =>
         _instance != null && Application.isPlaying && !_shuttingDown;
-        
+
     private void Awake()
     {
         if (_instance != null && _instance != this)
@@ -170,19 +168,12 @@ public class WorldObjectRegistry : MonoBehaviour
     /// <summary>
     /// Try to get a world object by ID.
     /// </summary>
-    public bool TryGet(int id, out WorldObject obj)
-    {
-        return objectsById.TryGetValue(id, out obj);
-    }
+    public bool TryGet(int id, out WorldObject obj) => objectsById.TryGetValue(id, out obj);
 
     /// <summary>
-    /// Get a world object by ID, or null if not found.
+    /// Try to get an ID by world object.
     /// </summary>
-    public WorldObject Get(int id)
-    {
-        objectsById.TryGetValue(id, out var obj);
-        return obj;
-    }
+    public bool TryGetId(WorldObject obj, out int id) => idByObject.TryGetValue(obj, out id);
 
     /// <summary>
     /// Enumerate all currently registered objects.

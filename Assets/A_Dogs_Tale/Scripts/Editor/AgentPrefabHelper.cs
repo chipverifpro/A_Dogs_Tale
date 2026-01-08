@@ -4,7 +4,7 @@ using UnityEngine;
 
 //using DogGame.World;       // WorldObject, LocationModule, MotionModule, BlackboardModule, etc.
 using DogGame.Modules;          // AgentModule, AgentMovementModule, AgentSenseModule, PackMemberModule, AgentBlackboardView
-//using DogGame.Sensory;     // VisionModule, HearingModule, SmellModule, ScentEmitterModule, SoundEmitterModule
+//using DogGame.Sensory;     // VisionPerceptionModule, HearingModule, SmellModule, ScentEmitterModule, SoundEmitterModule
 // using DogGame.Visuals;  // If you have a VisualModule namespace
 
 public static class AgentPrefabHelper
@@ -41,7 +41,7 @@ public static class AgentPrefabHelper
         // addedCount += EnsureComponent<AgentBlackboardView>(root);
 
         // ---- SENSORY MODULES ----
-        addedCount += EnsureComponent<VisionModule>(root);
+        addedCount += EnsureComponent<VisionPerceptionModule>(root);
         //addedCount += EnsureComponent<HearingModule>(root);
         //addedCount += EnsureComponent<SmellModule>(root);
         addedCount += EnsureComponent<ScentEmitterModule>(root);

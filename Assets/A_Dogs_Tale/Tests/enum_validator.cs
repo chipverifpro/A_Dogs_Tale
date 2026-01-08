@@ -34,7 +34,7 @@ public enum ModuleFlags : ulong
     // --- Sensory ---
     hearingModule = 1UL << 1,
     smellModule   = 1UL << 2,
-    visionModule  = 1UL << 3,
+    visionPerceptionModule  = 1UL << 3,
     TasteModule     = 1UL << 4,
 
     // --- Agent Decision Modules

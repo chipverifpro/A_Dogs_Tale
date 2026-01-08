@@ -8560,14 +8560,13 @@ MonoBehaviour:
     whichFollowersArrived: 
   targetObject: {fileID: 0}
   keepFollowingTargetObject: 0
-  targetMoved: 0
   stopDistanceFromObject: 0
   accelerationMetersPerSecondSquared: 12
   decelerationMetersPerSecondSquared: 16
   enableDebugLogging: 0
   walkMode: 0
+  maxWalkModeSpeed: 0
   maxDistance: 1
-  desiredWalkSpeed: 0
 --- !u!114 &1253610046
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -12203,6 +12202,11 @@ PrefabInstance:
       propertyPath: m_IsActive
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 4477274621950385561, guid: da33ad6d2d1f9483faa117084b30e547,
+        type: 3}
+      propertyPath: m_TagString
+      value: Dog
+      objectReference: {fileID: 0}
     - target: {fileID: 7941343565711738264, guid: da33ad6d2d1f9483faa117084b30e547,
         type: 3}
       propertyPath: m_LocalPosition.x
@@ -12268,15 +12272,7 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 4477274621950385561, guid: da33ad6d2d1f9483faa117084b30e547,
         type: 3}
       insertIndex: -1
-      addedObject: {fileID: 1651296792}
-    - targetCorrespondingSourceObject: {fileID: 4477274621950385561, guid: da33ad6d2d1f9483faa117084b30e547,
-        type: 3}
-      insertIndex: -1
       addedObject: {fileID: 1651296791}
-    - targetCorrespondingSourceObject: {fileID: 4477274621950385561, guid: da33ad6d2d1f9483faa117084b30e547,
-        type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 1651296790}
     - targetCorrespondingSourceObject: {fileID: 4477274621950385561, guid: da33ad6d2d1f9483faa117084b30e547,
         type: 3}
       insertIndex: -1
@@ -12456,14 +12452,13 @@ MonoBehaviour:
     whichFollowersArrived: 
   targetObject: {fileID: 6544990386685219154}
   keepFollowingTargetObject: 0
-  targetMoved: 0
   stopDistanceFromObject: 0
   accelerationMetersPerSecondSquared: 12
   decelerationMetersPerSecondSquared: 16
   enableDebugLogging: 0
   walkMode: 0
+  maxWalkModeSpeed: 0
   maxDistance: 1
-  desiredWalkSpeed: 0
 --- !u!114 &1651296787
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -12513,18 +12508,6 @@ MonoBehaviour:
   cameraForMovement: {fileID: 1815589284}
   cameraModeSwitcher: {fileID: 1815589288}
   currentDestinationObject: {fileID: 0}
---- !u!114 &1651296790
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1651296779}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a331d038638764085ab09ba8be98ac41, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.SmellModule
 --- !u!114 &1651296791
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -12538,21 +12521,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.HearingModule
   debugMode: 0
---- !u!114 &1651296792
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1651296779}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a84846d553e584223b8e8df5ef2d7381, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.VisionModule
-  debugMode: 0
-  mainRenderer: {fileID: 0}
-  extraRenderers: []
 --- !u!114 &1651296793
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -15865,6 +15833,11 @@ PrefabInstance:
       propertyPath: m_IsActive
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 8843402266763018810, guid: 2ce0050a816054aaca2a1076f182f7a8,
+        type: 3}
+      propertyPath: m_TagString
+      value: Dog
+      objectReference: {fileID: 0}
     m_RemovedComponents:
     - {fileID: 0}
     m_RemovedGameObjects: []
@@ -15882,10 +15855,6 @@ PrefabInstance:
         type: 3}
       insertIndex: -1
       addedObject: {fileID: 6544990386685219154}
-    - targetCorrespondingSourceObject: {fileID: 8843402266763018810, guid: 2ce0050a816054aaca2a1076f182f7a8,
-        type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 6544990386685219156}
     - targetCorrespondingSourceObject: {fileID: 8843402266763018810, guid: 2ce0050a816054aaca2a1076f182f7a8,
         type: 3}
       insertIndex: -1
@@ -15994,6 +15963,10 @@ PrefabInstance:
         type: 3}
       insertIndex: -1
       addedObject: {fileID: 6544990386685219178}
+    - targetCorrespondingSourceObject: {fileID: 8843402266763018810, guid: 2ce0050a816054aaca2a1076f182f7a8,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 6544990386685219185}
   m_SourcePrefab: {fileID: 100100000, guid: 2ce0050a816054aaca2a1076f182f7a8, type: 3}
 --- !u!1 &6544990386685219093 stripped
 GameObject:
@@ -16119,14 +16092,13 @@ MonoBehaviour:
     whichFollowersArrived: 
   targetObject: {fileID: 0}
   keepFollowingTargetObject: 0
-  targetMoved: 0
   stopDistanceFromObject: 0
   accelerationMetersPerSecondSquared: 12
   decelerationMetersPerSecondSquared: 16
   enableDebugLogging: 0
   walkMode: 0
+  maxWalkModeSpeed: 0
   maxDistance: 1
-  desiredWalkSpeed: 0
 --- !u!114 &6544990386685219150
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -16205,21 +16177,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.HearingModule
   debugMode: 0
---- !u!114 &6544990386685219156
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6544990386685219093}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a84846d553e584223b8e8df5ef2d7381, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.VisionModule
-  debugMode: 0
-  mainRenderer: {fileID: 0}
-  extraRenderers: []
 --- !u!114 &6544990386685219157
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -16236,6 +16193,9 @@ MonoBehaviour:
   head: {fileID: 0}
   eyesForward: {fileID: 0}
   camera_refresh_needed: 1
+  debugMode: 0
+  mainRenderer: {fileID: 0}
+  extraRenderers: []
 --- !u!114 &6544990386685219159
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -16400,6 +16360,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: aa18621c0f4a44c6c9ed8dddcbed1c83, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ReactionModule
+  taskController: {fileID: 6544990386685219172}
 --- !u!114 &6544990386685219177
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -16498,8 +16459,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 34adf64ec2a2442bc923cb803bea1343, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.ScentPerceptionModule
-  dir: {fileID: 0}
-  worldObject: {fileID: 0}
   scentSystem: {fileID: 0}
   maxEventsPerTick: 2
   reNoticeSeconds: 10
@@ -16520,6 +16479,30 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.TasteModule
   debugMode: 0
+--- !u!114 &6544990386685219185
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6544990386685219093}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b89d8ed18e1fb45f1bc9eb7a96a8b787, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.VisionPerceptionModule
+  viewRadius: 12
+  peripheralFovDeg: 160
+  eyeHeight: 0.6
+  targetAimHeight: 0.5
+  occluderMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  movingSpeedThreshold: 0.2
+  fastSpeedThreshold: 3.5
+  maxDetections: 12
+  maxEvents: 16
+  leaderNotVisibleCooldownSeconds: 2
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

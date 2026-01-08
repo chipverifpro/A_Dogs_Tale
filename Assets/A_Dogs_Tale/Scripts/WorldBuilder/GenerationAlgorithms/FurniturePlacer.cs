@@ -268,9 +268,9 @@ public class FurniturePlacer : MonoBehaviour
             loc = instance.AddComponent<LocationModule>();
 
         // VisualModule (nice to have for tints, visibility, etc.)
-        VisionModule visual = instance.GetComponent<VisionModule>();
+        VisionPerceptionModule visual = instance.GetComponent<VisionPerceptionModule>();
         if (visual == null)
-            visual = instance.AddComponent<VisionModule>();
+            visual = instance.AddComponent<VisionPerceptionModule>();
 
         // Sync location from cell
         //loc.cell = cell;

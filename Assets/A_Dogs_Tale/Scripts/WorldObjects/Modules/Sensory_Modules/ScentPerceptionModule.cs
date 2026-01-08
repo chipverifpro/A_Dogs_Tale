@@ -7,12 +7,9 @@ namespace DogGame.Modules
 {
     // You can keep this as a WorldModule if that's your base type.
     // For now I'm showing it as a MonoBehaviour so it compiles anywhere.
-    public sealed class ScentPerceptionModule : MonoBehaviour
+    public sealed class ScentPerceptionModule : WorldModule
     {
-        public Directory? dir;
-
         [Header("Inputs")]
-        public WorldObject worldObject = null!;          // assign in Awake if you prefer
         public ScentAirGround scentSystem = null!;       // assign/reference your global scent system
         public int maxEventsPerTick = 2;
 
@@ -32,29 +29,26 @@ namespace DogGame.Modules
 
         private readonly ScentMemory scentMemory = new();
 
-        private void Awake()
+        protected override void Awake()
         {
-            if (worldObject == null)
-                worldObject = GetComponentInParent<WorldObject>();
-            if (dir == null)
-                dir = FindFirstObjectByType<Directory>();
+            
         }
 
-        public void TickScent(float deltaTime)
+        public List<PerceptionEvent> TickScent(float deltaTime)
         {
+            var events = new List<PerceptionEvent>(maxEventsPerTick);
+
             if (worldObject == null || scentSystem == null)
-                return;
+                return events;
 
             Cell cell = worldObject.locationModule.cell; // <-- adjust to your actual "where am I" cell getter
             //List<ScentDetection> detections = cell.scents;
             List<ScentDetection> detections = dir!.scentRegistry.CollectScentsAtCell(cell, scentSystem);
 
             if (detections == null || detections.Count == 0)
-                return;
+                return events;
 
             float timeNow = Time.time;
-
-            var events = new List<PerceptionEvent>(maxEventsPerTick);
 
             for (int i = 0; i < detections.Count; i++)
             {
@@ -82,7 +76,7 @@ namespace DogGame.Modules
 
                 var type = !seenBefore ? PerceptionEventType.NewSmell : PerceptionEventType.SmellStrengthChanged;
 
-                events.Add(new PerceptionEvent(
+                events.Add(PerceptionEvent.MakeScent(
                     type: type,
                     worldPos: worldObject.transform.position,
                     scentKey: scentKey,
@@ -96,7 +90,7 @@ namespace DogGame.Modules
             }
 
             if (events.Count == 0)
-                return;
+                return events;
 
             // Sort by interest descending and take top N
             events.Sort((a, b) => b.Interest01.CompareTo(a.Interest01));
@@ -104,8 +98,9 @@ namespace DogGame.Modules
                 events.RemoveRange(maxEventsPerTick, events.Count - maxEventsPerTick);
 
             // Hand off to your reaction engine / task controller
-            var reactionEngine = worldObject.GetComponentInParent<ReactionEngine>();
-            reactionEngine?.HandlePerceptionEvents(events);
+            //var reactionEngine = worldObject.GetComponentInParent<ReactionEngine>();
+            //worldObject.reactionModule.HandlePerceptionEvents(events);
+            return events;
         }
 
         private static string BuildScentKey(ScentSource source)

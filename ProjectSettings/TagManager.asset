@@ -5,6 +5,11 @@ TagManager:
   serializedVersion: 3
   tags:
   - CinemachineTarget
+  - Human
+  - Dog
+  - Animal
+  - Threat
+  - Item
   layers:
   - Default
   - TransparentFX
