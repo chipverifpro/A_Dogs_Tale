@@ -74,18 +74,28 @@ namespace DogGame.Modules
 
         public override void Tick(float deltaTime)
         {
+            //Debug.Log("VisionPerceptionModule.Tick");
             detections.Clear();
             perceptionEvents.Clear();
 
             if (worldObject == null)
+            {
+                Debug.Log("worldObject is null");
                 return;
+            }
 
-            if (!WorldObjectRegistry.HasInstance)
-                return;
+            //if (!WorldObjectRegistry.HasInstance)
+            //{
+            //    Debug.Log("WorldObjectRegister.HasInstance = false");
+            //    return;
+            //}
 
             var registry = WorldObjectRegistry.Instance;
             if (registry == null)
+            {
+                Debug.Log("registry is null");
                 return;
+            }
 
             // swap visibility sets
             visibleLastTick.Clear();
@@ -109,33 +119,48 @@ namespace DogGame.Modules
             foreach (var target in registry.GetAllObjects())
             {
                 if (target == null || target == worldObject)
+                {
+                    //Debug.Log($"bad target {worldObject.DisplayName}.");
                     continue;
-
+                }                
+                //Debug.Log($"[VisionPerceptionModule:{worldObject.DisplayName}] checking {target.DisplayName}");
+                
                 Vector3 targetPos = target.pos3d_world;
 
                 Vector3 toTarget = targetPos - agentPos;
                 toTarget.y = 0f;
                 float sqrDist = toTarget.sqrMagnitude;
                 if (sqrDist > viewRadiusSqr || sqrDist < 0.0001f)
+                {
+                    //Debug.Log("Distance too great.");
                     continue;
+                }
 
                 float dist = Mathf.Sqrt(sqrDist);
 
                 Vector3 dir = toTarget / dist;
                 float angleDeg = Vector3.Angle(forward, dir);
                 if (angleDeg > halfFov)
+                {
+                    Debug.Log($"VisionPerceptionModule {worldObject.DisplayName}: Out of peripheral vision {target.DisplayName}.");
                     continue;
-
+                }
                 // LOS
                 Vector3 aimPoint = targetPos + Vector3.up * targetAimHeight;
                 Vector3 ray = aimPoint - eyePos;
                 float rayLen = ray.magnitude;
                 if (rayLen < 0.0001f)
+                {
+                    Debug.Log("rayLen too short.");
                     continue;
+                }
 
                 Vector3 rayDir = ray / rayLen;
                 if (Physics.Raycast(eyePos, rayDir, rayLen, occluderMask, QueryTriggerInteraction.Ignore))
+                {
+                    Debug.Log("Raycast unsuccessful.");
                     continue;
+                }
 
                 int key = target.GetInstanceID();
                 visibleThisTick.Add(key);
@@ -149,6 +174,8 @@ namespace DogGame.Modules
 
                 float sizeScore = EstimateSizeScore(target);
                 float score = ComputeScore(dist, angleDeg, speed, sizeScore, kind, relation);
+
+                Debug.Log($"Detected {target.DisplayName}");
 
                 detections.Add(new VisionDetection
                 {
@@ -189,6 +216,7 @@ namespace DogGame.Modules
                 var type = d.isNewlySeen ? PerceptionEventType.TargetNewlySeen : PerceptionEventType.TargetSeen;
 
                 perceptionEvents.Add(PerceptionEvent.MakeVision(
+                    observer: worldObject,
                     type: type,
                     worldPos: d.target.pos3d_world,
                     target: d.target,
@@ -207,6 +235,7 @@ namespace DogGame.Modules
                 if (d.speed >= fastSpeedThreshold)
                 {
                     perceptionEvents.Add(PerceptionEvent.MakeVision(
+                        observer: worldObject,
                         type: PerceptionEventType.TargetMovingFast,
                         worldPos: d.target.pos3d_world,
                         target: d.target,
@@ -222,6 +251,7 @@ namespace DogGame.Modules
                 else if (d.speed >= movingSpeedThreshold)
                 {
                     perceptionEvents.Add(PerceptionEvent.MakeVision(
+                        observer: worldObject,
                         type: PerceptionEventType.TargetMoving,
                         worldPos: d.target.pos3d_world,
                         target: d.target,
@@ -240,7 +270,8 @@ namespace DogGame.Modules
             if (perceptionEvents.Count < maxEvents)
                 EmitLeaderNotVisible();
             
-            Debug.Log($"VisionPerceptionModule {worldObject.DisplayName}: #perceptionEvents = {perceptionEvents.Count}");
+            if (perceptionEvents.Count>0)
+                Debug.Log($"VisionPerceptionModule {worldObject.DisplayName}: #perceptionEvents = {perceptionEvents.Count}");
         }
 
         private void EmitLeaderNotVisible()
@@ -271,6 +302,7 @@ namespace DogGame.Modules
                 leaderNotVisibleCooldown = leaderNotVisibleCooldownSeconds;
 
                 perceptionEvents.Add(PerceptionEvent.MakeVision(
+                    observer: worldObject,
                     type: PerceptionEventType.PackLeaderNotVisible,
                     worldPos: leader.pos3d_world,
                     target: leader,

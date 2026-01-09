@@ -77,6 +77,7 @@ namespace DogGame.Modules
                 var type = !seenBefore ? PerceptionEventType.NewSmell : PerceptionEventType.SmellStrengthChanged;
 
                 events.Add(PerceptionEvent.MakeScent(
+                    observer: worldObject,
                     type: type,
                     worldPos: worldObject.transform.position,
                     scentKey: scentKey,

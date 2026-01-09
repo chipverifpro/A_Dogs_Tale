@@ -357,7 +357,7 @@ public class WorldObject : MonoBehaviour
         if (!Application.isPlaying)
             return;
 
-        if (IsRegistered && WorldObjectRegistry.HasInstance)
+        if (IsRegistered)// && WorldObjectRegistry.HasInstance)
         {
             WorldObjectRegistry.Instance.Unregister(this);
             IsRegistered = false;

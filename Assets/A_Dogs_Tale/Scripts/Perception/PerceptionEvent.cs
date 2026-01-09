@@ -1,4 +1,6 @@
 #nullable enable
+using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace DogGame.Modules
@@ -45,6 +47,9 @@ namespace DogGame.Modules
     /// </summary>
     public readonly struct PerceptionEvent
     {
+        // who perceived this event
+        public readonly WorldObject Observer;
+
         // Core identifiers
         public readonly PerceptionSense Sense;
         public readonly PerceptionEventType Type;
@@ -66,6 +71,7 @@ namespace DogGame.Modules
         public readonly SoundDetails? Sound;
 
         public PerceptionEvent(
+            WorldObject observer,
             PerceptionSense sense,
             PerceptionEventType type,
             Vector3 worldPos,
@@ -77,6 +83,7 @@ namespace DogGame.Modules
             VisionDetails? vision = null,
             SoundDetails? sound = null)
         {
+            Observer = observer;
             Sense = sense;
             Type = type;
             WorldPos = worldPos;
@@ -91,6 +98,7 @@ namespace DogGame.Modules
 
         // Convenience factory for your existing scent events (minimal call-site changes)
         public static PerceptionEvent MakeScent(
+            WorldObject observer,
             PerceptionEventType type,
             Vector3 worldPos,
             string scentKey,
@@ -101,6 +109,7 @@ namespace DogGame.Modules
             float interest01)
         {
             return new PerceptionEvent(
+                observer: observer,
                 sense: PerceptionSense.Scent,
                 type: type,
                 worldPos: worldPos,
@@ -113,6 +122,7 @@ namespace DogGame.Modules
 
         // Convenience factory for vision events
         public static PerceptionEvent MakeVision(
+            WorldObject observer,
             PerceptionEventType type,
             Vector3 worldPos,
             WorldObject target,
@@ -126,6 +136,7 @@ namespace DogGame.Modules
             SocialRelation relation)
         {
             return new PerceptionEvent(
+                observer: observer,
                 sense: PerceptionSense.Vision,
                 type: type,
                 worldPos: worldPos,
@@ -187,4 +198,64 @@ namespace DogGame.Modules
     // These enums can live here or be referenced from your VisionPerceptionModule.
     public enum VisionTargetKind { Unknown = 0, Dog, Human, Animal, Item, Threat }
     public enum SocialRelation { Self = 0, PackLeader, Packmate, NonPack }
+
+    // Helper class to display the perception event in a human readable way.
+    // Example usage
+    // Debug.Log(event.ToDebugString(worldObject)} ");
+
+    public static class PerceptionEventExtensions
+    {
+        public static string ToDebugString(this PerceptionEvent e)
+        {
+            string description = string.Empty;
+            switch (e.Sense)
+            {
+                case PerceptionSense.Scent:
+                    if (e.Scent.HasValue)
+                    {
+                        var s = e.Scent.Value;
+                        description =
+                            $"[PerceptionEvent] {e.Observer.DisplayName} noticed {e.Type} SCENT " +
+                            $"{s.Category} '{s.ScentName}' " +
+                            $"strength={e.Strength01:0.00} novelty={e.Novelty01:0.00} interest={e.Interest01:0.00}";
+                    }
+                    break;
+
+                case PerceptionSense.Vision:
+                    if (e.Vision.HasValue)
+                    {
+                        var v = e.Vision.Value;
+                        description =
+                            $"[PerceptionEvent] {e.Observer.DisplayName} saw {e.Type} " +
+                            $"{v.Kind} {v.Relation} " +
+                            $"dist={v.DistanceMeters:0.0}m speed={v.SpeedMps:0.0}m/s " +
+                            $"interest={e.Interest01:0.00}";
+                    }
+                    break;
+
+                default:
+                    description =
+                        $"[PerceptionEvent] {e.Observer.DisplayName} perceived {e.Type} " +
+                        $"interest={e.Interest01:0.00}";
+                    break;
+            }
+            return description;
+        }
+
+        public static string AllEventsToDebugString(this List<PerceptionEvent> events)
+        {
+            string description = string.Empty;
+            if (events==null || events.Count==0)
+            {
+                description = "[PerceptionEvent] No events in list";
+                return description;
+            }
+            foreach (PerceptionEvent e in events)
+            {
+                var eventDescription = e.ToDebugString();
+                description = description + Environment.NewLine + eventDescription;
+            }
+            return description;
+        }
+    }
 }
