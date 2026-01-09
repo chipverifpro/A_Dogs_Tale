@@ -328,6 +328,7 @@ public class WorldObject : MonoBehaviour
         noiseMakerModule?.Tick(dt);
         scentEmitterModule?.Tick(dt);
         
+        reactionModule?.Tick(dt);
         // QUEST
         //fetchQuestModule?.Tick(dt);
     }

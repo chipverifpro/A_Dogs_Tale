@@ -142,7 +142,7 @@ namespace DogGame.Modules
                 float angleDeg = Vector3.Angle(forward, dir);
                 if (angleDeg > halfFov)
                 {
-                    Debug.Log($"VisionPerceptionModule {worldObject.DisplayName}: Out of peripheral vision {target.DisplayName}.");
+                    //Debug.Log($"VisionPerceptionModule {worldObject.DisplayName}: Out of peripheral vision {target.DisplayName}.");
                     continue;
                 }
                 // LOS
@@ -158,7 +158,7 @@ namespace DogGame.Modules
                 Vector3 rayDir = ray / rayLen;
                 if (Physics.Raycast(eyePos, rayDir, rayLen, occluderMask, QueryTriggerInteraction.Ignore))
                 {
-                    Debug.Log("Raycast unsuccessful.");
+                    //Debug.Log("Raycast unsuccessful.");
                     continue;
                 }
 
