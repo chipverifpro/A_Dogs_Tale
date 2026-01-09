@@ -2,6 +2,7 @@
 using UnityEngine;
 using DogGame.Modules;
 using DogGame.Tasks;
+using System.Collections.Generic;
 
 namespace DogGame.LLM
 {
@@ -134,6 +135,28 @@ namespace DogGame.LLM
         {
             if (!taskExecutor.TryInterruptWith(taskContext, request))
                 taskQueue.Enqueue(request);
+        }
+
+        public TaskRequest SubmitSequence(
+            int priority,
+            TaskSource source,
+            IEnumerable<IAgentTask> tasks,
+            bool canInterrupt = true,
+            bool resumePrevious = false,
+            bool clearStackOnStart = false,
+            string? tag = null)
+        {
+            var seq = new Task_Sequence(tasks is IAgentTask[] arr ? arr : new List<IAgentTask>(tasks).ToArray());
+
+            return new TaskRequest(
+                task: seq,
+                priority: priority,
+                source: source,
+                canInterrupt: canInterrupt,
+                resumePrevious: resumePrevious,
+                clearStackOnStart: clearStackOnStart,
+                tag: tag
+            );
         }
     }
 }
