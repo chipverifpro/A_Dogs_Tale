@@ -36,7 +36,7 @@ namespace DogGame.Tasks
         public void Start(TaskContext context)
         {
             remainingSeconds = durationSeconds;
-            context.Movement.StopMoving();
+            context.Motion.StopMoving();
         }
 
         private int debugDoubleTick = -1;

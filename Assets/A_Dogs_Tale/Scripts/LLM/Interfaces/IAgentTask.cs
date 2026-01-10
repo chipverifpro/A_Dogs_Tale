@@ -35,24 +35,24 @@ namespace DogGame.LLM
 
     /// <summary>
     /// A small context object you can expand later (agent references, world, nav, etc.)
+    /// TODO: look into how this is used.  Can everything be found inside Agent?
+    /// AgentID = Agent.AgentId,
+    /// AgentTransform: Agent., Movement: maybe, Blackboard: yes, Current
     /// </summary>
     public sealed class TaskContext
     {
-        public readonly string AgentId;
-        public readonly Transform AgentTransform;
         public readonly WorldObject Agent;
 
-        public readonly IAgentMovementAdapter Movement;
-        public readonly IBlackboard Blackboard;
-        public Vector2Int CurrentCellPos => new Vector2Int((int)AgentTransform.position.x,(int)AgentTransform.position.z);
+        // everything else comes directly from Agent (which is a WorldObject)
+        public string AgentId => Agent.DisplayName;
+        public Transform AgentTransform => Agent.transform;
+        public MotionAdapter Motion => Agent.motionAdapter;
+        public IBlackboard Blackboard => Agent.blackboardModule.Blackboard;
+        public Vector2Int CurrentCellPos => Agent.locationModule.cell.pos;
         
-        public TaskContext(string agentId, WorldObject worldObject, Transform agentTransform, IAgentMovementAdapter movement, IBlackboard blackboard)
+        public TaskContext(WorldObject worldObject)
         {
-            AgentId = agentId;
             Agent = worldObject;
-            AgentTransform = agentTransform;
-            Movement = movement;
-            Blackboard = blackboard;
         }
     }
 

@@ -1,7 +1,7 @@
 using UnityEngine;
 
 
-// This is basically a module implementation of TaskControler.cs
+// This is basically a module implementation of TaskController.cs
 // It parses the task list (in TaskListModule) and issues those commands.
 //
 // when no commands are present, it switches back to another Decision Module

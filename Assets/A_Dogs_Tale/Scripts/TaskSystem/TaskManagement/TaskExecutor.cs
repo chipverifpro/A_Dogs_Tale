@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using DogGame.LLM;
+using DogGame.Routines;
 
 namespace DogGame.Tasks
 {
@@ -22,6 +23,9 @@ namespace DogGame.Tasks
         public int CurrentPriority => currentRequest?.Priority ?? -1;
         public int SuspendedCount => suspended.Count;
 
+        private float currentRequestElapsed;
+        private string? lastFailureReason;
+
         public TaskExecutor(TaskQueue taskQueue)
         {
             this.taskQueue = taskQueue;
@@ -34,6 +38,9 @@ namespace DogGame.Tasks
             if (debugDoubleTick == Time.frameCount)
                 Debug.LogError("ERROR: TaskExecutor.Tick run more than once per frame");
             debugDoubleTick = Time.frameCount;
+
+            if (currentTask != null)
+                currentRequestElapsed += deltaTimeSeconds;
 
             //Debug.Log($"TaskExecutor.Tick: taskQueue = {taskQueue.Count}");
             // Acquire next task if none is running (prefer suspended over queued)
@@ -79,8 +86,10 @@ namespace DogGame.Tasks
                 return;
 
             if (tickResult.Status == TaskStatus.Failed)
+            {
                 Debug.LogWarning($"Task failed: {currentTask!.DebugName} reason={tickResult.FailureReason}");
-
+                lastFailureReason = tickResult.FailureReason;
+            }
             EndCurrentTask(context, succeeded: tickResult.Status == TaskStatus.Succeeded);
         }
 
@@ -141,7 +150,7 @@ namespace DogGame.Tasks
             currentTaskStarted = false;
 
             // Clear movement intent so we don't drift while suspended.
-            context.Movement.StopMoving();
+            context.Motion.StopMoving();
             return true;
         }
 
@@ -187,14 +196,22 @@ namespace DogGame.Tasks
             currentRequest = request;
             currentTask = request.Task;
             currentTaskStarted = false;
+
+            currentRequestElapsed = 0f;
+            lastFailureReason = null;
         }
 
         private void EndCurrentTask(TaskContext context, bool succeeded)
         {
+            string? tag = currentRequest?.Tag;
+
+            if (RoutineLibrary.Instance != null && tag != null)
+                RoutineLibrary.Instance.RecordOutcomeFromTag(tag, succeeded, currentRequestElapsed, lastFailureReason);
+
             SafeStop(context);
 
             // Ensure agent doesn't keep moving when tasks end.
-            context.Movement.StopMoving();
+            context.Motion.StopMoving();
 
             currentRequest = null;
             currentTask = null;
@@ -210,7 +227,7 @@ namespace DogGame.Tasks
                 return;
 
             SafeStop(context);
-            context.Movement.StopMoving();
+            context.Motion.StopMoving();
 
             currentRequest = null;
             currentTask = null;

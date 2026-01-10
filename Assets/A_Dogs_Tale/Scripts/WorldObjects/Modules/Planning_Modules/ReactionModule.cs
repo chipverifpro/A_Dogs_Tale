@@ -8,7 +8,7 @@ using DogGame.Reactions;
 
 public sealed class ReactionModule : WorldModule
 {
-    public TaskControler taskController = null!;
+    public TaskController taskController = null!;
 
     [SerializeField] private float minInterestToReact = 0.25f;
     [SerializeField] private float globalCooldownSeconds = 0.50f;
@@ -19,7 +19,7 @@ public sealed class ReactionModule : WorldModule
     protected override void Awake()
     {
         if (taskController == null)
-            taskController = GetComponentInParent<TaskControler>();
+            taskController = GetComponentInParent<TaskController>();
 
         ruleTable = new ReactionRuleTable();
         BuildDefaultRules(ruleTable);

@@ -124,6 +124,33 @@ namespace DogGame.Reactions
                 .Arg("overwrite", overwrite)
                 .Build();
 
+        public static TaskSpec Call(string routineId) =>
+            TaskSpecBuilder.Task("routine_call")
+                .Arg("id", routineId)
+                .Build();
+            
+        // These take no explicit WorldObject parameter because routines/rules
+        // typically act on the current Vision target or a blackboard-selected item.
+        //
+        // Why no parameter here? Because your DSL/LLM is way more reliable if it
+        // can say “take the current target” rather than needing object references. 
+        // We’ll resolve the item from:
+        //	•	PerceptionEvent.Vision.Target if present
+        //	•	otherwise a blackboard slot like item.target
+        //
+        // (If you really want explicit item IDs later, we can add take_item { objectId: 123 }.)
+
+        public static TaskSpec TakeItem() =>
+            TaskSpecBuilder.Task("take_item").Build();
+
+        public static TaskSpec DropItem() =>
+            TaskSpecBuilder.Task("drop_item").Build();
+
+        public static TaskSpec BuryItem(float depthMeters = 0.15f) =>
+            TaskSpecBuilder.Task("bury_item")
+                .Arg("depthMeters", depthMeters)
+                .Build();
+
     }
 }
 

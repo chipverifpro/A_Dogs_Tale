@@ -44,7 +44,7 @@ namespace DogGame.Tasks
         public void Stop(TaskContext context)
         {
             context.Agent.agentMovementModule.SetDesiredVelocity(Vector3.zero);
-            context.Movement.StopMoving();
+            context.Motion.StopMoving();
         }
     }
 }

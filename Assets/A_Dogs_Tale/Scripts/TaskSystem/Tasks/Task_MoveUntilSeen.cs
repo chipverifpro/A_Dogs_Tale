@@ -55,12 +55,12 @@ namespace DogGame.Tasks
 
             // 2) Otherwise keep moving toward target
             Vector3 targetPos = target.transform.position;
-            bool ok = context.Movement.SetMoveTarget(targetPos);
+            bool ok = context.Motion.SetMoveTarget(targetPos);
             if (!ok)
                 return TaskTickResult.Failed("Movement adapter rejected move");
 
             // 3) If we arrived near target but still can't see => fail (or succeed; your call)
-            if (context.Movement.IsAt(targetPos, stopRadius))
+            if (context.Motion.IsAt(targetPos, stopRadius))
                 return TaskTickResult.Failed("Arrived but not visible");
 
             if (elapsed >= maxSeconds)

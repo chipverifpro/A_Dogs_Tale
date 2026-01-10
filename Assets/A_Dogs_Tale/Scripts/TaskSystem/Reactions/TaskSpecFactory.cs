@@ -245,6 +245,28 @@ namespace DogGame.Reactions
                 return true;
             }
 
+            // ---------------- ITEM TASKS ----------------
+            if (name == "take_item")
+            {
+                task = new Task_TakeItem();
+                return true;
+            }
+
+            if (name == "drop_item")
+            {
+                task = new Task_DropItem();
+                return true;
+            }
+
+            if (name == "bury_item")
+            {
+                float depth = GetFloat(spec, "depthMeters", 0.15f);
+                //depth = UnityEngine.Mathf.Clamp(depth, 0.01f, 1.0f);
+
+                task = new Task_BuryItem(depth);
+                return true;
+            }
+
             error = $"Unknown TaskSpec name '{spec.Name}'.";
             return false;
         }
@@ -354,6 +376,62 @@ namespace DogGame.Reactions
 
             error = $"'{key}' in TaskSpec '{spec.Name}' must be TaskSpec[].";
             return false;
+        }
+
+        private static bool TryResolveItem(
+            TaskContext context,
+            PerceptionEvent? evt,
+            out WorldObject? item,
+            out string? error)
+        {
+            error = null;
+            item = null;
+
+            // Prefer vision target if present
+            if (evt.HasValue && evt.Value.Vision.HasValue && evt.Value.Target != null)
+            {
+                item = evt.Value.Target;
+                return true;
+            }
+
+            // Otherwise look for blackboard selection
+            if (context.Blackboard.TryGetInt("item.targetId", out int id))
+            {
+                if (WorldObjectRegistry.Instance && WorldObjectRegistry.Instance.TryGet(id, out var wo))
+                {
+                    item = wo;
+                    return true;
+                }
+                error = $"Blackboard item.targetId={id} not found in registry.";
+                return false;
+            }
+
+            error = "No item resolved (need Vision.Target or blackboard item.targetId).";
+            return false;
+        }
+
+        private static bool TryResolveCarriedItem(
+            TaskContext context,
+            out WorldObject? item,
+            out string? error)
+        {
+            error = null;
+            item = null;
+
+            if (!context.Blackboard.TryGetInt("item.carriedId", out int id) || id <= 0)
+            {
+                error = "No carried item (blackboard item.carriedId missing).";
+                return false;
+            }
+
+            if (!WorldObjectRegistry.Instance || !WorldObjectRegistry.Instance.TryGet(id, out var wo) || wo == null)
+            {
+                error = $"Carried item id={id} missing from registry.";
+                return false;
+            }
+
+            item = wo;
+            return true;
         }
     }
 }

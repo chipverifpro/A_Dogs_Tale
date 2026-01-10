@@ -125,6 +125,10 @@ public class WorldObject : MonoBehaviour
     [SerializeField] private WorldObjectKind kind = WorldObjectKind.Unknown;
     [SerializeField] private bool autoRegister = true;
 
+    // MotionAdapter implements IAgentMovementAdapter interface 
+    //     connecting LLMAsyncPlanDriver to agentMovementModule
+    public MotionAdapter motionAdapter = null;
+
     // --------------------------
     // MODULE REFERENCES
     // Use Modules as:
@@ -207,6 +211,8 @@ public class WorldObject : MonoBehaviour
         {
             Debug.LogError($"WorldObject.Awake() was unable to find Directory.");
         }
+
+        motionAdapter = new(this);  // create the adapter
 
         // Auto-fill module pointers, if they are attached to the same GameObject as this.
 
@@ -629,6 +635,26 @@ public class WorldObject : MonoBehaviour
         return go.AddComponent<T>();
     }
 
+    // Ensure that the BlackboardModule and it's included Blackboard are both valid.
+    // Return a pointer to the Blackboard (of type SimpleBlackboard, implementing IBlackboard interface).
+    public IBlackboard EnsureBlackboard()
+    {
+        // if everything is good, use it.
+        if (blackboardModule!=null && blackboardModule.Blackboard!=null)
+            return blackboardModule.Blackboard;
+
+        // If the pointer to an existing Module is missing, get it.
+        if (blackboardModule == null)
+            blackboardModule = GetComponent<BlackboardModule>();
+
+        // Create the module if missing
+        if (blackboardModule == null)
+            blackboardModule = gameObject.AddComponent<BlackboardModule>();
+
+        // now create the Blackboard (SimpleBlackboard) itself
+        blackboardModule.ForceInitialize();
+        return blackboardModule.Blackboard;
+    }
 
 #if UNITY_EDITOR
     private void OnValidate()

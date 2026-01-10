@@ -25,7 +25,7 @@ namespace DogGame.Tasks
 
         public void Start(TaskContext context)
         {
-            destinationWorld = context.Movement.CellToWorld((int)mapX, (int)mapY);  // TODO: change these back to float, and include height
+            destinationWorld = context.Motion.CellToWorld((int)mapX, (int)mapY);  // TODO: change these back to float, and include height
         }
 
         private int debugDoubleTick = -1;
@@ -37,10 +37,10 @@ namespace DogGame.Tasks
             debugDoubleTick = Time.frameCount;
 
             Debug.Log ($"Task_MoveToCell.Tick ({context.Agent.DisplayName}, {deltaTimeSeconds})");
-            if (context.Movement.IsAt(destinationWorld, stopRadius))
+            if (context.Motion.IsAt(destinationWorld, stopRadius))
                 return TaskTickResult.Succeeded();
 
-            bool couldMove = context.Movement.SetMoveTarget(destinationWorld);
+            bool couldMove = context.Motion.SetMoveTarget(destinationWorld);
             if (!couldMove)
                 return TaskTickResult.Failed("Movement adapter refused move target (blocked/unavailable).");
 

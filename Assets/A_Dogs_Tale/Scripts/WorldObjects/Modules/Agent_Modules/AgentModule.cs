@@ -23,8 +23,8 @@ namespace DogGame.Modules
         //public PackMemberModule packMemberModule { get; protected set; }
         //public MotivationModule motivationModule { get; protected set; }
 
-        [Header("Customized Module Views")]
-        public AgentBlackboardView agentBlackboard;
+        //[Header("Customized Module Views")]
+        //public AgentBlackboardView agentBlackboard;
         
         [Header("Initial Decision Type")]
         public AgentDecisionType initialDecisionType = AgentDecisionType.Wanderer;

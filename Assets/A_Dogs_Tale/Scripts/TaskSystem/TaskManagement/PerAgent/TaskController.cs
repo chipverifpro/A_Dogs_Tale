@@ -7,7 +7,7 @@ using System.Collections.Generic;
 namespace DogGame.LLM
 {
     [DefaultExecutionOrder(-10)]
-    public sealed class TaskControler : WorldModule
+    public sealed class TaskController : WorldModule
     {
         [SerializeField] private string agentId = "player";
         public string AgentId => agentId;
@@ -39,7 +39,7 @@ namespace DogGame.LLM
         {
             if (worldObject == null)
             {
-                Debug.LogError("[TaskControler] WorldObject not found on this GameObject.");
+                Debug.LogError("[TaskController] WorldObject not found on this GameObject.");
                 enabled = false;
                 return;
             }
@@ -54,9 +54,10 @@ namespace DogGame.LLM
 
         
             // Movement adapter used by tasks (intent-level; no per-frame Tick here)
-            motionAdapter = new MotionAdapter(worldObject: worldObject);
+            motionAdapter = worldObject.motionAdapter;
 
-            taskContext = new TaskContext(agentId, worldObject, transform, motionAdapter, blackboard);
+            taskContext = new TaskContext(worldObject);
+            motionAdapter = (MotionAdapter)taskContext.Motion;
         }
 
         public bool TryApplyPlanJson(string planResponseJson)
@@ -98,8 +99,8 @@ namespace DogGame.LLM
             // If we just took control, kill any leftover player intent immediately.
             if (isDrivingMovementNow && !wasDrivingMovementLastTick)
             {
-                Debug.Log("TaskControler: Stop movement when task control gains control.");
-                taskContext.Movement.StopMoving();
+                Debug.Log("TaskController: Stop movement when task control gains control.");
+                taskContext.Motion.StopMoving();
             }
 
             wasDrivingMovementLastTick = isDrivingMovementNow;
@@ -110,13 +111,13 @@ namespace DogGame.LLM
         public override void Tick(float deltaTimeSeconds)
         {
             if (debugDoubleTick == Time.frameCount)
-                Debug.LogError("ERROR: TaskControler.Tick run more than once per frame");
+                Debug.LogError("ERROR: TaskController.Tick run more than once per frame");
             debugDoubleTick = Time.frameCount;
 
             // Temporary dev behavior: any input cancels task control (also blocks Tab, etc.).
             if (dir && worldObject && dir.gameInputRouter.InputState.anyKeyOrButtonDown)
             {
-                Debug.Log("TaskControler: Cancelling tasks due to anyKeyOrButtonDown");
+                Debug.Log("TaskController: Cancelling tasks due to anyKeyOrButtonDown");
                 CancelAllTasks();
                 return;
             }

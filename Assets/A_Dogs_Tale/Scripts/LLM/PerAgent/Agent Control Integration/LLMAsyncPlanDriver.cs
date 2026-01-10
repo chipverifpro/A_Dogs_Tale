@@ -29,7 +29,7 @@ namespace DogGame.LLM
         // Core runtime
         private TaskExecutor executor = null!;
         private TaskContext context = null!;
-        private TaskControler controller = null!;
+        private TaskController controller = null!;
 
         // Async state
         private float nextEligibleRequestTime;
@@ -41,14 +41,15 @@ namespace DogGame.LLM
         {
             agentId = worldObject.DisplayName;
 
-            controller = GetComponent<TaskControler>();
+            controller = GetComponent<TaskController>();
             if (controller == null)
-                controller = gameObject.AddComponent<TaskControler>();
+                controller = gameObject.AddComponent<TaskController>();
                 
             executor = controller.taskExecutor; //new TaskExecutor(controller.taskQueue);
 
-            // Keep the simple adapter for now; later replace with your real movement adapter.
-            var movement = new SimpleMovementAdapter(transform, moveSpeed: 2.5f, cellSize: 1.0f, gridOrigin: Vector3.zero);
+            // Your real movement adapter.  (WorldObject.Awake() has execution order = -100)
+            var motion = worldObject.motionAdapter;
+            //var movement = new MotionAdapter(worldObject);
             context = controller.taskContext; //new TaskContext(agentId, worldObject, transform, movement);
 
             // Ensure we have a FakeLLMService on this object (or add one).

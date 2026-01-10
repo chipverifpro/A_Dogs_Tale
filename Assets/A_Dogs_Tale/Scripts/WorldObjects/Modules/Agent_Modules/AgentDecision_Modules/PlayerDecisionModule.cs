@@ -34,8 +34,14 @@ namespace DogGame.Modules
         public WorldObject currentDestinationObject = null;
         public Vector3? currentManualWorldMoveDir = null;
 
-        TaskControler taskControler = null;
+        TaskController taskController = null;
 
+        protected override void Awake()
+        {
+            if (taskController == null)
+                taskController = GetComponentInParent<TaskController>();
+
+        }
     private void Start()
     {
         if (gameInputRouter == null)
@@ -62,7 +68,7 @@ namespace DogGame.Modules
             Debug.LogError($"[PlayerInputStateDebugger] gameInputRouter.InputState is null.", this);
         }
 
-        taskControler = worldObject.GetComponent<TaskControler>();
+        taskController = worldObject.GetComponent<TaskController>();
 
     }
 
@@ -118,10 +124,10 @@ namespace DogGame.Modules
                 return;
             }
 
-            if (taskControler != null && taskControler.IsDrivingMovement)
+            if (taskController != null && taskController.IsDrivingMovement)
             {
-                //Debug.Log("taskControler is driving movement.");
-                taskControler.Tick(deltaTime);
+                //Debug.Log("taskController is driving movement.");
+                taskController.Tick(deltaTime);
                 //return; // IMPORTANT: don't also write motion inputs this tick
             }
 
@@ -143,7 +149,7 @@ namespace DogGame.Modules
             HandleOneShotActions(inputState);
 
             // Only do player controlled movement if LLM isn't driving movement
-            if (!(taskControler != null && taskControler.IsDrivingMovement))
+            if (!(taskController != null && taskController.IsDrivingMovement))
             {
                 //Debug.Log("PlayerDecisionModule is driving movement.");
                 HandleMovement(inputState, deltaTime);
@@ -341,7 +347,7 @@ namespace DogGame.Modules
         {
             if (targetWorldObject != null)
             {
-                taskControler.Submit(new TaskRequest(
+                taskController.Submit(new TaskRequest(
                     task: new Task_MoveToObject(targetWorldObject, stopRadius: 0.6f),
                     priority: 100,
                     source: TaskSource.Player,
@@ -355,7 +361,7 @@ namespace DogGame.Modules
         public void SubmitMoveToTargetPositionTask(Vector3 targetLocation)
         {
             {
-                taskControler.Submit(new TaskRequest(
+                taskController.Submit(new TaskRequest(
                     task: new Task_MoveToLocation(targetLocation.x, targetLocation.z, stopRadius: 0.6f),
                     priority: 100,
                     source: TaskSource.Player,
@@ -489,7 +495,7 @@ namespace DogGame.Modules
         // Run this when THIS decision module becomes active
         public override void BeginDecisionModule(bool resume=false)
         {
-            if (!(taskControler != null && taskControler.IsDrivingMovement))
+            if (!(taskController != null && taskController.IsDrivingMovement))
             {
                 Debug.Log("LLM was still driving movement when Player took over.");
             }
@@ -522,5 +528,31 @@ namespace DogGame.Modules
             worldObject.agentMovementModule.ClearDesiredMove();
         }
         #endregion
+
+        // Example "real" routine submission
+        public void Submit_curious_bark_sniff ()
+        {
+            var lib = DogGame.Routines.RoutineLibrary.Instance;
+            TaskRequest request;
+            string error = string.Empty;
+            if (lib != null && lib.TryBuildRoutineRequest(
+                    routineId: "curious_bark_sniff",
+                    context: taskController.taskContext,
+                    evt: null,
+                    priority: 80,
+                    source: TaskSource.Reaction,
+                    canInterrupt: true,
+                    resumePrevious: true,
+                    clearStackOnStart: false,
+                    out request,
+                    out error))
+            {
+                taskController.Submit(request);
+            }
+            else
+            {
+                Debug.LogWarning($"Routine build failed: {error}");
+            }
+        }
     }
 }

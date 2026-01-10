@@ -96,7 +96,7 @@ namespace DogGame.Tasks
 
             if (stepsTaken >= maxSteps)
             {
-                context.Movement.StopMoving();
+                context.Motion.StopMoving();
                 return TaskTickResult.Succeeded();
             }
 
@@ -104,10 +104,10 @@ namespace DogGame.Tasks
             if (currentTargetCell != null)
             {
                 Vector3 targetWorld = CenterOfCellWorld(currentTargetCell);
-                if (!context.Movement.IsAt(targetWorld, stopRadius))
+                if (!context.Motion.IsAt(targetWorld, stopRadius))
                 {
                     // Keep heading toward it.
-                    context.Movement.SetMoveTarget(targetWorld);
+                    context.Motion.SetMoveTarget(targetWorld);
                     return TaskTickResult.Running();
                 }
 
@@ -145,7 +145,7 @@ namespace DogGame.Tasks
             {
                 // Lost trail: no meaningful direction. Stop and succeed for now.
                 // Later: you can switch to “spiral sniff search” or LLM request.
-                context.Movement.StopMoving();
+                context.Motion.StopMoving();
                 return TaskTickResult.Succeeded();
             }
 
@@ -153,13 +153,13 @@ namespace DogGame.Tasks
             stepsTaken++;
 
             Vector3 nextWorld = CenterOfCellWorld(nextCell);
-            context.Movement.SetMoveTarget(nextWorld);
+            context.Motion.SetMoveTarget(nextWorld);
             return TaskTickResult.Running();
         }
 
         public void Stop(TaskContext context)
         {
-            context.Movement.StopMoving();
+            context.Motion.StopMoving();
         }
 
         private static Vector3 CenterOfCellWorld(Cell cell)

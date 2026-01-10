@@ -1,31 +1,24 @@
-using System.Collections.Generic;
 using UnityEngine;
+using DogGame.Tasks;
 
 namespace DogGame.Modules
 {
     [DisallowMultipleComponent]
     public class BlackboardModule : WorldModule
     {
-        private readonly Dictionary<string, object> data = new();
+        public IBlackboard Blackboard { get; private set; } = null!;
 
-        public void Set<T>(string key, T value)
+        protected override void Awake()
         {
-            data[key] = value;
+            ForceInitialize();
         }
 
-        public bool TryGet<T>(string key, out T value)
+        /// <summary>
+        /// Ensure Blackboard exists even if this component was just added at runtime.
+        /// </summary>
+        public void ForceInitialize()
         {
-            if (data.TryGetValue(key, out var obj) && obj is T cast)
-            {
-                value = cast;
-                return true;
-            }
-
-            value = default;
-            return false;
+            Blackboard ??= new SimpleBlackboard();
         }
-
-        public bool HasKey(string key) => data.ContainsKey(key);
-        public void Remove(string key) => data.Remove(key);
     }
 }

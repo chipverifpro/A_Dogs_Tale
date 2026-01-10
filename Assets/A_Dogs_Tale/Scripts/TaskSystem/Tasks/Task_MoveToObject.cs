@@ -30,16 +30,16 @@ namespace DogGame.Tasks
 
             Vector3 targetWorld = target.locationModule.pos3d_world;
 
-            if (context.Movement.IsAt(targetWorld, stopRadius))
+            if (context.Motion.IsAt(targetWorld, stopRadius))
                 return TaskTickResult.Succeeded();
 
-            context.Movement.SetMoveTarget(targetWorld);
+            context.Motion.SetMoveTarget(targetWorld);
             return TaskTickResult.Running();
         }
 
         public void Stop(TaskContext context)
         {
-            context.Movement.StopMoving();
+            context.Motion.StopMoving();
         }
     }
 }
