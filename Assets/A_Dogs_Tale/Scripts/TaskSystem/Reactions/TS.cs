@@ -43,6 +43,12 @@ namespace DogGame.Reactions
             });
 
         /// <summary>
+        /// Choose exactly one option at runtime and execute it to completion.
+        /// </summary>
+        public static TaskSpec Random(params TaskSpec[] options) =>
+            new TaskSpec(name: "random", new Dictionary<string, object> { ["options"] = options });
+        
+        /// <summary>
         /// Move toward the PerceptionEvent.WorldPos.
         /// Common for vision/scent investigation.
         /// </summary>

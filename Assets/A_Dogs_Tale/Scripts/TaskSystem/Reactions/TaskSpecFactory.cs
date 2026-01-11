@@ -118,6 +118,26 @@ namespace DogGame.Reactions
                 return true;
             }
 
+            if (name == "random")
+            {
+                if (!TryGetTaskSpecArray(spec, "tasks", out var specs, out error))
+                    return false;
+
+                var tasks = new IAgentTask[specs.Length];
+                for (int i = 0; i < specs.Length; i++)
+                {
+                    if (!TryBuildTask(specs[i], observer, e, out var built, out var err))
+                    {
+                        error = $"random[{i}] failed: {err}";
+                        return false;
+                    }
+                    tasks[i] = built!;
+                }
+
+                task = new Task_Random(tasks);
+                return true;
+            }
+
             // ---------------- MOVEMENT TASKS ----------------
 
             if (name == "move_to_event")
