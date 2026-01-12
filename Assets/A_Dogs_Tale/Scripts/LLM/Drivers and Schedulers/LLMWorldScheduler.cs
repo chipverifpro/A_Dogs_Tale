@@ -4,6 +4,12 @@ using UnityEngine;
 
 namespace DogGame.LLM
 {
+    public enum RemoteLLMProvider
+    {
+        OpenAI,
+        Gemini
+    }
+
     /// <summary>
     /// Global LLM request scheduler.
     /// Ensures fairness, throttling, and model-tier limits.
@@ -11,6 +17,9 @@ namespace DogGame.LLM
     public sealed class LLMWorldScheduler : MonoBehaviour
     {
         public static LLMWorldScheduler Instance { get; private set; } = null!;
+
+        [Header("LLM Provider")]
+        [SerializeField] private RemoteLLMProvider remoteProvider = RemoteLLMProvider.OpenAI;
 
         [Header("Throughput limits")]
         [SerializeField] private int maxConcurrentLocalRequests = 2;
@@ -24,8 +33,8 @@ namespace DogGame.LLM
         private int activeLocalRequests;
         private int activeRemoteRequests;
 
-        //private FakeLLMService fakeService = null!;
-        private RemoteLLMService remoteService = null!;
+        private RemoteLLMService? openAiService;
+        private GeminiLLMService? geminiService;
         private float nextScheduleTime;
 
         private void Awake()
@@ -37,8 +46,16 @@ namespace DogGame.LLM
             }
 
             Instance = this;
-            //fakeService = gameObject.AddComponent<FakeLLMService>();
-            remoteService = gameObject.AddComponent<RemoteLLMService>();
+            
+            switch (remoteProvider)
+            {
+                case RemoteLLMProvider.OpenAI:
+                    openAiService = gameObject.AddComponent<RemoteLLMService>();
+                    break;
+                case RemoteLLMProvider.Gemini:
+                    geminiService = gameObject.AddComponent<GeminiLLMService>();
+                    break;
+            }
         }
 
         private void Update()
@@ -89,7 +106,7 @@ namespace DogGame.LLM
         {
             return tier switch
             {
-                LLMModelTier.LocalSmall  => activeLocalRequests < maxConcurrentLocalRequests,
+                LLMModelTier.LocalSmall => activeLocalRequests < maxConcurrentLocalRequests,
                 LLMModelTier.RemotePaid => activeRemoteRequests < maxConcurrentRemoteRequests,
                 _ => false
             };
@@ -131,27 +148,31 @@ namespace DogGame.LLM
                 + " Return 1–4 add_task intentions unless impossible. If impossible, return a single wait.\""
                 + "}";
 
-            remoteService.SubmitRequest(
-                requestId: request.RequestId,
-                requestJson: RequestJson_text,
-                agentId: request.AgentId,
-                onResponseJson: (json) =>
-                {
-                    DecrementActive(request.ModelTier);
-                    request.OnResponseJson(json);
-                });
+            Action<string> onResponse = (json) =>
+            {
+                DecrementActive(request.ModelTier);
+                request.OnResponseJson(json);
+            };
 
-            //fakeService.SubmitRequest(
-            //    requestId: request.RequestId,
-            //    requestJson: "{ \"note\": \"scheduled fake request\" }",
-            //    agentId: request.AgentId,
-            //    onResponseJson: (json) =>
-            //    {
-            //        DecrementActive(request.ModelTier);
-            //        request.OnResponseJson(json);
-            //    });
+            switch (remoteProvider)
+            {
+                case RemoteLLMProvider.OpenAI:
+                    openAiService?.SubmitRequest(
+                        requestId: request.RequestId,
+                        requestJson: RequestJson_text,
+                        agentId: request.AgentId,
+                        onResponseJson: onResponse);
+                    break;
+                case RemoteLLMProvider.Gemini:
+                    geminiService?.SubmitRequest(
+                        requestId: request.RequestId,
+                        requestJson: RequestJson_text,
+                        agentId: request.AgentId,
+                        onResponseJson: onResponse);
+                    break;
+            }
 
-            Debug.Log($"[LLM Scheduler] Dispatched {request.ModelTier} request for {request.AgentId}");
+            Debug.Log($"[LLM Scheduler] Dispatched {request.ModelTier} request for {request.AgentId} using {remoteProvider}");
         }
 
         private void IncrementActive(LLMModelTier tier)
