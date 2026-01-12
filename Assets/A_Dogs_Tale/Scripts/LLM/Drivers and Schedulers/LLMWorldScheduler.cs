@@ -24,7 +24,8 @@ namespace DogGame.LLM
         private int activeLocalRequests;
         private int activeRemoteRequests;
 
-        private FakeLLMService fakeService = null!;
+        //private FakeLLMService fakeService = null!;
+        private RemoteLLMService remoteService = null!;
         private float nextScheduleTime;
 
         private void Awake()
@@ -36,7 +37,8 @@ namespace DogGame.LLM
             }
 
             Instance = this;
-            fakeService = gameObject.AddComponent<FakeLLMService>();
+            //fakeService = gameObject.AddComponent<FakeLLMService>();
+            remoteService = gameObject.AddComponent<RemoteLLMService>();
         }
 
         private void Update()
@@ -96,16 +98,58 @@ namespace DogGame.LLM
         private void Dispatch(LLMPlanRequest request)
         {
             IncrementActive(request.ModelTier);
+            string RequestJson_text =
+    "IMPORTANT: Output ONLY JSON.\n" +
+    "Return ONLY a PlanResponseV1 JSON object in EXACTLY this format:\n" +
+    "{\n" +
+    "  \"schema\":\"PlanResponseV1\",\n" +
+    "  \"requestId\":\"<copy from requestId below>\",\n" +
+    "  \"agentId\":\"<copy from agentId below>\",\n" +
+    "  \"intentions\":[\n" +
+    "    {\"type\":\"add_task\",\"id\":\"t1\",\"priority\":0.9,\"parameters\":{\"task\":\"move_to_cell\",\"locationCell\":[5,3],\"stopRadius\":0.2}},\n" +
+    "    {\"type\":\"add_task\",\"id\":\"t2\",\"priority\":0.5,\"parameters\":{\"task\":\"wait\",\"seconds\":1.0}}\n" +
+    "  ],\n" +
+    "  \"debug\":{\"confidence\":0.5,\"notes\":[]}\n" +
+    "}\n" +
+    "RULES:\n" +
+    "- intentions entries MUST contain: type, id, priority, parameters.\n" +
+    "- Use type=\"add_task\".\n" +
+    "- parameters.task must be one of: \"move_to_cell\", \"wait\".\n" +
+    "- move_to_cell parameters: locationCell [int,int], stopRadius float.\n" +
+    "- wait parameters: seconds float.\n" +
+    "- Do NOT output intentions as {task, params}.\n\n" +
+    "INPUT PACKET:\n"
+                + "{"
+                + "\"schema\":\"PlanRequestV1\","
+                //+ $"\"requestId\":\"{request.RequestId}\","
+                //+ $"\"agentId\":\"{request.AgentId}\","
+                + "\"allowedTasks\":["
+                + "{\"task\":\"wait\",\"params\":{\"seconds\":\"float 0..30\"}},"
+                + "{\"task\":\"move_to_cell\",\"params\":{\"locationCell\":\"[int,int]\",\"stopRadius\":\"float 0.05..2.0\"}}"
+                + "],"
+                + "\"goal\":\"Pick 2-4 simple tasks: move somewhere nearby, maybe wait."
+                + " Return 1–4 add_task intentions unless impossible. If impossible, return a single wait.\""
+                + "}";
 
-            fakeService.SubmitRequest(
+            remoteService.SubmitRequest(
                 requestId: request.RequestId,
-                requestJson: "{ \"note\": \"scheduled fake request\" }",
+                requestJson: RequestJson_text,
                 agentId: request.AgentId,
                 onResponseJson: (json) =>
                 {
                     DecrementActive(request.ModelTier);
                     request.OnResponseJson(json);
                 });
+
+            //fakeService.SubmitRequest(
+            //    requestId: request.RequestId,
+            //    requestJson: "{ \"note\": \"scheduled fake request\" }",
+            //    agentId: request.AgentId,
+            //    onResponseJson: (json) =>
+            //    {
+            //        DecrementActive(request.ModelTier);
+            //        request.OnResponseJson(json);
+            //    });
 
             Debug.Log($"[LLM Scheduler] Dispatched {request.ModelTier} request for {request.AgentId}");
         }

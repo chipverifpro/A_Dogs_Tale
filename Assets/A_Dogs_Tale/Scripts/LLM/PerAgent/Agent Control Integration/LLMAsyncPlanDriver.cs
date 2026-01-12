@@ -35,7 +35,8 @@ namespace DogGame.LLM
         private float nextEligibleRequestTime;
         private bool requestInFlight;
 
-        private FakeLLMService fakeService = null!;
+        //private FakeLLMService fakeService = null!;
+        private RemoteLLMService remoteService = null!;
 
         protected override void Awake()
         {
@@ -53,11 +54,16 @@ namespace DogGame.LLM
             context = controller.taskContext; //new TaskContext(agentId, worldObject, transform, movement);
 
             // Ensure we have a FakeLLMService on this object (or add one).
-            fakeService = GetComponent<FakeLLMService>();
-            if (fakeService == null)
-                fakeService = gameObject.AddComponent<FakeLLMService>();
+            remoteService = GetComponent<RemoteLLMService>();
+            if (remoteService == null)
+                remoteService = gameObject.AddComponent<RemoteLLMService>();
 
-            fakeService.SetLatencyRange(simulatedLatencyRangeSeconds);
+            //// Ensure we have a FakeLLMService on this object (or add one).
+            //fakeService = GetComponent<FakeLLMService>();
+            //if (fakeService == null)
+            //    fakeService = gameObject.AddComponent<FakeLLMService>();
+            //
+            //fakeService.SetLatencyRange(simulatedLatencyRangeSeconds);
 
             nextEligibleRequestTime = Time.time + UnityEngine.Random.Range(0f, 0.5f);
         }
