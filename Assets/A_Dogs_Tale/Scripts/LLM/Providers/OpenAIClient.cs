@@ -156,8 +156,8 @@ namespace DogGame.LLM.Providers
                 {
                     succeeded = false,
                     errorMessage =
-                        $"[OpenAIClient] HTTP failed: {unityRequest.responseCode} {unityRequest.error}\n{unityRequest.downloadHandler.text}",
-                    rawProviderPayloadJson = unityRequest.downloadHandler.text
+                        $"[OpenAIClient] HTTP failed: {unityRequest.responseCode} {unityRequest.error}\n{raw}",
+                    rawProviderPayloadJson = raw
                 };
                 yield break;
             }
