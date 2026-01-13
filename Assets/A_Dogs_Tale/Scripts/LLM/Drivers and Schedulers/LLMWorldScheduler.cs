@@ -1,4 +1,5 @@
 #nullable enable
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -19,7 +20,7 @@ namespace DogGame.LLM
         public static LLMWorldScheduler Instance { get; private set; } = null!;
 
         [Header("LLM Provider")]
-        [SerializeField] private RemoteLLMProvider remoteProvider = RemoteLLMProvider.OpenAI;
+        [SerializeField] private RemoteLLMProvider remoteProvider = RemoteLLMProvider.Gemini;
 
         [Header("Throughput limits")]
         [SerializeField] private int maxConcurrentLocalRequests = 2;
