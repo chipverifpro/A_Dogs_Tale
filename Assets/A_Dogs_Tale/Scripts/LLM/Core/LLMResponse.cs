@@ -17,6 +17,12 @@ namespace DogGame.LLM.Core
         public bool succeeded = true;
         public string errorMessage;
 
+        // If the provider returned HTTP 429 (or equivalent)
+        public bool isRateLimited = false;
+
+        // If known, how long to wait before trying again
+        public float retryAfterSeconds = 0f;
+
         [Serializable]
         public sealed class ToolCall
         {

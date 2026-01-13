@@ -5,6 +5,7 @@ using DogGame.LLM.Core;
 using DogGame.LLM.Policy;
 using DogGame.LLM.Personality;
 using DogGame.LLM.Prompting;
+using DogGame.LLM.Providers;
 
 public sealed class AgentBrain
 {
@@ -16,7 +17,21 @@ public sealed class AgentBrain
     public AgentBrain(PersonalityDatabase personalityDatabase, LLMRouter router)
     {
         this.personalityMixer = new PersonalityMixer(personalityDatabase);
-        this.router = router;
+        
+        string openAIApiKey = OpenAIConfig.GetApiKey(inspectorValue: /* from your bootstrap MonoBehaviour */ "");
+        var openAIClient = new OpenAIClient(openAIApiKey);
+        
+        string geminiApiKey = GeminiConfig.GetApiKey(inspectorValue: /* from your bootstrap MonoBehaviour */ "");
+        var geminiClient = new GeminiClient(geminiApiKey);
+        
+        //var fakeLLMClient = new FakeLLMClient();
+
+        this.router = new LLMRouter(new ILLMClient[]
+        {
+            openAIClient,
+            geminiClient,
+            //fakeClient,
+        });
     }
 
     public async Task<LLMResponse> ThinkAsync(
