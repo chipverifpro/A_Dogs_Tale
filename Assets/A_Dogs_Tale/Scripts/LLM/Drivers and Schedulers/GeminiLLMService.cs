@@ -14,6 +14,7 @@ namespace DogGame.LLM
     /// </summary>
     public sealed class GeminiLLMService : MonoBehaviour
     {
+    
         [Header("Gemini")]
         [Tooltip("If empty, we'll try to read from environment variable GEMINI_API_KEY.")]
         [SerializeField] private string apiKey = "";

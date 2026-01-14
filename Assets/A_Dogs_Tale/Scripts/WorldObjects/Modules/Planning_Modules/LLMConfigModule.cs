@@ -17,6 +17,10 @@ namespace DogGame.LLM.Agent
     {
         private readonly SophisticationPolicy sophisticationPolicy = new();
 
+        public LLMProfile lowProfile = new();
+        public LLMProfile mediumProfile = new();
+        public LLMProfile highProfile = new();
+
         //[Header("Identity")]
         public IdentitySection identity = new();
 
@@ -35,10 +39,11 @@ namespace DogGame.LLM.Agent
         public LLMRequest BuildLLMRequest(
             LLMWorldStateModule worldState,
             string requestId,
-            string userTaskPrompt,
-            LLMProfile low,
-            LLMProfile medium,
-            LLMProfile high)
+            string userTaskPrompt
+            //LLMProfile low,
+            //LLMProfile medium,
+            //LLMProfile high
+            )
         {
             string agentId = identity.ResolveAgentId(gameObject);
 
@@ -48,9 +53,9 @@ namespace DogGame.LLM.Agent
 
             LLMProfile defaults = tier switch
             {
-                Sophistication.Low => low,
-                Sophistication.Medium => medium,
-                _ => high
+                Sophistication.Low => lowProfile,
+                Sophistication.Medium => mediumProfile,
+                _ => highProfile
             };
 
             LLMProfile profile = modelOverrides.ApplyOverrides(tier, defaults);

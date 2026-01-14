@@ -3,6 +3,9 @@ using DogGame.AI;
 using DogGame.LLM;  // if your AgentDecisionModuleBase lives here
 // using DogGame.World; // if you need WorldObject, etc.
 using DogGame.Tasks;
+using DogGame.LLM.Execution;
+using DogGame.LLM.Agent;
+using System.Threading;
 
 namespace DogGame.Modules
 {
@@ -529,6 +532,127 @@ namespace DogGame.Modules
         }
         #endregion
 
+#nullable enable
+        [Header("LLM")]
+        [SerializeField] private LLMAgentFacade? llmFacade;
+
+        [Header("Tasks")]
+        [SerializeField] private MonoBehaviour? taskRunnerComponent; // should implement IAgentTaskRunner
+
+        private System.Threading.CancellationTokenSource? planCts;
+        private LLMPlanExecutor? planExecutor;
+
+//        private void Awake()
+//        {
+//            if (llmFacade == null)
+//                llmFacade = GetComponent<LLMAgentFacade>();
+//
+//            // Build executor once (typed factory)
+//            planExecutor = new LLMPlanExecutor(new AgentTaskFactory());
+//        }
+
+        private IAgentTaskRunner? Runner =>
+            taskRunnerComponent as IAgentTaskRunner;
+
+/*
+        /// <summary>
+        /// Call this when you want the player agent to ask the LLM for a plan and execute it.
+        /// </summary>
+        public async Task RequestAndExecutePlan()
+        {
+            if (llmFacade == null)
+            {
+                Debug.LogWarning("[PlayerDecisionModule] Missing LLMAgentFacade.", this);
+                return;
+            }
+
+            if (Runner == null)
+            {
+                Debug.LogWarning("[PlayerDecisionModule] taskRunnerComponent must implement IAgentTaskRunner.", this);
+                return;
+            }
+
+            if (planExecutor == null)
+            {
+                Debug.LogWarning("[PlayerDecisionModule] planExecutor not initialized.", this);
+                return;
+            }
+
+            // Cancel any in-flight plan request
+            planCts?.Cancel();
+            planCts?.Dispose();
+            planCts = new CancellationTokenSource();
+
+            string taskPrompt = BuildTaskPrompt();
+
+            // Ask LLM
+            var llmResponse = await llmFacade.RequestPlanAsync(taskPrompt, planCts.Token);
+            if (!llmResponse.succeeded)
+            {
+                Debug.LogWarning($"[PlayerDecisionModule] LLM failed: {llmResponse.errorMessage}", this);
+                return;
+            }
+
+            // Parse/validate/translate/instantiate
+            var rootTask = planExecutor.BuildRootTaskFromJson(llmResponse.rawText);
+            if (rootTask == null)
+            {
+                Debug.LogWarning("[PlayerDecisionModule] LLM plan was invalid; not executing.", this);
+                return;
+            }
+
+            // Execute
+            Runner.AbortAll("new_llm_plan");
+            Runner.StartTask(rootTask);
+        }
+*/
+        private string BuildTaskPrompt()
+        {
+            // Keep this short; your system blocks and world state carry the heavy context.
+            return
+    @"TASK:
+    Decide the next 1–3 actions for the agent over the next few seconds.
+    Prefer safe, plausible actions. If uncertain, request_observation or noop.";
+        }
+
+        private void OnDisable()
+        {
+            planCts?.Cancel();
+            planCts?.Dispose();
+            planCts = null;
+        }
+
+        #region RequestAndExecutePlan
+        //[SerializeField] private DogGame.LLM.Agent.LLMAgentFacade? llmFacade;
+        //private CancellationTokenSource? planCts;
+
+        public async void RequestAndExecutePlan()
+        {
+            if (llmFacade == null) llmFacade = GetComponent<DogGame.LLM.Agent.LLMAgentFacade>();
+            if (llmFacade == null) return;
+
+            planCts?.Cancel();
+            planCts?.Dispose();
+            planCts = new CancellationTokenSource();
+
+            string taskPrompt =
+        @"TASK:
+        Decide the next 1–3 actions over the next few seconds.
+        If uncertain, request_observation or noop.";
+
+            var response = await llmFacade.RequestPlanAsync(taskPrompt, planCts.Token);
+            if (!response.succeeded)
+            {
+                Debug.LogWarning(response.errorMessage);
+                return;
+            }
+
+            // Next step: parse/translate/instantiate and push to task runner (we already built this part earlier)
+        }
+        #endregion
+
+/*
+        #region BeginEndDecisionModule
         // Example "real" routine submission
         public void Submit_curious_bark_sniff ()
         {
@@ -554,5 +678,7 @@ namespace DogGame.Modules
                 Debug.LogWarning($"Routine build failed: {error}");
             }
         }
+        #endregion
+*/
     }
 }

@@ -9,7 +9,7 @@ namespace DogGame.Tasks
     /// Runs a list of tasks in order as a single task.
     /// From the scheduler's point of view, this is ONE task (one priority).
     /// </summary>
-    public sealed class Task_Sequence : IAgentTask
+    public sealed class Task_Sequence : IAgentTask, ICompositeAgentTask
     {
         private readonly List<IAgentTask> steps;
         private int stepIndex;
@@ -30,6 +30,21 @@ namespace DogGame.Tasks
         {
             steps = new List<IAgentTask>(tasks);
             stepIndex = 0;
+        }
+
+        // parameterless constructor
+        public Task_Sequence()
+        {
+            steps = new List<IAgentTask>();
+            stepIndex = 0;
+        }
+
+        public void AddChild(IAgentTask child)
+        {
+            if (child == null)
+                throw new System.ArgumentNullException(nameof(child));
+
+            steps.Add(child);
         }
 
         public void Start(TaskContext context)

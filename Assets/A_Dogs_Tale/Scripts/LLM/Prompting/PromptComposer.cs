@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using DogGame.LLM.Core;
 using DogGame.LLM.Personality;
+using DogGame.LLM.Tools;
 
 namespace DogGame.LLM.Prompting
 {
@@ -39,6 +40,19 @@ namespace DogGame.LLM.Prompting
                 foreach (var pair in metadata)
                     request.metadata[pair.Key] = pair.Value;
             }
+
+            //In earlier code agentId was stored as request.metadata["agentId"]
+            string agentIdValue =
+                request.metadata != null && request.metadata.TryGetValue("agentId", out var id) ? id : "";
+            PromptBlocks.IdentityEchoBlock(requestId, agentIdValue);
+
+            request.systemBlocks.Add(PromptBlocks.IdentityEchoBlock(requestId, agentIdValue));
+            request.systemBlocks.Add(ToolCatalog.PlanIntentionTypeListText);
+            request.systemBlocks.Add(ToolCatalog.AvailableIntentionsText);
+            
+            request.systemBlocks.Add(PromptBlocks.ValidationAwareRulesBlock());
+            request.systemBlocks.Add(PromptBlocks.GoldenExamplePlanResponseV1());
+            request.systemBlocks.Add(PromptBlocks.OutputOnlyJsonBlock(ResponseSchemas.PlanResponseV1Name, ResponseSchemas.PlanResponseV1ContractText));
 
             return request;
         }
