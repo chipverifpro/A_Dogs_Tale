@@ -1,6 +1,7 @@
 using UnityEngine;
 using Cinemachine;
 using DogGame.Language;
+using DogGame.LLM;
 
 [DefaultExecutionOrder(-1000)] // big negative = runs very early
 public class Directory : MonoBehaviour
@@ -70,6 +71,8 @@ public class Directory : MonoBehaviour
     public AcvtivityStats activityStats;
 
 
+    [Header("LLM")]
+    public LLMWorldScheduler llmWorldScheduler;
     void Awake()
     {
         Debug.Log("Directory Awake");

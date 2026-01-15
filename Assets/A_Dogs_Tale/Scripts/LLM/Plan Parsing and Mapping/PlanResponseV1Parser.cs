@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using UnityEngine;
 
 namespace DogGame.LLM
 {
@@ -71,6 +72,12 @@ namespace DogGame.LLM
 
             ValidateTopLevel(parsedResponse, validationResult);
             ValidateIntentions(parsedResponse, validationResult);
+
+            Debug.Log($"LLMWalkthrough3: PlanResponseV1Parser.ParseAndValidate intentionsCount={parsedResponse.Intentions.Count}");
+            for (int debugdumpx = 0; debugdumpx < parsedResponse.Intentions.Count; debugdumpx++)
+            {
+                Debug.Log($"LLMWalkthrough3: PlanResponseV1Parser.ParseAndValidate intention {debugdumpx}: type={parsedResponse.Intentions[debugdumpx].Type} priority={parsedResponse.Intentions[debugdumpx].Priority}");
+            }
 
             return (validationResult.IsValid ? parsedResponse : null, validationResult);
         }

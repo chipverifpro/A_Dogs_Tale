@@ -5,6 +5,7 @@ using DogGame.AI;
 using System;
 using DogGame.LLM;
 using DogGame.Tasks;
+using DogGame.LLM.Agent;
 
 
 /// <summary>
@@ -152,13 +153,15 @@ public class WorldObject : MonoBehaviour
     public AgentMovementModule agentMovementModule { get; private set; }
     public PackMemberModule packMemberModule { get; private set; }
     public MotivationModule motivationModule { get; private set; }
+
+    // LLM Planning Modules
     public LLMRequestResponseModule llmRequestResponseModule { get; private set; }    
- 
-    public LLMRequestResponseModule lLMRequestResponseModule { get; private set; }
     public ReactionModule reactionModule { get; private set; }
-    
+    public LLMConfigModule llmConfigModule { get; private set; }
+    public LLMWorldStateModule llmWorldStateModule { get; private set; }
     
     public TaskExecutor  taskExecutor { get; private set; }
+    public LLMWorldScheduler llmWorldScheduler { get; private set; }
 
     // Sensory:
     public TasteModule TasteModule { get; private set; }
@@ -237,6 +240,9 @@ public class WorldObject : MonoBehaviour
         motivationModule   = GetComponent<MotivationModule>();
         llmRequestResponseModule = GetComponent<LLMRequestResponseModule>();    
         reactionModule        = GetComponent<ReactionModule>();
+
+        llmConfigModule       = GetComponent<LLMConfigModule>();
+        llmWorldStateModule   = GetComponent<LLMWorldStateModule>();
 
         // --- Ability ---
         activatorModule   = GetComponent<ActivatorModule>();

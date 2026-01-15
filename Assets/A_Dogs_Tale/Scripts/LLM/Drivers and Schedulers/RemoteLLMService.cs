@@ -134,7 +134,7 @@ Debug.Log(
     $"bytes={request.downloadHandler?.data?.Length ?? 0}\n" +
     request.downloadHandler.text,
     this);
-
+            
             if (request.result != UnityWebRequest.Result.Success)
             {
                 Debug.LogWarning(
@@ -144,6 +144,8 @@ Debug.Log(
             }
 
             string raw = request.downloadHandler.text;
+
+            Debug.Log($"LLMWalkthrough1B: RemoteLLMService(OpenAI).PostResponsesCoroutine response_code={request.responseCode}, raw_response={raw}");
 
             // Responses API returns a wrapper object. We extract the first output_text.
             // Then we pass that string back as the plan JSON your parser expects.
@@ -155,7 +157,7 @@ Debug.Log("[RemoteLLMService] Parsing response JSON...", this);
                 Debug.LogWarning($"[RemoteLLMService] Could not extract output_text: {error}\nRAW:\n{raw}", this);
                 yield break;
             }
-
+            
             onResponseJson?.Invoke(planJson);
         }
 

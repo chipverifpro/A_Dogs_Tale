@@ -1,8 +1,10 @@
 #nullable enable
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using DogGame.LLM;                 // PlanResponseV1, PlanIntentionV1, PlanIntentionType
 using Newtonsoft.Json.Linq;
+using UnityEngine;
 
 namespace DogGame.LLM.Translation
 {
@@ -71,6 +73,8 @@ namespace DogGame.LLM.Translation
             // Guarantee at least one node (your parser requires intentions non-empty; but translator might filter)
             if (plan.rootNodes.Count == 0)
                 plan.rootNodes.Add(TaskNodes.WaitSeconds(0.2f, note: "Empty plan fallback"));
+
+            UnityEngine.Debug.Log($"LLMWalkthrough4: PlanResponseToTaskPlanTrasnslator.Translate: Task Plan graph: (TBD)");
 
             return plan;
         }

@@ -5,6 +5,7 @@ using UnityEngine;
 
 namespace DogGame.LLM
 {
+    /*
     public sealed class FakeLLMService : MonoBehaviour
     {
         private Vector2 latencyRangeSeconds = new(0.4f, 10.4f);
@@ -65,4 +66,5 @@ namespace DogGame.LLM
                 + "}";
         }
     }
+    */
 }

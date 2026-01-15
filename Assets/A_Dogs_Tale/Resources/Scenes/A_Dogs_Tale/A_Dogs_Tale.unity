@@ -3848,7 +3848,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7218e3fb1f54040bcb853b10dd1e8ede, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.LLM.LLMWorldScheduler
-  remoteProvider: 1
+  remoteProvider: 0
   maxConcurrentLocalRequests: 2
   maxConcurrentRemoteRequests: 1
   schedulingIntervalSeconds: 0.25
@@ -12509,6 +12509,8 @@ MonoBehaviour:
   cameraForMovement: {fileID: 1815589284}
   cameraModeSwitcher: {fileID: 1815589288}
   currentDestinationObject: {fileID: 0}
+  llmFacade: {fileID: 0}
+  taskRunnerComponent: {fileID: 0}
 --- !u!114 &1651296791
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -14258,6 +14260,7 @@ MonoBehaviour:
   scentAirGround: {fileID: 1546545660}
   demo_Speech: {fileID: 1642226071}
   activityStats: {fileID: 603597960}
+  llmWorldScheduler: {fileID: 494970098}
 --- !u!4 &1920128613
 Transform:
   m_ObjectHideFlags: 0
@@ -15972,6 +15975,18 @@ PrefabInstance:
         type: 3}
       insertIndex: -1
       addedObject: {fileID: 6544990386685219187}
+    - targetCorrespondingSourceObject: {fileID: 8843402266763018810, guid: 2ce0050a816054aaca2a1076f182f7a8,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 6544990386685219192}
+    - targetCorrespondingSourceObject: {fileID: 8843402266763018810, guid: 2ce0050a816054aaca2a1076f182f7a8,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 6544990386685219191}
+    - targetCorrespondingSourceObject: {fileID: 8843402266763018810, guid: 2ce0050a816054aaca2a1076f182f7a8,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 6544990386685219190}
   m_SourcePrefab: {fileID: 100100000, guid: 2ce0050a816054aaca2a1076f182f7a8, type: 3}
 --- !u!1 &6544990386685219093 stripped
 GameObject:
@@ -16153,6 +16168,8 @@ MonoBehaviour:
   cameraForMovement: {fileID: 1815589284}
   cameraModeSwitcher: {fileID: 1815589288}
   currentDestinationObject: {fileID: 0}
+  llmFacade: {fileID: 0}
+  taskRunnerComponent: {fileID: 0}
 --- !u!114 &6544990386685219154
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -16285,6 +16302,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dd22649b43d8a471494719853c60cf65, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.LLM.FakeLLMService
+  latencyRangeSeconds: {x: 0.4, y: 10.4}
+  planCounter: 0
 --- !u!114 &6544990386685219170
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -16544,31 +16563,123 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 810e59c04f8694998b57459611f42c36, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.LLM.Agent.LLMConfigModule
-  agentIdOverride: 
-  isBoss: 0
-  isSimpleCreature: 0
-  allowRandomPersonality: 1
-  lockPersonalityAfterSpawn: 1
-  personalityDatabase: {fileID: 0}
-  manualArchetype:
-    id: 
-    weight: 1
-    personaBlock: 
-    defaultGoals: []
-  forcedQuirks: []
-  manualComplication:
-    id: 
-    weight: 1
-    constraintText: 
-  randomQuirkCount: 2
-  extraSystemInstructions: 
-  vendorOverride: 
-  modelLow: 
-  modelMedium: 
-  modelHigh: 
-  allowToolsLow: 0
-  allowToolsMedium: 1
-  allowToolsHigh: 1
+  lowProfile:
+    vendor: 
+    model: 
+    level: 0
+    maxOutputTokens: 512
+    temperature: 0.7
+    allowTools: 0
+    contextDetail: 1
+    planningDepth: 1
+    minSecondsBetweenCalls: 0.75
+  mediumProfile:
+    vendor: 
+    model: 
+    level: 0
+    maxOutputTokens: 512
+    temperature: 0.7
+    allowTools: 0
+    contextDetail: 1
+    planningDepth: 1
+    minSecondsBetweenCalls: 0.75
+  highProfile:
+    vendor: 
+    model: 
+    level: 0
+    maxOutputTokens: 512
+    temperature: 0.7
+    allowTools: 0
+    contextDetail: 1
+    planningDepth: 1
+    minSecondsBetweenCalls: 0.75
+  identity:
+    agentIdOverride: 
+    isBoss: 0
+    isSimpleCreature: 0
+  personality:
+    allowRandomPersonality: 1
+    lockPersonalityAfterSpawn: 1
+    personalityDatabase: {fileID: 0}
+    manualArchetype:
+      id: 
+      weight: 1
+      personaBlock: 
+      defaultGoals: []
+    forcedQuirks: []
+    manualComplication:
+      id: 
+      weight: 1
+      constraintText: 
+    randomQuirkCount: 2
+  instructions:
+    extraSystemInstructions: 
+  modelOverrides:
+    vendorOverride: 
+    modelLow: 
+    modelMedium: 
+    modelHigh: 
+  tools:
+    allowToolsLow: 0
+    allowToolsMedium: 1
+    allowToolsHigh: 1
+--- !u!114 &6544990386685219190
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6544990386685219093}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 42e203ae1c8eb473e968bb1d3e462217, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DogGame.LLM.LLMAsyncPlanDriver
+  agentId: player
+  minSecondsBetweenRequests: 6
+  requestOnlyWhenIdle: 1
+  simulatedLatencyRangeSeconds: {x: 0.4, y: 1.4}
+--- !u!114 &6544990386685219191
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6544990386685219093}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6e55b4afbe2cd45a0925b2aeb372034c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DogGame.LLM.Agent.LLMAgentFacade
+  config: {fileID: 6544990386685219188}
+  worldState: {fileID: 6544990386685219187}
+  llmServiceBehaviour: {fileID: 0}
+--- !u!114 &6544990386685219192
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6544990386685219093}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 885dee1646420411b9e59808255ee79b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DogGame.LLM.RemoteLLMService
+  apiKey: 
+  apiKeyEnvironmentVariable: OPENAI_API_KEY
+  model: gpt-4.1-mini
+  endpointUrl: https://api.openai.com/v1/responses
+  timeoutSeconds: 60
+  maxOutputTokens: 800
+  temperature: 0.2
+  systemInstructions: 'You are an NPC planning service for a Unity game.
+
+    You
+    MUST output ONLY a single JSON object that matches the PlanResponseV1 schema.
+
+    No
+    markdown, no commentary, no code fences. JSON only.'
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

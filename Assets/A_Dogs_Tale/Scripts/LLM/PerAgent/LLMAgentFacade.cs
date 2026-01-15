@@ -1,5 +1,6 @@
 #nullable enable
 using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using DogGame.LLM.Core;
@@ -63,6 +64,8 @@ namespace DogGame.LLM.Agent
             var tcs = new TaskCompletionSource<string>(TaskCreationOptions.RunContinuationsAsynchronously);
             using var reg = cancellationToken.Register(() => tcs.TrySetCanceled(cancellationToken));
 
+            Debug.Log($"LLMWalkthrough1A: RequestPlanAsync requestId={requestId}, sophistication=?, modelname=?, allowTools=?, requestJson.Count={requestJson.Count()}");
+            
             try
             {
                 submitRequest(requestId, requestJson, agentId, responseJson =>

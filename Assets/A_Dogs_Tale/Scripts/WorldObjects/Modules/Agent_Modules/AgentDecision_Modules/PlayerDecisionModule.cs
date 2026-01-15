@@ -6,6 +6,8 @@ using DogGame.Tasks;
 using DogGame.LLM.Execution;
 using DogGame.LLM.Agent;
 using System.Threading;
+using DogGame.LLM.Core;
+using System;
 
 namespace DogGame.Modules
 {
@@ -39,11 +41,16 @@ namespace DogGame.Modules
 
         TaskController taskController = null;
 
+        public float thinkIntervalSeconds = 10f;
+        private float nextThinkTime = 0f;
+
         protected override void Awake()
         {
             if (taskController == null)
                 taskController = GetComponentInParent<TaskController>();
-
+            
+            llmConfig ??= worldObject.llmConfigModule;
+            llmWorldState ??= worldObject.llmWorldStateModule;
         }
     private void Start()
     {
@@ -165,8 +172,109 @@ namespace DogGame.Modules
 
             //if (worldObject.activatorModule!=null)
             //    worldObject.activatorModule.HandleActivate(inputState, deltaTime);
+
+            // Periodically Think about what to do next...
+            if (Time.time >= nextThinkTime)
+            {
+                string taskPrompt = $"Update at interval time {thinkIntervalSeconds}";
+                worldObject.llmWorldScheduler.EnqueueRequest(BuildRequestForThisAgent(taskPrompt));
+                nextThinkTime = Time.time + thinkIntervalSeconds;
+            }
         }
 
+#nullable enable
+        [SerializeField] private LLMConfigModule? llmConfig;
+        [SerializeField] private LLMWorldStateModule? llmWorldState;
+
+//        private LLMPlanRequestOnDemand BuildRequestForThisAgent(string userTaskPrompt)
+//        {
+//            if (worldObject.llmConfigModule == null) throw new InvalidOperationException("Missing LLMConfigModule");
+//            if (worldObject.llmWorldStateModule == null) throw new InvalidOperationException("Missing LLMWorldStateModule");
+//
+//            string requestId = $"{gameObject.name}:{DateTime.UtcNow.Ticks}";
+//            return llmConfig.BuildLLMRequest(worldObject.llmWorldStateModule, requestId, userTaskPrompt);
+//        }
+
+//        public void RequestPlanNow()
+//        {
+//            string prompt =
+//                "Decide the next 1–3 actions for the next few seconds. " +
+//                "If uncertain, request_observation or noop.";
+//
+//            var req = BuildRequestForThisAgent(prompt);
+//            LLMWorldScheduler.Instance.EnqueueRequest(req);
+//        }
+
+        private LLMPlanRequestOnDemand BuildRequestForThisAgent(
+                string userTaskPrompt,
+                LLMPlanUrgency urgency = LLMPlanUrgency.Normal,
+                LLMApplyMode applyMode = LLMApplyMode.Append,
+                string tag = "player_request",
+                Vector2Int? eventCell = null,
+                Vector3? eventWorld = null)
+            {
+                if (llmConfig == null) throw new InvalidOperationException("Missing LLMConfigModule");
+                if (llmWorldState == null) throw new InvalidOperationException("Missing LLMWorldStateModule");
+
+                // Choose tier/profile the same way config does (boss/combat/distance etc.)
+                // Your config decides Sophistication and applies overrides; but it doesn’t expose tier directly.
+                // So we select a tier for scheduler based on world state signals:
+                // (Keep it simple: close/combat/quest => higher tier.)
+                Sophistication sophistication = ChooseSophistication(llmWorldState, llmConfig.identity.isBoss, llmConfig.identity.isSimpleCreature);
+
+                return new LLMPlanRequestOnDemand(
+                    agentId: llmConfig.identity.ResolveAgentId(gameObject),
+                    prompt: userTaskPrompt,
+                    eventCell: eventCell,
+                    eventWorld: eventWorld,
+                    urgency: urgency,
+                    applyMode: applyMode,
+                    tag: tag,
+                    Sophistication: sophistication,
+                    onResponseJson: OnLLMResponseJson
+                );
+            }
+
+            private static Sophistication ChooseSophistication(
+                LLMWorldStateModule ws,
+                bool isBoss,
+                bool isSimpleCreature)
+            {
+                if (isSimpleCreature)
+                    return Sophistication.Low;
+
+                if (isBoss || ws.isQuestCritical || ws.isInCombat)
+                    return Sophistication.High;
+
+                if (ws.distanceToPlayerMeters <= 10f || ws.isPlayerFocusingThisNpc)
+                    return Sophistication.Medium;
+
+                return Sophistication.Low;
+            }
+
+            public void RequestPlanNow()
+            {
+                string prompt =
+                    "Decide the next 1–3 actions for the next few seconds.\n" +
+                    "If uncertain, request_observation or noop.\n" +
+                    "Prefer safe, reversible actions.";
+
+                var request = BuildRequestForThisAgent(
+                    userTaskPrompt: prompt,
+                    urgency: LLMPlanUrgency.Normal,
+                    applyMode: LLMApplyMode.Interrupt,
+                    tag: "player_manual");
+
+                LLMWorldScheduler.Instance.EnqueueRequest(request);
+            }
+
+            private void OnLLMResponseJson(string planJson)
+            {
+                // This is where your Step 2/3/4 pipeline continues:
+                // Parse -> Translate -> Instantiate -> Start task
+                Debug.Log($"LLMWalkthrough2: PlayerDecisionModule got planJsonChars={planJson?.Length ?? 0}");
+            }
+            
         #region One-shot actions
 
         private void HandleOneShotActions(PlayerInputState state)
@@ -639,6 +747,8 @@ namespace DogGame.Modules
         @"TASK:
         Decide the next 1–3 actions over the next few seconds.
         If uncertain, request_observation or noop.";
+
+            Debug.Log($"LLMWalkthrough0: RequestAndExecutePlan {worldObject.DisplayName}, {taskPrompt}");
 
             var response = await llmFacade.RequestPlanAsync(taskPrompt, planCts.Token);
             if (!response.succeeded)
