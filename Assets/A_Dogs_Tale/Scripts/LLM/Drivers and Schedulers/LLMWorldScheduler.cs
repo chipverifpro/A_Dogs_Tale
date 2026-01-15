@@ -1,6 +1,7 @@
 #nullable enable
 using System;
 using System.Collections.Generic;
+using DogGame.LLM.Agent;
 using DogGame.LLM.Core;
 using UnityEngine;
 
@@ -140,7 +141,7 @@ namespace DogGame.LLM
             {
                 var request = pendingRequests[index];
 
-                if (!CanDispatch(request.ModelTier))
+                if (!CanDispatch(MapSophisticationToModelTier(request.Sophistication)))
                 {
                     index++; // keep it queued
                     continue;

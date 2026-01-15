@@ -2,6 +2,7 @@
 using System;
 using UnityEngine;
 using DogGame.LLM;
+using DogGame.LLM.Core;
 
 namespace DogGame.Tasks
 {
@@ -69,7 +70,7 @@ namespace DogGame.Tasks
                 urgency: urgency,
                 applyMode: applyMode,
                 tag: tag,
-                modelTier: LLMModelTier.LocalSmall,         // choose appropriate tier
+                sophistication: Sophistication.Low,         // choose appropriate tier
                 onResponseJson: result => Debug.Log(result)    // or pass null if callback is optional
             );
 

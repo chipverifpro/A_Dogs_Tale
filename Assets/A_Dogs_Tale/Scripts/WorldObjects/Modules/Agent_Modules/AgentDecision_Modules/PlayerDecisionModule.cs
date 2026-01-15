@@ -230,7 +230,7 @@ namespace DogGame.Modules
                     urgency: urgency,
                     applyMode: applyMode,
                     tag: tag,
-                    Sophistication: sophistication,
+                    sophistication: sophistication,
                     onResponseJson: OnLLMResponseJson
                 );
             }
