@@ -5,6 +5,7 @@ using System.Text;
 using UnityEngine;
 using UnityEngine.Networking;
 using Newtonsoft.Json.Linq;
+using DogGame.LLM.Debugging;
 
 namespace DogGame.LLM
 {
@@ -12,7 +13,7 @@ namespace DogGame.LLM
     /// Remote-first LLM service using OpenAI Responses API.
     /// Drop-in replacement for FakeLLMService: same SubmitRequest signature.
     /// </summary>
-    public sealed class RemoteLLMService : MonoBehaviour
+    public sealed class OpenAILLMService : MonoBehaviour
     {
         [Header("OpenAI")]
         [Tooltip("If empty, we'll try to read from environment variable OPENAI_API_KEY.")]
@@ -132,18 +133,24 @@ Debug.Log(
 Debug.Log(
     $"[RemoteLLMService] HTTP OK ({request.responseCode}) " +
     $"bytes={request.downloadHandler?.data?.Length ?? 0}\n" +
-    request.downloadHandler.text,
+    request.downloadHandler?.text,
     this);
             
             if (request.result != UnityWebRequest.Result.Success)
             {
                 Debug.LogWarning(
-                    $"[RemoteLLMService] HTTP failed: {request.responseCode} {request.error}\n{request.downloadHandler.text}",
+                    $"[RemoteLLMService] HTTP failed: {request.responseCode} {request.error}\n{request.downloadHandler?.text}",
                     this);
                 yield break;
             }
 
-            string raw = request.downloadHandler.text;
+            string raw = request.downloadHandler!.text;
+
+            LLMPacketLogger.LogResponse(
+                agentId: agentId,
+                requestId: requestId,
+                provider: "OpenAI",
+                responseJson: raw);
 
             Debug.Log($"LLMWalkthrough1B: RemoteLLMService(OpenAI).PostResponsesCoroutine response_code={request.responseCode}, raw_response={raw}");
 

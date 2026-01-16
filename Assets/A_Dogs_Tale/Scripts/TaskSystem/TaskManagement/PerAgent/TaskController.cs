@@ -3,6 +3,8 @@ using UnityEngine;
 using DogGame.Modules;
 using DogGame.Tasks;
 using System.Collections.Generic;
+using DogGame.LLM.Debugging;
+using NUnit.Framework.Interfaces;
 
 namespace DogGame.LLM
 {
@@ -63,9 +65,17 @@ namespace DogGame.LLM
         public bool TryApplyPlanJson(string planResponseJson)
         {
             var (plan, validation) = PlanResponseV1Parser.ParseAndValidate(planResponseJson);
+
             if (plan == null)
             {
                 Debug.LogWarning("PlanResponseV1 invalid:\n" + string.Join("\n", validation.Errors));
+                
+                LLMPacketLogger.LogResponse(
+                    agentId,
+                    "requestID",
+                    provider: "ParserError" + string.Join("\n", validation.Errors),
+                    responseJson: planResponseJson);
+                
                 return false;
             }
 

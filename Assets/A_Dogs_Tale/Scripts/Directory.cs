@@ -73,6 +73,8 @@ public class Directory : MonoBehaviour
 
     [Header("LLM")]
     public LLMWorldScheduler llmWorldScheduler;
+    public LLMDebugMonitor llmDebugMonitor;
+
     void Awake()
     {
         Debug.Log("Directory Awake");

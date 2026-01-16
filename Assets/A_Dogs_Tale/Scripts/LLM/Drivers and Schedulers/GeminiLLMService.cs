@@ -5,6 +5,7 @@ using System.Text;
 using UnityEngine;
 using UnityEngine.Networking;
 using Newtonsoft.Json.Linq;
+using DogGame.LLM.Debugging;
 
 namespace DogGame.LLM
 {
@@ -131,7 +132,11 @@ namespace DogGame.LLM
 
             Debug.Log($"[GeminiLLMService] SendWebRequest to {url} ({payload.ToString()}) ", this);
 
+            Directory.Instance.llmDebugMonitor.DebugLLMRequest(payload.ToString());
+
             yield return request.SendWebRequest();
+
+            Directory.Instance.llmDebugMonitor.DebugLLMResponse(request.downloadHandler?.text);
 
             Debug.Log(
                 $"[GeminiLLMService] HTTP Response: {request.responseCode}\n" +
@@ -145,7 +150,7 @@ namespace DogGame.LLM
                     this);
                 if (request.responseCode == 429)
                 {
-                    float retrySeconds = TryExtractRetryDelaySeconds(request.downloadHandler.text, out var parsed)
+                    float retrySeconds = TryExtractRetryDelaySeconds(request.downloadHandler!.text, out var parsed)
                         ? parsed
                         : 20f; // safe default
 
@@ -159,13 +164,19 @@ namespace DogGame.LLM
                 yield break;
             }
 
-            string raw = request.downloadHandler.text;
+            string raw = request.downloadHandler!.text;
 
             if (!TryExtractPlanJson(raw, out string planJson, out string error))
             {
                 Debug.LogWarning($"[GeminiLLMService] Could not extract plan JSON: {error}\nRAW:\n{raw}", this);
                 yield break;
             }
+
+            LLMPacketLogger.LogResponse(
+                agentId: agentId,
+                requestId: requestId,
+                provider: "Gemini",
+                responseJson: planJson);
 
             onResponseJson?.Invoke(planJson);
         }

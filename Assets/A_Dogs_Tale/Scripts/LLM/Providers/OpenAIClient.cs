@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using DogGame.LLM.Core;
 using DogGame.LLM.Unity;
 using Newtonsoft.Json.Linq;
+using Unity.AppUI.Core;
 using UnityEngine;
 using UnityEngine.Networking;
 
@@ -124,11 +125,15 @@ namespace DogGame.LLM.Providers
             unityRequest.SetRequestHeader("Authorization", $"Bearer {apiKey}");
 
             // Debug (optional)
-            // Debug.Log($"[OpenAIClient] POST {endpointUrl}\n{payload}");
+            Debug.Log($"[OpenAIClient] POST {endpointUrl}\n{payload}");
+
+            Directory.Instance.llmDebugMonitor.DebugLLMRequest(payload.ToString());
 
             yield return unityRequest.SendWebRequest();
 
             string raw = unityRequest.downloadHandler?.text ?? "";
+
+            Directory.Instance.llmDebugMonitor.DebugLLMResponse(raw);
 
             if (unityRequest.result != UnityWebRequest.Result.Success)
             {

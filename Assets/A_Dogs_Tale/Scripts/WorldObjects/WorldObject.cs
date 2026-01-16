@@ -216,8 +216,12 @@ public class WorldObject : MonoBehaviour
         }
 
         motionAdapter = new(this);  // create the adapter
+        
+        // grab from Directory:
+        llmWorldScheduler = dir.llmWorldScheduler;
 
         // Auto-fill module pointers, if they are attached to the same GameObject as this.
+
 
         // --- Sensory ---
         locationModule    = GetComponent<LocationModule>();

@@ -51,6 +51,7 @@ namespace DogGame.Modules
             
             llmConfig ??= worldObject.llmConfigModule;
             llmWorldState ??= worldObject.llmWorldStateModule;
+            //llmWorldScheduler = dir.llmWorldScheduler;
         }
     private void Start()
     {

@@ -3,6 +3,9 @@ using System;
 using System.Collections.Generic;
 using DogGame.LLM.Agent;
 using DogGame.LLM.Core;
+using DogGame.LLM.Debugging;
+using DogGame.LLM.Providers;
+using UnityEditor.PackageManager.Requests;
 using UnityEngine;
 
 namespace DogGame.LLM
@@ -10,7 +13,8 @@ namespace DogGame.LLM
     public enum RemoteLLMProvider
     {
         OpenAI,
-        Gemini
+        Gemini,
+        Ollama
     }
 
     /// <summary>
@@ -36,9 +40,12 @@ namespace DogGame.LLM
         private int activeLocalRequests;
         private int activeRemoteRequests;
 
-        private RemoteLLMService? openAiService;
+        private OpenAILLMService? openAiService;
         private GeminiLLMService? geminiService;
+        private OllamaLLMService? ollamaService;
         private float nextScheduleTime;
+
+        //public string requestJSON;
 
         private void Awake()
         {
@@ -53,10 +60,13 @@ namespace DogGame.LLM
             switch (remoteProvider)
             {
                 case RemoteLLMProvider.OpenAI:
-                    openAiService = gameObject.AddComponent<RemoteLLMService>();
+                    openAiService = gameObject.AddComponent<OpenAILLMService>();
                     break;
                 case RemoteLLMProvider.Gemini:
                     geminiService = gameObject.AddComponent<GeminiLLMService>();
+                    break;
+                case RemoteLLMProvider.Ollama:
+                    ollamaService = gameObject.AddComponent<OllamaLLMService>();
                     break;
             }
             Debug.Log($"LLMWalkthroughScheduler.Awake: pendingRequests(initial)={pendingRequests.Count}", this);
@@ -183,7 +193,13 @@ namespace DogGame.LLM
             );
 
             string requestJson = LLMRequestSerializer.ToJson(llmRequest);
-
+            //requestJSON = requestJson;
+            LLMPacketLogger.LogRequest(
+                agentId: request.AgentId,
+                requestId: request.RequestId,
+                provider: remoteProvider.ToString(),
+                requestJson: requestJson);
+                
             // 4) Mark inflight (use modelTier you just computed)
             IncrementActive(modelTier);
 
@@ -218,6 +234,19 @@ namespace DogGame.LLM
                         return;
                     }
                     geminiService.SubmitRequest(
+                        requestId: request.RequestId,
+                        requestJson: requestJson,
+                        agentId: request.AgentId,
+                        onResponseJson: onResponse);
+                    break;
+                case RemoteLLMProvider.Ollama:
+                    if (ollamaService == null)
+                    {
+                        Debug.LogWarning("[LLM Scheduler] Ollama service not assigned.");
+                        DecrementActive(modelTier);
+                        return;
+                    }
+                    ollamaService.SubmitRequest(
                         requestId: request.RequestId,
                         requestJson: requestJson,
                         agentId: request.AgentId,
