@@ -1,0 +1,56 @@
+{
+    "schema": "ToolCatalogV1",
+    "description": "Available high-level tasks the NPC may propose. Tasks are declarative; execution is handled by the game.",
+    "rules": [
+      "Do NOT invent tasks not listed here.",
+      "Do NOT include engine-level commands.",
+      "Do NOT set positions, transforms, health, or inventory directly.",
+      "Use tasks to express intent, not implementation details."
+    ],
+    "tasks": [
+      {
+        "name": "wait",
+        "description": "Pause or idle for a short duration.",
+        "parameters": {
+          "seconds": "float 0.1..30"
+        }
+      },
+      {
+        "name": "move_to_cell",
+        "description": "Move toward a grid cell using navigation.",
+        "parameters": {
+          "locationCell": "[int x, int y]",
+          "stopRadius": "float 0.05..2.0"
+        }
+      },
+      {
+        "name": "move_to_object",
+        "description": "Move toward a known object or entity.",
+        "parameters": {
+          "targetEntityId": "string",
+          "stopRadius": "float 0.05..2.0"
+        }
+      },
+      {
+        "name": "sniff",
+        "description": "Perform a scent-based investigation.",
+        "parameters": {
+          "radius": "float 0.5..10.0"
+        }
+      },
+      {
+        "name": "bark",
+        "description": "Emit a bark or alert sound.",
+        "parameters": {
+          "volume": "int 1..10"
+        }
+      },
+      {
+        "name": "emote",
+        "description": "Display a body-language or facial emote.",
+        "parameters": {
+          "type": "string"
+        }
+      }
+    ]
+  }

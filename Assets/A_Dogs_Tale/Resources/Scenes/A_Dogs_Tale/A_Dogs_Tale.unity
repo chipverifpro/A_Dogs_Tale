@@ -3853,7 +3853,6 @@ MonoBehaviour:
   maxConcurrentLocalRequests: 2
   maxConcurrentRemoteRequests: 1
   schedulingIntervalSeconds: 0.25
-  requestJSON: 
 --- !u!114 &494970099
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -16596,7 +16595,11 @@ MonoBehaviour:
       constraintText: 
     randomQuirkCount: 2
   instructions:
-    extraSystemInstructions: 
+    extraSystemBlocks: []
+    toolCatalogJson: {fileID: 4900000, guid: 35ddece6d077340e18e39033d81f541e, type: 3}
+    responseSchemaJson: {fileID: 4900000, guid: 4073476e4662d4a95b00d93fbaa4b565,
+      type: 3}
+    embedAsStructuredJson: 1
   modelOverrides:
     vendorOverride: 
     modelLow: 

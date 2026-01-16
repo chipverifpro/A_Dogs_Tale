@@ -39,14 +39,13 @@ namespace DogGame.LLM.Agent
         public LLMRequest BuildLLMRequest(
             LLMWorldStateModule worldState,
             string requestId,
+            string agentId,
             string userTaskPrompt
             //LLMProfile low,
             //LLMProfile medium,
             //LLMProfile high
             )
         {
-            string agentId = identity.ResolveAgentId(gameObject);
-
             var inputs = worldState.BuildSophisticationInputs(identity.isBoss);
             Sophistication tier = sophisticationPolicy.Evaluate(inputs);
             tier = sophisticationPolicy.ClampByNpcType(tier, identity.isSimpleCreature);
@@ -76,12 +75,16 @@ namespace DogGame.LLM.Agent
             worldState.AddContextBlocks(contextBlocks);
             systemBlocks.AddRange(contextBlocks);
 
+            Debug.Log($"[LLMConfig] toolsChars={instructions.BuildToolDefinitionsJson().Length} schemaChars={instructions.BuildResponseSchemaJson().Length}");
+            
             return new LLMRequest
             {
                 requestId = requestId,
                 profile = profile,
                 userPrompt = userTaskPrompt.Trim(),
                 systemBlocks = systemBlocks,
+                toolDefinitionsJson = instructions.BuildToolDefinitionsJson(),
+                responseSchemaJson = instructions.BuildResponseSchemaJson(),
                 metadata = new Dictionary<string, string>
                 {
                     { "agentId", agentId },

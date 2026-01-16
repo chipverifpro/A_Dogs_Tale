@@ -44,18 +44,18 @@ namespace DogGame.LLM.Agent
             // Facade just needs a unique requestId.
             string requestId = $"{gameObject.name}:{DateTime.UtcNow.Ticks}";
 
+            string agentId = gameObject.name; // default
+
             LLMRequest request;
             try
             {
-                request = config.BuildLLMRequest(worldState, requestId, userTaskPrompt);
+                request = config.BuildLLMRequest(worldState, requestId, agentId, userTaskPrompt);
             }
             catch (Exception ex)
             {
                 return LLMResponse.Fail("[LLMAgentFacade] BuildLLMRequest failed: " + ex.Message);
             }
 
-            // AgentId is placed into request.metadata by BuildLLMRequest().
-            string agentId = gameObject.name; // default
             if (request.metadata != null && request.metadata.TryGetValue("agentId", out var id))
                 agentId = id;
 

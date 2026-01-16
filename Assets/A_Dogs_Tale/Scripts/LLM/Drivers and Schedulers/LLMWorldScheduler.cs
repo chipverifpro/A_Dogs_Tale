@@ -189,6 +189,7 @@ namespace DogGame.LLM
             LLMRequest llmRequest = config.BuildLLMRequest(
                 worldState: worldState,
                 requestId: request.RequestId,
+                agentId: request.AgentId,
                 userTaskPrompt: request.Prompt
             );
 

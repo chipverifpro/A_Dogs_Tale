@@ -1,17 +1,20 @@
 using UnityEditor.PackageManager.Requests;
 using UnityEngine;
+using DogGame.Attributes;
 
 // A little momitor to display the LLM input/output packets in the Unity browser.
 public class LLMDebugMonitor : MonoBehaviour
 {
     [Header("Request")]
     public float Time_Request;
-    [TextArea(3, 12)]
+    //[TextArea(3, 12)]
+    [JsonPreview(260f)]
     public string LLM_Request;
 
     [Header("Response")]
     public float Time_Response;
-    [TextArea(3, 12)]
+    //[TextArea(3, 12)]
+    [JsonPreview(260f)]
     public string LLM_Response;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
