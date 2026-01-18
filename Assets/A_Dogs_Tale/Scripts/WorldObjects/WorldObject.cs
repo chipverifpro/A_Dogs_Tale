@@ -160,7 +160,8 @@ public class WorldObject : MonoBehaviour
     public LLMConfigModule llmConfigModule { get; private set; }
     public LLMWorldStateModule llmWorldStateModule { get; private set; }
     
-    public TaskExecutor  taskExecutor { get; private set; }
+    //public TaskExecutor  taskExecutor { get; private set; }
+    public TaskController taskController { get; private set; }
     public LLMWorldScheduler llmWorldScheduler { get; private set; }
 
     // Sensory:
@@ -216,9 +217,11 @@ public class WorldObject : MonoBehaviour
         }
 
         motionAdapter = new(this);  // create the adapter
-        
+
         // grab from Directory:
         llmWorldScheduler = dir.llmWorldScheduler;
+        taskController = GetComponent<TaskController>();
+        //taskExecutor = GetComponent<TaskExecutor>();
 
         // Auto-fill module pointers, if they are attached to the same GameObject as this.
 

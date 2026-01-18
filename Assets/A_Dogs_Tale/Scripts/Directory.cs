@@ -38,7 +38,7 @@ public class Directory : MonoBehaviour
     public ScentRegistry scentRegistry;
     public ConvertScreenToWorld convertScreenToWorld;
     public DogSpeechDictionary dogSpeechDictionary;
-
+    public WorldObjectRegistry worldObjectRegistry;
 
     [Header("Game Camearas")]
     public CinemachineBrain brain;

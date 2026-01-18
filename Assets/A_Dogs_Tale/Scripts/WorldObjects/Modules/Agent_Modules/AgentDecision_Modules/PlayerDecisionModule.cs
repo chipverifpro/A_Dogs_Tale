@@ -8,6 +8,7 @@ using DogGame.LLM.Agent;
 using System.Threading;
 using DogGame.LLM.Core;
 using System;
+using Unity.Tutorials.Core.Editor;
 
 namespace DogGame.Modules
 {
@@ -177,7 +178,8 @@ namespace DogGame.Modules
             // Periodically Think about what to do next...
             if (Time.time >= nextThinkTime)
             {
-                string taskPrompt = $"Update at interval time {thinkIntervalSeconds}";
+                //string taskPrompt = $"Update at interval time {thinkIntervalSeconds}";
+                string taskPrompt = $"Explore the world.";
                 worldObject.llmWorldScheduler.EnqueueRequest(BuildRequestForThisAgent(taskPrompt));
                 nextThinkTime = Time.time + thinkIntervalSeconds;
             }
@@ -213,68 +215,74 @@ namespace DogGame.Modules
                 string tag = "player_request",
                 Vector2Int? eventCell = null,
                 Vector3? eventWorld = null)
-            {
-                if (llmConfig == null) throw new InvalidOperationException("Missing LLMConfigModule");
-                if (llmWorldState == null) throw new InvalidOperationException("Missing LLMWorldStateModule");
+        {
+            if (llmConfig == null) throw new InvalidOperationException("Missing LLMConfigModule");
+            if (llmWorldState == null) throw new InvalidOperationException("Missing LLMWorldStateModule");
 
-                // Choose tier/profile the same way config does (boss/combat/distance etc.)
-                // Your config decides Sophistication and applies overrides; but it doesn’t expose tier directly.
-                // So we select a tier for scheduler based on world state signals:
-                // (Keep it simple: close/combat/quest => higher tier.)
-                Sophistication sophistication = ChooseSophistication(llmWorldState, llmConfig.identity.isBoss, llmConfig.identity.isSimpleCreature);
+            // Choose tier/profile the same way config does (boss/combat/distance etc.)
+            // Your config decides Sophistication and applies overrides; but it doesn’t expose tier directly.
+            // So we select a tier for scheduler based on world state signals:
+            // (Keep it simple: close/combat/quest => higher tier.)
+            Sophistication sophistication = ChooseSophistication(llmWorldState, llmConfig.identity.isBoss, llmConfig.identity.isSimpleCreature);
 
-                return new LLMPlanRequestOnDemand(
-                    agentId: llmConfig.identity.ResolveAgentId(gameObject),
-                    prompt: userTaskPrompt,
-                    eventCell: eventCell,
-                    eventWorld: eventWorld,
-                    urgency: urgency,
-                    applyMode: applyMode,
-                    tag: tag,
-                    sophistication: sophistication,
-                    onResponseJson: OnLLMResponseJson
-                );
-            }
+            return new LLMPlanRequestOnDemand(
+                agentId: llmConfig.identity.ResolveAgentId(gameObject),
+                prompt: userTaskPrompt,
+                eventCell: eventCell,
+                eventWorld: eventWorld,
+                urgency: urgency,
+                applyMode: applyMode,
+                tag: tag,
+                sophistication: sophistication,
+                onResponseJson: OnLLMResponseJson
+            );
+        }
 
-            private static Sophistication ChooseSophistication(
-                LLMWorldStateModule ws,
-                bool isBoss,
-                bool isSimpleCreature)
-            {
-                if (isSimpleCreature)
-                    return Sophistication.Low;
-
-                if (isBoss || ws.isQuestCritical || ws.isInCombat)
-                    return Sophistication.High;
-
-                if (ws.distanceToPlayerMeters <= 10f || ws.isPlayerFocusingThisNpc)
-                    return Sophistication.Medium;
-
+        private static Sophistication ChooseSophistication(
+            LLMWorldStateModule ws,
+            bool isBoss,
+            bool isSimpleCreature)
+        {
+            if (isSimpleCreature)
                 return Sophistication.Low;
-            }
 
-            public void RequestPlanNow()
+            if (isBoss || ws.isQuestCritical || ws.isInCombat)
+                return Sophistication.High;
+
+            if (ws.distanceToPlayerMeters <= 10f || ws.isPlayerFocusingThisNpc)
+                return Sophistication.Medium;
+
+            return Sophistication.Low;
+        }
+
+        public void RequestPlanNow()
+        {
+            string prompt =
+                "Decide the next 1–3 actions for the next few seconds.\n" +
+                "If uncertain, request_observation or noop.\n" +
+                "Prefer safe, reversible actions.";
+
+            var request = BuildRequestForThisAgent(
+                userTaskPrompt: prompt,
+                urgency: LLMPlanUrgency.Normal,
+                applyMode: LLMApplyMode.Interrupt,
+                tag: "player_manual");
+
+            LLMWorldScheduler.Instance.EnqueueRequest(request);
+        }
+
+        private void OnLLMResponseJson(string planJson)
+        {
+            // This is where your Step 2/3/4 pipeline continues:
+            // Parse -> Translate -> Instantiate -> Start task
+            Debug.Log($"LLMWalkthrough2: PlayerDecisionModule got planJsonChars={planJson?.Length ?? 0}.  planJson={planJson}");
+            if (planJson.IsNullOrEmpty())
             {
-                string prompt =
-                    "Decide the next 1–3 actions for the next few seconds.\n" +
-                    "If uncertain, request_observation or noop.\n" +
-                    "Prefer safe, reversible actions.";
-
-                var request = BuildRequestForThisAgent(
-                    userTaskPrompt: prompt,
-                    urgency: LLMPlanUrgency.Normal,
-                    applyMode: LLMApplyMode.Interrupt,
-                    tag: "player_manual");
-
-                LLMWorldScheduler.Instance.EnqueueRequest(request);
+                Debug.LogError("OnLLMResponseJson: planJson is null or empty.");
+                return;
             }
-
-            private void OnLLMResponseJson(string planJson)
-            {
-                // This is where your Step 2/3/4 pipeline continues:
-                // Parse -> Translate -> Instantiate -> Start task
-                Debug.Log($"LLMWalkthrough2: PlayerDecisionModule got planJsonChars={planJson?.Length ?? 0}");
-            }
+            worldObject.taskController.TryApplyPlanJson(planJson!);
+        }
             
         #region One-shot actions
 

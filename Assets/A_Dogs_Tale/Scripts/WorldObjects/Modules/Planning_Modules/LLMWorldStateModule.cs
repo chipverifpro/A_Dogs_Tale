@@ -2,7 +2,10 @@
 using System;
 using System.Collections.Generic;
 using DogGame.LLM.Policy;
+using DogGame.Modules;
+using Unity.Tutorials.Core.Editor;
 using UnityEngine;
+using UnityEngine.AI;
 
 namespace DogGame.LLM.Agent
 {
@@ -14,8 +17,12 @@ namespace DogGame.LLM.Agent
     /// Start simple: you (or other systems) can set the public fields directly.
     /// Later you can add RefreshFromGameSystems() to auto-fill from your WorldObject framework.
     /// </summary>
-    public sealed class LLMWorldStateModule : MonoBehaviour
+    public sealed class LLMWorldStateModule : WorldModule
     {
+        public string positionContext = "";
+        public string doorsContext = "";
+        public int maxDoors = 5;
+
         [Header("Perception / Signals (auto-populate at runtime)")]
         [Tooltip("Approx distance to player in meters.")]
         public float distanceToPlayerMeters = 999f;
@@ -54,6 +61,24 @@ namespace DogGame.LLM.Agent
         [Range(100, 4000)]
         public int maxCharsPerBlock = 800;
 
+        // ----- Location context -----
+        [Header("Agent Location (auto-populate)")]
+        [Tooltip("Agent world-space position (meters). Auto-filled from transform.")]
+        public Vector3 agentWorldPosition;
+
+        [Tooltip("Agent Cell, if known.")]
+        public Cell agentCell;
+
+        [Tooltip("True if agentCell is valid this frame.")]
+        public bool hasAgentCell = false;
+
+        public int suggestedTravelRadius = 8;
+
+        [Tooltip("Suggested nearby target cells (reachable/preferred) if known. Keep small (<=8).")]
+        public Rect tgt = new();
+
+        // ---------------------
+
         /// <summary>
         /// Build the inputs used by SophisticationPolicy.
         /// </summary>
@@ -78,24 +103,41 @@ namespace DogGame.LLM.Agent
         {
             if (contextBlocks == null) throw new ArgumentNullException(nameof(contextBlocks));
 
-            TryAddBlock(contextBlocks, "CONTEXT: Nearby", nearbySummary);
-            TryAddBlock(contextBlocks, "CONTEXT: Status", statusSummary);
-            TryAddBlock(contextBlocks, "CONTEXT: Goals", goalsSummary);
-            TryAddBlock(contextBlocks, "CONTEXT: Recent Events", recentEventsSummary);
+            positionContext = BuildPositionContextBlock();
+            LimitAndAddBlock(contextBlocks, positionContext);
+            //TryAddBlock(contextBlocks, "CONTEXT: Nearby", nearbySummary);
+            //TryAddBlock(contextBlocks, "CONTEXT: Status", statusSummary);
+            //TryAddBlock(contextBlocks, "CONTEXT: Goals", goalsSummary);
+            //TryAddBlock(contextBlocks, "CONTEXT: Recent Events", recentEventsSummary);
         }
 
-        private void TryAddBlock(List<string> blocks, string title, string body)
+        private void LimitAndAddBlock(List<string> contextBlocks, string context)
         {
-            if (string.IsNullOrWhiteSpace(body))
+            if (string.IsNullOrWhiteSpace(context))
                 return;
 
-            string trimmedBody = body.Trim();
+            // chop text to maximum size
+            if (context.Length>maxCharsPerBlock)
+                context = context.Substring(0, maxCharsPerBlock);
 
-            if (maxCharsPerBlock > 0 && trimmedBody.Length > maxCharsPerBlock)
-                trimmedBody = trimmedBody.Substring(0, maxCharsPerBlock) + "…";
+            // eliminate leading/trailing spaces
+            context.Trim();
 
-            blocks.Add($"{title}\n{trimmedBody}");
+            contextBlocks.Add(context);
         }
+
+//        private void TryAddBlock(List<string> blocks, string title, string body)
+//        {
+//            if (string.IsNullOrWhiteSpace(body))
+//                return;
+//
+//            string trimmedBody = body.Trim();
+//
+//            if (maxCharsPerBlock > 0 && trimmedBody.Length > maxCharsPerBlock)
+//                trimmedBody = trimmedBody.Substring(0, maxCharsPerBlock) + "…";
+//
+//            blocks.Add($"{title}\n{trimmedBody}");
+//        }
 
         // --------------------------------------------------------------------
         // Optional expansion point:
@@ -115,5 +157,174 @@ namespace DogGame.LLM.Agent
             // - Build nearbySummary from sensed entities list
             // - Summarize health/stamina/status into statusSummary
         }
+
+        #region PositionContext
+            
+        // ========== Position Context ===========
+        public string BuildPositionContextBlock()
+        {
+            string roomName;
+            string roomType;
+            RectInt worldBounds = new(0,0, dir.cfg.mapWidth,dir.cfg.mapHeight);
+            RectInt roomBounds;
+            RectInt radiusBounds;
+
+            RectInt clipRect;
+            RectInt tgt;
+
+            string roomContext = ""; // description of the room
+
+            // get location and cell so we can look up room.
+            Vector3 agentWorldPosition = worldObject.pos3d_world;   // guaranteed valid
+            Cell? cell = worldObject.locationModule?.cell;          // possibly null
+
+            // get suggested move rectangle, later clip this to room or map limits
+            radiusBounds = GetRadiusBounds(agentWorldPosition, suggestedTravelRadius);
+            
+            // identify the room and it's particulars..
+            if (cell!=null)
+            {
+                Room room = dir.gen.rooms[cell.room_number];
+                roomName = room.name;
+                roomType = $"{room.placementTypes}";
+                // these may be redundant...
+                if (room.isOutdoor) roomType += ", Outdoor";
+                if (room.isCorridor) roomType += ", Corridor";
+
+                roomBounds = room.bounds;
+
+                if (!TryIntersect(worldBounds, roomBounds, out clipRect))
+                    clipRect=worldBounds; // on failure, use entire map.
+                
+                if (!roomName.IsNullOrEmpty())
+                    roomContext = $" in room \"{roomName}\" of type \"{roomType}\" and size {roomBounds.width},{roomBounds.height}";
+                else
+                    roomContext = $" in room type \"{roomType}\" and size {roomBounds.width},{roomBounds.height}";
+                
+                //   identify door locations.
+                BuildDoorsList(agentWorldPosition, room, radiusBounds, maxDoors);
+            
+            } 
+            else
+            {
+                // no Cell/Room so don't describe room, and clip only to map.
+                clipRect = worldBounds;
+                roomContext = "";
+            }
+            
+            // bounds are radius around agentWorldPosition clipped by room and map
+            if(!TryIntersect(radiusBounds, clipRect, out tgt))
+                tgt = radiusBounds;     // if no overlap, just use local radius without clip
+
+            // expansion suggestions:
+            // create summary for LLM:
+            positionContext = "Context: Agent position:"
+                + $" [{agentWorldPosition.x:0.0}, {agentWorldPosition.z:0.0}]."
+                + $" floor height={agentWorldPosition.y:0.0}"
+                + roomContext
+                + doorsContext
+                + $" suggested move_to bounded by rectangle [x in {tgt.x} .. {tgt.x+tgt.width}, y in {tgt.y} .. {tgt.y+tgt.height}]";
+            Debug.Log(positionContext);
+            return positionContext;
+        }
+
+        public struct FoundDoor
+        {
+            public Vector2Int pos;
+            public float distSqr;
+            public bool open;
+            public string IsOpen;
+            public DirFlags direction;
+        }
+
+        public string BuildDoorsList(Vector3 worldPos, Room room, RectInt radiusBounds, int maxDoors)
+        {
+            Debug.Log($"BuildDoorsList: {room.cells.Count}");
+            doorsContext = "";
+            List<FoundDoor> foundDoors = new();
+            foreach (Cell c in room.cells)
+            {
+                if (c.doors != DirFlags.None)
+                {
+                    if (!radiusBounds.Contains(c.pos))
+                        continue;
+                    foreach (DirFlags dir in DirFlagsEx.AllCardinals)
+                    {
+                        if ((c.doors & dir) != 0)
+                        {
+                            Debug.Log($"Found door @ {c.pos}");
+                            FoundDoor door = new FoundDoor
+                            {
+                                pos = c.pos,
+                                distSqr = Vector3.SqrMagnitude(worldPos - c.pos3d_world),
+                                direction = dir,
+                                open = false, // future capability
+                            };
+                            door.IsOpen = door.open ? "Open" : "Closed";
+
+                            foundDoors.Add(door);
+                        }
+                    }
+                }
+            }
+            Debug.Log($"{foundDoors.Count} doors nearby: ");
+            if (foundDoors.Count==0) return "";
+
+            // Sort nearest first
+            foundDoors.Sort((a, b) => a.distSqr.CompareTo(b.distSqr));
+
+            // Truncate to maxDoors
+            if (maxDoors > 0 && foundDoors.Count > maxDoors)
+            {
+                foundDoors.RemoveRange(maxDoors, foundDoors.Count - maxDoors);
+            }
+            doorsContext = $"{foundDoors.Count} doors nearby: ";
+            foreach (FoundDoor foundDoor in foundDoors)
+            {
+                doorsContext += $"{foundDoor.direction} {foundDoor.IsOpen} at [{foundDoor.pos.x},{foundDoor.pos.y}]; ";
+            }
+            doorsContext.Trim();    // eliminate trailing space
+            Debug.Log(doorsContext);
+            return doorsContext;
+        }
+
+        public static bool TryIntersect(RectInt a, RectInt b, out RectInt intersection)
+        {
+            int xMin = Mathf.Max(a.xMin, b.xMin);
+            int yMin = Mathf.Max(a.yMin, b.yMin);
+            int xMax = Mathf.Min(a.xMax, b.xMax);
+            int yMax = Mathf.Min(a.yMax, b.yMax);
+
+            if (xMax <= xMin || yMax <= yMin)
+            {
+                intersection = default;
+                return false;
+            }
+
+            intersection = new RectInt(
+                xMin,
+                yMin,
+                xMax - xMin,
+                yMax - yMin
+            );
+            return true;
+        }
+
+        // gets a rectangular radius from a position, and clips it to bounds (world/room/etc)
+        public RectInt GetRadiusBounds(Vector3 centerWorldPos, int radius)
+        {
+            RectInt tgt = new();
+
+            // build target around center
+            tgt.x = Mathf.FloorToInt(centerWorldPos.x) - radius;
+            tgt.y = Mathf.FloorToInt(centerWorldPos.z) - radius; // z is used in world position
+            tgt.width = radius * 2 + 1;
+            tgt.height = radius * 2 + 1;
+            return tgt;
+        }
+
+        #endregion
+        // ======================================
+
     }
 }

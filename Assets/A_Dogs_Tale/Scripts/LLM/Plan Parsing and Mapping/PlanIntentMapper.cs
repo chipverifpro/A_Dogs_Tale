@@ -2,6 +2,7 @@
 using Newtonsoft.Json.Linq;
 using UnityEngine;
 using DogGame.Tasks;
+using Unity.AppUI.Core;
 
 namespace DogGame.LLM
 {
@@ -162,6 +163,60 @@ namespace DogGame.LLM
                     stopRadius = Mathf.Clamp(stopRadius, 0.05f, 2.0f);
 
                     task = new Task_MoveToCell(cellX, cellY, stopRadius);
+                    return true;
+                }
+
+                case "move_to_object":
+                {
+                    // NOTE: Maybe should be a string instead of int.  Lookup function is by int.
+                    //
+                    //string targetEntityId = (string)(parameters.Value<string?>("targetEntityId") ?? "");
+                    //if (targetEntityId.Length > 20)   // chop end if too long
+                    //    targetEntityId = targetEntityId.Substring(0, 20);
+                    //targetEntityId = targetEntityId.Trim();     // clean up whitespace
+                    
+                    int targetEntityId = (int)(parameters.Value<int?>("targetEntityId") ?? -1);
+                    
+                    WorldObject targetEntity;
+                    Directory.Instance.worldObjectRegistry.TryGet(targetEntityId, out targetEntity);
+                    if (targetEntity==null)
+                    {
+                        error = $"move_to_object parameters.targetEntityId {targetEntityId} matched no objects.";
+                        return false;
+                    }                    
+                    float stopRadius = (float)(parameters.Value<float?>("stopRadius") ?? 0.35);
+                    stopRadius = Mathf.Clamp(stopRadius, 0.05f, 2.0f);
+
+                    task = new Task_MoveToObject(targetEntity, stopRadius);
+                    return true;
+                }
+
+                case "sniff":
+                {
+                    float durationSeconds = (float)(parameters.Value<double?>("stopRadius") ?? 0.35);
+                    durationSeconds = Mathf.Clamp(durationSeconds, 0.05f, 2.0f);
+
+                    task = new Task_Sniff(durationSeconds);
+                    return true;
+                }
+
+                case "bark":
+                {
+                    int volume = (int)(parameters.Value<int?>("volume") ?? 8);
+                    volume = Mathf.Clamp(volume, 1, 10);
+
+                    task = new Task_Bark(volume);
+                    return true;
+                }
+
+                case "emote":
+                {
+                    string type = (string)(parameters.Value<string?>("emote") ?? "");
+                    if (type.Length > 20)   // chop end if too long
+                        type = type.Substring(0, 20);
+                    type = type.Trim();     // clean up whitespace
+                    
+                    task = new Task_Emote(type);
                     return true;
                 }
 

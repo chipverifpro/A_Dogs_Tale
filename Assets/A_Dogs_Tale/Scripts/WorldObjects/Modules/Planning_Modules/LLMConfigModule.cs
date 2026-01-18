@@ -1,9 +1,12 @@
 #nullable enable
+using System;
 using System.Collections.Generic;
 using DogGame.LLM.Core;
 using DogGame.LLM.Personality;
 using DogGame.LLM.Policy;
 using DogGame.LLM.Prompting;
+using DogGame.Modules;
+using UnityEditor.Rendering.LookDev;
 using UnityEngine;
 
 namespace DogGame.LLM.Agent
@@ -13,7 +16,7 @@ namespace DogGame.LLM.Agent
     /// Sections declared in LLMConfigModuleSections.cs.
     /// Intended to be designer-tweaked. Pairs with LLMWorldStateModule (dynamic context).
     /// </summary>
-    public sealed class LLMConfigModule : MonoBehaviour
+    public sealed class LLMConfigModule : WorldModule
     {
         private readonly SophisticationPolicy sophisticationPolicy = new();
 
@@ -72,11 +75,13 @@ namespace DogGame.LLM.Agent
             instructions.AddSystemBlocks(systemBlocks);
 
             var contextBlocks = new List<string>();
+            worldObject.llmWorldStateModule.AddContextBlocks(contextBlocks);
             worldState.AddContextBlocks(contextBlocks);
+
             systemBlocks.AddRange(contextBlocks);
 
             Debug.Log($"[LLMConfig] toolsChars={instructions.BuildToolDefinitionsJson().Length} schemaChars={instructions.BuildResponseSchemaJson().Length}");
-            
+
             return new LLMRequest
             {
                 requestId = requestId,

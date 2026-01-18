@@ -60,21 +60,21 @@ namespace DogGame.LLM
         {
             string endpointUrl = $"{baseUrl.TrimEnd('/')}/responses";
 
-            // Build the same Responses payload shape you use for OpenAI.
-            // Note: Ollama supports /v1/responses in OpenAI compatibility mode (non-stateful).
+            string inputHeader =
+                $"requestId={requestId}\nagentId={agentId}\n" +
+                "Return ONLY JSON matching responseSchemaJson.\n";
+
             JObject payload = new JObject
             {
                 ["model"] = model,
+
+                // Keep your systemInstructions, but make it short and non-redundant.
                 ["instructions"] = systemInstructions,
-                ["input"] =
-                    "IMPORTANT: Output ONLY JSON.\n" +
-                    "Return ONLY a PlanResponseV1 JSON object with fields: schema, requestId, agentId, intentions, debug.\n" +
-                    "You MUST set schema=\"PlanResponseV1\" and copy requestId and agentId exactly.\n" +
-                    "Example shape:\n" +
-                    "{ \"schema\":\"PlanResponseV1\", \"requestId\":\"...\", \"agentId\":\"...\", \"intentions\":[], \"debug\":{ \"confidence\":0.5, \"notes\":[] } }\n" +
-                    $"requestId={requestId} agentId={agentId}\n" +
-                    "Now plan based on this input packet (may be partial):\n" +
-                    requestJson,
+
+                // Provide a small header + the full structured request packet.
+                // The packet already contains: profile, systemBlocks, toolDefinitionsJson, responseSchemaJson, metadata, userPrompt...
+                ["input"] = inputHeader + "\nREQUEST_PACKET_JSON:\n" + requestJson,
+
                 ["temperature"] = temperature,
                 ["max_output_tokens"] = maxOutputTokens,
                 ["text"] = new JObject
@@ -87,8 +87,7 @@ namespace DogGame.LLM
                 ["metadata"] = new JObject
                 {
                     ["requestId"] = requestId,
-                    ["agentId"] = agentId,
-                    ["provider"] = "ollama"
+                    ["agentId"] = agentId
                 }
             };
 
