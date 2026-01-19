@@ -67,7 +67,7 @@ namespace DogGame.LLM.Agent
         public Vector3 agentWorldPosition;
 
         [Tooltip("Agent Cell, if known.")]
-        public Cell agentCell;
+        public Cell? agentCell;
 
         [Tooltip("True if agentCell is valid this frame.")]
         public bool hasAgentCell = false;

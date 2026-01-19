@@ -6,6 +6,7 @@ using System;
 using DogGame.LLM;
 using DogGame.Tasks;
 using DogGame.LLM.Agent;
+using DogGame;
 
 
 /// <summary>
@@ -298,8 +299,11 @@ public class WorldObject : MonoBehaviour
                 Debug.LogError("ERROR: TickCallerAllModules run more than once per frame");
             debugDoubleTick = Time.frameCount;
 
-        float dt = Time.deltaTime;
-
+        //float dt = Time.deltaTime;
+        float dt = GameTime.DeltaTime;
+        if (dt <= 0f)
+            return;
+            
         // SENSES
         //visionPerceptionModule?.Tick(dt);
         //hearingModule?.Tick(dt);

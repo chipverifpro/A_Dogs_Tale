@@ -1,3 +1,4 @@
+#nullable enable
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -13,6 +14,9 @@ namespace DogGame.LLM.Core
         {
             if (request == null) throw new ArgumentNullException(nameof(request));
             if (request.profile == null) throw new ArgumentNullException(nameof(request.profile));
+
+            // Capture token at dispatch. If it changes later, this response is stale.
+            int tokenAtDispatch = LLMSessionToken.Current;
 
             // If this client tracks cooldown, avoid retrying/spamming during cooldown
             if (this is ICooldownAware cooldownAware && cooldownAware.IsCoolingDown)
@@ -33,6 +37,17 @@ namespace DogGame.LLM.Core
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
+                // If play session changed, stop immediately.
+                if (LLMSessionToken.Current != tokenAtDispatch)
+                {
+                    return new LLMResponse
+                    {
+                        succeeded = false,
+                        wasStale = true,
+                        errorMessage = $"[{Vendor}] Ignored stale response (session changed) requestId={request.requestId}."
+                    };
+                }
+
                 // Re-check cooldown between attempts
                 if (this is ICooldownAware cooldownAware2 && cooldownAware2.IsCoolingDown)
                 {
@@ -49,6 +64,17 @@ namespace DogGame.LLM.Core
                 {
                     LLMResponse response = await SendCoreAsync(request, cancellationToken).ConfigureAwait(false);
 
+                    // Critical: provider returned, but session may have changed while it was running.
+                    if (LLMSessionToken.Current != tokenAtDispatch)
+                    {
+                        return new LLMResponse
+                        {
+                            succeeded = false,
+                            wasStale = true,
+                            errorMessage = $"[{Vendor}] Ignored stale response (session changed after provider return) requestId={request.requestId}."
+                        };
+                    }
+
                     if (response == null)
                     {
                         return new LLMResponse
@@ -58,10 +84,9 @@ namespace DogGame.LLM.Core
                         };
                     }
 
-                    // ✅ Critical: if provider says it's rate-limited, STOP retrying automatically
+                    // If provider says rate-limited, STOP retrying automatically.
                     if (response.isRateLimited)
                     {
-                        // Optionally log once
                         Debug.LogWarning($"[{Vendor}] Rate limited. retryAfter={response.retryAfterSeconds:0.0}s requestId={request.requestId}");
                         return response;
                     }
@@ -70,6 +95,17 @@ namespace DogGame.LLM.Core
                 }
                 catch (OperationCanceledException)
                 {
+                    // If cancellation happened because of a session change, prefer stale response.
+                    if (LLMSessionToken.Current != tokenAtDispatch)
+                    {
+                        return new LLMResponse
+                        {
+                            succeeded = false,
+                            wasStale = true,
+                            errorMessage = $"[{Vendor}] Canceled due to session change requestId={request.requestId}."
+                        };
+                    }
+
                     throw;
                 }
                 catch (Exception exception)
@@ -86,8 +122,31 @@ namespace DogGame.LLM.Core
                         };
                     }
 
-                    await Task.Delay(TimeSpan.FromSeconds(backoffSeconds), cancellationToken).ConfigureAwait(false);
+                    // Backoff, but don’t waste time if session changed during the delay.
+                    float delaySeconds = backoffSeconds;
                     backoffSeconds *= 2f;
+
+                    const float sliceSeconds = 0.1f;
+                    float remaining = delaySeconds;
+
+                    while (remaining > 0f)
+                    {
+                        cancellationToken.ThrowIfCancellationRequested();
+
+                        if (LLMSessionToken.Current != tokenAtDispatch)
+                        {
+                            return new LLMResponse
+                            {
+                                succeeded = false,
+                                wasStale = true,
+                                errorMessage = $"[{Vendor}] Ignored stale response during backoff (session changed) requestId={request.requestId}."
+                            };
+                        }
+
+                        float step = Math.Min(sliceSeconds, remaining);
+                        await Task.Delay(TimeSpan.FromSeconds(step), cancellationToken).ConfigureAwait(false);
+                        remaining -= step;
+                    }
                 }
             }
 

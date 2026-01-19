@@ -323,6 +323,7 @@ namespace DogGame.LLM
             ollamaService?.CancelAll("scheduler_disabled");
             openAiService?.CancelAll("scheduler_disabled");
             geminiService?.CancelAll("scheduler_disabled");
+            LLMSessionToken.Bump();
         }
     }
 }

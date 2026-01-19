@@ -23,6 +23,8 @@ namespace DogGame.LLM.Core
         // If known, how long to wait before trying again
         public float retryAfterSeconds = 0f;
 
+        public bool wasStale;
+        
         [Serializable]
         public sealed class ToolCall
         {
