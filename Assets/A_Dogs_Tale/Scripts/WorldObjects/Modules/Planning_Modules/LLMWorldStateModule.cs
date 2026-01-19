@@ -253,6 +253,7 @@ namespace DogGame.LLM.Agent
                         if ((c.doors & dir) != 0)
                         {
                             Debug.Log($"Found door @ {c.pos}");
+                            
                             FoundDoor door = new FoundDoor
                             {
                                 pos = c.pos,
@@ -284,7 +285,7 @@ namespace DogGame.LLM.Agent
                 doorsContext += $"{foundDoor.direction} {foundDoor.IsOpen} at [{foundDoor.pos.x},{foundDoor.pos.y}]; ";
             }
             doorsContext.Trim();    // eliminate trailing space
-            Debug.Log(doorsContext);
+            //Debug.Log(doorsContext);
             return doorsContext;
         }
 

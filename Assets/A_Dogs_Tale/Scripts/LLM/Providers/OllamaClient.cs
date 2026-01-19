@@ -24,6 +24,9 @@ namespace DogGame.LLM.Providers
         private readonly string model;
         private readonly int timeoutSeconds;
 
+        private readonly object inflightLock = new();
+        private readonly System.Collections.Generic.Dictionary<string, UnityWebRequest> inflightRequestsById = new();
+
         // Keep these conservative; you can later source them from request.profile if desired.
         private readonly float temperatureDefault;
         private readonly int maxOutputTokensDefault;
@@ -146,7 +149,19 @@ namespace DogGame.LLM.Providers
             unityRequest.timeout = timeoutSeconds;
             unityRequest.SetRequestHeader("Content-Type", "application/json");
 
-            // UnityWebRequest isn't natively awaitable; use the completed callback.
+            Directory.Instance.llmDebugMonitor.DebugLLMRequest(payload.ToString());
+            unityRequest.uploadHandler = new UploadHandlerRaw(bodyBytes);
+            unityRequest.downloadHandler = new DownloadHandlerBuffer();
+            unityRequest.timeout = timeoutSeconds;
+            unityRequest.SetRequestHeader("Content-Type", "application/json");
+
+            // Track inflight so we can Abort() on Play stop.
+            lock (inflightLock)
+            {
+                inflightRequestsById[requestId] = unityRequest;
+            }
+
+            // UnityWebRequest isn't natively awaitable; use completed callback.
             var tcs = new TaskCompletionSource<LLMResponse>(TaskCreationOptions.RunContinuationsAsynchronously);
 
             // Cancellation: abort the request.
@@ -159,24 +174,35 @@ namespace DogGame.LLM.Providers
 
             unityRequest.SendWebRequest().completed += _ =>
             {
-                Directory.Instance.llmDebugMonitor.DebugLLMResponse(unityRequest.downloadHandler?.text);
-
                 try
                 {
+                    Directory.Instance.llmDebugMonitor.DebugLLMResponse(unityRequest.downloadHandler?.text);
+
                     ctr.Dispose();
+
+                    // Remove from inflight tracking
+                    lock (inflightLock)
+                    {
+                        inflightRequestsById.Remove(requestId);
+                    }
 
                     string raw = unityRequest.downloadHandler?.text ?? "";
                     bool ok = unityRequest.result == UnityWebRequest.Result.Success;
 
                     if (!ok)
                     {
+                        // If this was an Abort() from shutdown, treat it as canceled (don’t spam warnings).
+                        bool aborted = unityRequest.result == UnityWebRequest.Result.ConnectionError &&
+                                    (unityRequest.error != null && unityRequest.error.IndexOf("aborted", StringComparison.OrdinalIgnoreCase) >= 0);
+
                         tcs.TrySetResult(new LLMResponse
                         {
                             succeeded = false,
-                            // Ollama usually won't 429 locally; still surface it if it happens.
                             isRateLimited = unityRequest.responseCode == 429,
                             retryAfterSeconds = unityRequest.responseCode == 429 ? 1f : 0f,
-                            errorMessage = $"[{Vendor}] HTTP failed: {unityRequest.responseCode} {unityRequest.error}\n{raw}"
+                            errorMessage = aborted
+                                ? $"[{Vendor}] Aborted requestId={requestId} (likely Play stop)."
+                                : $"[{Vendor}] HTTP failed: {unityRequest.responseCode} {unityRequest.error}\n{raw}"
                         });
                         return;
                     }
@@ -194,8 +220,6 @@ namespace DogGame.LLM.Providers
                     tcs.TrySetResult(new LLMResponse
                     {
                         succeeded = true,
-                        // IMPORTANT: pick the correct field name in your LLMResponse type if different.
-                        // I’m assuming your downstream expects "responseJson" or similar.
                         rawProviderPayloadJson = planJson
                     });
                 }
@@ -206,6 +230,11 @@ namespace DogGame.LLM.Providers
                         succeeded = false,
                         errorMessage = $"[{Vendor}] Exception: {ex.GetType().Name}: {ex.Message}"
                     });
+                }
+                finally
+                {
+                    // IMPORTANT: Dispose here (not with 'using var') so Abort() is possible while inflight.
+                    try { unityRequest.Dispose(); } catch { /* ignore */ }
                 }
             };
 
@@ -266,5 +295,7 @@ namespace DogGame.LLM.Providers
             if (request.metadata == null) return null;
             return request.metadata.TryGetValue(key, out var value) ? value : null;
         }
+
+
     }
 }

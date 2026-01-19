@@ -29,7 +29,7 @@ namespace DogGame.LLM
         [SerializeField] private RemoteLLMProvider remoteProvider = RemoteLLMProvider.Gemini;
 
         [Header("Throughput limits")]
-        [SerializeField] private int maxConcurrentLocalRequests = 2;
+        [SerializeField] private int maxConcurrentLocalRequests = 1;
         [SerializeField] private int maxConcurrentRemoteRequests = 1;
 
         [Header("Scheduling")]
@@ -312,6 +312,17 @@ namespace DogGame.LLM
         {
             if (tier == LLMModelTier.LocalSmall) activeLocalRequests--;
             else activeRemoteRequests--;
+        }
+
+        private void OnDisable()
+        {
+            // Clear pending queue so nothing dispatches next play session
+            pendingRequests.Clear();
+
+            // Best-effort cancel inflight provider work
+            ollamaService?.CancelAll("scheduler_disabled");
+            openAiService?.CancelAll("scheduler_disabled");
+            geminiService?.CancelAll("scheduler_disabled");
         }
     }
 }

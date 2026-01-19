@@ -50,6 +50,9 @@ namespace DogGame.LLM
         public bool IsCoolingDown => cooldownUntilRealtime > Time.realtimeSinceStartup;
         public float CooldownRemainingSeconds => Mathf.Max(0f, cooldownUntilRealtime - Time.realtimeSinceStartup);
 
+        private readonly object inflightLock = new();
+        private readonly System.Collections.Generic.Dictionary<string, UnityWebRequest> inflightRequestsById = new();
+
         private void Awake()
         {
             if (string.IsNullOrWhiteSpace(apiKey))
@@ -331,6 +334,28 @@ namespace DogGame.LLM
             }
 
             return false;
+        }
+
+        public void CancelAll(string reason)
+        {
+            UnityWebRequest[] requests;
+
+            lock (inflightLock)
+            {
+                requests = new UnityWebRequest[inflightRequestsById.Count];
+                int i = 0;
+                foreach (var kvp in inflightRequestsById)
+                    requests[i++] = kvp.Value;
+
+                inflightRequestsById.Clear();
+            }
+
+            Debug.LogWarning($"[OllamaClient] CancelAll reason={reason} aborting={requests.Length}");
+
+            for (int i = 0; i < requests.Length; i++)
+            {
+                try { requests[i]?.Abort(); } catch { /* ignore */ }
+            }
         }
     }
 }

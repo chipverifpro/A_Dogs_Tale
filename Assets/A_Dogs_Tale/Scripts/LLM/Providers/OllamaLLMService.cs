@@ -42,6 +42,11 @@ namespace DogGame.LLM
 
         public string Model => model;
 
+        private readonly object inflightLock = new();
+        private readonly System.Collections.Generic.HashSet<UnityWebRequest> inflightRequests = new();
+
+        private int sessionToken = 0; // increments on enable/disable so late responses can be ignored
+
         /// <summary>
         /// Submit an LLM request. The callback receives the PlanResponseV1 JSON (string).
         /// </summary>
@@ -59,6 +64,7 @@ namespace DogGame.LLM
         private IEnumerator PostResponsesCoroutine(string requestId, string requestJson, string agentId, Action<string> onResponseJson)
         {
             string endpointUrl = $"{baseUrl.TrimEnd('/')}/responses";
+            int tokenAtDispatch = sessionToken;
 
             string inputHeader =
                 $"requestId={requestId}\nagentId={agentId}\n" +
@@ -67,14 +73,8 @@ namespace DogGame.LLM
             JObject payload = new JObject
             {
                 ["model"] = model,
-
-                // Keep your systemInstructions, but make it short and non-redundant.
                 ["instructions"] = systemInstructions,
-
-                // Provide a small header + the full structured request packet.
-                // The packet already contains: profile, systemBlocks, toolDefinitionsJson, responseSchemaJson, metadata, userPrompt...
                 ["input"] = inputHeader + "\nREQUEST_PACKET_JSON:\n" + requestJson,
-
                 ["temperature"] = temperature,
                 ["max_output_tokens"] = maxOutputTokens,
                 ["text"] = new JObject
@@ -93,43 +93,70 @@ namespace DogGame.LLM
 
             byte[] bodyBytes = Encoding.UTF8.GetBytes(payload.ToString());
 
-            using var unityRequest = new UnityWebRequest(endpointUrl, "POST");
+            var unityRequest = new UnityWebRequest(endpointUrl, "POST");
             unityRequest.uploadHandler = new UploadHandlerRaw(bodyBytes);
             unityRequest.downloadHandler = new DownloadHandlerBuffer();
             unityRequest.timeout = timeoutSeconds;
             unityRequest.SetRequestHeader("Content-Type", "application/json");
 
-            Debug.Log($"[OllamaLLMService] POST {endpointUrl} model={model} bytes={bodyBytes.Length}", this);
+            lock (inflightLock)
+            {
+                inflightRequests.Add(unityRequest);
+            }
 
+            Debug.Log($"[OllamaLLMService] POST {endpointUrl} model={model} bytes={bodyBytes.Length} requestId={requestId}", this);
             Directory.Instance.llmDebugMonitor.DebugLLMRequest(payload.ToString());
 
-            yield return unityRequest.SendWebRequest();
-
-            string raw = unityRequest.downloadHandler?.text ?? "";
-            
-            Directory.Instance.llmDebugMonitor.DebugLLMResponse(raw);
-
-            Debug.Log(
-                $"[OllamaLLMService] HTTP {unityRequest.responseCode} result={unityRequest.result}\n{raw}",
-                this);
-
-            if (unityRequest.result != UnityWebRequest.Result.Success)
+            try
             {
-                Debug.LogWarning(
-                    $"[OllamaLLMService] HTTP failed: {unityRequest.responseCode} {unityRequest.error}\n{raw}",
-                    this);
-                yield break;
-            }
+                yield return unityRequest.SendWebRequest();
 
-            if (!TryExtractFirstOutputText(raw, out string planJson, out string error))
+                // If play session changed (stop/start), ignore stale completion
+                if (tokenAtDispatch != sessionToken)
+                {
+                    Debug.Log($"[OllamaLLMService] Ignoring stale response (session changed) requestId={requestId}", this);
+                    yield break;
+                }
+
+                string raw = unityRequest.downloadHandler?.text ?? "";
+                Directory.Instance.llmDebugMonitor.DebugLLMResponse(raw);
+
+                Debug.Log($"[OllamaLLMService] HTTP {unityRequest.responseCode} result={unityRequest.result} requestId={requestId}\n{raw}", this);
+
+                if (unityRequest.result != UnityWebRequest.Result.Success)
+                {
+                    // If we aborted intentionally, don't spam warnings.
+                    bool likelyAborted =
+                        unityRequest.error != null &&
+                        unityRequest.error.IndexOf("aborted", StringComparison.OrdinalIgnoreCase) >= 0;
+
+                    if (!likelyAborted)
+                    {
+                        Debug.LogWarning(
+                            $"[OllamaLLMService] HTTP failed: {unityRequest.responseCode} {unityRequest.error}\n{raw}",
+                            this);
+                    }
+                    yield break;
+                }
+
+                if (!TryExtractFirstOutputText(raw, out string planJson, out string error))
+                {
+                    Debug.LogWarning($"[OllamaLLMService] Could not extract output_text: {error}\nRAW:\n{raw}", this);
+                    yield break;
+                }
+
+                onResponseJson?.Invoke(planJson);
+            }
+            finally
             {
-                Debug.LogWarning($"[OllamaLLMService] Could not extract output_text: {error}\nRAW:\n{raw}", this);
-                yield break;
-            }
+                lock (inflightLock)
+                {
+                    inflightRequests.Remove(unityRequest);
+                }
 
-            onResponseJson?.Invoke(planJson);
+                try { unityRequest.Dispose(); } catch { /* ignore */ }
+            }
         }
-
         // Same helper as your OpenAI service: Responses API wrapper -> output_text
         private static bool TryExtractFirstOutputText(string responsesApiJson, out string outputText, out string error)
         {
@@ -178,5 +205,52 @@ namespace DogGame.LLM
                 return false;
             }
         }
+
+        private void OnEnable()
+        {
+            // New play session (or re-enabled)
+            sessionToken++;
+        }
+
+        private void OnDisable()
+        {
+            // Called when you stop play mode in Editor too.
+            sessionToken++;
+            CancelAll("service_disabled");
+        }
+
+        private void OnApplicationQuit()
+        {
+            sessionToken++;
+            CancelAll("application_quit");
+        }
+
+        /// <summary>
+        /// Abort all inflight HTTP requests (best effort).
+        /// This stops Unity from waiting and usually causes Ollama to stop generating shortly after.
+        /// </summary>
+        public void CancelAll(string reason)
+        {
+            UnityWebRequest[] toAbort;
+
+            lock (inflightLock)
+            {
+                toAbort = new UnityWebRequest[inflightRequests.Count];
+                inflightRequests.CopyTo(toAbort);
+                inflightRequests.Clear();
+            }
+
+            // Stop coroutines so we don't keep processing after play-stop.
+            try { StopAllCoroutines(); } catch { /* ignore */ }
+
+            Debug.LogWarning($"[OllamaLLMService] CancelAll reason={reason} aborting={toAbort.Length}", this);
+
+            for (int i = 0; i < toAbort.Length; i++)
+            {
+                try { toAbort[i]?.Abort(); } catch { /* ignore */ }
+                try { toAbort[i]?.Dispose(); } catch { /* ignore */ }
+            }
+        }
+
     }
 }

@@ -3850,7 +3850,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.LLM.LLMWorldScheduler
   remoteProvider: 2
-  maxConcurrentLocalRequests: 2
+  maxConcurrentLocalRequests: 1
   maxConcurrentRemoteRequests: 1
   schedulingIntervalSeconds: 0.25
 --- !u!114 &494970099
@@ -14263,6 +14263,7 @@ MonoBehaviour:
   scentRegistry: {fileID: 1546545661}
   convertScreenToWorld: {fileID: 942637348}
   dogSpeechDictionary: {fileID: 1642226072}
+  worldObjectRegistry: {fileID: 0}
   brain: {fileID: 1815589289}
   vcamFP: {fileID: 445485060}
   vcamNose: {fileID: 225585588}
@@ -16523,6 +16524,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: db549f203ae414165bf5be24dacf2337, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.LLM.Agent.LLMWorldStateModule
+  positionContext: 
+  doorsContext: 
+  maxDoors: 5
   distanceToPlayerMeters: 999
   isInCombat: 0
   isQuestCritical: 0
@@ -16533,6 +16537,15 @@ MonoBehaviour:
   goalsSummary: 
   recentEventsSummary: 
   maxCharsPerBlock: 800
+  agentWorldPosition: {x: 0, y: 0, z: 0}
+  hasAgentCell: 0
+  suggestedTravelRadius: 8
+  tgt:
+    serializedVersion: 2
+    x: 0
+    y: 0
+    width: 0
+    height: 0
 --- !u!114 &6544990386685219188
 MonoBehaviour:
   m_ObjectHideFlags: 0

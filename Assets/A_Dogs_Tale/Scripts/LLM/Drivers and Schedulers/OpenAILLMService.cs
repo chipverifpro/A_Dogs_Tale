@@ -45,6 +45,9 @@ namespace DogGame.LLM
             "You MUST output ONLY a single JSON object that matches the PlanResponseV1 schema.\n" +
             "No markdown, no commentary, no code fences. JSON only.";
 
+        private readonly object inflightLock = new();
+        private readonly System.Collections.Generic.Dictionary<string, UnityWebRequest> inflightRequestsById = new();
+
         private void Awake()
         {
             if (string.IsNullOrWhiteSpace(apiKey))
@@ -220,6 +223,28 @@ Debug.Log("[RemoteLLMService] Inspecting Responses API output...");
             {
                 error = ex.Message;
                 return false;
+            }
+        }
+
+        public void CancelAll(string reason)
+        {
+            UnityWebRequest[] requests;
+
+            lock (inflightLock)
+            {
+                requests = new UnityWebRequest[inflightRequestsById.Count];
+                int i = 0;
+                foreach (var kvp in inflightRequestsById)
+                    requests[i++] = kvp.Value;
+
+                inflightRequestsById.Clear();
+            }
+
+            Debug.LogWarning($"[OllamaClient] CancelAll reason={reason} aborting={requests.Length}");
+
+            for (int i = 0; i < requests.Length; i++)
+            {
+                try { requests[i]?.Abort(); } catch { /* ignore */ }
             }
         }
     }
