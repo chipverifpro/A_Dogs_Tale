@@ -13,7 +13,7 @@ namespace DogGame.LLM
     /// Remote-first LLM service using OpenAI Responses API.
     /// Drop-in replacement for FakeLLMService: same SubmitRequest signature.
     /// </summary>
-    public sealed class OpenAILLMService : MonoBehaviour
+    public sealed class OBSOLETE_OpenAILLMService : MonoBehaviour
     {
         [Header("OpenAI")]
         [Tooltip("If empty, we'll try to read from environment variable OPENAI_API_KEY.")]

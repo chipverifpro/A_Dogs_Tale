@@ -1,9 +1,11 @@
 #nullable enable
 using System;
+using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using DogGame.LLM.Core;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using UnityEngine;
 using UnityEngine.Networking;
@@ -64,12 +66,9 @@ namespace DogGame.LLM.Providers
                 cancellationToken: cancellationToken);
         }
 
+        #nullable enable
         private string BuildRequestPacketJson(LLMRequest request)
         {
-            // Best-effort: keep using the data you already carry in LLMRequest.
-            // If you have PromptComposer/LLMRequestSerializer, replace this implementation with that call.
-            //
-            // Important: include the word "JSON" somewhere to avoid "infinite whitespace" style failures in JSON mode.
             var sb = new StringBuilder(2048);
 
             if (request.systemBlocks != null && request.systemBlocks.Count > 0)
@@ -86,25 +85,117 @@ namespace DogGame.LLM.Providers
             sb.AppendLine(request.userPrompt ?? "");
             sb.AppendLine();
 
-            if (!string.IsNullOrWhiteSpace(request.toolDefinitionsJson))
+            // Prefer structured forms if available:
+            // - request.toolDefinitions (object/JToken/JObject/Dictionary/etc)
+            // - request.responseSchema  (object/JToken/JObject/Dictionary/etc)
+            // Fallback to the old string fields if not available.
+            if (TryGetPrettyJsonFromOptionalMember(request, "toolDefinitions", out string? toolsPrettyJson))
             {
                 sb.AppendLine("TOOLS JSON:");
-                sb.AppendLine(request.toolDefinitionsJson);
+                sb.AppendLine(toolsPrettyJson);
+                sb.AppendLine();
+            }
+            else if (!string.IsNullOrWhiteSpace(request.toolDefinitionsJson))
+            {
+                sb.AppendLine("TOOLS JSON:");
+                sb.AppendLine(LLMJsonNormalizer.Normalize(request.toolDefinitionsJson));
                 sb.AppendLine();
             }
 
-            if (!string.IsNullOrWhiteSpace(request.responseSchemaJson))
+            if (TryGetPrettyJsonFromOptionalMember(request, "responseSchema", out string? schemaPrettyJson))
             {
                 sb.AppendLine("RESPONSE SCHEMA JSON:");
-                sb.AppendLine(request.responseSchemaJson);
+                sb.AppendLine(schemaPrettyJson);
+                sb.AppendLine();
+            }
+            else if (!string.IsNullOrWhiteSpace(request.responseSchemaJson))
+            {
+                sb.AppendLine("RESPONSE SCHEMA JSON:");
+                sb.AppendLine(LLMJsonNormalizer.Normalize(request.responseSchemaJson));
                 sb.AppendLine();
             }
 
-            // This is the "input packet" string that the service will embed in the provider payload.
-            // We keep it as a plain string because your provider services already do the wrapping.
+            // Keep the magic word "JSON" somewhere in the prompt to avoid certain model quirks.
+            // Your labels above already include it, so we’re good.
+
             return sb.ToString().Trim();
         }
 
+        private static bool TryGetPrettyJsonFromOptionalMember(object obj, string memberName, out string? prettyJson)
+        {
+            prettyJson = null;
+            if (obj == null) return false;
+
+            // Try property first, then field.
+            var type = obj.GetType();
+            object? value = null;
+
+            PropertyInfo? prop = type.GetProperty(memberName, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+            if (prop != null)
+                value = prop.GetValue(obj);
+
+            if (value == null)
+            {
+                FieldInfo? field = type.GetField(memberName, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+                if (field != null)
+                    value = field.GetValue(obj);
+            }
+
+            if (value == null)
+                return false;
+
+            // If it’s already a JToken/JObject/JArray, indent nicely.
+            if (value is JToken token)
+            {
+                prettyJson = token.ToString(Formatting.Indented);
+                return true;
+            }
+
+            // If it’s a raw string, attempt to parse it as JSON and pretty-print it (handles the case where
+            // someone put JSON text in toolDefinitions instead of an object).
+            if (value is string s)
+            {
+                s = s.Trim();
+                if (s.Length == 0) return false;
+
+                if (TryParseJsonToPretty(s, out string? parsedPretty))
+                {
+                    prettyJson = parsedPretty;
+                    return true;
+                }
+
+                // Not valid JSON; don’t treat it as structured.
+                return false;
+            }
+
+            // Any other object: serialize to JSON and pretty print
+            try
+            {
+                // Round-trip through JToken so we get clean formatting
+                JToken objToken = JToken.FromObject(value);
+                prettyJson = objToken.ToString(Formatting.Indented);
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        private static bool TryParseJsonToPretty(string jsonText, out string? pretty)
+        {
+            pretty = null;
+            try
+            {
+                var token = JToken.Parse(jsonText);
+                pretty = token.ToString(Formatting.Indented);
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
         private async Task<LLMResponse> PostResponsesAsync(
             string requestId,
             string agentId,

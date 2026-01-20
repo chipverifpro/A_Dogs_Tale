@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Newtonsoft.Json.Linq;
 
 namespace DogGame.LLM.Core
 {
@@ -25,5 +26,9 @@ namespace DogGame.LLM.Core
 
         // Optional: metadata for logging
         public Dictionary<string, string> metadata = new();
+
+#nullable enable
+        public JToken? toolDefinitions;   // or JObject?
+        public JToken? responseSchema;
     }
 }

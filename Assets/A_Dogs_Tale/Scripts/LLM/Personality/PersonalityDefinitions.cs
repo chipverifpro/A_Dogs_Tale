@@ -30,14 +30,31 @@ namespace DogGame.LLM.Personality
         public string constraintText;
     }
 
+#nullable enable
     [Serializable]
     public sealed class MixedPersonality
     {
-        public string archetypeId;
-        public List<string> quirkIds = new();
-        public string complicationId;
+        public string? speciesId;
+        public string? roleId;
 
-        public string personaBlock;             // final composed persona
+        // legacy (optional)
+        public string? archetypeId;
+
+        public string? complicationId;
+
+        public List<string> quirkIds = new();
         public List<string> goals = new();
+
+        public string personaBlock = "";
+
+        public string DebugSummary()
+        {
+            string species = string.IsNullOrWhiteSpace(speciesId) ? "none" : speciesId;
+            string role = string.IsNullOrWhiteSpace(roleId) ? "none" : roleId;
+            string legacy = string.IsNullOrWhiteSpace(archetypeId) ? "" : $" legacyArchetype={archetypeId}";
+            string complication = string.IsNullOrWhiteSpace(complicationId) ? "none" : complicationId;
+
+            return $"species={species} role={role}{legacy} complication={complication} quirks={quirkIds.Count} goals={goals.Count}";
+        }
     }
 }

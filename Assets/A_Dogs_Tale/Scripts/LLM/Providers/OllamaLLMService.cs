@@ -13,7 +13,7 @@ namespace DogGame.LLM
     /// Uses OpenAI Responses API: POST {baseUrl}/responses
     /// Ollama supports /v1/responses in OpenAI-compat mode (non-stateful). 
     /// </summary>
-    public sealed class OllamaLLMService : MonoBehaviour
+    public sealed class OBSOLETE_OllamaLLMService : MonoBehaviour
     {
         [Header("Ollama (OpenAI-compatible)")]
         [Tooltip("Base URL including /v1. Example: http://localhost:11434/v1")]

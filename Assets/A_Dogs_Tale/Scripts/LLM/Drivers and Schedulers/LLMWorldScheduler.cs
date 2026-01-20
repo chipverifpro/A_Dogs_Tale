@@ -5,6 +5,7 @@ using DogGame.LLM.Agent;
 using DogGame.LLM.Core;
 using DogGame.LLM.Debugging;
 using DogGame.LLM.Providers;
+using Unity.AppUI.Core;
 using UnityEditor.PackageManager.Requests;
 using UnityEngine;
 
@@ -35,14 +36,17 @@ namespace DogGame.LLM
         [Header("Scheduling")]
         [SerializeField] private float schedulingIntervalSeconds = 0.25f;
 
+        [Header("Unified LLM Router")]
+        [SerializeField] private UnifiedLLMRouter router;
+
         private readonly List<LLMPlanRequestOnDemand> pendingRequests = new();
 
         private int activeLocalRequests;
         private int activeRemoteRequests;
 
-        private OpenAILLMService? openAiService;
-        private GeminiLLMService? geminiService;
-        private OllamaLLMService? ollamaService;
+        //private OpenAILLMService? openAiService;
+        //private GeminiLLMService? geminiService;
+        //private OllamaLLMService? ollamaService;
         private float nextScheduleTime;
 
         //public string requestJSON;
@@ -57,17 +61,26 @@ namespace DogGame.LLM
 
             Instance = this;
             
-            switch (remoteProvider)
+//            switch (remoteProvider)
+//            {
+//                case RemoteLLMProvider.OpenAI:
+//                    openAiService = gameObject.AddComponent<OpenAILLMService>();
+//                    break;
+//                case RemoteLLMProvider.Gemini:
+//                    geminiService = gameObject.AddComponent<GeminiLLMService>();
+//                    break;
+//                case RemoteLLMProvider.Ollama:
+//                    ollamaService = gameObject.AddComponent<OllamaLLMService>();
+//                    break;
+//            }
+
+            if (router == null)
             {
-                case RemoteLLMProvider.OpenAI:
-                    openAiService = gameObject.AddComponent<OpenAILLMService>();
-                    break;
-                case RemoteLLMProvider.Gemini:
-                    geminiService = gameObject.AddComponent<GeminiLLMService>();
-                    break;
-                case RemoteLLMProvider.Ollama:
-                    ollamaService = gameObject.AddComponent<OllamaLLMService>();
-                    break;
+                router = FindFirstObjectByType<UnifiedLLMRouter>();
+                if (router == null)
+                {
+                    Debug.LogError("[LLMWorldScheduler] UnifiedLLMRouter not found in scene.");
+                }
             }
             Debug.Log($"LLMWalkthroughScheduler.Awake: pendingRequests(initial)={pendingRequests.Count}", this);
         }
@@ -130,6 +143,9 @@ namespace DogGame.LLM
 
         private void TryDispatchRequests()
         {
+            // Don't start LLM until build is complete.
+            if (!Directory.Instance.gen.buildComplete) return;
+
             if (!HasPendingRequests())
                 return;
 
@@ -173,10 +189,34 @@ namespace DogGame.LLM
 
 #nullable enable
 
+        // Drop-in replacement for LLMWorldScheduler.Dispatch(LLMPlanRequestOnDemand request)
+        //
+        // Assumptions / fields you should already have in LLMWorldScheduler:
+        //   - [SerializeField] private DogGame.LLM.Providers.UnifiedLLMRouter? router;   (or whatever you named it)
+        //   - MapSophisticationToModelTier(Sophistication) -> LLMModelTier
+        //   - TryResolveAgentModules(agentId, out LLMConfigModule config, out LLMWorldStateModule worldState, out GameObject agentGo)
+        //   - IncrementActive(LLMModelTier), DecrementActive(LLMModelTier)
+        //   - LLMPacketLogger.LogRequest(...), LLMPacketLogger.LogResponse(...)  (if you have response logging; optional)
+        //
+        // Notes:
+        //   - Uses your existing BuildLLMRequest + serializer for packet logging.
+        //   - Sends the *LLMRequest object* to router (recommended), so vendors can unify packet building.
+        //   - Filters stale/cancelled responses using LLMResponse.wasStale (from your LLMClientBase sessionToken gate).
+        //
         private void Dispatch(LLMPlanRequestOnDemand request)
         {
+            if (request == null)
+                return;
+
             // 1) Decide infra tier from planning sophistication (central place)
             LLMModelTier modelTier = MapSophisticationToModelTier(request.Sophistication);
+
+            if (router == null)
+            {
+                Debug.LogWarning("[LLM Scheduler] Router missing; cannot dispatch LLM request.");
+                DecrementActive(modelTier);
+                return;
+            }
 
             // 2) Resolve agent object + modules
             if (!TryResolveAgentModules(request.AgentId, out var config, out var worldState, out var agentGo))
@@ -185,7 +225,7 @@ namespace DogGame.LLM
                 return;
             }
 
-            // 3) Build real request packet (your production path)
+            // 3) Build request packet
             LLMRequest llmRequest = config.BuildLLMRequest(
                 worldState: worldState,
                 requestId: request.RequestId,
@@ -193,72 +233,77 @@ namespace DogGame.LLM
                 userTaskPrompt: request.Prompt
             );
 
+            // Keep your existing request JSON logging (good for debugging / packet capture)
             string requestJson = LLMRequestSerializer.ToJson(llmRequest);
-            //requestJSON = requestJson;
             LLMPacketLogger.LogRequest(
                 agentId: request.AgentId,
                 requestId: request.RequestId,
                 provider: remoteProvider.ToString(),
                 requestJson: requestJson);
-                
-            // 4) Mark inflight (use modelTier you just computed)
+
+            // 4) Mark inflight
             IncrementActive(modelTier);
 
-            Action<string> onResponse = (json) =>
+            // 5) Dispatch via unified router
+            // IMPORTANT: router should internally route to OpenAI/Gemini/Ollama client based on selection.
+            if (router == null)
             {
+                Debug.LogWarning("[LLM Scheduler] UnifiedLLMRouter not assigned.");
                 DecrementActive(modelTier);
-                request.OnResponseJson?.Invoke(json);
-            };
-
-            // 5) Dispatch to provider
-            switch (remoteProvider)
-            {
-                case RemoteLLMProvider.OpenAI:
-                    if (openAiService == null)
-                    {
-                        Debug.LogWarning("[LLM Scheduler] OpenAI service not assigned.");
-                        DecrementActive(modelTier);
-                        return;
-                    }
-                    openAiService.SubmitRequest(
-                        requestId: request.RequestId,
-                        requestJson: requestJson,
-                        agentId: request.AgentId,
-                        onResponseJson: onResponse);
-                    break;
-
-                case RemoteLLMProvider.Gemini:
-                    if (geminiService == null)
-                    {
-                        Debug.LogWarning("[LLM Scheduler] Gemini service not assigned.");
-                        DecrementActive(modelTier);
-                        return;
-                    }
-                    geminiService.SubmitRequest(
-                        requestId: request.RequestId,
-                        requestJson: requestJson,
-                        agentId: request.AgentId,
-                        onResponseJson: onResponse);
-                    break;
-                case RemoteLLMProvider.Ollama:
-                    if (ollamaService == null)
-                    {
-                        Debug.LogWarning("[LLM Scheduler] Ollama service not assigned.");
-                        DecrementActive(modelTier);
-                        return;
-                    }
-                    ollamaService.SubmitRequest(
-                        requestId: request.RequestId,
-                        requestJson: requestJson,
-                        agentId: request.AgentId,
-                        onResponseJson: onResponse);
-                    break;
-
-                default:
-                    Debug.LogWarning($"[LLM Scheduler] Unknown provider {remoteProvider}");
-                    DecrementActive(modelTier);
-                    return;
+                return;
             }
+
+            router.Send(llmRequest, (response) =>
+            {
+                // Always decrement active count exactly once
+                DecrementActive(modelTier);
+
+                if (response == null)
+                {
+                    Debug.LogWarning($"[LLM Scheduler] Null response. requestId={request.RequestId} agentId={request.AgentId}");
+                    return;
+                }
+
+                // Stale response? (e.g., playmode restarted / new session token)
+                if (response.wasStale)
+                {
+                    Debug.Log($"[LLM Scheduler] Stale response ignored. requestId={request.RequestId} agentId={request.AgentId}");
+                    return;
+                }
+
+                if (!response.succeeded)
+                {
+                    Debug.LogWarning($"[LLM Scheduler] LLM failed. requestId={request.RequestId} agentId={request.AgentId} err={response.errorMessage}");
+                    return;
+                }
+
+                // Choose which field carries the PlanResponseV1 JSON in your project.
+                // Prefer rawText if you populate it with the extracted PlanResponseV1 JSON.
+                // Fall back to rawProviderPayloadJson if that's where your client stored it.
+                string planJson =
+                    !string.IsNullOrWhiteSpace(response.rawText) ? response.rawText :
+                    !string.IsNullOrWhiteSpace(response.rawProviderPayloadJson) ? response.rawProviderPayloadJson :
+                    "";
+
+                if (string.IsNullOrWhiteSpace(planJson))
+                {
+                    Debug.LogWarning($"[LLM Scheduler] Response succeeded but planJson was empty. requestId={request.RequestId} agentId={request.AgentId}");
+                    return;
+                }
+
+                // Optional: response packet logging
+                // LLMPacketLogger.LogResponse(request.AgentId, request.RequestId, remoteProvider.ToString(), planJson);
+
+                // Deliver to caller (PlayerDecisionModule etc.)
+                try
+                {
+                    request.OnResponseJson?.Invoke(planJson);
+                }
+                catch (Exception ex)
+                {
+                    Debug.LogWarning($"[LLM Scheduler] OnResponseJson handler threw. requestId={request.RequestId} agentId={request.AgentId} ex={ex.GetType().Name}: {ex.Message}");
+                }
+            });
 
             Debug.Log($"[LLM Scheduler] Dispatched requestId={request.RequestId} agent={agentGo.name} agentId={request.AgentId} soph={request.Sophistication} tier={modelTier} provider={remoteProvider} jsonChars={requestJson.Length}");
         }
@@ -320,9 +365,9 @@ namespace DogGame.LLM
             pendingRequests.Clear();
 
             // Best-effort cancel inflight provider work
-            ollamaService?.CancelAll("scheduler_disabled");
-            openAiService?.CancelAll("scheduler_disabled");
-            geminiService?.CancelAll("scheduler_disabled");
+//            ollamaService?.CancelAll("scheduler_disabled");
+//            openAiService?.CancelAll("scheduler_disabled");
+//            geminiService?.CancelAll("scheduler_disabled");
             LLMSessionToken.Bump();
         }
     }

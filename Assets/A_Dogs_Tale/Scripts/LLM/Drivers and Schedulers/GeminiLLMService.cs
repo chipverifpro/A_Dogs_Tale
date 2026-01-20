@@ -13,7 +13,7 @@ namespace DogGame.LLM
     /// LLM service using Google Gemini API.
     /// Parallel to RemoteLLMService.
     /// </summary>
-    public sealed class GeminiLLMService : MonoBehaviour
+    public sealed class OBSOLETE_GeminiLLMService : MonoBehaviour
     {
     
         [Header("Gemini")]

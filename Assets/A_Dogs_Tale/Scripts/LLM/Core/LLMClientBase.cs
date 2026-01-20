@@ -1,3 +1,4 @@
+// Assets/A_Dogs_Tale/Scripts/LLM/Core/LLMClientBase.cs
 #nullable enable
 using System;
 using System.Threading;
@@ -10,24 +11,36 @@ namespace DogGame.LLM.Core
     {
         public abstract string Vendor { get; }
 
+        // ---- Session token stale-response gate ----
+        // Increment this when Play stops / restarts, or when you want all inflight results to become no-ops.
+        private static int sessionToken;
+
+        public static int CurrentSessionToken => sessionToken;
+
+        public static int BeginNewSession()
+        {
+            // wraps naturally; comparisons remain correct for "changed or not changed"
+            sessionToken++;
+            return sessionToken;
+        }
+
         public async Task<LLMResponse> SendAsync(LLMRequest request, CancellationToken cancellationToken)
         {
             if (request == null) throw new ArgumentNullException(nameof(request));
             if (request.profile == null) throw new ArgumentNullException(nameof(request.profile));
 
-            // Capture token at dispatch. If it changes later, this response is stale.
-            int tokenAtDispatch = LLMSessionToken.Current;
+            int capturedSessionToken = CurrentSessionToken;
 
             // If this client tracks cooldown, avoid retrying/spamming during cooldown
             if (this is ICooldownAware cooldownAware && cooldownAware.IsCoolingDown)
             {
-                return new LLMResponse
+                return MarkStaleIfNeeded(capturedSessionToken, new LLMResponse
                 {
                     succeeded = false,
                     isRateLimited = true,
                     retryAfterSeconds = cooldownAware.CooldownRemainingSeconds,
                     errorMessage = $"[{Vendor}] Cooling down ({cooldownAware.CooldownRemainingSeconds:0.0}s). Skipping requestId={request.requestId}."
-                };
+                });
             }
 
             const int maxAttempts = 3;
@@ -37,75 +50,42 @@ namespace DogGame.LLM.Core
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                // If play session changed, stop immediately.
-                if (LLMSessionToken.Current != tokenAtDispatch)
-                {
-                    return new LLMResponse
-                    {
-                        succeeded = false,
-                        wasStale = true,
-                        errorMessage = $"[{Vendor}] Ignored stale response (session changed) requestId={request.requestId}."
-                    };
-                }
-
                 // Re-check cooldown between attempts
                 if (this is ICooldownAware cooldownAware2 && cooldownAware2.IsCoolingDown)
                 {
-                    return new LLMResponse
+                    return MarkStaleIfNeeded(capturedSessionToken, new LLMResponse
                     {
                         succeeded = false,
                         isRateLimited = true,
                         retryAfterSeconds = cooldownAware2.CooldownRemainingSeconds,
                         errorMessage = $"[{Vendor}] Cooling down ({cooldownAware2.CooldownRemainingSeconds:0.0}s). Skipping requestId={request.requestId}."
-                    };
+                    });
                 }
 
                 try
                 {
                     LLMResponse response = await SendCoreAsync(request, cancellationToken).ConfigureAwait(false);
 
-                    // Critical: provider returned, but session may have changed while it was running.
-                    if (LLMSessionToken.Current != tokenAtDispatch)
-                    {
-                        return new LLMResponse
-                        {
-                            succeeded = false,
-                            wasStale = true,
-                            errorMessage = $"[{Vendor}] Ignored stale response (session changed after provider return) requestId={request.requestId}."
-                        };
-                    }
-
                     if (response == null)
                     {
-                        return new LLMResponse
+                        return MarkStaleIfNeeded(capturedSessionToken, new LLMResponse
                         {
                             succeeded = false,
                             errorMessage = $"{Vendor}: null response"
-                        };
+                        });
                     }
 
-                    // If provider says rate-limited, STOP retrying automatically.
+                    // ✅ Stop retrying automatically on rate limit
                     if (response.isRateLimited)
                     {
                         Debug.LogWarning($"[{Vendor}] Rate limited. retryAfter={response.retryAfterSeconds:0.0}s requestId={request.requestId}");
-                        return response;
+                        return MarkStaleIfNeeded(capturedSessionToken, response);
                     }
 
-                    return response;
+                    return MarkStaleIfNeeded(capturedSessionToken, response);
                 }
                 catch (OperationCanceledException)
                 {
-                    // If cancellation happened because of a session change, prefer stale response.
-                    if (LLMSessionToken.Current != tokenAtDispatch)
-                    {
-                        return new LLMResponse
-                        {
-                            succeeded = false,
-                            wasStale = true,
-                            errorMessage = $"[{Vendor}] Canceled due to session change requestId={request.requestId}."
-                        };
-                    }
-
                     throw;
                 }
                 catch (Exception exception)
@@ -115,48 +95,42 @@ namespace DogGame.LLM.Core
 
                     if (isLastAttempt)
                     {
-                        return new LLMResponse
+                        return MarkStaleIfNeeded(capturedSessionToken, new LLMResponse
                         {
                             succeeded = false,
                             errorMessage = $"{Vendor}: {exception.GetType().Name}: {exception.Message}"
-                        };
+                        });
                     }
 
-                    // Backoff, but don’t waste time if session changed during the delay.
-                    float delaySeconds = backoffSeconds;
+                    await Task.Delay(TimeSpan.FromSeconds(backoffSeconds), cancellationToken).ConfigureAwait(false);
                     backoffSeconds *= 2f;
-
-                    const float sliceSeconds = 0.1f;
-                    float remaining = delaySeconds;
-
-                    while (remaining > 0f)
-                    {
-                        cancellationToken.ThrowIfCancellationRequested();
-
-                        if (LLMSessionToken.Current != tokenAtDispatch)
-                        {
-                            return new LLMResponse
-                            {
-                                succeeded = false,
-                                wasStale = true,
-                                errorMessage = $"[{Vendor}] Ignored stale response during backoff (session changed) requestId={request.requestId}."
-                            };
-                        }
-
-                        float step = Math.Min(sliceSeconds, remaining);
-                        await Task.Delay(TimeSpan.FromSeconds(step), cancellationToken).ConfigureAwait(false);
-                        remaining -= step;
-                    }
                 }
             }
 
-            return new LLMResponse
+            return MarkStaleIfNeeded(capturedSessionToken, new LLMResponse
             {
                 succeeded = false,
                 errorMessage = $"{Vendor}: unexpected fallthrough"
-            };
+            });
         }
 
         protected abstract Task<LLMResponse> SendCoreAsync(LLMRequest request, CancellationToken cancellationToken);
+
+        private static LLMResponse MarkStaleIfNeeded(int capturedToken, LLMResponse response)
+        {
+            if (response == null) return null;
+
+            // If session changed since request began, mark stale so upstream can drop it.
+            if (capturedToken != CurrentSessionToken)
+            {
+                response.wasStale = true;
+
+                // Optional: if you prefer stale responses to be treated as failures:
+                // response.succeeded = false;
+                // response.errorMessage = "Stale response (session changed).";
+            }
+
+            return response;
+        }
     }
 }

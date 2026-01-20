@@ -15,7 +15,12 @@ namespace DogGame.LLM.Personality
 
         public MixedPersonality Build(
             string stableSeedString,
+            SpeciesDefinition manualSpeciesOverride = null,
+            RoleDefinition manualRoleOverride = null,
+
+            // legacy support (optional)
             ArchetypeDefinition manualArchetypeOverride = null,
+
             List<QuirkDefinition> manualQuirkOverrides = null,
             ComplicationDefinition manualComplicationOverride = null,
             int randomQuirkCount = 2)
@@ -25,49 +30,105 @@ namespace DogGame.LLM.Personality
 
             var rng = new Random(StableHash(stableSeedString));
 
-            ArchetypeDefinition archetype = manualArchetypeOverride ?? WeightedPick(database.archetypes, rng);
-            ComplicationDefinition complication = manualComplicationOverride ?? WeightedPick(database.complications, rng);
+            // 1) Species + Role (preferred new path)
+            SpeciesDefinition species = null;
+            if (database.species != null && database.species.Count > 0)
+                species = manualSpeciesOverride ?? WeightedPick(database.species, rng);
 
+            RoleDefinition role = null;
+            if (database.roles != null && database.roles.Count > 0)
+                role = manualRoleOverride ?? WeightedPick(database.roles, rng);
+
+            // 2) Legacy fallback: use archetype as a “role” if roles aren’t present
+            ArchetypeDefinition archetype = null;
+            if (role == null) // only fallback when roles not used
+                archetype = manualArchetypeOverride ?? WeightedPick(database.archetypes, rng);
+
+            // 3) Complication
+            ComplicationDefinition complication =
+                manualComplicationOverride ?? WeightedPick(database.complications, rng);
+
+            // 4) Quirks
             List<QuirkDefinition> quirks = new();
             if (manualQuirkOverrides != null && manualQuirkOverrides.Count > 0)
-            {
                 quirks.AddRange(manualQuirkOverrides);
-            }
             else
-            {
                 quirks = PickNonConflictingQuirks(database.quirks, rng, randomQuirkCount);
-            }
 
+            // 5) Result payload
             var result = new MixedPersonality
             {
-                archetypeId = archetype?.id,
+                speciesId = species?.id,
+                roleId = role?.id,
+
+                // legacy (only when role list isn't used)
+                archetypeId = role == null ? archetype?.id : null,
+
                 complicationId = complication?.id
             };
 
             foreach (var quirk in quirks)
-                result.quirkIds.Add(quirk.id);
+            {
+                if (quirk != null && !string.IsNullOrWhiteSpace(quirk.id))
+                    result.quirkIds.Add(quirk.id);
+            }
 
             // Compose persona text
-            result.personaBlock = ComposePersona(archetype, quirks, complication);
+            result.personaBlock = ComposePersona(species, role, archetype, quirks, complication);
 
-            // Goals
-            if (archetype != null && archetype.defaultGoals != null)
+            // Goals (species + role, or fallback archetype)
+            if (species?.defaultGoals != null)
+                result.goals.AddRange(species.defaultGoals);
+
+            if (role?.defaultGoals != null)
+            {
+                result.goals.AddRange(role.defaultGoals);
+            }
+            else if (archetype?.defaultGoals != null)
+            {
+                result.goals.AddRange(archetype.defaultGoals);
+            }
+
+            // 6) Compose persona
+            result.personaBlock = ComposePersona(species, role, archetype, quirks, complication);
+
+            // 7) Goals
+            if (species != null && species.defaultGoals != null)
+                result.goals.AddRange(species.defaultGoals);
+
+            if (role != null && role.defaultGoals != null)
+                result.goals.AddRange(role.defaultGoals);
+
+            // legacy goals
+            if (role == null && archetype != null && archetype.defaultGoals != null)
                 result.goals.AddRange(archetype.defaultGoals);
 
             return result;
         }
 
         private static string ComposePersona(
-            ArchetypeDefinition archetype,
+            SpeciesDefinition species,
+            RoleDefinition role,
+            ArchetypeDefinition archetypeLegacy,
             List<QuirkDefinition> quirks,
             ComplicationDefinition complication)
         {
             var builder = new StringBuilder(512);
 
             builder.AppendLine("CHARACTER PERSONA:");
-            if (!string.IsNullOrWhiteSpace(archetype?.personaBlock))
+
+            if (!string.IsNullOrWhiteSpace(species?.speciesBlock))
+                builder.AppendLine(species.speciesBlock.Trim());
+
+            string roleText =
+                !string.IsNullOrWhiteSpace(role?.roleBlock) ? role.roleBlock :
+                !string.IsNullOrWhiteSpace(archetypeLegacy?.personaBlock) ? archetypeLegacy.personaBlock :
+                "";
+
+            if (!string.IsNullOrWhiteSpace(roleText))
             {
-                builder.AppendLine(archetype.personaBlock.Trim());
+                builder.AppendLine();
+                builder.AppendLine(roleText.Trim());
             }
 
             if (quirks != null && quirks.Count > 0)
@@ -164,9 +225,13 @@ namespace DogGame.LLM.Personality
         {
             switch (item)
             {
+                case SpeciesDefinition species: return species.weight;
+                case RoleDefinition role: return role.weight;
+
                 case ArchetypeDefinition archetype: return archetype.weight;
                 case QuirkDefinition quirk: return quirk.weight;
                 case ComplicationDefinition complication: return complication.weight;
+
                 default: return 1;
             }
         }

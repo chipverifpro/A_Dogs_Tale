@@ -33,6 +33,12 @@ public sealed class IdentitySection
     [Tooltip("Simple creatures are clamped to lower sophistication tiers.")]
     public bool isSimpleCreature = false;
 
+    [Tooltip("What species this agent is (dog, human, wolf, etc.).")]
+    public string species = "dog";
+
+    [Tooltip("What job/role this agent has (guard dog, merchant, villager, etc.).")]
+    public string job = "guard dog";
+
     public string ResolveAgentId(GameObject owner)
     {
         if (!string.IsNullOrWhiteSpace(agentIdOverride))
@@ -49,6 +55,12 @@ public sealed class PersonalitySection
 {
     public bool allowRandomPersonality = true;
     public bool lockPersonalityAfterSpawn = true;
+
+    [Tooltip("Optional manual species override (dog/human/etc). If null, mixer may pick randomly.")]
+    public SpeciesDefinition? manualSpecies;
+
+    [Tooltip("Optional manual role override (guard/pet/etc). If null, mixer may pick randomly.")]
+    public RoleDefinition? manualRole;
 
     public PersonalityDatabase? personalityDatabase;
 
@@ -97,7 +109,9 @@ public sealed class PersonalitySection
             result = shouldMix
                 ? mixer.Build(
                     stableSeedString: stableSeed,
-                    manualArchetypeOverride: manualArchetype,
+                    manualSpeciesOverride: manualSpecies,
+                    manualRoleOverride: manualRole,
+                    manualArchetypeOverride: manualArchetype, // legacy fallback still supported
                     manualQuirkOverrides: manualQuirkOverrides,
                     manualComplicationOverride: manualComplication,
                     randomQuirkCount: randomQuirkCount)
@@ -203,6 +217,23 @@ public sealed class ToolPermissionSection
             Sophistication.Medium => allowToolsMedium,
             _ => allowToolsHigh
         };
+    }
+
+    public static string IdentityBlock(string species, string job)
+    {
+        species = (species ?? "").Trim();
+        job = (job ?? "").Trim();
+
+        if (string.IsNullOrEmpty(species) && string.IsNullOrEmpty(job))
+            return "IDENTITY: Unknown.";
+
+        if (!string.IsNullOrEmpty(species) && !string.IsNullOrEmpty(job))
+            return $"IDENTITY: Species={species}. Job={job}.";
+
+        if (!string.IsNullOrEmpty(species))
+            return $"IDENTITY: Species={species}.";
+
+        return $"IDENTITY: Job={job}.";
     }
 }
 

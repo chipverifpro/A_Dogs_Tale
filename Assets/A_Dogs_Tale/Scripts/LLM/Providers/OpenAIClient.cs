@@ -95,7 +95,7 @@ namespace DogGame.LLM.Providers
 
             // Your "input" is the actual task/prompt packet.
             // If you want a stronger contract, keep the JSON-only constraints here as well.
-            string inputText = request.userPrompt ?? "";
+            string inputText = LLMRequestPacketFormatter.BuildPacketText(request);
 
             JObject payload = new JObject
             {

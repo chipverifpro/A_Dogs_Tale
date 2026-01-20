@@ -1,6 +1,6 @@
 namespace DogGame.LLM.Prompting
 {
-    public static class PromptBlocks
+    public static partial class PromptBlocks
     {
         public static string GlobalRulesBlock()
         {
@@ -53,6 +53,24 @@ $@"REQUEST IDENTITY:
 - requestId: {requestId}
 - agentId: {agentId}
 You MUST copy requestId and agentId exactly into the JSON response.";
+
+#nullable enable
+        public static string IdentityBlock(string? species, string? job)
+        {
+            string speciesClean = (species ?? "").Trim();
+            string jobClean = (job ?? "").Trim();
+
+            if (string.IsNullOrEmpty(speciesClean) && string.IsNullOrEmpty(jobClean))
+                return "IDENTITY: (unspecified)";
+
+            if (!string.IsNullOrEmpty(speciesClean) && !string.IsNullOrEmpty(jobClean))
+                return $"IDENTITY: Species={speciesClean}. Job={jobClean}.";
+
+            if (!string.IsNullOrEmpty(speciesClean))
+                return $"IDENTITY: Species={speciesClean}.";
+
+            return $"IDENTITY: Job={jobClean}.";
+        }
 
         // ============ Golden Example ================
 //Optional refinement (recommended later)

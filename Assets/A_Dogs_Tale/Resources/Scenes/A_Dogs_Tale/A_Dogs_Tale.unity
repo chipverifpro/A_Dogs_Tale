@@ -3815,6 +3815,7 @@ GameObject:
   - component: {fileID: 494970097}
   - component: {fileID: 494970098}
   - component: {fileID: 494970099}
+  - component: {fileID: 494970100}
   m_Layer: 0
   m_Name: AI
   m_TagString: Untagged
@@ -3852,7 +3853,7 @@ MonoBehaviour:
   remoteProvider: 2
   maxConcurrentLocalRequests: 1
   maxConcurrentRemoteRequests: 1
-  schedulingIntervalSeconds: 0.25
+  schedulingIntervalSeconds: 30
 --- !u!114 &494970099
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3869,6 +3870,18 @@ MonoBehaviour:
   LLM_Request: 
   Time_Response: 0
   LLM_Response: 
+--- !u!114 &494970100
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 494970096}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a493df2f0125144a18498d70ebaf5756, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::UnifiedLLMRouter
 --- !u!1 &504165305
 GameObject:
   m_ObjectHideFlags: 0
@@ -13430,6 +13443,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dcfe468d7a54c41da8afd1dcfaf53c75, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.GameTimeDriver
+  pause: 0
 --- !u!1 &1790646801
 GameObject:
   m_ObjectHideFlags: 0
@@ -16605,14 +16619,41 @@ MonoBehaviour:
     agentIdOverride: 
     isBoss: 0
     isSimpleCreature: 0
+    species: dog
+    job: guard dog
   personality:
     allowRandomPersonality: 1
     lockPersonalityAfterSpawn: 1
+    manualSpecies:
+      id: dog
+      weight: 1
+      speciesBlock: 'SPECIES: Dog
+
+        - Strong scent + hearing, weaker vision.
+
+        -
+        Communicates via body language, barks, movement.
+
+        - Safety, curiosity,
+        pack bonds matter.'
+      defaultGoals: []
+    manualRole:
+      id: guard
+      weight: 1
+      roleBlock: 'ROLE: Guard
+
+        - Protect occupants and territory.
+
+        -
+        Prefer observe -> warn -> intercept -> alarm.'
+      defaultGoals: []
     personalityDatabase: {fileID: 0}
     manualArchetype:
       id: 
       weight: 1
-      personaBlock: 
+      personaBlock: You are a guard dog. Your primary role is to protect the home
+        and its occupants. You are alert, territorial, and cautious around unfamiliar
+        sounds or scents.
       defaultGoals: []
     forcedQuirks: []
     manualComplication:

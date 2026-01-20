@@ -6,7 +6,6 @@ using DogGame.LLM.Personality;
 using DogGame.LLM.Policy;
 using DogGame.LLM.Prompting;
 using DogGame.Modules;
-using UnityEditor.Rendering.LookDev;
 using UnityEngine;
 
 namespace DogGame.LLM.Agent
@@ -72,10 +71,12 @@ namespace DogGame.LLM.Agent
                 persona.personaBlock
             };
 
+            systemBlocks.Insert(1, PromptBlocks.IdentityBlock(identity.species, identity.job));
+
             instructions.AddSystemBlocks(systemBlocks);
 
             var contextBlocks = new List<string>();
-            worldObject.llmWorldStateModule.AddContextBlocks(contextBlocks);
+            //worldObject.llmWorldStateModule.AddContextBlocks(contextBlocks);
             worldState.AddContextBlocks(contextBlocks);
 
             systemBlocks.AddRange(contextBlocks);

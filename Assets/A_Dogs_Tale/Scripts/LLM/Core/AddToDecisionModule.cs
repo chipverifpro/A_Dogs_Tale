@@ -84,7 +84,7 @@ public sealed class AgentBrain
                     level = level,
                     maxOutputTokens = 200,
                     temperature = 0.6f,
-                    allowTools = false,
+                    allowTools = true,
                     contextDetail = 1,
                     planningDepth = 0,
                     minSecondsBetweenCalls = 1.0f
