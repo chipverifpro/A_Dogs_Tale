@@ -15,7 +15,8 @@ namespace DogGame.LLM
     {
         OpenAI,
         Gemini,
-        Ollama
+        Ollama,
+        None
     }
 
     /// <summary>
@@ -27,7 +28,7 @@ namespace DogGame.LLM
         public static LLMWorldScheduler Instance { get; private set; } = null!;
 
         [Header("LLM Provider")]
-        [SerializeField] private RemoteLLMProvider remoteProvider = RemoteLLMProvider.Gemini;
+        [SerializeField] public RemoteLLMProvider remoteProvider = RemoteLLMProvider.Gemini;
 
         [Header("Throughput limits")]
         [SerializeField] private int maxConcurrentLocalRequests = 1;
@@ -225,7 +226,7 @@ namespace DogGame.LLM
                 return;
             }
 
-            // 3) Build request packet
+            // 3) Build real request packet (your production path)
             LLMRequest llmRequest = config.BuildLLMRequest(
                 worldState: worldState,
                 requestId: request.RequestId,
@@ -233,14 +234,19 @@ namespace DogGame.LLM
                 userTaskPrompt: request.Prompt
             );
 
-            // Keep your existing request JSON logging (good for debugging / packet capture)
-            string requestJson = LLMRequestSerializer.ToJson(llmRequest);
-            LLMPacketLogger.LogRequest(
-                agentId: request.AgentId,
-                requestId: request.RequestId,
-                provider: remoteProvider.ToString(),
-                requestJson: requestJson);
+            // ✅ Force router vendor to match the selected provider
+            // default leaves override value
+            llmRequest.profile.vendor = remoteProvider switch
+            {
+                RemoteLLMProvider.OpenAI => "OpenAI",
+                RemoteLLMProvider.Gemini => "Gemini",
+                RemoteLLMProvider.Ollama => "Ollama",
+                _ => llmRequest.profile.vendor.ToString()
+            };
 
+            // (optional) if you also want to force model per provider:
+            if (remoteProvider == RemoteLLMProvider.Ollama) llmRequest.profile.model = "Gemma3:1b";
+            
             // 4) Mark inflight
             IncrementActive(modelTier);
 
@@ -305,7 +311,7 @@ namespace DogGame.LLM
                 }
             });
 
-            Debug.Log($"[LLM Scheduler] Dispatched requestId={request.RequestId} agent={agentGo.name} agentId={request.AgentId} soph={request.Sophistication} tier={modelTier} provider={remoteProvider} jsonChars={requestJson.Length}");
+            Debug.Log($"[LLM Scheduler] Dispatched requestId={request.RequestId} agent={agentGo.name} agentId={request.AgentId} soph={request.Sophistication} tier={modelTier} provider={remoteProvider}");
         }
 
         private bool TryResolveAgentModules(

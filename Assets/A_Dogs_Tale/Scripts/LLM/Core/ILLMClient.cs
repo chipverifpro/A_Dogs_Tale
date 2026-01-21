@@ -7,5 +7,6 @@ namespace DogGame.LLM.Core
     {
         string Vendor { get; }
         Task<LLMResponse> SendAsync(LLMRequest request, CancellationToken cancellationToken);
+        public int BumpSessionToken();
     }
 }

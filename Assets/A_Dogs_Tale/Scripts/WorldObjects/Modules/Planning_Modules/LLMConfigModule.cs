@@ -43,9 +43,6 @@ namespace DogGame.LLM.Agent
             string requestId,
             string agentId,
             string userTaskPrompt
-            //LLMProfile low,
-            //LLMProfile medium,
-            //LLMProfile high
             )
         {
             var inputs = worldState.BuildSophisticationInputs(identity.isBoss);

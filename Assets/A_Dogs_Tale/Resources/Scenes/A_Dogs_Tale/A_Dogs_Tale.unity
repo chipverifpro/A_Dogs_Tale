@@ -3850,10 +3850,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7218e3fb1f54040bcb853b10dd1e8ede, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.LLM.LLMWorldScheduler
-  remoteProvider: 2
+  remoteProvider: 0
   maxConcurrentLocalRequests: 1
   maxConcurrentRemoteRequests: 1
   schedulingIntervalSeconds: 30
+  router: {fileID: 494970100}
 --- !u!114 &494970099
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3882,6 +3883,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a493df2f0125144a18498d70ebaf5756, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::UnifiedLLMRouter
+  llmWorldScheduler: {fileID: 494970098}
+  vendor: 3
 --- !u!1 &504165305
 GameObject:
   m_ObjectHideFlags: 0
@@ -16703,20 +16706,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 885dee1646420411b9e59808255ee79b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.LLM.RemoteLLMService
-  apiKey: 
-  apiKeyEnvironmentVariable: OPENAI_API_KEY
-  model: gpt-4.1-mini
-  endpointUrl: https://api.openai.com/v1/responses
-  timeoutSeconds: 60
-  maxOutputTokens: 800
-  temperature: 0.2
-  systemInstructions: 'You are an NPC planning service for a Unity game.
-
-    You
-    MUST output ONLY a single JSON object that matches the PlanResponseV1 schema.
-
-    No
-    markdown, no commentary, no code fences. JSON only.'
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

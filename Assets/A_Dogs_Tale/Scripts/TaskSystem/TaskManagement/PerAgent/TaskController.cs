@@ -64,7 +64,14 @@ namespace DogGame.LLM
 
         public bool TryApplyPlanJson(string planResponseJson)
         {
-            var (plan, validation) = PlanResponseV1Parser.ParseAndValidate(planResponseJson);
+            // sanitize the LLM Response.
+            if (!DogGame.LLM.LLMResponseSanitizer.TryExtractJsonObject(planResponseJson, out string cleanJson, out string err))
+            {
+                Debug.LogWarning($"PlanResponseV1 invalid: could not extract JSON object. {err}");
+                return false;
+            }
+
+            var (plan, validation) = PlanResponseV1Parser.ParseAndValidate(cleanJson);
 
             if (plan == null)
             {
