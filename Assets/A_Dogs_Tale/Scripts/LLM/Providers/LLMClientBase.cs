@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using UnityEngine;
 using UnityEngine.Networking;
@@ -289,7 +290,7 @@ namespace DogGame.LLM.Core
         /// Common request->text builder used by OpenAI/Ollama/Gemini for consistency.
         /// This is the text inserted into provider payload under "input" (or Gemini content).
         /// </summary>
-        protected string BuildRequestPacketText(LLMRequest request, bool normalizeEmbeddedJson)
+        protected string BuildRequestPacketText(LLMRequest request)
         {
             var sb = new StringBuilder(2048);
 
@@ -307,21 +308,32 @@ namespace DogGame.LLM.Core
             sb.AppendLine(request.userPrompt ?? "");
             sb.AppendLine();
 
-            if (!string.IsNullOrWhiteSpace(request.toolDefinitionsJson))
+            if (request.toolDefinitions != null)
             {
                 sb.AppendLine("TOOLS JSON:");
-                sb.AppendLine(normalizeEmbeddedJson ? LLMJsonNormalizer.Normalize(request.toolDefinitionsJson) : request.toolDefinitionsJson);
+                sb.AppendLine(LLMPacketJsonPrinter.PrintJson(request.toolDefinitions, pretty: true));
+                sb.AppendLine();
+            }
+            else if (!string.IsNullOrWhiteSpace(request.toolDefinitionsJson))
+            {
+                sb.AppendLine("TOOLS JSON:");
+                sb.AppendLine(LLMJsonNormalizer.Normalize(request.toolDefinitionsJson));
                 sb.AppendLine();
             }
 
-            if (!string.IsNullOrWhiteSpace(request.responseSchemaJson))
+            if (request.responseSchema != null)
             {
                 sb.AppendLine("RESPONSE SCHEMA JSON:");
-                sb.AppendLine(normalizeEmbeddedJson ? LLMJsonNormalizer.Normalize(request.responseSchemaJson) : request.responseSchemaJson);
+                sb.AppendLine(LLMPacketJsonPrinter.PrintJson(request.responseSchema, pretty: true));
+                sb.AppendLine();
+            }
+            else if (!string.IsNullOrWhiteSpace(request.responseSchemaJson))
+            {
+                sb.AppendLine("RESPONSE SCHEMA JSON:");
+                sb.AppendLine(LLMJsonNormalizer.Normalize(request.responseSchemaJson));
                 sb.AppendLine();
             }
 
-            // include word JSON (helps some JSON-mode models avoid weird whitespace failure modes)
             sb.AppendLine("END OF REQUEST PACKET (JSON).");
 
             return sb.ToString().Trim();
@@ -391,6 +403,37 @@ namespace DogGame.LLM.Core
         {
             if (request.metadata == null) return null;
             return request.metadata.TryGetValue(key, out var value) ? value : null;
+        }
+
+        public static class LLMPacketJsonPrinter
+        {
+            public static string PrintJson(JToken token, bool pretty)
+            {
+                return token.ToString(pretty ? Formatting.Indented : Formatting.None);
+            }
+
+            public static bool TryParseObject(string json, out JObject? obj, out string? error)
+            {
+                obj = null;
+                error = null;
+
+                if (string.IsNullOrWhiteSpace(json))
+                {
+                    error = "Empty JSON string.";
+                    return false;
+                }
+
+                try
+                {
+                    obj = JObject.Parse(json);
+                    return true;
+                }
+                catch (Exception ex)
+                {
+                    error = ex.Message;
+                    return false;
+                }
+            }
         }
     }
 }

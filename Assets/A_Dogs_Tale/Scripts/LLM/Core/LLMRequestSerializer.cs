@@ -1,6 +1,6 @@
 #nullable enable
 using System;
-using DogGame.LLM.Core;
+using System.Collections.Generic;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -8,84 +8,68 @@ namespace DogGame.LLM
 {
     public static class LLMRequestSerializer
     {
-        /// <summary>
-        /// Serialize LLMRequest so nested JSON strings become actual nested objects.
-        /// This makes the model see tools/schema as structured JSON (not escaped text blobs).
-        /// </summary>
-        public static string ToJson(LLMRequest request)
+        public static string ToJson(LLM.Core.LLMRequest request)
         {
             if (request == null) throw new ArgumentNullException(nameof(request));
 
-            var root = JObject.FromObject(request);
+            var root = new JObject
+            {
+                ["requestId"] = request.requestId ?? "",
+                ["profile"] = JObject.FromObject(request.profile ?? new LLM.Core.LLMProfile()),
+                ["systemBlocks"] = new JArray(request.systemBlocks ?? new List<string>()),
+                ["userPrompt"] = request.userPrompt ?? "",
+                ["metadata"] = JObject.FromObject(request.metadata ?? new Dictionary<string, string>())
+            };
 
-            // Replace string fields with parsed tokens when possible
-            ReplaceStringJsonWithToken(
-                rootObject: root,
-                stringFieldName: "toolDefinitionsJson",
-                newFieldName: "toolDefinitions");
+            // Prefer structured tokens if present
+            if (request.toolDefinitions != null)
+            {
+                root["toolDefinitions"] = request.toolDefinitions;
+            }
+            else
+            {
+                TryAddParsedJson(root, "toolDefinitions", request.toolDefinitionsJson);
+            }
 
-            ReplaceStringJsonWithToken(
-                rootObject: root,
-                stringFieldName: "responseSchemaJson",
-                newFieldName: "responseSchema");
-
-            // Optional: remove the original string blobs to reduce prompt bloat
-            // root.Remove("toolDefinitionsJson");
-            // root.Remove("responseSchemaJson");
+            if (request.responseSchema != null)
+            {
+                root["responseSchema"] = request.responseSchema;
+            }
+            else
+            {
+                TryAddParsedJson(root, "responseSchema", request.responseSchemaJson);
+            }
 
             return root.ToString(Formatting.Indented);
         }
 
-        private static void ReplaceStringJsonWithToken(
-            JObject rootObject,
-            string stringFieldName,
-            string newFieldName)
+        private static void TryAddParsedJson(JObject root, string fieldName, string? jsonText)
         {
-            if (!rootObject.TryGetValue(stringFieldName, out var token))
-                return;
-
-            if (token.Type != JTokenType.String)
-                return;
-
-            string? jsonText = token.Value<string>();
             if (string.IsNullOrWhiteSpace(jsonText))
                 return;
 
-            // Case 1: string contains raw JSON
-            if (TryParseJson(jsonText, out JToken? parsed))
+            // raw JSON
+            if (TryParseJson(jsonText, out var parsed))
             {
-                rootObject[newFieldName] = parsed;
+                root[fieldName] = parsed;
                 return;
             }
 
-            // Case 2: string is itself a JSON string literal containing JSON
-            // e.g. "\"{\\\"schema\\\":...}\""
+            // possibly a JSON string literal containing JSON
             try
             {
                 string? unescaped = JsonConvert.DeserializeObject<string>(jsonText);
                 if (!string.IsNullOrWhiteSpace(unescaped) && TryParseJson(unescaped, out parsed))
-                {
-                    rootObject[newFieldName] = parsed;
-                }
+                    root[fieldName] = parsed;
             }
-            catch
-            {
-                // ignore
-            }
+            catch { /* ignore */ }
         }
 
         private static bool TryParseJson(string jsonText, out JToken? token)
         {
             token = null;
-            try
-            {
-                token = JToken.Parse(jsonText);
-                return true;
-            }
-            catch
-            {
-                return false;
-            }
+            try { token = JToken.Parse(jsonText); return true; }
+            catch { return false; }
         }
     }
 }

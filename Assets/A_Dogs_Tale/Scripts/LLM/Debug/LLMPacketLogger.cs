@@ -83,7 +83,8 @@ namespace DogGame.LLM.Debugging
                 string path = Path.Combine(dir, file);
 
                 Debug.Log($"WritePacket {path}");
-
+                Debug.Log($"file contents:\n{payload}");
+                
                 File.WriteAllText(path, payload, Encoding.UTF8);
             }
             catch (Exception ex)

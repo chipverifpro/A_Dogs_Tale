@@ -299,6 +299,16 @@ namespace DogGame.LLM
 
                 // Optional: response packet logging
                 // LLMPacketLogger.LogResponse(request.AgentId, request.RequestId, remoteProvider.ToString(), planJson);
+                
+                // ==== LOGGING VERSION ONLY ====
+                string requestJson = LLMRequestSerializer.ToJson(llmRequest);
+                LLMPacketLogger.LogRequest(
+                    agentId: request.AgentId,
+                    requestId: request.RequestId,
+                    provider: remoteProvider.ToString(),
+                    requestJson: requestJson);
+                try { Directory.Instance.llmDebugMonitor.DebugLLMRequest_Input(requestJson); } catch { /* ignore */ }
+                // ==== END LOGGING ====
 
                 // Deliver to caller (PlayerDecisionModule etc.)
                 try

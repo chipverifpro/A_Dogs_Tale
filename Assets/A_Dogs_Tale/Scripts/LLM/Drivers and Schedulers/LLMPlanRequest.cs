@@ -4,38 +4,7 @@ using UnityEngine;
 
 namespace DogGame.LLM
 {
-/*
-    public sealed class LLMPlanRequest_OBSOLETE
-    {
-        public readonly string AgentId;
-        public readonly Sophistication sophistication;
-        public readonly LLMModelTier ModelTier;
-        public readonly float PriorityScore;
-        public readonly Action<string> OnResponseJson;
-
-        public readonly string RequestId;
-        public readonly float RequestTime;
-
-        public LLMPlanRequest(
-            string agentId,
-            LLMModelTier modelTier,
-            float priorityScore,
-            Action<string> onResponseJson)
-        {
-            AgentId = agentId;
-            ModelTier = modelTier;
-            PriorityScore = priorityScore;
-            OnResponseJson = onResponseJson;
-
-            RequestId = Guid.NewGuid().ToString("N");
-            RequestTime = UnityEngine.Time.time;
-        }
-    }
-*/
     // ---------------------------------------------
-    // This second version has different parameters,
-    // it comes from Task_RequestLLMPlan.cs
-    // TODO: unify the two versions.
 
     public enum LLMPlanUrgency { Low, Normal, High, Emergency }
     public enum LLMApplyMode { Append, Interrupt, SuspendThenInterrupt }
@@ -92,6 +61,8 @@ namespace DogGame.LLM
             OnResponseJson = onResponseJson;
 
             RequestId = Guid.NewGuid().ToString("N");
+            // Concept for a requestID that isn't a huge random number.
+            //RequestId = $"{sessionToken}:{++requestCounter}";
             RequestTime = UnityEngine.Time.time;
 
             PriorityScore = priorityScoreOverride ?? DefaultPriorityFromUrgency(urgency);

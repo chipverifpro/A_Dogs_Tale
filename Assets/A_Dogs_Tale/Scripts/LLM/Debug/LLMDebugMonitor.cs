@@ -10,6 +10,7 @@ public class LLMDebugMonitor : MonoBehaviour
     //[TextArea(3, 12)]
     [JsonPreview(260f)]
     public string LLM_Request;
+    public string LLM_Request_Input;
 
     [Header("Response")]
     public float Time_Response;
@@ -21,9 +22,15 @@ public class LLMDebugMonitor : MonoBehaviour
     void Start()
     {
         LLM_Request = "";
+        LLM_Request_Input = "";
         LLM_Response = "";
     }
 
+    public void DebugLLMRequest_Input(string request)
+    {
+        LLM_Request_Input = request;
+    }
+    
     public void DebugLLMRequest(string request)
     {
         LLM_Request = request;

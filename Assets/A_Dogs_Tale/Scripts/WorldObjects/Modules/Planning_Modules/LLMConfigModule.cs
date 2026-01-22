@@ -7,6 +7,7 @@ using DogGame.LLM.Policy;
 using DogGame.LLM.Prompting;
 using DogGame.Modules;
 using UnityEngine;
+using static DogGame.LLM.Core.LLMClientBase;
 
 namespace DogGame.LLM.Agent
 {
@@ -80,20 +81,35 @@ namespace DogGame.LLM.Agent
 
             Debug.Log($"[LLMConfig] toolsChars={instructions.BuildToolDefinitionsJson().Length} schemaChars={instructions.BuildResponseSchemaJson().Length}");
 
-            return new LLMRequest
+            string toolsJson = instructions.BuildToolDefinitionsJson();
+            string schemaJson = instructions.BuildResponseSchemaJson();
+
+            var req = new LLMRequest
             {
                 requestId = requestId,
                 profile = profile,
                 userPrompt = userTaskPrompt.Trim(),
                 systemBlocks = systemBlocks,
-                toolDefinitionsJson = instructions.BuildToolDefinitionsJson(),
-                responseSchemaJson = instructions.BuildResponseSchemaJson(),
+
+                // Legacy fields still filled (for compatibility)
+                toolDefinitionsJson = toolsJson,
+                responseSchemaJson = schemaJson,
+
                 metadata = new Dictionary<string, string>
                 {
                     { "agentId", agentId },
                     { "sophistication", tier.ToString() }
                 }
             };
+
+            // NEW: parse into structured objects once (preferred path)
+            if (LLMPacketJsonPrinter.TryParseObject(toolsJson, out var toolsObj, out _))
+                req.toolDefinitions = toolsObj;
+
+            if (LLMPacketJsonPrinter.TryParseObject(schemaJson, out var schemaObj, out _))
+                req.responseSchema = schemaObj;
+
+            return req;
         }
     }
 }

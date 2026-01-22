@@ -36,7 +36,7 @@ namespace DogGame.LLM.Providers
 
         protected override Task<LLMResponse> SendCoreAsync(LLMRequest request, CancellationToken cancellationToken)
         {
-            string requestText = BuildRequestPacketText(request, normalizeEmbeddedJson: true);
+            string requestText = BuildRequestPacketText(request);
 
             string requestId = request.requestId ?? "";
             string agentId = TryGetMetadata(request, "agentId") ?? "";
