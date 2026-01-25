@@ -46,6 +46,8 @@ namespace DogGame.LLM.Agent
             string userTaskPrompt
             )
         {
+            List<string> systemBlocks = new();
+
             var inputs = worldState.BuildSophisticationInputs(identity.isBoss);
             Sophistication tier = sophisticationPolicy.Evaluate(inputs);
             tier = sophisticationPolicy.ClampByNpcType(tier, identity.isSimpleCreature);
@@ -60,28 +62,49 @@ namespace DogGame.LLM.Agent
             LLMProfile profile = modelOverrides.ApplyOverrides(tier, defaults);
             profile.allowTools = tools.AllowTools(tier);
 
-            MixedPersonality persona = personality.BuildOrGetPersonality(agentId);
+            // ========== 2 Personality Section ==========
+            //MixedPersonality persona = personality.BuildOrGetPersonality(agentId);
+            //
+            //systemBlocks = new List<string>
+            //{
+            //    PromptBlocks.GlobalRulesBlock(),
+            //    PromptBlocks.PlanningGuidanceBlock(profile.planningDepth),
+            //    persona.personaBlock
+            //};
 
-            var systemBlocks = new List<string>
+            personality.RandomizePersonality(); // if already run before, won't do anything
+            
+            string personatext = personality.PersonalityToString();
+            systemBlocks = new List<string>
             {
                 PromptBlocks.GlobalRulesBlock(),
                 PromptBlocks.PlanningGuidanceBlock(profile.planningDepth),
-                persona.personaBlock
+                personatext
             };
 
-            systemBlocks.Insert(1, PromptBlocks.IdentityBlock(identity.species, identity.job));
+            // ========== 1. Identity Section ==========
+            identity.RandomizeIdentity();
 
+            string identitytext = identity.IdentityToString();
+
+            systemBlocks.Insert(1, identitytext);
+
+            // ========== 3. Instructions Section ==========
             instructions.AddSystemBlocks(systemBlocks);
 
             var contextBlocks = new List<string>();
             //worldObject.llmWorldStateModule.AddContextBlocks(contextBlocks);
+            // ========== World State Section ==========
             worldState.AddContextBlocks(contextBlocks);
 
             systemBlocks.AddRange(contextBlocks);
 
             Debug.Log($"[LLMConfig] toolsChars={instructions.BuildToolDefinitionsJson().Length} schemaChars={instructions.BuildResponseSchemaJson().Length}");
 
+            // ========== Tools Section ==========
             string toolsJson = instructions.BuildToolDefinitionsJson();
+            
+            // ========== Schema Section ==========
             string schemaJson = instructions.BuildResponseSchemaJson();
 
             var req = new LLMRequest

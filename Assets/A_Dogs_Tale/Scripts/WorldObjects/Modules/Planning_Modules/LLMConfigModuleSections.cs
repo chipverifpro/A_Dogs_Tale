@@ -1,6 +1,8 @@
 #nullable enable
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 using DogGame.LLM.Core;
 using DogGame.LLM.Personality;
 using DogGame.LLM.Policy;
@@ -20,6 +22,65 @@ using UnityEngine;
 //  └─ ToolPermissionSection
 
 
+// PersonalityOption defines a property of the Agent.
+// only Name is required, all others are optional.
+// Weight can be used to adjust randomization in the
+//   TryGetRandomChoice function.
+public class PersonalityOption
+{
+    public string Name { get; set; }
+    public string Notes { get; set; }
+    public string Options { get; set; }
+    public int Weight { get; set; }
+
+    public PersonalityOption(string name, string notes = "", string options = "", int weight=10)
+    {
+        Name = name;
+        Notes = notes;      // guidance to LLM
+        Options = options;
+        Weight = weight;
+    }
+
+    public static bool TryGetRandomChoice(List<PersonalityOption> choices, out PersonalityOption selection)
+    {
+        if (choices.Count==0) 
+        {
+            selection = new("");
+            return false;
+        }
+
+        int totalWeight = choices.Sum(x => x.Weight);    // Linq
+        int randomNumber = UnityEngine.Random.Range(0, totalWeight);
+
+        // Iterate through items and subtract weight until reaching 0
+        foreach (var entry in choices)
+        {
+            if (randomNumber < entry.Weight)
+            {
+                selection = entry;
+                return true;
+            }
+            randomNumber -= entry.Weight;
+        }
+        selection = choices.First();
+        return true; 
+    }
+
+    public string OptionToString()
+    {
+        StringBuilder sb = new();
+
+        sb.Append(Name);
+        if (!string.IsNullOrEmpty(Notes))
+            sb.Append(" = " + Notes + " ");
+        if (!string.IsNullOrEmpty(Options))
+            sb.Append("("+Options+") ");
+        return sb.ToString();
+    }
+}
+
+
+
 // ================ 1. Identity Section ===============
 [Serializable]
 public sealed class IdentitySection
@@ -33,11 +94,33 @@ public sealed class IdentitySection
     [Tooltip("Simple creatures are clamped to lower sophistication tiers.")]
     public bool isSimpleCreature = false;
 
-    [Tooltip("What species this agent is (dog, human, wolf, etc.).")]
-    public string species = "dog";
+    [Header("Species")]
+    public List<PersonalityOption> species = new();
 
-    [Tooltip("What job/role this agent has (guard dog, merchant, villager, etc.).")]
-    public string job = "guard dog";
+    [Header("Roles")]
+    public int numRoles = 1;
+    public List<PersonalityOption> roles = new();
+
+
+    public List<PersonalityOption> SpeciesChoices = new() {
+        new("Dog",   "- Strong scent + hearing, weaker vision.\n" +
+                     "- Communicates via body language, barks, movement.\n" +
+                     "- Safety, curiosity, pack bonds matter."),
+        new("Human", "Can use tools and communicate."),
+        new("Cat",   "Independent and ignores commands.")
+    };
+
+    public List<PersonalityOption> RoleChoices = new() {
+        new("Guard",    "Protects a location."),
+        new("Bodyguard","Protects a character."),
+        new("Scout",    "Explores the world."),
+        new("Mentor",   "Guides and helps others."),
+        new("Tickster", "Causes mischief."),
+        new("Trainer",  "Teaches commands, abilities"),
+        new("Healer",   "Helps injured characters.")
+    };
+    
+    public string cachedIdentity = "";
 
     public string ResolveAgentId(GameObject owner)
     {
@@ -46,6 +129,44 @@ public sealed class IdentitySection
 
         return owner.name;
     }
+
+    public void RandomizeIdentity()
+    {
+        PersonalityOption selection;
+        while (species.Count<1)
+        {
+            PersonalityOption.TryGetRandomChoice(SpeciesChoices, out selection);
+            species.Add(selection);
+        }
+
+        while (roles.Count<numRoles)
+        {
+            PersonalityOption.TryGetRandomChoice(RoleChoices, out selection);
+            roles.Add(selection);
+        }
+
+        // empty the cached string
+        if (!string.IsNullOrEmpty(cachedIdentity))
+            cachedIdentity="";
+    }
+
+    public string IdentityToString ()
+    {
+        if (string.IsNullOrEmpty(cachedIdentity))
+        {
+            StringBuilder sb = new();
+            
+            sb.Append("Identity: ");
+            foreach(PersonalityOption opt in species)
+                sb.Append(opt.OptionToString());
+            foreach(PersonalityOption opt in roles)
+                sb.Append(opt.OptionToString());
+        
+            cachedIdentity = sb.ToString();
+            Debug.Log("IdentityToString: " + cachedIdentity);
+        }
+        return cachedIdentity;
+    }
 }
 
 // ================ 2. Personality Section ===============
@@ -53,78 +174,93 @@ public sealed class IdentitySection
 [Serializable]
 public sealed class PersonalitySection
 {
-    public bool allowRandomPersonality = true;
-    public bool lockPersonalityAfterSpawn = true;
+    [Header("Quirks")]
+    public int numQuirks = 2;
+    public List<PersonalityOption> quirks = new();
 
-    [Tooltip("Optional manual species override (dog/human/etc). If null, mixer may pick randomly.")]
-    public SpeciesDefinition? manualSpecies;
+    [Header("Complications")]
+    public int numComplications = 2;
+    public List<PersonalityOption> complications = new();
 
-    [Tooltip("Optional manual role override (guard/pet/etc). If null, mixer may pick randomly.")]
-    public RoleDefinition? manualRole;
 
-    public PersonalityDatabase? personalityDatabase;
+    public List<PersonalityOption> QuirksChoices = new() {
+        new("Impulsive",      "Acts without thinking."),
+        new("Curious",        "Investigates new things."),
+        new("Proud",          "Refuses help from others."),
+        new("Loyal",          "Stays close to allies."),
+        new("Anxious",        "Startles at loud noises."),
+        new("Playful",        "Treats serious situations like a game."),
+        new("Stubborn",       "Resists changing plans once decided."),
+        new("Protective",     "Instinctively guards weaker allies."),
+        new("Distractible",   "Loses focus when something interesting appears."),
+        new("Cautious",       "Hesitates before taking risks."),
+        new("Greedy",         "Tries to claim more than their share."),
+        new("Affectionate",   "Seeks closeness and approval from others."),
+        new("Suspicious",     "Assumes unknown actors may be hostile."),
+        new("Competitive",    "Turns cooperation into a contest."),
+        new("Observant",      "Notices small details others miss.")
+    };
 
-    [Tooltip("Optional manual archetype override.")]
-    public ArchetypeDefinition? manualArchetype;
+// TODO: add option field that will be parsed to modify character capabilities.
 
-    [Tooltip("Forced quirks. If non-empty, these replace random quirks.")]
-    public List<QuirkDefinition> forcedQuirks = new();
+    public List<PersonalityOption> ComplicationChoices = new() {
+        new("InjuredPaw",         "Moves slower than usual."),
+        new("AfraidOfThunder",    "Hides during storms."),
+        new("DistrustsCats",      "Will not cooperate with cats."),
+        new("EasilyDistracted",   "Stops moving to look at butterflies."),
+        new("SensitiveNose",      "Overreacts to strong or unpleasant smells."),
+        new("OldInjury",          "Avoids strenuous actions that might reopen wounds."),
+        new("FoodObsessed",       "Will abandon tasks to pursue food scents."),
+        new("Territorial",        "Becomes hostile when others enter claimed areas."),
+        new("FearOfHeights",      "Refuses to cross high or unstable ground."),
+        new("PoorNightVision",    "Struggles to perceive details in low light."),
+        new("Overprotective",     "Intervenes unnecessarily to defend allies."),
+        new("ShortAttentionSpan", "Forgets goals when interrupted."),
+        new("NoiseSensitive",     "Flinches or freezes at sudden sounds."),
+        new("SeparationAnxiety",  "Performs poorly when isolated from the pack.")
+    };
+        
+    public string cachedPersonality = "";
 
-    [Tooltip("Optional manual complication override.")]
-    public ComplicationDefinition? manualComplication;
 
-    [Range(0, 5)]
-    public int randomQuirkCount = 2;
-
-    [NonSerialized]
-    private MixedPersonality? cachedPersonality;
-
-    public MixedPersonality BuildOrGetPersonality(string stableSeed)
+    // Note: does nothing if there are already enough entries in each.
+    public void RandomizePersonality()
     {
-        if (lockPersonalityAfterSpawn && cachedPersonality != null)
-            return cachedPersonality;
+        PersonalityOption selection;
 
-        MixedPersonality result;
-
-        if (personalityDatabase == null)
+        while (quirks.Count<numQuirks)
         {
-            result = new MixedPersonality
-            {
-                personaBlock = "CHARACTER PERSONA:\n- Act as a game NPC."
-            };
-        }
-        else
-        {
-            var mixer = new PersonalityMixer(personalityDatabase);
-
-            List<QuirkDefinition>? manualQuirkOverrides =
-                forcedQuirks.Count > 0 ? forcedQuirks : null;
-
-            bool shouldMix =
-                allowRandomPersonality ||
-                manualArchetype != null ||
-                manualQuirkOverrides != null ||
-                manualComplication != null;
-
-            result = shouldMix
-                ? mixer.Build(
-                    stableSeedString: stableSeed,
-                    manualSpeciesOverride: manualSpecies,
-                    manualRoleOverride: manualRole,
-                    manualArchetypeOverride: manualArchetype, // legacy fallback still supported
-                    manualQuirkOverrides: manualQuirkOverrides,
-                    manualComplicationOverride: manualComplication,
-                    randomQuirkCount: randomQuirkCount)
-                : new MixedPersonality
-                {
-                    personaBlock = "CHARACTER PERSONA:\n- Act as a game NPC."
-                };
+            PersonalityOption.TryGetRandomChoice(QuirksChoices, out selection);
+            quirks.Add(selection);
         }
 
-        if (lockPersonalityAfterSpawn)
-            cachedPersonality = result;
+        while (complications.Count<numComplications)
+        {
+            PersonalityOption.TryGetRandomChoice(ComplicationChoices, out selection);
+            complications.Add(selection);
+        }
 
-        return result;
+        // empty the cached string
+        if (!string.IsNullOrEmpty(cachedPersonality))
+            cachedPersonality="";
+    }
+
+    public string PersonalityToString ()
+    {
+        if (string.IsNullOrEmpty(cachedPersonality))
+        {
+            StringBuilder sb = new();
+            
+            sb.Append("PERSONALITY: ");
+            foreach(PersonalityOption opt in quirks)
+                sb.Append(opt.OptionToString());
+            foreach(PersonalityOption opt in complications)
+                sb.Append(opt.OptionToString());
+        
+            cachedPersonality = sb.ToString();
+            Debug.Log("PersonalityToString: " + cachedPersonality);
+        }
+        return cachedPersonality;
     }
 }
 
@@ -218,23 +354,4 @@ public sealed class ToolPermissionSection
             _ => allowToolsHigh
         };
     }
-
-    public static string IdentityBlock(string species, string job)
-    {
-        species = (species ?? "").Trim();
-        job = (job ?? "").Trim();
-
-        if (string.IsNullOrEmpty(species) && string.IsNullOrEmpty(job))
-            return "IDENTITY: Unknown.";
-
-        if (!string.IsNullOrEmpty(species) && !string.IsNullOrEmpty(job))
-            return $"IDENTITY: Species={species}. Job={job}.";
-
-        if (!string.IsNullOrEmpty(species))
-            return $"IDENTITY: Species={species}.";
-
-        return $"IDENTITY: Job={job}.";
-    }
 }
-
-// ================ Identity Section ===============

@@ -3,388 +3,651 @@ using System;
 using System.Collections.Generic;
 using DogGame.LLM.Agent;
 using DogGame.LLM.Core;
-using DogGame.LLM.Debugging;
 using DogGame.LLM.Providers;
-using Unity.AppUI.Core;
-using UnityEditor.PackageManager.Requests;
 using UnityEngine;
+using DogGame.LLM;
 
 namespace DogGame.LLM
 {
-    public enum RemoteLLMProvider
+    [System.Flags]
+    public enum LLMVendorAndModel
     {
-        OpenAI,
-        Gemini,
-        Ollama,
-        None
+        None = 0,
+        OpenAI_gpt_4_1_mini = 1 << 0,
+        OpenAI_gpt_5_mini = 1 << 1,
+
+        Gemini_gemini_2_5_flash_lite = 1 << 10,
+
+        Ollama_Qwen3_4b = 1 << 20,
+        Ollama_Qwen3_8b = 1 << 21,
+        Ollama_Gemma3_12b = 1 << 22
     }
 
-    /// <summary>
-    /// Global LLM request scheduler.
-    /// Ensures fairness, throttling, and model-tier limits.
-    /// </summary>
-    public sealed class LLMWorldScheduler : MonoBehaviour
+    [Serializable]
+    public class LLMModelSelection
     {
-        public static LLMWorldScheduler Instance { get; private set; } = null!;
+        [HideInInspector]
+        public string displayName;
+        public LLMVendorAndModel llmVendorAndModel;
 
-        [Header("LLM Provider")]
-        [SerializeField] public RemoteLLMProvider remoteProvider = RemoteLLMProvider.Gemini;
+        public LLMVendor llmVendor;
+        public string llmModelString;
+        [Tooltip("Unchecked means runs locally.")]
+        public bool remote;
+        [Tooltip("Capability of creating complex plans.")]
+        public Sophistication sophistication;
 
-        [Header("Throughput limits")]
-        [SerializeField] private int maxConcurrentLocalRequests = 1;
-        [SerializeField] private int maxConcurrentRemoteRequests = 1;
+        [Tooltip("Game imposed limit of number of simultaneous requests")]
+        public int vendorMaxConcurrentRequests;
+        [Header("Statistics")]
+        public float successRate;
+        public float typicalResponseTime;
+        public float typicalCost;
+        public int totalRequests = 0;
+        public int totalFailures = 0;
+        [Header("Currently running requests")]
+        public List<string> currentRequests = new();
 
-        [Header("Scheduling")]
-        [SerializeField] private float schedulingIntervalSeconds = 0.25f;
-
-        [Header("Unified LLM Router")]
-        [SerializeField] private UnifiedLLMRouter router;
-
-        private readonly List<LLMPlanRequestOnDemand> pendingRequests = new();
-
-        private int activeLocalRequests;
-        private int activeRemoteRequests;
-
-        //private OpenAILLMService? openAiService;
-        //private GeminiLLMService? geminiService;
-        //private OllamaLLMService? ollamaService;
-        private float nextScheduleTime;
-
-        //public string requestJSON;
-
-        private void Awake()
+        public LLMModelSelection(LLMVendorAndModel vendorAndModel,
+                          LLMVendor vendor,
+                          string modelString,
+                          bool remote,
+                          Sophistication sophistication,
+                          float TypicalResponseTime,
+                          float SuccessRate,
+                          float TypicalCost,
+                          int vendorMaxConcurrentRequests)
         {
-            if (Instance != null)
-            {
-                Destroy(gameObject);
-                return;
-            }
-
-            Instance = this;
-            
-//            switch (remoteProvider)
-//            {
-//                case RemoteLLMProvider.OpenAI:
-//                    openAiService = gameObject.AddComponent<OpenAILLMService>();
-//                    break;
-//                case RemoteLLMProvider.Gemini:
-//                    geminiService = gameObject.AddComponent<GeminiLLMService>();
-//                    break;
-//                case RemoteLLMProvider.Ollama:
-//                    ollamaService = gameObject.AddComponent<OllamaLLMService>();
-//                    break;
-//            }
-
-            if (router == null)
-            {
-                router = FindFirstObjectByType<UnifiedLLMRouter>();
-                if (router == null)
-                {
-                    Debug.LogError("[LLMWorldScheduler] UnifiedLLMRouter not found in scene.");
-                }
-            }
-            Debug.Log($"LLMWalkthroughScheduler.Awake: pendingRequests(initial)={pendingRequests.Count}", this);
+            this.llmVendorAndModel = vendorAndModel;
+            this.llmVendor = vendor;
+            this.llmModelString = modelString;
+            this.remote = remote;
+            this.sophistication = sophistication;
+            this.typicalResponseTime = TypicalResponseTime;
+            this.successRate = SuccessRate;
+            this.typicalCost = TypicalCost;
+            this.vendorMaxConcurrentRequests = vendorMaxConcurrentRequests;
+            this.displayName = $"{this.llmVendor} · {this.llmModelString} · {this.sophistication}";
         }
 
-        private void Update()
+        [NonSerialized] private LLMClientBase? cachedClient;
+
+        public string VendorName => llmVendor.ToString();
+
+        /// <summary>
+        /// Get or create the client for THIS (vendor, model) selection.
+        /// Put all per-vendor wiring here so there is a 1:1 mapping between selection and client.
+        /// </summary>
+        /// <summary>
+        /// 1:1 mapping: this model selection constructs the correct client instance.
+        /// Clients fetch env vars / defaults internally.
+        /// </summary>
+        public LLMClientBase GetOrCreateClient()
         {
-            // 1) Idle: nothing to do
-            if (!HasPendingRequests())
-                return;
+            if (cachedClient != null)
+                return cachedClient;
 
-            // 2) Throttle: only attempt dispatch on interval
-            if (Time.time < nextScheduleTime)
-                return;
+            switch (llmVendor)
+            {
+                case LLMVendor.OpenAI:
+                    // If your OpenAIClient ctor supports "model" only:
+                    cachedClient = new DogGame.LLM.Providers.OpenAIClient(model: llmModelString);
+                    break;
 
-            nextScheduleTime = Time.time + schedulingIntervalSeconds;
+                case LLMVendor.Gemini:
+                    cachedClient = new DogGame.LLM.Providers.GeminiClient(model: llmModelString);
+                    break;
 
-            TryDispatchRequests();
-        }
+                case LLMVendor.Ollama:
+                    cachedClient = new DogGame.LLM.Providers.OllamaClient(model: llmModelString);
+                    break;
 
-        private bool HasPendingRequests()
-        {
-            // Replace with your real queue check(s)
-            return pendingRequests != null && pendingRequests.Count > 0;
+                default:
+                    throw new InvalidOperationException($"[LLMModelSelection] Unsupported vendor {llmVendor}.");
+            }
+
+            return cachedClient!;
         }
 
         /// <summary>
-        /// Agents call this to request a planning slot.
+        /// Optional: call this if you change settings at runtime and need fresh clients.
         /// </summary>
-/*        public void EnqueueRequest(LLMPlanRequest request)
+        public void ResetClient()
         {
-            if (request == null) return;
-
-            Debug.Log($"LLMWalkthroughEnqueue: agentId={request.AgentId} tier={request.ModelTier} priority={request.PriorityScore:0.00} pendingNow={pendingRequests.Count+1}", this);
-
-            pendingRequests.Add(request);
-
-            // Try to dispatch immediately on next frame (or even right now if you want).
-            // Next frame is safer to avoid re-entrancy if Enqueue happens during dispatch.
-            nextScheduleTime = Mathf.Min(nextScheduleTime, Time.time);
-        }
-        */
-
-        public void EnqueueRequest(LLMPlanRequestOnDemand request)
-        {
-            if (request == null) return;
-            pendingRequests.Add(request); // change pendingRequests type to List<LLMPlanRequestOnDemand>
-            nextScheduleTime = Mathf.Min(nextScheduleTime, Time.time); // dispatch soon
+            cachedClient = null;
         }
 
-        private static LLMModelTier MapSophisticationToModelTier(Sophistication s)
+        // --- runtime-only ---
+        [NonSerialized] private readonly Dictionary<string, float> requestStartTimes = new();
+
+        public bool HasOpenSlot =>
+            currentRequests.Count < vendorMaxConcurrentRequests;
+
+        public void OnDispatchStart(string requestId)
         {
-            return s switch
-            {
-                Sophistication.High => LLMModelTier.RemotePaid,
-                Sophistication.Medium => LLMModelTier.RemotePaid,
-                Sophistication.Low => LLMModelTier.LocalSmall,
-                _ => LLMModelTier.LocalSmall
-            };
+            totalRequests++;
+            currentRequests.Add(requestId);
+            requestStartTimes[requestId] = Time.realtimeSinceStartup;
         }
 
-        private void TryDispatchRequests()
+        public void OnDispatchSuccess(string requestId)
         {
-            // Don't start LLM until build is complete.
-            if (!Directory.Instance.gen.buildComplete) return;
+            FinishRequest(requestId, success: true);
+        }
 
-            if (!HasPendingRequests())
-                return;
+        public void OnDispatchFailure(string requestId)
+        {
+            totalFailures++;
+            FinishRequest(requestId, success: false);
+        }
 
-            Debug.Log($"LLMWalkthroughDispatchTry: pending={pendingRequests.Count}", this);
+        private void FinishRequest(string requestId, bool success)
+        {
+            currentRequests.Remove(requestId);
 
-            // Sort by priority (high first), then age (oldest first)
-            pendingRequests.Sort((a, b) =>
+            if (requestStartTimes.TryGetValue(requestId, out float start))
             {
-                int priorityCompare = b.PriorityScore.CompareTo(a.PriorityScore);
-                if (priorityCompare != 0)
-                    return priorityCompare;
+                float duration = Time.realtimeSinceStartup - start;
+                UpdateTypicalResponseTime(duration);
+                requestStartTimes.Remove(requestId);
+            }
 
-                return a.RequestTime.CompareTo(b.RequestTime);
-            });
+            UpdateSuccessRate();
+        }
 
-            // Dispatch from the front (highest priority first)
-            int index = 0;
-            while (index < pendingRequests.Count)
+        private void UpdateTypicalResponseTime(float newSample)
+        {
+            // Exponential moving average (stable, cheap)
+            const float alpha = 0.2f;
+            typicalResponseTime = typicalResponseTime <= 0
+                ? newSample
+                : Mathf.Lerp(typicalResponseTime, newSample, alpha);
+        }
+
+        private void UpdateSuccessRate()
+        {
+            successRate = totalRequests > 0
+                ? 1f - (float)totalFailures / totalRequests
+                : 0f;
+        }
+
+    }
+}
+/// <summary>
+/// A single place in the scene/inspector to assign provider settings assets/structs.
+/// This replaces the old per-service MonoBehaviours.
+/// </summary>
+//    [Serializable]
+//    public sealed class ProviderSettingsBundle
+//    {
+//        public DogGame.LLM.Providers.OpenAIProviderSettings? openAI;
+//        public DogGame.LLM.Providers.GeminiProviderSettings? gemini;
+//        public DogGame.LLM.Providers.OllamaProviderSettings? ollama;
+//    }
+
+public enum LLMVendor
+{
+    OpenAI,
+    Gemini,
+    Ollama,
+    None
+}
+
+public enum RemoteLLMModel
+{
+    gpt_4_1_mini,
+    Gemini,
+    Ollama,
+    None
+}
+
+public class LLMDatabase
+{
+    public List<LLMModelSelection> llmModelDatabase = new List<LLMModelSelection>();
+
+}
+
+/// <summary>
+/// Global LLM request scheduler.
+/// Ensures fairness, throttling, and model-tier limits.
+/// </summary>
+public class LLMWorldScheduler : MonoBehaviour
+{
+    public static LLMWorldScheduler Instance { get; private set; } = null!;
+
+    [Header("LLM Providers Available")]
+    [Tooltip("Enable/Disable available models")]
+    public LLMVendorAndModel llmVendorAndModel;
+
+    //[Tooltip("These are all available models")]
+    [HideInInspector]
+    private List<LLMModelSelection> masterLLMModelDatabase = new List<LLMModelSelection>()
+        {
+            new(LLMVendorAndModel.OpenAI_gpt_4_1_mini,
+                LLMVendor.OpenAI,
+                "gpt-4.1-mini",
+                true,
+                Sophistication.Medium,
+                TypicalResponseTime: 10f,
+                SuccessRate: 0.9f,
+                TypicalCost: .01f,
+                vendorMaxConcurrentRequests: 2),
+            new(LLMVendorAndModel.Gemini_gemini_2_5_flash_lite,
+                LLMVendor.Gemini,
+                "gemini-2.5-flash-lite",
+                true,
+                Sophistication.Medium,
+                TypicalResponseTime: 10f,
+                SuccessRate: 0.9f,
+                TypicalCost: .01f,
+                vendorMaxConcurrentRequests: 2),
+            new(LLMVendorAndModel.Ollama_Gemma3_12b,
+                LLMVendor.Ollama,
+                "Gemma3:12b",
+                false,
+                Sophistication.Medium,
+                TypicalResponseTime: 20f,
+                SuccessRate: 0.8f,
+                TypicalCost: 0f,
+                vendorMaxConcurrentRequests: 1),
+            new(LLMVendorAndModel.Ollama_Qwen3_4b,
+                LLMVendor.Ollama,
+                "Qwen3:4b",
+                false,
+                Sophistication.Low,
+                TypicalResponseTime: 70f,
+                SuccessRate: 0.5f,
+                TypicalCost: 0f,
+                vendorMaxConcurrentRequests: 1),
+        };
+
+    [Tooltip("These models are enabled (above) as usable")]
+    [SerializeField] public List<LLMModelSelection> llmModelsAvailable = new List<LLMModelSelection>();
+
+    //[Header("Scheduling")]
+    [HideInInspector] private float schedulingIntervalSeconds = 1f;
+
+    [Header("Unified LLM Router")]
+    [SerializeField] private UnifiedLLMRouter router;
+
+    public readonly List<LLMPlanRequestOnDemand> pendingRequests = new();
+
+    //private OpenAILLMService? openAiService;
+    //private GeminiLLMService? geminiService;
+    //private OllamaLLMService? ollamaService;
+    private float nextScheduleTime;
+
+    //public string requestJSON;
+
+    // One in-flight request per agent.
+    private readonly HashSet<string> inflightAgents = new();
+    private readonly Dictionary<string, string> inflightRequestIdByAgent = new();
+
+    public void OnValidate()
+    {
+        llmModelsAvailable = new();
+        foreach (LLMModelSelection model in masterLLMModelDatabase)
+        {
+            if (llmVendorAndModel.HasFlag(model.llmVendorAndModel))
             {
-                var request = pendingRequests[index];
-
-                if (!CanDispatch(MapSophisticationToModelTier(request.Sophistication)))
-                {
-                    index++; // keep it queued
-                    continue;
-                }
-
-                Dispatch(request);
-                pendingRequests.RemoveAt(index); // do NOT increment index; list shifts left
+                llmModelsAvailable.Add(model);
             }
         }
-        private bool CanDispatch(LLMModelTier tier)
+    }
+
+    private void Awake()
+    {
+        if (Instance != null)
         {
-            return tier switch
-            {
-                LLMModelTier.LocalSmall => activeLocalRequests < maxConcurrentLocalRequests,
-                LLMModelTier.RemotePaid => activeRemoteRequests < maxConcurrentRemoteRequests,
-                _ => false
-            };
+            Destroy(gameObject);
+            return;
         }
+        Instance = this;
 
-#nullable enable
+        OnValidate();   // initialize llmModelsAvailable to match llmVendorAndModel.
 
-        // Drop-in replacement for LLMWorldScheduler.Dispatch(LLMPlanRequestOnDemand request)
-        //
-        // Assumptions / fields you should already have in LLMWorldScheduler:
-        //   - [SerializeField] private DogGame.LLM.Providers.UnifiedLLMRouter? router;   (or whatever you named it)
-        //   - MapSophisticationToModelTier(Sophistication) -> LLMModelTier
-        //   - TryResolveAgentModules(agentId, out LLMConfigModule config, out LLMWorldStateModule worldState, out GameObject agentGo)
-        //   - IncrementActive(LLMModelTier), DecrementActive(LLMModelTier)
-        //   - LLMPacketLogger.LogRequest(...), LLMPacketLogger.LogResponse(...)  (if you have response logging; optional)
-        //
-        // Notes:
-        //   - Uses your existing BuildLLMRequest + serializer for packet logging.
-        //   - Sends the *LLMRequest object* to router (recommended), so vendors can unify packet building.
-        //   - Filters stale/cancelled responses using LLMResponse.wasStale (from your LLMClientBase sessionToken gate).
-        //
-        private void Dispatch(LLMPlanRequestOnDemand request)
+        if (router == null)
         {
-            if (request == null)
-                return;
-
-            // 1) Decide infra tier from planning sophistication (central place)
-            LLMModelTier modelTier = MapSophisticationToModelTier(request.Sophistication);
-
+            router = FindFirstObjectByType<UnifiedLLMRouter>();
             if (router == null)
             {
-                Debug.LogWarning("[LLM Scheduler] Router missing; cannot dispatch LLM request.");
-                DecrementActive(modelTier);
+                router = gameObject.AddComponent<UnifiedLLMRouter>();
+                if (router == null)
+                {
+                    Debug.LogError("[LLMWorldScheduler] UnifiedLLMRouter not found or created.");
+                }
+            }
+        }
+        //Debug.Log($"LLMWalkthroughScheduler.Awake: pendingRequests(initial)={pendingRequests.Count}", this);
+    }
+
+    private void Update()
+    {
+        // 1) Idle: nothing to do
+        if (!HasPendingRequests())
+            return;
+
+        // 2) Throttle: only attempt dispatch on interval
+        if (Time.time < nextScheduleTime)
+            return;
+
+        nextScheduleTime = Time.time + schedulingIntervalSeconds;
+
+        TryDispatchRequests();
+    }
+
+    private bool HasPendingRequests()
+    {
+        // Replace with your real queue check(s)
+        return pendingRequests != null && pendingRequests.Count > 0;
+    }
+
+    /// <summary>
+    /// Agents call this to request a planning slot.
+    /// </summary>
+    /*        public void EnqueueRequest(LLMPlanRequest request)
+            {
+                if (request == null) return;
+
+                Debug.Log($"LLMWalkthroughEnqueue: agentId={request.AgentId} tier={request.ModelTier} priority={request.PriorityScore:0.00} pendingNow={pendingRequests.Count+1}", this);
+
+                pendingRequests.Add(request);
+
+                // Try to dispatch immediately on next frame (or even right now if you want).
+                // Next frame is safer to avoid re-entrancy if Enqueue happens during dispatch.
+                nextScheduleTime = Mathf.Min(nextScheduleTime, Time.time);
+            }
+            */
+
+    public void EnqueueRequest(LLMPlanRequestOnDemand request)
+    {
+        if (request == null) return;
+        for (int i = pendingRequests.Count - 1; i >= 0; i--)
+        {
+            if (pendingRequests[i].AgentId == request.AgentId)
+            {
+                pendingRequests[i] = request; // replace old pending with newest
+                nextScheduleTime = Mathf.Min(nextScheduleTime, Time.time);
                 return;
             }
+        }
+        pendingRequests.Add(request);
+        nextScheduleTime = Mathf.Min(nextScheduleTime, Time.time); // dispatch soon
+    }
 
-            // 2) Resolve agent object + modules
-            if (!TryResolveAgentModules(request.AgentId, out var config, out var worldState, out var agentGo))
-            {
-                Debug.LogWarning($"[LLM Scheduler] Dispatch failed: cannot resolve agent/modules for AgentId={request.AgentId}");
-                return;
-            }
+    private void Dispatch(LLMPlanRequestOnDemand request, LLMModelSelection selection)
+    {
+        if (request == null) return;
 
-            // 3) Build real request packet (your production path)
-            LLMRequest llmRequest = config.BuildLLMRequest(
-                worldState: worldState,
-                requestId: request.RequestId,
-                agentId: request.AgentId,
-                userTaskPrompt: request.Prompt
-            );
-
-            // ✅ Force router vendor to match the selected provider
-            // default leaves override value
-            llmRequest.profile.vendor = remoteProvider switch
-            {
-                RemoteLLMProvider.OpenAI => "OpenAI",
-                RemoteLLMProvider.Gemini => "Gemini",
-                RemoteLLMProvider.Ollama => "Ollama",
-                _ => llmRequest.profile.vendor.ToString()
-            };
-
-            // (optional) if you also want to force model per provider:
-            if (remoteProvider == RemoteLLMProvider.Ollama) llmRequest.profile.model = "Gemma3:1b";
-            
-            // 4) Mark inflight
-            IncrementActive(modelTier);
-
-            // 5) Dispatch via unified router
-            // IMPORTANT: router should internally route to OpenAI/Gemini/Ollama client based on selection.
-            if (router == null)
-            {
-                Debug.LogWarning("[LLM Scheduler] UnifiedLLMRouter not assigned.");
-                DecrementActive(modelTier);
-                return;
-            }
-
-            router.Send(llmRequest, (response) =>
-            {
-                // Always decrement active count exactly once
-                DecrementActive(modelTier);
-
-                if (response == null)
-                {
-                    Debug.LogWarning($"[LLM Scheduler] Null response. requestId={request.RequestId} agentId={request.AgentId}");
-                    return;
-                }
-
-                // Stale response? (e.g., playmode restarted / new session token)
-                if (response.wasStale)
-                {
-                    Debug.Log($"[LLM Scheduler] Stale response ignored. requestId={request.RequestId} agentId={request.AgentId}");
-                    return;
-                }
-
-                if (!response.succeeded)
-                {
-                    Debug.LogWarning($"[LLM Scheduler] LLM failed. requestId={request.RequestId} agentId={request.AgentId} err={response.errorMessage}");
-                    return;
-                }
-
-                // Choose which field carries the PlanResponseV1 JSON in your project.
-                // Prefer rawText if you populate it with the extracted PlanResponseV1 JSON.
-                // Fall back to rawProviderPayloadJson if that's where your client stored it.
-                string planJson =
-                    !string.IsNullOrWhiteSpace(response.rawText) ? response.rawText :
-                    !string.IsNullOrWhiteSpace(response.rawProviderPayloadJson) ? response.rawProviderPayloadJson :
-                    "";
-
-                if (string.IsNullOrWhiteSpace(planJson))
-                {
-                    Debug.LogWarning($"[LLM Scheduler] Response succeeded but planJson was empty. requestId={request.RequestId} agentId={request.AgentId}");
-                    return;
-                }
-
-                // Optional: response packet logging
-                // LLMPacketLogger.LogResponse(request.AgentId, request.RequestId, remoteProvider.ToString(), planJson);
-                
-                // ==== LOGGING VERSION ONLY ====
-                string requestJson = LLMRequestSerializer.ToJson(llmRequest);
-                LLMPacketLogger.LogRequest(
-                    agentId: request.AgentId,
-                    requestId: request.RequestId,
-                    provider: remoteProvider.ToString(),
-                    requestJson: requestJson);
-                try { Directory.Instance.llmDebugMonitor.DebugLLMRequest_Input(requestJson); } catch { /* ignore */ }
-                // ==== END LOGGING ====
-
-                // Deliver to caller (PlayerDecisionModule etc.)
-                try
-                {
-                    request.OnResponseJson?.Invoke(planJson);
-                }
-                catch (Exception ex)
-                {
-                    Debug.LogWarning($"[LLM Scheduler] OnResponseJson handler threw. requestId={request.RequestId} agentId={request.AgentId} ex={ex.GetType().Name}: {ex.Message}");
-                }
-            });
-
-            Debug.Log($"[LLM Scheduler] Dispatched requestId={request.RequestId} agent={agentGo.name} agentId={request.AgentId} soph={request.Sophistication} tier={modelTier} provider={remoteProvider}");
+        if (!TryResolveAgentModules(request.AgentId, out var config, out var worldState, out var agentGo))
+        {
+            UnityEngine.Debug.LogWarning($"[LLM Scheduler] Dispatch failed: cannot resolve agent/modules for AgentId={request.AgentId}");
+            return;
         }
 
-        private bool TryResolveAgentModules(
-            string agentId,
-            out LLMConfigModule config,
-            out LLMWorldStateModule worldState,
-            out GameObject agentGameObject)
+        LLMRequest llmRequest = config.BuildLLMRequest(
+            worldState: worldState,
+            requestId: request.RequestId,
+            agentId: request.AgentId,
+            userTaskPrompt: request.Prompt
+        );
+
+        // Force vendor/model to match the selection (prevents the “why is it using OpenAI” bug)
+        llmRequest.profile.vendor = selection.VendorName;
+        llmRequest.profile.model = selection.llmModelString;
+
+        // Track inflight on the selection (per-model concurrency)
+        if (!string.IsNullOrWhiteSpace(request.AgentId))
         {
-            config = null!;
-            worldState = null!;
-            agentGameObject = null!;
+            inflightAgents.Add(request.AgentId);
+            inflightRequestIdByAgent[request.AgentId] = request.RequestId;
+        }
+        string requestName = request.AgentId + ":" + request.RequestId;
+        selection.OnDispatchStart(requestName);
 
-            if (string.IsNullOrWhiteSpace(agentId))
-                return false;
+        LLMClientBase client;
+        try
+        {
+            client = selection.GetOrCreateClient();
+        }
+        catch (Exception ex)
+        {
+            selection.currentRequests.Remove(request.RequestId);
+            UnityEngine.Debug.LogWarning($"[LLM Scheduler] Client creation failed vendor={selection.llmVendor} model={selection.llmModelString}: {ex.Message}");
+            return;
+        }
 
-            // Scan active configs (cheap enough for now; can be cached later)
-            var configs = UnityEngine.Object.FindObjectsByType<LLMConfigModule>(FindObjectsSortMode.None);
-            foreach (var c in configs)
+        _ = SendAndHandleAsync(client, llmRequest, request, selection, agentGo.name);
+    }
+
+    private async System.Threading.Tasks.Task SendAndHandleAsync(
+        LLMClientBase client,
+        LLMRequest llmRequest,
+        LLMPlanRequestOnDemand schedulerRequest,
+        LLMModelSelection selection,
+        string agentName)
+    {
+        try
+        {
+            var response = await client.SendAsync(llmRequest, default);
+
+            // Always release slot
+            selection.currentRequests.Remove(schedulerRequest.RequestId);
+            if (!string.IsNullOrWhiteSpace(schedulerRequest.AgentId))
             {
-                if (c == null) continue;
-
-                string resolvedId = c.identity.ResolveAgentId(c.gameObject);
-                if (!string.Equals(resolvedId, agentId, StringComparison.Ordinal))
-                    continue;
-
-                var ws = c.GetComponent<LLMWorldStateModule>();
-                if (ws == null)
-                {
-                    Debug.LogWarning($"[LLM Scheduler] Agent {c.gameObject.name} matches id={agentId} but has no LLMWorldStateModule.");
-                    return false;
-                }
-
-                config = c;
-                worldState = ws;
-                agentGameObject = c.gameObject;
-                return true;
+                inflightAgents.Remove(schedulerRequest.AgentId);
+                inflightRequestIdByAgent.Remove(schedulerRequest.AgentId);
+            }
+            if (response == null)
+            {
+                selection.OnDispatchFailure(schedulerRequest.RequestId);
+                UnityEngine.Debug.LogWarning($"[LLM Scheduler] Null response requestId={schedulerRequest.RequestId} agentId={schedulerRequest.AgentId}");
+                return;
             }
 
+            if (response.wasStale)
+            {
+                selection.OnDispatchFailure(schedulerRequest.RequestId);
+                UnityEngine.Debug.Log($"[LLM Scheduler] Stale response ignored requestId={schedulerRequest.RequestId} agentId={schedulerRequest.AgentId}");
+                return;
+            }
+
+            if (!response.succeeded)
+            {
+                selection.OnDispatchSuccess(schedulerRequest.RequestId);
+                UnityEngine.Debug.LogWarning($"[LLM Scheduler] LLM failed requestId={schedulerRequest.RequestId} agentId={schedulerRequest.AgentId} err={response.errorMessage}");
+                return;
+            }
+
+            string planJson =
+                !string.IsNullOrWhiteSpace(response.rawText) ? response.rawText :
+                !string.IsNullOrWhiteSpace(response.rawProviderPayloadJson) ? response.rawProviderPayloadJson :
+                "";
+
+            schedulerRequest.OnResponseJson?.Invoke(planJson);
+        }
+        catch (Exception ex)
+        {
+            selection.currentRequests.Remove(schedulerRequest.RequestId);
+            selection.OnDispatchFailure(schedulerRequest.RequestId);
+            UnityEngine.Debug.LogWarning($"[LLM Scheduler] Send failed vendor={selection.llmVendor} model={selection.llmModelString} requestId={schedulerRequest.RequestId}: {ex.GetType().Name}: {ex.Message}");
+        }
+    }
+
+    private void TryDispatchRequests()
+    {
+        if (!Directory.Instance.gen.buildComplete) return;
+        if (!HasPendingRequests()) return;
+
+        // Sort by priority (high first), then age (oldest first)
+        pendingRequests.Sort((a, b) =>
+        {
+            int priorityCompare = b.PriorityScore.CompareTo(a.PriorityScore);
+            if (priorityCompare != 0) return priorityCompare;
+            return a.RequestTime.CompareTo(b.RequestTime);
+        });
+
+        int index = 0;
+        while (index < pendingRequests.Count)
+        {
+            var request = pendingRequests[index];
+
+            var agentId = request.AgentId;
+            if (!string.IsNullOrWhiteSpace(agentId) && inflightAgents.Contains(agentId))
+            {
+                // Agent already has an inflight request; keep this queued.
+                index++;
+                continue;
+            }
+            LLMModelSelection? chosenModel = ChooseBestModelForRequest(request);
+
+            if (chosenModel == null)
+            {
+                // No model has an open slot right now; leave it queued.
+                index++;
+                continue;
+            }
+
+            // We have a slot: dispatch and remove from queue.
+            Dispatch(request, chosenModel);
+            pendingRequests.RemoveAt(index);
+        }
+    }
+
+    private bool TryResolveAgentModules(
+        string agentId,
+        out LLMConfigModule config,
+        out LLMWorldStateModule worldState,
+        out GameObject agentGameObject)
+    {
+        config = null!;
+        worldState = null!;
+        agentGameObject = null!;
+
+        if (string.IsNullOrWhiteSpace(agentId))
             return false;
-        }
 
-        private void IncrementActive(LLMModelTier tier)
+        // Scan active configs (cheap enough for now; can be cached later)
+        var configs = UnityEngine.Object.FindObjectsByType<LLMConfigModule>(FindObjectsSortMode.None);
+        foreach (var c in configs)
         {
-            if (tier == LLMModelTier.LocalSmall) activeLocalRequests++;
-            else activeRemoteRequests++;
+            if (c == null) continue;
+
+            string resolvedId = c.identity.ResolveAgentId(c.gameObject);
+            if (!string.Equals(resolvedId, agentId, StringComparison.Ordinal))
+                continue;
+
+            var ws = c.GetComponent<LLMWorldStateModule>();
+            if (ws == null)
+            {
+                Debug.LogWarning($"[LLM Scheduler] Agent {c.gameObject.name} matches id={agentId} but has no LLMWorldStateModule.");
+                return false;
+            }
+
+            config = c;
+            worldState = ws;
+            agentGameObject = c.gameObject;
+            return true;
         }
 
-        private void DecrementActive(LLMModelTier tier)
+        return false;
+    }
+
+    private void OnDisable()
+    {
+        // Clear pending queue so nothing dispatches next play session
+        pendingRequests.Clear();
+
+        // Best-effort cancel inflight provider work
+        //            ollamaService?.CancelAll("scheduler_disabled");
+        //            openAiService?.CancelAll("scheduler_disabled");
+        //            geminiService?.CancelAll("scheduler_disabled");
+        LLMSessionToken.Bump();
+        inflightAgents.Clear();
+        inflightRequestIdByAgent.Clear();
+    }
+
+    private static bool MeetsSophistication(LLMModelSelection model, Sophistication needed)
+    {
+        // "Sufficient sophistication" = model tier >= needed
+        // Adjust ordering if your enum isn't ordered Low < Medium < High
+        return model.sophistication >= needed;
+    }
+
+    private bool HasOpenSlot(LLMModelSelection model)
+    {
+        if (model.vendorMaxConcurrentRequests <= 0)
+            return false;
+
+        model.currentRequests ??= new List<string>();
+        return model.currentRequests.Count < model.vendorMaxConcurrentRequests;
+    }
+
+    private LLMModelSelection? ChooseBestModelForRequest(LLMPlanRequestOnDemand request)
+    {
+        if (llmModelsAvailable == null || llmModelsAvailable.Count == 0)
+            return null;
+
+        // 1) Prefer local first (remote == false)
+        LLMModelSelection? local = ChooseFromPool(request, remote: false);
+        if (local != null) return local;
+
+        // 2) Fall back to remote
+        LLMModelSelection? remoteModel = ChooseFromPool(request, remote: true);
+        if (remoteModel != null) return remoteModel;
+
+        return null;
+    }
+
+    private LLMModelSelection? ChooseFromPool(LLMPlanRequestOnDemand request, bool remote)
+    {
+        LLMModelSelection? best = null;
+        float bestScore = float.NegativeInfinity;
+
+        for (int i = 0; i < llmModelsAvailable.Count; i++)
         {
-            if (tier == LLMModelTier.LocalSmall) activeLocalRequests--;
-            else activeRemoteRequests--;
+            var model = llmModelsAvailable[i];
+            if (model == null) continue;
+            if (model.remote != remote) continue;
+            if (!MeetsSophistication(model, request.Sophistication)) continue;
+            if (!HasOpenSlot(model)) continue;
+
+            // Scoring: tune to taste.
+            // - Higher sophistication headroom is good (but mild)
+            // - Higher successRate is good
+            // - Lower response time is good
+            // - Lower cost is good (mostly matters for remote)
+            float sophHeadroom = (float)(model.sophistication - request.Sophistication); // 0..?
+            float score =
+                (model.successRate * 100f) +
+                (sophHeadroom * 2f) +
+                (-model.typicalResponseTime * 1f) +
+                (-model.typicalCost * 50f);
+
+            if (score > bestScore)
+            {
+                bestScore = score;
+                best = model;
+            }
         }
 
-        private void OnDisable()
-        {
-            // Clear pending queue so nothing dispatches next play session
-            pendingRequests.Clear();
+        return best;
+    }
 
-            // Best-effort cancel inflight provider work
-//            ollamaService?.CancelAll("scheduler_disabled");
-//            openAiService?.CancelAll("scheduler_disabled");
-//            geminiService?.CancelAll("scheduler_disabled");
-            LLMSessionToken.Bump();
-        }
+    private void MarkInFlight(LLMModelSelection model, string requestId)
+    {
+        model.currentRequests ??= new List<string>();
+        if (!model.currentRequests.Contains(requestId))
+            model.currentRequests.Add(requestId);
+        model.totalRequests++;
+    }
+
+    private void MarkCompleted(LLMModelSelection model, string requestId, bool succeeded)
+    {
+        model.currentRequests ??= new List<string>();
+        model.currentRequests.Remove(requestId);
+
+        if (!succeeded)
+            model.totalFailures++;
     }
 }

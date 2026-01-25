@@ -20,12 +20,18 @@ namespace DogGame.LLM.Providers
         public readonly string model = "Gemma3:1b";
         public readonly string apiKeyEnvironmentVariable = ""; // none needed
         public readonly string apiKey = ""; // none needed
-        public readonly int timeoutSeconds = 60;
+        public readonly int timeoutSeconds = 300;
         public readonly float temperature = 0.2f;
         public readonly int maxOutputTokens = 800;
         public readonly string modelUniqueInstructions =          
             "You MUST output ONLY a single JSON object that matches the PlanResponseV1 schema.\n" +
             "No markdown, no commentary, no code fences. JSON only.";
+
+        // constructor:
+        public OllamaClient(string model = "Gemma3:1b")
+        {
+            this.model = model;
+        }
 
         protected override Task<LLMResponse> SendCoreAsync(LLMRequest request, CancellationToken cancellationToken)
         {

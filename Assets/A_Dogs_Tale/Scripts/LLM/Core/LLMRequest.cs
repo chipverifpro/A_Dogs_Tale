@@ -23,6 +23,7 @@ namespace DogGame.LLM.Core
         // A stable identifier for caching/dedup (npc id + situation hash, etc.)
         public string requestId = "";
 
+        // Profile: model, sophistication, planning depth, token limits, etc
         public LLMProfile profile = new();
 
         // “System” content (persona, rules, schema/tools description)

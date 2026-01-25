@@ -157,7 +157,7 @@ namespace DogGame.LLM.Core
         {
             public string url = "";
             public JObject payload = new JObject();
-            public int timeoutSeconds = 60;
+            public int timeoutSeconds = 300;
             public Dictionary<string, string>? headers;
         }
 

@@ -27,11 +27,12 @@ namespace DogGame.LLM.Providers
         public readonly string modelUniqueInstructions = "";
         
         // constructor:
-        public OpenAIClient()
+        public OpenAIClient(string model = "gpt-4.1-mini")
         {
             apiKey = ResolveApiKey(apiKeyEnvironmentVariable, apiKey);
             if (apiKey.IsNullOrEmpty())
                 Debug.LogError($"{Vendor}Client apiKey empty. apiKeyEnvironmentVariable={apiKeyEnvironmentVariable}");
+            this.model = model;
         }
 
         protected override Task<LLMResponse> SendCoreAsync(LLMRequest request, CancellationToken cancellationToken)

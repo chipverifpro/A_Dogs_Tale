@@ -27,11 +27,12 @@ namespace DogGame.LLM.Providers
         public readonly string modelUniqueInstructions = "";
 
         // constructor:
-        public GeminiClient()
+        public GeminiClient(string model = "gemini-2.5-flash-lite")
         {
             apiKey = ResolveApiKey(apiKeyEnvironmentVariable, apiKey);
             if (apiKey.IsNullOrEmpty())
                 Debug.LogError($"{Vendor}Client: apiKey is empty. apiKeyEnvironmentVariable={apiKeyEnvironmentVariable}");
+            this.model = model;
         }
 
         protected override Task<LLMResponse> SendCoreAsync(LLMRequest request, CancellationToken cancellationToken)
