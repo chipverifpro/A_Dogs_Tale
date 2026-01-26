@@ -47,7 +47,12 @@ public class ScentSource
 
     public void Emit(Cell cell, float dt, float decayed = 1.0f)
     {
-        if (cell==null) return; // need location
+        //Debug.Log($"[{agentId} Emit]");
+        if (cell==null)
+        {
+            Debug.LogError("Scent Emit: cell is null");
+            return; // need location
+        }
         if (scentAirGround == null) // need physics controller
             scentAirGround = UnityEngine.Object.FindFirstObjectByType<ScentAirGround>();
         if (scentAirGround == null)

@@ -177,7 +177,7 @@ public class ScentAirGround : MonoBehaviour
         ClearAllScentVisuals();
 
         // Switch the overlay to the new source for currentAgentId
-        ScentSource scentSource = dir.scentRegistry.GetScentSource(currentAgentId);
+        ScentSource scentSource = dir.scentRegistry.GetOrCreateScentSource(currentAgentId, ScentCategory.Dog);
         ActivateOverlayForSource(scentSource);
 
         // Draw the current state for this agent with current visibility flags
@@ -198,6 +198,7 @@ public class ScentAirGround : MonoBehaviour
         }
 
         currentAgentId = 1;
+        Debug.Log($"StartScentSimulation");
         // Call this every time we change map structure (load/build complete): likely to start empty or nearly so before scents start appearing.
         ScentCellsListCreate();
 
@@ -272,6 +273,7 @@ public class ScentAirGround : MonoBehaviour
         {
             while (true)
             {
+                Debug.Log($"ScentDecayAndSpread running");
                 physicsStartTime = Time.realtimeSinceStartup;
                 original_cell_count = cellsContainingScents.Count;
                 float limitedDeltaTime = Mathf.Clamp(Time.deltaTime, 0f, simulationTimeStep * 5f); // prevent huge steps if frame rate drops too low
@@ -750,6 +752,7 @@ public class ScentAirGround : MonoBehaviour
     // Use visualizeImmediately=true to see the effect right away (for player deposit, etc), not as part of the mass update.
     public void DepositScentToCell(Cell cell, ScentSource scentSource, float dt, float fade_amount = 1.0f, bool visualizeImmediately=false)
     {
+        //Debug.Log($"DepositScentSource {scentSource.agentId}");
         if (cell == null || scentSource == null) return;
  //       if (scentSource.scentStabilized)
  //       {
@@ -794,10 +797,10 @@ public class ScentAirGround : MonoBehaviour
     {
         int sIdx = FindAgentIdScentIndex(cell, agentId, createIfNeeded: true);
         //Debug.Log($"===>({cell.pos}) sIdx = {sIdx} for agentId = {agentId}");
-        //Debug.Log($"Adding scent agentId={agentId} to cell at {cell.pos}. sIdx={sIdx}");
+        Debug.Log($"Adding scent agentId={agentId} to cell at {cell.pos}. sIdx={sIdx}");
         if (sIdx < 0)
         {
-            //Debug.Log($"({cell.pos}) sIdx = {sIdx} for agentId = {agentId}");
+            Debug.Log($"({cell.pos}) sIdx = {sIdx} for agentId = {agentId}");
             return;
         } 
 
@@ -848,14 +851,16 @@ public class ScentAirGround : MonoBehaviour
         if ((sIdx == -1) && createIfNeeded)
         {
             // before creating new scent, we need the agent pointer
-//            agent = null; //GetAgentFromAgentId(agentId);
-//            if (agent==null) {Debug.LogWarning($"agent = null from GetAgentFromAgentId(agentId={agentId})");}
-//            ScentInCell newScent = new()
-//            {
-//                agentId = agentId,
-//                agent = agent
-//            };
-//            cell.scents.Add(newScent);
+            //var agent = GetAgentFromAgentId(agentId);
+            dir.worldObjectRegistry.TryGet(agentId, out WorldObject agent);
+
+            if (agent==null) {Debug.LogWarning($"agent = null from GetAgentFromAgentId(agentId={agentId})");}
+            ScentInCell newScent = new()
+            {
+                agentId = agentId
+                //agent = agent
+            };
+            cell.scents.Add(newScent);
             sIdx = cell.scents.Count - 1;
         }
         return sIdx;
@@ -953,7 +958,7 @@ public class ScentAirGround : MonoBehaviour
                 continue;
 
             // Lookup or create the ScentSource metadata for this agentId
-            ScentSource scentSource = dir.scentRegistry.GetScentSource(scent.agentId);
+            ScentSource scentSource = dir.scentRegistry.GetOrCreateScentSource(scent.agentId,ScentCategory.Dog);
             if (scentSource == null) continue;   // not a valid scent
 
             float combined = ground * groundWeight + air * airWeight;

@@ -175,7 +175,7 @@ namespace DogGame.Modules
                 float sizeScore = EstimateSizeScore(target);
                 float score = ComputeScore(dist, angleDeg, speed, sizeScore, kind, relation);
 
-                Debug.Log($"Detected {target.DisplayName}");
+                //Debug.Log($"Detected {target.DisplayName}");
 
                 detections.Add(new VisionDetection
                 {
@@ -270,8 +270,8 @@ namespace DogGame.Modules
             if (perceptionEvents.Count < maxEvents)
                 EmitLeaderNotVisible();
             
-            if (perceptionEvents.Count>0)
-                Debug.Log($"VisionPerceptionModule {worldObject.DisplayName}: #perceptionEvents = {perceptionEvents.Count}");
+//            if (perceptionEvents.Count>0)
+//                Debug.Log($"VisionPerceptionModule {worldObject.DisplayName}: #perceptionEvents = {perceptionEvents.Count}");
         }
 
         private void EmitLeaderNotVisible()

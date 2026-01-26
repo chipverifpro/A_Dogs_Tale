@@ -294,6 +294,7 @@ public class WorldObject : MonoBehaviour
     private int debugDoubleTick = -1;
     private void TickCallerAllModules()
     {
+        //Debug.Log($"[{ToString()}] TickCallerAllModules");
         // Ensure this isn't being called more than once per frame:
             if (debugDoubleTick == Time.frameCount)
                 Debug.LogError("ERROR: TickCallerAllModules run more than once per frame");

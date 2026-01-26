@@ -3849,12 +3849,36 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 7218e3fb1f54040bcb853b10dd1e8ede, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::DogGame.LLM.LLMWorldScheduler
-  remoteProvider: 0
-  maxConcurrentLocalRequests: 1
-  maxConcurrentRemoteRequests: 1
-  schedulingIntervalSeconds: 30
-  router: {fileID: 494970100}
+  m_EditorClassIdentifier: Assembly-CSharp::LLMWorldScheduler
+  llmVendorAndModel: 1048577
+  llmModelsAvailable:
+  - displayName: "OpenAI \xB7 gpt-4.1-mini \xB7 Medium"
+    llmVendorAndModel: 1
+    llmVendor: 0
+    llmModelString: gpt-4.1-mini
+    remote: 1
+    sophistication: 1
+    vendorMaxConcurrentRequests: 2
+    successRate: 0.9
+    typicalResponseTime: 10
+    typicalCost: 0.01
+    totalRequests: 0
+    totalFailures: 0
+    currentRequests: []
+  - displayName: "Ollama \xB7 Qwen3:4b \xB7 Low"
+    llmVendorAndModel: 1048576
+    llmVendor: 2
+    llmModelString: Qwen3:4b
+    remote: 0
+    sophistication: 0
+    vendorMaxConcurrentRequests: 1
+    successRate: 0.5
+    typicalResponseTime: 70
+    typicalCost: 0
+    totalRequests: 0
+    totalFailures: 0
+    currentRequests: []
+  router: {fileID: 0}
 --- !u!114 &494970099
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3869,6 +3893,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::LLMDebugMonitor
   Time_Request: 0
   LLM_Request: 
+  LLM_Request_Input: 
   Time_Response: 0
   LLM_Response: 
 --- !u!114 &494970100
@@ -3884,7 +3909,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::UnifiedLLMRouter
   llmWorldScheduler: {fileID: 494970098}
-  vendor: 3
 --- !u!1 &504165305
 GameObject:
   m_ObjectHideFlags: 0
@@ -4161,7 +4185,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 556401679}
-  - component: {fileID: 556401680}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -4184,18 +4207,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1767335688}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &556401680
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 556401678}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: dcdc0a2c1733d440881cfeeedb6fbcf0, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1 &572427359
 GameObject:
   m_ObjectHideFlags: 0
@@ -5438,7 +5449,8 @@ MonoBehaviour:
   maxCrumbs: 256
   pack: {fileID: 766807147}
   leader: {fileID: 6544990386685219154}
-  followers: []
+  followers:
+  - {fileID: 1651296793}
   crumbs: []
   lastDropPos: {x: 0, y: 0}
   hasAny: 0
@@ -7055,6 +7067,10 @@ PrefabInstance:
         type: 3}
       insertIndex: -1
       addedObject: {fileID: 1253610051}
+    - targetCorrespondingSourceObject: {fileID: 7970140317087810869, guid: e2802ce6b21f34344bc910cf30e9b3a8,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1253610056}
   m_SourcePrefab: {fileID: 100100000, guid: e2802ce6b21f34344bc910cf30e9b3a8, type: 3}
 --- !u!1 &1066008316
 GameObject:
@@ -8637,6 +8653,44 @@ MonoBehaviour:
     scentDiscipline: 0
     noiseDiscipline: 0
     bravery: 0
+--- !u!114 &1253610056
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1253610019}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 27672672e8d6a41bdb530d870f01d309, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.ScentEmitterModule
+  normalScentSource:
+    agentId: -1
+    category: 5
+    scentName: FlyingCrate
+    categoryColor: {r: 0, g: 0, b: 0, a: 0}
+    sourceAirColor: {r: 0, g: 0, b: 0, a: 0}
+    sourceGroundColor: {r: 0, g: 0, b: 0, a: 0}
+    airDepositRate: 1
+    groundDepositRate: 0.1
+    familiarity: 0
+    sensitivityBoost: 1
+    persistentId: 
+  onDemandScentSource:
+    agentId: -1
+    category: 0
+    scentName: 
+    categoryColor: {r: 0, g: 0, b: 0, a: 0}
+    sourceAirColor: {r: 0, g: 0, b: 0, a: 0}
+    sourceGroundColor: {r: 0, g: 0, b: 0, a: 0}
+    airDepositRate: 1
+    groundDepositRate: 0.1
+    familiarity: 0
+    sensitivityBoost: 1
+    persistentId: 
+  durationScentSources: []
+  deposit_time_left: 0
 --- !u!1 &1255866326
 GameObject:
   m_ObjectHideFlags: 0
@@ -12354,7 +12408,7 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 4477274621950385561, guid: da33ad6d2d1f9483faa117084b30e547,
         type: 3}
       insertIndex: -1
-      addedObject: {fileID: 1651296798}
+      addedObject: {fileID: 1651296801}
   m_SourcePrefab: {fileID: 100100000, guid: da33ad6d2d1f9483faa117084b30e547, type: 3}
 --- !u!4 &1651296778 stripped
 Transform:
@@ -12617,18 +12671,6 @@ MonoBehaviour:
     scentDiscipline: 0
     noiseDiscipline: 0
     bravery: 0
---- !u!114 &1651296798
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1651296779}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0f0592814a05846588709e51d13a9888, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.LLMDecisionModule
 --- !u!114 &1651296799
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -12642,6 +12684,44 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.ImmobileDecisionModule
   navigationSource: 0
+--- !u!114 &1651296801
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1651296779}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 27672672e8d6a41bdb530d870f01d309, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.ScentEmitterModule
+  normalScentSource:
+    agentId: -1
+    category: 1
+    scentName: Cur
+    categoryColor: {r: 0, g: 0, b: 0, a: 0}
+    sourceAirColor: {r: 0, g: 0, b: 0, a: 0}
+    sourceGroundColor: {r: 0, g: 0, b: 0, a: 0}
+    airDepositRate: 1
+    groundDepositRate: 0.1
+    familiarity: 0
+    sensitivityBoost: 1
+    persistentId: 
+  onDemandScentSource:
+    agentId: -1
+    category: 0
+    scentName: 
+    categoryColor: {r: 0, g: 0, b: 0, a: 0}
+    sourceAirColor: {r: 0, g: 0, b: 0, a: 0}
+    sourceGroundColor: {r: 0, g: 0, b: 0, a: 0}
+    airDepositRate: 1
+    groundDepositRate: 0.1
+    familiarity: 0
+    sensitivityBoost: 1
+    persistentId: 
+  durationScentSources: []
+  deposit_time_left: 0
 --- !u!1 &1653904421
 GameObject:
   m_ObjectHideFlags: 0
@@ -14293,7 +14373,7 @@ MonoBehaviour:
   scentRegistry: {fileID: 1546545661}
   convertScreenToWorld: {fileID: 942637348}
   dogSpeechDictionary: {fileID: 1642226072}
-  worldObjectRegistry: {fileID: 0}
+  worldObjectRegistry: {fileID: 1920128614}
   brain: {fileID: 1815589289}
   vcamFP: {fileID: 445485060}
   vcamNose: {fileID: 225585588}
@@ -16462,8 +16542,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.ScentEmitterModule
   normalScentSource:
     agentId: -1
-    category: 0
-    scentName: 
+    category: 1
+    scentName: GermanShepherd
     categoryColor: {r: 0, g: 0, b: 0, a: 0}
     sourceAirColor: {r: 0, g: 0, b: 0, a: 0}
     sourceGroundColor: {r: 0, g: 0, b: 0, a: 0}
@@ -16622,48 +16702,12 @@ MonoBehaviour:
     agentIdOverride: 
     isBoss: 0
     isSimpleCreature: 0
-    species: dog
-    job: guard dog
+    numRoles: 1
+    cachedIdentity: 
   personality:
-    allowRandomPersonality: 1
-    lockPersonalityAfterSpawn: 1
-    manualSpecies:
-      id: dog
-      weight: 1
-      speciesBlock: 'SPECIES: Dog
-
-        - Strong scent + hearing, weaker vision.
-
-        -
-        Communicates via body language, barks, movement.
-
-        - Safety, curiosity,
-        pack bonds matter.'
-      defaultGoals: []
-    manualRole:
-      id: guard
-      weight: 1
-      roleBlock: 'ROLE: Guard
-
-        - Protect occupants and territory.
-
-        -
-        Prefer observe -> warn -> intercept -> alarm.'
-      defaultGoals: []
-    personalityDatabase: {fileID: 0}
-    manualArchetype:
-      id: 
-      weight: 1
-      personaBlock: You are a guard dog. Your primary role is to protect the home
-        and its occupants. You are alert, territorial, and cautious around unfamiliar
-        sounds or scents.
-      defaultGoals: []
-    forcedQuirks: []
-    manualComplication:
-      id: 
-      weight: 1
-      constraintText: 
-    randomQuirkCount: 2
+    numQuirks: 2
+    numComplications: 2
+    cachedPersonality: 
   instructions:
     extraSystemBlocks: []
     toolCatalogJson: {fileID: 4900000, guid: 35ddece6d077340e18e39033d81f541e, type: 3}
