@@ -1123,7 +1123,7 @@ public partial class DungeonGenerator : MonoBehaviour
             return null;
         }
             
-        if (dir.gen.hf.TryQueryAt(x, y + 1, z, threshold: 10, out match))
+        if (dir.gen.hf.TryQueryAt(x, y, z, threshold: 10, out match))
         {
             Room nRoom = rooms[match.roomId];
             foreach (Cell cc in nRoom.cells)
