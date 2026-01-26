@@ -5,12 +5,15 @@ EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
   m_Scenes:
-  - enabled: 1
+  - enabled: 0
     path: Assets/Fargoaldungeon/Scenes/MainMenu.unity
     guid: 8b3c4b49ca27546d2bb61a7a9de6b2d2
-  - enabled: 1
+  - enabled: 0
     path: Assets/Fargoaldungeon/Scenes/2D_Fargoal_Map.unity
     guid: feb836705ce2a443a9c1609e165e63bd
+  - enabled: 1
+    path: Assets/A_Dogs_Tale/Resources/Scenes/A_Dogs_Tale/A_Dogs_Tale.unity
+    guid: 9561f90f4b24b41efb80d9c58b4ee6d1
   m_configObjects:
     com.unity.dt.app-ui: {fileID: 11400000, guid: 1b1c20d82303e4b5781c3ef50ac1449f,
       type: 2}
