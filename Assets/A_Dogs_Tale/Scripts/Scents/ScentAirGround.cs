@@ -797,7 +797,7 @@ public class ScentAirGround : MonoBehaviour
     {
         int sIdx = FindAgentIdScentIndex(cell, agentId, createIfNeeded: true);
         //Debug.Log($"===>({cell.pos}) sIdx = {sIdx} for agentId = {agentId}");
-        Debug.Log($"Adding scent agentId={agentId} to cell at {cell.pos}. sIdx={sIdx}");
+        //Debug.Log($"Adding scent agentId={agentId} to cell at {cell.pos}. sIdx={sIdx}");
         if (sIdx < 0)
         {
             Debug.Log($"({cell.pos}) sIdx = {sIdx} for agentId = {agentId}");

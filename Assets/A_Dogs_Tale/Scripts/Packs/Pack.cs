@@ -59,8 +59,15 @@ public class Pack : MonoBehaviour
     void Start()
     {
         if (dir!=null && dir.packManager!=null && dir.packManager.PackParentObject!=null)
-        // move this Pack object to under the "Packs" object in the hierarchy
-        this.gameObject.transform.SetParent(dir.packManager.PackParentObject.transform, worldPositionStays: false);
+        {
+            // move this Pack object to under the "Packs" object in the hierarchy
+            this.gameObject.transform.SetParent(dir.packManager.PackParentObject.transform, worldPositionStays: false);
+            Debug.LogWarning($"[Pack.Start {this.gameObject.name}] set parent to {dir.packManager.PackParentObject.name}");
+        } else
+        {
+            //problem.  Something isn't configured.
+            Debug.LogError($"[Pack.Start {this.gameObject.name}] dir="+dir+" packManager="+dir.packManager+" PackParentObject="+dir.packManager.PackParentObject);
+        }
     }
 
     void Awake()
@@ -79,6 +86,14 @@ public class Pack : MonoBehaviour
                 trail = gameObject.AddComponent<BreadcrumbTrail>();
                 trail.pack = this;
             }
+        }
+
+        //Move all initial pack members to under this pack in Unity Hierarchy
+        // and any other initialization.
+        foreach (WorldObject agent in packAgentList)
+        {
+            Debug.LogWarning($"[Packs.Awake {gameObject.name}] setting parent of {agent.DisplayName} to {this.name}");
+            agent.gameObject.transform.SetParent(this.gameObject.transform,false);
         }
     }
 

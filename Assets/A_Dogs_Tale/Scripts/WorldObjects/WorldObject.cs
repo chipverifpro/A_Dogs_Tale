@@ -284,6 +284,14 @@ public class WorldObject : MonoBehaviour
         {
             module.Initialize(this);    // save this pointer to me in all my modules
         }
+
+        // if we are an agent, but not in a pack, we are a FreeAgent.
+        // Note that if we do have a packMemberModule but it doesn't identify a pack, that module will do this move to FreeAgents.
+        if (agentModule!=null && packMemberModule==null)
+        {
+            Debug.LogWarning($"[WorldObject.Awake {gameObject.name}] setting parent of {name} to FreeAgents");
+            this.gameObject.transform.SetParent(dir.packManager.FreeAgentsParent.transform);
+        }
     }
 
     private void Update()

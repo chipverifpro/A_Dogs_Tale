@@ -50,7 +50,7 @@ public class ScentSource
         //Debug.Log($"[{agentId} Emit]");
         if (cell==null)
         {
-            Debug.LogError("Scent Emit: cell is null");
+            Debug.LogError($"Scent Emit {scentName}: cell is null");
             return; // need location
         }
         if (scentAirGround == null) // need physics controller

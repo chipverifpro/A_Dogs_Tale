@@ -220,6 +220,9 @@ public class WorldObjectRegistry : MonoBehaviour
         if (wo.transform == null)
             return;
 
+        if (wo.agentModule!=null)
+            return;     // Agents will get moved in the agent, so don't bother finding/creating a folder for it.
+
         var parent = GetParentForKind(wo.Kind);  // or wo.worldObjectKind / wo.kind – use your actual field
         if (parent == null)
             return;

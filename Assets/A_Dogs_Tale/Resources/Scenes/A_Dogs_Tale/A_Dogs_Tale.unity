@@ -957,7 +957,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 766807148}
-  m_Father: {fileID: 196505886}
+  m_Father: {fileID: 2140542027}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &125976612
 MonoBehaviour:
@@ -973,6 +973,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PackManager
   dir: {fileID: 1920128612}
   playerPack: {fileID: 766807147}
+  FreeAgentsParent: {fileID: 1168471413}
   PackParentObject: {fileID: 125976610}
   packs:
   - {fileID: 766807147}
@@ -1113,7 +1114,7 @@ PrefabInstance:
   serializedVersion: 2
   m_Modification:
     serializedVersion: 3
-    m_TransformParent: {fileID: 2140542027}
+    m_TransformParent: {fileID: 1168471414}
     m_Modifications:
     - target: {fileID: 5412989707248662670, guid: 94f5b811bc2e74a9a992ca995f1f81d3,
         type: 3}
@@ -1245,8 +1246,7 @@ Transform:
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children:
-  - {fileID: 125976611}
+  m_Children: []
   m_Father: {fileID: 1767335688}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &200283689
@@ -3624,7 +3624,7 @@ PrefabInstance:
   serializedVersion: 2
   m_Modification:
     serializedVersion: 3
-    m_TransformParent: {fileID: 2140542027}
+    m_TransformParent: {fileID: 1168471414}
     m_Modifications:
     - target: {fileID: 840080039950359814, guid: 6210faa9f30844384870719125248e48,
         type: 3}
@@ -6955,7 +6955,7 @@ PrefabInstance:
   serializedVersion: 2
   m_Modification:
     serializedVersion: 3
-    m_TransformParent: {fileID: 2140542027}
+    m_TransformParent: {fileID: 1168471414}
     m_Modifications:
     - target: {fileID: 7336487799710392207, guid: e2802ce6b21f34344bc910cf30e9b3a8,
         type: 3}
@@ -7572,6 +7572,41 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!1 &1168471413
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1168471414}
+  m_Layer: 0
+  m_Name: FreeAgents
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1168471414
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1168471413}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 1880613838}
+  - {fileID: 160131187}
+  - {fileID: 464182954}
+  - {fileID: 1253610034}
+  m_Father: {fileID: 2140542027}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1175813280
 GameObject:
   m_ObjectHideFlags: 0
@@ -8484,7 +8519,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::WorldObject
   objectId: -1
   displayName: PlayerCrate
-  kind: 1
+  kind: 2
   autoRegister: 1
 --- !u!4 &1253610034 stripped
 Transform:
@@ -14260,7 +14295,7 @@ PrefabInstance:
   serializedVersion: 2
   m_Modification:
     serializedVersion: 3
-    m_TransformParent: {fileID: 2140542027}
+    m_TransformParent: {fileID: 1168471414}
     m_Modifications:
     - target: {fileID: 5957909782290826837, guid: e86f8e8e9b1324aecbb31e00a8c49ed2,
         type: 3}
@@ -15875,10 +15910,8 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 1880613838}
-  - {fileID: 160131187}
-  - {fileID: 464182954}
-  - {fileID: 1253610034}
+  - {fileID: 125976611}
+  - {fileID: 1168471414}
   m_Father: {fileID: 1767335688}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!4 &6191479115019793372 stripped

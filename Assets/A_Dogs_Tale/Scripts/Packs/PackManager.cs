@@ -6,6 +6,7 @@ public class PackManager : MonoBehaviour
 {
     public Directory dir;
     public Pack playerPack;
+    public GameObject FreeAgentsParent;
     public GameObject PackParentObject;
     public List<Pack> packs;
 
@@ -22,6 +23,14 @@ public class PackManager : MonoBehaviour
             {
                 Debug.LogError($"PackManager Start() did not find Player Pack.");
                 return;
+            }
+        }
+        if (FreeAgentsParent == null)
+        {
+            FreeAgentsParent = GameObject.Find("FreeAgents");
+            if (FreeAgentsParent == null)
+            {
+                Debug.LogError($"PackManager Start() did not find FreeAgents.");
             }
         }
 
