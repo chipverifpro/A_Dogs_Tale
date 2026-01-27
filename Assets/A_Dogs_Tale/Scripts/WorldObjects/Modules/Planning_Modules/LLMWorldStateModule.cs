@@ -222,8 +222,8 @@ namespace DogGame.LLM.Agent
                 + $" [{agentWorldPosition.x:0.0}, {agentWorldPosition.z:0.0}]."
                 + $" floor height={agentWorldPosition.y:0.0}"
                 + roomContext
-                + doorsContext
-                + $" suggested move_to bounded by rectangle [x in {tgt.x} .. {tgt.x+tgt.width}, y in {tgt.y} .. {tgt.y+tgt.height}]";
+                + doorsContext 
+                + $" suggested move_to bounded by rectangle [x in {tgt.x} .. {tgt.x+tgt.width-1}, y in {tgt.y} .. {tgt.y+tgt.height-1}]";
             Debug.Log(positionContext);
             return positionContext;
         }

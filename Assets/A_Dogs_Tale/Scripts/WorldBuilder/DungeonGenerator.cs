@@ -1131,6 +1131,7 @@ public partial class DungeonGenerator : MonoBehaviour
                 if ((cc.x == x) && (cc.y == y)) return cc;
             }
         }
+        Debug.LogError($"Heightfield failed to find cell {x},{y} in room {match.roomId}");
         return null;
     }
 

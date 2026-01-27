@@ -23,10 +23,12 @@ namespace DogGame.Modules
         {
             base.Awake();
             deposit_time_left = 0f;
-            normalScentSource = new()
-            {
-                agentId = worldObject.ObjectId
-            };
+            if (normalScentSource==null)
+                normalScentSource = new();
+                
+            normalScentSource.agentId = worldObject.ObjectId;
+            if (string.IsNullOrEmpty(normalScentSource.scentName))
+                normalScentSource.scentName = worldObject.DisplayName;
         }
 
         private int debugDoubleTick = -1;

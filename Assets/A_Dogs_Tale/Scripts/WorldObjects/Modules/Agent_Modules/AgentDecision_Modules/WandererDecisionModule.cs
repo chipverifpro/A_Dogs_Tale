@@ -111,10 +111,11 @@ namespace DogGame.Modules
             // 2. Choose a random point in a circle around origin (XZ plane)
             Vector2 randomCircle = Random.insideUnitCircle * wanderRadius;
 
+            // clamp to map dimensions
             Vector3 candidate = new Vector3(
-                origin.x + randomCircle.x,
+                Mathf.Clamp(origin.x + randomCircle.x, 0f, dir.cfg.mapWidth),
                 origin.y,
-                origin.z + randomCircle.y
+                Mathf.Clamp(origin.z + randomCircle.y, 0f, dir.cfg.mapHeight)
             );
 
             // 3. Optionally clamp to navigable / walkable area via LocationModule
@@ -124,6 +125,7 @@ namespace DogGame.Modules
                 // candidate = locationModule.ClampToWalkable(candidate);
                 // candidate.y = locationModule.GetGroundHeightAt(candidate);
             }
+
 
             currentWanderTarget = candidate;
 

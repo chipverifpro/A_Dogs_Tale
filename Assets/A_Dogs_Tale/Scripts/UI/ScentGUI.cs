@@ -8,10 +8,10 @@ public class ScentGUI : MonoBehaviour
     public SniffModeVisuals sniffVisuals;
 
     private InputAction sniffAction;
+    private bool isSniffModeActive;
 
     private void Awake()
     {
-        // Create an input action bound to keyboard F
         sniffAction = new InputAction(
             name: "Sniff",
             type: InputActionType.Button,
@@ -22,20 +22,20 @@ public class ScentGUI : MonoBehaviour
     private void OnEnable()
     {
         sniffAction.Enable();
-        sniffAction.started += OnSniffStarted;
-        sniffAction.canceled += OnSniffCanceled;
+        sniffAction.performed += OnSniffToggle;
     }
 
     private void OnDisable()
     {
-        sniffAction.started -= OnSniffStarted;
-        sniffAction.canceled -= OnSniffCanceled;
+        sniffAction.performed -= OnSniffToggle;
         sniffAction.Disable();
     }
 
-    private void OnSniffStarted(InputAction.CallbackContext ctx)
+    private void OnSniffToggle(InputAction.CallbackContext ctx)
     {
-        sniffVisuals.SetSniffMode(true);
+        isSniffModeActive = !isSniffModeActive;
+
+        sniffVisuals.SetSniffMode(isSniffModeActive);
 
         if (dir == null)
             dir = Directory.Instance;
@@ -46,13 +46,14 @@ public class ScentGUI : MonoBehaviour
             return;
         }
 
-        dir.scentRegistry.ActivateScentOverlay();
-    }
-
-    private void OnSniffCanceled(InputAction.CallbackContext ctx)
-    {
-        sniffVisuals.SetSniffMode(false);
-        // hide sniff UI / overlay if needed
+        if (isSniffModeActive)
+        {
+            dir.scentRegistry.ActivateScentOverlay();
+        }
+        else
+        {
+            dir.scentRegistry.DeactivateScentOverlay(); // ← add this if you don’t already have it
+        }
     }
 
     // Called by other systems (unchanged)
