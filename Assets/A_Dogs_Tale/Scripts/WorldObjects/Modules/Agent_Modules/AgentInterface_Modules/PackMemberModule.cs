@@ -19,11 +19,11 @@ namespace DogGame.Modules
         {
             if (currentPack!=null)
             {
-                Debug.LogWarning($"[PackMemberModule.Awake {gameObject.name}] setting parent of {name} to {currentPack.name}");
+                //Debug.LogWarning($"[PackMemberModule.Awake {gameObject.name}] setting parent of {name} to {currentPack.name}");
                 this.gameObject.transform.SetParent(currentPack.gameObject.transform,false);
             } else
             {
-                Debug.LogWarning($"[PackMemberModule.Awake {gameObject.name}] setting parent of {name} to FreeAgents");
+                //Debug.LogWarning($"[PackMemberModule.Awake {gameObject.name}] setting parent of {name} to FreeAgents");
                 this.gameObject.transform.SetParent(dir.packManager.FreeAgentsParent.transform);
             }
             base.Awake();

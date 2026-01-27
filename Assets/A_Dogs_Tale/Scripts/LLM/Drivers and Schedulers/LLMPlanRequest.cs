@@ -9,6 +9,7 @@ namespace DogGame.LLM
     public enum LLMPlanUrgency { Low, Normal, High, Emergency }
     public enum LLMApplyMode { Append, Interrupt, SuspendThenInterrupt }
 
+    [Serializable]
     public sealed class LLMPlanRequestOnDemand
     {
         public string AgentId = "";

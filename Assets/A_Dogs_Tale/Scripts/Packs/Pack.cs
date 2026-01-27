@@ -92,7 +92,7 @@ public class Pack : MonoBehaviour
         // and any other initialization.
         foreach (WorldObject agent in packAgentList)
         {
-            Debug.LogWarning($"[Packs.Awake {gameObject.name}] setting parent of {agent.DisplayName} to {this.name}");
+            //Debug.LogWarning($"[Packs.Awake {gameObject.name}] setting parent of {agent.DisplayName} to {this.name}");
             agent.gameObject.transform.SetParent(this.gameObject.transform,false);
         }
     }

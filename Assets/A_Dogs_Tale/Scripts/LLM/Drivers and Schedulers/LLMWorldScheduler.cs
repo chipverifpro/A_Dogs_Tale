@@ -270,7 +270,7 @@ public class LLMWorldScheduler : MonoBehaviour
     [Header("Unified LLM Router")]
     [SerializeField] private UnifiedLLMRouter router;
 
-    public readonly List<LLMPlanRequestOnDemand> pendingRequests = new();
+    [SerializeField] public List<LLMPlanRequestOnDemand> pendingRequests = new();
 
     //private OpenAILLMService? openAiService;
     //private GeminiLLMService? geminiService;
@@ -402,7 +402,8 @@ public class LLMWorldScheduler : MonoBehaviour
             inflightAgents.Add(request.AgentId);
             inflightRequestIdByAgent[request.AgentId] = request.RequestId;
         }
-        string requestName = request.AgentId + ":" + request.RequestId;
+        //string requestName = request.AgentId + ":" + request.RequestId;
+        string requestName = request.RequestId;
         selection.OnDispatchStart(requestName);
 
         LLMClientBase client;
@@ -454,11 +455,12 @@ public class LLMWorldScheduler : MonoBehaviour
 
             if (!response.succeeded)
             {
-                selection.OnDispatchSuccess(schedulerRequest.RequestId);
+                selection.OnDispatchFailure(schedulerRequest.RequestId);
                 UnityEngine.Debug.LogWarning($"[LLM Scheduler] LLM failed requestId={schedulerRequest.RequestId} agentId={schedulerRequest.AgentId} err={response.errorMessage}");
                 return;
             }
 
+            selection.OnDispatchSuccess(schedulerRequest.RequestId);
             string planJson =
                 !string.IsNullOrWhiteSpace(response.rawText) ? response.rawText :
                 !string.IsNullOrWhiteSpace(response.rawProviderPayloadJson) ? response.rawProviderPayloadJson :
