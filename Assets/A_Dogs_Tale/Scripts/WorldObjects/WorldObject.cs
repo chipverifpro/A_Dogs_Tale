@@ -156,7 +156,7 @@ public class WorldObject : MonoBehaviour
     public MotivationModule motivationModule { get; private set; }
 
     // LLM Planning Modules
-    public LLMRequestResponseModule llmRequestResponseModule { get; private set; }    
+    public LLMThinkModule llmThinkModule { get; private set; }    
     public ReactionModule reactionModule { get; private set; }
     public LLMConfigModule llmConfigModule { get; private set; }
     public LLMWorldStateModule llmWorldStateModule { get; private set; }
@@ -245,8 +245,8 @@ public class WorldObject : MonoBehaviour
         agentModule           = GetComponent<AgentModule>();
         agentMovementModule   = GetComponent<AgentMovementModule>();
         packMemberModule      = GetComponent<PackMemberModule>();
-        motivationModule   = GetComponent<MotivationModule>();
-        llmRequestResponseModule = GetComponent<LLMRequestResponseModule>();    
+        motivationModule      = GetComponent<MotivationModule>();
+        llmThinkModule        = GetComponent<LLMThinkModule>();    
         reactionModule        = GetComponent<ReactionModule>();
 
         llmConfigModule       = GetComponent<LLMConfigModule>();
@@ -339,6 +339,7 @@ public class WorldObject : MonoBehaviour
         scentPerceptionModule?.Tick(dt);
         agentMovementModule?.Tick(dt);
         packMemberModule?.Tick(dt);
+        llmThinkModule?.Tick(dt);
 
         // MOTIVATION
         motivationModule?.Tick(dt);

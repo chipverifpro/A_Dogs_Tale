@@ -7058,6 +7058,14 @@ PrefabInstance:
         type: 3}
       insertIndex: -1
       addedObject: {fileID: 1253610056}
+    - targetCorrespondingSourceObject: {fileID: 7970140317087810869, guid: e2802ce6b21f34344bc910cf30e9b3a8,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1253610062}
+    - targetCorrespondingSourceObject: {fileID: 7970140317087810869, guid: e2802ce6b21f34344bc910cf30e9b3a8,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1253610061}
   m_SourcePrefab: {fileID: 100100000, guid: e2802ce6b21f34344bc910cf30e9b3a8, type: 3}
 --- !u!1 &1066008316
 GameObject:
@@ -8713,6 +8721,85 @@ MonoBehaviour:
     persistentId: 
   durationScentSources: []
   deposit_time_left: 0
+--- !u!114 &1253610061
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1253610019}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 810e59c04f8694998b57459611f42c36, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DogGame.LLM.Agent.LLMConfigModule
+  lowProfile:
+    vendor: 
+    model: 
+    level: 0
+    maxOutputTokens: 512
+    temperature: 0.7
+    allowTools: 0
+    contextDetail: 1
+    planningDepth: 1
+    minSecondsBetweenCalls: 0.75
+  mediumProfile:
+    vendor: 
+    model: 
+    level: 0
+    maxOutputTokens: 512
+    temperature: 0.7
+    allowTools: 0
+    contextDetail: 1
+    planningDepth: 1
+    minSecondsBetweenCalls: 0.75
+  highProfile:
+    vendor: 
+    model: 
+    level: 0
+    maxOutputTokens: 512
+    temperature: 0.7
+    allowTools: 0
+    contextDetail: 1
+    planningDepth: 1
+    minSecondsBetweenCalls: 0.75
+  identity:
+    agentIdOverride: 
+    isBoss: 0
+    isSimpleCreature: 0
+    numRoles: 1
+    cachedIdentity: 
+  personality:
+    numQuirks: 2
+    numComplications: 2
+    cachedPersonality: 
+  instructions:
+    extraSystemBlocks: []
+    toolCatalogJson: {fileID: 0}
+    responseSchemaJson: {fileID: 0}
+    embedAsStructuredJson: 1
+  modelOverrides:
+    vendorOverride: 
+    modelLow: 
+    modelMedium: 
+    modelHigh: 
+  tools:
+    allowToolsLow: 0
+    allowToolsMedium: 1
+    allowToolsHigh: 1
+--- !u!114 &1253610062
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1253610019}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 210617b5fd4f744bba85c2b6dced64e0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DogGame.LLM.LLMThinkModule
+  defaultSophistication: 0
 --- !u!1 &1255866326
 GameObject:
   m_ObjectHideFlags: 0
@@ -12431,6 +12518,14 @@ PrefabInstance:
         type: 3}
       insertIndex: -1
       addedObject: {fileID: 1651296801}
+    - targetCorrespondingSourceObject: {fileID: 4477274621950385561, guid: da33ad6d2d1f9483faa117084b30e547,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1651296803}
+    - targetCorrespondingSourceObject: {fileID: 4477274621950385561, guid: da33ad6d2d1f9483faa117084b30e547,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1651296804}
   m_SourcePrefab: {fileID: 100100000, guid: da33ad6d2d1f9483faa117084b30e547, type: 3}
 --- !u!4 &1651296778 stripped
 Transform:
@@ -12744,6 +12839,85 @@ MonoBehaviour:
     persistentId: 
   durationScentSources: []
   deposit_time_left: 0
+--- !u!114 &1651296803
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1651296779}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 210617b5fd4f744bba85c2b6dced64e0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DogGame.LLM.LLMThinkModule
+  defaultSophistication: 0
+--- !u!114 &1651296804
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1651296779}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 810e59c04f8694998b57459611f42c36, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DogGame.LLM.Agent.LLMConfigModule
+  lowProfile:
+    vendor: 
+    model: 
+    level: 0
+    maxOutputTokens: 512
+    temperature: 0.7
+    allowTools: 0
+    contextDetail: 1
+    planningDepth: 1
+    minSecondsBetweenCalls: 0.75
+  mediumProfile:
+    vendor: 
+    model: 
+    level: 0
+    maxOutputTokens: 512
+    temperature: 0.7
+    allowTools: 0
+    contextDetail: 1
+    planningDepth: 1
+    minSecondsBetweenCalls: 0.75
+  highProfile:
+    vendor: 
+    model: 
+    level: 0
+    maxOutputTokens: 512
+    temperature: 0.7
+    allowTools: 0
+    contextDetail: 1
+    planningDepth: 1
+    minSecondsBetweenCalls: 0.75
+  identity:
+    agentIdOverride: 
+    isBoss: 0
+    isSimpleCreature: 0
+    numRoles: 1
+    cachedIdentity: 
+  personality:
+    numQuirks: 2
+    numComplications: 2
+    cachedPersonality: 
+  instructions:
+    extraSystemBlocks: []
+    toolCatalogJson: {fileID: 0}
+    responseSchemaJson: {fileID: 0}
+    embedAsStructuredJson: 1
+  modelOverrides:
+    vendorOverride: 
+    modelLow: 
+    modelMedium: 
+    modelHigh: 
+  tools:
+    allowToolsLow: 0
+    allowToolsMedium: 1
+    allowToolsHigh: 1
 --- !u!1 &1653904421
 GameObject:
   m_ObjectHideFlags: 0
@@ -14383,6 +14557,14 @@ PrefabInstance:
         type: 3}
       insertIndex: -1
       addedObject: {fileID: 2108676838}
+    - targetCorrespondingSourceObject: {fileID: 5957909782290826837, guid: e86f8e8e9b1324aecbb31e00a8c49ed2,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2108676848}
+    - targetCorrespondingSourceObject: {fileID: 5957909782290826837, guid: e86f8e8e9b1324aecbb31e00a8c49ed2,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2108676849}
   m_SourcePrefab: {fileID: 100100000, guid: e86f8e8e9b1324aecbb31e00a8c49ed2, type: 3}
 --- !u!4 &1880613838 stripped
 Transform:
@@ -15992,6 +16174,85 @@ MonoBehaviour:
   displayName: chihuahua
   kind: 0
   autoRegister: 1
+--- !u!114 &2108676848
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2108676836}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 210617b5fd4f744bba85c2b6dced64e0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DogGame.LLM.LLMThinkModule
+  defaultSophistication: 0
+--- !u!114 &2108676849
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2108676836}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 810e59c04f8694998b57459611f42c36, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DogGame.LLM.Agent.LLMConfigModule
+  lowProfile:
+    vendor: 
+    model: 
+    level: 0
+    maxOutputTokens: 512
+    temperature: 0.7
+    allowTools: 0
+    contextDetail: 1
+    planningDepth: 1
+    minSecondsBetweenCalls: 0.75
+  mediumProfile:
+    vendor: 
+    model: 
+    level: 0
+    maxOutputTokens: 512
+    temperature: 0.7
+    allowTools: 0
+    contextDetail: 1
+    planningDepth: 1
+    minSecondsBetweenCalls: 0.75
+  highProfile:
+    vendor: 
+    model: 
+    level: 0
+    maxOutputTokens: 512
+    temperature: 0.7
+    allowTools: 0
+    contextDetail: 1
+    planningDepth: 1
+    minSecondsBetweenCalls: 0.75
+  identity:
+    agentIdOverride: 
+    isBoss: 0
+    isSimpleCreature: 0
+    numRoles: 1
+    cachedIdentity: 
+  personality:
+    numQuirks: 2
+    numComplications: 2
+    cachedPersonality: 
+  instructions:
+    extraSystemBlocks: []
+    toolCatalogJson: {fileID: 0}
+    responseSchemaJson: {fileID: 0}
+    embedAsStructuredJson: 1
+  modelOverrides:
+    vendorOverride: 
+    modelLow: 
+    modelMedium: 
+    modelHigh: 
+  tools:
+    allowToolsLow: 0
+    allowToolsMedium: 1
+    allowToolsHigh: 1
 --- !u!1 &2129299916
 GameObject:
   m_ObjectHideFlags: 0
@@ -16383,11 +16644,11 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 8843402266763018810, guid: 2ce0050a816054aaca2a1076f182f7a8,
         type: 3}
       insertIndex: -1
-      addedObject: {fileID: 6544990386685219192}
+      addedObject: {fileID: 6544990386685219191}
     - targetCorrespondingSourceObject: {fileID: 8843402266763018810, guid: 2ce0050a816054aaca2a1076f182f7a8,
         type: 3}
       insertIndex: -1
-      addedObject: {fileID: 6544990386685219191}
+      addedObject: {fileID: 6544990386685219194}
   m_SourcePrefab: {fileID: 100100000, guid: 2ce0050a816054aaca2a1076f182f7a8, type: 3}
 --- !u!1 &6544990386685219093 stripped
 GameObject:
@@ -16746,6 +17007,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 210617b5fd4f744bba85c2b6dced64e0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::LLMRequestResponseModule
+  defaultSophistication: 0
 --- !u!114 &6544990386685219176
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -17019,7 +17281,7 @@ MonoBehaviour:
   config: {fileID: 6544990386685219188}
   worldState: {fileID: 6544990386685219187}
   llmServiceBehaviour: {fileID: 0}
---- !u!114 &6544990386685219192
+--- !u!114 &6544990386685219194
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -17028,9 +17290,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 6544990386685219093}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 885dee1646420411b9e59808255ee79b, type: 3}
+  m_Script: {fileID: 11500000, guid: 210617b5fd4f744bba85c2b6dced64e0, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::DogGame.LLM.RemoteLLMService
+  m_EditorClassIdentifier: Assembly-CSharp::DogGame.LLM.LLMThinkModule
+  defaultSophistication: 0
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

@@ -6,6 +6,7 @@ using UnityEditor;
 using UnityEngine;
 using DogGame.Modules;           // adjust to your namespaces
 using DogGame.AI;
+using DogGame.LLM;
 
 [CustomEditor(typeof(WorldObject), true)]
 public class WorldObjectModulesInspector : Editor
@@ -52,7 +53,7 @@ public class WorldObjectModulesInspector : Editor
         typeof(AgentMovementModule),    // Movement intent
         typeof(PackMemberModule),       // Membership, leader, formation
         typeof(MotivationModule),       // Combination of senses
-        typeof(LLMRequestResponseModule),   // LLM Interface: request, collect responses, convert to tasks and reactions
+        typeof(LLMThinkModule),         // LLM Interface: request, collect responses, convert to tasks and reactions
         typeof(ReactionModule),         // detects conditions and trigger response scripts
     };
 

@@ -176,13 +176,13 @@ namespace DogGame.Modules
             //    worldObject.activatorModule.HandleActivate(inputState, deltaTime);
 
             // Periodically Think about what to do next...
-            if (Time.time >= nextThinkTime)
-            {
-                //string taskPrompt = $"Update at interval time {thinkIntervalSeconds}";
-                string taskPrompt = $"Explore the world.";
-                worldObject.llmWorldScheduler.EnqueueRequest(BuildRequestForThisAgent(taskPrompt));
-                nextThinkTime = Time.time + thinkIntervalSeconds;
-            }
+//            if (Time.time >= nextThinkTime)
+//            {
+//                //string taskPrompt = $"Update at interval time {thinkIntervalSeconds}";
+//                string taskPrompt = $"Explore the world.";
+//                think.TryRequestPlan(taskPrompt, urgency: Normal, applyMode: Append, tag: "player_interval");
+//                nextThinkTime = Time.time + thinkIntervalSeconds;
+//            }
         }
 
 #nullable enable
@@ -257,18 +257,23 @@ namespace DogGame.Modules
 
         public void RequestPlanNow()
         {
+            if (worldObject.llmThinkModule == null)
+                return;
+
             string prompt =
-                "Decide the next 1–3 actions for the next few seconds.\n" +
+                "Decide the next 1-3 actions for the next few seconds.\n" +
                 "If uncertain, request_observation or noop.\n" +
                 "Prefer safe, reversible actions.";
 
-            var request = BuildRequestForThisAgent(
+            bool queued = worldObject.llmThinkModule.TryRequestPlan(
                 userTaskPrompt: prompt,
-                urgency: LLMPlanUrgency.Normal,
-                applyMode: LLMApplyMode.Interrupt,
-                tag: "player_manual");
+                urgency: DogGame.LLM.LLMPlanUrgency.Normal,
+                applyMode: DogGame.LLM.LLMApplyMode.Interrupt,
+                tag: "player_manual"
+            );
 
-            LLMWorldScheduler.Instance.EnqueueRequest(request);
+            // optional debug
+            if (!queued) Debug.Log("[PlayerDecisionModule] Plan request blocked (inflight).");
         }
 
         private void OnLLMResponseJson(string planJson)
