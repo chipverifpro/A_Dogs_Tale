@@ -3850,22 +3850,23 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7218e3fb1f54040bcb853b10dd1e8ede, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::LLMWorldScheduler
-  llmVendorAndModel: 1048576
+  llmVendorAndModel: 4194304
   llmModelsAvailable:
-  - displayName: "Ollama \xB7 Qwen3:4b \xB7 Low"
-    llmVendorAndModel: 1048576
+  - displayName: "Ollama \xB7 Gemma3:12b \xB7 Medium"
+    llmVendorAndModel: 4194304
     llmVendor: 2
-    llmModelString: Qwen3:4b
+    llmModelString: Gemma3:12b
     remote: 0
-    sophistication: 0
+    sophistication: 1
     vendorMaxConcurrentRequests: 1
-    successRate: 0.5
-    typicalResponseTime: 70
+    successRate: 0.8
+    typicalResponseTime: 20
     typicalCost: 0
     totalRequests: 0
     totalFailures: 0
     currentRequests: []
   router: {fileID: 0}
+  pendingRequests: []
 --- !u!114 &494970099
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -6218,6 +6219,7 @@ GameObject:
   - component: {fileID: 942637347}
   - component: {fileID: 942637348}
   - component: {fileID: 942637349}
+  - component: {fileID: 942637350}
   m_Layer: 0
   m_Name: Input
   m_TagString: Untagged
@@ -6355,7 +6357,7 @@ MonoBehaviour:
     m_Bits: 4294967295
   rayMaxDistance: 200
   screenPos: {x: 0, y: 0, z: 0}
-  mapWorldPos_valid: 0
+  mapWorldPos_valid: 1
   mapWorldPosCenter: {x: 0, y: 0, z: 0}
   mapWorldPos: {x: 0, y: 0, z: 0}
   targetedWorldObject_valid: 0
@@ -6373,6 +6375,20 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NonAgentUserInputHandler
   dir: {fileID: 1920128612}
+--- !u!114 &942637350
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 942637342}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ebb0ca905acef49cda2df9e8c7795fd7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.SniffInput
+  observer: {fileID: 0}
+  binding: <Keyboard>/g
 --- !u!1 &976222952
 GameObject:
   m_ObjectHideFlags: 0
@@ -7066,6 +7082,10 @@ PrefabInstance:
         type: 3}
       insertIndex: -1
       addedObject: {fileID: 1253610061}
+    - targetCorrespondingSourceObject: {fileID: 7970140317087810869, guid: e2802ce6b21f34344bc910cf30e9b3a8,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1253610063}
   m_SourcePrefab: {fileID: 100100000, guid: e2802ce6b21f34344bc910cf30e9b3a8, type: 3}
 --- !u!1 &1066008316
 GameObject:
@@ -8800,6 +8820,42 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.LLM.LLMThinkModule
   defaultSophistication: 0
+  nextThinkTime: 0
+  thinkIntervalSeconds: 10
+--- !u!114 &1253610063
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1253610019}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: db549f203ae414165bf5be24dacf2337, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DogGame.LLM.Agent.LLMWorldStateModule
+  positionContext: 
+  doorsContext: 
+  maxDoors: 5
+  distanceToPlayerMeters: 999
+  isInCombat: 0
+  isQuestCritical: 0
+  isPlayerFocusingThisNpc: 0
+  nearbyEntityCount: 0
+  nearbySummary: 
+  statusSummary: 
+  goalsSummary: 
+  recentEventsSummary: 
+  maxCharsPerBlock: 800
+  agentWorldPosition: {x: 0, y: 0, z: 0}
+  hasAgentCell: 0
+  suggestedTravelRadius: 8
+  tgt:
+    serializedVersion: 2
+    x: 0
+    y: 0
+    width: 0
+    height: 0
 --- !u!1 &1255866326
 GameObject:
   m_ObjectHideFlags: 0
@@ -12526,6 +12582,10 @@ PrefabInstance:
         type: 3}
       insertIndex: -1
       addedObject: {fileID: 1651296804}
+    - targetCorrespondingSourceObject: {fileID: 4477274621950385561, guid: da33ad6d2d1f9483faa117084b30e547,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1651296805}
   m_SourcePrefab: {fileID: 100100000, guid: da33ad6d2d1f9483faa117084b30e547, type: 3}
 --- !u!4 &1651296778 stripped
 Transform:
@@ -12852,6 +12912,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.LLM.LLMThinkModule
   defaultSophistication: 0
+  nextThinkTime: 0
+  thinkIntervalSeconds: 10
 --- !u!114 &1651296804
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -12918,6 +12980,40 @@ MonoBehaviour:
     allowToolsLow: 0
     allowToolsMedium: 1
     allowToolsHigh: 1
+--- !u!114 &1651296805
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1651296779}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: db549f203ae414165bf5be24dacf2337, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DogGame.LLM.Agent.LLMWorldStateModule
+  positionContext: 
+  doorsContext: 
+  maxDoors: 5
+  distanceToPlayerMeters: 999
+  isInCombat: 0
+  isQuestCritical: 0
+  isPlayerFocusingThisNpc: 0
+  nearbyEntityCount: 0
+  nearbySummary: 
+  statusSummary: 
+  goalsSummary: 
+  recentEventsSummary: 
+  maxCharsPerBlock: 800
+  agentWorldPosition: {x: 0, y: 0, z: 0}
+  hasAgentCell: 0
+  suggestedTravelRadius: 8
+  tgt:
+    serializedVersion: 2
+    x: 0
+    y: 0
+    width: 0
+    height: 0
 --- !u!1 &1653904421
 GameObject:
   m_ObjectHideFlags: 0
@@ -14565,6 +14661,10 @@ PrefabInstance:
         type: 3}
       insertIndex: -1
       addedObject: {fileID: 2108676849}
+    - targetCorrespondingSourceObject: {fileID: 5957909782290826837, guid: e86f8e8e9b1324aecbb31e00a8c49ed2,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2108676850}
   m_SourcePrefab: {fileID: 100100000, guid: e86f8e8e9b1324aecbb31e00a8c49ed2, type: 3}
 --- !u!4 &1880613838 stripped
 Transform:
@@ -16187,6 +16287,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.LLM.LLMThinkModule
   defaultSophistication: 0
+  nextThinkTime: 0
+  thinkIntervalSeconds: 10
 --- !u!114 &2108676849
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -16253,6 +16355,40 @@ MonoBehaviour:
     allowToolsLow: 0
     allowToolsMedium: 1
     allowToolsHigh: 1
+--- !u!114 &2108676850
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2108676836}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: db549f203ae414165bf5be24dacf2337, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DogGame.LLM.Agent.LLMWorldStateModule
+  positionContext: 
+  doorsContext: 
+  maxDoors: 5
+  distanceToPlayerMeters: 999
+  isInCombat: 0
+  isQuestCritical: 0
+  isPlayerFocusingThisNpc: 0
+  nearbyEntityCount: 0
+  nearbySummary: 
+  statusSummary: 
+  goalsSummary: 
+  recentEventsSummary: 
+  maxCharsPerBlock: 800
+  agentWorldPosition: {x: 0, y: 0, z: 0}
+  hasAgentCell: 0
+  suggestedTravelRadius: 8
+  tgt:
+    serializedVersion: 2
+    x: 0
+    y: 0
+    width: 0
+    height: 0
 --- !u!1 &2129299916
 GameObject:
   m_ObjectHideFlags: 0
@@ -17008,6 +17144,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::LLMRequestResponseModule
   defaultSophistication: 0
+  nextThinkTime: 0
+  thinkIntervalSeconds: 10
 --- !u!114 &6544990386685219176
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -17128,6 +17266,8 @@ MonoBehaviour:
   minStrength01: 0.02
   strengthWeight: 0.65
   noveltyWeight: 0.35
+  enableBackgroundSniff: 1
+  tickIntervalSeconds: 0.25
 --- !u!114 &6544990386685219183
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -17294,6 +17434,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.LLM.LLMThinkModule
   defaultSophistication: 0
+  nextThinkTime: 0
+  thinkIntervalSeconds: 10
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

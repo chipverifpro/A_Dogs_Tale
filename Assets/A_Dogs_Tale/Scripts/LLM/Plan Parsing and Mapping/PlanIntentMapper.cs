@@ -196,7 +196,7 @@ namespace DogGame.LLM
                     float durationSeconds = (float)(parameters.Value<double?>("stopRadius") ?? 0.35);
                     durationSeconds = Mathf.Clamp(durationSeconds, 0.05f, 2.0f);
 
-                    task = new Task_Sniff(durationSeconds);
+                    task = new Task_Sniff(null);  //TODO: wants HashSet<string>
                     return true;
                 }
 

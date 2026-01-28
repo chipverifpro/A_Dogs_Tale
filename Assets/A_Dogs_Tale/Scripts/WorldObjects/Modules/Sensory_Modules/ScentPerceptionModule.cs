@@ -2,11 +2,18 @@
 using System.Collections.Generic;
 using UnityEngine;
 using DogGame.AI.Perception;
+using System;
 
 namespace DogGame.Modules
 {
-    // You can keep this as a WorldModule if that's your base type.
-    // For now I'm showing it as a MonoBehaviour so it compiles anywhere.
+    // TODO: add a type DetectedScent that can be used for:
+    // 1) scent memory
+    // 2) scents to ignore
+    // 3) scents observed
+    // 4) follow scent
+    //.  Field ides: agentId, pointer to scentinfo struct, airOrGround, lastStrength, lastTime, lastLocationCell, novelty/interest, currently tracking, nearby strengths (8 ways)
+    //.  Function ideas: Create, update, sniff nearby, determine novelty/interest (functions exist below)
+
     public sealed class ScentPerceptionModule : WorldModule
     {
         [Header("Inputs")]
@@ -41,8 +48,7 @@ namespace DogGame.Modules
             if (worldObject == null || scentSystem == null)
                 return events;
 
-            Cell cell = worldObject.locationModule.cell; // <-- adjust to your actual "where am I" cell getter
-            //List<ScentDetection> detections = cell.scents;
+            Cell cell = worldObject.locationModule.cell;
             List<ScentDetection> detections = dir!.scentRegistry.CollectScentsAtCell(cell, scentSystem);
 
             if (detections == null || detections.Count == 0)
@@ -144,5 +150,145 @@ namespace DogGame.Modules
 
             return Mathf.Clamp01(baseInterest * categoryBias * familiarityBias);
         }
+
+        /// <summary>
+        /// Manual sniff: returns a report of scents in the observer's current cell.
+        /// Ignores any scent whose key is in ignoreKeys. Results are sorted by strength descending.
+        /// Air & ground separated.
+        /// </summary>
+        public SniffReport SniffHere(HashSet<string>? ignoreKeys = null)
+        {
+            var report = new SniffReport
+            {
+                time = Time.time,
+                cell = worldObject != null ? worldObject.locationModule.cell.pos : default
+            };
+
+            if (worldObject == null || scentSystem == null || dir == null || dir.scentRegistry == null)
+                return report;
+
+            Cell cell = worldObject.locationModule.cell;
+
+            // You already use this in TickScent()
+            List<ScentDetection> detections = dir.scentRegistry.CollectScentsAtCell(cell, scentSystem);
+            if (detections == null || detections.Count == 0)
+                return report;
+
+            Vector2Int cellPos = cell.pos;
+            float timeNow = Time.time;
+
+            for (int i = 0; i < detections.Count; i++)
+            {
+                var det = detections[i];
+                if (det.scentSource == null)
+                    continue;
+
+                float combined01 = Mathf.Clamp01(det.combinedStrength);
+                if (combined01 < minStrength01)
+                    continue;
+
+                string key = BuildScentKey(det.scentSource);
+
+                bool ignored = ignoreKeys != null && ignoreKeys.Contains(key);
+                if (ignored)
+                    continue;
+
+                // If your ScentDetection has separated channels, use them.
+                // If it does NOT, this still works: we treat "combined" as both unknown.
+                float air01 = TryGetAirStrength01(det);
+                float ground01 = TryGetGroundStrength01(det);
+
+                // If you only have combined, put it in air (or ground) consistently:
+                if (air01 <= 0f && ground01 <= 0f)
+                    air01 = combined01;
+
+                if (air01 >= minStrength01)
+                {
+                    report.air.Add(new DetectedScent
+                    {
+                        scentKey = key,
+                        category = det.scentSource.category,
+                        scentName = det.scentSource.scentName ?? det.scentSource.category.ToString(),
+                        medium = ScentMedium.Air,
+                        strength01 = air01,
+                        cell = cellPos,
+                        time = timeNow,
+                        agentId = det.scentSource.agentId,
+                        ignored = false
+                    });
+                }
+
+                if (ground01 >= minStrength01)
+                {
+                    report.ground.Add(new DetectedScent
+                    {
+                        scentKey = key,
+                        category = det.scentSource.category,
+                        scentName = det.scentSource.scentName ?? det.scentSource.category.ToString(),
+                        medium = ScentMedium.Ground,
+                        strength01 = ground01,
+                        cell = cellPos,
+                        time = timeNow,
+                        agentId = det.scentSource.agentId,
+                        ignored = false
+                    });
+                }
+            }
+
+            report.air.Sort((a, b) => b.strength01.CompareTo(a.strength01));
+            report.ground.Sort((a, b) => b.strength01.CompareTo(a.strength01));
+
+            return report;
+        }
+
+        // ---- Helpers to adapt to whatever fields your ScentDetection actually has ----
+
+        private static float TryGetAirStrength01(ScentDetection det)
+        {
+            // If your ScentDetection already has airStrength/air01, use it here.
+            // Otherwise return 0 and we'll fall back to combined.
+            // Example guesses (change to match your struct):
+            // return Mathf.Clamp01(det.airStrength);
+            // return Mathf.Clamp01(det.air01);
+
+            return 0f;
+        }
+
+        private static float TryGetGroundStrength01(ScentDetection det)
+        {
+            // If your ScentDetection already has groundStrength/ground01, use it here.
+            // Example guesses:
+            // return Mathf.Clamp01(det.groundStrength);
+            // return Mathf.Clamp01(det.ground01);
+
+            return 0f;
+        }
+
+
+        // =============== Background Sniff ==================
+
+        [SerializeField] private bool enableBackgroundSniff = true;
+
+        // You can throttle if you want:
+        [SerializeField] private float tickIntervalSeconds = 0.25f;
+        private float nextTickTime;
+
+
+        private void ScentBackgroundTick()
+        {
+            if (!enableBackgroundSniff) return;
+
+            if (Time.time < nextTickTime) return;
+            nextTickTime = Time.time + Mathf.Max(0.05f, tickIntervalSeconds);
+
+            List<PerceptionEvent> events = TickScent(Time.deltaTime);
+            if (events == null || events.Count == 0) return;
+
+            // TODO: Route these to your reaction engine, task controller, or LLMThinkModule triggers.
+            // For now, just log:
+            for (int i = 0; i < events.Count; i++)
+                Debug.Log($"[ScentEvent] {worldObject.name} {events[i].Type} {events[i].Target.ObjectId} strength={events[i].Strength01:0.00} novelty={events[i].Novelty01:0.00} interest={events[i].Interest01:0.00}", worldObject);
+        }
+
     }
 }

@@ -259,23 +259,23 @@ public class ScentRegistry : MonoBehaviour
         var results = new List<ScentDetection>();
 
         // Example (pseudocode, replace with your actual sampling):
-        /*
-        foreach (var contributingAgent in cell.contributingAgents)
+        
+        foreach (var contributingAgent in cell.scents)
         {
-            var scentSource = GetOrCreateScentSource(contributingAgent.agentId, contributingAgent.category);
+            var scentSource = GetOrCreateScentSource(contributingAgent.agentId, ScentCategory.Unknown);
             float air = contributingAgent.airIntensity;
             float ground = contributingAgent.groundIntensity;
             float combined = ground * 0.7f + air * 0.3f;
 
             results.Add(new ScentDetection
             {
-                scentSource = sentSource,
+                scentSource = scentSource,
                 airStrength = air,
                 groundStrength = ground,
                 combinedStrength = combined
             });
         }
-        */
+        
 
         // Sort strongest to weakest by combined strength
         results.Sort((a, b) => b.combinedStrength.CompareTo(a.combinedStrength));

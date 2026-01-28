@@ -37,7 +37,8 @@ namespace DogGame.Reactions
             {
                 float seconds = GetFloat(spec, "seconds", 1.0f);
                 seconds = Mathf.Clamp(seconds, 0.05f, 10f);
-                task = new Task_Sniff(seconds);
+                //TaskSpec context = new(observer.DisplayName);
+                task = new Task_Sniff(null);    //TODO: Wants a HashSet<string>
                 return true;
             }
 

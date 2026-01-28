@@ -154,7 +154,7 @@ public sealed class ReactionModule : WorldModule
                 new Task_Bark(10),
 
                 new Task_Try(
-                    tryTask: new Task_Sniff(1.0f),
+                    tryTask: new Task_Sniff(null),      //TODO: wants HashSet<string>
                     onFail: new Task_Wait(0.1f))
             });
 
@@ -195,7 +195,7 @@ public sealed class ReactionModule : WorldModule
                 {
                     new Task_Bark(10),
                     new Task_Try(
-                        tryTask: new Task_Sniff(1.0f),
+                        tryTask: new Task_Sniff(null),  //TODO: wants HashSet<string>
                         onFail: new Task_Wait(0.1f))
                 });
 
