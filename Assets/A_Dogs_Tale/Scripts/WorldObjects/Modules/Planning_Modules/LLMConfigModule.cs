@@ -95,6 +95,12 @@ namespace DogGame.LLM.Agent
             var contextBlocks = new List<string>();
             //worldObject.llmWorldStateModule.AddContextBlocks(contextBlocks);
             // ========== World State Section ==========
+            var observations = worldState.ConsumeObservations();
+            foreach (var obs in observations)
+            {
+                systemBlocks.Add("OBSERVATION: " + obs);
+            }
+
             worldState.AddContextBlocks(contextBlocks);
 
             systemBlocks.AddRange(contextBlocks);

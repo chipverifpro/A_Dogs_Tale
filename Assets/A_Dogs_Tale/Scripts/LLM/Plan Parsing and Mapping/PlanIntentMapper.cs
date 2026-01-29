@@ -36,7 +36,7 @@ namespace DogGame.LLM
                         {
                             // Build metadata (priority/interrupt/resume) for this task
                             var request = BuildRequestForAddTask(intention, task!);
-                            queue.Enqueue(new TaskRequest(task!, priority: 60, source: TaskSource.LLM, canInterrupt: false));
+                            queue.Enqueue(new TaskRequest(task!, priority: 60, source: TaskSource.LLM, canInterrupt: false, originRequestId: plan.RequestId));
                             enqueuedCount++;
                         }
                         else

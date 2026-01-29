@@ -58,7 +58,7 @@ namespace DogGame.LLM
             // Movement adapter used by tasks (intent-level; no per-frame Tick here)
             motionAdapter = worldObject.motionAdapter;
 
-            taskContext = new TaskContext(worldObject);
+            taskContext = new TaskContext(worldObject, OriginRequestId:null, OriginTag:null);
             motionAdapter = (MotionAdapter)taskContext.Motion;
         }
 
@@ -134,9 +134,9 @@ namespace DogGame.LLM
             // Temporary dev behavior: any input cancels task control (also blocks Tab, etc.).
             if (dir && worldObject && dir.gameInputRouter.InputState.anyKeyOrButtonDown)
             {
-                Debug.Log("TaskController: Cancelling tasks due to anyKeyOrButtonDown");
-                CancelAllTasks();
-                return;
+                Debug.Log("DISABLED: TaskController: Cancelling tasks due to anyKeyOrButtonDown");
+                //CancelAllTasks();
+                //return;
             }
 
             StopMovementWhenControlGained();

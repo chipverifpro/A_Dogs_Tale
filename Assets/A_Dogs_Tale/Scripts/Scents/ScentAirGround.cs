@@ -176,8 +176,9 @@ public class ScentAirGround : MonoBehaviour
         // Fully reset visuals for a clean overlay
         ClearAllScentVisuals();
 
+        WorldObject agent = GetAgentFromAgentId(currentAgentId);
         // Switch the overlay to the new source for currentAgentId
-        ScentSource scentSource = dir.scentRegistry.GetOrCreateScentSource(currentAgentId, agent:null, ScentCategory.Dog);
+        ScentSource scentSource = dir.scentRegistry.GetOrCreateScentSource(currentAgentId, agent:agent, ScentCategory.Dog);
         ActivateOverlayForSource(scentSource);
 
         // Draw the current state for this agent with current visibility flags
@@ -867,23 +868,26 @@ public class ScentAirGround : MonoBehaviour
     }
 
     // returns a pointer to the Agent matching agentId
-/*    Agent GetAgentFromAgentId(int agentId)
+    public WorldObject GetAgentFromAgentId(int agentId)
     {
-        Agent agent;
-        if ((dir.gen.agentRegistry == null) || (dir.gen.agentRegistry.Count < agentId) || (agentId<1))
+        WorldObject agent;
+        if ((dir.worldObjectRegistry == null) || (agentId<1))
         {
-            Debug.LogError($"AgentRegistry doesn't include agentId={agentId}, max={dir.gen.agentRegistry.Count}");
+            Debug.LogError($"AgentRegistry is null");
             return null;
         }
-
-        agent = dir.gen.agentRegistry[agentId-1];   // (index zero is agent 1)
-        if (agent==null)
+        if (agentId<1)
         {
-            Debug.LogError($"AgentRegistry returned null at agentId={agentId}");
+            Debug.LogError($"Invalid agentId lookup {agentId}");
+            return null;
+        }
+        if (!dir.worldObjectRegistry.TryGet(agentId, out agent) || agent==null)
+        {
+            Debug.LogError($"AgentRegistry lookup failed at agentId={agentId}");
         }
         return agent;
     }
-*/
+
     // adds the cell to the current big scent list if it isn't already there.
     void AddToScentCellsList(Cell cell)
     {
@@ -957,8 +961,9 @@ public class ScentAirGround : MonoBehaviour
             if (air <= 0f && ground <= 0f)
                 continue;
 
+            WorldObject agent = GetAgentFromAgentId(currentAgentId);
             // Lookup or create the ScentSource metadata for this agentId
-            ScentSource scentSource = dir.scentRegistry.GetOrCreateScentSource(scent.agentId, agent:null, ScentCategory.Dog);
+            ScentSource scentSource = dir.scentRegistry.GetOrCreateScentSource(scent.agentId, agent, ScentCategory.Dog);
             if (scentSource == null) continue;   // not a valid scent
 
             float combined = ground * groundWeight + air * airWeight;

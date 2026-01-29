@@ -6220,6 +6220,7 @@ GameObject:
   - component: {fileID: 942637348}
   - component: {fileID: 942637349}
   - component: {fileID: 942637350}
+  - component: {fileID: 942637351}
   m_Layer: 0
   m_Name: Input
   m_TagString: Untagged
@@ -6389,6 +6390,20 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.SniffInput
   observer: {fileID: 0}
   binding: <Keyboard>/g
+--- !u!114 &942637351
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 942637342}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 701298120df30458fb7a25ed64612dc9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.ScentFollowInput
+  observer: {fileID: 0}
+  binding: <Keyboard>/h
 --- !u!1 &976222952
 GameObject:
   m_ObjectHideFlags: 0
@@ -8717,6 +8732,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.ScentEmitterModule
   normalScentSource:
     agentId: -1
+    agent: {fileID: 0}
     category: 5
     scentName: FlyingCrate
     categoryColor: {r: 0, g: 0, b: 0, a: 0}
@@ -8729,6 +8745,7 @@ MonoBehaviour:
     persistentId: 
   onDemandScentSource:
     agentId: -1
+    agent: {fileID: 0}
     category: 0
     scentName: 
     categoryColor: {r: 0, g: 0, b: 0, a: 0}
@@ -12875,6 +12892,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.ScentEmitterModule
   normalScentSource:
     agentId: -1
+    agent: {fileID: 0}
     category: 1
     scentName: Cur
     categoryColor: {r: 0, g: 0, b: 0, a: 0}
@@ -12887,6 +12905,7 @@ MonoBehaviour:
     persistentId: 
   onDemandScentSource:
     agentId: -1
+    agent: {fileID: 0}
     category: 0
     scentName: 
     categoryColor: {r: 0, g: 0, b: 0, a: 0}
@@ -16125,6 +16144,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.ScentEmitterModule
   normalScentSource:
     agentId: -1
+    agent: {fileID: 0}
     category: 1
     scentName: Chihuahua
     categoryColor: {r: 0, g: 0, b: 0, a: 0}
@@ -16137,6 +16157,7 @@ MonoBehaviour:
     persistentId: 
   onDemandScentSource:
     agentId: -1
+    agent: {fileID: 0}
     category: 0
     scentName: 
     categoryColor: {r: 0, g: 0, b: 0, a: 0}
@@ -17223,6 +17244,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.ScentEmitterModule
   normalScentSource:
     agentId: -1
+    agent: {fileID: 0}
     category: 1
     scentName: GermanShepherd
     categoryColor: {r: 0, g: 0, b: 0, a: 0}
@@ -17235,6 +17257,7 @@ MonoBehaviour:
     persistentId: 
   onDemandScentSource:
     agentId: -1
+    agent: {fileID: 0}
     category: 0
     scentName: 
     categoryColor: {r: 0, g: 0, b: 0, a: 0}

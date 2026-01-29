@@ -104,6 +104,46 @@ public static class DirFlagsEx  // extension functions for the DirFlags enum
         }
         return count;
     }
+
+    // ToLongName produces a more readable description of a direction.
+    // Returns different formatted strings depending on number of directions: 
+    // 0: None
+    // 1: North
+    // 2: Northeast
+    // 3-4: North,East,South
+    public static string ToLongName(this DirFlags dir)
+    {
+        string longName = "";
+        string result;
+
+        if (dir.Count() <= 2)
+        {
+            if ((dir & DirFlags.N) != 0) longName += "north";
+            if ((dir & DirFlags.S) != 0) longName += "south";
+            if ((dir & DirFlags.E) != 0) longName += "east";
+            if ((dir & DirFlags.W) != 0) longName += "west";
+
+            if (!string.IsNullOrEmpty(longName))
+            {
+                // capitalize first character
+                result = char.ToUpper(longName[0]) + longName.Substring(1);
+            }
+            else
+            {
+                result = "None";
+            }
+        }
+        else
+        {
+            if ((dir & DirFlags.N) != 0) longName += "North,";
+            if ((dir & DirFlags.E) != 0) longName += "East,";
+            if ((dir & DirFlags.S) != 0) longName += "South,";
+            if ((dir & DirFlags.W) != 0) longName += "West,";
+
+            result = longName.TrimEnd(',');
+        }
+        return result;
+    }
 }
 
 /* Examples of things to do with DirFlags and DirFlagsEx:

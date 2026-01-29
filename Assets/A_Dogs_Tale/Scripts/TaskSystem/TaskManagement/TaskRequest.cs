@@ -12,6 +12,7 @@ namespace DogGame.Tasks
         public readonly bool ClearStackOnStart;
         public readonly TaskSource Source;
         public readonly string? Tag;
+        public readonly string? OriginRequestId;
 
         public TaskRequest(
             IAgentTask task,
@@ -20,7 +21,8 @@ namespace DogGame.Tasks
             bool canInterrupt = true,
             bool resumePrevious = false,
             bool clearStackOnStart = false,
-            string? tag = null)
+            string? tag = null,
+            string? originRequestId = null)
         {
             Task = task;
             Priority = priority;
@@ -29,6 +31,7 @@ namespace DogGame.Tasks
             ResumePrevious = resumePrevious;
             ClearStackOnStart = clearStackOnStart;
             Tag = tag;
+            OriginRequestId = originRequestId;
         }
     }
 }

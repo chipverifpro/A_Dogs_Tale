@@ -20,7 +20,7 @@ namespace DogGame.Tasks
 
         public Vector3 CellToWorld(int cellX, int cellY)
         {
-            return new Vector3(cellX, worldObject.locationModule.height, cellY);
+            return new Vector3(cellX+0.5f, worldObject.locationModule.height, cellY+0.5f);
         }
 
         public bool SetMoveTarget(Vector3 worldPosition)

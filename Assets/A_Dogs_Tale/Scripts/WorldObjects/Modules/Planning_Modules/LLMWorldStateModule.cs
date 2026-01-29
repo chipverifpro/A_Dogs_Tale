@@ -325,7 +325,30 @@ namespace DogGame.LLM.Agent
         }
 
         #endregion
+        
         // ======================================
+    
+        #region Observation
 
+        private readonly Queue<string> recentObservations = new();
+        private const int MaxObservations = 5;
+
+        public void AddObservation(string jsonLine)
+        {
+            if (string.IsNullOrWhiteSpace(jsonLine))
+                return;
+
+            if (recentObservations.Count >= MaxObservations)
+                recentObservations.Dequeue();
+
+            recentObservations.Enqueue(jsonLine);
+        }
+
+        public IEnumerable<string> ConsumeObservations()
+        {
+            while (recentObservations.Count > 0)
+                yield return recentObservations.Dequeue();
+        }
+        #endregion
     }
 }

@@ -42,6 +42,8 @@ namespace DogGame.LLM
     public sealed class TaskContext
     {
         public readonly WorldObject Agent;
+        public string? OriginRequestId;   // set when task came from LLM plan
+        public string? OriginTag;
 
         // everything else comes directly from Agent (which is a WorldObject)
         public string AgentId => Agent.DisplayName;
@@ -50,9 +52,10 @@ namespace DogGame.LLM
         public IBlackboard Blackboard => Agent.blackboardModule.Blackboard;
         public Vector2Int CurrentCellPos => Agent.locationModule.cell.pos;
         
-        public TaskContext(WorldObject worldObject)
+        public TaskContext(WorldObject worldObject, string? OriginRequestId, string? OriginTag)
         {
             Agent = worldObject;
+            this.OriginRequestId = OriginRequestId;
         }
     }
 

@@ -264,7 +264,8 @@ public class ScentRegistry : MonoBehaviour
         
         foreach (var contributingAgent in cell.scents)
         {
-            var scentSource = GetOrCreateScentSource(contributingAgent.agentId, agent:null, ScentCategory.Unknown);
+            WorldObject agent = dir.scentAirGround.GetAgentFromAgentId(contributingAgent.agentId);
+            var scentSource = GetOrCreateScentSource(contributingAgent.agentId, agent:agent, ScentCategory.Unknown);
             float air = contributingAgent.airIntensity;
             float ground = contributingAgent.groundIntensity;
             float combined = ground * 0.7f + air * 0.3f;

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using DogGame.LLM;
 using DogGame.Routines;
+using DogGame.LLM.Agent;
 
 namespace DogGame.Tasks
 {
@@ -83,13 +84,33 @@ namespace DogGame.Tasks
             }
 
             if (tickResult.Status == TaskStatus.Running)
+            {
                 return;
-
+            }
+            if (tickResult.Status == TaskStatus.Succeeded)
+            {
+                Debug.LogWarning($"Task succeeded: {currentTask!.DebugName}");
+            }
             if (tickResult.Status == TaskStatus.Failed)
             {
                 Debug.LogWarning($"Task failed: {currentTask!.DebugName} reason={tickResult.FailureReason}");
                 lastFailureReason = tickResult.FailureReason;
             }
+
+            // 🔹 NEW: harvest report if present
+            if (currentTask is ITaskWithReport reporter)
+            {
+                if (reporter.TryGetReportJson(out string reportJson))
+                {
+                    var ws = context.Agent?.GetComponent<LLMWorldStateModule>();
+                    if (ws != null)
+                    {
+                        Debug.LogWarning($"TaskExecutor.Tick: on success, add observation: {reportJson}");
+                        ws.AddObservation(reportJson);
+                    }
+                }
+            }
+
             EndCurrentTask(context, succeeded: tickResult.Status == TaskStatus.Succeeded);
         }
 

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using DogGame.AI.Perception;
 using System;
+using static DungeonGenerator;
 
 namespace DogGame.Modules
 {
@@ -290,5 +291,59 @@ namespace DogGame.Modules
                 Debug.Log($"[ScentEvent] {worldObject.name} {events[i].Type} {events[i].Target.ObjectId} strength={events[i].Strength01:0.00} novelty={events[i].Novelty01:0.00} interest={events[i].Interest01:0.00}", worldObject);
         }
 
+        public bool TryFindStrongestNeighborForScent(
+            string scentKey,
+            Vector2Int centerPos,
+            int height,
+            ScentMedium medium,
+            out DirFlags bestDir,
+            out Vector2Int bestPos,
+            out float bestStrength)
+        {
+            bestDir = DirFlags.None;
+            bestPos = centerPos;
+            bestStrength = 0f;
+
+            // Safety
+            if (dir == null || dir.gen == null || dir.gen.hf == null)
+                return false;
+
+            NeighborMatch match;
+
+            foreach (DirFlags direction in DirFlagsEx.All8)
+            {
+                Vector2Int relPosLoc = centerPos + direction.ToVector2Int();
+
+                dir.gen.hf.TryQueryAt(relPosLoc.x, relPosLoc.y, height, 50, out match);
+                if (match.roomId < 0 || match.cellId < 0) 
+                    continue;
+
+                Cell relCell = dir.gen.rooms[match.roomId].cells[match.cellId];
+                if (relCell.scents == null)
+                    continue;
+
+                foreach (ScentInCell scentInCell in relCell.scents)
+                {
+                    // Your scentKey convention for agents is "agent:<id>"
+                    string cellKey = $"agent:{scentInCell.agentId}";
+                    if (cellKey != scentKey)
+                        continue;
+
+                    float strength =
+                        (medium == ScentMedium.Ground)
+                            ? scentInCell.groundIntensity
+                            : scentInCell.airIntensity;
+
+                    if (strength > bestStrength)
+                    {
+                        bestStrength = strength;
+                        bestPos = relPosLoc;
+                        bestDir = direction;
+                    }
+                }
+            }
+
+            return bestDir != DirFlags.None && bestStrength > 0f;
+        }
     }
 }
