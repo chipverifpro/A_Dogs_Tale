@@ -176,5 +176,78 @@ namespace DogGame.LLM
                 tag: tag
             );
         }
+
+        // Assuming you already have one of these:
+        // [SerializeField] private TaskQueue taskQueue;
+        // public TaskQueue Queue => taskQueue;  // if you expose it
+
+        public void EnqueueTask(
+            IAgentTask task,
+            int priority,
+            TaskSource source,
+            bool canInterrupt = true,
+            bool resumePrevious = false,
+            bool clearStackOnStart = false,
+            string? tag = null,
+            bool front = false)
+        {
+            if (taskQueue == null)
+            {
+                Debug.LogWarning("[TaskController] taskQueue is null; cannot enqueue task.");
+                return;
+            }
+
+            var request = new TaskRequest(
+                task: task,
+                priority: Mathf.Clamp(priority, 0, 100),
+                source: source,
+                canInterrupt: canInterrupt,
+                resumePrevious: resumePrevious,
+                clearStackOnStart: clearStackOnStart,
+                tag: tag);
+
+            taskQueue.Enqueue(request, front: front);
+        }
+
+        // Convenience helper matching your old LLMApplyMode intent
+        public void EnqueueTask(
+            IAgentTask task,
+            int priority,
+            TaskSource source,
+            LLMApplyMode applyMode,
+            string? tag = null,
+            bool front = false)
+        {
+            bool canInterrupt = applyMode != LLMApplyMode.Append;
+            bool resumePrevious = applyMode == LLMApplyMode.SuspendThenInterrupt;
+            bool clearStack = false; // keep separate for emergencies
+
+            EnqueueTask(
+                task: task,
+                priority: priority,
+                source: source,
+                canInterrupt: canInterrupt,
+                resumePrevious: resumePrevious,
+                clearStackOnStart: clearStack,
+                tag: tag,
+                front: front);
+        }
+
+        public void EnqueueEmergency(
+            IAgentTask task,
+            int priority,
+            TaskSource source,
+            string? tag = null)
+        {
+            EnqueueTask(
+                task: task,
+                priority: Mathf.Clamp(priority, 0, 100),
+                source: source,
+                canInterrupt: true,
+                resumePrevious: false,
+                clearStackOnStart: true,
+                tag: tag,
+                front: true);
+        }
     }
 }

@@ -195,15 +195,15 @@ namespace DogGame.Tasks
         private static float TryGetAirStrength01(ScentDetection det)
         {
             // TODO: replace with real field when confirmed
-            // return det.airStrength01;
-            return 0.5f;    // dummy return value nonzero
+            return det.airStrength;
+            //return 0.5f;    // dummy return value nonzero
         }
 
         private static float TryGetGroundStrength01(ScentDetection det)
         {
             // TODO: replace with real field when confirmed
-            // return det.groundStrength01;
-            return 0.6f;    // dummy return value nonzero
+            return det.groundStrength;
+            //return 0.6f;    // dummy return value nonzero
         }
 
         private void DebugLogResults(WorldObject agent)
@@ -219,11 +219,11 @@ namespace DogGame.Tasks
                 agent);
             for (int i=0; i<AirScents.Count; i++)
             {
-                Debug.Log($"Air[{i}] = {AirScents[i].agentId}");
+                Debug.Log($"Air[{i}] = {AirScents[i].agentId}, strength={AirScents[i].strength01}");
             }
             for (int i=0; i<GroundScents.Count; i++)
             {
-                Debug.Log($"Air[{i}] = {GroundScents[i].agentId}");
+                Debug.Log($"Ground[{i}] = {GroundScents[i].agentId}, strength={GroundScents[i].strength01}");
             }
         }
     }

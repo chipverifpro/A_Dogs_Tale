@@ -13,14 +13,22 @@ namespace DogGame.Tasks
 
         public void Clear() => queued.Clear();
 
-        public void Enqueue(TaskRequest request)
+        public void Enqueue(TaskRequest request, bool front=false)
         {
             // Insert in descending priority order (stable)
-            int index = queued.Count;
-            while (index > 0 && queued[index - 1].Priority < request.Priority)
-                index--;
+            int index;
+            if (front) 
+            {
+                queued.Insert(0, request);
+            }
+            else
+            {
+                index = queued.Count;
+                while (index > 0 && queued[index - 1].Priority < request.Priority)
+                    index--;
 
-            queued.Insert(index, request);
+                queued.Insert(index, request);
+            }
         }
 
         public bool TryDequeue(out TaskRequest request)

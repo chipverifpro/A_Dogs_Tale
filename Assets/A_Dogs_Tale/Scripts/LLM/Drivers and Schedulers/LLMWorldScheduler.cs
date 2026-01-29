@@ -20,7 +20,7 @@ namespace DogGame.LLM
 
         Ollama_Qwen3_4b = 1 << 20,
         Ollama_Qwen3_8b = 1 << 21,
-        Ollama_Gemma3_12b = 1 << 22
+        Ollama_Gemma3 = 1 << 22
     }
 
     [Serializable]
@@ -241,9 +241,9 @@ public class LLMWorldScheduler : MonoBehaviour
                 SuccessRate: 0.9f,
                 TypicalCost: .01f,
                 vendorMaxConcurrentRequests: 2),
-            new(LLMVendorAndModel.Ollama_Gemma3_12b,
+            new(LLMVendorAndModel.Ollama_Gemma3,
                 LLMVendor.Ollama,
-                "Gemma3:12b",
+                "Gemma3",
                 false,
                 Sophistication.Medium,
                 TypicalResponseTime: 20f,
@@ -268,7 +268,7 @@ public class LLMWorldScheduler : MonoBehaviour
     [HideInInspector] private float schedulingIntervalSeconds = 1f;
 
     [Header("Unified LLM Router")]
-    [SerializeField] private UnifiedLLMRouter router;
+    [SerializeField] private UnifiedLLMRouter? router;
 
     [SerializeField] public List<LLMPlanRequestOnDemand> pendingRequests = new();
 

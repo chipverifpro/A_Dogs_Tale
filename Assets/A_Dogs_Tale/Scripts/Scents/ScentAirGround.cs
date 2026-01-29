@@ -177,7 +177,7 @@ public class ScentAirGround : MonoBehaviour
         ClearAllScentVisuals();
 
         // Switch the overlay to the new source for currentAgentId
-        ScentSource scentSource = dir.scentRegistry.GetOrCreateScentSource(currentAgentId, ScentCategory.Dog);
+        ScentSource scentSource = dir.scentRegistry.GetOrCreateScentSource(currentAgentId, agent:null, ScentCategory.Dog);
         ActivateOverlayForSource(scentSource);
 
         // Draw the current state for this agent with current visibility flags
@@ -958,7 +958,7 @@ public class ScentAirGround : MonoBehaviour
                 continue;
 
             // Lookup or create the ScentSource metadata for this agentId
-            ScentSource scentSource = dir.scentRegistry.GetOrCreateScentSource(scent.agentId,ScentCategory.Dog);
+            ScentSource scentSource = dir.scentRegistry.GetOrCreateScentSource(scent.agentId, agent:null, ScentCategory.Dog);
             if (scentSource == null) continue;   // not a valid scent
 
             float combined = ground * groundWeight + air * airWeight;

@@ -103,6 +103,7 @@ public class ScentRegistry : MonoBehaviour
     /// </summary>
     public ScentSource GetOrCreateScentSource(
         int agentId,
+        WorldObject agent,
         ScentCategory category,
         string defaultName = null,
         float airDepositRate = 1.0f,
@@ -116,6 +117,7 @@ public class ScentRegistry : MonoBehaviour
         var scentSource = new ScentSource
         {
             agentId = agentId,
+            agent = agent,
             category = category,
             scentName = string.IsNullOrEmpty(defaultName) ? category.ToString() : defaultName,
             categoryColor = GetCategoryBaseColor(category),
@@ -262,7 +264,7 @@ public class ScentRegistry : MonoBehaviour
         
         foreach (var contributingAgent in cell.scents)
         {
-            var scentSource = GetOrCreateScentSource(contributingAgent.agentId, ScentCategory.Unknown);
+            var scentSource = GetOrCreateScentSource(contributingAgent.agentId, agent:null, ScentCategory.Unknown);
             float air = contributingAgent.airIntensity;
             float ground = contributingAgent.groundIntensity;
             float combined = ground * 0.7f + air * 0.3f;

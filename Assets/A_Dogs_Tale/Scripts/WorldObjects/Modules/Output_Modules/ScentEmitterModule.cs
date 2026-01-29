@@ -27,6 +27,8 @@ namespace DogGame.Modules
                 normalScentSource = new();
                 
             normalScentSource.agentId = worldObject.ObjectId;
+            normalScentSource.agent = worldObject;
+            
             if (string.IsNullOrEmpty(normalScentSource.scentName))
                 normalScentSource.scentName = worldObject.DisplayName;
         }

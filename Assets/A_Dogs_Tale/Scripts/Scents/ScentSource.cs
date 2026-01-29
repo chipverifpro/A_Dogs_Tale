@@ -10,6 +10,8 @@ public class ScentSource
     // Unique key that ties this scent to your ScentSystem / emitters.
     public int agentId = -1;
 
+    public WorldObject agent = null;
+    
     // Broad category: Dog, Human, Food, Machine, etc.
     public ScentCategory category = ScentCategory.Unknown;
 

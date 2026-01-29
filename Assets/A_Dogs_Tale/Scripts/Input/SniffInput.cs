@@ -1,4 +1,6 @@
 #nullable enable
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using DogGame.LLM;
 using DogGame.Tasks;
 using Unity.AppUI.Core;
@@ -52,9 +54,20 @@ namespace DogGame.Modules
             //    return;
             //}
             // One-shot manual sniff by player
-            TaskContext sniffContext = new(Directory.Instance.playerPack.packLeader);
-            Debug.Log($"SniffInput.OnSniffPerformed {sniffContext.Agent.DisplayName}");
-            Task_Sniff.RunTask_Sniff(sniffContext);
+            //TaskContext sniffContext = new(Directory.Instance.playerPack.packLeader);
+            //Debug.Log($"SniffInput.OnSniffPerformed {sniffContext.Agent.DisplayName}");
+            //Task_Sniff.RunTask_Sniff(sniffContext);
+
+            
+            WorldObject playerAgent = Directory.Instance.playerPack.packLeader;
+            HashSet<string> sniffContext = new(playerAgent.ObjectId);
+            playerAgent.taskController.EnqueueTask(
+                task: new Task_Sniff(sniffContext),
+                priority: 60,
+                source: TaskSource.Player,  // or AI/LLM/etc
+                applyMode: LLMApplyMode.Interrupt,
+                tag: "sniff_key",
+                front: true);
         }
     }
 }

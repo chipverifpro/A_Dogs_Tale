@@ -3852,10 +3852,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::LLMWorldScheduler
   llmVendorAndModel: 4194304
   llmModelsAvailable:
-  - displayName: "Ollama \xB7 Gemma3:12b \xB7 Medium"
+  - displayName: "Ollama \xB7 Gemma3 \xB7 Medium"
     llmVendorAndModel: 4194304
     llmVendor: 2
-    llmModelString: Gemma3:12b
+    llmModelString: Gemma3
     remote: 0
     sophistication: 1
     vendorMaxConcurrentRequests: 1
