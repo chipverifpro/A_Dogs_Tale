@@ -3,7 +3,6 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using DogGame.Modules;
-using static DungeonGenerator;
 using DogGame.LLM;
 
 namespace DogGame.Tasks
@@ -45,6 +44,7 @@ namespace DogGame.Tasks
         private float lastChosenScore;
         private int stuckCounter;
 
+        private bool prev_exploring=false;
         // Optional “result” fields (for debug/UI)
         public DirFlags lastBestDir = DirFlags.None;
         public Vector2Int lastBestPos;
@@ -70,8 +70,8 @@ namespace DogGame.Tasks
             ScentMedium medium,
             float minStrengthToContinue01 = 0.0002f,
             float stepCooldownSeconds = 0.20f,
-            int maxSteps = 50,
-            float maxSeconds = 60f)
+            int maxSteps = 100,
+            float maxSeconds = 120f)
         {
             this.scentKey = scentKey ?? "";
             this.medium = medium;
@@ -179,6 +179,11 @@ namespace DogGame.Tasks
 
             // 3) Choose next step using memory + taboo + explore logic
             bool exploring = stuckCounter >= stuckStepsToExplore;
+            if(exploring != prev_exploring)
+            {
+                Debug.Log($"exploring = {exploring}");
+                prev_exploring = exploring;
+            }
 
             if (!TryPickNextStep(
                     scentModule: scentModule,
@@ -191,7 +196,18 @@ namespace DogGame.Tasks
                     out float chosenScore))
             {
                 Debug.Log("No viable next step (likely boxed in or no scent).");
-                return TaskTickResult.Succeeded();
+                chosenPos = JumpToHighestScore();
+                Debug.Log($"JumpToHighestScore {chosenPos}");
+                if (centerPos==chosenPos)
+                {
+                    Debug.Log($"Already at best score.");
+                    return TaskTickResult.Succeeded();
+                }
+                moveToCell = new Task_MoveToCell(chosenPos.x, chosenPos.y, 0.25f);
+                moveToCell.Start(context);
+                stepsTaken++;
+                return TaskTickResult.Running();
+                //return TaskTickResult.Succeeded();
             }
 
             lastBestDir = chosenDir;
@@ -341,7 +357,7 @@ namespace DogGame.Tasks
                 if (!exploring)
                 {
                     float currentStrength = GetKnownStrength(centerPos);
-                    if (strength01 + 0.0001f < currentStrength) // small tolerance
+                    if (strength01 + 0.01f < currentStrength) // small tolerance
                         continue;
                 }
 
@@ -397,6 +413,26 @@ namespace DogGame.Tasks
                 (wBacktrack * backtrackPenalty01);
 
             return score;
+        }
+
+        public Vector2Int JumpToHighestScore()
+        {
+            float score;
+            float hi_score = 0;
+            Vector2Int best_pos = new();
+
+            foreach (var kvp in memory)
+            {
+                Vector2Int pos = kvp.Key;
+                var cell = kvp.Value;
+                score = ScoreNeighbor(pos, cell.bestStrength01, false);
+                if (score > hi_score)
+                {
+                    best_pos = pos;
+                    hi_score = score;
+                }
+            }
+            return best_pos;
         }
 
         private void DebugPrintScentMemory()
