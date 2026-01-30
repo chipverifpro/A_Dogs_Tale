@@ -144,7 +144,35 @@ public static class DirFlagsEx  // extension functions for the DirFlags enum
         }
         return result;
     }
+
+    public static DirFlags FromVector2(Vector2 v)
+    {
+        // Pick the closest of 8 directions using dot product.
+        if (v.sqrMagnitude < 0.000001f) return DirFlags.None;
+
+        v.Normalize();
+
+        DirFlags best = DirFlags.None;
+        float bestDot = -999f;
+
+        foreach (DirFlags d in All8)
+        {
+            Vector2 dv = d.ToVector2Int();
+            if (dv.sqrMagnitude < 0.5f) continue;
+            dv.Normalize();
+
+            float dot = Vector2.Dot(v, dv);
+            if (dot > bestDot)
+            {
+                bestDot = dot;
+                best = d;
+            }
+        }
+
+        return best;
+    }
 }
+
 
 /* Examples of things to do with DirFlags and DirFlagsEx:
 --------------------------------------------- Example 1

@@ -346,6 +346,13 @@ namespace DogGame.Modules
             return bestDir != DirFlags.None && bestStrength > 0f;
         }
 
+        public float TryGetStrengthAt(Vector2Int pos, int height, string scentKey, ScentMedium medium)
+        {
+            float strength01;
+            TryGetScentStrengthAtCell(scentKey, pos, height, medium, out strength01);
+            return strength01;
+        }
+
         public bool TryGetScentStrengthAtCell(
             string scentKey,
             Vector2Int pos,
