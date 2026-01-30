@@ -345,5 +345,55 @@ namespace DogGame.Modules
 
             return bestDir != DirFlags.None && bestStrength > 0f;
         }
+
+        public bool TryGetScentStrengthAtCell(
+            string scentKey,
+            Vector2Int pos,
+            int height,
+            ScentMedium medium,
+            out float strength01)
+        {
+            strength01 = 0f;
+
+            if (dir == null || dir.gen == null || dir.gen.hf == null)
+                return false;
+
+            if (string.IsNullOrWhiteSpace(scentKey) || !scentKey.StartsWith("agent:", StringComparison.Ordinal))
+                return false;
+
+            if (!int.TryParse(scentKey.AsSpan(6), out int targetAgentId))
+                return false;
+
+            NeighborMatch match;
+            dir.gen.hf.TryQueryAt(pos.x, pos.y, height, 50, out match);
+            if (match.roomId < 0 || match.cellId < 0)
+                return false;
+
+            Cell cell = dir.gen.rooms[match.roomId].cells[match.cellId];
+            if (cell.scents == null)
+                return false;
+
+            float best = 0f;
+
+            foreach (ScentInCell scentInCell in cell.scents)
+            {
+                if (scentInCell.agentId != targetAgentId)
+                    continue;
+
+                float v =
+                    (medium == ScentMedium.Ground)
+                        ? scentInCell.groundIntensity
+                        : scentInCell.airIntensity;
+
+                if (v > best)
+                    best = v;
+            }
+
+            if (best <= 0f)
+                return false;
+
+            strength01 = best;
+            return true;
+        }
     }
 }
