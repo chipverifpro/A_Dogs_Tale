@@ -2891,6 +2891,52 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 392898576}
   m_CullTransparentMesh: 1
+--- !u!1 &401301246
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 401301247}
+  - component: {fileID: 401301248}
+  m_Layer: 0
+  m_Name: Sound
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &401301247
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 401301246}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1767335688}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &401301248
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 401301246}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5a0205c62bec640fcb4ae5f249a8a390, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DogGame.Noise.NoiseManager
+  capacity: 2048
+  maxAgeSeconds: 12
 --- !u!1 &408055400
 GameObject:
   m_ObjectHideFlags: 0
@@ -4164,37 +4210,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 515869042}
   m_CullTransparentMesh: 1
---- !u!1 &556401678
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 556401679}
-  m_Layer: 0
-  m_Name: Player
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &556401679
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 556401678}
-  serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 1767335688}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &572427359
 GameObject:
   m_ObjectHideFlags: 0
@@ -12603,6 +12618,10 @@ PrefabInstance:
         type: 3}
       insertIndex: -1
       addedObject: {fileID: 1651296805}
+    - targetCorrespondingSourceObject: {fileID: 4477274621950385561, guid: da33ad6d2d1f9483faa117084b30e547,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1651296807}
   m_SourcePrefab: {fileID: 100100000, guid: da33ad6d2d1f9483faa117084b30e547, type: 3}
 --- !u!4 &1651296778 stripped
 Transform:
@@ -12807,7 +12826,21 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6a58844417672410b85570a105ad1e62, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.HearingModule
-  debugMode: 0
+  useTick: 1
+  tickIntervalSeconds: 0.25
+  hearingWindowSeconds: 8
+  hearThresholdNormalized: 0.08
+  normalizationScale: 3
+  suppressSelfNoise: 1
+  allowSelfDistress: 1
+  allowSelfPriorityAtOrAbove: 7
+  alwaysSuppressSelfFootsteps: 1
+  sameRoomFactor: 1
+  adjacentRoomFactor: 0.75
+  differentRoomFactor: 0.4
+  maxRawHeard: 24
+  maxLLMItems: 8
+  sensitivity: 1
 --- !u!114 &1651296793
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -13033,6 +13066,41 @@ MonoBehaviour:
     y: 0
     width: 0
     height: 0
+--- !u!114 &1651296807
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1651296779}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 420aabba5d96b4fc0a21c2ebcfc7e2e0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.NoiseMakerModule
+  emitFootsteps: 1
+  minSpeedMetersPerSecond: 0.1
+  stepDistanceWalk: 0.85
+  stepDistanceRun: 0.55
+  stepDistanceSneak: 1.1
+  stepDistanceCautious: 1
+  stepDistanceCrawl: 1.2
+  stepDistanceStrafe: 0.9
+  stepDistanceBackpedal: 0.95
+  loudnessWalk: 0.6
+  loudnessRun: 1.1
+  loudnessSneak: 0.35
+  loudnessCautious: 0.45
+  loudnessCrawl: 0.25
+  loudnessStrafe: 0.65
+  loudnessBackpedal: 0.65
+  rangeWalk: 12
+  rangeRun: 18
+  rangeSneak: 6
+  rangeCautious: 9
+  rangeCrawl: 5
+  rangeStrafe: 12
+  rangeBackpedal: 12
 --- !u!1 &1653904421
 GameObject:
   m_ObjectHideFlags: 0
@@ -13812,7 +13880,6 @@ Transform:
   - {fileID: 838293513}
   - {fileID: 367847098}
   - {fileID: 1448055485}
-  - {fileID: 556401679}
   - {fileID: 1642226070}
   - {fileID: 408055402}
   - {fileID: 438825160}
@@ -13823,6 +13890,7 @@ Transform:
   - {fileID: 196505886}
   - {fileID: 2140542027}
   - {fileID: 942637343}
+  - {fileID: 401301247}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1767335689
@@ -14684,6 +14752,14 @@ PrefabInstance:
         type: 3}
       insertIndex: -1
       addedObject: {fileID: 2108676850}
+    - targetCorrespondingSourceObject: {fileID: 5957909782290826837, guid: e86f8e8e9b1324aecbb31e00a8c49ed2,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2108676852}
+    - targetCorrespondingSourceObject: {fileID: 5957909782290826837, guid: e86f8e8e9b1324aecbb31e00a8c49ed2,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2108676853}
   m_SourcePrefab: {fileID: 100100000, guid: e86f8e8e9b1324aecbb31e00a8c49ed2, type: 3}
 --- !u!4 &1880613838 stripped
 Transform:
@@ -16276,7 +16352,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.WandererDecisionModule
   navigationSource: 0
-  wanderRadius: 4
+  wanderRadius: 20
   minTimeBetweenTargets: 1.5
   maxTimeBetweenTargets: 4
 --- !u!114 &2108676847
@@ -16293,7 +16369,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::WorldObject
   objectId: -1
   displayName: chihuahua
-  kind: 0
+  kind: 2
   autoRegister: 1
 --- !u!114 &2108676848
 MonoBehaviour:
@@ -16410,6 +16486,68 @@ MonoBehaviour:
     y: 0
     width: 0
     height: 0
+--- !u!114 &2108676852
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2108676836}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 420aabba5d96b4fc0a21c2ebcfc7e2e0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.NoiseMakerModule
+  emitFootsteps: 1
+  minSpeedMetersPerSecond: 0.1
+  stepDistanceWalk: 0.85
+  stepDistanceRun: 0.55
+  stepDistanceSneak: 1.1
+  stepDistanceCautious: 1
+  stepDistanceCrawl: 1.2
+  stepDistanceStrafe: 0.9
+  stepDistanceBackpedal: 0.95
+  loudnessWalk: 0.6
+  loudnessRun: 1.1
+  loudnessSneak: 0.35
+  loudnessCautious: 0.45
+  loudnessCrawl: 0.25
+  loudnessStrafe: 0.65
+  loudnessBackpedal: 0.65
+  rangeWalk: 12
+  rangeRun: 18
+  rangeSneak: 6
+  rangeCautious: 9
+  rangeCrawl: 5
+  rangeStrafe: 12
+  rangeBackpedal: 12
+--- !u!114 &2108676853
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2108676836}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6a58844417672410b85570a105ad1e62, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.HearingModule
+  useTick: 1
+  tickIntervalSeconds: 0.25
+  hearingWindowSeconds: 8
+  hearThresholdNormalized: 0.08
+  normalizationScale: 3
+  suppressSelfNoise: 1
+  allowSelfDistress: 1
+  allowSelfPriorityAtOrAbove: 7
+  alwaysSuppressSelfFootsteps: 1
+  sameRoomFactor: 1
+  adjacentRoomFactor: 0.75
+  differentRoomFactor: 0.4
+  maxRawHeard: 24
+  maxLLMItems: 8
+  sensitivity: 1
 --- !u!1 &2129299916
 GameObject:
   m_ObjectHideFlags: 0
@@ -17020,7 +17158,21 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6a58844417672410b85570a105ad1e62, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.HearingModule
-  debugMode: 0
+  useTick: 1
+  tickIntervalSeconds: 0.25
+  hearingWindowSeconds: 8
+  hearThresholdNormalized: 0.08
+  normalizationScale: 3
+  suppressSelfNoise: 1
+  allowSelfDistress: 1
+  allowSelfPriorityAtOrAbove: 7
+  alwaysSuppressSelfFootsteps: 1
+  sameRoomFactor: 1
+  adjacentRoomFactor: 0.75
+  differentRoomFactor: 0.4
+  maxRawHeard: 24
+  maxLLMItems: 8
+  sensitivity: 1
 --- !u!114 &6544990386685219157
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -17230,6 +17382,29 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 420aabba5d96b4fc0a21c2ebcfc7e2e0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.NoiseMakerModule
+  emitFootsteps: 1
+  minSpeedMetersPerSecond: 0.1
+  stepDistanceWalk: 0.85
+  stepDistanceRun: 0.55
+  stepDistanceSneak: 1.1
+  stepDistanceCautious: 1
+  stepDistanceCrawl: 1.2
+  stepDistanceStrafe: 0.9
+  stepDistanceBackpedal: 0.95
+  loudnessWalk: 0.6
+  loudnessRun: 1.1
+  loudnessSneak: 0.35
+  loudnessCautious: 0.45
+  loudnessCrawl: 0.25
+  loudnessStrafe: 0.65
+  loudnessBackpedal: 0.65
+  rangeWalk: 12
+  rangeRun: 18
+  rangeSneak: 6
+  rangeCautious: 9
+  rangeCrawl: 5
+  rangeStrafe: 12
+  rangeBackpedal: 12
 --- !u!114 &6544990386685219181
 MonoBehaviour:
   m_ObjectHideFlags: 0

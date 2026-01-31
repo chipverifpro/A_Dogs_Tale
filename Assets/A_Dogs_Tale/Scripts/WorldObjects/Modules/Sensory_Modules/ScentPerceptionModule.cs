@@ -297,7 +297,7 @@ namespace DogGame.Modules
             // TODO: Route these to your reaction engine, task controller, or LLMThinkModule triggers.
             // For now, just log:
             for (int i = 0; i < events.Count; i++)
-                Debug.Log($"[ScentEvent] {worldObject.name} {events[i].Type} {events[i].Target.ObjectId} strength={events[i].Strength01:0.00} novelty={events[i].Novelty01:0.00} interest={events[i].Interest01:0.00}", worldObject);
+                Debug.Log($"[ScentEvent] {worldObject.name} {events[i].Type} {events[i].Target!.ObjectId} strength={events[i].Strength01:0.00} novelty={events[i].Novelty01:0.00} interest={events[i].Interest01:0.00}", worldObject);
         }
 
         public bool TryFindStrongestNeighborForScent(

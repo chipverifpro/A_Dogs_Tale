@@ -7,6 +7,7 @@ using DogGame.LLM;
 using DogGame.Tasks;
 using DogGame.LLM.Agent;
 using DogGame;
+using DogGame.Noise;
 
 
 /// <summary>
@@ -195,7 +196,8 @@ public class WorldObject : MonoBehaviour
 
     // Registration management functions
     public bool IsRegistered { get; private set; }
-
+    public bool HasValidId => objectId >= 0;
+    
     public int ObjectId => objectId;
     public WorldObjectKind Kind => kind;
     public string DisplayName => string.IsNullOrEmpty(displayName) ? name : displayName;
@@ -315,7 +317,7 @@ public class WorldObject : MonoBehaviour
             
         // SENSES
         //visionPerceptionModule?.Tick(dt);
-        //hearingModule?.Tick(dt);
+        hearingModule?.Tick(dt);
         //scentPerceptionModule?.Tick(dt);
         //TasteModule?.Tick(dt);
 

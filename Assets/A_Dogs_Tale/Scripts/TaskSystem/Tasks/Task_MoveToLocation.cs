@@ -36,7 +36,7 @@ namespace DogGame.Tasks
                 Debug.LogError("ERROR: Tick run more than once per frame");
             debugDoubleTick = Time.frameCount;
 
-            Debug.Log ($"Task_MoveToCell.Tick ({context.Agent.DisplayName}, {deltaTimeSeconds})");
+            //Debug.Log ($"Task_MoveToCell.Tick ({context.Agent.DisplayName}, {deltaTimeSeconds})");
             if (context.Motion.IsAt(destinationWorld, stopRadius))
                 return TaskTickResult.Succeeded();
 

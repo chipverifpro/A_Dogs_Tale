@@ -356,7 +356,7 @@ namespace DogGame.Tasks
                 + "\"schema\":\"SniffReportV1\","
                 + "\"originRequestId\":\"" + EscapeJson(requestId) + "\","
                 + "\"agentObjectId\":" + agentId + ","
-                + "\"cell\":[" + context.Agent.locationModule.cell.pos.x + "," + context.Agent.locationModule.cell.pos.y + "],"
+                + "\"cell\":[" + context.Agent!.locationModule.cell.pos.x + "," + context.Agent.locationModule.cell.pos.y + "],"
                 + "\"bestAir\":{\"ok\":" + (bestAir.ok ? "true" : "false") + ",\"scentKey\":\"" + EscapeJson(bestAir.scentKey) + "\",\"dir\":\"" + EscapeJson(bestAirDir) + "\",\"intensity\":" + bestAir.intensity.ToString("0.###", CultureInfo.InvariantCulture) + "},"
                 + "\"bestGround\":{\"ok\":" + (bestGround.ok ? "true" : "false") + ",\"scentKey\":\"" + EscapeJson(bestGround.scentKey) + "\",\"dir\":\"" + EscapeJson(bestGroundDir) + "\",\"intensity\":" + bestGround.intensity.ToString("0.###", CultureInfo.InvariantCulture) + "},"
                 + "\"airTop\":" + airTop + ","

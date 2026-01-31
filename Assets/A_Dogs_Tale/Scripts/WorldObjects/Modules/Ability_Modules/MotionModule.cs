@@ -108,7 +108,9 @@ namespace DogGame.Modules
         public WalkMode currentWalkMode = WalkMode.Walk;
 
         private Vector3 horizontalVelocity = Vector3.zero;
-
+        public Vector3 HorizontalVelocity => horizontalVelocity;
+        public float HorizontalSpeed => new Vector2(horizontalVelocity.x, horizontalVelocity.z).magnitude;
+        
         [SerializeField] private List<WalkModeSpeed> maxSpeedsByMode = new()
         {
             new WalkModeSpeed { mode = WalkMode.None,      maxSpeed = 0f },
