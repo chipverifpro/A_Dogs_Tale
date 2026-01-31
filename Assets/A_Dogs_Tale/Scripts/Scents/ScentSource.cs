@@ -11,7 +11,7 @@ public class ScentSource
     public int agentId = -1;
 
     public WorldObject agent = null;
-    
+
     // Broad category: Dog, Human, Food, Machine, etc.
     public ScentCategory category = ScentCategory.Unknown;
 

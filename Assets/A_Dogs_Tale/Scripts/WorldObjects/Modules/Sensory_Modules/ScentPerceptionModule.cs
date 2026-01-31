@@ -36,7 +36,7 @@ namespace DogGame.Modules
         public float noveltyWeight = 0.35f;
 
         private readonly ScentMemory scentMemory = new();
-
+            
         protected override void Awake()
         {
             
@@ -69,7 +69,16 @@ namespace DogGame.Modules
 
                 string scentKey = BuildScentKey(det.scentSource);
 
-                bool seenBefore = scentMemory.TryGet(scentKey, out float lastStrength01, out float lastTime);
+                //bool seenBefore = scentMemory.TryGet(scentKey, out float lastStrength01, out float lastTime);
+                bool seenBefore = scentMemory.TryGetInfo(
+                    scentKey,
+                    out float lastStrength01,
+                    out float lastTime,
+                    out float bestStrength01,
+                    out ScentFamiliarity familiarity,
+                    out string? learnedName,
+                    out int learnedAgentId);
+                
                 float timeSince = seenBefore ? (timeNow - lastTime) : 999f;
 
                 float novelty01 = ComputeNovelty(seenBefore, timeSince);
@@ -89,7 +98,7 @@ namespace DogGame.Modules
                     worldPos: worldObject.transform.position,
                     scentKey: scentKey,
                     category: det.scentSource.category,
-                    scentName: det.scentSource.scentName ?? det.scentSource.category.ToString(),
+                    scentName: ResolveScentDisplayName(det.scentSource, seenBefore, familiarity, learnedName),
                     strength01: strength01,
                     novelty01: novelty01,
                     interest01: interest01));
@@ -402,5 +411,43 @@ namespace DogGame.Modules
             strength01 = best;
             return true;
         }
+
+        private static string ResolveScentDisplayName(
+            ScentSource source,
+            bool seenBefore,
+            ScentFamiliarity familiarity,
+            string? learnedName)
+        {
+            // If we've actually identified it, prefer the learned name (e.g., "Hot Dog Thief")
+            if (seenBefore && familiarity >= ScentFamiliarity.Identified && !string.IsNullOrWhiteSpace(learnedName))
+                return learnedName!;
+
+            // Otherwise fall back to the source-provided name if any
+            if (!string.IsNullOrWhiteSpace(source.scentName))
+                return source.scentName!;
+
+            // Otherwise category label
+            return source.category.ToString();
+        }
+
+        public void PromoteScentFamiliarity(string scentKey, ScentFamiliarity atLeast)
+        {
+            if (string.IsNullOrWhiteSpace(scentKey))
+                return;
+
+            scentMemory.PromoteFamiliarity(scentKey, atLeast);
+        }
+
+        public void IdentifyScent(string scentKey, string displayName, int agentId = -1)
+        {
+            if (string.IsNullOrWhiteSpace(scentKey))
+                return;
+
+            if (string.IsNullOrWhiteSpace(displayName))
+                displayName = "Unknown";
+
+            scentMemory.Identify(scentKey, displayName, agentId);
+        }
+
     }
 }

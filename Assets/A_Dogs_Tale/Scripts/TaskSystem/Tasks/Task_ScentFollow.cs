@@ -5,6 +5,7 @@ using UnityEngine;
 using DogGame.Modules;
 using DogGame.LLM;
 using static DungeonGenerator;
+using NUnit.Framework;
 
 namespace DogGame.Tasks
 {
@@ -125,6 +126,14 @@ namespace DogGame.Tasks
                 NoteVisit(lastCellPos);
                 // prime memory for current cell if possible
                 TryNoteScentAt(context, lastCellPos);
+
+                WorldObject otherAgent = context.Agent;
+                // as soon as we commit to tracking, mark as Scented
+                //context.Agent?.scentPerceptionModule?.PromoteScentFamiliarity(scentKey, ScentFamiliarity.Scented);
+                context.Agent?.scentPerceptionModule?.IdentifyScent(
+                    scentKey: $"agent:{otherAgent.ObjectId}",
+                    displayName: otherAgent.DisplayName,
+                    agentId: otherAgent.ObjectId);
             }
 
             Debug.Log("Task_ScentFollow.Start");
@@ -155,6 +164,19 @@ namespace DogGame.Tasks
                         TryNoteScentAt(context, lastCellPos);
 
                         DebugPrintScentMemory();
+                    }
+
+                    if (IsTargetReached(context))
+                    {
+                        Debug.Log($"[ScentFollow] Found target for {scentKey}");
+                        return TaskTickResult.Succeeded();
+                    }
+
+                    // TODO: this should only be used If you’re tracking a category (Food/Human/etc.) and don’t have a specific agent id.
+                    if (IsHeuristicFound(lastCellPos))
+                    {
+                        Debug.Log($"[ScentFollow] Found target using IsHeuristicFound for {scentKey}");
+                        return TaskTickResult.Succeeded();
                     }
                 }
             }
@@ -877,6 +899,72 @@ namespace DogGame.Tasks
         private float GetSeenAgeSeconds(Vector2Int pos)
         {
             return memory.TryGetValue(pos, out var info) ? (Time.time - info.lastSeenTime) : 999f;
+        }
+
+        private bool IsTargetReached(TaskContext context)
+        {
+            if (context.Agent == null) return false;
+
+            // only works when scentKey is agent:<id>
+            if (!TryParseAgentId(scentKey, out int targetId)) 
+                return false;
+
+            if (!WorldObjectRegistry.Instance.TryGet(targetId, out var target) || target == null)
+                return false;
+
+            // Cell-based proximity (recommended for your grid world)
+            Vector2Int a = context.Agent.locationModule.cell.pos;
+            Vector2Int b = target.locationModule.cell.pos;
+
+            int manhattan = Mathf.Abs(a.x - b.x) + Mathf.Abs(a.y - b.y);
+            return manhattan <= 1; // same or adjacent
+        }
+
+        private static bool TryParseAgentId(string key, out int id)
+        {
+            id = -1;
+            if (string.IsNullOrWhiteSpace(key)) return false;
+            if (!key.StartsWith("agent:", StringComparison.Ordinal)) return false;
+            return int.TryParse(key.Substring("agent:".Length), out id);
+        }
+
+        private readonly float foundStrengthThreshold01 = 0.20f; // tune to your diffusion
+        private readonly float plateauEpsilon = 0.005f;
+        private float lastHeuristicStrength01 = 0f;
+        private Vector2Int lastHeuristicPos;
+        private bool hasLastHeuristicSample = false;
+        private int plateauTicks = 0;
+
+        // Use IsHeuristicFound only for “category-only” or “named non-agent sources”.
+        private bool IsHeuristicFound(Vector2Int pos)
+        {
+            float current = GetLastStrength(pos); // from memory[pos].lastStrength01
+            if (current < foundStrengthThreshold01)
+            {
+                plateauTicks = 0;
+                hasLastHeuristicSample = false;
+                return false;
+            }
+
+            // Only count plateau if we're sampling the same cell consecutively.
+            if (hasLastHeuristicSample && pos == lastHeuristicPos)
+            {
+                if (current <= lastHeuristicStrength01 + plateauEpsilon)
+                    plateauTicks++;
+                else
+                    plateauTicks = 0;
+            }
+            else
+            {
+                // New cell sample resets plateau tracking
+                plateauTicks = 0;
+                hasLastHeuristicSample = true;
+            }
+
+            lastHeuristicPos = pos;
+            lastHeuristicStrength01 = current;
+
+            return plateauTicks >= 3; // ~3 cycles “we’re basically at source”
         }
 
     }
