@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using Unity.AppUI.Core;
+using System.Net;
 using UnityEngine;
 
 [Serializable]
@@ -57,7 +57,7 @@ public class LeashSystem : MonoBehaviour // or your Subsystem base
             {
                 if (agent == null) continue;
 
-                var endpoints = agent.packMemberModule?.LeashEndpoints;
+                var endpoints = agent.packMemberModule?.leashEndpoints;
                 if (endpoints == null) continue;
 
                 foreach (var ep in endpoints)
@@ -75,6 +75,20 @@ public class LeashSystem : MonoBehaviour // or your Subsystem base
                     // Create leash where agent is ep.myRole, other is opposite by default
                     var otherRole = (ep.myRole == LeashEndRole.Handle) ? LeashEndRole.Clip : LeashEndRole.Handle;
 
+                    LeashEndpoint ep_other = FindEndpoint(ep.otherAgent.packMemberModule.leashEndpoints, ep.otherAgent);
+                    if (ep_other==null)
+                    {
+                        // create ep_other
+                        ep_other = new()
+                        {
+                            maxLength = ep.maxLength,
+                            myRole = otherRole,
+                            otherAgent = agent,
+                            autoCreateOnStart = false   // I just created the link, don't try it again from this new endpooint.
+                        };
+                        ep.otherAgent.packMemberModule.leashEndpoints.Add(ep_other);
+                        Debug.Log($"{agent.DisplayName} Created matching LeashEndpoint in {ep.otherAgent.DisplayName}: {otherRole} {ep.maxLength}");
+                    }
                     LeashLink newLeashLink;
                     TryCreateLeash(agent, ep.myRole, ep.otherAgent, otherRole, ep.maxLength, out newLeashLink);
                 }
@@ -92,7 +106,7 @@ public class LeashSystem : MonoBehaviour // or your Subsystem base
         }
         if (maxLength <= 0f)
         {
-            Debug.LogError("Tried to create a leash with invalid length = {maxLength}");
+            Debug.LogError($"Tried to create a leash with invalid length = {maxLength}");
             return false;
         }
 
@@ -101,7 +115,9 @@ public class LeashSystem : MonoBehaviour // or your Subsystem base
         var bp = b.packMemberModule.currentPack; 
         if (ap == null || bp == null)
         {
-            Debug.LogError($"Tried to create leash to an agent not in a pack {a.DisplayName} in pack={ap.packName} to {b.DisplayName} in pack={bp.packName}");
+            Debug.LogError($"Tried to create leash but an agent is not in a pack. " +
+                        $"{a.DisplayName} pack={(ap != null ? ap.packName : "NULL")} " +
+                        $"to {b.DisplayName} pack={(bp != null ? bp.packName : "NULL")}");
             return false;
         }
         if (ap!=bp)
@@ -115,7 +131,7 @@ public class LeashSystem : MonoBehaviour // or your Subsystem base
             return false;
         }
 
-        Debug.Log($"Creating leash between {a.DisplayName} and {b.DisplayName}.");
+        //Debug.Log($"Creating leash between {a.DisplayName} and {b.DisplayName}.");
         GameObject leashObject;
         LeashVisualizer leashVisualizer;
         newLeashLink = new LeashLink { a = a, roleA = roleA, b = b, roleB = roleB, maxLength = maxLength };
@@ -225,4 +241,14 @@ public class LeashSystem : MonoBehaviour // or your Subsystem base
         return true;
     }
 
+    private LeashEndpoint FindEndpoint(IReadOnlyList<LeashEndpoint> endpoints, WorldObject other)
+    {
+        for (int i = 0; i < endpoints.Count; i++)
+        {
+            var ep = endpoints[i];
+            if (ep != null && ep.otherAgent == other)
+                return ep;
+        }
+        return null;
+    }
 }

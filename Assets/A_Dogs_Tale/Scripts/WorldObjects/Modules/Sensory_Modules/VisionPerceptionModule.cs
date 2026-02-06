@@ -228,7 +228,7 @@ namespace DogGame.Modules
                         observer: worldObject,
                         type: PerceptionEventType.TargetLostSight,
                         worldPos: ls.lastPosWorld,
-                        target: lastTarget,
+                        target: lastTarget!,    // ok to be null
                         strength01: 0.35f,
                         novelty01: 0.8f,
                         interest01: 0.35f,

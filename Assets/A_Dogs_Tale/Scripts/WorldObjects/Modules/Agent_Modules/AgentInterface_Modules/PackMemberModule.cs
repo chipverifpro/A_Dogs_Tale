@@ -8,8 +8,7 @@ namespace DogGame.Modules
     {
         public Pack currentPack;
 
-        [SerializeField] private List<LeashEndpoint> leashEndpoints = new();
-        public IReadOnlyList<LeashEndpoint> LeashEndpoints => leashEndpoints;
+        [SerializeField] public List<LeashEndpoint> leashEndpoints = new();
 
         public bool isLeader
         {
