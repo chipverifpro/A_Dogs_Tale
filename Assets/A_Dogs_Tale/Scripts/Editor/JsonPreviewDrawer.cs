@@ -391,13 +391,15 @@ public sealed class JsonPreviewDrawer : PropertyDrawer
         //s = s.Replace("\\t", "\t");
         //s = s.Replace("\\\"", "\"");
         s = s.Replace("\\\n", "\n");
-        s = s.Replace(",", ",\n");
-        //s = s.Replace("\",\"", ",\n");
+        //s = s.Replace(",", ",\n");
+        s = s.Replace("\",", "\",\n");
+        s = s.Replace(",\"", ",\n\"");
         s = s.Replace("\\r\\n", "\n");
         s = s.Replace("\\n", "\n");
         s = s.Replace("\\t", "\t");
         s = s.Replace("\\\\\\\"", "\"");
         s = s.Replace("\\\"", "\"");
+        s = s.Replace("\n\n", "\n");
 
         // Strip markdown fences if present
         s = StripCodeFencesIfPresent(s);

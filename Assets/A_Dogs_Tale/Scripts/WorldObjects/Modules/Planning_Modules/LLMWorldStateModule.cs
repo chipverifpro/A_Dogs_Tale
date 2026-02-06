@@ -23,6 +23,8 @@ namespace DogGame.LLM.Agent
         public string doorsContext = "";
         public int maxDoors = 5;
 
+        public string leashContext = "";
+
         [Header("Perception / Signals (auto-populate at runtime)")]
         [Tooltip("Approx distance to player in meters.")]
         public float distanceToPlayerMeters = 999f;
@@ -104,7 +106,8 @@ namespace DogGame.LLM.Agent
         public void AddContextBlocks(List<string> contextBlocks)
         {
             if (contextBlocks == null) throw new ArgumentNullException(nameof(contextBlocks));
-
+            leashContext = LeashSystem.MyLeashToLLM(observer: worldObject);
+            LimitAndAddBlock(contextBlocks, leashContext);
             positionContext = BuildPositionContextBlock();
             LimitAndAddBlock(contextBlocks, positionContext);
             //TryAddBlock(contextBlocks, "CONTEXT: Nearby", nearbySummary);
@@ -228,9 +231,9 @@ namespace DogGame.LLM.Agent
                     clipRect=worldBounds; // on failure, use entire map.
                 
                 if (!roomName.IsNullOrEmpty())
-                    roomContext = $" in room \"{roomName}\" of type \"{roomType}\" and size {roomBounds.width},{roomBounds.height}. ";
+                    roomContext = $" in room {roomName} of type {roomType} and size {roomBounds.width},{roomBounds.height}. ";
                 else
-                    roomContext = $" in room type \"{roomType}\" and size {roomBounds.width},{roomBounds.height}. ";
+                    roomContext = $" in room type {roomType} and size {roomBounds.width},{roomBounds.height}. ";
                 
                 //   identify door locations.
                 BuildDoorsList(agentWorldPosition, room, radiusBounds, maxDoors);

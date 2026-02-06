@@ -200,7 +200,14 @@ namespace DogGame.LLM.Core
             }
 
             // Optional debug monitor hook (your project has Directory.Instance.llmDebugMonitor)
-            try { Directory.Instance.llmDebugMonitor.DebugLLMRequest(spec.payload.ToString()); } catch { /* ignore */ }
+            string payloadJson = spec.payload.ToString();
+            string agentId = ExtractAgentId(payloadJson) ?? "<unknown>";
+            string requestId = Guid.NewGuid().ToString("N");
+            Directory.Instance.llmDebugMonitor.DebugLLMRequest(
+                payloadJson,
+                agentId,
+                requestId
+            );
 
             var tcs = new TaskCompletionSource<LLMResponse>(TaskCreationOptions.RunContinuationsAsynchronously);
 
@@ -215,11 +222,18 @@ namespace DogGame.LLM.Core
                 {
                     ctr.Dispose();
 
-                    string raw = unityRequest.downloadHandler?.text ?? "";
-                    try { Directory.Instance.llmDebugMonitor.DebugLLMResponse(raw); } catch { /* ignore */ }
-
                     // Stale-session check at completion time
                     bool stale = tokenAtStart != CurrentSessionToken;
+
+                    string raw = unityRequest.downloadHandler?.text ?? "";
+                    Directory.Instance.llmDebugMonitor.DebugLLMResponse(
+                        raw,
+                        agentId,
+                        requestId,
+                        stale
+                    );
+
+                    // Stale-session check at completion time
                     if (stale)
                     {
                         tcs.TrySetResult(new LLMResponse
@@ -434,6 +448,32 @@ namespace DogGame.LLM.Core
                     return false;
                 }
             }
+        }
+
+        private static string? ExtractAgentId(string json)
+        {
+            if (string.IsNullOrEmpty(json))
+                return null;
+
+            const string key = "\"agentId\"";
+
+            int keyIndex = json.IndexOf(key, StringComparison.Ordinal);
+            if (keyIndex < 0)
+                return null;
+
+            int colonIndex = json.IndexOf(':', keyIndex + key.Length);
+            if (colonIndex < 0)
+                return null;
+
+            int firstQuote = json.IndexOf('"', colonIndex + 1);
+            if (firstQuote < 0)
+                return null;
+
+            int secondQuote = json.IndexOf('"', firstQuote + 1);
+            if (secondQuote < 0)
+                return null;
+
+            return json.Substring(firstQuote + 1, secondQuote - firstQuote - 1);
         }
     }
 }

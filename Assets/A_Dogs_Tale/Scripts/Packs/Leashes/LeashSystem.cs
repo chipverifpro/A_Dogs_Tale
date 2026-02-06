@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Net;
+using System.Text;
 using UnityEngine;
 
 [Serializable]
@@ -225,12 +226,13 @@ public class LeashSystem : MonoBehaviour // or your Subsystem base
             Debug.LogError("Leash prefab is null.");
             return false;
         }
-        leashObject = Instantiate(leashPrefab, parent:parentA.gameObject.transform);
+        leashObject = Instantiate(leashPrefab);
         if (leashObject==null)
         {
             Debug.LogError("Failed to create a leash GameObject.");
             return false;
         }
+        leashObject.transform.SetParent(parentA.transform, worldPositionStays: true);
         leashObject.name = $"Leash {parentA.name} to {parentB.name}";
 
         leashVisualizer = leashObject.GetComponent<LeashVisualizer>();
@@ -250,5 +252,27 @@ public class LeashSystem : MonoBehaviour // or your Subsystem base
                 return ep;
         }
         return null;
+    }
+
+    public static string MyLeashToLLM(WorldObject observer)
+    {
+        StringBuilder sb = new();
+        // is observer on a leash?
+        if (observer.packMemberModule.leashEndpoints.Count>0)
+        {
+            foreach(LeashEndpoint ep in observer.packMemberModule.leashEndpoints)
+            {
+                if (ep.myRole == LeashEndRole.Handle)
+                {
+                    sb.Append($"I am holding a {ep.maxLength}m long leash connected to {ep.otherAgent.DisplayName} at [{ep.otherAgent.pos3d_world.x},{ep.otherAgent.pos3d_world.z}]. ");
+                }
+                else
+                {
+                    sb.Append($"I am clipped to a {ep.maxLength}m long leash held by {ep.otherAgent.DisplayName} at [{ep.otherAgent.pos3d_world.x},{ep.otherAgent.pos3d_world.z}]. ");
+                }
+            }
+        }
+        // future? can we see any other leashes?
+        return sb.ToString();
     }
 }
