@@ -286,9 +286,34 @@ namespace DogGame.Modules
             // --- 4. Determine combined velocity ---
             Vector3 frameVelocity = horizontalVelocity + verticalVelocity;
 
-            // --- 5. Apply change in position at velocity * deltaT,
-            //     but limit to a maximum of maxDistance.
-            bodyRoot.position += Vector3.ClampMagnitude(frameVelocity * deltaTime, maxDistance);
+            // --- 5. Propose frame delta (already maxDistance-clamped)
+            Vector3 proposedDelta = Vector3.ClampMagnitude(frameVelocity * deltaTime, maxDistance);
+            Vector3 proposedPosition = bodyRoot.position + proposedDelta;
+
+            // --- 6. Apply leash constraint (position-level clamp)
+            Vector3 constrainedPosition = proposedPosition;
+
+            //var leashSystem = world?.GetSubsystem<LeashSystem>(); // or however you access subsystems
+            if (dir.leashSystem != null)
+            {
+                // If this MotionModule belongs to an agent WorldObject, pass it.
+                // Adapt the cast/type to your actual agent class.
+                constrainedPosition = dir.leashSystem.ConstrainDesiredPosition(worldObject, proposedPosition);
+            }
+
+            // --- 7. Commit
+            Vector3 actualDelta = constrainedPosition - bodyRoot.position;
+            bodyRoot.position = constrainedPosition;
+
+            // --- 8. Optional: make horizontalVelocity reflect the actual move (reduces later jitter)
+            if (deltaTime > 0f)
+            {
+                Vector3 actualFrameVelocity = actualDelta / deltaTime;
+
+                // Keep your gravity model intact; only adjust horizontal.
+                horizontalVelocity = new Vector3(actualFrameVelocity.x, 0f, actualFrameVelocity.z);
+            }
+
             //Debug.Log($"{worldObject.DisplayName}:MotionModule.ApplyMotion complete");
         }
 

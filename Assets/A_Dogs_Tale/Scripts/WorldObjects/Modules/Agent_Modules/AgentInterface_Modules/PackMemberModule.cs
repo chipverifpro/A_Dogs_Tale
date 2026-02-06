@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace DogGame.Modules
@@ -6,6 +7,9 @@ namespace DogGame.Modules
     public class PackMemberModule : WorldModule
     {
         public Pack currentPack;
+
+        [SerializeField] private List<LeashEndpoint> leashEndpoints = new();
+        public IReadOnlyList<LeashEndpoint> LeashEndpoints => leashEndpoints;
 
         public bool isLeader
         {

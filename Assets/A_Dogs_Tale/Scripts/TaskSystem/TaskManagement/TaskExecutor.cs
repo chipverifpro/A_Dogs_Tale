@@ -89,7 +89,7 @@ namespace DogGame.Tasks
             }
             if (tickResult.Status == TaskStatus.Succeeded)
             {
-                Debug.LogWarning($"{context.AgentId} Task succeeded: {currentTask!.DebugName}");
+                Debug.Log($"{context.AgentId} Task succeeded: {currentTask!.DebugName}");
             }
             if (tickResult.Status == TaskStatus.Failed)
             {

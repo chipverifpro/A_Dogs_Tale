@@ -936,6 +936,7 @@ GameObject:
   m_Component:
   - component: {fileID: 125976611}
   - component: {fileID: 125976612}
+  - component: {fileID: 125976613}
   m_Layer: 0
   m_Name: Packs
   m_TagString: Untagged
@@ -978,6 +979,22 @@ MonoBehaviour:
   packs:
   - {fileID: 766807147}
   debug_RandomJoin: 1
+--- !u!114 &125976613
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 125976610}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 561ba137512844c6894d2cac9f3e284a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::LeashSystem
+  leashes: []
+  leashPrefab: {fileID: 5830273461789261354, guid: 0a93b18a3acdf40bc9f6c3cb46997b24,
+    type: 3}
+  leashVisualParent: {fileID: 125976611}
 --- !u!1 &134909790
 GameObject:
   m_ObjectHideFlags: 0
@@ -8664,6 +8681,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.AgentPackMemberModule
   currentPack: {fileID: 0}
+  leashEndpoints: []
 --- !u!114 &1253610045
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -12623,6 +12641,10 @@ PrefabInstance:
         type: 3}
       insertIndex: -1
       addedObject: {fileID: 1651296807}
+    - targetCorrespondingSourceObject: {fileID: 4477274621950385561, guid: da33ad6d2d1f9483faa117084b30e547,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1651296809}
   m_SourcePrefab: {fileID: 100100000, guid: da33ad6d2d1f9483faa117084b30e547, type: 3}
 --- !u!4 &1651296778 stripped
 Transform:
@@ -12650,7 +12672,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.AgentModule
   agentName: Agent Cur
   initialDecisionType: 2
-  currentDecisionModule: {fileID: 6544990386685219152}
+  currentDecisionModule: {fileID: 0}
 --- !u!114 &1651296781
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -12728,6 +12750,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.AgentPackMemberModule
   currentPack: {fileID: 766807147}
+  leashEndpoints:
+  - otherAgent: {fileID: 6544990386685219154}
+    myRole: 1
+    maxLength: 3
+    autoCreateOnStart: 1
 --- !u!114 &1651296786
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -13104,6 +13131,30 @@ MonoBehaviour:
   rangeCrawl: 5
   rangeStrafe: 12
   rangeBackpedal: 12
+--- !u!114 &1651296809
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1651296779}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b89d8ed18e1fb45f1bc9eb7a96a8b787, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.VisionPerceptionModule
+  viewRadius: 12
+  peripheralFovDeg: 160
+  eyeHeight: 0.6
+  targetAimHeight: 0.5
+  occluderMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  movingSpeedThreshold: 0.2
+  fastSpeedThreshold: 3.5
+  maxDetections: 12
+  maxEvents: 16
+  leaderNotVisibleCooldownSeconds: 2
 --- !u!1 &1653904421
 GameObject:
   m_ObjectHideFlags: 0
@@ -14767,6 +14818,10 @@ PrefabInstance:
         type: 3}
       insertIndex: -1
       addedObject: {fileID: 2108676855}
+    - targetCorrespondingSourceObject: {fileID: 5957909782290826837, guid: e86f8e8e9b1324aecbb31e00a8c49ed2,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2108676857}
   m_SourcePrefab: {fileID: 100100000, guid: e86f8e8e9b1324aecbb31e00a8c49ed2, type: 3}
 --- !u!4 &1880613838 stripped
 Transform:
@@ -14820,6 +14875,7 @@ MonoBehaviour:
   convertScreenToWorld: {fileID: 942637348}
   dogSpeechDictionary: {fileID: 1642226072}
   worldObjectRegistry: {fileID: 1920128614}
+  leashSystem: {fileID: 125976613}
   brain: {fileID: 1815589289}
   vcamFP: {fileID: 445485060}
   vcamNose: {fileID: 225585588}
@@ -16313,6 +16369,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.PackMemberModule
   currentPack: {fileID: 0}
+  leashEndpoints: []
 --- !u!114 &2108676845
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -16571,6 +16628,30 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.ImmobileDecisionModule
   navigationSource: 0
+--- !u!114 &2108676857
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2108676836}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b89d8ed18e1fb45f1bc9eb7a96a8b787, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.VisionPerceptionModule
+  viewRadius: 12
+  peripheralFovDeg: 160
+  eyeHeight: 0.6
+  targetAimHeight: 0.5
+  occluderMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  movingSpeedThreshold: 0.2
+  fastSpeedThreshold: 3.5
+  maxDetections: 12
+  maxEvents: 16
+  leaderNotVisibleCooldownSeconds: 2
 --- !u!1 &2129299916
 GameObject:
   m_ObjectHideFlags: 0
@@ -17066,6 +17147,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.AgentPackMemberModule
   currentPack: {fileID: 766807147}
+  leashEndpoints: []
 --- !u!114 &6544990386685219149
 MonoBehaviour:
   m_ObjectHideFlags: 0

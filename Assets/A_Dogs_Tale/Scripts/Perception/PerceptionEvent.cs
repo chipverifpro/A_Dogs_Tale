@@ -226,7 +226,7 @@ namespace DogGame.Modules
                         (e.Type == PerceptionEventType.TargetNewlySeen ? "spotted" : "seen");
 
                     // Dist/speed are very useful for planning, but keep formatting tight
-                    return $"VISION: {motion} {targetName} ({v.Kind},{v.Relation}) dist={v.DistanceMeters:0.0}m speed={v.SpeedMps:0.0}m/s position=({e.WorldPos.x:0},{e.WorldPos.y:0}).";
+                    return $"VISION: {motion} {targetName} ({v.Kind},{v.Relation}) dist={v.DistanceMeters:0.0}m speed={v.SpeedMps:0.0}m/s position=[{e.WorldPos.x:0},{e.WorldPos.y:0}].";
                 }
 
                 case PerceptionSense.Scent:

@@ -39,6 +39,7 @@ public class Directory : MonoBehaviour
     public ConvertScreenToWorld convertScreenToWorld;
     public DogSpeechDictionary dogSpeechDictionary;
     public WorldObjectRegistry worldObjectRegistry;
+    public LeashSystem leashSystem;
 
     [Header("Game Camearas")]
     public CinemachineBrain brain;
