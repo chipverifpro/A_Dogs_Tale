@@ -263,7 +263,7 @@ public class ScentAirGround : MonoBehaviour
         
         // define the wait time per step funtion for repeated use below. (yield return wait;)
         WaitForSeconds wait = new WaitForSeconds(simulationTimeStep);
-        
+        Debug.Log("Scent physics started.");
         
         //////////////////////////////////////////////////////////
         /// Main physics/visualize loop is one of these two... ///
@@ -274,7 +274,7 @@ public class ScentAirGround : MonoBehaviour
         {
             while (true)
             {
-                Debug.Log($"ScentDecayAndSpread running");
+                //Debug.Log($"ScentDecayAndSpread running");
                 physicsStartTime = Time.realtimeSinceStartup;
                 original_cell_count = cellsContainingScents.Count;
                 float limitedDeltaTime = Mathf.Clamp(Time.deltaTime, 0f, simulationTimeStep * 5f); // prevent huge steps if frame rate drops too low

@@ -77,6 +77,8 @@ namespace DogGame.LLM.Agent
         [Tooltip("Suggested nearby target cells (reachable/preferred) if known. Keep small (<=8).")]
         public Rect tgt = new();
 
+        [SerializeField] private int maxVisionContextLines = 6;
+
         // ---------------------
 
         /// <summary>
@@ -158,6 +160,35 @@ namespace DogGame.LLM.Agent
             // - Summarize health/stamina/status into statusSummary
         }
 
+        #region VisionContext
+        public string GetVisionContextBlock()
+        {
+            // However you fetch modules in your project:
+            // - worldObject.GetModule<VisionPerceptionModule>()
+            // - GetComponent<VisionPerceptionModule>()
+            // - worldObject.visionPerceptionModule
+            var sb = new System.Text.StringBuilder(1024);
+            //Debug.Log($"{worldObject.DisplayName} GetVisionContextBlock");
+
+            var vision = worldObject.visionPerceptionModule;
+            if (vision == null) return "";
+
+            var events = vision.GetPerceptionEvents();
+            Debug.Log($"{worldObject.DisplayName} vision events.count={events.Count}");
+            if (events == null || events.Count == 0) return "";
+
+            // Convert to compact lines
+            var lines = events.ToLLMLines(maxVisionContextLines);
+            if (lines.Count == 0) return "";
+
+            sb.AppendLine("Vision:");
+            for (int i = 0; i < lines.Count; i++)
+                sb.Append(" - ").AppendLine(lines[i]);
+            
+            return sb.ToString();
+        }
+        #endregion
+
         #region PositionContext
             
         // ========== Position Context ===========
@@ -197,9 +228,9 @@ namespace DogGame.LLM.Agent
                     clipRect=worldBounds; // on failure, use entire map.
                 
                 if (!roomName.IsNullOrEmpty())
-                    roomContext = $" in room \"{roomName}\" of type \"{roomType}\" and size {roomBounds.width},{roomBounds.height}";
+                    roomContext = $" in room \"{roomName}\" of type \"{roomType}\" and size {roomBounds.width},{roomBounds.height}. ";
                 else
-                    roomContext = $" in room type \"{roomType}\" and size {roomBounds.width},{roomBounds.height}";
+                    roomContext = $" in room type \"{roomType}\" and size {roomBounds.width},{roomBounds.height}. ";
                 
                 //   identify door locations.
                 BuildDoorsList(agentWorldPosition, room, radiusBounds, maxDoors);
@@ -216,13 +247,15 @@ namespace DogGame.LLM.Agent
             if(!TryIntersect(radiusBounds, clipRect, out tgt))
                 tgt = radiusBounds;     // if no overlap, just use local radius without clip
 
+            string visionContext = GetVisionContextBlock();
             // expansion suggestions:
             // create summary for LLM:
-            positionContext = "Context: Agent position:"
+            positionContext = $"[{worldObject.DisplayName}] CONTEXT: Agent position:"
                 + $" [{agentWorldPosition.x:0.0}, {agentWorldPosition.z:0.0}]."
                 + $" floor height={agentWorldPosition.y:0.0}"
                 + roomContext
                 + doorsContext 
+                + visionContext
                 + $" suggested move_to bounded by rectangle [x in {tgt.x} .. {tgt.x+tgt.width-1}, y in {tgt.y} .. {tgt.y+tgt.height-1}]";
             Debug.Log(positionContext);
             return positionContext;
@@ -268,7 +301,7 @@ namespace DogGame.LLM.Agent
                     }
                 }
             }
-            Debug.Log($"{foundDoors.Count} doors nearby: ");
+            //Debug.Log($"{foundDoors.Count} doors nearby: ");
             if (foundDoors.Count==0) return "";
 
             // Sort nearest first
@@ -279,10 +312,10 @@ namespace DogGame.LLM.Agent
             {
                 foundDoors.RemoveRange(maxDoors, foundDoors.Count - maxDoors);
             }
-            doorsContext = $"{foundDoors.Count} doors nearby: ";
+            doorsContext = $"{foundDoors.Count} room exits nearby: ";
             foreach (FoundDoor foundDoor in foundDoors)
             {
-                doorsContext += $"{foundDoor.direction} {foundDoor.IsOpen} at [{foundDoor.pos.x},{foundDoor.pos.y}]; ";
+                doorsContext += $"Door to {DirFlagsEx.ToLongName(foundDoor.direction)} is {foundDoor.IsOpen} at [{foundDoor.pos.x},{foundDoor.pos.y}]; ";
             }
             doorsContext.Trim();    // eliminate trailing space
             //Debug.Log(doorsContext);

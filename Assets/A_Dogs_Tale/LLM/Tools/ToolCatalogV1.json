@@ -41,7 +41,7 @@
         "description": "Move toward a grid cell using navigation.",
         "parameters": {
           "locationCell": "[int x 0..100, int y 0..100]",
-          "stopRadius": "float 0.05..2.0"
+          "stopRadius": "float 0.05..1.0"
         }
       },
       {

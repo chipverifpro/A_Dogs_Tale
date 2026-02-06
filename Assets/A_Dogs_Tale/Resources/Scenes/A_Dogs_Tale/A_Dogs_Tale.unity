@@ -8888,6 +8888,7 @@ MonoBehaviour:
     y: 0
     width: 0
     height: 0
+  maxVisionContextLines: 6
 --- !u!1 &1255866326
 GameObject:
   m_ObjectHideFlags: 0
@@ -12809,7 +12810,6 @@ MonoBehaviour:
   cameraForMovement: {fileID: 1815589284}
   cameraModeSwitcher: {fileID: 1815589288}
   currentDestinationObject: {fileID: 0}
-  thinkIntervalSeconds: 10
   llmConfig: {fileID: 0}
   llmWorldState: {fileID: 0}
   llmFacade: {fileID: 0}
@@ -12835,6 +12835,8 @@ MonoBehaviour:
   allowSelfDistress: 1
   allowSelfPriorityAtOrAbove: 7
   alwaysSuppressSelfFootsteps: 1
+  suppressPackFootsteps: 1
+  suppressOnlyMovementFromPack: 1
   sameRoomFactor: 1
   adjacentRoomFactor: 0.75
   differentRoomFactor: 0.4
@@ -13066,6 +13068,7 @@ MonoBehaviour:
     y: 0
     width: 0
     height: 0
+  maxVisionContextLines: 6
 --- !u!114 &1651296807
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -14760,6 +14763,10 @@ PrefabInstance:
         type: 3}
       insertIndex: -1
       addedObject: {fileID: 2108676853}
+    - targetCorrespondingSourceObject: {fileID: 5957909782290826837, guid: e86f8e8e9b1324aecbb31e00a8c49ed2,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2108676855}
   m_SourcePrefab: {fileID: 100100000, guid: e86f8e8e9b1324aecbb31e00a8c49ed2, type: 3}
 --- !u!4 &1880613838 stripped
 Transform:
@@ -16259,7 +16266,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.AgentModule
   agentName: Chihuahua
-  initialDecisionType: 3
+  initialDecisionType: 4
   currentDecisionModule: {fileID: 2108676846}
 --- !u!114 &2108676842
 MonoBehaviour:
@@ -16486,6 +16493,7 @@ MonoBehaviour:
     y: 0
     width: 0
     height: 0
+  maxVisionContextLines: 6
 --- !u!114 &2108676852
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -16542,12 +16550,27 @@ MonoBehaviour:
   allowSelfDistress: 1
   allowSelfPriorityAtOrAbove: 7
   alwaysSuppressSelfFootsteps: 1
+  suppressPackFootsteps: 1
+  suppressOnlyMovementFromPack: 1
   sameRoomFactor: 1
   adjacentRoomFactor: 0.75
   differentRoomFactor: 0.4
   maxRawHeard: 24
   maxLLMItems: 8
   sensitivity: 1
+--- !u!114 &2108676855
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2108676836}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7adcf621b06804d44b2f0129468cf217, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.ImmobileDecisionModule
+  navigationSource: 0
 --- !u!1 &2129299916
 GameObject:
   m_ObjectHideFlags: 0
@@ -17125,7 +17148,6 @@ MonoBehaviour:
   cameraForMovement: {fileID: 1815589284}
   cameraModeSwitcher: {fileID: 1815589288}
   currentDestinationObject: {fileID: 0}
-  thinkIntervalSeconds: 10
   llmConfig: {fileID: 6544990386685219188}
   llmWorldState: {fileID: 6544990386685219187}
   llmFacade: {fileID: 6544990386685219191}
@@ -17167,6 +17189,8 @@ MonoBehaviour:
   allowSelfDistress: 1
   allowSelfPriorityAtOrAbove: 7
   alwaysSuppressSelfFootsteps: 1
+  suppressPackFootsteps: 1
+  suppressOnlyMovementFromPack: 1
   sameRoomFactor: 1
   adjacentRoomFactor: 0.75
   differentRoomFactor: 0.4
@@ -17537,6 +17561,7 @@ MonoBehaviour:
     y: 0
     width: 0
     height: 0
+  maxVisionContextLines: 6
 --- !u!114 &6544990386685219188
 MonoBehaviour:
   m_ObjectHideFlags: 0

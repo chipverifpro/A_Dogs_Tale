@@ -51,7 +51,7 @@ namespace DogGame.Reactions
 
             if (name == "move_to_event_location")
             {
-                float stopRadius = GetFloat(spec, "stopRadius", 0.6f);
+                float stopRadius = GetFloat(spec, "stopRadius", 0.25f);
                 stopRadius = Mathf.Clamp(stopRadius, 0.05f, 3.0f);
 
                 // Uses the event’s world position as destination

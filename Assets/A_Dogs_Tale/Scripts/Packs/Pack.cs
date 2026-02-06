@@ -62,7 +62,7 @@ public class Pack : MonoBehaviour
         {
             // move this Pack object to under the "Packs" object in the hierarchy
             this.gameObject.transform.SetParent(dir.packManager.PackParentObject.transform, worldPositionStays: false);
-            Debug.LogWarning($"[Pack.Start {this.gameObject.name}] set parent to {dir.packManager.PackParentObject.name}");
+            //Debug.LogWarning($"[Pack.Start {this.gameObject.name}] set parent to {dir.packManager.PackParentObject.name}");
         } else
         {
             //problem.  Something isn't configured.

@@ -42,8 +42,8 @@ namespace DogGame.Modules
 
         TaskController taskController = null;
 
-        public float thinkIntervalSeconds = 10f;
-        private float nextThinkTime = 0f;
+        //public float thinkIntervalSeconds = 10f;
+        //private float nextThinkTime = 0f;
 
         protected override void Awake()
         {
@@ -487,7 +487,7 @@ namespace DogGame.Modules
         {
             {
                 taskController.Submit(new TaskRequest(
-                    task: new Task_MoveToLocation(targetLocation.x, targetLocation.z, stopRadius: 0.6f),
+                    task: new Task_MoveToLocation(targetLocation.x, targetLocation.z, stopRadius: 0.3f),
                     priority: 100,
                     source: TaskSource.Player,
                     canInterrupt: true,

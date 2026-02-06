@@ -50,7 +50,7 @@ namespace DogGame.Tasks
                 if (!TryAcquireNextRequest(out var next))
                     return;
 
-                Debug.Log($"TaskExecutor.Tick: Begin Task: {next.Task.DebugName}");
+                Debug.Log($"{context.AgentId} TaskExecutor.Tick: Begin Task: {next.Task.DebugName}");
                 BeginRequest(next);
             }
 
@@ -64,7 +64,7 @@ namespace DogGame.Tasks
                 }
                 catch (System.Exception exception)
                 {
-                    Debug.LogWarning($"Task Start failed for {currentTask!.DebugName}: {exception.Message}");
+                    Debug.LogWarning($"{context.AgentId} Task Start failed for {currentTask!.DebugName}: {exception.Message}");
                     EndCurrentTask(context, succeeded: false);
                     return;
                 }
@@ -78,7 +78,7 @@ namespace DogGame.Tasks
             }
             catch (System.Exception exception)
             {
-                Debug.LogWarning($"Task Tick exception for {currentTask!.DebugName}: {exception.Message}");
+                Debug.LogWarning($"{context.AgentId} Task Tick exception for {currentTask!.DebugName}: {exception.Message}");
                 EndCurrentTask(context, succeeded: false);
                 return;
             }
@@ -89,11 +89,11 @@ namespace DogGame.Tasks
             }
             if (tickResult.Status == TaskStatus.Succeeded)
             {
-                Debug.LogWarning($"Task succeeded: {currentTask!.DebugName}");
+                Debug.LogWarning($"{context.AgentId} Task succeeded: {currentTask!.DebugName}");
             }
             if (tickResult.Status == TaskStatus.Failed)
             {
-                Debug.LogWarning($"Task failed: {currentTask!.DebugName} reason={tickResult.FailureReason}");
+                Debug.LogWarning($"{context.AgentId} Task failed: {currentTask!.DebugName} reason={tickResult.FailureReason}");
                 lastFailureReason = tickResult.FailureReason;
             }
 

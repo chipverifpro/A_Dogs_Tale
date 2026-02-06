@@ -29,7 +29,7 @@ namespace DogGame.Tasks
         //private readonly float wBacktrack = 0.50f;
 
         // How strongly we avoid very recent cells
-        private readonly int tabooLength = 4;
+        //private readonly int tabooLength = 4;
 
         // When "stuck", we allow mild downhill to escape peaks
         private readonly int stuckStepsToExplore = 4;
@@ -81,8 +81,8 @@ namespace DogGame.Tasks
         }
 
         private readonly Dictionary<Vector2Int, CellTrackInfo> memory = new();
-        private readonly Queue<Vector2Int> tabooQueue = new();        // recent visited cells
-        private readonly HashSet<Vector2Int> tabooSet = new();        // fast lookup
+        //private readonly Queue<Vector2Int> tabooQueue = new();        // recent visited cells
+        //private readonly HashSet<Vector2Int> tabooSet = new();        // fast lookup
 
         public Task_ScentFollow(
             string scentKey,
@@ -115,8 +115,8 @@ namespace DogGame.Tasks
             stuckCounter = 0;
 
             memory.Clear();
-            tabooQueue.Clear();
-            tabooSet.Clear();
+            //tabooQueue.Clear();
+            //tabooSet.Clear();
 
             if (context.Agent != null && context.Agent.locationModule != null)
             {
@@ -401,8 +401,8 @@ namespace DogGame.Tasks
                 float delta01 = GetRiseDelta(p);
                 float score = ScoreNeighbor(p, strength01, false, exploring, delta01);
                 
-                if (tabooSet.Contains(p))
-                    score -= 1.25f;
+                //if (tabooSet.Contains(p))
+                //    score -= 1.25f;
 
                 if (score > bestScore)
                 {

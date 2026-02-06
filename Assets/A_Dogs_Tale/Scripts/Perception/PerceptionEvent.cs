@@ -205,6 +205,65 @@ namespace DogGame.Modules
 
     public static class PerceptionEventExtensions
     {
+        public static string ToLLMLine(this PerceptionEvent e)
+        {
+            // Keep this intentionally compact and consistent.
+            switch (e.Sense)
+            {
+                case PerceptionSense.Vision:
+                {
+                    string targetName = e.Target != null ? e.Target.DisplayName : "unknown";
+                    if (!e.Vision.HasValue)
+                        return $"VISION: {e.Type} {targetName}";
+
+                    var v = e.Vision.Value;
+
+                    // Small “motion word” derived from type
+                    string motion =
+                        e.Type == PerceptionEventType.TargetMovingFast ? "running" :
+                        e.Type == PerceptionEventType.TargetMoving ? "moving" :
+                        e.Type == PerceptionEventType.TargetLostSight ? "lost" :
+                        (e.Type == PerceptionEventType.TargetNewlySeen ? "spotted" : "seen");
+
+                    // Dist/speed are very useful for planning, but keep formatting tight
+                    return $"VISION: {motion} {targetName} ({v.Kind},{v.Relation}) dist={v.DistanceMeters:0.0}m speed={v.SpeedMps:0.0}m/s position=({e.WorldPos.x:0},{e.WorldPos.y:0}).";
+                }
+
+                case PerceptionSense.Scent:
+                {
+                    if (!e.Scent.HasValue)
+                        return $"SCENT: {e.Type}";
+
+                    var s = e.Scent.Value;
+                    return $"SCENT: {e.Type} {s.Category} '{s.ScentName}' strength={e.Strength01:0.00}";
+                }
+
+                default:
+                    return $"{e.Sense.ToString().ToUpperInvariant()}: {e.Type}";
+            }
+        }
+
+        public static List<string> ToLLMLines(this List<PerceptionEvent> events, int maxLines)
+        {
+            var lines = new List<string>();
+            if (events == null || events.Count == 0) return lines;
+
+            // Prefer high-interest events; stable tie-breaks
+            events.Sort((a, b) =>
+            {
+                int c = b.Interest01.CompareTo(a.Interest01);
+                if (c != 0) return c;
+                c = string.Compare(a.Sense.ToString(), b.Sense.ToString(), StringComparison.Ordinal);
+                if (c != 0) return c;
+                return string.Compare(a.Type.ToString(), b.Type.ToString(), StringComparison.Ordinal);
+            });
+
+            for (int i = 0; i < events.Count && lines.Count < maxLines; i++)
+                lines.Add(events[i].ToLLMLine());
+
+            return lines;
+        }
+
         public static string ToDebugString(this PerceptionEvent e)
         {
             string description = string.Empty;

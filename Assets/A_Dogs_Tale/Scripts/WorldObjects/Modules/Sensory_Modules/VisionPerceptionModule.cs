@@ -56,6 +56,7 @@ namespace DogGame.Modules
         public readonly List<PerceptionEvent> perceptionEvents = new();
 
         private readonly Dictionary<int, LastSeenInfo> lastSeen = new();
+        private readonly Dictionary<int, WorldObject> lastSeenTargetRef = new();
         private readonly HashSet<int> visibleThisTick = new();
         private readonly HashSet<int> visibleLastTick = new();
 
@@ -175,7 +176,7 @@ namespace DogGame.Modules
                 float sizeScore = EstimateSizeScore(target);
                 float score = ComputeScore(dist, angleDeg, speed, sizeScore, kind, relation);
 
-                //Debug.Log($"Detected {target.DisplayName}");
+                //Debug.Log($"[{worldObject.DisplayName} Vision] Detected {target.DisplayName}");
 
                 detections.Add(new VisionDetection
                 {
@@ -196,6 +197,47 @@ namespace DogGame.Modules
                     lastPosWorld = targetPos,
                     lastSeenFrame = Time.frameCount
                 };
+
+                lastSeenTargetRef[key] = target;
+            }
+
+            // Emit TargetLostSight for anything that was visible last tick but not this tick
+            // (keep it cheap + capped)
+            int lostBudget = Mathf.Max(0, maxEvents - perceptionEvents.Count);
+            if (lostBudget > 0)
+            {
+                foreach (var id in visibleLastTick)
+                {
+                    if (perceptionEvents.Count >= maxEvents) break;
+                    if (visibleThisTick.Contains(id)) continue;
+
+                    if (!lastSeen.TryGetValue(id, out var ls))
+                        continue;
+
+                    // Try to find the target ref; it may have been destroyed.
+                    lastSeenTargetRef.TryGetValue(id, out var lastTarget);
+
+                    // If destroyed, prune it (optional).
+                    if (lastTarget == null)
+                    {
+                        lastSeenTargetRef.Remove(id);
+                    }
+
+                    // This is a "context" event; keep it moderate unless you want it to trigger reactions.
+                    perceptionEvents.Add(PerceptionEvent.MakeVision(
+                        observer: worldObject,
+                        type: PerceptionEventType.TargetLostSight,
+                        worldPos: ls.lastPosWorld,
+                        target: lastTarget,
+                        strength01: 0.35f,
+                        novelty01: 0.8f,
+                        interest01: 0.35f,
+                        distanceMeters: 0f,
+                        speedMps: 0f,
+                        angleDeg: 0f,
+                        kind: VisionTargetKind.Unknown,
+                        relation: SocialRelation.NonPack));
+                }
             }
 
             detections.Sort((a, b) => b.score.CompareTo(a.score));
