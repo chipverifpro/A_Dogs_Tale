@@ -6,6 +6,7 @@ using DogGame.LLM.Personality;
 using DogGame.LLM.Policy;
 using DogGame.LLM.Prompting;
 using DogGame.Modules;
+using Newtonsoft.Json.Linq;
 using UnityEngine;
 using static DogGame.LLM.Core.LLMClientBase;
 
@@ -105,13 +106,13 @@ namespace DogGame.LLM.Agent
 
             systemBlocks.AddRange(contextBlocks);
 
-            Debug.Log($"[LLMConfig] toolsChars={instructions.BuildToolDefinitionsJson().Length} schemaChars={instructions.BuildResponseSchemaJson().Length}");
+            //Debug.Log($"[LLMConfig] toolsChars={instructions.BuildToolDefinitionsJson().Length} schemaChars={instructions.BuildResponseSchemaJson().Length}");
 
             // ========== Tools Section ==========
-            string toolsJson = instructions.BuildToolDefinitionsJson();
+            JObject toolsJson = instructions.BuildToolDefinitionsJson();
             
             // ========== Schema Section ==========
-            string schemaJson = instructions.BuildResponseSchemaJson();
+            JObject schemaJson = instructions.BuildResponseSchemaJson();
 
             var req = new LLMRequest
             {
@@ -121,8 +122,8 @@ namespace DogGame.LLM.Agent
                 systemBlocks = systemBlocks,
 
                 // Legacy fields still filled (for compatibility)
-                toolDefinitionsJson = toolsJson,
-                responseSchemaJson = schemaJson,
+                toolDefinitions = toolsJson,
+                responseSchema = schemaJson,
 
                 metadata = new Dictionary<string, string>
                 {
@@ -132,11 +133,11 @@ namespace DogGame.LLM.Agent
             };
 
             // NEW: parse into structured objects once (preferred path)
-            if (LLMPacketJsonPrinter.TryParseObject(toolsJson, out var toolsObj, out _))
-                req.toolDefinitions = toolsObj;
+            //if (LLMPacketJsonPrinter.TryParseObject(toolsJson, out var toolsObj, out _))
+            req.toolDefinitions = toolsJson;
 
-            if (LLMPacketJsonPrinter.TryParseObject(schemaJson, out var schemaObj, out _))
-                req.responseSchema = schemaObj;
+            //if (LLMPacketJsonPrinter.TryParseObject(schemaJson, out var schemaObj, out _))
+            req.responseSchema = schemaJson;
 
             return req;
         }

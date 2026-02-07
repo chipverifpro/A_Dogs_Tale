@@ -325,20 +325,20 @@ namespace DogGame.LLM.Core
             if (request.toolDefinitions != null)
             {
                 sb.AppendLine("TOOLS JSON:");
-                sb.AppendLine(LLMPacketJsonPrinter.PrintJson(request.toolDefinitions, pretty: true));
+                sb.AppendLine(MinifyJson(LLMPacketJsonPrinter.PrintJson(request.toolDefinitions, pretty: true)));
                 sb.AppendLine();
             }
-            else if (!string.IsNullOrWhiteSpace(request.toolDefinitionsJson))
-            {
-                sb.AppendLine("TOOLS JSON:");
-                sb.AppendLine(LLMJsonNormalizer.Normalize(request.toolDefinitionsJson));
-                sb.AppendLine();
-            }
+            //else if (!string.IsNullOrWhiteSpace(request.toolDefinitionsJson))
+            //{
+            //    sb.AppendLine("TOOLS JSON:");
+            //    sb.AppendLine(LLMJsonNormalizer.Normalize(request.toolDefinitionsJson));
+            //    sb.AppendLine();
+            //}
 
             if (request.responseSchema != null)
             {
                 sb.AppendLine("RESPONSE SCHEMA JSON:");
-                sb.AppendLine(LLMPacketJsonPrinter.PrintJson(request.responseSchema, pretty: true));
+                sb.AppendLine(MinifyJson(LLMPacketJsonPrinter.PrintJson(request.responseSchema, pretty: true)));
                 sb.AppendLine();
             }
             else if (!string.IsNullOrWhiteSpace(request.responseSchemaJson))
@@ -474,6 +474,26 @@ namespace DogGame.LLM.Core
                 return null;
 
             return json.Substring(firstQuote + 1, secondQuote - firstQuote - 1);
+        }
+
+        private static string MinifyJson(string json)
+        {
+            if (string.IsNullOrWhiteSpace(json))
+                return "";
+
+            try
+            {
+                var token = JToken.Parse(json);
+                return token.ToString(Formatting.None);
+            }
+            catch
+            {
+                // If it isn't valid JSON, just collapse whitespace
+                return json.Replace("\r", "")
+                        .Replace("\n", " ")
+                        .Replace("\t", " ")
+                        .Trim();
+            }
         }
     }
 }

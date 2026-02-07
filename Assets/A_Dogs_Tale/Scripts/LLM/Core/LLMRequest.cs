@@ -37,7 +37,7 @@ namespace DogGame.LLM.Core
         // Legacy string JSON fields (keep during migration)
         // ----------------------------
         //[Newtonsoft.Json.JsonIgnore]      // do this after nothing relies on them.
-        public string toolDefinitionsJson = "";
+        //public string toolDefinitionsJson = "";
         //[Newtonsoft.Json.JsonIgnore]
         public string responseSchemaJson = "";
 

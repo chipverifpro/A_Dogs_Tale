@@ -38,10 +38,18 @@ namespace DogGame.LLM
                 return (null, validationResult);
             }
 
+            // NEW: sanitize / extract
+            string? extracted = ExtractFirstJsonObject(jsonText);
+            if (string.IsNullOrWhiteSpace(extracted))
+            {
+                validationResult.Errors.Add("Could not find a JSON object in the model output.");
+                return (null, validationResult);
+            }
+
             JObject rootObject;
             try
             {
-                rootObject = JObject.Parse(jsonText);
+                rootObject = JObject.Parse(extracted);
             }
             catch (Exception exception)
             {
@@ -429,6 +437,79 @@ namespace DogGame.LLM
                     }
                 }
             }
+        }
+
+        private static string? ExtractFirstJsonObject(string text)
+        {
+            if (string.IsNullOrWhiteSpace(text))
+                return null;
+
+            // Remove common markdown fences quickly (doesn't need to be perfect).
+            // We'll still do brace extraction after this.
+            text = text.Replace("```json", "", StringComparison.OrdinalIgnoreCase)
+                    .Replace("```", "", StringComparison.OrdinalIgnoreCase)
+                    .Trim();
+
+            int firstBrace = text.IndexOf('{');
+            if (firstBrace < 0)
+                return null;
+
+            int depth = 0;
+            bool inString = false;
+            bool escape = false;
+
+            for (int i = firstBrace; i < text.Length; i++)
+            {
+                char c = text[i];
+
+                if (inString)
+                {
+                    if (escape)
+                    {
+                        escape = false;
+                        continue;
+                    }
+
+                    if (c == '\\')
+                    {
+                        escape = true;
+                        continue;
+                    }
+
+                    if (c == '"')
+                    {
+                        inString = false;
+                        continue;
+                    }
+
+                    continue;
+                }
+                else
+                {
+                    if (c == '"')
+                    {
+                        inString = true;
+                        continue;
+                    }
+
+                    if (c == '{')
+                    {
+                        depth++;
+                    }
+                    else if (c == '}')
+                    {
+                        depth--;
+                        if (depth == 0)
+                        {
+                            // Inclusive substring { ... }
+                            return text.Substring(firstBrace, i - firstBrace + 1);
+                        }
+                    }
+                }
+            }
+
+            // No matching close brace
+            return null;
         }
     }
 }

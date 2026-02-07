@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using DogGame.LLM.Core;
 using DogGame.LLM.Personality;
 using DogGame.LLM.Tools;
+using Newtonsoft.Json.Linq;
 
 namespace DogGame.LLM.Prompting
 {
@@ -13,8 +14,8 @@ namespace DogGame.LLM.Prompting
             string userPrompt,
             MixedPersonality personality,
             List<string> contextBlocks,
-            string toolDefinitionsJson,
-            string responseSchemaJson,
+            JObject toolDefinitions,
+            JObject responseSchema,
             Dictionary<string, string> metadata = null)
         {
             var request = new LLMRequest
@@ -22,8 +23,8 @@ namespace DogGame.LLM.Prompting
                 requestId = requestId,
                 profile = profile,
                 userPrompt = userPrompt,
-                toolDefinitionsJson = toolDefinitionsJson,
-                responseSchemaJson = responseSchemaJson
+                toolDefinitions = toolDefinitions,
+                responseSchema = responseSchema
             };
 
             request.systemBlocks.Add(PromptBlocks.GlobalRulesBlock());

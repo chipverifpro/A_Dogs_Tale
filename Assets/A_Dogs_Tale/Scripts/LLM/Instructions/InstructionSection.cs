@@ -25,6 +25,17 @@ namespace DogGame.LLM.Agent
         [Tooltip("If true, embed tool catalog + schema as JSON objects in the request packet (preferred). If false, embed as raw strings.")]
         public bool embedAsStructuredJson = true;
 
+        [SerializeField] private string toolCatalogResourcePath = "ToolCatalogV1"; // no extension
+
+        private void Awake()
+        {
+            if (toolCatalogJson == null)
+                toolCatalogJson = Resources.Load<TextAsset>(toolCatalogResourcePath);
+
+            if (toolCatalogJson == null)
+                Debug.LogError($"ToolCatalogV1.json not found. Expected Resources/{toolCatalogResourcePath}.json");
+        }
+
         public void AddSystemBlocks(List<string> systemBlocks)
         {
             if (systemBlocks == null) throw new ArgumentNullException(nameof(systemBlocks));
@@ -42,10 +53,10 @@ namespace DogGame.LLM.Agent
         /// Returns the JSON string describing available tools/tasks the LLM may reference.
         /// Source: TextAsset if provided, otherwise a minimal fallback.
         /// </summary>
-        public string BuildToolDefinitionsJson()
+        public JObject OLD_BuildToolDefinitionsJson()
         {
-            if (toolCatalogJson != null && !string.IsNullOrWhiteSpace(toolCatalogJson.text))
-                return toolCatalogJson.text.Trim();
+            //if (toolCatalogJson != null && !string.IsNullOrWhiteSpace(toolCatalogJson.text))
+            //    return toolCatalogJson.text.Trim();
 
             // Minimal fallback so the field is never empty.
             // You can replace this later with a generator over your Tasks directory.
@@ -54,17 +65,92 @@ namespace DogGame.LLM.Agent
                 ["schema"] = "ToolCatalogV1",
                 ["tools"] = new JArray()
             };
-            return fallback.ToString(Formatting.None);
+            return fallback;
+        }
+
+        private const string ToolCatalogResourcePath = "LLM/Tools/ToolCatalogV1";
+        private JObject cachedToolCatalog;
+
+        public JObject BuildToolDefinitionsJson()
+        {
+            if (cachedToolCatalog != null)
+                return (JObject)cachedToolCatalog.DeepClone();
+
+            if (toolCatalogJson == null)
+                toolCatalogJson = Resources.Load<TextAsset>(ToolCatalogResourcePath);
+
+            if (toolCatalogJson == null)
+            {
+                Debug.LogError($"ToolCatalogV1.json not found at Resources/{ToolCatalogResourcePath}.json");
+
+                return new JObject
+                {
+                    ["schema"] = "ToolCatalogV1",
+                    ["tools"] = new JArray()
+                };
+            }
+
+            try
+            {
+                var parsed = JObject.Parse(toolCatalogJson.text);
+
+                var result = new JObject
+                {
+                    ["schema"] = parsed.Value<string>("schema") ?? "ToolCatalogV1",
+                    ["description"] = parsed.Value<string>("description") ?? "",
+                    ["criticalRules"] = parsed["criticalRules"]?.DeepClone(),
+                    ["taskParameterConvention"] = parsed["taskParameterConvention"]?.DeepClone(),
+                    ["tools"] = parsed["tasks"]?.DeepClone() ?? new JArray()
+                };
+
+                cachedToolCatalog = result;
+                return (JObject)cachedToolCatalog.DeepClone();
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"ToolCatalogV1 parse failed: {ex.Message}");
+
+                return new JObject
+                {
+                    ["schema"] = "ToolCatalogV1",
+                    ["tools"] = new JArray()
+                };
+            }
+        }
+        public JObject BuildToolDefinitionsJson_OLD2()
+        {
+            if (toolCatalogJson == null || string.IsNullOrWhiteSpace(toolCatalogJson.text))
+            {
+                return new JObject
+                {
+                    ["schema"] = "ToolCatalogV1",
+                    ["tasks"] = new JArray()
+                };
+            }
+
+            try
+            {
+                return JObject.Parse(toolCatalogJson.text);
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"ToolCatalogV1 parse failed: {ex.Message}");
+                return new JObject
+                {
+                    ["schema"] = "ToolCatalogV1",
+                    ["tasks"] = new JArray()
+                };
+            }
         }
 
         /// <summary>
         /// Returns the JSON string describing the expected response shape.
         /// Source: TextAsset if provided, otherwise a minimal fallback.
         /// </summary>
-        public string BuildResponseSchemaJson()
+        public JObject BuildResponseSchemaJson()
         {
-            if (responseSchemaJson != null && !string.IsNullOrWhiteSpace(responseSchemaJson.text))
-                return responseSchemaJson.text.Trim();
+            //if (responseSchemaJson != null && !string.IsNullOrWhiteSpace(responseSchemaJson.text))
+            //    return responseSchemaJson.text.Trim();
 
             // Minimal fallback that still tells the model what we want.
             var fallback = new JObject
@@ -82,7 +168,7 @@ namespace DogGame.LLM.Agent
                     ["debug"] = new JObject { ["type"] = "object" }
                 }
             };
-            return fallback.ToString(Formatting.None);
+            return fallback;
         }
     }
 }
