@@ -7,6 +7,7 @@ using UnityEngine;
 using DogGame.Modules;           // adjust to your namespaces
 using DogGame.AI;
 using DogGame.LLM;
+using DogGame.UI.InteractionWheel;
 
 [CustomEditor(typeof(WorldObject), true)]
 public class WorldObjectModulesInspector : Editor

@@ -8,6 +8,7 @@ using DogGame.Tasks;
 using DogGame.LLM.Agent;
 using DogGame;
 using DogGame.Noise;
+using DogGame.UI.InteractionWheel;
 
 
 /// <summary>
@@ -64,6 +65,7 @@ public enum ModuleFlags : ulong
     // --- Ability ---
     activatorModule     = 1UL << 31,
     interactionModule   = 1UL << 32,
+    
     
     // --- Output ---
     motionModule        = 1UL << 41,
