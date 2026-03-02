@@ -175,6 +175,7 @@ public class SceneFader : MonoBehaviour
 
     private IEnumerator Fade(CanvasGroup canvasGroup, float startAlpha, float targetAlpha)
     {
+        Debug.Log($"Fading canvas {canvasGroup.name} from {startAlpha} to {targetAlpha}");
         canvasGroup.blocksRaycasts = true; // prevent clicks during fade
 
         float fadePct = 0f;

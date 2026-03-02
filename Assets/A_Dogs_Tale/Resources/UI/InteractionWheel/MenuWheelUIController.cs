@@ -79,6 +79,8 @@ namespace DogGame.UI.InteractionWheel
         {
             if (menuModel == null) throw new ArgumentNullException(nameof(menuModel));
 
+            gameObject.SetActive(true); // <- re-enable before building
+
             currentMenu = menuModel;
             currentPageIndex = 0;
 
@@ -111,6 +113,8 @@ namespace DogGame.UI.InteractionWheel
             currentPageIndex = 0;
 
             RestoreTimeScale();
+
+            gameObject.SetActive(false);
         }
 
         private void Update()
@@ -322,7 +326,7 @@ namespace DogGame.UI.InteractionWheel
         {
             if (canvasRect == null) return;
 
-            Camera uiCamera = rootCanvas.renderMode == RenderMode.ScreenSpaceOverlay ? null : rootCanvas.worldCamera;
+            Camera? uiCamera = rootCanvas.renderMode == RenderMode.ScreenSpaceOverlay ? null : rootCanvas.worldCamera;
 
             // Convert screen pointer to local coordinates in the OptionsContainer space (center is 0,0).
             if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(
