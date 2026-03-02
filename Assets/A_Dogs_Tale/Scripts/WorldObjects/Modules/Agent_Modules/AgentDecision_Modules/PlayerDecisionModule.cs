@@ -481,6 +481,7 @@ namespace DogGame.Modules
                     clearStackOnStart: true,
                     tag: "player_move_to_object"
                 ));
+                Debug.Log($"Move to target object {targetWorldObject.DisplayName}");
             } 
         }
         public void SubmitMoveToTargetPositionTask(Vector3 targetLocation)
@@ -495,6 +496,7 @@ namespace DogGame.Modules
                     clearStackOnStart: true,
                     tag: "player_move_to_location"
                 ));
+                Debug.Log($"Move to target location {targetLocation}");
             }
         }
         private void UpdateFacingModeForDirectInput(Vector3 worldMoveDir)

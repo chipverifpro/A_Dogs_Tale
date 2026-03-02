@@ -15,7 +15,7 @@ public sealed class MenuWheelSystem : MonoBehaviour
     
     public void Initialize()
     {
-        Transform parent = FindGameInputParent();
+        Transform? parent = FindGameInputParent();
         wheelInstance = Instantiate(wheelPrefab,parent);
         Debug.Log ($"instantiated wheelInstance");
         //wheelInstance.CloseMenuWheel(); // ensure hidden
@@ -37,7 +37,7 @@ public sealed class MenuWheelSystem : MonoBehaviour
 
     public bool IsOpen => wheelInstance != null && wheelInstance.IsOpen;
 
-    private Transform FindGameInputParent()
+    private Transform? FindGameInputParent()
     {
         GameObject inputGO = GameObject.Find("Input");
         if (inputGO == null)

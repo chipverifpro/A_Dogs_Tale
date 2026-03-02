@@ -44,6 +44,10 @@ public class NewInputAdapter : MonoBehaviour
     [SerializeField] private string cameraViewActionName      = "";     // optional: change view
     [SerializeField] private string nextAgentActionName       = "";     // optional: cycle player agent
 
+    [Header("Tap (click-to-move)")]
+    [SerializeField] private float tapMaxSeconds = 0.30f;      // must be < holdToOpenSeconds (default in WheelOpener is 0.45) for the wheel
+    [SerializeField] private float tapMaxMovePixels = 18f;     // also must match.
+
     // Latest snapshot of input. Other systems can read this.
     public PlayerInputState CurrentState { get; private set; }
 
@@ -63,6 +67,11 @@ public class NewInputAdapter : MonoBehaviour
 
     private CameraModes cameraMode = CameraModes.Perspective;
 
+    // track long press versus click
+    private bool isPrimaryPressTracking;
+    private double primaryPressStartTime;
+    private Vector2 primaryPressStartPos;
+    private int primaryPressPointerId; // -1 mouse, touchId for touch
     
     private void Awake()
     {
@@ -307,9 +316,18 @@ public class NewInputAdapter : MonoBehaviour
         // --- State Modifiers (ie. Shift / RightMouse / TwoFingers / FaceButtonNorth) ---
         UpdateModifiers(state);
 
+        // If the wheel is open, don't generate click-to-move targets this frame.
+        var wheelUI = DogGame.UI.InteractionWheel.MenuWheelUIFactory.GetOrCreate();
+        if (wheelUI != null && wheelUI.IsOpen)
+        {
+            state.hasClickTargetLocationWorld = false;
+            state.hasClickTargetWorldObject = false;
+            CurrentState = state;
+            return;
+        }
 
         // --- World & object targeting ---
-        if (TryGetMouseClickScreenPosition(out Vector2 screenPosition))
+        if (TryGetTapScreenPosition(out Vector2 screenPosition))
         {
             Vector3 screenPosition3 = new(screenPosition.x, screenPosition.y, 0f);
             //Debug.Log($"TryGetMouseClickScreenPosition returned {screenPosition:0}");
@@ -369,28 +387,125 @@ public class NewInputAdapter : MonoBehaviour
         CurrentState = state;
     }
 
-    public static bool TryGetMouseClickScreenPosition(out Vector2 screenPos)
+    public bool TryGetTapScreenPosition(out Vector2 screenPos)
     {
         screenPos = default;
 
+        // 1) Touch has priority
+        if (Touchscreen.current != null)
+        {
+            // Find a touch that is either starting, in progress, or just ended.
+            foreach (var touch in Touchscreen.current.touches)
+            {
+                if (touch == null) continue;
+
+                bool pressedThisFrame = touch.press.wasPressedThisFrame;
+                bool isPressed = touch.press.isPressed;
+                bool releasedThisFrame = touch.press.wasReleasedThisFrame;
+
+                if (pressedThisFrame)
+                {
+                    // Start tracking
+                    isPrimaryPressTracking = true;
+                    primaryPressStartTime = Time.unscaledTimeAsDouble;
+                    primaryPressStartPos = touch.position.ReadValue();
+                    primaryPressPointerId = touch.touchId.ReadValue();
+                    return false;
+                }
+
+                // Only consider ending the same touch we started with
+                if (isPrimaryPressTracking && primaryPressPointerId == touch.touchId.ReadValue())
+                {
+                    if (isPressed)
+                    {
+                        // Still down; if it moves too far, cancel the tap (becomes drag/hold)
+                        Vector2 currentPos = touch.position.ReadValue();
+                        float moved = Vector2.Distance(currentPos, primaryPressStartPos);
+                        if (moved > tapMaxMovePixels)
+                        {
+                            ClearTapTracking();
+                        }
+                        return false;
+                    }
+
+                    if (releasedThisFrame)
+                    {
+                        Vector2 releasePos = touch.position.ReadValue();
+                        double held = Time.unscaledTimeAsDouble - primaryPressStartTime;
+                        float moved = Vector2.Distance(releasePos, primaryPressStartPos);
+
+                        bool isTap = held <= tapMaxSeconds && moved <= tapMaxMovePixels;
+
+                        ClearTapTracking();
+
+                        if (isTap)
+                        {
+                            screenPos = releasePos;
+                            return true;
+                        }
+                    }
+                }
+            }
+
+            // If tracking but we didn't find that touch anymore, clear (edge case)
+            // (e.g., touch canceled)
+            // Note: conservative; avoids stuck tracking.
+        }
+
+        // 2) Mouse
         if (Mouse.current == null)
             return false;
 
-        if (Mouse.current.leftButton.wasPressedThisFrame ||
-            Mouse.current.rightButton.wasPressedThisFrame)
+        if (Mouse.current.leftButton.wasPressedThisFrame)
         {
-            screenPos = Mouse.current.position.ReadValue();
-            return true;
+            isPrimaryPressTracking = true;
+            primaryPressStartTime = Time.unscaledTimeAsDouble;
+            primaryPressStartPos = Mouse.current.position.ReadValue();
+            primaryPressPointerId = -1;
+            return false;
         }
 
-        if (Touchscreen.current != null &&
-            Touchscreen.current.primaryTouch.press.wasPressedThisFrame)
+        if (isPrimaryPressTracking && primaryPressPointerId == -1)
         {
-            screenPos = Touchscreen.current.primaryTouch.position.ReadValue();
+            Vector2 currentPos = Mouse.current.position.ReadValue();
+
+            // Cancel tap if user drags too far while holding
+            if (Mouse.current.leftButton.isPressed)
+            {
+                float moved = Vector2.Distance(currentPos, primaryPressStartPos);
+                if (moved > tapMaxMovePixels)
+                    ClearTapTracking();
+
+                return false;
+            }
+
+            if (Mouse.current.leftButton.wasReleasedThisFrame)
+            {
+                double held = Time.unscaledTimeAsDouble - primaryPressStartTime;
+                float moved = Vector2.Distance(currentPos, primaryPressStartPos);
+
+                bool isTap = held <= tapMaxSeconds && moved <= tapMaxMovePixels;
+
+                ClearTapTracking();
+
+                if (isTap)
+                {
+                    screenPos = currentPos;
+                    return true;
+                }
+            }
         }
+
         return false;
     }
 
+    private void ClearTapTracking()
+    {
+        isPrimaryPressTracking = false;
+        primaryPressStartTime = 0;
+        primaryPressStartPos = default;
+        primaryPressPointerId = 0;
+    }
     private bool IsPointerOverUI()
     {
         return EventSystem.current != null 

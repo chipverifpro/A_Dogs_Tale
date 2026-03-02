@@ -91,7 +91,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.UI.InteractionWheel.MenuWheelTooltipView
   root: {fileID: 4520833562846944369}
   textField: {fileID: 8626468168127342300}
-  layoutElement: {fileID: 0}
+  layoutElement: {fileID: 2342115289312048684}
   maxWidthPixels: 420
   screenPadding: {x: 18, y: 18}
 --- !u!1 &1728899978605357954
@@ -130,7 +130,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 100, y: 100}
+  m_SizeDelta: {x: 19, y: 1080}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &2229084045944435893
 GameObject:
@@ -220,6 +220,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 187b7b55bcdf44048b22c9d43dc6dc40, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.UI.InteractionWheel.MenuWheelInputBlocker
+  allowAcquireDuringHold: 1
+  useAimAssist: 1
+  aimAssistRadiusPixels: 22
+  aimAssistSamples: 8
+  lockTargetOnceAcquired: 1
 --- !u!1 &2756386938766768965
 GameObject:
   m_ObjectHideFlags: 0
@@ -390,7 +395,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 100, y: 100}
+  m_SizeDelta: {x: 1920, y: 1080}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &6104403432001801353
 GameObject:
@@ -567,7 +572,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0}
   m_AnchorMax: {x: 0.5, y: 0}
-  m_AnchoredPosition: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 0, y: 5}
   m_SizeDelta: {x: 200, y: 60}
   m_Pivot: {x: 0.5, y: 0}
 --- !u!222 &192034539464616173

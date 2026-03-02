@@ -119,6 +119,7 @@ namespace DogGame.UI.InteractionWheel
             BindAction("Quest.Get", ctx => Debug.Log("Quest.Get fired for " + ctx.target.name));
         }
 
+/*
         public void Start()
         {
             // Debug 1
@@ -149,5 +150,6 @@ namespace DogGame.UI.InteractionWheel
             MenuWheelUIController menuWheelUIController = FindFirstObjectByType<MenuWheelUIController>(UnityEngine.FindObjectsInactive.Include);
             menuWheelUIController.OpenMenuWheel(model, overrideTimeScale: 0f);
         }
+    */
     }
 }

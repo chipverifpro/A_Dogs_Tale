@@ -58,7 +58,7 @@ namespace DogGame.UI.InteractionWheel
 
             canvasRect = rootCanvas.GetComponent<RectTransform>();
 
-            SetVisible(true);   // DEBUG: should be false
+            SetVisible(false);   // DEBUG: should be false
 
             if (inputBlocker != null)
                 inputBlocker.onPressedOutside = HandlePressedOutside;
@@ -224,6 +224,8 @@ namespace DogGame.UI.InteractionWheel
 
         private void BuildPage(int pageIndex)
         {
+            Debug.Log("[WheelUI] BuildPage called");
+
             if (currentMenu == null) return;
 
             ClearSpawnedButtons();
@@ -391,6 +393,7 @@ namespace DogGame.UI.InteractionWheel
 
         private void SetHighlightedIndex(int newIndex)
         {
+            return;
             if (highlightedIndex == newIndex)
                 return;
 
@@ -487,6 +490,41 @@ namespace DogGame.UI.InteractionWheel
             pointerIsDown = false;
             pointerReleasedThisFrame = false;
             return false;
+        }
+
+        private Vector2 _lastWheelRootPos;
+        private Vector2 _lastOptionsPos;
+        private int _lastButtonsHash;
+
+        private void LateUpdate()
+        {
+            if (!isOpen) return;
+
+            var wr = wheelRoot.anchoredPosition;
+            var oc = optionsContainer.anchoredPosition;
+
+            if (wr != _lastWheelRootPos || oc != _lastOptionsPos)
+            {
+                Debug.Log($"[WheelUI] MOVED: WheelRoot={wr} OptionsContainer={oc}", this);
+                _lastWheelRootPos = wr;
+                _lastOptionsPos = oc;
+            }
+
+            // Also detect if any button's anchoredPosition changes unchecked
+            {
+                int hash = 17;
+                for (int i = 0; i < spawnedButtons.Count; i++)
+                {
+                    var rt = spawnedButtons[i].GetComponent<RectTransform>();
+                    hash = hash * 31 + rt.anchoredPosition.GetHashCode();
+                }
+
+                if (hash != _lastButtonsHash)
+                {
+                    Debug.Log($"[WheelUI] BUTTON POSITIONS CHANGED (hash { _lastButtonsHash } -> { hash })", this);
+                    _lastButtonsHash = hash;
+                }
+            }
         }
     }
 }
