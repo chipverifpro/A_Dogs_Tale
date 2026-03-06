@@ -24,17 +24,20 @@ class PlanRequestV2(BaseModel):
 async def health() -> Dict[str, str]:
     return {"status": "ok"}
 
-
 @app.post("/plan")
 async def plan(request: PlanRequestV2) -> Dict[str, Any]:
     start_time = time.time()
 
-    response = {
+    return {
         "schema": "plan_response_v2",
         "intentions": [
             {
                 "type": "Bark",
                 "count": 1
+            },
+            {
+                "type": "FleeFromNoise",
+                "seconds": 2.0
             }
         ],
         "debug": {

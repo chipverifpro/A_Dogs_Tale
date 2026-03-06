@@ -29,17 +29,27 @@ namespace DogGame.LLM
                 return;
             }
 
-            pendingActions.Clear();
+            List<ExecutableAction> translatedActions = TranslatePlan(response);
 
-            foreach (PlanIntentionV2 intention in response.intentions)
+            if (translatedActions.Count == 0)
             {
-                ExecutableAction action = TranslateIntention(intention);
-
-                if (action != null)
-                    pendingActions.Enqueue(action);
+                Debug.LogWarning("[AgentPlanExecutor] Incoming plan translated to zero actions.");
+                return;
             }
 
-            Debug.Log($"[AgentPlanExecutor] Queued {pendingActions.Count} action(s).");
+            bool interruptedCurrentAction = TryInterruptCurrentAction();
+
+            ClearPendingActions();
+            EnqueueActions(translatedActions);
+
+            if (interruptedCurrentAction)
+            {
+                Debug.Log($"[AgentPlanExecutor] Current action interrupted. Replaced with {pendingActions.Count} queued action(s).");
+            }
+            else
+            {
+                Debug.Log($"[AgentPlanExecutor] Pending queue replaced with {pendingActions.Count} action(s). Current action continues.");
+            }
         }
 
         private void TickExecutor(float deltaTime)
@@ -72,6 +82,51 @@ namespace DogGame.LLM
             currentAction.Begin(controlledAgentObject);
         }
 
+        private bool TryInterruptCurrentAction()
+        {
+            if (currentAction == null)
+                return true;
+
+            if (!currentAction.CanBeInterruptedNow(controlledAgentObject))
+                return false;
+
+            Debug.Log($"[AgentPlanExecutor] Interrupting current action '{currentAction.ActionType}'.");
+
+            currentAction.Cancel(controlledAgentObject);
+            currentAction = null;
+
+            return true;
+        }
+
+        private void ClearPendingActions()
+        {
+            pendingActions.Clear();
+        }
+
+        private void EnqueueActions(List<ExecutableAction> actions)
+        {
+            foreach (ExecutableAction action in actions)
+            {
+                if (action != null)
+                    pendingActions.Enqueue(action);
+            }
+        }
+
+        private List<ExecutableAction> TranslatePlan(PlanResponseV2 response)
+        {
+            List<ExecutableAction> actions = new();
+
+            foreach (PlanIntentionV2 intention in response.intentions)
+            {
+                ExecutableAction action = TranslateIntention(intention);
+
+                if (action != null)
+                    actions.Add(action);
+            }
+
+            return actions;
+        }
+
         private ExecutableAction TranslateIntention(PlanIntentionV2 intention)
         {
             if (intention == null)
@@ -81,6 +136,9 @@ namespace DogGame.LLM
             {
                 case "Bark":
                     return new BarkAction(intention.count);
+
+                case "FleeFromNoise":
+                    return new FleeFromNoiseAction(intention.seconds);
 
                 default:
                     Debug.LogWarning($"[AgentPlanExecutor] Unsupported intention '{intention.type}'.");

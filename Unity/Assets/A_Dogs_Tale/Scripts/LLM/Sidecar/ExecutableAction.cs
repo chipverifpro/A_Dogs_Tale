@@ -22,5 +22,10 @@ namespace DogGame.LLM
         public virtual void Cancel(GameObject agentObject)
         {
         }
+
+        public virtual bool CanBeInterruptedNow(GameObject agentObject)
+        {
+            return true;
+        }
     }
 }
