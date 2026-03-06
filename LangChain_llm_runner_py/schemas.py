@@ -1,5 +1,5 @@
-from pydantic import BaseModel
 from typing import List, Optional
+from pydantic import BaseModel, Field, ConfigDict
 
 
 class TriggerV2(BaseModel):
@@ -19,7 +19,9 @@ class ConstraintsV2(BaseModel):
 
 
 class PlanRequestV2(BaseModel):
-    schema: str
+    model_config = ConfigDict(populate_by_name=True)
+
+    schema_name: str = Field(alias="schema")
     agent_id: str
     trigger: TriggerV2
     world_state: Optional[WorldStateV2] = None
@@ -40,6 +42,8 @@ class DebugInfoV2(BaseModel):
 
 
 class PlanResponseV2(BaseModel):
-    schema: str
+    model_config = ConfigDict(populate_by_name=True)
+
+    schema_name: str = Field(alias="schema")
     intentions: List[PlanIntentionV2]
     debug: Optional[DebugInfoV2] = None

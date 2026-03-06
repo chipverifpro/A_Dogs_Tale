@@ -21,7 +21,7 @@ def stub_generate_plan(request: PlanRequestV2) -> Dict[str, Any]:
         "debug": {
             "model": "stub",
             "latency_ms": int((time.time() - start) * 1000),
-            "request_schema": request.schema,
+            "request_schema": request.schema_name,
             "trigger_type": request.trigger.type
         }
     }

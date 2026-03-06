@@ -14,6 +14,10 @@ namespace DogGame.LLM
         [SerializeField] private string planUrl = "http://127.0.0.1:8000/plan";
         [SerializeField] private float requestTimeoutSeconds = 10f;
 
+        // Asynchronous Management
+        private bool plannerRequestInFlight = false;
+        private float plannerRequestStartTime = 0f;
+
         // ------------------------------------------------------------
         // Public entry point
         // ------------------------------------------------------------
@@ -85,7 +89,7 @@ namespace DogGame.LLM
             Debug.Log($"[SidecarPlanClientV2] Sending POST to {planUrl}");
 
             Debug.Log($"[SidecarPlanClientV2] Waiting up to {requestTimeoutSeconds}s for planner response...");
-            
+
             yield return webRequest.SendWebRequest();
 
             Debug.Log("[SidecarPlanClientV2] SendWebRequest returned.");
@@ -127,6 +131,8 @@ namespace DogGame.LLM
             response = null;
 
             SchemaProbeV2 probe;
+
+            Debug.Log($"responseJson = {responseJson}");
 
             try
             {

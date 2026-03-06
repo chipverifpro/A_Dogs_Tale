@@ -1,4 +1,3 @@
-import os
 import time
 import json
 import requests
@@ -8,57 +7,68 @@ from schemas import PlanRequestV2
 from planner_stub import stub_generate_plan
 
 
-OLLAMA_URL = os.getenv("OLLAMA_URL", "http://127.0.0.1:11434/api/generate")
-OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "gemma3")
+OLLAMA_URL = "http://127.0.0.1:11434/api/chat"
+OLLAMA_MODEL = "functiongemma"
 
 
-SYSTEM_PROMPT = """
-You are a dog behavior planner for a simulation.
+TOOLS = [
+    {
+        "type": "function",
+        "function": {
+            "name": "bark",
+            "description": "Dog barks loudly",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "count": {"type": "integer"}
+                }
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "flee_from_noise",
+            "description": "Dog runs away from a loud noise",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "seconds": {"type": "number"}
+                }
+            }
+        }
+    }
+]
 
-You must return ONLY valid JSON.
 
-The format MUST be:
+def bark(count: int = 1) -> Dict[str, Any]:
+    return {
+        "type": "Bark",
+        "count": count
+    }
 
-{
-  "schema": "plan_response_v2",
-  "intentions": [
-    {"type": "Bark", "count": 1},
-    {"type": "FleeFromNoise", "seconds": 2.0}
-  ]
-}
 
-Do not include explanation.
-Do not include markdown.
-Only return JSON.
-"""
+def flee_from_noise(seconds: float = 2.0) -> Dict[str, Any]:
+    return {
+        "type": "FleeFromNoise",
+        "seconds": seconds
+    }
 
 
 def build_prompt(request: PlanRequestV2) -> str:
+
     return f"""
-Dog Agent Planning Request
+Dog planning request.
 
 Trigger: {request.trigger.type}
 
-Return a plan_response_v2 JSON plan for the dog.
+If the dog hears a loud noise it should:
+1. bark
+2. flee_from_noise for about 2 seconds
+
+Use the available tools to represent the actions.
+You may call multiple tools.
 """
-
-
-def call_ollama(prompt: str) -> str:
-
-    payload = {
-        "model": OLLAMA_MODEL,
-        "prompt": SYSTEM_PROMPT + "\n" + prompt,
-        "stream": False
-    }
-
-    r = requests.post(OLLAMA_URL, json=payload, timeout=20)
-
-    if r.status_code != 200:
-        raise RuntimeError(f"Ollama error: {r.status_code}")
-
-    data = r.json()
-
-    return data["response"]
 
 
 def llm_generate_plan(request: PlanRequestV2) -> Dict[str, Any]:
@@ -67,22 +77,66 @@ def llm_generate_plan(request: PlanRequestV2) -> Dict[str, Any]:
 
     try:
 
-        prompt = build_prompt(request)
-
-        response_text = call_ollama(prompt)
-
-        parsed = json.loads(response_text)
-
-        parsed["debug"] = {
+        payload = {
             "model": OLLAMA_MODEL,
-            "latency_ms": int((time.time() - start) * 1000),
-            "trigger_type": request.trigger.type
+            "messages": [
+                {
+                    "role": "system",
+                    "content": "You control a dog in a simulation."
+                },
+                {
+                    "role": "user",
+                    "content": build_prompt(request)
+                }
+            ],
+            "tools": TOOLS,
+            "stream": False
         }
 
-        return parsed
+        r = requests.post(OLLAMA_URL, json=payload, timeout=120)
+
+        if r.status_code != 200:
+            raise RuntimeError(f"Ollama error {r.status_code}: {r.text}")
+
+        data = r.json()
+
+        print(json.dumps(data, indent=2))
+
+        tool_calls = data.get("message", {}).get("tool_calls", [])
+
+        intentions = []
+
+        for call in tool_calls:
+
+            function_block = call.get("function", {})
+
+            name = function_block.get("name", "")
+            args = function_block.get("arguments", {}) or {}
+
+            if name == "bark":
+                intentions.append(bark(**args))
+
+            elif name == "flee_from_noise":
+                intentions.append(flee_from_noise(**args))
+
+            else:
+                print("Unknown tool call:", name)
+
+        if not intentions:
+            intentions.append(bark())
+
+        return {
+            "schema": "plan_response_v2",
+            "intentions": intentions,
+            "debug": {
+                "model": OLLAMA_MODEL,
+                "latency_ms": int((time.time() - start) * 1000),
+                "trigger_type": request.trigger.type
+            }
+        }
 
     except Exception as e:
 
-        print("LLM planner failed, using stub:", e)
+        print("LLM planner failed:", e)
 
         return stub_generate_plan(request)
