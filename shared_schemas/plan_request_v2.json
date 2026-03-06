@@ -1,0 +1,21 @@
+{
+  "schema": "plan_request_v2",
+
+  "agent_id": "dog_1",
+
+  "trigger": {
+    "type": "LoudNoiseHeard",
+    "location": [3.2, 0.0, -4.1],
+    "intensity": 0.8
+  },
+
+  "world_state": {
+    "position": [1.2, 0.0, 2.4],
+    "pack_members_nearby": 2
+  },
+
+  "constraints": {
+    "max_plan_steps": 4,
+    "max_latency_ms": 1000
+  }
+}

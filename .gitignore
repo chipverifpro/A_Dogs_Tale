@@ -87,15 +87,13 @@ crashlytics-build.properties
 
 # Mac temporary files
 .DS_Store
-Unity/UserSettings/Search.settings
-Unity/UserSettings/Search.index
-Unity/UserSettings/ProjectName.txt
-Unity/UserSettings/PlayModeUserSettings.asset
-Unity/UserSettings/Layouts/default-6000.dwlt
-Unity/UserSettings/Layouts/CurrentMaximizeLayout.dwlt
-Unity/UserSettings/EditorUserSettings.asset
-Unity/UserSettings/AI.Sound/SoundGeneratorSettings.asset
-Unity/UserSettings/AI.Material/MaterialGeneratorSettings.asset
-Unity/UserSettings/AI.Image/TextureGeneratorSettings.asset
-Unity/UserSettings/AI.Generators/DragAndDropCache.asset
-Unity/UserSettings/AI.Animate/AnimateGeneratorSettings.asset
+*.swp
+
+# Unity User Settings
+Unity/UserSettings/*
+
+# Python temporary files
+/LangChain_llm_runner_py/__pycache__
+
+# Manually Ignored Files
+Unity/UserSettings/Layots/default-6000.dwlt

@@ -428,6 +428,84 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 59175228}
   m_CullTransparentMesh: 1
+--- !u!1 &81350530
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 81350533}
+  - component: {fileID: 81350532}
+  - component: {fileID: 81350531}
+  - component: {fileID: 81350534}
+  m_Layer: 0
+  m_Name: LLMDebug
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &81350531
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 81350530}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ace7dfffad6a94cb8993aab89b4d55a3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SidecarPlanClient
+  planExecutor: {fileID: 81350534}
+  planUrl: http://127.0.0.1:8000/plan
+  requestTimeoutSeconds: 10
+--- !u!114 &81350532
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 81350530}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 248304f5932a04f22939b1fc9692a7ee, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlanV2DebugLauncher
+  sidecarPlanClient: {fileID: 81350531}
+  triggerKey: 30
+  DebugPlan: '{   "schema": "plan_request_v2",   "agent_id": "dog_1",   "trigger":
+    {     "type": "DebugTest"   } }'
+--- !u!4 &81350533
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 81350530}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 63.41664, y: 8.5, z: 42.09074}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &81350534
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 81350530}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0b5669062253a4dac9bf31d6f98b0df3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DogGame.LLM.AgentPlanExecutor
+  controlledAgentObject: {fileID: 6544990386685219093}
 --- !u!1 &93863483
 GameObject:
   m_ObjectHideFlags: 0
@@ -16103,3 +16181,4 @@ SceneRoots:
   - {fileID: 2103636774}
   - {fileID: 215243008}
   - {fileID: 1767335688}
+  - {fileID: 81350533}
