@@ -84,6 +84,8 @@ namespace DogGame.LLM
 
             Debug.Log($"[SidecarPlanClientV2] Sending POST to {planUrl}");
 
+            Debug.Log($"[SidecarPlanClientV2] Waiting up to {requestTimeoutSeconds}s for planner response...");
+            
             yield return webRequest.SendWebRequest();
 
             Debug.Log("[SidecarPlanClientV2] SendWebRequest returned.");
