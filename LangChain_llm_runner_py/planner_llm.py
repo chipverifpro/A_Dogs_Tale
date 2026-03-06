@@ -54,73 +54,104 @@ def flee_from_noise(seconds: float = 2.0) -> Dict[str, Any]:
         "seconds": seconds
     }
 
-
 def build_prompt(request: PlanRequestV2) -> str:
-
     return f"""
 Dog planning request.
 
 Trigger: {request.trigger.type}
 
-If the dog hears a loud noise it should:
+If the dog hears a loud noise it should usually:
 1. bark
 2. flee_from_noise for about 2 seconds
 
 Use the available tools to represent the actions.
-You may call multiple tools.
+
+You may call multiple tools in sequence.
+Call one tool at a time.
+Stop calling tools when the plan is complete.
 """
 
-
-def llm_generate_plan(request: PlanRequestV2) -> Dict[str, Any]:
+def llm_generate_plan(request: PlanRequestV2):
 
     start = time.time()
 
     try:
 
-        payload = {
-            "model": OLLAMA_MODEL,
-            "messages": [
-                {
-                    "role": "system",
-                    "content": "You control a dog in a simulation."
-                },
-                {
-                    "role": "user",
-                    "content": build_prompt(request)
-                }
-            ],
-            "tools": TOOLS,
-            "stream": False
-        }
+        messages = [
+            {
+                "role": "system",
+                "content": """
+You control a dog in a simulation.
 
-        r = requests.post(OLLAMA_URL, json=payload, timeout=120)
+You must decide actions by calling tools.
 
-        if r.status_code != 200:
-            raise RuntimeError(f"Ollama error {r.status_code}: {r.text}")
+Typical loud noise response:
+1. bark
+2. flee_from_noise for about 2 seconds
 
-        data = r.json()
-
-        print(json.dumps(data, indent=2))
-
-        tool_calls = data.get("message", {}).get("tool_calls", [])
+Call one tool at a time.
+When no more actions are needed, stop calling tools.
+"""
+            },
+            {
+                "role": "user",
+                "content": build_prompt(request)
+            }
+        ]
 
         intentions = []
 
-        for call in tool_calls:
+        MAX_STEPS = 5
 
-            function_block = call.get("function", {})
+        for step in range(MAX_STEPS):
 
-            name = function_block.get("name", "")
-            args = function_block.get("arguments", {}) or {}
+            payload = {
+                "model": OLLAMA_MODEL,
+                "messages": messages,
+                "tools": TOOLS,
+                "stream": False
+            }
 
-            if name == "bark":
-                intentions.append(bark(**args))
+            r = requests.post(OLLAMA_URL, json=payload, timeout=120)
 
-            elif name == "flee_from_noise":
-                intentions.append(flee_from_noise(**args))
+            if r.status_code != 200:
+                raise RuntimeError(f"Ollama error {r.status_code}: {r.text}")
 
-            else:
-                print("Unknown tool call:", name)
+            data = r.json()
+
+            print(json.dumps(data, indent=2))
+
+            tool_calls = data.get("message", {}).get("tool_calls", [])
+
+            if not tool_calls:
+                break
+
+            for call in tool_calls:
+
+                function_block = call.get("function", {})
+
+                name = function_block.get("name", "")
+                args = function_block.get("arguments", {}) or {}
+
+                if name == "bark":
+                    result = bark(**args)
+                    intentions.append(result)
+
+                elif name == "flee_from_noise":
+                    result = flee_from_noise(**args)
+                    intentions.append(result)
+
+                else:
+                    print("Unknown tool:", name)
+                    continue
+
+                # feed tool result back into conversation
+                messages.append(data["message"])
+
+                messages.append({
+                    "role": "tool",
+                    "content": json.dumps(result)
+                })
 
         if not intentions:
             intentions.append(bark())
