@@ -1,5 +1,6 @@
 using System.Collections;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class SceneFader : MonoBehaviour
 {
@@ -101,7 +102,64 @@ public class SceneFader : MonoBehaviour
             preload: true
         );
     }
+
+    [Header("Canvases")]
+    //[SerializeField] private CanvasGroup splashCanvasGroup;
+    //[SerializeField] private CanvasGroup menuCanvasGroup;
+
+    [Header("Splash Image")]
+    [SerializeField] private Image splashImage;              // drag the Image component from SplashCanvas here
+    [SerializeField] private string splashResourceFolder = "Images";
+    [SerializeField] private int splashCount = 10;
+
+    // Call this right before you display the splash.
+    private void SetRandomSplashSprite()
+    {
+        if (splashImage == null)
+        {
+            Debug.LogError("[TitleScreen] splashImage is not assigned.");
+            return;
+        }
+
+        int chosenIndex = Random.Range(1, splashCount + 1); // inclusive 1..10
+        string resourcePath = $"{splashResourceFolder}/SplashScreen{chosenIndex}";
+
+        Sprite loadedSprite = Resources.Load<Sprite>(resourcePath);
+        if (loadedSprite == null)
+        {
+            Debug.LogError($"[TitleScreen] Could not load splash sprite at Resources/{resourcePath}. " +
+                           $"Make sure the file exists and Texture Type is 'Sprite (2D and UI)'.");
+            return;
+        }
+
+        splashImage.sprite = loadedSprite;
+
+        // Optional: if you want the Image to match the sprite’s native size
+        // splashImage.SetNativeSize();
+    }
+
     private IEnumerator CrossFade()
+    {
+        // Pick the splash before any visible alpha changes.
+        SetRandomSplashSprite();
+
+        yield return null; // let things settle out before beginning this.
+        BottomBanner.Show("🐾 Welcome, Pup! Sniffing out treasures...");
+
+        // Display just the splash screen.
+        splashCanvasGroup.alpha = 1;
+        menuCanvasGroup.alpha = 0;
+
+        audioPlayer.PlayClip("Opening Title");
+        audioPlayer.PlayClip("Bark_GS_repeat");
+
+        yield return StartCoroutine(WaitAllowSkip(minSplashSeconds));
+
+        StartCoroutine(Fade(splashCanvasGroup, 1f, 0f));
+        yield return StartCoroutine(Fade(menuCanvasGroup, 0f, 1f));
+    }
+
+    private IEnumerator CrossFade_OLD()
     {
         yield return null;      // let things settle out before beginning this.
         BottomBanner.Show("🐾 Welcome, Pup! Sniffing out treasures...");
