@@ -1,9 +1,9 @@
 #nullable enable
 using System;
 using System.Collections.Generic;
+using System.Text;
 using DogGame.LLM.Policy;
 using DogGame.Modules;
-using Unity.Tutorials.Core.Editor;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -13,9 +13,6 @@ namespace DogGame.LLM.Agent
     /// Dynamic, self-updating context for the LLM.
     /// This module should not require per-agent babysitting: it should populate itself
     /// from game systems (player, combat, perception, etc.).
-    ///
-    /// Start simple: you (or other systems) can set the public fields directly.
-    /// Later you can add RefreshFromGameSystems() to auto-fill from your WorldObject framework.
     /// </summary>
     public sealed class LLMWorldStateModule : WorldModule
     {
@@ -81,8 +78,6 @@ namespace DogGame.LLM.Agent
 
         [SerializeField] private int maxVisionContextLines = 6;
 
-        // ---------------------
-
         /// <summary>
         /// Build the inputs used by SophisticationPolicy.
         /// </summary>
@@ -106,14 +101,59 @@ namespace DogGame.LLM.Agent
         public void AddContextBlocks(List<string> contextBlocks)
         {
             if (contextBlocks == null) throw new ArgumentNullException(nameof(contextBlocks));
+
             leashContext = LeashSystem.MyLeashToLLM(observer: worldObject);
             LimitAndAddBlock(contextBlocks, leashContext);
+
             positionContext = BuildPositionContextBlock();
             LimitAndAddBlock(contextBlocks, positionContext);
-            //TryAddBlock(contextBlocks, "CONTEXT: Nearby", nearbySummary);
-            //TryAddBlock(contextBlocks, "CONTEXT: Status", statusSummary);
-            //TryAddBlock(contextBlocks, "CONTEXT: Goals", goalsSummary);
-            //TryAddBlock(contextBlocks, "CONTEXT: Recent Events", recentEventsSummary);
+
+            // Future optional blocks:
+            // LimitAndAddBlock(contextBlocks, nearbySummary);
+            // LimitAndAddBlock(contextBlocks, statusSummary);
+            // LimitAndAddBlock(contextBlocks, goalsSummary);
+            // LimitAndAddBlock(contextBlocks, recentEventsSummary);
+        }
+
+        /// <summary>
+        /// Build world state blocks for MCP / sidecar requests using a requested detail level.
+        /// This is the entry point intended for get_world_state(detail).
+        /// </summary>
+        public List<string> BuildWorldStateBlocks(string detail = "normal")
+        {
+            List<string> contextBlocks = new();
+
+            leashContext = LeashSystem.MyLeashToLLM(observer: worldObject);
+            LimitAndAddBlock(contextBlocks, leashContext);
+
+            positionContext = BuildPositionContextBlock(detail);
+            LimitAndAddBlock(contextBlocks, positionContext);
+
+            return contextBlocks;
+        }
+
+        /// <summary>
+        /// Build a single compact text block for the current world state.
+        /// This is the preferred return for Python get_world_state(detail).
+        /// </summary>
+        public string BuildWorldStateText(string detail = "normal")
+        {
+            List<string> blocks = BuildWorldStateBlocks(detail);
+
+            if (blocks.Count == 0)
+                return $"[{worldObject.DisplayName}] CONTEXT: No world state available.";
+
+            StringBuilder stringBuilder = new(maxCharsPerBlock * Math.Max(1, blocks.Count));
+
+            for (int index = 0; index < blocks.Count; index++)
+            {
+                if (index > 0)
+                    stringBuilder.AppendLine();
+
+                stringBuilder.Append(blocks[index]);
+            }
+
+            return stringBuilder.ToString().Trim();
         }
 
         private void LimitAndAddBlock(List<string> contextBlocks, string context)
@@ -121,146 +161,142 @@ namespace DogGame.LLM.Agent
             if (string.IsNullOrWhiteSpace(context))
                 return;
 
-            // chop text to maximum size
-            if (context.Length>maxCharsPerBlock)
+            if (context.Length > maxCharsPerBlock)
                 context = context.Substring(0, maxCharsPerBlock);
 
-            // eliminate leading/trailing spaces
-            context.Trim();
+            context = context.Trim();
 
             contextBlocks.Add(context);
         }
 
-//        private void TryAddBlock(List<string> blocks, string title, string body)
-//        {
-//            if (string.IsNullOrWhiteSpace(body))
-//                return;
-//
-//            string trimmedBody = body.Trim();
-//
-//            if (maxCharsPerBlock > 0 && trimmedBody.Length > maxCharsPerBlock)
-//                trimmedBody = trimmedBody.Substring(0, maxCharsPerBlock) + "…";
-//
-//            blocks.Add($"{title}\n{trimmedBody}");
-//        }
-
-        // --------------------------------------------------------------------
-        // Optional expansion point:
-        // Add a method you can call from a manager/perception system each tick,
-        // or from Update() at a throttled rate.
-        // --------------------------------------------------------------------
-
         /// <summary>
-        /// Optional hook: populate fields from your game's systems (player, combat, perception).
-        /// Not implemented yet because it depends on your project's architecture.
+        /// Optional hook: populate fields from your game's systems.
         /// </summary>
         public void RefreshFromGameSystems()
         {
-            // Example future steps:
-            // - Find player position and set distanceToPlayerMeters
-            // - Pull combat state from your CombatModule
-            // - Build nearbySummary from sensed entities list
-            // - Summarize health/stamina/status into statusSummary
+            // Future expansion point.
         }
 
         #region VisionContext
         public string GetVisionContextBlock()
         {
-            // However you fetch modules in your project:
-            // - worldObject.GetModule<VisionPerceptionModule>()
-            // - GetComponent<VisionPerceptionModule>()
-            // - worldObject.visionPerceptionModule
-            var sb = new System.Text.StringBuilder(1024);
-            //Debug.Log($"{worldObject.DisplayName} GetVisionContextBlock");
+            var stringBuilder = new StringBuilder(1024);
 
             var vision = worldObject.visionPerceptionModule;
-            if (vision == null) return "";
+            if (vision == null)
+                return "";
 
             var events = vision.GetPerceptionEvents();
             Debug.Log($"{worldObject.DisplayName} vision events.count={events.Count}");
-            if (events == null || events.Count == 0) return "";
+            if (events == null || events.Count == 0)
+                return "";
 
-            // Convert to compact lines
             var lines = events.ToLLMLines(maxVisionContextLines);
-            if (lines.Count == 0) return "";
+            if (lines.Count == 0)
+                return "";
 
-            sb.AppendLine("Vision:");
-            for (int i = 0; i < lines.Count; i++)
-                sb.Append(" - ").AppendLine(lines[i]);
-            
-            return sb.ToString();
+            stringBuilder.AppendLine("Vision:");
+            for (int index = 0; index < lines.Count; index++)
+                stringBuilder.Append(" - ").AppendLine(lines[index]);
+
+            return stringBuilder.ToString();
         }
         #endregion
 
         #region PositionContext
-            
-        // ========== Position Context ===========
-        public string BuildPositionContextBlock()
+
+        public string BuildPositionContextBlock(string detail = "normal")
         {
             string roomName;
             string roomType;
-            RectInt worldBounds = new(0,0, dir.cfg.mapWidth,dir.cfg.mapHeight);
+            RectInt worldBounds = new(0, 0, dir.cfg.mapWidth, dir.cfg.mapHeight);
             RectInt roomBounds;
             RectInt radiusBounds;
 
             RectInt clipRect;
             RectInt tgt;
 
-            string roomContext = ""; // description of the room
+            bool wantBrief = detail == "brief";
+            bool wantDetailed = detail == "detailed";
+            bool wantNormal = !(wantBrief || wantDetailed);
 
-            // get location and cell so we can look up room.
-            Vector3 agentWorldPosition = worldObject.pos3d_world;   // guaranteed valid
-            Cell? cell = worldObject.locationModule?.cell;          // possibly null
+            string roomContext = "";
 
-            // get suggested move rectangle, later clip this to room or map limits
-            radiusBounds = GetRadiusBounds(agentWorldPosition, suggestedTravelRadius);
-            
-            // identify the room and it's particulars..
-            if (cell!=null)
+            Vector3 currentAgentWorldPosition = worldObject.pos3d_world;
+            Cell? cell = worldObject.locationModule?.cell;
+
+            radiusBounds = GetRadiusBounds(currentAgentWorldPosition, suggestedTravelRadius);
+
+            if (cell != null)
             {
                 Room room = dir.gen.rooms[cell.room_number];
                 roomName = room.name;
                 roomType = $"{room.placementTypes}";
-                // these may be redundant...
-                if (room.isOutdoor) roomType += ", Outdoor";
-                if (room.isCorridor) roomType += ", Corridor";
+
+                if (room.isOutdoor)
+                    roomType += ", Outdoor";
+                if (room.isCorridor)
+                    roomType += ", Corridor";
 
                 roomBounds = room.bounds;
 
                 if (!TryIntersect(worldBounds, roomBounds, out clipRect))
-                    clipRect=worldBounds; // on failure, use entire map.
-                
-                if (!roomName.IsNullOrEmpty())
-                    roomContext = $" in room {roomName} of type {roomType} and size {roomBounds.width},{roomBounds.height}. ";
+                    clipRect = worldBounds;
+
+                if (!string.IsNullOrEmpty(roomName))
+                    roomContext = $" in room {roomName} of type {roomType}";
                 else
-                    roomContext = $" in room type {roomType} and size {roomBounds.width},{roomBounds.height}. ";
-                
-                //   identify door locations.
-                BuildDoorsList(agentWorldPosition, room, radiusBounds, maxDoors);
-            
-            } 
+                    roomContext = $" in room type {roomType}";
+
+                if (!wantBrief)
+                    roomContext += $" and size {roomBounds.width},{roomBounds.height}. ";
+                else
+                    roomContext += ". ";
+
+                maxDoors = wantBrief ? 2 : wantDetailed ? 8 : 4;
+                BuildDoorsList(currentAgentWorldPosition, room, radiusBounds, maxDoors);
+            }
             else
             {
-                // no Cell/Room so don't describe room, and clip only to map.
                 clipRect = worldBounds;
                 roomContext = "";
             }
-            
-            // bounds are radius around agentWorldPosition clipped by room and map
-            if(!TryIntersect(radiusBounds, clipRect, out tgt))
-                tgt = radiusBounds;     // if no overlap, just use local radius without clip
+
+            if (!TryIntersect(radiusBounds, clipRect, out tgt))
+                tgt = radiusBounds;
 
             string visionContext = GetVisionContextBlock();
-            // expansion suggestions:
-            // create summary for LLM:
-            positionContext = $"[{worldObject.DisplayName}] CONTEXT: Agent position:"
-                + $" [{agentWorldPosition.x:0.0}, {agentWorldPosition.z:0.0}]."
-                + $" floor height={agentWorldPosition.y:0.0}"
-                + roomContext
-                + doorsContext 
-                + visionContext
-                + $" suggested move_to bounded by rectangle [x in {tgt.x} .. {tgt.x+tgt.width-1}, y in {tgt.y} .. {tgt.y+tgt.height-1}]";
-            Debug.Log(positionContext);
+
+            if (wantBrief)
+            {
+                positionContext = $"[{worldObject.DisplayName}] CONTEXT: Agent position:"
+                    + $" [{currentAgentWorldPosition.x:0}, {currentAgentWorldPosition.z:0}]."
+                    + roomContext
+                    + doorsContext
+                    + visionContext;
+            }
+
+            if (wantNormal)
+            {
+                positionContext = $"[{worldObject.DisplayName}] CONTEXT: Agent position:"
+                    + $" [{currentAgentWorldPosition.x:0.0}, {currentAgentWorldPosition.z:0.0}]."
+                    + roomContext
+                    + doorsContext
+                    + visionContext;
+            }
+
+            if (wantDetailed)
+            {
+                positionContext = $"[{worldObject.DisplayName}] CONTEXT: Agent position:"
+                    + $" [{currentAgentWorldPosition.x:0.0}, {currentAgentWorldPosition.z:0.0}]."
+                    + $" floor height={currentAgentWorldPosition.y:0.0}"
+                    + roomContext
+                    + doorsContext
+                    + visionContext
+                    + $" suggested move_to bounded by rectangle [x in {tgt.x} .. {tgt.x + tgt.width - 1}, y in {tgt.y} .. {tgt.y + tgt.height - 1}]";
+            }
+
+            Debug.Log($"{detail} Context: {positionContext}");
             return positionContext;
         }
 
@@ -278,24 +314,26 @@ namespace DogGame.LLM.Agent
             Debug.Log($"BuildDoorsList: {room.cells.Count}");
             doorsContext = "";
             List<FoundDoor> foundDoors = new();
+
             foreach (Cell c in room.cells)
             {
                 if (c.doors != DirFlags.None)
                 {
                     if (!radiusBounds.Contains(c.pos))
                         continue;
+
                     foreach (DirFlags dir in DirFlagsEx.AllCardinals)
                     {
                         if ((c.doors & dir) != 0)
                         {
                             Debug.Log($"Found door @ {c.pos}");
-                            
+
                             FoundDoor door = new FoundDoor
                             {
                                 pos = c.pos,
                                 distSqr = Vector3.SqrMagnitude(worldPos - c.pos3d_world),
                                 direction = dir,
-                                open = false, // future capability
+                                open = false,
                             };
                             door.IsOpen = door.open ? "Open" : "Closed";
 
@@ -304,24 +342,22 @@ namespace DogGame.LLM.Agent
                     }
                 }
             }
-            //Debug.Log($"{foundDoors.Count} doors nearby: ");
-            if (foundDoors.Count==0) return "";
 
-            // Sort nearest first
+            if (foundDoors.Count == 0)
+                return "";
+
             foundDoors.Sort((a, b) => a.distSqr.CompareTo(b.distSqr));
 
-            // Truncate to maxDoors
             if (maxDoors > 0 && foundDoors.Count > maxDoors)
-            {
                 foundDoors.RemoveRange(maxDoors, foundDoors.Count - maxDoors);
-            }
+
             doorsContext = $"{foundDoors.Count} room exits nearby: ";
             foreach (FoundDoor foundDoor in foundDoors)
             {
                 doorsContext += $"Door to {DirFlagsEx.ToLongName(foundDoor.direction)} is {foundDoor.IsOpen} at [{foundDoor.pos.x},{foundDoor.pos.y}]; ";
             }
-            doorsContext.Trim();    // eliminate trailing space
-            //Debug.Log(doorsContext);
+
+            doorsContext = doorsContext.Trim();
             return doorsContext;
         }
 
@@ -347,23 +383,19 @@ namespace DogGame.LLM.Agent
             return true;
         }
 
-        // gets a rectangular radius from a position, and clips it to bounds (world/room/etc)
         public RectInt GetRadiusBounds(Vector3 centerWorldPos, int radius)
         {
             RectInt tgt = new();
 
-            // build target around center
             tgt.x = Mathf.FloorToInt(centerWorldPos.x) - radius;
-            tgt.y = Mathf.FloorToInt(centerWorldPos.z) - radius; // z is used in world position
+            tgt.y = Mathf.FloorToInt(centerWorldPos.z) - radius;
             tgt.width = radius * 2 + 1;
             tgt.height = radius * 2 + 1;
             return tgt;
         }
 
         #endregion
-        
-        // ======================================
-    
+
         #region Observation
 
         private readonly Queue<string> recentObservations = new();

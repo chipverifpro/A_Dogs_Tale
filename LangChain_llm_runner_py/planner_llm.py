@@ -18,117 +18,93 @@
 # → intentions
 # → PlanResponseV2-compatible dict
 
-import time
 import json
+import os
+import time
+from typing import Any, Dict, List
+
 import requests
-from typing import Dict, Any
 
 from schemas import PlanRequestV2
 from planner_stub import stub_generate_plan
+from mcp_tools import TOOLS
+from tools import (
+    bark,
+    flee_from_noise,
+    action_tool_result,
+    request_unity_world_state,
+)
 
 
-OLLAMA_URL = "http://127.0.0.1:11434/api/chat"
-OLLAMA_MODEL = "functiongemma"
+OLLAMA_URL = os.getenv("OLLAMA_URL", "http://127.0.0.1:11434/api/chat")
+OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "functiongemma")
 
 
-TOOLS = [
-    {
-        "type": "function",
-        "function": {
-            "name": "bark",
-            "description": "Dog barks loudly",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "count": {"type": "integer"}
-                }
-            }
-        }
-    },
-    {
-        "type": "function",
-        "function": {
-            "name": "flee_from_noise",
-            "description": "Dog runs away from a loud noise",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "seconds": {"type": "number"}
-                }
-            }
-        }
-    }
-]
+ACTION_TOOL_NAMES = {
+    "bark",
+    "flee_from_noise",
+}
 
+INFO_TOOL_NAMES = {
+    "get_world_state",
+}
 
-def bark(count: int = 1) -> Dict[str, Any]:
-    return {
-        "type": "Bark",
-        "count": count
-    }
-
-
-def flee_from_noise(seconds: float = 2.0) -> Dict[str, Any]:
-    return {
-        "type": "FleeFromNoise",
-        "seconds": seconds
-    }
 
 def build_prompt(request: PlanRequestV2) -> str:
     return f"""
 Dog planning request.
 
+Agent ID: {request.agent_id}
 Trigger: {request.trigger.type}
 
-If the dog hears a loud noise it should usually:
-1. bark
-2. flee_from_noise for about 2 seconds
+You control a dog in a simulation.
 
-Use the available tools to represent the actions.
-
-You may call multiple tools in sequence.
-Call one tool at a time.
-Stop calling tools when the plan is complete.
-
-Do not explain actions.
-Do not produce text responses.
-Only call tools.
+Rules:
+- Use tools to decide actions.
+- If you already know enough, call action tools.
+- If you need situational awareness, call get_world_state(detail).
+- Prefer detail="normal" first.
+- Use detail="brief" only for very quick checks.
+- Use detail="detailed" only if you need more than the normal summary.
+- You may call multiple tools.
+- Call one or more tools until the plan is complete.
+- Do not produce explanatory prose unless no tool call is needed.
 """
 
-def llm_generate_plan(request: PlanRequestV2):
 
+def llm_generate_plan(request: PlanRequestV2) -> Dict[str, Any]:
     start = time.time()
 
     try:
-
-        messages = [
+        messages: List[Dict[str, Any]] = [
             {
                 "role": "system",
                 "content": """
 You control a dog in a simulation.
 
-You must decide actions by calling tools.
+Decide what the dog should do by calling tools.
 
-Typical loud noise response:
-1. bark
-2. flee_from_noise for about 2 seconds
+Available tool categories:
+- Action tools: these produce actions for Unity to execute later.
+- Information tools: these query Unity immediately for current world information.
 
-Call one tool at a time.
-When no more actions are needed, stop calling tools.
-"""
+When you need more context, call get_world_state(detail).
+
+Do not explain actions.
+Do not produce normal text if a tool call is appropriate.
+Prefer tool calls over prose.
+""".strip()
             },
             {
                 "role": "user",
-                "content": build_prompt(request)
+                "content": build_prompt(request).strip()
             }
         ]
 
-        intentions = []
+        intentions: List[Dict[str, Any]] = []
+        max_steps = 6
 
-        MAX_STEPS = 5
-
-        for step in range(MAX_STEPS):
-
+        for step_index in range(max_steps):
             payload = {
                 "model": OLLAMA_MODEL,
                 "messages": messages,
@@ -136,46 +112,69 @@ When no more actions are needed, stop calling tools.
                 "stream": False
             }
 
-            r = requests.post(OLLAMA_URL, json=payload, timeout=120)
+            response = requests.post(
+                OLLAMA_URL,
+                json=payload,
+                timeout=120
+            )
 
-            if r.status_code != 200:
-                raise RuntimeError(f"Ollama error {r.status_code}: {r.text}")
+            if response.status_code != 200:
+                raise RuntimeError(
+                    f"Ollama error {response.status_code}: {response.text}"
+                )
 
-            data = r.json()
-
+            data = response.json()
             print(json.dumps(data, indent=2))
 
-            tool_calls = data.get("message", {}).get("tool_calls", [])
+            assistant_message = data.get("message", {})
+            tool_calls = assistant_message.get("tool_calls", [])
 
             if not tool_calls:
                 break
 
+            messages.append(assistant_message)
+
             for call in tool_calls:
-
                 function_block = call.get("function", {})
+                tool_name = function_block.get("name", "")
+                tool_args = function_block.get("arguments", {}) or {}
 
-                name = function_block.get("name", "")
-                args = function_block.get("arguments", {}) or {}
+                if tool_name == "bark":
+                    action = bark(**tool_args)
+                    intentions.append(action)
 
-                if name == "bark":
-                    result = bark(**args)
-                    intentions.append(result)
+                    messages.append({
+                        "role": "tool",
+                        "content": action_tool_result(action)
+                    })
 
-                elif name == "flee_from_noise":
-                    result = flee_from_noise(**args)
-                    intentions.append(result)
+                elif tool_name == "flee_from_noise":
+                    action = flee_from_noise(**tool_args)
+                    intentions.append(action)
+
+                    messages.append({
+                        "role": "tool",
+                        "content": action_tool_result(action)
+                    })
+
+                elif tool_name == "get_world_state":
+                    requested_detail = tool_args.get("detail", "normal")
+                    world_state_text = request_unity_world_state(
+                        agent_id=request.agent_id,
+                        detail=requested_detail
+                    )
+
+                    messages.append({
+                        "role": "tool",
+                        "content": f"WORLD STATE ({requested_detail}):\n{world_state_text}"
+                    })
 
                 else:
-                    print("Unknown tool:", name)
-                    continue
-
-                # feed tool result back into conversation
-                messages.append(data["message"])
-
-                messages.append({
-                    "role": "tool",
-                    "content": json.dumps(result)
-                })
+                    print(f"Unknown tool call ignored: {tool_name}")
+                    messages.append({
+                        "role": "tool",
+                        "content": f"Unknown tool ignored: {tool_name}"
+                    })
 
         if not intentions:
             intentions.append(bark())
@@ -190,8 +189,6 @@ When no more actions are needed, stop calling tools.
             }
         }
 
-    except Exception as e:
-
-        print("LLM planner failed:", e)
-
+    except Exception as exception:
+        print("LLM planner failed:", exception)
         return stub_generate_plan(request)
