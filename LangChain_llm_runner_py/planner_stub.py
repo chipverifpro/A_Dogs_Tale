@@ -1,3 +1,19 @@
+# planner_stub.py
+#
+# This is the safe fallback planner.
+#
+# Its job is to:
+#	•	return a known-good hardcoded response
+#	•	keep the pipeline working if the LLM fails
+#	•	give you a reliable debug mode
+#	•	help isolate whether a bug is in Unity/networking or in the LLM
+#
+# This is very useful because it lets you answer:
+#
+# “Is the system broken, or is only the model broken?”
+#
+# If LLM fails → use stub → Unity still receives a valid plan
+
 import time
 from typing import Dict, Any
 from schemas import PlanRequestV2

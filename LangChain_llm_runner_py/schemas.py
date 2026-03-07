@@ -1,3 +1,23 @@
+# schemas.py
+#
+# This defines the data shapes shared inside the Python side.
+#
+# Its job is to describe:
+#	•	what a valid plan_request_v2 looks like
+#	•	what a valid plan_response_v2 looks like
+#	•	what fields triggers, world state, constraints, and intentions contain
+#
+# This gives you:
+#	•	validation
+#	•	cleaner code
+#	•	predictable field names
+#	•	safer refactoring
+#
+# Think of it as the contract layer for Python.
+#
+# request JSON ↔ Python objects ↔ response JSON
+
+
 from typing import List, Optional
 from pydantic import BaseModel, Field, ConfigDict
 

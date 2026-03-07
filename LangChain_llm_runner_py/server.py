@@ -1,3 +1,18 @@
+# server.py
+#
+# This is the web entry point.
+#
+# Its job is to:
+#	•	start the FastAPI app
+#	•	expose routes like /health and /plan
+#	•	receive the incoming request from Unity
+#	•	pass that request to the planner
+#	•	return the planner’s result back to Unity
+#
+# It should stay thin. It is basically the HTTP wrapper around your planner.
+#
+# Unity → server.py → planner → Unity
+
 from fastapi import FastAPI
 from typing import Dict, Any
 

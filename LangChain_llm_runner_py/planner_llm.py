@@ -1,3 +1,23 @@
+# planner_llm.py
+#
+# This is the real planner.
+#
+# Its job is to:
+#	•	build the prompt
+#	•	call the LLM
+#	•	handle tool calls or structured output
+#	•	translate the model’s answer into your plan_response_v2
+#	•	sanitize arguments
+#	•	return safe intention dictionaries Unity can execute
+#
+# If server.py is the front door, planner_llm.py is the brain.
+#
+# PlanRequestV2
+# → prompt / tools
+# → LLM
+# → intentions
+# → PlanResponseV2-compatible dict
+
 import time
 import json
 import requests
@@ -69,6 +89,10 @@ Use the available tools to represent the actions.
 You may call multiple tools in sequence.
 Call one tool at a time.
 Stop calling tools when the plan is complete.
+
+Do not explain actions.
+Do not produce text responses.
+Only call tools.
 """
 
 def llm_generate_plan(request: PlanRequestV2):
