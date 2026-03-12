@@ -8,6 +8,7 @@ namespace DogGame.Tasks
         Player,
         Reaction,
         LLM,
-        AI
+        AI,
+        Lua
     }
 }

@@ -6726,7 +6726,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1041234626}
-  - component: {fileID: 1041234625}
+  - component: {fileID: 1041234627}
   m_Layer: 0
   m_Name: Lua
   m_TagString: Untagged
@@ -6734,18 +6734,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &1041234625
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1041234624}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e63ffa0c4b93949c6a479cd39e3082ff, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::LuaTest
 --- !u!4 &1041234626
 Transform:
   m_ObjectHideFlags: 0
@@ -6761,6 +6749,25 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1041234627
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1041234624}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b8956e57f4c814637862b21852297782, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DogGame.Lua.LuaAgentTest
+  taskController: {fileID: 6544990386685219172}
+  observer: {fileID: 6544990386685219154}
+  luaScript: "\r\nfunction react()\r\n    if Dog.isHungry and Vision.foodVisible
+    then\r\n        print('Hungry and food visible')\r\n        Bark(1)\r\n       
+    MoveToEvent(0.3)\r\n        return\r\n    end\r\n\r\n    if Hearing.barkHeard
+    then\r\n        print('Heard a bark')\r\n        Bark(1)\r\n        return\r\n   
+    end\r\n\r\n    print('Nothing interesting')\r\nend\r\n"
 --- !u!1 &1066008316
 GameObject:
   m_ObjectHideFlags: 3

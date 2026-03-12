@@ -78,6 +78,8 @@ public class AudioCatalog : MonoBehaviour
         }
         if (audioMixerGroups == null) audioMixerGroups = dir.audioMixerGroups;
         if (audioPlayer == null) audioPlayer = dir.audioPlayer;
+
+        AddSomeClipsToTheCatalog();
     }
 
     // these should move to someplace more relevant to each.  Left here as an example.
@@ -88,7 +90,16 @@ public class AudioCatalog : MonoBehaviour
             name: "Bark_GermanShepherd",
             filename: "Bark_GermanShepherd",
             subtitle: "[Bark (German Shepherd)]",
-            sourceObjectName: "AgentGermanShepherd",
+            sourceObjectName: "GermanShepherd",
+            pitchRange: new(.95f, 1.05f)
+        );
+
+        AddClipToCatalog(
+            name: "Bark",
+            filename: "Bark_GermanShepherd",
+            subtitle: "[Bark]",
+            channel: "SFX",
+            sourceObjectName: "GermanShepherd",
             pitchRange: new(.95f, 1.05f)
         );
 

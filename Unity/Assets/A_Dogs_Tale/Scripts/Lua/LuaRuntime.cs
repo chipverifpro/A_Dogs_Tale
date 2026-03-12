@@ -1,34 +1,96 @@
+using System;
 using MoonSharp.Interpreter;
+using UnityEngine;
 
-public class LuaRuntime
+namespace DogGame.Lua
 {
-    private Script script;
-
-    public LuaRuntime()
+    public class LuaRuntime
     {
-        script = new Script();
+        private static bool userdataTypesRegistered = false;
+        private readonly Script script;
 
-        // Optional sandbox restrictions
-        script.Options.DebugPrint = s => UnityEngine.Debug.Log("[Lua] " + s);
-    }
+        public LuaRuntime()
+        {
+            RegisterUserdataTypesOnce();
 
-    public void RegisterFunction(string name, object func)
-    {
-        script.Globals[name] = func;
-    }
+            script = new Script();
 
-    public void SetGlobal(string name, object value)
-    {
-        script.Globals[name] = value;
-    }
+            script.Options.DebugPrint = message =>
+            {
+                Debug.Log("[Lua] " + message);
+            };
+        }
 
-    public DynValue Execute(string code)
-    {
-        return script.DoString(code);
-    }
+        private static void RegisterUserdataTypesOnce()
+        {
+            if (userdataTypesRegistered)
+                return;
 
-    public DynValue Call(string functionName)
-    {
-        return script.Call(script.Globals[functionName]);
+            UserData.RegisterType<DogState>();
+            UserData.RegisterType<VisionState>();
+            UserData.RegisterType<HearingState>();
+
+            userdataTypesRegistered = true;
+        }
+
+        public void RegisterBindings(DogLuaBindings bindings)
+        {
+            script.Globals["Bark"] = (Action<int>)bindings.Bark;
+            script.Globals["MoveToEvent"] = (Action<float>)bindings.MoveToEvent;
+            script.Globals["MoveToTarget"] = (Action<float>)bindings.MoveToTarget;
+        }
+
+        public void SetState(DogState dogState, VisionState visionState, HearingState hearingState)
+        {
+            script.Globals["Dog"] = dogState;
+            script.Globals["Vision"] = visionState;
+            script.Globals["Hearing"] = hearingState;
+        }
+
+        public bool LoadScript(string luaCode)
+        {
+            try
+            {
+                script.DoString(luaCode);
+                return true;
+            }
+            catch (InterpreterException exception)
+            {
+                Debug.LogError("[LuaRuntime] Lua load error: " + exception.DecoratedMessage);
+                return false;
+            }
+            catch (Exception exception)
+            {
+                Debug.LogError("[LuaRuntime] General load error: " + exception);
+                return false;
+            }
+        }
+
+        public bool CallReact()
+        {
+            try
+            {
+                DynValue reactFunction = script.Globals.Get("react");
+
+                if (reactFunction.IsNil())
+                {
+                    Debug.LogError("[LuaRuntime] Lua function 'react' was not found.");
+                    return false;
+                }
+
+                script.Call(reactFunction);
+                return true;
+            }
+            catch (InterpreterException exception)
+            {
+                Debug.LogError("[LuaRuntime] Lua runtime error: " + exception.DecoratedMessage);
+                return false;
+            }
+            catch (Exception exception)
+            {
+                Debug.LogError("[LuaRuntime] General runtime error: " + exception);
+                return false;
+            }
+        }
     }
 }
