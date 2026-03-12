@@ -1,10 +1,12 @@
 #nullable enable
+using System;
 using UnityEngine;
 using DogGame.Modules;
 using System.Collections.Generic;
 using DogGame.LLM;
 using DogGame.Tasks;
 using DogGame.Reactions;
+using DogGame.Lua;
 
 public sealed class ReactionModule : WorldModule
 {
@@ -12,9 +14,25 @@ public sealed class ReactionModule : WorldModule
 
     [SerializeField] private float minInterestToReact = 0.25f;
     [SerializeField] private float globalCooldownSeconds = 0.50f;
+    [SerializeField] private float sameEventTypeCooldownSeconds = 0.75f;
     private float globalCooldown;
 
+    [Header("Lua Reactions")]
+    [SerializeField] private bool runLuaOnPerceptionEvents = false;
+    [TextArea(8, 30)]
+    [SerializeField] private string luaReactionScript = "";
+    [SerializeField] private bool luaDogIsHungry = false;
+    [Range(0f, 1f)]
+    [SerializeField] private float luaDogHunger01 = 0f;
+
     private ReactionRuleTable ruleTable = null!;
+    private LuaRuntime? luaRuntime;
+    private bool luaScriptLoaded;
+    private string loadedLuaScript = "";
+    private readonly Dictionary<string, float> eventTypeCooldownUntil = new();
+    private readonly DogState luaDogState = new();
+    private readonly VisionState luaVisionState = new();
+    private readonly HearingState luaHearingState = new();
 
     protected override void Awake()
     {
@@ -23,6 +41,7 @@ public sealed class ReactionModule : WorldModule
 
         ruleTable = new ReactionRuleTable();
         BuildDefaultRules(ruleTable);
+        EnsureLuaReady();
     }
 
     public override void Tick(float dt)
@@ -33,7 +52,8 @@ public sealed class ReactionModule : WorldModule
         if (globalCooldown > 0f)
         {
             globalCooldown = Mathf.Max(0f, globalCooldown - dt);
-            return;
+            if (!runLuaOnPerceptionEvents)
+                return;
         }
 
         var events = CollectPerceptionEvents(dt);
@@ -42,6 +62,18 @@ public sealed class ReactionModule : WorldModule
 
         // Optional: only process events observed by me (if you added Observer)
         events.RemoveAll(e => e.Observer != worldObject);
+        if (events.Count == 0)
+            return;
+
+        ApplySameTypeCooldown(events);
+        if (events.Count == 0)
+            return;
+
+        RunLuaReactions(events);
+
+        // Cooldown gates C# rule-based reactions, not Lua event callbacks.
+        if (globalCooldown > 0f)
+            return;
 
         var bestEvent = PickBestEvent(events);
         if (bestEvent.Interest01 < minInterestToReact)
@@ -58,6 +90,88 @@ public sealed class ReactionModule : WorldModule
 
             Debug.Log($"[ReactionModule] {worldObject.DisplayName} -> rule='{rule.Name}' score={score:0.00} event={bestEvent.Type}");
         }
+    }
+
+    private void EnsureLuaReady()
+    {
+        if (!runLuaOnPerceptionEvents)
+            return;
+
+        if (string.IsNullOrWhiteSpace(luaReactionScript))
+        {
+            luaScriptLoaded = false;
+            loadedLuaScript = "";
+            return;
+        }
+
+        if (luaRuntime == null)
+        {
+            luaRuntime = new LuaRuntime();
+
+            var bootstrapEvent = new PerceptionEvent(
+                observer: worldObject,
+                sense: PerceptionSense.Scent,
+                type: PerceptionEventType.SomethingInteresting,
+                worldPos: worldObject.transform.position,
+                target: null,
+                strength01: 0f,
+                novelty01: 0f,
+                interest01: 0f);
+
+            var bindings = new DogLuaBindings(taskController, worldObject, bootstrapEvent);
+            luaRuntime.RegisterBindings(bindings);
+        }
+
+        if (luaScriptLoaded &&
+            string.Equals(loadedLuaScript, luaReactionScript, StringComparison.Ordinal))
+            return;
+
+        luaDogState.isHungry = luaDogIsHungry;
+        luaDogState.hunger = Mathf.Clamp01(luaDogHunger01);
+        luaVisionState.foodVisible = false;
+        luaHearingState.barkHeard = false;
+
+        luaRuntime.SetState(luaDogState, luaVisionState, luaHearingState);
+        luaScriptLoaded = luaRuntime.LoadScript(luaReactionScript);
+        if (luaScriptLoaded)
+            loadedLuaScript = luaReactionScript;
+    }
+
+    private void RunLuaReactions(List<PerceptionEvent> events)
+    {
+        if (!runLuaOnPerceptionEvents)
+            return;
+
+        EnsureLuaReady();
+        if (luaRuntime == null || !luaScriptLoaded)
+            return;
+
+        for (int i = 0; i < events.Count; i++)
+        {
+            var e = events[i];
+            UpdateLuaStateFromEvent(e);
+
+            luaRuntime.SetState(luaDogState, luaVisionState, luaHearingState);
+            luaRuntime.SetPerceptionEvent(e);
+
+            if (!luaRuntime.CallReact())
+            {
+                Debug.LogError($"[ReactionModule] Lua CallReact failed for event {e.Type} ({e.Sense}).");
+                return;
+            }
+        }
+    }
+
+    private void UpdateLuaStateFromEvent(in PerceptionEvent e)
+    {
+        luaHearingState.barkHeard =
+            e.Sense == PerceptionSense.Sound &&
+            e.Type == PerceptionEventType.BarkHeard;
+
+        luaVisionState.foodVisible =
+            e.Sense == PerceptionSense.Vision &&
+            e.Target != null &&
+            e.Target.Kind == WorldObjectKind.Item;
     }
 
     private List<PerceptionEvent> CollectPerceptionEvents(float dt)
@@ -83,6 +197,37 @@ public sealed class ReactionModule : WorldModule
         }
 
         return events;
+    }
+
+    private void ApplySameTypeCooldown(List<PerceptionEvent> events)
+    {
+        if (events == null || events.Count == 0)
+            return;
+
+        if (sameEventTypeCooldownSeconds <= 0f)
+            return;
+
+        float now = Time.time;
+
+        for (int i = 0; i < events.Count;)
+        {
+            PerceptionEvent e = events[i];
+            string key = BuildEventTypeCooldownKey(e);
+
+            if (eventTypeCooldownUntil.TryGetValue(key, out float until) && now < until)
+            {
+                events.RemoveAt(i);
+                continue;
+            }
+
+            eventTypeCooldownUntil[key] = now + sameEventTypeCooldownSeconds;
+            i++;
+        }
+    }
+
+    private static string BuildEventTypeCooldownKey(in PerceptionEvent e)
+    {
+        return $"{e.Sense}:{e.Type}";
     }
 
     private void FilterToSelfObserved(List<PerceptionEvent> events)

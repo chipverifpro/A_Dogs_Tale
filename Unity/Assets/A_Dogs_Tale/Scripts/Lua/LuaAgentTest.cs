@@ -1,4 +1,4 @@
-using System;
+using System.Collections.Generic;
 using DogGame.LLM;
 using DogGame.Modules;
 using UnityEngine;
@@ -10,8 +10,17 @@ namespace DogGame.Lua
         public TaskController taskController;
         public WorldObject observer;
         public PerceptionEvent perceptionEvent;
+        [SerializeField] private bool reactToPerceptionEvents = true;
+        [SerializeField] private float sameEventTypeCooldownSeconds = 0.75f;
 
-        private LuaRuntime luaRuntime;
+        private LuaRuntime luaRuntime = null!;
+
+        private readonly List<PerceptionEvent> scratchEvents = new();
+        private readonly Dictionary<string, float> eventTypeCooldownUntil = new();
+        private DogState dogState = new();
+        private VisionState visionState = new();
+        private HearingState hearingState = new();
+        private bool scriptLoaded;
 
         [TextArea(10, 30)]
         public string luaScript = @"
@@ -61,55 +70,139 @@ end
         {
             Debug.Log("[LuaAgentTest] Start");
 
+            if (observer == null)
+            {
+                Debug.LogError("[LuaAgentTest] observer is null.");
+                return;
+            }
+
             luaRuntime = new LuaRuntime();
 
-            perceptionEvent = PerceptionEvent.MakeScent(
+            // Bootstrap event so bindings can build event-context tasks before first live event arrives.
+            perceptionEvent = new PerceptionEvent(
                 observer: observer,
-                type: PerceptionEventType.NewSmell,
-                worldPos: new Vector3(5f, 5f, 0f),
-                scentKey: "agent:3",
-                category: ScentCategory.Food,
-                scentName: "Hot Dog",
-                strength01: 0.8f,
-                novelty01: 0.9f,
-                interest01: 0.85f);
+                sense: PerceptionSense.Scent,
+                type: PerceptionEventType.SomethingInteresting,
+                worldPos: observer.transform.position,
+                target: null,
+                strength01: 0f,
+                novelty01: 0f,
+                interest01: 0f);
 
-            DogLuaBindings bindings = new DogLuaBindings(taskController, observer, perceptionEvent);
+            var bindings = new DogLuaBindings(taskController, observer, perceptionEvent);
             luaRuntime.RegisterBindings(bindings);
 
-            DogState dogState = new DogState
+            dogState = new DogState
             {
                 isHungry = true,
                 hunger = 0.8f
             };
 
-            VisionState visionState = new VisionState
+            visionState = new VisionState
             {
                 foodVisible = true
             };
 
-            HearingState hearingState = new HearingState
+            hearingState = new HearingState
             {
                 barkHeard = false
             };
 
             luaRuntime.SetState(dogState, visionState, hearingState);
-            luaRuntime.SetPerceptionEvent(perceptionEvent);
-            bool loaded = luaRuntime.LoadScript(luaScript);
-            if (!loaded)
+            scriptLoaded = luaRuntime.LoadScript(luaScript);
+            if (!scriptLoaded)
             {
                 Debug.LogError("[LuaAgentTest] LoadScript failed; skipping react.");
                 return;
             }
 
-            bool reacted = luaRuntime.CallReact();
-            if (!reacted)
-            {
-                Debug.LogError("[LuaAgentTest] CallReact failed.");
+            Debug.Log("[LuaAgentTest] Ready (script loaded; waiting for perception events)");
+        }
+
+        private void Update()
+        {
+            if (!reactToPerceptionEvents || !scriptLoaded || observer == null)
                 return;
+
+            CollectPerceptionEvents(Time.deltaTime, scratchEvents);
+            if (scratchEvents.Count == 0)
+                return;
+
+            for (int i = 0; i < scratchEvents.Count; i++)
+            {
+                perceptionEvent = scratchEvents[i];
+                if (IsEventTypeOnCooldown(perceptionEvent))
+                    continue;
+
+                UpdateStateFromEvent(perceptionEvent);
+
+                luaRuntime.SetState(dogState, visionState, hearingState);
+                luaRuntime.SetPerceptionEvent(perceptionEvent);
+
+                if (!luaRuntime.CallReact())
+                {
+                    Debug.LogError("[LuaAgentTest] CallReact failed for perception event.");
+                    return;
+                }
+            }
+        }
+
+        private void CollectPerceptionEvents(float dt, List<PerceptionEvent> events)
+        {
+            events.Clear();
+
+            if (observer.scentPerceptionModule != null)
+            {
+                var scentEvents = observer.scentPerceptionModule.TickScent(dt);
+                if (scentEvents != null && scentEvents.Count > 0)
+                    events.AddRange(scentEvents);
             }
 
-            Debug.Log("[LuaAgentTest] Done (script loaded and react executed)");
+            if (observer.visionPerceptionModule != null)
+            {
+                var visionEvents = observer.visionPerceptionModule.GetPerceptionEvents();
+                if (visionEvents != null && visionEvents.Count > 0)
+                    events.AddRange(visionEvents);
+            }
+
+            if (observer.hearingModule != null)
+            {
+                var hearingEvents = observer.hearingModule.GetPerceptionEvents();
+                if (hearingEvents != null && hearingEvents.Count > 0)
+                {
+                    events.AddRange(hearingEvents);
+                    observer.hearingModule.ClearPerceptionEvents();
+                }
+            }
+
+            events.RemoveAll(e => e.Observer != observer);
+        }
+
+        private void UpdateStateFromEvent(PerceptionEvent e)
+        {
+            hearingState.barkHeard = e.Sense == PerceptionSense.Sound && e.Type == PerceptionEventType.BarkHeard;
+
+            bool visionFood =
+                e.Sense == PerceptionSense.Vision &&
+                e.Target != null &&
+                e.Target.Kind == WorldObjectKind.Item;
+
+            visionState.foodVisible = visionFood;
+        }
+
+        private bool IsEventTypeOnCooldown(in PerceptionEvent e)
+        {
+            if (sameEventTypeCooldownSeconds <= 0f)
+                return false;
+
+            string key = $"{e.Sense}:{e.Type}";
+            float now = Time.time;
+
+            if (eventTypeCooldownUntil.TryGetValue(key, out float until) && now < until)
+                return true;
+
+            eventTypeCooldownUntil[key] = now + sameEventTypeCooldownSeconds;
+            return false;
         }
     }
 }
