@@ -74,6 +74,14 @@ public sealed class ReactionModule : WorldModule
         if (eventsVision != null && eventsVision.Count > 0)
             events.AddRange(eventsVision);
 
+        // Hearing
+        var eventsHearing = worldObject.hearingModule.GetPerceptionEvents();
+        if (eventsHearing != null && eventsHearing.Count > 0)
+        {
+            events.AddRange(eventsHearing);
+            worldObject.hearingModule.ClearPerceptionEvents();
+        }
+
         return events;
     }
 

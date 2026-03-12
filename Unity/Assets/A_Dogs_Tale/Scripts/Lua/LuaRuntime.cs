@@ -1,6 +1,7 @@
 using System;
 using MoonSharp.Interpreter;
 using UnityEngine;
+using DogGame.Modules;
 
 namespace DogGame.Lua
 {
@@ -8,6 +9,7 @@ namespace DogGame.Lua
     {
         private static bool userdataTypesRegistered = false;
         private readonly Script script;
+        private DogLuaBindings bindings;
 
         public LuaRuntime()
         {
@@ -29,15 +31,24 @@ namespace DogGame.Lua
             UserData.RegisterType<DogState>();
             UserData.RegisterType<VisionState>();
             UserData.RegisterType<HearingState>();
+            UserData.RegisterType<PerceptionEventState>();
 
             userdataTypesRegistered = true;
         }
 
         public void RegisterBindings(DogLuaBindings bindings)
         {
+            this.bindings = bindings;
             script.Globals["Bark"] = (Action<int>)bindings.Bark;
             script.Globals["MoveToEvent"] = (Action<float>)bindings.MoveToEvent;
             script.Globals["MoveToTarget"] = (Action<float>)bindings.MoveToTarget;
+            script.Globals["FaceEventTarget"] = (Action<float, float>)bindings.FaceEventTarget;
+            script.Globals["MoveUntilEventSeen"] = (Action<float, float>)bindings.MoveUntilEventSeen;
+            script.Globals["MoveToEventSound"] = (Action<float>)bindings.MoveToEventSound;
+            script.Globals["Sniff"] = (Action<float>)bindings.Sniff;
+            script.Globals["FollowScent"] = (Action<string, string>)bindings.FollowScent;
+            script.Globals["FollowEventScent"] = (Action)bindings.FollowEventScent;
+            script.Globals["FollowEventScentAir"] = (Action)bindings.FollowEventScentAir;
         }
 
         public void SetState(DogState dogState, VisionState visionState, HearingState hearingState)
@@ -45,6 +56,14 @@ namespace DogGame.Lua
             script.Globals["Dog"] = dogState;
             script.Globals["Vision"] = visionState;
             script.Globals["Hearing"] = hearingState;
+            script.Globals["Event"] = DynValue.Nil;
+        }
+
+        public void SetPerceptionEvent(PerceptionEvent perceptionEvent)
+        {
+            if (bindings != null)
+                bindings.SetPerceptionEvent(perceptionEvent);
+            script.Globals["Event"] = PerceptionEventState.FromPerceptionEvent(perceptionEvent);
         }
 
         public bool LoadScript(string luaCode)
@@ -78,7 +97,8 @@ namespace DogGame.Lua
                     return false;
                 }
 
-                script.Call(reactFunction);
+                DynValue perceptionEvent = script.Globals.Get("Event");
+                script.Call(reactFunction, perceptionEvent);
                 return true;
             }
             catch (InterpreterException exception)

@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using DogGame.Noise;
 
 namespace DogGame.Modules
 {
@@ -146,6 +147,40 @@ namespace DogGame.Modules
                 interest01: interest01,
                 vision: new VisionDetails(distanceMeters, speedMps, angleDeg, kind, relation));
         }
+
+        // Convenience factory for sound events
+        public static PerceptionEvent MakeSound(
+            WorldObject observer,
+            PerceptionEventType type,
+            Vector3 worldPos,
+            WorldObject? target,
+            float strength01,
+            float novelty01,
+            float interest01,
+            float loudness01,
+            float distanceMeters,
+            NoiseCategory category,
+            NoiseSubtype subtype,
+            bool addressedToMe = false,
+            float addressedConfidence01 = 0f)
+        {
+            return new PerceptionEvent(
+                observer: observer,
+                sense: PerceptionSense.Sound,
+                type: type,
+                worldPos: worldPos,
+                target: target,
+                strength01: strength01,
+                novelty01: novelty01,
+                interest01: interest01,
+                sound: new SoundDetails(
+                    loudness01,
+                    distanceMeters,
+                    category,
+                    subtype,
+                    addressedToMe,
+                    addressedConfidence01));
+        }
     }
 
     /// <summary>Scent-specific payload.</summary>
@@ -187,11 +222,25 @@ namespace DogGame.Modules
     {
         public readonly float Loudness01;
         public readonly float DistanceMeters;
+        public readonly NoiseCategory Category;
+        public readonly NoiseSubtype Subtype;
+        public readonly bool AddressedToMe;
+        public readonly float AddressedConfidence01;
 
-        public SoundDetails(float loudness01, float distanceMeters)
+        public SoundDetails(
+            float loudness01,
+            float distanceMeters,
+            NoiseCategory category = NoiseCategory.Other,
+            NoiseSubtype subtype = NoiseSubtype.Unknown,
+            bool addressedToMe = false,
+            float addressedConfidence01 = 0f)
         {
             Loudness01 = Mathf.Clamp01(loudness01);
             DistanceMeters = distanceMeters;
+            Category = category;
+            Subtype = subtype;
+            AddressedToMe = addressedToMe;
+            AddressedConfidence01 = Mathf.Clamp01(addressedConfidence01);
         }
     }
 
@@ -237,6 +286,15 @@ namespace DogGame.Modules
 
                     var s = e.Scent.Value;
                     return $"SCENT: {e.Type} {s.Category} '{s.ScentName}' strength={e.Strength01:0.00}";
+                }
+
+                case PerceptionSense.Sound:
+                {
+                    if (!e.Sound.HasValue)
+                        return $"SOUND: {e.Type}";
+
+                    var s = e.Sound.Value;
+                    return $"SOUND: {e.Type} {s.Category}/{s.Subtype} loud={s.Loudness01:0.00} dist={s.DistanceMeters:0.0}m";
                 }
 
                 default:

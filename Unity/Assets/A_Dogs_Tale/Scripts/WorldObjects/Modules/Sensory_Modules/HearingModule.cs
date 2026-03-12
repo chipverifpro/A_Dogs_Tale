@@ -44,6 +44,7 @@ namespace DogGame.Modules
         [Header("Ranking / caps")]
         [SerializeField] private int maxRawHeard = 24;
         [SerializeField] private int maxLLMItems = 8;
+        [SerializeField] private int maxPerceptionEvents = 8;
 
         [Header("Listener state")]
         [Range(0.1f, 3f)]
@@ -63,6 +64,10 @@ namespace DogGame.Modules
         // Public outputs
         public IReadOnlyList<HeardNoise> CurrentHeardNoises => currentHeard;
         public NoiseSummaryForLLM CurrentLLMSummary { get; private set; }
+        public readonly List<PerceptionEvent> perceptionEvents = new();
+
+        public List<PerceptionEvent> GetPerceptionEvents() => perceptionEvents;
+        public void ClearPerceptionEvents() => perceptionEvents.Clear();
 
         private int debugDoubleTick = -1;
         public override void Tick(float deltaTime)
@@ -103,6 +108,7 @@ namespace DogGame.Modules
         private void UpdateHearing()
         {
             currentHeard.Clear();
+            perceptionEvents.Clear();
 
             if (NoiseManager.Instance == null)
             {
@@ -208,6 +214,7 @@ namespace DogGame.Modules
             // 2) Summarize + cap for LLM
             NoiseSummarizer.SummarizeForLLM(currentHeard, maxLLMItems, summarizedForLLM);
             CurrentLLMSummary = BuildLLMSummary(summarizedForLLM, listenerRoomId, hearingWindowSeconds);
+            BuildPerceptionEvents(summarizedForLLM, listenerPos);
             
             foreach (var h in summarizedForLLM)
             {
@@ -223,6 +230,46 @@ namespace DogGame.Modules
             }            
             //if (summarizedForLLM.Count > 0)
             //    Debug.Log($"[{worldObject.DisplayName}] Heard: {summarizedForLLM[0].category}/{summarizedForLLM[0].subtype} loud={summarizedForLLM[0].perceivedLoudness01:0.00} notes={summarizedForLLM[0].notesShort}");
+        }
+
+        private void BuildPerceptionEvents(List<HeardNoise> ranked, Vector3 listenerPos)
+        {
+            if (ranked == null || ranked.Count == 0)
+                return;
+
+            int maxEvents = Mathf.Max(1, maxPerceptionEvents);
+            int count = Mathf.Min(maxEvents, ranked.Count);
+
+            for (int i = 0; i < count; i++)
+            {
+                var h = ranked[i];
+
+                Vector3 eventPos = listenerPos;
+                if (h.directionToSource != Vector3.zero)
+                    eventPos = listenerPos + (h.directionToSource * Mathf.Max(0f, h.distanceMeters));
+
+                PerceptionEventType type =
+                    (h.category == NoiseCategory.Voice && h.subtype == NoiseSubtype.Bark)
+                        ? PerceptionEventType.BarkHeard
+                        : PerceptionEventType.LoudNoise;
+
+                float novelty01 = 1f - Mathf.Clamp01(h.timeAgoSeconds / Mathf.Max(0.001f, hearingWindowSeconds));
+
+                perceptionEvents.Add(PerceptionEvent.MakeSound(
+                    observer: worldObject,
+                    type: type,
+                    worldPos: eventPos,
+                    target: h.attributedEmitterRef,
+                    strength01: h.perceivedLoudness01,
+                    novelty01: novelty01,
+                    interest01: Mathf.Clamp01(h.audibilityScore),
+                    loudness01: h.perceivedLoudness01,
+                    distanceMeters: h.distanceMeters,
+                    category: h.category,
+                    subtype: h.subtype,
+                    addressedToMe: h.isIntendedForMe,
+                    addressedConfidence01: h.intendedConfidence01));
+            }
         }
 
         private float ComputeRoomFactor(int listenerRoomId, int sourceRoomId)
