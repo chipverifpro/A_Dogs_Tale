@@ -90,7 +90,7 @@ public class AudioCatalog : MonoBehaviour
             name: "Bark_GermanShepherd",
             filename: "Bark_GermanShepherd",
             subtitle: "[Bark (German Shepherd)]",
-            sourceObjectName: "GermanShepherd",
+            sourceObjectName: "germanshepherd",
             pitchRange: new(.95f, 1.05f)
         );
 
@@ -99,7 +99,7 @@ public class AudioCatalog : MonoBehaviour
             filename: "Bark_GermanShepherd",
             subtitle: "[Bark]",
             channel: "SFX",
-            sourceObjectName: "GermanShepherd",
+            sourceObjectName: "germanshepherd",
             pitchRange: new(.95f, 1.05f)
         );
 
