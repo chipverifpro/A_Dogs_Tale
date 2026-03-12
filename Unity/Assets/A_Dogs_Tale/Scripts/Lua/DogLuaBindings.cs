@@ -25,7 +25,7 @@ namespace DogGame.Lua
 
         public void Bark(int times)
         {
-            int barkCount = Mathf.Max(1, times);
+            int barkCount = Mathf.Clamp(times, 1, 5);
 
             for (int barkIndex = 0; barkIndex < barkCount; barkIndex++)
             {

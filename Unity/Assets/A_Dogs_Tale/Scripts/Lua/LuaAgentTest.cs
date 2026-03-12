@@ -19,7 +19,7 @@ function react()
     if Dog.isHungry and Vision.foodVisible then
         print('Hungry and food visible')
         Bark(1)
-        MoveTo('food')
+        MoveToEvent(0.3)
         return
     end
 
@@ -71,10 +71,21 @@ end
             };
 
             luaRuntime.SetState(dogState, visionState, hearingState);
-            luaRuntime.LoadScript(luaScript);
-            luaRuntime.CallReact();
+            bool loaded = luaRuntime.LoadScript(luaScript);
+            if (!loaded)
+            {
+                Debug.LogError("[LuaAgentTest] LoadScript failed; skipping react.");
+                return;
+            }
 
-            Debug.Log("[LuaAgentTest] Done");
+            bool reacted = luaRuntime.CallReact();
+            if (!reacted)
+            {
+                Debug.LogError("[LuaAgentTest] CallReact failed.");
+                return;
+            }
+
+            Debug.Log("[LuaAgentTest] Done (script loaded and react executed)");
         }
     }
 }
