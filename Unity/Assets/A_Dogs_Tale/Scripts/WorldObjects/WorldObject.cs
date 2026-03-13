@@ -122,7 +122,7 @@ public static class ModuleFlagsTemplates  // extension functions for the ModuleF
 public class WorldObject : MonoBehaviour
 {
     [Header("GameObject directory")]
-    public Directory dir => Directory.Instance;
+    public Dir dir => Dir.Instance;
 
     [Header("Identity")]
     [SerializeField] private int objectId = -1;
@@ -215,15 +215,15 @@ public class WorldObject : MonoBehaviour
 
     private void Awake()
     {
-        //dir = FindFirstObjectByType<Directory>();
+        //dir = FindFirstObjectByType<Dir>();
         if (dir == null)
         {
-            Debug.LogError($"WorldObject.Awake() was unable to find Directory.");
+            Debug.LogError($"WorldObject.Awake() was unable to find Dir.");
         }
 
         motionAdapter = new(this);  // create the adapter
 
-        // grab from Directory:
+        // grab from Dir:
         llmWorldScheduler = dir.llmWorldScheduler;
         taskController = GetComponent<TaskController>();
         //taskExecutor = GetComponent<TaskExecutor>();

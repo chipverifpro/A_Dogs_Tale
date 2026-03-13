@@ -43,8 +43,8 @@ public struct ScentDetection
 
 public class ScentRegistry : MonoBehaviour
 {
-    [Header("Reference to Global Directory")]
-    public Directory dir;
+    [Header("Reference to Global Dir")]
+    public Dir dir;
 
     [Header("All Scent Sources")]
     public List<ScentSource> allScentSources = new List<ScentSource>();

@@ -28,7 +28,7 @@ public class AudioPlayTracking
 public partial class AudioPlayer : MonoBehaviour
 {
     [Header("AudioPlayer Object References")]
-    public Directory dir;
+    public Dir dir;
     public AudioCatalog audioCatalog;
     public GameObject nowPlayingContainer;
 
@@ -43,7 +43,7 @@ public partial class AudioPlayer : MonoBehaviour
         }
 
         Instance = this;
-        if (dir == null) dir = FindFirstObjectByType<Directory>(FindObjectsInactive.Include);
+        if (dir == null) dir = FindFirstObjectByType<Dir>(FindObjectsInactive.Include);
         if (dir == null)
         {
             Debug.LogError($"AudioCatalog: ObjectDirectory not found");

@@ -54,12 +54,12 @@ namespace DogGame.Modules
             //    return;
             //}
             // One-shot manual sniff by player
-            //TaskContext sniffContext = new(Directory.Instance.playerPack.packLeader);
+            //TaskContext sniffContext = new(Dir.Instance.playerPack.packLeader);
             //Debug.Log($"SniffInput.OnSniffPerformed {sniffContext.Agent.DisplayName}");
             //Task_Sniff.RunTask_Sniff(sniffContext);
 
             
-            WorldObject playerAgent = Directory.Instance.playerPack.packLeader;
+            WorldObject playerAgent = Dir.Instance.playerPack.packLeader;
             HashSet<string> sniffContext = new(playerAgent.ObjectId);
             playerAgent.taskController.EnqueueTask(
                 task: new Task_Sniff(sniffContext),

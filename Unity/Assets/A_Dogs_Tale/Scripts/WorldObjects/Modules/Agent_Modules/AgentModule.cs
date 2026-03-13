@@ -39,7 +39,7 @@ namespace DogGame.Modules
             base.Awake();
             if (agentName.IsNullOrEmpty()) agentName=gameObject.name;
 
-            //if (dir==null) dir=FindFirstObjectByType<Directory>();
+            //if (dir==null) dir=FindFirstObjectByType<Dir>();
 
             // Find all decision modules attached to this agent and initialize them.
             allDecisionModules = GetComponents<AgentDecisionModuleBase>();

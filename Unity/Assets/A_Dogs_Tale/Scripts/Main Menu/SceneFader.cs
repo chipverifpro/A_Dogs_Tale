@@ -4,7 +4,7 @@ using UnityEngine.UI;
 
 public class SceneFader : MonoBehaviour
 {
-    public Directory dir;
+    public Dir dir;
     //public AudioPlayer sfx;
     public AudioPlayer audioPlayer;
     public AudioCatalog audioCatalog;

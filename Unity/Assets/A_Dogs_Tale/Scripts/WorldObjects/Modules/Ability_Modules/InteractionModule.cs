@@ -123,13 +123,13 @@ namespace DogGame.UI.InteractionWheel
         public void Start()
         {
             // Debug 1
-            var options = WheelOptionCollector.CollectFromTarget(Directory.Instance.playerPack.packLeader, worldObject);
+            var options = WheelOptionCollector.CollectFromTarget(Dir.Instance.playerPack.packLeader, worldObject);
             Debug.Log($"Start InteractionModule {worldObject.DisplayName}: {options.Count} options:");
             foreach (var opt in options) Debug.Log(opt.ToString());
 
             // Debug 2
             int maxPrimaryOptions = 8; // parameter later
-            var menuModel = WheelMenuResolver.CreateWheelMenu(Directory.Instance.playerPack.packLeader, worldObject, worldPoint: null, maxPrimaryOptions);
+            var menuModel = WheelMenuResolver.CreateWheelMenu(Dir.Instance.playerPack.packLeader, worldObject, worldPoint: null, maxPrimaryOptions);
             Debug.Log($"Wheel menu for target={worldObject.DisplayName}: pages={menuModel.pages.Count}");
             for (int p = 0; p < menuModel.pages.Count; p++)
             {
@@ -142,7 +142,7 @@ namespace DogGame.UI.InteractionWheel
 
             // Debug 3
             WheelMenuModel model = WheelMenuResolver.CreateWheelMenu(
-                actor: Directory.Instance.playerPack.packLeader,
+                actor: Dir.Instance.playerPack.packLeader,
                 target: worldObject,
                 worldPoint: null,
                 maxPrimaryOptions: 8

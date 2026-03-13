@@ -15,7 +15,7 @@ using DogGame.Modules;
 public partial class Player : MonoBehaviour
 {
     [Header("Refs")]
-    public Directory dir;
+    public Dir dir;
     public DungeonGenerator gen;         // assign in Inspector (has cellGrid, rooms, etc.)
     public BottomBanner bottomBanner;
 

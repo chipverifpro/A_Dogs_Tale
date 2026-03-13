@@ -20,8 +20,8 @@ namespace DogGame.Modules
         private WorldObject _worldObject;
         public WorldObject worldObject => _worldObject ??= GetComponent<WorldObject>();
 
-        private Directory _dir;
-        public Directory dir => _dir ??= Directory.Instance;
+        private Dir _dir;
+        public Dir dir => _dir ??= Dir.Instance;
         
         protected virtual void Awake()
         {

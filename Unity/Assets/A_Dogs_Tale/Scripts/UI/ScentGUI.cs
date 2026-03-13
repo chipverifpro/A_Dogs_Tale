@@ -4,7 +4,7 @@ using UnityEngine.InputSystem;
 public class ScentGUI : MonoBehaviour
 {
     [Header("External object references")]
-    private Directory dir;
+    private Dir dir;
     public SniffModeVisuals sniffVisuals;
 
     private InputAction sniffAction;
@@ -38,7 +38,7 @@ public class ScentGUI : MonoBehaviour
         sniffVisuals.SetSniffMode(isSniffModeActive);
 
         if (dir == null)
-            dir = Directory.Instance;
+            dir = Dir.Instance;
 
         if (dir.scentRegistry == null)
         {

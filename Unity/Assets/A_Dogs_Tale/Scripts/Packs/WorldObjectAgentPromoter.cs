@@ -25,11 +25,11 @@ using DogGame.AI;
 
     public static class WorldObjectAgentPromoter
     {
-        static Directory dir;
+        static Dir dir;
 /*
         public static bool PromoteToFollower(GameObject targetObject, PromoteToPackMemberOptions options)
         {
-            if (dir == null) dir = Directory.Instance;
+            if (dir == null) dir = Dir.Instance;
 
             if (targetObject == null) return false;
 
@@ -77,10 +77,10 @@ using DogGame.AI;
 
         //    Debug.LogWarning($"agentModule = {agentModule}, dir={agentModule.dir}, worldObject={agentModule.worldObject}");
             
-        //    if (agentModule.dir == null) dir = Directory.Instance;
-        //    if (motionModule.dir == null) dir = Directory.Instance;
-        //    if (packMemberModule.dir == null) dir = Directory.Instance;
-        //    if (motivationModule.dir == null) dir = Directory.Instance;
+        //    if (agentModule.dir == null) dir = Dir.Instance;
+        //    if (motionModule.dir == null) dir = Dir.Instance;
+        //    if (packMemberModule.dir == null) dir = Dir.Instance;
+        //    if (motivationModule.dir == null) dir = Dir.Instance;
 
         //    Debug.LogWarning($"agentModule = {agentModule}, dir={agentModule.dir}, worldObject={agentModule.worldObject}");
             

@@ -7,8 +7,8 @@ public enum CameraModes { Unchanged = 0, FP, Overhead, Perspective, Nose };   //
 
 public class CameraModeSwitcher : MonoBehaviour
 {
-    [Header("Game Directory")]
-    public Directory dir;
+    [Header("Game Dir")]
+    public Dir dir;
 
     [Header("Current Modes")]
     public CameraModes cameraMode = CameraModes.Nose;    // More readable version of current_camera for use in other systems

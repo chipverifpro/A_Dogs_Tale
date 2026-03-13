@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class PackManager : MonoBehaviour
 {
-    public Directory dir;
+    public Dir dir;
     public Pack playerPack;
     public GameObject FreeAgentsParent;
     public GameObject PackParentObject;

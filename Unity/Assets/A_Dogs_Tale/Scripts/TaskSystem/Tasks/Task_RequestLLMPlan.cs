@@ -50,7 +50,7 @@ namespace DogGame.Tasks
             submitted = true;
 
             // Find planner/scheduler. Choose ONE:
-            // A) via Directory (recommended if you already have it globally)
+            // A) via Dir (recommended if you already have it globally)
 
             // TODO: this is really broken, cannot figure out what planner is, so just put null and let it abort for now so it will compile.
             //var planner = context.Agent.scheduler as ILLMPlanner; // adjust to your actual field

@@ -6,7 +6,7 @@ using UnityEngine.SceneManagement;
 public sealed class TimeManager : MonoBehaviour
 {
     // --- Config ---
-    public Directory dir;
+    public Dir dir;
     public DungeonSettings cfg;
     [Range(0f, 100f)] public float budgetPercent = 0.95f;   // portion of each frame we allow work to consume
     public bool useUnscaledTime = true;                    // ignore Time.timeScale

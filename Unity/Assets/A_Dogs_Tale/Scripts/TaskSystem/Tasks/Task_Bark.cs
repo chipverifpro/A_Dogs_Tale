@@ -13,7 +13,7 @@ namespace DogGame.Tasks
         private readonly float durationSeconds;
         private float remainingSeconds;
 
-        private static Directory? dir;
+        private static Dir? dir;
 
         public Task_Bark(float volume)
         { 
@@ -23,7 +23,7 @@ namespace DogGame.Tasks
             bool success = false;
             
             // Start the bark audio
-            if (dir==null) dir=Object.FindFirstObjectByType<Directory>();
+            if (dir==null) dir=Object.FindFirstObjectByType<Dir>();
             if (dir!=null && dir.audioPlayer!=null)
                 success = dir.audioPlayer.PlayClip("Bark");
 

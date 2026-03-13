@@ -4,12 +4,12 @@ using UnityEngine.InputSystem.LowLevel;
 public class NonAgentUserInputHandler : MonoBehaviour
 {
     public static GameInputRouter Instance { get; private set; }
-    public Directory dir;
+    public Dir dir;
     public PlayerInputState InputState { get; private set; }
 
     public void Awake()
     {
-        if (dir==null) dir=FindFirstObjectByType<Directory>();
+        if (dir==null) dir=FindFirstObjectByType<Dir>();
 
     }
 

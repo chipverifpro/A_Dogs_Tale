@@ -26,7 +26,7 @@ namespace DogGame.Language
 
         // Parameters...
 
-        public Directory dir;
+        public Dir dir;
 
         private BottomBanner bottomBanner;
 

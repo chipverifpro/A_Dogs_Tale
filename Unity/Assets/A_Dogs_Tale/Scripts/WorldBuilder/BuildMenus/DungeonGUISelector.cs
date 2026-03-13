@@ -5,7 +5,7 @@ using UnityEngine.SceneManagement;
 
 public class DungeonGUISelector : MonoBehaviour
 {
-    public Directory dir;
+    public Dir dir;
     public DungeonSettings cfg; // Reference to the DungeonSettings ScriptableObject
     public TMP_Dropdown roomAlgorithmDropdown;
     public TMP_Dropdown tunnelsAlgorithmDropdown;

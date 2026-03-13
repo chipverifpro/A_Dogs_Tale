@@ -62,7 +62,7 @@ namespace DogGame.Modules
             if (!emitFootsteps) return;
             if (worldObject == null) return;
             if (worldObject.locationModule == null) return;
-            if (!Directory.Instance.gen.buildComplete) return;
+            if (!Dir.Instance.gen.buildComplete) return;
 
             EmitFootsteps(deltaTime);
         }

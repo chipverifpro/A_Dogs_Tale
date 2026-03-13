@@ -36,13 +36,13 @@ public class LeashLink
 // ============== LeashSystem ================
 public class LeashSystem : MonoBehaviour // or your Subsystem base
 {
-    private Directory dir;
+    private Dir dir;
 
     public List<LeashLink> leashes = new();
 
     public void Start()
     {
-        if (dir==null) dir=Directory.Instance;
+        if (dir==null) dir=Dir.Instance;
         // preload prefab
         if (leashPrefab==null) leashPrefab = LoadLeashPrefab();
 
@@ -52,7 +52,7 @@ public class LeashSystem : MonoBehaviour // or your Subsystem base
 
     private void CreateInitialLeashesFromEndpoints()
     {
-        foreach(Pack pack in Directory.Instance.packManager.packs)
+        foreach(Pack pack in Dir.Instance.packManager.packs)
         {
             foreach (var agent in pack.packAgentList)
             {

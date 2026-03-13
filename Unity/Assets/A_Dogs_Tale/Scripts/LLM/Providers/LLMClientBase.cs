@@ -199,11 +199,11 @@ namespace DogGame.LLM.Core
                 }
             }
 
-            // Optional debug monitor hook (your project has Directory.Instance.llmDebugMonitor)
+            // Optional debug monitor hook (your project has Dir.Instance.llmDebugMonitor)
             string payloadJson = spec.payload.ToString();
             string agentId = ExtractAgentId(payloadJson) ?? "<unknown>";
             string requestId = Guid.NewGuid().ToString("N");
-            Directory.Instance.llmDebugMonitor.DebugLLMRequest(
+            Dir.Instance.llmDebugMonitor.DebugLLMRequest(
                 payloadJson,
                 agentId,
                 requestId
@@ -226,7 +226,7 @@ namespace DogGame.LLM.Core
                     bool stale = tokenAtStart != CurrentSessionToken;
 
                     string raw = unityRequest.downloadHandler?.text ?? "";
-                    Directory.Instance.llmDebugMonitor.DebugLLMResponse(
+                    Dir.Instance.llmDebugMonitor.DebugLLMResponse(
                         raw,
                         agentId,
                         requestId,

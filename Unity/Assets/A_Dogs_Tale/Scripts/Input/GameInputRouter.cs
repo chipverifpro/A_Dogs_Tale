@@ -81,7 +81,7 @@ public class GameInputRouter : MonoBehaviour
 
     [Tooltip("The WorldObject currently controlled by the player.")]
     public WorldObject currentControlledWorldObject => dir.playerPack.packLeader;  // pack 0, member 0
-    public Directory dir;
+    public Dir dir;
 
     public GameMode currentGameMode = GameMode.Explore;
 
@@ -94,7 +94,7 @@ public class GameInputRouter : MonoBehaviour
         }
         Instance = this;
 
-        if (dir==null) dir=Directory.Instance;
+        if (dir==null) dir=Dir.Instance;
 
         if (InputState == null)
             InputState = new PlayerInputState();

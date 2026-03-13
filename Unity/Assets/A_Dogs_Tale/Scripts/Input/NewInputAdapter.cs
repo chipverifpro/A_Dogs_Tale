@@ -14,7 +14,7 @@ using System.Collections.Generic;
 public class NewInputAdapter : MonoBehaviour
 {
     [Header("References")]
-    public Directory dir;
+    public Dir dir;
     //public ConvertScreenToWorld convertScreenToWorld;  // move to directory
 
         

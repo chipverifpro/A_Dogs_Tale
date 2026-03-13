@@ -67,7 +67,7 @@ namespace DogGame.Tasks
 
         public Task_MoveToCell? moveToCell;
 
-        Directory dir => Directory.Instance;
+        Dir dir => Dir.Instance;
         
         // ---- Track memory ----
         private struct CellTrackInfo

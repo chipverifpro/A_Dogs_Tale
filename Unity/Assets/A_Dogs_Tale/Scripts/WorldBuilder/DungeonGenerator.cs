@@ -47,8 +47,8 @@ using UnityEditor.SettingsManagement;
 // Master Dungeon Generation Class...
 public partial class DungeonGenerator : MonoBehaviour
 {
-    [Header("Directory Object")]
-    public Directory dir;
+    [Header("Dir Object")]
+    public Dir dir;
 
     //public RandomSceneryScatter sceneryScatterer;
 
@@ -88,7 +88,7 @@ public partial class DungeonGenerator : MonoBehaviour
     {
         if (!dir)
         {
-            dir = FindFirstObjectByType<Directory>(FindObjectsInactive.Include);
+            dir = FindFirstObjectByType<Dir>(FindObjectsInactive.Include);
             if (!dir) Debug.LogError($"[DungeonGenerator.InitializeConnections] dir not found!");
         }
 

@@ -31,7 +31,7 @@ namespace DogGame.LLM.Debugging
             string provider,
             string requestJson)
         {
-            Directory.Instance.llmDebugMonitor.DebugLLMRequest(requestJson, agentId, requestId);
+            Dir.Instance.llmDebugMonitor.DebugLLMRequest(requestJson, agentId, requestId);
             WritePacket(
                 agentId,
                 requestId,
@@ -46,7 +46,7 @@ namespace DogGame.LLM.Debugging
             string provider,
             string responseJson)
         {
-            Directory.Instance.llmDebugMonitor.DebugLLMResponse(responseJson, agentId, requestId, wasStale:false);
+            Dir.Instance.llmDebugMonitor.DebugLLMResponse(responseJson, agentId, requestId, wasStale:false);
             WritePacket(
                 agentId,
                 requestId,

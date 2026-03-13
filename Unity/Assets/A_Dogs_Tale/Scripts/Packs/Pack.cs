@@ -37,7 +37,7 @@ using System;
 
 public class Pack : MonoBehaviour
 {
-    public Directory dir;
+    public Dir dir;
 
     //public GameObject icon;           // Future visual symbol representing this pack.
     public BreadcrumbTrail trail;       // List of locations to follow.  Normally left by leader, but maybe from pathfinding or patrol points

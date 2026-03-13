@@ -10,7 +10,7 @@ using UnityEngine;
 public class ScentAirGround : MonoBehaviour
 {
     [Header("External References")]
-    public Directory dir;
+    public Dir dir;
     public DungeonGenerator gen;
 
     [Tooltip("All cells that participate in scent simulation.")]

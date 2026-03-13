@@ -140,9 +140,9 @@ namespace DogGame.Tasks
             foreach (DirFlags direction in DirFlagsEx.All8)
             {
                 Vector2Int relPosLoc = centerPos + direction.ToVector2Int();
-                Directory.Instance.gen.hf.TryQueryAt(relPosLoc.x, relPosLoc.y, height, 50, out match);
+                Dir.Instance.gen.hf.TryQueryAt(relPosLoc.x, relPosLoc.y, height, 50, out match);
                 if (match.roomId<0 || match.cellId<0) continue; // no cell found
-                relCell = Directory.Instance.gen.rooms[match.roomId].cells[match.cellId];
+                relCell = Dir.Instance.gen.rooms[match.roomId].cells[match.cellId];
 
                 foreach (ScentInCell scentInCell in relCell.scents)
                 {

@@ -48,7 +48,7 @@ namespace DogGame.Modules
 
         private void OnscentFollowPerformed(InputAction.CallbackContext ctx)
         {            
-            WorldObject playerAgent = Directory.Instance.playerPack.packLeader;
+            WorldObject playerAgent = Dir.Instance.playerPack.packLeader;
             //HashSet<string> scentFollowContext = new(playerAgent.ObjectId);
             playerAgent.taskController.EnqueueTask(
                 // TODO: Replace hardcoded agent:3 with something else.

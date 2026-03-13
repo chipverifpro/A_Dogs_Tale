@@ -178,7 +178,7 @@ namespace DogGame.LLM
                     int targetEntityId = (int)(parameters.Value<int?>("targetEntityId") ?? -1);
                     
                     WorldObject targetEntity;
-                    Directory.Instance.worldObjectRegistry.TryGet(targetEntityId, out targetEntity);
+                    Dir.Instance.worldObjectRegistry.TryGet(targetEntityId, out targetEntity);
                     if (targetEntity==null)
                     {
                         error = $"move_to_object parameters.targetEntityId {targetEntityId} matched no objects.";

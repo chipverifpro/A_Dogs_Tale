@@ -10,7 +10,7 @@ namespace DogGame.Tasks
     /// </summary>
     public sealed class Task_FollowScentTrail : IAgentTask
     {
-        public Directory? dir;
+        public Dir? dir;
         private readonly int trackedScentAgentId;
         private readonly float stopRadius;
         private readonly int queryThreshold;
@@ -70,7 +70,7 @@ namespace DogGame.Tasks
 
         public void Awake()
         {
-            if (dir == null) dir = Object.FindFirstObjectByType<Directory>();
+            if (dir == null) dir = Object.FindFirstObjectByType<Dir>();
         }
 
         public void Start(TaskContext context)

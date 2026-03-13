@@ -23,11 +23,11 @@ public class FurniturePlacer : MonoBehaviour
     [Tooltip("Extra Y offset above the cell's world position for placement.")]
     public float baseYOffset = 1f;
 
-    private Directory dir;
+    private Dir dir;
 
     private void Awake()
     {
-        dir = Directory.Instance;
+        dir = Dir.Instance;
         if (dir == null)
         {
             Debug.LogError("FurniturePlacer: ObjectDirectory.Instance is null. Cannot place furniture.", this);

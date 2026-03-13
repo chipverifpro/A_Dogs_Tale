@@ -7,7 +7,7 @@ using UnityEngine;
 /// </summary>
 public sealed class TimeTask
 {
-    public Directory dir;
+    public Dir dir;
     public DungeonSettings cfg;
     public string Name { get; }
     readonly TimeManager _mgr;

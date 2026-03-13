@@ -478,7 +478,7 @@ public class LLMWorldScheduler : MonoBehaviour
 
     private void TryDispatchRequests()
     {
-        if (!Directory.Instance.gen.buildComplete) return;
+        if (!Dir.Instance.gen.buildComplete) return;
         if (!HasPendingRequests()) return;
 
         // Sort by priority (high first), then age (oldest first)

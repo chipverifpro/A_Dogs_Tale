@@ -5,7 +5,7 @@ using DogGame.Language;
 public class ConvertScreenToWorld : MonoBehaviour
 {
     [Header("References")]
-    public Directory dir;
+    public Dir dir;
     public Camera mainCamera;          // assign Main Camera
     
     [Header("Grid / Map")]

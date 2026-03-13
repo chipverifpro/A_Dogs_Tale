@@ -10,7 +10,7 @@ public class Mission
 
 public class MissionManager : MonoBehaviour
 {
-    public Directory dir;
+    public Dir dir;
 
     public List<Mission> missions;
 
