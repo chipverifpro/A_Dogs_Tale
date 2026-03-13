@@ -36,11 +36,16 @@ public class NewInputAdapter : MonoBehaviour
     [SerializeField] private string strafeActionName          = "Strafe";
     [SerializeField] private string barkActionName            = "Bark";
     [SerializeField] private string markTerritoryActionName   = "MarkTerritory";
+    [SerializeField] private string pauseActionName           = "Pause";
     [SerializeField] private string zoomActionName            = "Zoom";
     [SerializeField] private string changeFormationActionName = "ChangeFormation";
     [SerializeField] private string interactActionName        = "Interact";
     [SerializeField] private string selectObjectActionName    = "SelectObject";
     [SerializeField] private string skipAnyKeyActionName      = "Skip"; // generic "skip / any key"
+    [SerializeField] private string popupTab1ActionName       = "PopupTab1";
+    [SerializeField] private string popupTab2ActionName       = "PopupTab2";
+    [SerializeField] private string popupTab3ActionName       = "PopupTab3";
+    [SerializeField] private string popupTab4ActionName       = "PopupTab4";
 
     // If you have explicit actions for camera view / pack agent switching, you can add them here:
     [SerializeField] private string cameraViewActionName      = "";     // optional: change view
@@ -58,11 +63,16 @@ public class NewInputAdapter : MonoBehaviour
     private InputAction strafeAction;
     private InputAction barkAction;
     private InputAction markTerritoryAction;
+    private InputAction pauseAction;
     private InputAction zoomAction;
     private InputAction changeFormationAction;
     private InputAction interactAction;
     private InputAction selectObjectAction;
     private InputAction skipAnyKeyAction;
+    private InputAction popupTab1Action;
+    private InputAction popupTab2Action;
+    private InputAction popupTab3Action;
+    private InputAction popupTab4Action;
 
     private InputAction cameraViewAction;
     private InputAction nextAgentAction;
@@ -176,11 +186,16 @@ public class NewInputAdapter : MonoBehaviour
         strafeAction          = FindAction(map, strafeActionName);
         barkAction            = FindAction(map, barkActionName);
         markTerritoryAction   = FindAction(map, markTerritoryActionName);
+        pauseAction           = FindAction(map, pauseActionName);
         zoomAction            = FindAction(map, zoomActionName);
         changeFormationAction = FindAction(map, changeFormationActionName);
         interactAction        = FindAction(map, interactActionName);
         selectObjectAction    = FindAction(map, selectObjectActionName);
         skipAnyKeyAction      = FindAction(map, skipAnyKeyActionName);
+        popupTab1Action       = FindAction(map, popupTab1ActionName);
+        popupTab2Action       = FindAction(map, popupTab2ActionName);
+        popupTab3Action       = FindAction(map, popupTab3ActionName);
+        popupTab4Action       = FindAction(map, popupTab4ActionName);
 
         cameraViewAction      = string.IsNullOrEmpty(cameraViewActionName) ? null : FindAction(map, cameraViewActionName);
         nextAgentAction       = string.IsNullOrEmpty(nextAgentActionName)  ? null : FindAction(map, nextAgentActionName);
@@ -343,6 +358,12 @@ public class NewInputAdapter : MonoBehaviour
         // --- One-shot commands (per-frame triggers) ---
         state.barkPressed = barkAction != null && barkAction.triggered;
         state.markTerritoryPressed = markTerritoryAction != null && markTerritoryAction.triggered;
+        state.pausePressed = pauseAction != null && pauseAction.triggered;
+        state.requestedPopupTabIndex = 0;
+        if (popupTab1Action != null && popupTab1Action.triggered) state.requestedPopupTabIndex = 1;
+        else if (popupTab2Action != null && popupTab2Action.triggered) state.requestedPopupTabIndex = 2;
+        else if (popupTab3Action != null && popupTab3Action.triggered) state.requestedPopupTabIndex = 3;
+        else if (popupTab4Action != null && popupTab4Action.triggered) state.requestedPopupTabIndex = 4;
 
 
         // --- Camera commands (zoom / change view) ---

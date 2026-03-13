@@ -7,6 +7,7 @@ public class PlayerInputState
     // one-shot commands
     public bool barkPressed;
     public bool markTerritoryPressed;
+    public bool pausePressed;
 
     // camera commands
     public float zoomDelta;                     // float +/- delta zoom, works with keys or mouse wheel, or touchscreen pinch
@@ -19,6 +20,7 @@ public class PlayerInputState
 
     // Skip delay
     public bool anyKeyOrButtonDown;             // skips delay in title screen / interraction / cutscene
+    public int requestedPopupTabIndex;          // popup tab shortcut; 0 means no request, 1..4 are valid tabs
 
     // world and object targeting
     public bool interactPressed;                // "do something" with ClickTargetWorldObject

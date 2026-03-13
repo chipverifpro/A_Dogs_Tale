@@ -140,6 +140,42 @@
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": true
+                },
+                {
+                    "name": "PopupTab1",
+                    "type": "Button",
+                    "id": "b050e4bb-a5c1-4345-8f5b-0ae7b34f5a01",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "PopupTab2",
+                    "type": "Button",
+                    "id": "93d81f79-15a7-4d99-a18d-8a3a3278f324",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "PopupTab3",
+                    "type": "Button",
+                    "id": "61f06fca-54f9-47ea-a5be-67ec6fc593fc",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "PopupTab4",
+                    "type": "Button",
+                    "id": "dd4b5b88-1d7b-49fb-8f75-cf3a4b2b2783",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
                 }
             ],
             "bindings": [
@@ -648,6 +684,50 @@
                     "action": "Strafe",
                     "isComposite": false,
                     "isPartOfComposite": true
+                },
+                {
+                    "name": "",
+                    "id": "01f3a2cf-383a-4b3b-8f78-8577a7eb1093",
+                    "path": "<Keyboard>/1",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "PopupTab1",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "7dd093c0-897a-42c4-bf5d-6121518cb5d8",
+                    "path": "<Keyboard>/2",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "PopupTab2",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "63939970-87ab-47b7-b83c-d6f9ad6f2900",
+                    "path": "<Keyboard>/3",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "PopupTab3",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "2c6d9a0c-18da-4057-875e-0cb73b47b228",
+                    "path": "<Keyboard>/4",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "PopupTab4",
+                    "isComposite": false,
+                    "isPartOfComposite": false
                 }
             ]
         },

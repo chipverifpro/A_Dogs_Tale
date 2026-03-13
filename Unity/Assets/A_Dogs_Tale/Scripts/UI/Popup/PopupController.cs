@@ -198,9 +198,14 @@ public class PopupController : MonoBehaviour
     string curTab = "Game";
     bool isOpen = false;
     bool initialized;
+    private Dir dir;
+    private GameInputRouter gameInputRouter;
 
     void Awake()
     {
+        dir = Dir.Instance;
+        gameInputRouter = GameInputRouter.Instance;
+
         doc = GetComponent<UIDocument>();
         if (doc == null)
         {
@@ -275,13 +280,23 @@ public class PopupController : MonoBehaviour
     {
         if (!initialized) return;
 
-        if (Input.GetKeyDown(KeyCode.Escape)) Toggle();
+        if (gameInputRouter == null)
+            gameInputRouter = GameInputRouter.Instance ?? dir?.gameInputRouter;
+
+        var inputState = gameInputRouter?.InputState;
+        if (inputState == null)
+            return;
+
+        if (inputState.pausePressed) Toggle();
         if (!isOpen) return;
 
-        if (Input.GetKeyDown(KeyCode.Alpha1)) SwitchTab("Game");
-        if (Input.GetKeyDown(KeyCode.Alpha2)) SwitchTab("Pack");
-        if (Input.GetKeyDown(KeyCode.Alpha3)) SwitchTab("Inventory");
-        if (Input.GetKeyDown(KeyCode.Alpha4)) SwitchTab("Settings");
+        switch (inputState.requestedPopupTabIndex)
+        {
+            case 1: SwitchTab("Game"); break;
+            case 2: SwitchTab("Pack"); break;
+            case 3: SwitchTab("Inventory"); break;
+            case 4: SwitchTab("Settings"); break;
+        }
     }
 
     void ApplyResponsiveLayout()

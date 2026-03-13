@@ -226,6 +226,42 @@ public partial class @DogInputActions: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": true
+                },
+                {
+                    ""name"": ""PopupTab1"",
+                    ""type"": ""Button"",
+                    ""id"": ""b050e4bb-a5c1-4345-8f5b-0ae7b34f5a01"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""PopupTab2"",
+                    ""type"": ""Button"",
+                    ""id"": ""93d81f79-15a7-4d99-a18d-8a3a3278f324"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""PopupTab3"",
+                    ""type"": ""Button"",
+                    ""id"": ""61f06fca-54f9-47ea-a5be-67ec6fc593fc"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""PopupTab4"",
+                    ""type"": ""Button"",
+                    ""id"": ""dd4b5b88-1d7b-49fb-8f75-cf3a4b2b2783"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -734,6 +770,50 @@ public partial class @DogInputActions: IInputActionCollection2, IDisposable
                     ""action"": ""Strafe"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": true
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""01f3a2cf-383a-4b3b-8f78-8577a7eb1093"",
+                    ""path"": ""<Keyboard>/1"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""PopupTab1"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""7dd093c0-897a-42c4-bf5d-6121518cb5d8"",
+                    ""path"": ""<Keyboard>/2"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""PopupTab2"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""63939970-87ab-47b7-b83c-d6f9ad6f2900"",
+                    ""path"": ""<Keyboard>/3"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""PopupTab3"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""2c6d9a0c-18da-4057-875e-0cb73b47b228"",
+                    ""path"": ""<Keyboard>/4"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""PopupTab4"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         },
@@ -1108,6 +1188,10 @@ public partial class @DogInputActions: IInputActionCollection2, IDisposable
         m_Player_SelectObject = m_Player.FindAction("SelectObject", throwIfNotFound: true);
         m_Player_SkipAnyKey = m_Player.FindAction("SkipAnyKey", throwIfNotFound: true);
         m_Player_NextAgent = m_Player.FindAction("NextAgent", throwIfNotFound: true);
+        m_Player_PopupTab1 = m_Player.FindAction("PopupTab1", throwIfNotFound: true);
+        m_Player_PopupTab2 = m_Player.FindAction("PopupTab2", throwIfNotFound: true);
+        m_Player_PopupTab3 = m_Player.FindAction("PopupTab3", throwIfNotFound: true);
+        m_Player_PopupTab4 = m_Player.FindAction("PopupTab4", throwIfNotFound: true);
         // UI
         m_UI = asset.FindActionMap("UI", throwIfNotFound: true);
         m_UI_Navigate = m_UI.FindAction("Navigate", throwIfNotFound: true);
@@ -1216,6 +1300,10 @@ public partial class @DogInputActions: IInputActionCollection2, IDisposable
     private readonly InputAction m_Player_SelectObject;
     private readonly InputAction m_Player_SkipAnyKey;
     private readonly InputAction m_Player_NextAgent;
+    private readonly InputAction m_Player_PopupTab1;
+    private readonly InputAction m_Player_PopupTab2;
+    private readonly InputAction m_Player_PopupTab3;
+    private readonly InputAction m_Player_PopupTab4;
     /// <summary>
     /// Provides access to input actions defined in input action map "Player".
     /// </summary>
@@ -1288,6 +1376,22 @@ public partial class @DogInputActions: IInputActionCollection2, IDisposable
         /// </summary>
         public InputAction @NextAgent => m_Wrapper.m_Player_NextAgent;
         /// <summary>
+        /// Provides access to the underlying input action "Player/PopupTab1".
+        /// </summary>
+        public InputAction @PopupTab1 => m_Wrapper.m_Player_PopupTab1;
+        /// <summary>
+        /// Provides access to the underlying input action "Player/PopupTab2".
+        /// </summary>
+        public InputAction @PopupTab2 => m_Wrapper.m_Player_PopupTab2;
+        /// <summary>
+        /// Provides access to the underlying input action "Player/PopupTab3".
+        /// </summary>
+        public InputAction @PopupTab3 => m_Wrapper.m_Player_PopupTab3;
+        /// <summary>
+        /// Provides access to the underlying input action "Player/PopupTab4".
+        /// </summary>
+        public InputAction @PopupTab4 => m_Wrapper.m_Player_PopupTab4;
+        /// <summary>
         /// Provides access to the underlying input action map instance.
         /// </summary>
         public InputActionMap Get() { return m_Wrapper.m_Player; }
@@ -1358,6 +1462,18 @@ public partial class @DogInputActions: IInputActionCollection2, IDisposable
             @NextAgent.started += instance.OnNextAgent;
             @NextAgent.performed += instance.OnNextAgent;
             @NextAgent.canceled += instance.OnNextAgent;
+            @PopupTab1.started += instance.OnPopupTab1;
+            @PopupTab1.performed += instance.OnPopupTab1;
+            @PopupTab1.canceled += instance.OnPopupTab1;
+            @PopupTab2.started += instance.OnPopupTab2;
+            @PopupTab2.performed += instance.OnPopupTab2;
+            @PopupTab2.canceled += instance.OnPopupTab2;
+            @PopupTab3.started += instance.OnPopupTab3;
+            @PopupTab3.performed += instance.OnPopupTab3;
+            @PopupTab3.canceled += instance.OnPopupTab3;
+            @PopupTab4.started += instance.OnPopupTab4;
+            @PopupTab4.performed += instance.OnPopupTab4;
+            @PopupTab4.canceled += instance.OnPopupTab4;
         }
 
         /// <summary>
@@ -1414,6 +1530,18 @@ public partial class @DogInputActions: IInputActionCollection2, IDisposable
             @NextAgent.started -= instance.OnNextAgent;
             @NextAgent.performed -= instance.OnNextAgent;
             @NextAgent.canceled -= instance.OnNextAgent;
+            @PopupTab1.started -= instance.OnPopupTab1;
+            @PopupTab1.performed -= instance.OnPopupTab1;
+            @PopupTab1.canceled -= instance.OnPopupTab1;
+            @PopupTab2.started -= instance.OnPopupTab2;
+            @PopupTab2.performed -= instance.OnPopupTab2;
+            @PopupTab2.canceled -= instance.OnPopupTab2;
+            @PopupTab3.started -= instance.OnPopupTab3;
+            @PopupTab3.performed -= instance.OnPopupTab3;
+            @PopupTab3.canceled -= instance.OnPopupTab3;
+            @PopupTab4.started -= instance.OnPopupTab4;
+            @PopupTab4.performed -= instance.OnPopupTab4;
+            @PopupTab4.canceled -= instance.OnPopupTab4;
         }
 
         /// <summary>
@@ -1754,6 +1882,34 @@ public partial class @DogInputActions: IInputActionCollection2, IDisposable
         /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
         /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
         void OnNextAgent(InputAction.CallbackContext context);
+        /// <summary>
+        /// Method invoked when associated input action "PopupTab1" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnPopupTab1(InputAction.CallbackContext context);
+        /// <summary>
+        /// Method invoked when associated input action "PopupTab2" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnPopupTab2(InputAction.CallbackContext context);
+        /// <summary>
+        /// Method invoked when associated input action "PopupTab3" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnPopupTab3(InputAction.CallbackContext context);
+        /// <summary>
+        /// Method invoked when associated input action "PopupTab4" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnPopupTab4(InputAction.CallbackContext context);
     }
     /// <summary>
     /// Interface to implement callback methods for all input action callbacks associated with input actions defined by "UI" which allows adding and removing callbacks.

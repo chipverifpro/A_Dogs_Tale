@@ -62,6 +62,10 @@ public static class DogInputActionsGenerator
         var selectObjectAction = AddButton(player, "SelectObject");
         var skipAnyKeyAction = AddButton(player, "SkipAnyKey");
         var nextAgentAction = AddValue(player, "NextAgent", "Integer");
+        var popupTab1Action = AddButton(player, "PopupTab1");
+        var popupTab2Action = AddButton(player, "PopupTab2");
+        var popupTab3Action = AddButton(player, "PopupTab3");
+        var popupTab4Action = AddButton(player, "PopupTab4");
 
         var navigateAction = AddValue(ui, "Navigate", "Vector2");
         var submitAction = AddButton(ui, "Submit");
@@ -124,6 +128,11 @@ public static class DogInputActionsGenerator
         var strafeAxis = strafeAction.AddCompositeBinding("1DAxis");
         strafeAxis.With("Negative", "<Keyboard>/q");
         strafeAxis.With("Positive", "<Keyboard>/e");
+
+        popupTab1Action.AddBinding("<Keyboard>/1");
+        popupTab2Action.AddBinding("<Keyboard>/2");
+        popupTab3Action.AddBinding("<Keyboard>/3");
+        popupTab4Action.AddBinding("<Keyboard>/4");
 
         var navigateWasd = navigateAction.AddCompositeBinding("2DVector");
         navigateWasd.With("Up", "<Keyboard>/w");
