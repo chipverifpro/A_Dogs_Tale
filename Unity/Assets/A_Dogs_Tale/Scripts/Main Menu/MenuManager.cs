@@ -32,7 +32,7 @@ public class MenuManager : MonoBehaviour
         Hook(btnExplore, OnExplore);
         Hook(btnFlyover, OnFlyover);
         Hook(btnSettings, OnSettings);
-        Hook(btnQuit, OnQuit);
+        Hook(btnQuit, QuitGame);
 
         Debug.Log(
             $"[MenuManager] Button refs after Awake: " +
@@ -99,13 +99,20 @@ public class MenuManager : MonoBehaviour
         // TODO: open settings panel or scene
     }
 
-    public void OnQuit()
+    public void QuitGame()
     {
         BottomBanner.Show("💤 Curling up for a nap...");
-        Application.Quit();
 #if UNITY_EDITOR
         UnityEditor.EditorApplication.isPlaying = false;
+#else
+        Application.Quit();
 #endif
+    }
+
+    // Backward-compatible alias for existing inspector bindings.
+    public void OnQuit()
+    {
+        QuitGame();
     }
 
     private IEnumerator SwitchScenes(string sceneName)

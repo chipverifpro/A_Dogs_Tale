@@ -136,7 +136,8 @@ namespace DogGame.Modules
                 return;
             }
 
-            if (taskController != null && taskController.IsDrivingMovement)
+            bool taskDrivingMovement = taskController != null && taskController.IsDrivingMovement;
+            if (taskDrivingMovement)
             {
                 //Debug.Log("taskController is driving movement.");
                 taskController.Tick(deltaTime);
@@ -160,8 +161,20 @@ namespace DogGame.Modules
 
             HandleOneShotActions(inputState);
 
+            // Manual movement should immediately reclaim control from click-to-move / queued movement tasks.
+            if (taskDrivingMovement && HasManualMoveInput(inputState))
+            {
+                taskController!.CancelAllTasks();
+                taskDrivingMovement = false;
+
+                currentDestinationPosition = null;
+                currentDestinationObject = null;
+                inputState.hasClickTargetWorldObject = false;
+                inputState.hasClickTargetLocationWorld = false;
+            }
+
             // Only do player controlled movement if LLM isn't driving movement
-            if (!(taskController != null && taskController.IsDrivingMovement))
+            if (!taskDrivingMovement)
             {
                 //Debug.Log("PlayerDecisionModule is driving movement.");
                 HandleMovement(inputState, deltaTime);
@@ -351,7 +364,8 @@ namespace DogGame.Modules
 
 
             // 1) WASD / stick input -> camera-relative world direction
-            if (combinedMoveAxis.sqrMagnitude > 0.0001f)
+            bool hasManualInput = combinedMoveAxis.sqrMagnitude > 0.0001f;
+            if (hasManualInput)
             {
                 // First, manual controls disable current click-to-move status
                 currentDestinationPosition = null;  // stop heading to location
@@ -364,7 +378,14 @@ namespace DogGame.Modules
                     worldObject.motionModule.facingMode = FacingMode.Strafe; 
                 else
                     UpdateFacingModeForDirectInput(desiredWorldDir);    // handles strafe/backpedalling.
-           }
+                
+                currentManualWorldMoveDir = desiredWorldDir;
+                MovementHeadToDestination();
+                return; // manual input wins over click-to-move for this frame
+            }
+
+            // No direct input this frame.
+            currentManualWorldMoveDir = null;
 
             // 2) Click-to-move: if we have a click target location and no interact press,
             //    steer toward that point. (Very simple version: straight-line steering.)
@@ -384,6 +405,9 @@ namespace DogGame.Modules
                 SubmitMoveToTargetPositionTask((Vector3)currentDestinationPosition);
                 return;
             }
+
+            // Neither manual input nor click targets: stop residual direct movement intent.
+            MovementHeadToDestination();
 
 /*
             // current target is an object, let's figure out where it is now.
@@ -436,6 +460,14 @@ namespace DogGame.Modules
             currentManualWorldMoveDir = desiredWorldDir;
             MovementHeadToDestination();
             */
+        }
+
+        private static bool HasManualMoveInput(PlayerInputState state)
+        {
+            if (state == null)
+                return false;
+
+            return state.moveAxis.sqrMagnitude > 0.0001f || Mathf.Abs(state.strafeAxis) > 0.0001f;
         }
 
         public void MovementHeadToDestination()

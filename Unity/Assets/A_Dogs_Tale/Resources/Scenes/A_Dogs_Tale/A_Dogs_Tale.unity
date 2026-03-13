@@ -5981,11 +5981,16 @@ MonoBehaviour:
   strafeActionName: Strafe
   barkActionName: Bark
   markTerritoryActionName: MarkTerritory
+  pauseActionName: Pause
   zoomActionName: Zoom
   changeFormationActionName: ChangeFormation
   interactActionName: Interact
   selectObjectActionName: SelectObject
   skipAnyKeyActionName: SkipAnyKey
+  popupTab1ActionName: PopupTab1
+  popupTab2ActionName: PopupTab2
+  popupTab3ActionName: PopupTab3
+  popupTab4ActionName: PopupTab4
   cameraViewActionName: CameraView
   nextAgentActionName: NextAgent
   tapMaxSeconds: 0.3
