@@ -34,15 +34,15 @@ public class MenuManager : MonoBehaviour
         Hook(btnSettings, OnSettings);
         Hook(btnQuit, QuitGame);
 
-        Debug.Log(
-            $"[MenuManager] Button refs after Awake: " +
-            $"NewMap={(btnNewMap ? btnNewMap.name : "null")}, " +
-            $"EditMap={(btnEditMap ? btnEditMap.name : "null")}, " +
-            $"Explore={(btnExplore ? btnExplore.name : "null")}, " +
-            $"Flyover={(btnFlyover ? btnFlyover.name : "null")}, " +
-            $"Settings={(btnSettings ? btnSettings.name : "null")}, " +
-            $"Quit={(btnQuit ? btnQuit.name : "null")}",
-            this);
+//        Debug.Log(
+//            $"[MenuManager] Button refs after Awake: " +
+//            $"NewMap={(btnNewMap ? btnNewMap.name : "null")}, " +
+//            $"EditMap={(btnEditMap ? btnEditMap.name : "null")}, " +
+//            $"Explore={(btnExplore ? btnExplore.name : "null")}, " +
+//            $"Flyover={(btnFlyover ? btnFlyover.name : "null")}, " +
+//            $"Settings={(btnSettings ? btnSettings.name : "null")}, " +
+//            $"Quit={(btnQuit ? btnQuit.name : "null")}",
+//            this);
 
         // Optional: auto-find common refs
         if (!bottomBanner) bottomBanner = FindFirstObjectByType<BottomBanner>();
@@ -164,9 +164,9 @@ public class MenuManager : MonoBehaviour
             return;
         }
 
-        Debug.Log($"[MenuManager] Hooking '{btn.name}' to '{action.Method.Name}'. Existing runtime listeners will be cleared.", btn);
+        //Debug.Log($"[MenuManager] Hooking '{btn.name}' to '{action.Method.Name}'. Existing runtime listeners will be cleared.", btn);
         btn.onClick.RemoveAllListeners();
         btn.onClick.AddListener(action);
-        Debug.Log($"[MenuManager] Hook complete for '{btn.name}' -> '{action.Method.Name}'.", btn);
+        //Debug.Log($"[MenuManager] Hook complete for '{btn.name}' -> '{action.Method.Name}'.", btn);
     }
 }

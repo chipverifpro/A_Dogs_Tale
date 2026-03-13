@@ -31,7 +31,7 @@ namespace DogGame.LLM.Providers
         {
             apiKey = ResolveApiKey(apiKeyEnvironmentVariable, apiKey);
             if (apiKey.IsNullOrEmpty())
-                Debug.LogError($"{Vendor}Client apiKey empty. apiKeyEnvironmentVariable={apiKeyEnvironmentVariable}");
+                Debug.LogWarning($"{Vendor}Client apiKey empty. apiKeyEnvironmentVariable={apiKeyEnvironmentVariable}");
             this.model = model;
         }
 

@@ -76,7 +76,7 @@ public class CameraModeSwitcher : MonoBehaviour
             $"[CameraModeSwitcher] Initialized in scene '{SceneManager.GetActiveScene().name}'\n" +
             $"Brain: {(brain ? brain.name : "❌ None")}\n" +
             $"FP: {(vcamFP ? vcamFP.name : "❌ None")}\n" +
-            $"FP: {(vcamNose ? vcamNose.name : "❌ None")}\n" +
+            $"Nose: {(vcamNose ? vcamNose.name : "❌ None")}\n" +
             $"Top: {(vcamPerspective ? vcamPerspective.name : "❌ None")}\n" +
             $"Overhead: {(vcamOverhead ? vcamOverhead.name : "❌ None")}\n"
             //$"Player: {(playerModel ? playerModel.name : "❌ None")}"
@@ -275,7 +275,7 @@ public class CameraModeSwitcher : MonoBehaviour
         if (Mathf.Approximately(delta, 0f)) return;
 
         // Pick which of your three is currently live
-        CinemachineVirtualCamera targetVcam = GetLiveOfThree();
+        CinemachineVirtualCamera targetVcam = GetLiveVCam();
         if (targetVcam == null) return;
 
         // Adjust according to body type
@@ -298,7 +298,7 @@ public class CameraModeSwitcher : MonoBehaviour
         camOffset.m_Offset = o;
     }
 
-    CinemachineVirtualCamera GetLiveOfThree()
+    CinemachineVirtualCamera GetLiveVCam()
     {
         // Prefer the one that is live according to Cinemachine
         if (IsLive(vcamFP)) return vcamFP;
@@ -323,7 +323,7 @@ public class CameraModeSwitcher : MonoBehaviour
     }
 
     [Header("Zoom Controls")]
-    public float zoomStep = 2f;           // how fast to zoom
+    public float zoomStep = 1f;           // how fast to zoom
     public float minZoom = 2f;            // clamp limits
     public float maxZoom = 50f;
     public float minFOV = 30f;       // narrowest FOV
@@ -333,9 +333,10 @@ public class CameraModeSwitcher : MonoBehaviour
     public void ApplyZoomDelta(float delta)
     {
         Debug.Log($"ApplyZoomDelta({delta}) cameraMode={cameraMode}");
-        //float delta = 0f;
 
-        // '+' = zoom in (closer), '-' = zoom out (farther)
+        delta *= zoomStep;  // scales zoom speed
+
+        // 'x' = zoom in (closer), 'z' = zoom out (farther)
         //if (Input.GetKey(KeyCode.Equals) || Input.GetKey(KeyCode.Plus))
         //    delta -= zoomStep * Time.deltaTime * 10f;
         //if (Input.GetKey(KeyCode.Minus) || Input.GetKey(KeyCode.Underscore))
@@ -345,34 +346,38 @@ public class CameraModeSwitcher : MonoBehaviour
             return;
 
         // --- First Person: change FOV ---
-        if (vcamFP)
+        if (IsLive(vcamFP))
         {
             float fov = vcamFP.m_Lens.FieldOfView;
             fov = Mathf.Clamp(fov + delta, minFOV, maxFOV);
             vcamFP.m_Lens.FieldOfView = fov;
+            Debug.Log($"First Person zoom fov = {fov:0.0}");
         }
 
         // Top cam (Transposer): adjust FollowOffset.z for zoom effect
-        if (vcamPerspective)
+        if (IsLive(vcamPerspective))
         {
             var transposer = vcamPerspective.GetCinemachineComponent<CinemachineTransposer>();
             if (transposer != null)
             {
                 var off = transposer.m_FollowOffset;
                 off.z = Mathf.Clamp(off.z + delta, -maxZoom, -minZoom);
+                off.y = 5 - (off.z / 2);
                 transposer.m_FollowOffset = off;
+                Debug.Log($"Perspective zoom transposer.z = {off.z:0.0} transposer.y = {off.y:0.0}");
             }
         }
 
         // Overhead cam (Transposer): keep old behavior = change height (FollowOffset.y)
-        if (vcamOverhead)
+        if (IsLive(vcamOverhead))
         {
             var transposer = vcamOverhead.GetCinemachineComponent<CinemachineTransposer>();
             if (transposer != null)
             {
                 var off = transposer.m_FollowOffset;
-                off.y += delta;
+                off.y = Mathf.Clamp(off.y + delta, minZoom, maxZoom);
                 transposer.m_FollowOffset = off;
+                Debug.Log($"Overhead zoom transposer.y = {off.y:0.0}");
             }
         }
     }

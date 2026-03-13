@@ -88,7 +88,7 @@ public class LeashSystem : MonoBehaviour // or your Subsystem base
                             autoCreateOnStart = false   // I just created the link, don't try it again from this new endpooint.
                         };
                         ep.otherAgent.packMemberModule.leashEndpoints.Add(ep_other);
-                        Debug.Log($"{agent.DisplayName} Created matching LeashEndpoint in {ep.otherAgent.DisplayName}: {otherRole} {ep.maxLength}");
+                        Debug.Log($"{agent.DisplayName} Created matching LeashEndpoint in {ep.otherAgent.DisplayName}: {otherRole} {ep.maxLength}m");
                     }
                     LeashLink newLeashLink;
                     TryCreateLeash(agent, ep.myRole, ep.otherAgent, otherRole, ep.maxLength, out newLeashLink);
