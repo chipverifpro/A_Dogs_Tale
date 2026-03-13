@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.UI;
 
 namespace DogGame.UI.InteractionWheel
 {
@@ -58,6 +59,10 @@ namespace DogGame.UI.InteractionWheel
 
             canvasRect = rootCanvas.GetComponent<RectTransform>();
 
+            var rootGraphic = GetComponent<Graphic>();
+            if (rootGraphic != null)
+                rootGraphic.raycastTarget = false;
+
             SetVisible(false);   // DEBUG: should be false
 
             if (inputBlocker != null)
@@ -100,21 +105,21 @@ namespace DogGame.UI.InteractionWheel
 
         public void CloseMenuWheel()
         {
-            if (!isOpen)
-                return;
-
             ClearSpawnedButtons();
-            tooltipView.HideTooltip();
+            if (tooltipView != null)
+                tooltipView.HideTooltip();
 
             SetVisible(false);
-            isOpen = false;
 
+            if (isOpen)
+                RestoreTimeScale();
+
+            isOpen = false;
             currentMenu = null;
             currentPageIndex = 0;
 
-            RestoreTimeScale();
-
-            gameObject.SetActive(false);
+            if (gameObject.activeSelf)
+                gameObject.SetActive(false);
         }
 
         private void Update()

@@ -19,12 +19,12 @@ public class MenuManager : MonoBehaviour
     void Awake()
     {
         // If not assigned, try to find by name under the Canvas
-        btnNewMap = btnNewMap ?? FindButton("Button NewMap");
-        btnEditMap = btnEditMap ?? FindButton("Button EditMap");
-        btnExplore = btnExplore ?? FindButton("Button Explore");
-        btnFlyover = btnFlyover ?? FindButton("Button Flyover");
-        btnSettings = btnSettings ?? FindButton("Button Settings");
-        btnQuit = btnQuit ?? FindButton("Button Quit");
+        btnNewMap = btnNewMap ?? FindButton("NewMap");
+        btnEditMap = btnEditMap ?? FindButton("EditMap");
+        btnExplore = btnExplore ?? FindButton("Explore");
+        btnFlyover = btnFlyover ?? FindButton("Flyover");
+        btnSettings = btnSettings ?? FindButton("Settings");
+        btnQuit = btnQuit ?? FindButton("Quit");
 
         // Clear any existing listeners and add ours
         Hook(btnNewMap, OnNewMap);
@@ -33,6 +33,16 @@ public class MenuManager : MonoBehaviour
         Hook(btnFlyover, OnFlyover);
         Hook(btnSettings, OnSettings);
         Hook(btnQuit, OnQuit);
+
+        Debug.Log(
+            $"[MenuManager] Button refs after Awake: " +
+            $"NewMap={(btnNewMap ? btnNewMap.name : "null")}, " +
+            $"EditMap={(btnEditMap ? btnEditMap.name : "null")}, " +
+            $"Explore={(btnExplore ? btnExplore.name : "null")}, " +
+            $"Flyover={(btnFlyover ? btnFlyover.name : "null")}, " +
+            $"Settings={(btnSettings ? btnSettings.name : "null")}, " +
+            $"Quit={(btnQuit ? btnQuit.name : "null")}",
+            this);
 
         // Optional: auto-find common refs
         if (!bottomBanner) bottomBanner = FindFirstObjectByType<BottomBanner>();
@@ -54,6 +64,7 @@ public class MenuManager : MonoBehaviour
 
     public void OnNewMap()
     {
+        Debug.Log($"[MenuManager] OnNewMap invoked. fader={(fader ? fader.name : "null")} dir={(dir ? dir.name : "null")}", this);
         BottomBanner.Show("🐾 Digging a brand new hole...");
         dir.audioPlayer.PlayClip("Button-Click");
         StartCoroutine(fader.FadeToGame());
@@ -119,14 +130,36 @@ public class MenuManager : MonoBehaviour
     Button FindButton(string name)
     {
         var go = GameObject.Find(name);
-        if (!go) return null;
-        return go.GetComponent<Button>();
+        if (!go)
+            go = GameObject.Find($"Button {name}");
+        if (!go)
+        {
+            Debug.LogWarning($"[MenuManager] Could not find button '{name}'.", this);
+            return null;
+        }
+
+        var button = go.GetComponent<Button>();
+        if (!button)
+        {
+            Debug.LogWarning($"[MenuManager] Object '{go.name}' was found, but it has no Button component.", go);
+            return null;
+        }
+
+        Debug.Log($"[MenuManager] Resolved button '{name}' to scene object '{go.name}'.", button);
+        return button;
     }
 
     void Hook(Button btn, UnityEngine.Events.UnityAction action)
     {
-        if (!btn) return;
+        if (!btn)
+        {
+            Debug.LogWarning($"[MenuManager] Skipping hook for action '{action.Method.Name}' because button is null.", this);
+            return;
+        }
+
+        Debug.Log($"[MenuManager] Hooking '{btn.name}' to '{action.Method.Name}'. Existing runtime listeners will be cleared.", btn);
         btn.onClick.RemoveAllListeners();
         btn.onClick.AddListener(action);
+        Debug.Log($"[MenuManager] Hook complete for '{btn.name}' -> '{action.Method.Name}'.", btn);
     }
 }

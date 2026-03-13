@@ -1,7 +1,9 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.Controls;
+using UnityEngine.InputSystem.UI;
 using UnityEngine.EventSystems;
+using System.Collections.Generic;
 
 /// <summary>
 /// Bridges Unity's new Input System (PlayerInput + InputActions)
@@ -138,6 +140,15 @@ public class NewInputAdapter : MonoBehaviour
         {
             Debug.LogError($"[PlayerInputStateDebugger] gameInputRouter.InputState is null.", this);
         }
+
+        ConfigureUiInputModule();
+
+        var existingWheelUi = DogGame.UI.InteractionWheel.MenuWheelUIFactory.TryGetExisting();
+        if (existingWheelUi != null)
+        {
+            existingWheelUi.CloseMenuWheel();
+            Debug.Log("[NewInputAdapter] Closed existing MenuWheelUI during startup.", existingWheelUi);
+        }
     }
 
     private void OnEnable()
@@ -195,6 +206,110 @@ public class NewInputAdapter : MonoBehaviour
             playerInput.actions.Enable();
         else
             playerInput.actions.Disable();
+    }
+
+    private void ConfigureUiInputModule()
+    {
+        if (playerInput == null || playerInput.actions == null)
+        {
+            Debug.LogWarning("[NewInputAdapter] Cannot configure UI input module because PlayerInput actions are unavailable.", this);
+            return;
+        }
+
+        if (EventSystem.current == null)
+        {
+            Debug.LogWarning("[NewInputAdapter] No EventSystem present; UI will not receive pointer clicks.", this);
+            return;
+        }
+
+        var uiModule = EventSystem.current.currentInputModule as InputSystemUIInputModule;
+        if (uiModule == null)
+        {
+            uiModule = EventSystem.current.GetComponent<InputSystemUIInputModule>();
+        }
+
+        if (uiModule == null)
+        {
+            Debug.LogWarning("[NewInputAdapter] EventSystem has no InputSystemUIInputModule; UI clicks may be ignored.", EventSystem.current);
+            return;
+        }
+
+        var actions = playerInput.actions;
+        uiModule.actionsAsset = actions;
+        uiModule.move = CreateActionReference(actions, "UI/Navigate");
+        uiModule.submit = CreateActionReference(actions, "UI/Submit");
+        uiModule.cancel = CreateActionReference(actions, "UI/Cancel");
+        uiModule.point = CreateActionReference(actions, "UI/Point");
+        uiModule.leftClick = CreateActionReference(actions, "UI/Click");
+        uiModule.middleClick = CreateActionReference(actions, "UI/MiddleClick");
+        uiModule.rightClick = CreateActionReference(actions, "UI/RightClick");
+        uiModule.scrollWheel = CreateActionReference(actions, "UI/ScrollWheel");
+        uiModule.trackedDevicePosition = CreateActionReference(actions, "UI/TrackedDevicePosition");
+        uiModule.trackedDeviceOrientation = CreateActionReference(actions, "UI/TrackedDeviceOrientation");
+
+        Debug.Log(
+            $"[NewInputAdapter] Configured InputSystemUIInputModule on '{EventSystem.current.name}' using actions asset '{actions.name}'. " +
+            $"point={(uiModule.point != null ? uiModule.point.action?.name : "null")} " +
+            $"leftClick={(uiModule.leftClick != null ? uiModule.leftClick.action?.name : "null")}",
+            uiModule);
+    }
+
+    private InputActionReference CreateActionReference(InputActionAsset asset, string actionPath)
+    {
+        var action = asset.FindAction(actionPath, throwIfNotFound: false);
+        if (action == null)
+        {
+            Debug.LogWarning($"[NewInputAdapter] UI action '{actionPath}' was not found in actions asset '{asset.name}'.", this);
+            return null;
+        }
+
+        return InputActionReference.Create(action);
+    }
+
+    private void LogUiRaycastHits(Vector2 screenPos, int maxHits = 8)
+    {
+        if (EventSystem.current == null)
+            return;
+
+        var eventData = new PointerEventData(EventSystem.current)
+        {
+            position = screenPos
+        };
+
+        var results = new List<RaycastResult>();
+        EventSystem.current.RaycastAll(eventData, results);
+
+        if (results.Count == 0)
+        {
+            Debug.Log($"[NewInputAdapter] UI raycast found no hits at {screenPos}.");
+            return;
+        }
+
+        int count = Mathf.Min(results.Count, maxHits);
+        for (int i = 0; i < count; i++)
+        {
+            var result = results[i];
+            string path = result.gameObject != null ? GetTransformPath(result.gameObject.transform) : "null";
+            Debug.Log(
+                $"[NewInputAdapter] UI raycast hit[{i}] go='{result.gameObject?.name}' path='{path}' " +
+                $"module='{result.module?.GetType().Name}' sortOrder={result.sortingOrder} depth={result.depth} distance={result.distance}");
+        }
+    }
+
+    private static string GetTransformPath(Transform current)
+    {
+        if (current == null)
+            return "null";
+
+        var parts = new List<string>();
+        while (current != null)
+        {
+            parts.Add(current.name);
+            current = current.parent;
+        }
+
+        parts.Reverse();
+        return string.Join("/", parts);
     }
 
     private void Update()
@@ -317,7 +432,7 @@ public class NewInputAdapter : MonoBehaviour
         UpdateModifiers(state);
 
         // If the wheel is open, don't generate click-to-move targets this frame.
-        var wheelUI = DogGame.UI.InteractionWheel.MenuWheelUIFactory.GetOrCreate();
+        var wheelUI = DogGame.UI.InteractionWheel.MenuWheelUIFactory.TryGetExisting();
         if (wheelUI != null && wheelUI.IsOpen)
         {
             state.hasClickTargetLocationWorld = false;
@@ -405,6 +520,13 @@ public class NewInputAdapter : MonoBehaviour
 
                 if (pressedThisFrame)
                 {
+                    if (IsPointerOverUI(touch.touchId.ReadValue()))
+                    {
+                        Debug.Log($"[NewInputAdapter] Ignoring touch press over UI. touchId={touch.touchId.ReadValue()} pos={touch.position.ReadValue()}");
+                        ClearTapTracking();
+                        return false;
+                    }
+
                     // Start tracking
                     isPrimaryPressTracking = true;
                     primaryPressStartTime = Time.unscaledTimeAsDouble;
@@ -438,10 +560,15 @@ public class NewInputAdapter : MonoBehaviour
 
                         ClearTapTracking();
 
-                        if (isTap)
+                        if (isTap && !IsPointerOverUI(touch.touchId.ReadValue()))
                         {
+                            Debug.Log($"[NewInputAdapter] Touch tap accepted for world input. touchId={touch.touchId.ReadValue()} pos={releasePos}");
                             screenPos = releasePos;
                             return true;
+                        }
+                        if (isTap)
+                        {
+                            Debug.Log($"[NewInputAdapter] Touch tap released over UI, suppressing world input. touchId={touch.touchId.ReadValue()} pos={releasePos}");
                         }
                     }
                 }
@@ -458,6 +585,15 @@ public class NewInputAdapter : MonoBehaviour
 
         if (Mouse.current.leftButton.wasPressedThisFrame)
         {
+            if (IsPointerOverUI(-1))
+            {
+                Vector2 mousePos = Mouse.current.position.ReadValue();
+                Debug.Log($"[NewInputAdapter] Ignoring mouse press over UI. pos={mousePos}");
+                LogUiRaycastHits(mousePos);
+                ClearTapTracking();
+                return false;
+            }
+
             isPrimaryPressTracking = true;
             primaryPressStartTime = Time.unscaledTimeAsDouble;
             primaryPressStartPos = Mouse.current.position.ReadValue();
@@ -488,10 +624,15 @@ public class NewInputAdapter : MonoBehaviour
 
                 ClearTapTracking();
 
-                if (isTap)
+                if (isTap && !IsPointerOverUI(-1))
                 {
+                    Debug.Log($"[NewInputAdapter] Mouse tap accepted for world input. pos={currentPos}");
                     screenPos = currentPos;
                     return true;
+                }
+                if (isTap)
+                {
+                    Debug.Log($"[NewInputAdapter] Mouse tap released over UI, suppressing world input. pos={currentPos}");
                 }
             }
         }
@@ -506,10 +647,15 @@ public class NewInputAdapter : MonoBehaviour
         primaryPressStartPos = default;
         primaryPressPointerId = 0;
     }
-    private bool IsPointerOverUI()
+    private bool IsPointerOverUI(int pointerId = -1)
     {
-        return EventSystem.current != null 
-            && EventSystem.current.IsPointerOverGameObject();
+        if (EventSystem.current == null)
+            return false;
+
+        if (pointerId >= 0)
+            return EventSystem.current.IsPointerOverGameObject(pointerId);
+
+        return EventSystem.current.IsPointerOverGameObject();
     }
 
     private bool IsMouseOverGameView()

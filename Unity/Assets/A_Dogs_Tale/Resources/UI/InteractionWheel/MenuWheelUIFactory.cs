@@ -10,13 +10,22 @@ namespace DogGame.UI.InteractionWheel
 
         private static MenuWheelUIController? instance;
 
+        public static MenuWheelUIController? TryGetExisting()
+        {
+            if (instance != null)
+                return instance;
+
+            instance = Object.FindFirstObjectByType<MenuWheelUIController>(FindObjectsInactive.Include);
+            return instance;
+        }
+
         public static MenuWheelUIController GetOrCreate()
         {
             if (instance != null)
                 return instance;
 
             // If someone already placed one in the scene, use it.
-            instance = Object.FindFirstObjectByType<MenuWheelUIController>();
+            instance = Object.FindFirstObjectByType<MenuWheelUIController>(FindObjectsInactive.Include);
             if (instance != null)
                 return instance;
 
