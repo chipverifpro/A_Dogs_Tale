@@ -684,7 +684,7 @@
                 },
                 {
                     "name": "Point",
-                    "type": "Value",
+                    "type": "PassThrough",
                     "id": "dcd9b13f-fbb2-4feb-9e7e-c8cc96e72744",
                     "expectedControlType": "Vector2",
                     "processors": "",
@@ -693,7 +693,7 @@
                 },
                 {
                     "name": "Click",
-                    "type": "Button",
+                    "type": "PassThrough",
                     "id": "09049267-1ed5-48e7-9fb3-83f7f23b9775",
                     "expectedControlType": "",
                     "processors": "",
@@ -702,7 +702,7 @@
                 },
                 {
                     "name": "RightClick",
-                    "type": "Button",
+                    "type": "PassThrough",
                     "id": "6f377530-919e-4b2f-a998-ea65654264e5",
                     "expectedControlType": "",
                     "processors": "",
@@ -711,7 +711,7 @@
                 },
                 {
                     "name": "MiddleClick",
-                    "type": "Button",
+                    "type": "PassThrough",
                     "id": "4a2b4cd0-b590-4501-9ef2-9c549692ba92",
                     "expectedControlType": "",
                     "processors": "",
@@ -720,7 +720,7 @@
                 },
                 {
                     "name": "ScrollWheel",
-                    "type": "Value",
+                    "type": "PassThrough",
                     "id": "e9627261-b9e1-4c79-a06b-c75d0bef14d8",
                     "expectedControlType": "Vector2",
                     "processors": "",
@@ -729,7 +729,7 @@
                 },
                 {
                     "name": "TrackedDevicePosition",
-                    "type": "Value",
+                    "type": "PassThrough",
                     "id": "e575c902-b20d-4619-870b-fdb79374cee4",
                     "expectedControlType": "Vector3",
                     "processors": "",
@@ -738,7 +738,7 @@
                 },
                 {
                     "name": "TrackedDeviceOrientation",
-                    "type": "Value",
+                    "type": "PassThrough",
                     "id": "c14d755f-9212-4b54-9846-cd15c1761bfe",
                     "expectedControlType": "Quaternion",
                     "processors": "",

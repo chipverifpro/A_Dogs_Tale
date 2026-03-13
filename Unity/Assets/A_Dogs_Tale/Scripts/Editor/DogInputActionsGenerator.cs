@@ -1,191 +1,170 @@
 #if UNITY_EDITOR
+using System.IO;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using System.IO; // still fine to keep, we'll qualify types explicitly
 
 public static class DogInputActionsGenerator
 {
-    // We generate a .inputactions JSON file so Unity's Input System importer kicks in.
-    private const string AssetPath = "Assets/A_Dogs_Tale/Assets/Input/DogInputActions.inputactions";
+    private const string AssetPath = "Assets/A_Dogs_Tale/Input/DogInputActions.inputactions";
 
     [MenuItem("Tools/DogGame/Rebuild DogInputActions Asset")]
     public static void RebuildDogInputActions()
     {
-        // Compute full path to the .inputactions file
-        // (Application.dataPath ends with ".../YourProject/Assets")
-        string projectRoot = System.IO.Path.GetDirectoryName(Application.dataPath);
-        string fullPath    = System.IO.Path.Combine(projectRoot, AssetPath);
+        string projectRoot = Path.GetDirectoryName(Application.dataPath);
+        string fullPath = Path.Combine(projectRoot, AssetPath);
 
-        // Ensure directory exists
-        string dir = System.IO.Path.GetDirectoryName(fullPath);
+        string dir = Path.GetDirectoryName(fullPath);
         if (!System.IO.Directory.Exists(dir))
-        {
             System.IO.Directory.CreateDirectory(dir);
-        }
 
-        // Build InputActionAsset in memory
         var asset = ScriptableObject.CreateInstance<InputActionAsset>();
+        var player = new InputActionMap("Player");
+        var ui = new InputActionMap("UI");
+        asset.AddActionMap(player);
+        asset.AddActionMap(ui);
 
-        // --------------------------------------------------
-        // 1. Control schemes
-        // --------------------------------------------------
-        asset.AddControlScheme("Keyboard&Mouse")
-             .WithRequiredDevice("<Keyboard>")
-             .WithRequiredDevice("<Mouse>");
-
-        asset.AddControlScheme("Gamepad")
-             .WithRequiredDevice("<Gamepad>");
-
-        asset.AddControlScheme("Touch")
-             .WithRequiredDevice("<Touchscreen>");
-
-        // --------------------------------------------------
-        // 2. Gameplay action map
-        // --------------------------------------------------
-        var gameplay = new InputActionMap("Gameplay");
-        asset.AddActionMap(gameplay);
-
-        // Helpers
-        InputAction AddButton(string name)
+        InputAction AddAction(InputActionMap map, string name, InputActionType type, string expectedControlType = "")
         {
-            return gameplay.AddAction(name, InputActionType.Button);
-        }
-
-        InputAction AddValue(string name, string expectedControlType)
-        {
-            var action = gameplay.AddAction(name, InputActionType.Value);
-            action.expectedControlType = expectedControlType;
+            var action = map.AddAction(name, type);
+            if (!string.IsNullOrEmpty(expectedControlType))
+                action.expectedControlType = expectedControlType;
             return action;
         }
 
-        // --------------------------------------------------
-        // 3. Actions
-        // --------------------------------------------------
+        InputAction AddButton(InputActionMap map, string name)
+        {
+            return AddAction(map, name, InputActionType.Button);
+        }
 
-        // Movement / pointer / click
-        var moveAction   = AddValue("Move", "Vector2");
-        var pointAction  = AddValue("Point", "Vector2");
-        var clickAction  = AddButton("Click");
+        InputAction AddValue(InputActionMap map, string name, string expectedControlType)
+        {
+            return AddAction(map, name, InputActionType.Value, expectedControlType);
+        }
 
-        // Dog actions
-        var barkAction           = AddButton("Bark");
-        var markTerritoryAction  = AddButton("MarkTerritory");
-        var interactAction       = AddButton("Interact");
+        InputAction AddPassThrough(InputActionMap map, string name, string expectedControlType)
+        {
+            return AddAction(map, name, InputActionType.PassThrough, expectedControlType);
+        }
 
-        // Camera
-        var zoomAction           = AddValue("Zoom", "Axis");
-        var camView1Action       = AddButton("CameraView1");
-        var camView2Action       = AddButton("CameraView2");
-        var camView3Action       = AddButton("CameraView3");
+        var moveAction = AddValue(player, "Move", "Vector2");
+        var strafeAction = AddValue(player, "Strafe", "Axis");
+        var lookAction = AddValue(player, "Look", "Vector2");
+        var jumpAction = AddButton(player, "Jump");
+        var interactAction = AddButton(player, "Interact");
+        var barkAction = AddButton(player, "Bark");
+        var sprintAction = AddButton(player, "Sprint");
+        var pauseAction = AddButton(player, "Pause");
+        var cameraViewAction = AddButton(player, "CameraView");
+        var markTerritoryAction = AddButton(player, "MarkTerritory");
+        var zoomAction = AddValue(player, "Zoom", "Axis");
+        var changeFormationAction = AddButton(player, "ChangeFormation");
+        var selectObjectAction = AddButton(player, "SelectObject");
+        var skipAnyKeyAction = AddButton(player, "SkipAnyKey");
+        var nextAgentAction = AddValue(player, "NextAgent", "Integer");
 
-        // Pack / meta
-        var selectAgent1Action   = AddButton("SelectAgent1");
-        var selectAgent2Action   = AddButton("SelectAgent2");
-        var selectAgent3Action   = AddButton("SelectAgent3");
-        var selectAgent4Action   = AddButton("SelectAgent4");
-        var selectAgent5Action   = AddButton("SelectAgent5");
-        var changeFormationAction= AddButton("ChangeFormation");
+        var navigateAction = AddValue(ui, "Navigate", "Vector2");
+        var submitAction = AddButton(ui, "Submit");
+        var cancelAction = AddButton(ui, "Cancel");
+        var pointAction = AddPassThrough(ui, "Point", "Vector2");
+        var clickAction = AddPassThrough(ui, "Click", "Button");
+        var rightClickAction = AddPassThrough(ui, "RightClick", "Button");
+        var middleClickAction = AddPassThrough(ui, "MiddleClick", "Button");
+        var scrollWheelAction = AddPassThrough(ui, "ScrollWheel", "Vector2");
+        var trackedDevicePositionAction = AddPassThrough(ui, "TrackedDevicePosition", "Vector3");
+        var trackedDeviceOrientationAction = AddPassThrough(ui, "TrackedDeviceOrientation", "Quaternion");
 
-        // Optional "press anything" action
-        var anyAction            = AddButton("AnyAction");
-
-        // --------------------------------------------------
-        // 4. Bindings
-        // --------------------------------------------------
-
-        // --- Move: WASD composite ---
         var wasd = moveAction.AddCompositeBinding("2DVector");
         wasd.With("Up",    "<Keyboard>/w");
         wasd.With("Down",  "<Keyboard>/s");
         wasd.With("Left",  "<Keyboard>/a");
         wasd.With("Right", "<Keyboard>/d");
 
-        // Optional arrows composite
         var arrows = moveAction.AddCompositeBinding("2DVector");
         arrows.With("Up",    "<Keyboard>/upArrow");
         arrows.With("Down",  "<Keyboard>/downArrow");
         arrows.With("Left",  "<Keyboard>/leftArrow");
         arrows.With("Right", "<Keyboard>/rightArrow");
-
-        // Gamepad left stick
         moveAction.AddBinding("<Gamepad>/leftStick");
-
-        // --- Point: cursor / primary touch position ---
-        pointAction.AddBinding("<Pointer>/position");
-
-        // --- Click: mouse/touch press, gamepad South button ---
-        clickAction.AddBinding("<Pointer>/press");
-        clickAction.AddBinding("<Gamepad>/buttonSouth");
-
-        // --- Bark ---
+        jumpAction.AddBinding("<Keyboard>/space");
+        jumpAction.AddBinding("<Gamepad>/buttonSouth");
+        interactAction.AddBinding("<Keyboard>/e");
+        interactAction.AddBinding("<Gamepad>/buttonWest");
         barkAction.AddBinding("<Keyboard>/q");
-        barkAction.AddBinding("<Gamepad>/buttonWest"); // X / Square
+        barkAction.AddBinding("<Gamepad>/rightShoulder");
+        sprintAction.AddBinding("<Keyboard>/leftShift");
+        sprintAction.AddBinding("<Gamepad>/leftStickPress");
+        pauseAction.AddBinding("<Keyboard>/escape");
+        pauseAction.AddBinding("<Gamepad>/start");
+        cameraViewAction.AddBinding("<Keyboard>/tab");
+        cameraViewAction.AddBinding("<Gamepad>/buttonNorth");
+        markTerritoryAction.AddBinding("<Keyboard>/r");
+        markTerritoryAction.AddBinding("<Gamepad>/rightTrigger");
+        zoomAction.AddBinding("<Mouse>/scroll/y");
 
-        // --- Mark territory ---
-        markTerritoryAction.AddBinding("<Keyboard>/e");
-        markTerritoryAction.AddBinding("<Gamepad>/buttonEast"); // B / Circle
+        var zoomKeyboardAxis = zoomAction.AddCompositeBinding("1DAxis");
+        zoomKeyboardAxis.With("Negative", "<Keyboard>/z");
+        zoomKeyboardAxis.With("Positive", "<Keyboard>/x");
 
-        // --- Interact ---
-        interactAction.AddBinding("<Keyboard>/f");
-        interactAction.AddBinding("<Gamepad>/buttonSouth"); // A / Cross
+        var zoomGamepadAxis = zoomAction.AddCompositeBinding("1DAxis");
+        zoomGamepadAxis.With("Negative", "<Gamepad>/leftTrigger");
+        zoomGamepadAxis.With("Positive", "<Gamepad>/rightTrigger");
 
-        // --- Zoom: mouse scroll + triggers ---
-        zoomAction.AddBinding("<Mouse>/scroll/y");         // wheel
-        zoomAction.AddBinding("<Gamepad>/rightTrigger");   // zoom in
-        zoomAction.AddBinding("<Gamepad>/leftTrigger")
-                  .WithProcessor("invert");                // zoom out
+        changeFormationAction.AddBinding("<Keyboard>/f");
+        changeFormationAction.AddBinding("<Gamepad>/dpad/right");
+        selectObjectAction.AddBinding("<Mouse>/leftButton");
+        selectObjectAction.AddBinding("<Keyboard>/a");
+        skipAnyKeyAction.AddBinding("<Keyboard>/anyKey");
+        skipAnyKeyAction.AddBinding("<Gamepad>/button*");
 
-        // --- Camera views ---
-        camView1Action.AddBinding("<Keyboard>/1");
-        camView1Action.AddBinding("<Gamepad>/dpad/up");
+        var nextAgentAxis = nextAgentAction.AddCompositeBinding("1DAxis");
+        nextAgentAxis.With("Negative", "<Keyboard>/minus");
+        nextAgentAxis.With("Positive", "<Keyboard>/equals");
 
-        camView2Action.AddBinding("<Keyboard>/2");
-        camView2Action.AddBinding("<Gamepad>/dpad/right");
+        var strafeAxis = strafeAction.AddCompositeBinding("1DAxis");
+        strafeAxis.With("Negative", "<Keyboard>/q");
+        strafeAxis.With("Positive", "<Keyboard>/e");
 
-        camView3Action.AddBinding("<Keyboard>/3");
-        camView3Action.AddBinding("<Gamepad>/dpad/down");
+        var navigateWasd = navigateAction.AddCompositeBinding("2DVector");
+        navigateWasd.With("Up", "<Keyboard>/w");
+        navigateWasd.With("Down", "<Keyboard>/s");
+        navigateWasd.With("Left", "<Keyboard>/a");
+        navigateWasd.With("Right", "<Keyboard>/d");
 
-        // --- Agent selection (keyboard 1–5) ---
-        selectAgent1Action.AddBinding("<Keyboard>/1");
-        selectAgent2Action.AddBinding("<Keyboard>/2");
-        selectAgent3Action.AddBinding("<Keyboard>/3");
-        selectAgent4Action.AddBinding("<Keyboard>/4");
-        selectAgent5Action.AddBinding("<Keyboard>/5");
+        var navigateArrows = navigateAction.AddCompositeBinding("2DVector");
+        navigateArrows.With("Up", "<Keyboard>/upArrow");
+        navigateArrows.With("Down", "<Keyboard>/downArrow");
+        navigateArrows.With("Left", "<Keyboard>/leftArrow");
+        navigateArrows.With("Right", "<Keyboard>/rightArrow");
+        navigateAction.AddBinding("<Gamepad>/dpad");
 
-        // Optional basic gamepad bindings for agent selection
-        selectAgent1Action.AddBinding("<Gamepad>/leftShoulder");
-        selectAgent2Action.AddBinding("<Gamepad>/rightShoulder");
+        submitAction.AddBinding("<Keyboard>/enter");
+        submitAction.AddBinding("<Gamepad>/buttonSouth");
+        cancelAction.AddBinding("<Keyboard>/escape");
+        cancelAction.AddBinding("<Gamepad>/buttonEast");
+        pointAction.AddBinding("<Mouse>/position");
+        clickAction.AddBinding("<Mouse>/leftButton");
+        clickAction.AddBinding("<Gamepad>/buttonSouth");
+        rightClickAction.AddBinding("<Mouse>/rightButton");
+        middleClickAction.AddBinding("<Mouse>/middleButton");
+        scrollWheelAction.AddBinding("<Mouse>/scroll");
+        trackedDevicePositionAction.AddBinding("<OculusTrackingReference>/devicePosition");
+        trackedDeviceOrientationAction.AddBinding("<OculusTrackingReference>/deviceRotation");
 
-        // --- Change formation ---
-        changeFormationAction.AddBinding("<Keyboard>/r");
-        changeFormationAction.AddBinding("<Gamepad>/buttonNorth"); // Y / Triangle
-
-        // --- AnyAction (optional "press anything") ---
-        anyAction.AddBinding("<Keyboard>/anyKey");
-        anyAction.AddBinding("<Gamepad>/start");
-        anyAction.AddBinding("<Gamepad>/buttonSouth");
-        anyAction.AddBinding("<Mouse>/leftButton");
-        anyAction.AddBinding("<Touchscreen>/primaryTouch/press");
-
-        // --------------------------------------------------
-        // 5. Serialize to JSON and write to .inputactions file
-        // --------------------------------------------------
         string json = asset.ToJson();
 
-        // Overwrite existing file if present
         if (System.IO.File.Exists(fullPath))
             System.IO.File.Delete(fullPath);
 
         System.IO.File.WriteAllText(fullPath, json);
 
-        AssetDatabase.ImportAsset(AssetPath);
+        AssetDatabase.ImportAsset(AssetPath, ImportAssetOptions.ForceUpdate);
         AssetDatabase.Refresh();
 
         var importedAsset = AssetDatabase.LoadAssetAtPath<InputActionAsset>(AssetPath);
         Selection.activeObject = importedAsset;
 
-        Debug.Log("DogInputActions.inputactions rebuilt at: " + AssetPath);
+        Debug.Log($"DogInputActions.inputactions rebuilt at: {AssetPath}");
     }
 }
 #endif
