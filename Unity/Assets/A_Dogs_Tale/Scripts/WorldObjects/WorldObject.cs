@@ -132,6 +132,9 @@ public class WorldObject : MonoBehaviour
 
     [Header("Map/World Alignment")]
     public Vector3 adjustMapToWorld = new(-0.5f, 0f, -0.5f);
+    public float sizeRadius = 0.3f;
+    public float mass = 1f;
+    public bool immovable = false;
 
     // MotionAdapter implements IAgentMovementAdapter interface 
     //     connecting LLMAsyncPlanDriver to agentMovementModule
@@ -233,6 +236,11 @@ public class WorldObject : MonoBehaviour
         if (dir == null)
         {
             Debug.LogError($"WorldObject.Awake() was unable to find Dir.");
+        }
+
+        if (!immovable && sizeRadius >= 0.5f)
+        {
+            Debug.LogWarning($"Warning: {DisplayName} worldObject.sizeRadius = {sizeRadius} >=0.5 will make it impossible to move through small rooms or doorways", this);
         }
 
         motionAdapter = new(this);  // create the adapter

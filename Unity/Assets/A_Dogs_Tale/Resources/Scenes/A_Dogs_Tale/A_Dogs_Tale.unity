@@ -1115,13 +1115,27 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8151982086402957479, guid: 94f5b811bc2e74a9a992ca995f1f81d3,
         type: 3}
+      propertyPath: m_Icon
+      value: 
+      objectReference: {fileID: 2800000, guid: bae5e99e314804dbca160de173605ba3, type: 3}
+    - target: {fileID: 8151982086402957479, guid: 94f5b811bc2e74a9a992ca995f1f81d3,
+        type: 3}
       propertyPath: m_Name
       value: pug
+      objectReference: {fileID: 0}
+    - target: {fileID: 8151982086402957479, guid: 94f5b811bc2e74a9a992ca995f1f81d3,
+        type: 3}
+      propertyPath: m_TagString
+      value: Dog
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 8151982086402957479, guid: 94f5b811bc2e74a9a992ca995f1f81d3,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1940263621}
   m_SourcePrefab: {fileID: 100100000, guid: 94f5b811bc2e74a9a992ca995f1f81d3, type: 3}
 --- !u!4 &160131187 stripped
 Transform:
@@ -3517,6 +3531,11 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 840080039950359814, guid: 6210faa9f30844384870719125248e48,
         type: 3}
+      propertyPath: m_Icon
+      value: 
+      objectReference: {fileID: 2800000, guid: bae5e99e314804dbca160de173605ba3, type: 3}
+    - target: {fileID: 840080039950359814, guid: 6210faa9f30844384870719125248e48,
+        type: 3}
       propertyPath: m_Name
       value: corgi
       objectReference: {fileID: 0}
@@ -3524,6 +3543,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_IsActive
       value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 840080039950359814, guid: 6210faa9f30844384870719125248e48,
+        type: 3}
+      propertyPath: m_TagString
+      value: Dog
       objectReference: {fileID: 0}
     - target: {fileID: 6314203209213561298, guid: 6210faa9f30844384870719125248e48,
         type: 3}
@@ -3578,7 +3602,11 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 840080039950359814, guid: 6210faa9f30844384870719125248e48,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 665028396}
   m_SourcePrefab: {fileID: 100100000, guid: 6210faa9f30844384870719125248e48, type: 3}
 --- !u!4 &464182954 stripped
 Transform:
@@ -4316,6 +4344,32 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!1 &665028394 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 840080039950359814, guid: 6210faa9f30844384870719125248e48,
+    type: 3}
+  m_PrefabInstance: {fileID: 464182952}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &665028396
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 665028394}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b112db3959c164550975dd26677f8e8e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::WorldObject
+  objectId: -1
+  displayName: corgi
+  kind: 2
+  autoRegister: 1
+  adjustMapToWorld: {x: -0.5, y: 0, z: -0.5}
+  sizeRadius: 0.3
+  mass: 25
+  immovable: 0
 --- !u!1 &669106350
 GameObject:
   m_ObjectHideFlags: 0
@@ -6641,8 +6695,19 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7970140317087810869, guid: e2802ce6b21f34344bc910cf30e9b3a8,
         type: 3}
+      propertyPath: m_Icon
+      value: 
+      objectReference: {fileID: 3936346786652291628, guid: 0000000000000000d000000000000000,
+        type: 0}
+    - target: {fileID: 7970140317087810869, guid: e2802ce6b21f34344bc910cf30e9b3a8,
+        type: 3}
       propertyPath: m_Name
       value: FlyingCrate
+      objectReference: {fileID: 0}
+    - target: {fileID: 7970140317087810869, guid: e2802ce6b21f34344bc910cf30e9b3a8,
+        type: 3}
+      propertyPath: m_TagString
+      value: Animal
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -8021,6 +8086,10 @@ MonoBehaviour:
   displayName: PlayerCrate
   kind: 2
   autoRegister: 1
+  adjustMapToWorld: {x: -0.5, y: 0, z: -0.5}
+  sizeRadius: 0.4
+  mass: 100
+  immovable: 0
 --- !u!4 &1253610034 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 7336487799710392207, guid: e2802ce6b21f34344bc910cf30e9b3a8,
@@ -8083,6 +8152,8 @@ MonoBehaviour:
   useGravity: 0
   gravityMetersPerSecondSquared: -9.81
   maxFallSpeedMetersPerSecond: 50
+  constrainToCellWalls: 1
+  wallConstraintIterations: 4
   motionControlMode: 0
   isBackpedaling: 0
   facingMode: 0
@@ -8150,6 +8221,7 @@ MonoBehaviour:
   useGridPathfinding: 1
   pathWaypointArrivalRadius: 0.2
   pathSmoothingIntervalSeconds: 0.2
+  movingTargetRepathIntervalSeconds: 0.2
   enablePathDebugLogging: 0
   accelerationMetersPerSecondSquared: 12
   decelerationMetersPerSecondSquared: 16
@@ -11098,6 +11170,11 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 4477274621950385561, guid: da33ad6d2d1f9483faa117084b30e547,
         type: 3}
+      propertyPath: m_Icon
+      value: 
+      objectReference: {fileID: 2800000, guid: bae5e99e314804dbca160de173605ba3, type: 3}
+    - target: {fileID: 4477274621950385561, guid: da33ad6d2d1f9483faa117084b30e547,
+        type: 3}
       propertyPath: m_Name
       value: cur
       objectReference: {fileID: 0}
@@ -11306,6 +11383,8 @@ MonoBehaviour:
   useGravity: 0
   gravityMetersPerSecondSquared: -9.81
   maxFallSpeedMetersPerSecond: 50
+  constrainToCellWalls: 1
+  wallConstraintIterations: 4
   motionControlMode: 0
   isBackpedaling: 0
   facingMode: 0
@@ -11389,6 +11468,7 @@ MonoBehaviour:
   useGridPathfinding: 1
   pathWaypointArrivalRadius: 0.2
   pathSmoothingIntervalSeconds: 0.2
+  movingTargetRepathIntervalSeconds: 0.2
   enablePathDebugLogging: 0
   accelerationMetersPerSecondSquared: 12
   decelerationMetersPerSecondSquared: 16
@@ -11495,6 +11575,10 @@ MonoBehaviour:
   displayName: cur
   kind: 2
   autoRegister: 1
+  adjustMapToWorld: {x: -0.5, y: 0, z: -0.5}
+  sizeRadius: 0.3
+  mass: 50
+  immovable: 0
 --- !u!65 &1651296795
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -13179,8 +13263,18 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 5957909782290826837, guid: e86f8e8e9b1324aecbb31e00a8c49ed2,
         type: 3}
+      propertyPath: m_Icon
+      value: 
+      objectReference: {fileID: 2800000, guid: bae5e99e314804dbca160de173605ba3, type: 3}
+    - target: {fileID: 5957909782290826837, guid: e86f8e8e9b1324aecbb31e00a8c49ed2,
+        type: 3}
       propertyPath: m_Name
       value: chihuahua
+      objectReference: {fileID: 0}
+    - target: {fileID: 5957909782290826837, guid: e86f8e8e9b1324aecbb31e00a8c49ed2,
+        type: 3}
+      propertyPath: m_TagString
+      value: Dog
       objectReference: {fileID: 0}
     - target: {fileID: 6029365054089107181, guid: e86f8e8e9b1324aecbb31e00a8c49ed2,
         type: 3}
@@ -13583,6 +13677,32 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 28}
   m_Pivot: {x: 0.5, y: 1}
+--- !u!1 &1940263619 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 8151982086402957479, guid: 94f5b811bc2e74a9a992ca995f1f81d3,
+    type: 3}
+  m_PrefabInstance: {fileID: 160131185}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1940263621
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1940263619}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b112db3959c164550975dd26677f8e8e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::WorldObject
+  objectId: -1
+  displayName: pug
+  kind: 2
+  autoRegister: 1
+  adjustMapToWorld: {x: -0.5, y: 0, z: -0.5}
+  sizeRadius: 0.25
+  mass: 15
+  immovable: 0
 --- !u!1 &1968244649
 GameObject:
   m_ObjectHideFlags: 0
@@ -14717,6 +14837,8 @@ MonoBehaviour:
   useGravity: 0
   gravityMetersPerSecondSquared: -9.81
   maxFallSpeedMetersPerSecond: 50
+  constrainToCellWalls: 1
+  wallConstraintIterations: 4
   motionControlMode: 0
   isBackpedaling: 0
   facingMode: 0
@@ -14883,6 +15005,7 @@ MonoBehaviour:
   useGridPathfinding: 1
   pathWaypointArrivalRadius: 0.2
   pathSmoothingIntervalSeconds: 0.2
+  movingTargetRepathIntervalSeconds: 0.2
   enablePathDebugLogging: 0
   accelerationMetersPerSecondSquared: 12
   decelerationMetersPerSecondSquared: 16
@@ -14922,6 +15045,10 @@ MonoBehaviour:
   displayName: chihuahua
   kind: 2
   autoRegister: 1
+  adjustMapToWorld: {x: -0.5, y: 0, z: -0.5}
+  sizeRadius: 0.15
+  mass: 4
+  immovable: 0
 --- !u!114 &2108676848
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -15402,6 +15529,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8843402266763018810, guid: 2ce0050a816054aaca2a1076f182f7a8,
         type: 3}
+      propertyPath: m_Icon
+      value: 
+      objectReference: {fileID: 2800000, guid: bae5e99e314804dbca160de173605ba3, type: 3}
+    - target: {fileID: 8843402266763018810, guid: 2ce0050a816054aaca2a1076f182f7a8,
+        type: 3}
       propertyPath: m_Name
       value: germanshepherd
       objectReference: {fileID: 0}
@@ -15615,6 +15747,8 @@ MonoBehaviour:
   useGravity: 0
   gravityMetersPerSecondSquared: -9.81
   maxFallSpeedMetersPerSecond: 50
+  constrainToCellWalls: 1
+  wallConstraintIterations: 4
   motionControlMode: 0
   isBackpedaling: 0
   facingMode: 0
@@ -15682,6 +15816,7 @@ MonoBehaviour:
   useGridPathfinding: 1
   pathWaypointArrivalRadius: 0.2
   pathSmoothingIntervalSeconds: 0.2
+  movingTargetRepathIntervalSeconds: 0.2
   enablePathDebugLogging: 0
   accelerationMetersPerSecondSquared: 12
   decelerationMetersPerSecondSquared: 16
@@ -15758,6 +15893,10 @@ MonoBehaviour:
   displayName: germanshepherd
   kind: 1
   autoRegister: 1
+  adjustMapToWorld: {x: -0.5, y: 0, z: -0.5}
+  sizeRadius: 0.35
+  mass: 70
+  immovable: 0
 --- !u!114 &6544990386685219155
 MonoBehaviour:
   m_ObjectHideFlags: 0

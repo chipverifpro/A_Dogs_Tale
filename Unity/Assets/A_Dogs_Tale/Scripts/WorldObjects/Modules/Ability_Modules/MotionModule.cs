@@ -89,7 +89,6 @@ namespace DogGame.Modules
 
         [Header("Wall Clearance")]
         [SerializeField] private bool constrainToCellWalls = true;
-        [SerializeField] private float wallClearanceRadius = 0.30f;
         [SerializeField] private int wallConstraintIterations = 4;
 
         // Internal vertical velocity (for gravity, jumps, etc.)
@@ -332,7 +331,7 @@ namespace DogGame.Modules
             if (dir == null || dir.gen == null || dir.gen.cfg == null || !dir.gen.buildComplete || dir.gen.cellGrid == null)
                 return toWorld;
 
-            float clearance = Mathf.Max(0f, wallClearanceRadius);
+            float clearance = GetWallClearanceRadius();
             if (clearance <= 0f)
                 return toWorld;
 
@@ -344,6 +343,14 @@ namespace DogGame.Modules
 
             Vector3 resolvedMap = new Vector3(resolved.x, toMap3.y, resolved.y);
             return worldObject != null ? worldObject.MapToWorldPosition(resolvedMap) : resolvedMap;
+        }
+
+        private float GetWallClearanceRadius()
+        {
+            if (worldObject != null)
+                return Mathf.Max(0f, worldObject.sizeRadius);
+
+            return 0.30f;
         }
 
         private Vector2 ResolveGridConstraints(Vector2 from, Vector2 to, float radius, int maxIters)
