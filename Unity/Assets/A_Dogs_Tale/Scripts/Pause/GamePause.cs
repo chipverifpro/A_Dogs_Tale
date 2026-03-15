@@ -23,6 +23,18 @@ namespace DogGame
         // Used for clamping first-tick deltas after resume
         private static float resumeUnscaledTime = -1f;
 
+        internal static void ResetStaticStateForReload()
+        {
+            IsPaused = false;
+            OnPauseChanged = null;
+            priorTimeScale = 1f;
+            priorFixedDeltaTime = 0.02f;
+            resumeUnscaledTime = -1f;
+
+            Time.timeScale = 1f;
+            Time.fixedDeltaTime = 0.02f;
+        }
+
         /// <summary>Pause the game globally.</summary>
         public static void Pause()
         {

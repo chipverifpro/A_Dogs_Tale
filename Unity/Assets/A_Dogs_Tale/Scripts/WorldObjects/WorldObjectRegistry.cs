@@ -17,6 +17,12 @@ public class WorldObjectRegistry : MonoBehaviour
     private static WorldObjectRegistry _instance;
     private static bool _shuttingDown;
 
+    internal static void ResetStaticStateForReload()
+    {
+        _instance = null;
+        _shuttingDown = false;
+    }
+
     // Begin a bunch of crap for starting up and shutting down safely.
 
     public static WorldObjectRegistry Instance
@@ -49,17 +55,36 @@ public class WorldObjectRegistry : MonoBehaviour
 
     private void Awake()
     {
+        if (!TryRegisterSingletonInstance())
+            return;
+
+        nextId = startingId;
+
+        EnsureHierarchyRoot();
+    }
+
+    private void OnEnable()
+    {
+        if (!TryRegisterSingletonInstance())
+            return;
+
+        if (nextId < startingId)
+            nextId = startingId;
+
+        EnsureHierarchyRoot();
+    }
+
+    private bool TryRegisterSingletonInstance()
+    {
         if (_instance != null && _instance != this)
         {
             Debug.LogWarning($"Duplicate WorldObjectRegistry found. Destroying {gameObject.name}.", this);
             Destroy(gameObject);
-            return;
+            return false;
         }
 
         _instance = this;
-        nextId = startingId;
-
-        EnsureHierarchyRoot();
+        return true;
     }
 
     private void EnsureHierarchyRoot()

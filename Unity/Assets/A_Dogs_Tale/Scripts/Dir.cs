@@ -76,21 +76,43 @@ public class Dir : MonoBehaviour
     public LLMWorldScheduler llmWorldScheduler;
     public LLMDebugMonitor llmDebugMonitor;
 
+    internal static void ResetStaticStateForReload()
+    {
+        Instance = null;
+    }
+
     void Awake()
     {
         Debug.Log("Dir Awake");
-        if (Instance != null && Instance != this)
-        {
-            Debug.LogWarning("Multiple ObjectDirectory instances found. Destroying duplicate.", this);
-            Destroy(gameObject);
+        if (!TryRegisterSingletonInstance())
             return;
-        }
-        Instance = this;    // set singleton instance
 
         if (gameInputRouter==null) gameInputRouter=FindFirstObjectByType<GameInputRouter>();
         pass_num = 0;
         AllReady = false;
         ValidateDirectory();
+    }
+
+    private void OnEnable()
+    {
+        if (!TryRegisterSingletonInstance())
+            return;
+
+        if (gameInputRouter == null)
+            gameInputRouter = FindFirstObjectByType<GameInputRouter>();
+    }
+
+    private bool TryRegisterSingletonInstance()
+    {
+        if (Instance != null && Instance != this)
+        {
+            Debug.LogWarning("Multiple ObjectDirectory instances found. Destroying duplicate.", this);
+            Destroy(gameObject);
+            return false;
+        }
+
+        Instance = this;    // set singleton instance
+        return true;
     }
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created

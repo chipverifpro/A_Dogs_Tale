@@ -36,23 +36,51 @@ public class ConvertScreenToWorld : MonoBehaviour
     public bool targetedWorldObject_valid = false;  // valid flag for targetedWorldObject
     public WorldObject targetedWorldObject;     // object targeted
 
+    private void Awake()
+    {
+        EnsureRuntimeReferences(logFailure: true);
+    }
+
     void Start()
     {
+        EnsureRuntimeReferences(logFailure: true);
+    }
+
+    private void OnEnable()
+    {
+        EnsureRuntimeReferences(logFailure: false);
+    }
+
+    private bool EnsureRuntimeReferences(bool logFailure)
+    {
+        if (dir == null)
+            dir = Dir.Instance ?? FindFirstObjectByType<Dir>();
+
         if (mainCamera == null)
-        {
             mainCamera = Camera.main;
+
+        if (dir == null)
+        {
+            if (logFailure)
+                Debug.LogWarning("[ConvertScreenToWorld] Waiting for Dir after reload.", this);
+            return false;
         }
+
+        return mainCamera != null;
     }
 
 
     // takes in a screen position, returns a world position (Y is height), or null if no hit.
     public Vector3 ?getWorldPointFromRaycast(Vector3 screenPosition)
     {
-        if (mainCamera == null)
+        if (!EnsureRuntimeReferences(logFailure: false))
         {
             Debug.LogError("[ConvertScreenToWorld] No mainCamera set; cannot use raycast to convert screen cooudinates to world coordinates.");
             return null;
         }
+
+        if (dir.cameraModeSwitcher == null || dir.gen == null || dir.gen.cfg == null || dir.gen.cellGrid == null)
+            return null;
 
         // Raycast to ground
         Ray ray = mainCamera.ScreenPointToRay(screenPosition);
@@ -92,6 +120,9 @@ public class ConvertScreenToWorld : MonoBehaviour
     // --- Tilted floor height sampling (uses Cell.tiltFloor & height) ---
     public float SampleTiltedFloorY(Vector2 worldXZ, Cell[,] grid)
     {
+        if (grid == null)
+            return 0f;
+
         int cx = Mathf.FloorToInt((worldXZ.x - origin.x) / cellSize);
         int cz = Mathf.FloorToInt((worldXZ.y - origin.z) / cellSize);
         int W = grid.GetLength(0);
@@ -101,6 +132,8 @@ public class ConvertScreenToWorld : MonoBehaviour
             //return agent ? agent.pos2.y : 0f;   // out of map bounds
 
         var cell = grid[cx, cz];    // TODO: use heightfield, not grid
+        if (cell == null)
+            return 0f;
 
         // Plane normal from tilt
         Vector3 n = (cell.tiltFloor * Vector3.up).normalized;
@@ -121,11 +154,13 @@ public class ConvertScreenToWorld : MonoBehaviour
     public WorldObject GetWorldObjectFromRaycast(Vector3 screenPosition)
     {
         //Debug.Log($"GetWorldObjectFromRaycast({screenPosition})");
-        if (mainCamera == null)
+        if (!EnsureRuntimeReferences(logFailure: false))
         {
             Debug.LogError("[ConvertScreenToWorld] No mainCamera set; cannot use raycast to convert screen cooudinates to world object.");
             return null;
         }
+        if (dir.cameraModeSwitcher == null)
+            return null;
             // YES, this is an ugly chunk of code.  Someday it will be cleaned up, but it works for now...
             // This cleaned up code could also be used to unify FP_BlockingMask and Overhead_BlockingMask which is basically this same function.
         // Tweak objectsMask
@@ -193,6 +228,12 @@ public class ConvertScreenToWorld : MonoBehaviour
 
     public Cell ConvertWorldLocationToCell(Vector3 worldLocation)
     {
+        if (!EnsureRuntimeReferences(logFailure: false))
+            return null;
+
+        if (dir.gen == null || dir.gen.hf == null || dir.gen.rooms == null)
+            return null;
+
         int x = Mathf.FloorToInt(worldLocation.x);
         int y = Mathf.FloorToInt(worldLocation.y);
         int z = Mathf.FloorToInt(worldLocation.z);

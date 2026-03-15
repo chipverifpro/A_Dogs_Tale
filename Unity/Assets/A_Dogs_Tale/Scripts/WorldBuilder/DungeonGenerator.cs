@@ -1117,21 +1117,23 @@ public partial class DungeonGenerator : MonoBehaviour
     {
         NeighborMatch match;
 
-        if (hf==null)
-        {
-            Debug.LogError("Heightfield not available in DungeonGenerator.GetCellFromHf");
+        if (!buildComplete || hf == null || rooms == null || rooms.Count == 0)
             return null;
-        }
             
-        if (dir.gen.hf.TryQueryAt(x, y, z, threshold: 10, out match))
+        if (hf.TryQueryAt(x, y, z, threshold, out match))
         {
+            if (match.roomId < 0 || match.roomId >= rooms.Count)
+                return null;
+
             Room nRoom = rooms[match.roomId];
+            if (nRoom == null || nRoom.cells == null)
+                return null;
+
             foreach (Cell cc in nRoom.cells)
             {
                 if ((cc.x == x) && (cc.y == y)) return cc;
             }
         }
-        Debug.LogError($"Heightfield failed to find cell {x},{y} in room {match.roomId}");
         return null;
     }
 

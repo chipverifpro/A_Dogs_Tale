@@ -97,16 +97,7 @@ public class NewInputAdapter : MonoBehaviour
             enabled = false;
         }
 
-        if (GameInputRouter.Instance == null)
-        {
-            Debug.LogError("[NewInputAdapter] No GameInputRouter in scene.", this);
-            //enabled = false;
-            return;
-        }
-        
-        playerInputState = GameInputRouter.Instance.InputState;
-        
-        CacheActions();
+        TryBindRuntimeState(logFailure: true);
 
         Debug.Log("[NewInputAdapter] Awake: InputAdapter initialized.", this);
     }
@@ -135,21 +126,7 @@ public class NewInputAdapter : MonoBehaviour
 
         gameplayMap.Enable();
 
-        if (gameInputRouter == null)
-        {
-            gameInputRouter = GameInputRouter.Instance;
-            if (gameInputRouter == null)
-            {
-                Debug.LogError("[PlayerDecisionModule] No GameInputRouter in scene.", this);
-                enabled = false;
-                return;
-            }
-        }
-
-        if (gameInputRouter.InputState == null)
-        {
-            Debug.LogError($"[PlayerInputStateDebugger] gameInputRouter.InputState is null.", this);
-        }
+        TryBindRuntimeState(logFailure: true);
 
         ConfigureUiInputModule();
 
@@ -163,6 +140,7 @@ public class NewInputAdapter : MonoBehaviour
 
     private void OnEnable()
     {
+        TryBindRuntimeState(logFailure: false);
         EnableActions(true);
     }
 
@@ -199,6 +177,33 @@ public class NewInputAdapter : MonoBehaviour
 
         cameraViewAction      = string.IsNullOrEmpty(cameraViewActionName) ? null : FindAction(map, cameraViewActionName);
         nextAgentAction       = string.IsNullOrEmpty(nextAgentActionName)  ? null : FindAction(map, nextAgentActionName);
+    }
+
+    private bool TryBindRuntimeState(bool logFailure)
+    {
+        if (dir == null)
+            dir = Dir.Instance;
+
+        if (gameInputRouter == null)
+            gameInputRouter = GameInputRouter.Instance;
+
+        if (gameInputRouter == null)
+        {
+            if (logFailure)
+                Debug.LogWarning("[NewInputAdapter] Waiting for GameInputRouter after reload.", this);
+            return false;
+        }
+
+        if (gameInputRouter.InputState == null)
+        {
+            if (logFailure)
+                Debug.LogWarning("[NewInputAdapter] GameInputRouter.InputState is null.", this);
+            return false;
+        }
+
+        playerInputState = gameInputRouter.InputState;
+        CacheActions();
+        return dir != null;
     }
 
     private static InputAction FindAction(InputActionMap map, string name)
@@ -329,6 +334,9 @@ public class NewInputAdapter : MonoBehaviour
 
     private void Update()
     {
+        if (!TryBindRuntimeState(logFailure: false))
+            return;
+
         var state = gameInputRouter.InputState;
 
 
@@ -342,6 +350,7 @@ public class NewInputAdapter : MonoBehaviour
             // moveAxis will interrupt travel to destination
             state.hasClickTargetWorldObject   = false;
             state.hasClickTargetLocationWorld = false;
+            state.hasPendingClickTargetLocationWorld = false;
         }
         // -- Strafe Movement ---
         state.strafeAxis = strafeAction != null
@@ -353,6 +362,7 @@ public class NewInputAdapter : MonoBehaviour
             // like moveAxis, strafeAcis will also interrupt travel to destination
             state.hasClickTargetWorldObject   = false;
             state.hasClickTargetLocationWorld = false;
+            state.hasPendingClickTargetLocationWorld = false;
         }
 
         // --- One-shot commands (per-frame triggers) ---
@@ -457,6 +467,7 @@ public class NewInputAdapter : MonoBehaviour
         if (wheelUI != null && wheelUI.IsOpen)
         {
             state.hasClickTargetLocationWorld = false;
+            state.hasPendingClickTargetLocationWorld = false;
             state.hasClickTargetWorldObject = false;
             CurrentState = state;
             return;
@@ -473,11 +484,21 @@ public class NewInputAdapter : MonoBehaviour
 
             state.screenCoordinateClicked = screenPosition;
 
+            if (dir == null || dir.convertScreenToWorld == null)
+            {
+                state.hasClickTargetLocationWorld = false;
+                state.hasPendingClickTargetLocationWorld = false;
+                state.hasClickTargetWorldObject = false;
+                CurrentState = state;
+                return;
+            }
+
             // (1) convert screen to world location and cell
             Vector3 ?worldLocation = dir.convertScreenToWorld.getWorldPointFromRaycast(screenPosition3);
             if (worldLocation != null)
             {
                 state.hasClickTargetLocationWorld = true;
+                state.hasPendingClickTargetLocationWorld = true;
                 state.clickTargetLocationWorld    = (Vector3)worldLocation;
                 state.clickTargetLocationCell     = dir.convertScreenToWorld.ConvertWorldLocationToCell((Vector3)worldLocation);
                 if (state.clickTargetLocationCell!=null)
@@ -488,6 +509,7 @@ public class NewInputAdapter : MonoBehaviour
             else
             {
                 state.hasClickTargetLocationWorld = false;
+                state.hasPendingClickTargetLocationWorld = false;
                 state.clickTargetLocationWorld    = Vector3.zero;
                 state.clickTargetLocationCell     = null;
             }
@@ -514,8 +536,6 @@ public class NewInputAdapter : MonoBehaviour
         }
         else
         {
-            // or put these at the top...
-            state.hasClickTargetLocationWorld = false;
             state.hasClickTargetWorldObject   = false;
         }
 

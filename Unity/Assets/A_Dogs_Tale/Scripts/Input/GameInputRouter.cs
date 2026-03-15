@@ -80,26 +80,53 @@ public class GameInputRouter : MonoBehaviour
     public PlayerInputState InputState { get; private set; } = new PlayerInputState();
 
     [Tooltip("The WorldObject currently controlled by the player.")]
-    public WorldObject currentControlledWorldObject => dir.playerPack.packLeader;  // pack 0, member 0
+    public WorldObject currentControlledWorldObject => dir != null && dir.playerPack != null ? dir.playerPack.packLeader : null;  // pack 0, member 0
     public Dir dir;
 
     public GameMode currentGameMode = GameMode.Explore;
 
+    internal static void ResetStaticStateForReload()
+    {
+        Instance = null;
+    }
+
     private void Awake()
+    {
+        if (!TryRegisterSingletonInstance())
+            return;
+
+        EnsureRuntimeReferences();
+        SetGameMode(GameMode.Explore);
+    }
+
+    private void OnEnable()
+    {
+        if (!TryRegisterSingletonInstance())
+            return;
+
+        EnsureRuntimeReferences();
+    }
+
+    private bool TryRegisterSingletonInstance()
     {
         if (Instance != null && Instance != this)
         {
             Destroy(gameObject);
-            return;
+            return false;
         }
         Instance = this;
+        return true;
+    }
 
-        if (dir==null) dir=Dir.Instance;
+    private bool EnsureRuntimeReferences()
+    {
+        if (dir == null)
+            dir = Dir.Instance;
 
         if (InputState == null)
             InputState = new PlayerInputState();
-        
-        SetGameMode(GameMode.Explore);
+
+        return dir != null && InputState != null;
     }
 
     public bool IsControlled(WorldObject wo)
@@ -118,12 +145,18 @@ public class GameInputRouter : MonoBehaviour
 
     public void Update()
     {
+        if (!EnsureRuntimeReferences())
+            return;
+
         RouteClickToTarget();
     }
 
     // Routes clicked target events to Activate their appropriate WorldObject
     public void RouteClickToTarget()
     {
+        if (!EnsureRuntimeReferences())
+            return;
+
         if (InputState.hasClickTargetWorldObject)
         {
             WorldObject target;

@@ -11,6 +11,11 @@ namespace DogGame.Noise
     {
         public static NoiseManager Instance { get; private set; }
 
+        internal static void ResetStaticStateForReload()
+        {
+            Instance = null;
+        }
+
         [Header("Buffer")]
         [SerializeField] private int capacity = 2048;
         [SerializeField] private float maxAgeSeconds = 12f;
@@ -26,20 +31,36 @@ namespace DogGame.Noise
 
         private void Awake()
         {
-            if (Instance != null && Instance != this)
-            {
-                Debug.LogWarning("[NoiseManager] Duplicate instance; destroying this one.");
-                Destroy(gameObject);
+            if (!TryRegisterSingletonInstance())
                 return;
-            }
-
-            Instance = this;
 
             if (capacity < 64) capacity = 64;
             buffer = new NoiseEvent[capacity];
             headIndex = 0;
             count = 0;
             lastPruneTime = Time.time;
+        }
+
+        private void OnEnable()
+        {
+            if (!TryRegisterSingletonInstance())
+                return;
+
+            if (buffer == null || buffer.Length != Mathf.Max(64, capacity))
+                buffer = new NoiseEvent[Mathf.Max(64, capacity)];
+        }
+
+        private bool TryRegisterSingletonInstance()
+        {
+            if (Instance != null && Instance != this)
+            {
+                Debug.LogWarning("[NoiseManager] Duplicate instance; destroying this one.");
+                Destroy(gameObject);
+                return false;
+            }
+
+            Instance = this;
+            return true;
         }
 
         private void OnDestroy()

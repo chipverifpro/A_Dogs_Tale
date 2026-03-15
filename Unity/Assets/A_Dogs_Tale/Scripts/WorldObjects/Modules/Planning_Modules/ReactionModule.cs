@@ -36,17 +36,24 @@ public sealed class ReactionModule : WorldModule
 
     protected override void Awake()
     {
-        if (taskController == null)
-            taskController = GetComponentInParent<TaskController>();
+        EnsureRuntimeState();
+        ResetRuntimeState();
+    }
 
-        ruleTable = new ReactionRuleTable();
-        BuildDefaultRules(ruleTable);
-        EnsureLuaReady();
+    private void OnEnable()
+    {
+        EnsureRuntimeState();
+        ResetRuntimeState();
+    }
+
+    private void OnDisable()
+    {
+        ResetRuntimeState();
     }
 
     public override void Tick(float dt)
     {
-        if (taskController == null || worldObject == null)
+        if (!EnsureRuntimeState())
             return;
 
         if (globalCooldown > 0f)
@@ -135,6 +142,32 @@ public sealed class ReactionModule : WorldModule
         luaScriptLoaded = luaRuntime.LoadScript(luaReactionScript);
         if (luaScriptLoaded)
             loadedLuaScript = luaReactionScript;
+    }
+
+    private bool EnsureRuntimeState()
+    {
+        if (worldObject == null)
+            return false;
+
+        if (taskController == null)
+            taskController = GetComponentInParent<TaskController>();
+
+        if (ruleTable == null)
+        {
+            ruleTable = new ReactionRuleTable();
+            BuildDefaultRules(ruleTable);
+        }
+
+        return taskController != null && ruleTable != null;
+    }
+
+    private void ResetRuntimeState()
+    {
+        globalCooldown = 0f;
+        eventTypeCooldownUntil.Clear();
+        luaRuntime = null;
+        luaScriptLoaded = false;
+        loadedLuaScript = "";
     }
 
     private void RunLuaReactions(List<PerceptionEvent> events)

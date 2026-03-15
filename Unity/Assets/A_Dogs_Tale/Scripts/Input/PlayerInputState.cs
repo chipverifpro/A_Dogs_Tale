@@ -31,6 +31,7 @@ public class PlayerInputState
     public Vector3 screenCoordinateClicked;     // Basic Level: possibly useful for special effects/overlays/etc
     
     public bool hasClickTargetLocationWorld;    // enable
+    public bool hasPendingClickTargetLocationWorld; // one-shot click-to-move event awaiting consumption
     public Vector3 clickTargetLocationWorld;    // world location (floor/wall)
     public Cell clickTargetLocationCell;        // Cell at world location
 

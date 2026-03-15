@@ -42,7 +42,16 @@ namespace DogGame.Modules
         public Vector2 pos2_f => new(x_f, y_f);
         public Vector2Int pos2 => new(x, y);
 
-        public Cell cell => dir.gen.GetCellFromHf(x, y, z, 50);
+        public Cell cell
+        {
+            get
+            {
+                if (dir == null || dir.gen == null || !dir.gen.buildComplete || dir.gen.hf == null)
+                    return null;
+
+                return dir.gen.GetCellFromHf(x, y, z, 50);
+            }
+        }
 
         /// <summary>
         /// Full world rotation (includes yaw + pitch/roll tilt).

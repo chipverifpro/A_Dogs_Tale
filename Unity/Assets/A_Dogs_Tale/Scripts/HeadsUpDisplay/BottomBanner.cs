@@ -12,6 +12,11 @@ public class BottomBanner : MonoBehaviour
 {
     public static BottomBanner Instance { get; private set; }
 
+    internal static void ResetStaticStateForReload()
+    {
+        Instance = null;
+    }
+
     [Header("Style")]
     [SerializeField] Color backgroundColor = new Color(0f, 0f, 0f, 0.5f);
     [SerializeField] Color textColor = Color.white;
@@ -28,11 +33,25 @@ public class BottomBanner : MonoBehaviour
 
     void Awake()
     {
-        if (Instance != null && Instance != this) { Destroy(gameObject); return; }
-        Instance = this;
-        //DontDestroyOnLoad(gameObject);
+        if (!TryRegisterSingletonInstance())
+            return;
 
         BuildUIIfNeeded();
+    }
+
+    void OnEnable()
+    {
+        if (!TryRegisterSingletonInstance())
+            return;
+
+        BuildUIIfNeeded();
+    }
+
+    bool TryRegisterSingletonInstance()
+    {
+        if (Instance != null && Instance != this) { Destroy(gameObject); return false; }
+        Instance = this;
+        return true;
     }
 
     void BuildUIIfNeeded()

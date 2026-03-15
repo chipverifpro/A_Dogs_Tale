@@ -24,7 +24,17 @@ namespace DogGame.LLM
         /// <summary>
         /// True when task control is active (either running a task or tasks are queued/suspended).
         /// </summary>
-        public bool IsDriving => taskExecutor.HasTask || taskQueue.Count > 0 || taskExecutor.SuspendedCount > 0;
+        public bool IsDriving
+        {
+            get
+            {
+                EnsureRuntimeState();
+                if (taskExecutor == null || taskQueue == null)
+                    return false;
+
+                return taskExecutor.HasTask || taskQueue.Count > 0 || taskExecutor.SuspendedCount > 0;
+            }
+        }
         public bool IsDrivingMovement => IsDriving;
 
         private MotionAdapter? motionAdapter;
@@ -39,31 +49,44 @@ namespace DogGame.LLM
 
         protected override void Awake()
         {
+            if (!EnsureRuntimeState())
+                enabled = false;
+        }
+
+        private void OnEnable()
+        {
+            EnsureRuntimeState();
+        }
+
+        private bool EnsureRuntimeState()
+        {
             if (worldObject == null)
             {
                 Debug.LogError("[TaskController] WorldObject not found on this GameObject.");
-                enabled = false;
-                return;
+                return false;
             }
 
-            blackboard = new DogGame.Tasks.SimpleBlackboard();
+            blackboard ??= new DogGame.Tasks.SimpleBlackboard();
 
             // Use DisplayName as agent id by default
             agentId = worldObject.DisplayName;
 
-            taskQueue = new TaskQueue();
-            taskExecutor  = new TaskExecutor(taskQueue);
+            taskQueue ??= new TaskQueue();
+            taskExecutor ??= new TaskExecutor(taskQueue);
 
-        
             // Movement adapter used by tasks (intent-level; no per-frame Tick here)
-            motionAdapter = worldObject.motionAdapter;
+            motionAdapter ??= worldObject.motionAdapter;
 
-            taskContext = new TaskContext(worldObject, OriginRequestId:null, OriginTag:null);
+            taskContext ??= new TaskContext(worldObject, OriginRequestId:null, OriginTag:null);
             motionAdapter = (MotionAdapter)taskContext.Motion;
+            return true;
         }
 
         public bool TryApplyPlanJson(string planResponseJson)
         {
+            if (!EnsureRuntimeState())
+                return false;
+
             // sanitize the LLM Response.
             if (!DogGame.LLM.LLMResponseSanitizer.TryExtractJsonObject(planResponseJson, out string cleanJson, out string err))
             {
@@ -111,6 +134,9 @@ namespace DogGame.LLM
 
         public void StopMovementWhenControlGained()
         {
+            if (!EnsureRuntimeState())
+                return;
+
             bool isDrivingMovementNow = IsDrivingMovement;
 
             // If we just took control, kill any leftover player intent immediately.
@@ -127,12 +153,16 @@ namespace DogGame.LLM
 
         public override void Tick(float deltaTimeSeconds)
         {
+            if (!EnsureRuntimeState())
+                return;
+
             if (debugDoubleTick == Time.frameCount)
                 Debug.LogError("ERROR: TaskController.Tick run more than once per frame");
             debugDoubleTick = Time.frameCount;
 
             // Temporary dev behavior: any input cancels task control (also blocks Tab, etc.).
-            if (dir && worldObject && dir.gameInputRouter.InputState.anyKeyOrButtonDown)
+            var router = dir != null ? (dir.gameInputRouter != null ? dir.gameInputRouter : GameInputRouter.Instance) : GameInputRouter.Instance;
+            if (dir && worldObject && router != null && router.InputState != null && router.InputState.anyKeyOrButtonDown)
             {
                 Debug.Log("DISABLED: TaskController: Cancelling tasks due to anyKeyOrButtonDown");
                 //CancelAllTasks();
@@ -146,11 +176,17 @@ namespace DogGame.LLM
 
         public void CancelAllTasks()
         {
+            if (!EnsureRuntimeState())
+                return;
+
             taskExecutor.ClearAll(taskContext);
         }
 
         public void Submit(TaskRequest request)
         {
+            if (!EnsureRuntimeState())
+                return;
+
             if (!taskExecutor.TryInterruptWith(taskContext, request))
                 taskQueue.Enqueue(request);
         }

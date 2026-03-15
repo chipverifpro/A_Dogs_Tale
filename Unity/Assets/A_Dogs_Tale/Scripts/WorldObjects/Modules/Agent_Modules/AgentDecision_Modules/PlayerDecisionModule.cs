@@ -54,35 +54,16 @@ namespace DogGame.Modules
             llmWorldState ??= worldObject.llmWorldStateModule;
             //llmWorldScheduler = dir.llmWorldScheduler;
         }
-    private void Start()
-    {
-        if (gameInputRouter == null)
-        {
-            gameInputRouter = GameInputRouter.Instance;
-            if (gameInputRouter == null)
-            {
-                Debug.LogError("[PlayerDecisionModule] No GameInputRouter in scene.", this);
-                enabled = false;
-                return;
-            }
 
-            if (inputState == null)
-                inputState = gameInputRouter.InputState;  // keep a reference, not a copy
-            
-            if (inputState == null)
-            {
-                Debug.LogError($"[PlayerDecisionModule {worldObject.DisplayName}] inputState is null.", this);
-            }  
+        private void OnEnable()
+        {
+            TryBindRuntimeReferences(logFailure: false);
         }
 
-        if (gameInputRouter.InputState == null)
+        private void Start()
         {
-            Debug.LogError($"[PlayerInputStateDebugger] gameInputRouter.InputState is null.", this);
+            TryBindRuntimeReferences(logFailure: true);
         }
-
-        taskController = worldObject.GetComponent<TaskController>();
-
-    }
 
         // Initialize called from WorldObject.Awake phase
         public override void Initialize(AgentModule agent)
@@ -97,21 +78,7 @@ namespace DogGame.Modules
             //if (inputAdapter == null)
             //    inputAdapter = FindFirstObjectByType<NewInputAdapter>();
 
-            gameInputRouter = GameInputRouter.Instance;
-            if (gameInputRouter == null)
-            {
-                Debug.LogError("[PlayerDecisionModule] No GameInputRouter in scene.", this);
-                enabled = false;
-                return;
-            }
-
-            if (inputState == null)
-                inputState = gameInputRouter.InputState;  // keep a reference, not a copy
-            
-            if (inputState == null)
-            {
-                Debug.LogError($"[PlayerDecisionModule {worldObject.DisplayName}] inputState is null.", this);
-            }
+            TryBindRuntimeReferences(logFailure: true);
 
             if (worldObject.agentMovementModule == null)
             {
@@ -122,6 +89,37 @@ namespace DogGame.Modules
                 cameraForMovement = Camera.main;
         }
 
+        private bool TryBindRuntimeReferences(bool logFailure)
+        {
+            if (worldObject == null)
+                return false;
+
+            if (taskController == null)
+                taskController = GetComponentInParent<TaskController>();
+
+            if (gameInputRouter == null)
+                gameInputRouter = GameInputRouter.Instance;
+
+            if (gameInputRouter == null)
+            {
+                if (logFailure)
+                    Debug.LogWarning("[PlayerDecisionModule] Waiting for GameInputRouter after reload.", this);
+                return false;
+            }
+
+            inputState = gameInputRouter.InputState;
+            if (inputState == null)
+            {
+                if (logFailure)
+                    Debug.LogWarning($"[PlayerDecisionModule {worldObject.DisplayName}] Waiting for InputState after reload.", this);
+                return false;
+            }
+
+            llmConfig ??= worldObject.llmConfigModule;
+            llmWorldState ??= worldObject.llmWorldStateModule;
+            return taskController != null;
+        }
+
         private int debugDoubleTick = -1;
         public override void Tick(float deltaTime)
         {
@@ -130,9 +128,8 @@ namespace DogGame.Modules
                 Debug.LogError("ERROR: Tick run more than once per frame");
             debugDoubleTick = Time.frameCount;
 
-            if (gameInputRouter == null)
+            if (!TryBindRuntimeReferences(logFailure: false))
             {
-                Debug.LogWarning("Tick: gameInputRouter == null");
                 return;
             }
 
@@ -151,12 +148,6 @@ namespace DogGame.Modules
                 return;
             }
 
-            if (inputState == null)
-            {
-                Debug.LogWarning("Tick: inputState == null");
-                return;
-            }
-
             //Debug.Log($"PlayerDecisionModule: ready to process inputState");
 
             HandleOneShotActions(inputState);
@@ -171,6 +162,7 @@ namespace DogGame.Modules
                 currentDestinationObject = null;
                 inputState.hasClickTargetWorldObject = false;
                 inputState.hasClickTargetLocationWorld = false;
+                inputState.hasPendingClickTargetLocationWorld = false;
             }
 
             // Only do player controlled movement if LLM isn't driving movement
@@ -398,10 +390,11 @@ namespace DogGame.Modules
                 return;
             }
             // 2A) New click target was a location: new orders
-            if (state.hasClickTargetLocationWorld && !state.interactPressed)
+            if (state.hasPendingClickTargetLocationWorld && !state.interactPressed)
             {
                 currentDestinationPosition = state.clickTargetLocationWorld; // head to location, new orders arrived
                 currentDestinationObject = null;  // stop heading to object if we had been
+                state.hasPendingClickTargetLocationWorld = false;
                 SubmitMoveToTargetPositionTask((Vector3)currentDestinationPosition);
                 return;
             }

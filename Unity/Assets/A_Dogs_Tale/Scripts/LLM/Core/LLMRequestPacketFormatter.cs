@@ -31,7 +31,7 @@ namespace DogGame.LLM.Core
             builder.AppendLine();
 
             // TOOLS JSON (normalized for readability; still plain text)
-            if (!string.IsNullOrWhiteSpace(request.toolDefinitions.ToString()))
+            if (request.toolDefinitions!=null && !string.IsNullOrWhiteSpace(request!.toolDefinitions.ToString()))
             {
                 builder.AppendLine("TOOL DEFINITIONS JSON:");
                 builder.AppendLine(LLMJsonNormalizer.Normalize(request.toolDefinitions.ToString()));
