@@ -192,7 +192,7 @@ namespace DogGame.Modules
 
         private void CacheTargetObjectCell()
         {
-            if (targetLocation.HasValue && TryGetGridCell(targetLocation.Value, out Vector2Int cell))
+            if (targetLocation.HasValue && TryGetGridCell(targetLocation.Value, GetTargetCoordinateSpaceOwner(), out Vector2Int cell))
             {
                 lastKnownTargetObjectCell = cell;
                 hasLastKnownTargetObjectCell = true;
@@ -203,15 +203,19 @@ namespace DogGame.Modules
             }
         }
 
-        private bool TryGetGridCell(Vector3 worldPosition, out Vector2Int cell)
+        private bool TryGetGridCell(Vector3 worldPosition, WorldObject coordinateSpaceOwner, out Vector2Int cell)
         {
             cell = default;
 
             if (dir == null || dir.gen == null || !dir.gen.buildComplete || dir.gen.cellGrid == null)
                 return false;
 
-            int x = Mathf.FloorToInt(worldPosition.x);
-            int y = Mathf.FloorToInt(worldPosition.z);
+            Vector3 mapPosition = coordinateSpaceOwner != null
+                ? coordinateSpaceOwner.WorldToMapPosition(worldPosition)
+                : worldPosition;
+
+            int x = Mathf.FloorToInt(mapPosition.x);
+            int y = Mathf.FloorToInt(mapPosition.z);
             if (!dir.gen.In(x, y))
                 return false;
 
@@ -243,7 +247,13 @@ namespace DogGame.Modules
                     height = gridCell.height;
             }
 
-            return new Vector3(cell.x + 0.5f, height, cell.y + 0.5f);
+            Vector3 mapPosition = new Vector3(cell.x + 0.5f, height, cell.y + 0.5f);
+            return worldObject != null ? worldObject.MapToWorldPosition(mapPosition) : mapPosition;
+        }
+
+        private WorldObject GetTargetCoordinateSpaceOwner()
+        {
+            return targetObject != null ? targetObject : worldObject;
         }
 
         private bool RebuildPathToCurrentTarget(bool forceRebuild = false)
@@ -260,8 +270,8 @@ namespace DogGame.Modules
                 return false;
             }
 
-            if (!TryGetGridCell(worldObject.pos3d_world, out Vector2Int startCell) ||
-                !TryGetGridCell(targetLocation.Value, out Vector2Int goalCell))
+            if (!TryGetGridCell(worldObject.pos3d_world, worldObject, out Vector2Int startCell) ||
+                !TryGetGridCell(targetLocation.Value, GetTargetCoordinateSpaceOwner(), out Vector2Int goalCell))
             {
                 ClearActivePath();
                 return false;
@@ -325,7 +335,7 @@ namespace DogGame.Modules
                 smoothingCooldownSeconds = pathSmoothingIntervalSeconds;
             }
 
-            if (!TryGetGridCell(worldObject.pos3d_world, out Vector2Int currentCellPos))
+            if (!TryGetGridCell(worldObject.pos3d_world, worldObject, out Vector2Int currentCellPos))
                 return;
 
             if (!TryGetGridCellData(currentCellPos, out Cell currentCell))
@@ -374,7 +384,7 @@ namespace DogGame.Modules
             if (!useGridPathfinding)
                 return;
 
-            if (!targetLocation.HasValue || !TryGetGridCell(targetLocation.Value, out Vector2Int targetCell))
+            if (!targetLocation.HasValue || !TryGetGridCell(targetLocation.Value, GetTargetCoordinateSpaceOwner(), out Vector2Int targetCell))
             {
                 hasLastKnownTargetObjectCell = false;
                 return;

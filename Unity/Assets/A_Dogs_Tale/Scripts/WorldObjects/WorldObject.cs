@@ -130,6 +130,9 @@ public class WorldObject : MonoBehaviour
     [SerializeField] private WorldObjectKind kind = WorldObjectKind.Unknown;
     [SerializeField] private bool autoRegister = true;
 
+    [Header("Map/World Alignment")]
+    public Vector3 adjustMapToWorld = new(-0.5f, 0f, -0.5f);
+
     // MotionAdapter implements IAgentMovementAdapter interface 
     //     connecting LLMAsyncPlanDriver to agentMovementModule
     public MotionAdapter motionAdapter = null;
@@ -210,7 +213,18 @@ public class WorldObject : MonoBehaviour
     //   want current location, it can be grabbed here without a
     //   LocationModule.
     public Vector3 pos3d_world => this.transform.position;
-    public Vector3 pos3d_f => new(pos3d_world.x, pos3d_world.z, pos3d_world.y);
+    public Vector3 pos3d_map => WorldToMapPosition(pos3d_world);
+    public Vector3 pos3d_f => new(pos3d_map.x, pos3d_map.z, pos3d_map.y);
+
+    public Vector3 MapToWorldPosition(Vector3 mapPosition)
+    {
+        return mapPosition + adjustMapToWorld;
+    }
+
+    public Vector3 WorldToMapPosition(Vector3 worldPosition)
+    {
+        return worldPosition - adjustMapToWorld;
+    }
 
 
     private void Awake()

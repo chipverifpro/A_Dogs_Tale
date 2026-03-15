@@ -87,6 +87,11 @@ namespace DogGame.Modules
         [Tooltip("Clamp maximum downward speed (terminal velocity). Set to 0 to disable.")]
         [SerializeField] private float maxFallSpeedMetersPerSecond = 50f;
 
+        [Header("Wall Clearance")]
+        [SerializeField] private bool constrainToCellWalls = true;
+        [SerializeField] private float wallClearanceRadius = 0.30f;
+        [SerializeField] private int wallConstraintIterations = 4;
+
         // Internal vertical velocity (for gravity, jumps, etc.)
         private Vector3 verticalVelocity = Vector3.zero;
 
@@ -293,12 +298,17 @@ namespace DogGame.Modules
             // --- 6. Apply leash constraint (position-level clamp)
             Vector3 constrainedPosition = proposedPosition;
 
+            if (constrainToCellWalls)
+            {
+                constrainedPosition = ConstrainPositionToWalls(bodyRoot.position, constrainedPosition);
+            }
+
             //var leashSystem = world?.GetSubsystem<LeashSystem>(); // or however you access subsystems
             if (dir.leashSystem != null)
             {
                 // If this MotionModule belongs to an agent WorldObject, pass it.
                 // Adapt the cast/type to your actual agent class.
-                constrainedPosition = dir.leashSystem.ConstrainDesiredPosition(worldObject, proposedPosition);
+                constrainedPosition = dir.leashSystem.ConstrainDesiredPosition(worldObject, constrainedPosition);
             }
 
             // --- 7. Commit
@@ -315,6 +325,321 @@ namespace DogGame.Modules
             }
 
             //Debug.Log($"{worldObject.DisplayName}:MotionModule.ApplyMotion complete");
+        }
+
+        private Vector3 ConstrainPositionToWalls(Vector3 fromWorld, Vector3 toWorld)
+        {
+            if (dir == null || dir.gen == null || dir.gen.cfg == null || !dir.gen.buildComplete || dir.gen.cellGrid == null)
+                return toWorld;
+
+            float clearance = Mathf.Max(0f, wallClearanceRadius);
+            if (clearance <= 0f)
+                return toWorld;
+
+            Vector3 fromMap3 = worldObject != null ? worldObject.WorldToMapPosition(fromWorld) : fromWorld;
+            Vector3 toMap3 = worldObject != null ? worldObject.WorldToMapPosition(toWorld) : toWorld;
+            Vector2 from = new Vector2(fromMap3.x, fromMap3.z);
+            Vector2 to = new Vector2(toMap3.x, toMap3.z);
+            Vector2 resolved = ResolveGridConstraints(from, to, clearance, Mathf.Max(1, wallConstraintIterations));
+
+            Vector3 resolvedMap = new Vector3(resolved.x, toMap3.y, resolved.y);
+            return worldObject != null ? worldObject.MapToWorldPosition(resolvedMap) : resolvedMap;
+        }
+
+        private Vector2 ResolveGridConstraints(Vector2 from, Vector2 to, float radius, int maxIters)
+        {
+            Cleanup(ref from);
+            Cleanup(ref to);
+
+            int width = dir.gen.cfg.mapWidth;
+            int height = dir.gen.cfg.mapHeight;
+            Vector2 final = from;
+
+            float xmin = radius;
+            float xmax = width - radius;
+            float ymin = radius;
+            float ymax = height - radius;
+            to.x = Mathf.Clamp(to.x, xmin, xmax);
+            to.y = Mathf.Clamp(to.y, ymin, ymax);
+
+            if ((from - to).sqrMagnitude < 1e-10f)
+                return to;
+
+            for (int iter = 0; iter < maxIters; iter++)
+            {
+                int cellX = Mathf.FloorToInt(from.x);
+                int cellY = Mathf.FloorToInt(from.y);
+
+                if (!TryGetCell(cellX, cellY, out Cell cell))
+                    return final;
+
+                float cxmin = Mathf.Max(cellX - 1f + radius, xmin);
+                float cxmax = Mathf.Min(cellX + 2f - radius, xmax);
+                float cymin = Mathf.Max(cellY - 1f + radius, ymin);
+                float cymax = Mathf.Min(cellY + 2f - radius, ymax);
+
+                if (EdgeBlocked(from, cellX, cellY, DirFlags.E, radius)) cxmax = Mathf.Min(cxmax, cellX + 1f - radius);
+                if (EdgeBlocked(from, cellX, cellY, DirFlags.W, radius)) cxmin = Mathf.Max(cxmin, cellX + 0f + radius);
+                if (EdgeBlocked(from, cellX, cellY, DirFlags.N, radius)) cymax = Mathf.Min(cymax, cellY + 1f - radius);
+                if (EdgeBlocked(from, cellX, cellY, DirFlags.S, radius)) cymin = Mathf.Max(cymin, cellY + 0f + radius);
+
+                Vector2 tempTarget = new Vector2(
+                    Mathf.Clamp(to.x, cxmin, cxmax),
+                    Mathf.Clamp(to.y, cymin, cymax)
+                );
+
+                Vector2 onTheWay = tempTarget;
+                Vector2 moveDir = to - from;
+                float tempDistance = (tempTarget - from).magnitude;
+
+                if (moveDir.sqrMagnitude > 1e-8f)
+                {
+                    moveDir.Normalize();
+                    Vector2 startLocal = new Vector2(from.x - cellX, from.y - cellY);
+
+                    if (TryDistanceToDiagonalWall(cell, startLocal, moveDir, 1f, radius, out float diagonalDist) &&
+                        diagonalDist >= 0f &&
+                        diagonalDist <= tempDistance)
+                    {
+                        Vector2 hit = from + moveDir * diagonalDist;
+                        Vector2 remaining = tempTarget - hit;
+                        GetDiagonalTangentAndNormal(cell, out Vector2 tangent, out Vector2 normal);
+
+                        float slideLength = Vector2.Dot(remaining, tangent);
+                        Vector2 slideTarget = hit + tangent * slideLength;
+                        slideTarget = new Vector2(
+                            Mathf.Clamp(slideTarget.x, cxmin, cxmax),
+                            Mathf.Clamp(slideTarget.y, cymin, cymax)
+                        );
+
+                        const float epsilon = 1e-4f;
+                        slideTarget += (-normal) * epsilon;
+                        onTheWay = slideTarget;
+                    }
+                }
+
+                final = onTheWay;
+
+                if ((onTheWay - to).sqrMagnitude < 1e-10f)
+                    break;
+
+                if ((onTheWay - from).sqrMagnitude < 1e-10f)
+                    break;
+
+                from = onTheWay;
+            }
+
+            Cleanup(ref final);
+            return final;
+        }
+
+        private bool TryGetCell(int x, int y, out Cell cell)
+        {
+            cell = null;
+
+            if (dir == null || dir.gen == null || dir.gen.cellGrid == null || !dir.gen.In(x, y))
+                return false;
+
+            cell = dir.gen.cellGrid[x, y];
+            return cell != null;
+        }
+
+        private bool EdgeBlocked(Vector2 currentPosition, int x, int y, DirFlags dirFlag, float radius)
+        {
+            if (!TryGetCell(x, y, out Cell cell))
+                return true;
+
+            Vector2Int step = dirFlag.ToVector2Int();
+            TryGetCell(x + step.x, y + step.y, out Cell neighborCell);
+            DirFlags opposite = dirFlag.Opposite();
+
+            bool sharedDoor =
+                (cell.doors & dirFlag) != 0 ||
+                (neighborCell != null && (neighborCell.doors & opposite) != 0);
+
+            if (sharedDoor)
+                return false;
+
+            bool hasWall =
+                (cell.walls & dirFlag) != 0 ||
+                (neighborCell != null && (neighborCell.walls & opposite) != 0);
+
+            bool blockedByEndWall = (EndOfWallBlockers(currentPosition, x, y, radius) & dirFlag) != 0;
+            return hasWall || blockedByEndWall;
+        }
+
+        private DirFlags EndOfWallBlockers(Vector2 worldXZ, int x, int y, float radius)
+        {
+            Cleanup(ref worldXZ);
+
+            float localX = worldXZ.x % 1f;
+            float localY = worldXZ.y % 1f;
+            float oneMinusRadius = 1f - radius;
+            CleanupFloat(ref localX);
+            CleanupFloat(ref localY);
+
+            bool southEdge = localY < radius;
+            bool northEdge = localY > oneMinusRadius;
+            bool westEdge = localX < radius;
+            bool eastEdge = localX > oneMinusRadius;
+
+            bool southEndWall = false;
+            bool northEndWall = false;
+            bool westEndWall = false;
+            bool eastEndWall = false;
+
+            Cell southCell = GetNeighborOrEmpty(x, y - 1);
+            Cell northCell = GetNeighborOrEmpty(x, y + 1);
+            Cell westCell = GetNeighborOrEmpty(x - 1, y);
+            Cell eastCell = GetNeighborOrEmpty(x + 1, y);
+
+            if (eastEdge)
+            {
+                southEndWall = (southCell.walls & DirFlags.E) != 0;
+                northEndWall = (northCell.walls & DirFlags.E) != 0;
+            }
+            if (westEdge)
+            {
+                southEndWall = (southCell.walls & DirFlags.W) != 0;
+                northEndWall = (northCell.walls & DirFlags.W) != 0;
+            }
+            if (northEdge)
+            {
+                westEndWall = (westCell.walls & DirFlags.N) != 0;
+                eastEndWall = (eastCell.walls & DirFlags.N) != 0;
+            }
+            if (southEdge)
+            {
+                westEndWall = (westCell.walls & DirFlags.S) != 0;
+                eastEndWall = (eastCell.walls & DirFlags.S) != 0;
+            }
+
+            return (northEndWall ? DirFlags.N : DirFlags.None)
+                 | (southEndWall ? DirFlags.S : DirFlags.None)
+                 | (westEndWall ? DirFlags.W : DirFlags.None)
+                 | (eastEndWall ? DirFlags.E : DirFlags.None);
+        }
+
+        private Cell GetNeighborOrEmpty(int x, int y)
+        {
+            if (TryGetCell(x, y, out Cell cell))
+                return cell;
+
+            return new Cell(x, y)
+            {
+                walls = DirFlags.None,
+                doors = DirFlags.None,
+            };
+        }
+
+        private static void CleanupFloat(ref float value, bool stayInSameCell = true)
+        {
+            float rounded = Mathf.Round(value * 100f) / 100f;
+
+            if (stayInSameCell)
+            {
+                float cell = Mathf.Floor(value);
+                rounded = Mathf.Clamp(rounded, cell, cell + 0.99f);
+            }
+
+            value = rounded;
+        }
+
+        private static void Cleanup(ref Vector2 value, bool stayInSameCell = true)
+        {
+            CleanupFloat(ref value.x, stayInSameCell);
+            CleanupFloat(ref value.y, stayInSameCell);
+        }
+
+        private static bool TryDistanceToDiagonalWall(
+            Cell cell,
+            Vector2 startLocal,
+            Vector2 direction,
+            float cellSize,
+            float agentRadius,
+            out float distance)
+        {
+            distance = 0f;
+
+            DiagonalOpenDirection diag = GetDiagonalOpenDirection(cell.walls, cell.doors);
+            if (diag == DiagonalOpenDirection.None)
+                return false;
+
+            float a;
+            float b;
+            float c;
+            float clearanceOffset = (agentRadius / Mathf.Max(1e-5f, cellSize)) * 1.41421356f;
+
+            switch (diag)
+            {
+                case DiagonalOpenDirection.NE:
+                    a = 1f; b = 1f; c = 1f + clearanceOffset;
+                    break;
+                case DiagonalOpenDirection.SW:
+                    a = 1f; b = 1f; c = clearanceOffset;
+                    break;
+                case DiagonalOpenDirection.SE:
+                    a = 1f; b = -1f; c = clearanceOffset;
+                    break;
+                case DiagonalOpenDirection.NW:
+                    a = 1f; b = -1f; c = -(1f - clearanceOffset);
+                    break;
+                default:
+                    return false;
+            }
+
+            float denom = a * direction.x + b * direction.y;
+            if (Mathf.Abs(denom) < 1e-6f)
+                return false;
+
+            float num = cellSize * c - (a * startLocal.x + b * startLocal.y);
+            float t = num / denom;
+            Vector2 hit = startLocal + direction * t;
+
+            if (hit.x < -1e-4f || hit.x > cellSize + 1e-4f || hit.y < -1e-4f || hit.y > cellSize + 1e-4f)
+                return false;
+
+            distance = t;
+            return true;
+        }
+
+        private static DiagonalOpenDirection GetDiagonalOpenDirection(DirFlags walls, DirFlags doors)
+        {
+            if (walls.Count() != 2 || doors != DirFlags.None)
+                return DiagonalOpenDirection.None;
+
+            if ((walls & (DirFlags.N | DirFlags.E)) == (DirFlags.N | DirFlags.E)) return DiagonalOpenDirection.SW;
+            if ((walls & (DirFlags.S | DirFlags.E)) == (DirFlags.S | DirFlags.E)) return DiagonalOpenDirection.NW;
+            if ((walls & (DirFlags.S | DirFlags.W)) == (DirFlags.S | DirFlags.W)) return DiagonalOpenDirection.NE;
+            if ((walls & (DirFlags.N | DirFlags.W)) == (DirFlags.N | DirFlags.W)) return DiagonalOpenDirection.SE;
+            return DiagonalOpenDirection.None;
+        }
+
+        private static void GetDiagonalTangentAndNormal(Cell cell, out Vector2 tangent, out Vector2 normal)
+        {
+            switch (GetDiagonalOpenDirection(cell.walls, cell.doors))
+            {
+                case DiagonalOpenDirection.NE:
+                    tangent = new Vector2(1f, -1f).normalized;
+                    normal = new Vector2(1f, 1f).normalized;
+                    break;
+                case DiagonalOpenDirection.SW:
+                    tangent = new Vector2(1f, -1f).normalized;
+                    normal = new Vector2(-1f, -1f).normalized;
+                    break;
+                case DiagonalOpenDirection.SE:
+                    tangent = new Vector2(1f, 1f).normalized;
+                    normal = new Vector2(1f, -1f).normalized;
+                    break;
+                case DiagonalOpenDirection.NW:
+                    tangent = new Vector2(1f, 1f).normalized;
+                    normal = new Vector2(-1f, 1f).normalized;
+                    break;
+                default:
+                    tangent = Vector2.zero;
+                    normal = Vector2.zero;
+                    break;
+            }
         }
 
         private Vector3 ComputeHorizontalVelocity(

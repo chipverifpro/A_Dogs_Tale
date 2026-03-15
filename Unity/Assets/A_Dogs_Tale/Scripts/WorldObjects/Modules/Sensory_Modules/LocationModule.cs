@@ -25,11 +25,12 @@ namespace DogGame.Modules
     public class LocationModule : WorldModule
     {
         public Vector3 pos3d_world => this.transform.position;
+        public Vector3 pos3d_map => worldObject != null ? worldObject.WorldToMapPosition(pos3d_world) : pos3d_world;
 
-        // translate and decompose pos3d_world into map space
-        public float x_f => pos3d_world.x;
-        public float y_f => pos3d_world.z;  // map Y is world Z
-        public float z_f => pos3d_world.y;  // map Z (height) is world Y
+        // translate and decompose world-space position into map space
+        public float x_f => pos3d_map.x;
+        public float y_f => pos3d_map.z;  // map Y is world Z
+        public float z_f => pos3d_map.y;  // map Z (height) is world Y
         public float height_f => z_f;
 
         public int x => Mathf.FloorToInt(x_f);

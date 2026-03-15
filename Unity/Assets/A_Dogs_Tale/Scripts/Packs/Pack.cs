@@ -119,7 +119,8 @@ public class Pack : MonoBehaviour
         {
             if (member != null && member != packLeader)
             {
-                member.motionModule.Teleport(new Vector3(leaderPos2.x, leaderHeight, leaderPos2.y));
+                Vector3 leaderMapPosition = new Vector3(leaderPos2.x, leaderHeight, leaderPos2.y);
+                member.motionModule.Teleport(member.MapToWorldPosition(leaderMapPosition));
                 member.appearanceModule.camera_refresh_needed = true;
                 //member.next_formationCrumb.valid = false; // clear formation target
                 Debug.Log($"Teleported {member.name} to leader at {leaderPos2.x}, {leaderPos2.y}, {leaderHeight}");
@@ -304,4 +305,3 @@ public class Pack : MonoBehaviour
 
     }
 }
-
