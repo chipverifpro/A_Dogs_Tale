@@ -52,6 +52,22 @@ namespace DogGame.Modules
                                                 //   (should be radius of agent + radius of target)
                                                 // also used as follow distance when continuing to follow agents.
                                                 //   (should be packModule.followDistanceMeters)
+
+        [Header("Pathfinding")]
+        [SerializeField] private bool useGridPathfinding = true;
+        [SerializeField] private float pathWaypointArrivalRadius = 0.20f;
+        [SerializeField] private float pathSmoothingIntervalSeconds = 0.20f;
+        [SerializeField] private float movingTargetRepathIntervalSeconds = 0.20f;
+        [SerializeField] private bool enablePathDebugLogging = false;
+        private readonly List<Vector2Int> activePathCells = new();
+        private int activePathIndex = -1;
+        private Vector2Int activePathGoalCell;
+        private bool hasActivePath = false;
+        private float smoothingCooldownSeconds = 0f;
+        private float movingTargetRepathCooldownSeconds = 0f;
+        private Vector2Int lastKnownTargetObjectCell;
+        private bool hasLastKnownTargetObjectCell = false;
+        private Pathfinding pathfinding;
         
         [Header("Acceleration")]
         [Tooltip("Acceleration toward desired velocity in meters per second squared.")]
@@ -92,6 +108,12 @@ namespace DogGame.Modules
         protected override void Awake()
         {
             base.Awake();
+            EnsureRuntimeReferences();
+        }
+
+        private void OnEnable()
+        {
+            EnsureRuntimeReferences();
         }
 
         // this just forwards the change to motionModule where it is kept.
@@ -103,10 +125,7 @@ namespace DogGame.Modules
         // Set target in world location space, and we will travel to it until arrived.
         public void SetDesiredTargetLocation(Vector3 targetLocation_world)
         {
-            this.targetLocation = targetLocation_world;
-            // clear the target object or targetLocation will get overwritten every tick.
-            this.targetObject = null;
-            this.keepFollowingTargetObject = false;
+            SetDesiredTargetLocation(targetLocation_world, WalkMode.None, requestPathfinding: true);
         }
 
         // Set target once, and we will keep following it until we arrive.
@@ -114,6 +133,9 @@ namespace DogGame.Modules
         {
             this.targetObject = target;
             this.keepFollowingTargetObject = keepFollowing;
+            this.targetLocation = target != null ? target.pos3d_world : null;
+            CacheTargetObjectCell();
+            RebuildPathToCurrentTarget(forceRebuild: true);
         }
 
         public void ClearDesiredTarget()
@@ -126,11 +148,15 @@ namespace DogGame.Modules
         {
             targetObject = null;
             keepFollowingTargetObject = false;
+            hasLastKnownTargetObjectCell = false;
+            movingTargetRepathCooldownSeconds = 0f;
         }
 
         public void ClearDesiredTargetLocation()
         {
             targetLocation = null;
+            ClearActivePath();
+            hasLastKnownTargetObjectCell = false;
         }
 
         public void UpdateDesiredVelocityFromTargetIfAny()
@@ -140,30 +166,277 @@ namespace DogGame.Modules
                 
             }
         }
+
+        private bool EnsureRuntimeReferences()
+        {
+            if (pathfinding == null)
+            {
+                pathfinding = dir != null
+                    ? (dir.pathfinding != null ? dir.pathfinding : FindFirstObjectByType<Pathfinding>())
+                    : FindFirstObjectByType<Pathfinding>();
+            }
+
+            if (dir != null && dir.pathfinding == null && pathfinding != null)
+                dir.pathfinding = pathfinding;
+
+            return worldObject != null && worldObject.motionModule != null;
+        }
+
+        private void ClearActivePath()
+        {
+            activePathCells.Clear();
+            activePathIndex = -1;
+            hasActivePath = false;
+            smoothingCooldownSeconds = 0f;
+        }
+
+        private void CacheTargetObjectCell()
+        {
+            if (targetLocation.HasValue && TryGetGridCell(targetLocation.Value, out Vector2Int cell))
+            {
+                lastKnownTargetObjectCell = cell;
+                hasLastKnownTargetObjectCell = true;
+            }
+            else
+            {
+                hasLastKnownTargetObjectCell = false;
+            }
+        }
+
+        private bool TryGetGridCell(Vector3 worldPosition, out Vector2Int cell)
+        {
+            cell = default;
+
+            if (dir == null || dir.gen == null || !dir.gen.buildComplete || dir.gen.cellGrid == null)
+                return false;
+
+            int x = Mathf.FloorToInt(worldPosition.x);
+            int y = Mathf.FloorToInt(worldPosition.z);
+            if (!dir.gen.In(x, y))
+                return false;
+
+            if (dir.gen.cellGrid[x, y] == null)
+                return false;
+
+            cell = new Vector2Int(x, y);
+            return true;
+        }
+
+        private bool TryGetGridCellData(Vector2Int pos, out Cell cell)
+        {
+            cell = null;
+
+            if (dir == null || dir.gen == null || dir.gen.cellGrid == null || !dir.gen.In(pos.x, pos.y))
+                return false;
+
+            cell = dir.gen.cellGrid[pos.x, pos.y];
+            return cell != null;
+        }
+
+        private Vector3 CellCenterWorld(Vector2Int cell, float fallbackHeight)
+        {
+            float height = fallbackHeight;
+            if (dir != null && dir.gen != null && dir.gen.cellGrid != null && dir.gen.In(cell.x, cell.y))
+            {
+                Cell gridCell = dir.gen.cellGrid[cell.x, cell.y];
+                if (gridCell != null)
+                    height = gridCell.height;
+            }
+
+            return new Vector3(cell.x + 0.5f, height, cell.y + 0.5f);
+        }
+
+        private bool RebuildPathToCurrentTarget(bool forceRebuild = false)
+        {
+            if (!useGridPathfinding || targetLocation == null)
+            {
+                ClearActivePath();
+                return false;
+            }
+
+            if (!EnsureRuntimeReferences() || pathfinding == null)
+            {
+                ClearActivePath();
+                return false;
+            }
+
+            if (!TryGetGridCell(worldObject.pos3d_world, out Vector2Int startCell) ||
+                !TryGetGridCell(targetLocation.Value, out Vector2Int goalCell))
+            {
+                ClearActivePath();
+                return false;
+            }
+
+            if (!forceRebuild && hasActivePath && goalCell == activePathGoalCell)
+                return true;
+
+            List<Vector2Int> path = pathfinding.FindPath(startCell, goalCell);
+            ClearActivePath();
+            activePathGoalCell = goalCell;
+
+            if (path.Count <= 1)
+                return false;
+
+            for (int i = 1; i < path.Count; i++)
+                activePathCells.Add(path[i]);
+
+            hasActivePath = activePathCells.Count > 0;
+            activePathIndex = hasActivePath ? 0 : -1;
+            smoothingCooldownSeconds = 0f;
+
+            TrySmoothActivePath(force: true);
+
+            if (enablePathDebugLogging)
+                Debug.Log($"[AgentMovementModule] {worldObject.DisplayName} path cells={activePathCells.Count} start={startCell} goal={goalCell}", this);
+
+            return hasActivePath;
+        }
+
+        private bool FollowActivePath()
+        {
+            if (!hasActivePath || activePathIndex < 0 || activePathIndex >= activePathCells.Count)
+                return false;
+
+            while (activePathIndex < activePathCells.Count)
+            {
+                Vector3 waypoint = CellCenterWorld(activePathCells[activePathIndex], worldObject.locationModule.height);
+                if (!PointTowardWorldLocation(waypoint, pathWaypointArrivalRadius))
+                    return true;
+
+                activePathIndex++;
+                smoothingCooldownSeconds = 0f;
+                TrySmoothActivePath(force: true);
+            }
+
+            ClearActivePath();
+            return false;
+        }
+
+        private void TrySmoothActivePath(bool force = false)
+        {
+            if (!hasActivePath || activePathIndex < 0 || activePathIndex >= activePathCells.Count)
+                return;
+
+            if (!force)
+            {
+                if (smoothingCooldownSeconds > 0f)
+                    return;
+
+                smoothingCooldownSeconds = pathSmoothingIntervalSeconds;
+            }
+
+            if (!TryGetGridCell(worldObject.pos3d_world, out Vector2Int currentCellPos))
+                return;
+
+            if (!TryGetGridCellData(currentCellPos, out Cell currentCell))
+                return;
+
+            int roomIndex = currentCell.room_number;
+            if (dir == null || dir.gen == null || dir.gen.rooms == null || roomIndex < 0 || roomIndex >= dir.gen.rooms.Count)
+                return;
+
+            Room room = dir.gen.rooms[roomIndex];
+            if (room == null)
+                return;
+
+            int furthestVisibleIndex = activePathIndex;
+            for (int i = activePathIndex; i < activePathCells.Count; i++)
+            {
+                Vector2Int candidatePos = activePathCells[i];
+                if (!TryGetGridCellData(candidatePos, out Cell candidateCell))
+                    break;
+
+                if (candidateCell.room_number != roomIndex)
+                    break;
+
+                if (!RoomLOS.HasLineOfSight(room, currentCellPos, candidatePos))
+                    break;
+
+                furthestVisibleIndex = i;
+            }
+
+            if (furthestVisibleIndex > activePathIndex)
+            {
+                if (enablePathDebugLogging)
+                    Debug.Log($"[AgentMovementModule] {worldObject.DisplayName} smoothed path index {activePathIndex} -> {furthestVisibleIndex}", this);
+
+                activePathIndex = furthestVisibleIndex;
+            }
+        }
+
+        private void UpdateTargetObjectAndMaybeRepath()
+        {
+            if (targetObject == null)
+                return;
+
+            targetLocation = targetObject.pos3d_world;
+
+            if (!useGridPathfinding)
+                return;
+
+            if (!targetLocation.HasValue || !TryGetGridCell(targetLocation.Value, out Vector2Int targetCell))
+            {
+                hasLastKnownTargetObjectCell = false;
+                return;
+            }
+
+            if (!hasLastKnownTargetObjectCell)
+            {
+                lastKnownTargetObjectCell = targetCell;
+                hasLastKnownTargetObjectCell = true;
+                return;
+            }
+
+            if (targetCell == lastKnownTargetObjectCell)
+                return;
+
+            if (movingTargetRepathCooldownSeconds > 0f)
+            {
+                lastKnownTargetObjectCell = targetCell;
+                return;
+            }
+
+            lastKnownTargetObjectCell = targetCell;
+            movingTargetRepathCooldownSeconds = movingTargetRepathIntervalSeconds;
+
+            if (enablePathDebugLogging)
+                Debug.Log($"[AgentMovementModule] {worldObject.DisplayName} repathing for moving target cell={targetCell}", this);
+
+            RebuildPathToCurrentTarget(forceRebuild: true);
+        }
+
+        private bool PointTowardWorldLocation(Vector3 targetLocation_world, float stopDistance = 0f)
+        {
+            maxDistance = 1f;
+
+            Vector3 desired_move = targetLocation_world - worldObject.pos3d_world;
+            desired_move.y = 0f;
+
+            float distanceToTarget = desired_move.magnitude;
+            if (distanceToTarget <= stopDistance)
+            {
+                maxDistance = 0f;
+                desiredVelocity = Vector3.zero;
+                return true;
+            }
+
+            float remainingDistance = Mathf.Max(0f, distanceToTarget - stopDistance);
+            maxDistance = Mathf.Clamp(Mathf.Min(remainingDistance, 1f), 0f, 1f);
+            SetDesiredMove(desired_move, maxDistance: maxDistance);
+            return false;
+        }
+
         // Called every tick when a target object is not null.  Finds target and heads to it.
         // (DecisionModule probably should check if we can still see it or still guess it's location)
         public void PointTowardTargetObjectLocation()
         {
-            //Vector3 targetLocation_world=Vector3.zero;
-            maxDistance = 1f;
             if (targetObject!=null) 
             {
-                //if (targetObject.locationModule!=null)
                 targetLocation = targetObject.pos3d_world;
             }
 
             if (targetLocation == null) 
-            {
                 return;
-            }
-
-            // find our location
-            Vector3 ourLocation_world = worldObject.pos3d_world;
-
-            // direction and distance to target for move command.
-            Vector3 desired_move = (Vector3)targetLocation - ourLocation_world;
-            
-            float distanceToTarget = desired_move.magnitude;
 
             // determine if we should limit the distance travelled (because we are close)
             float stopDistanceFromTarget;
@@ -174,16 +447,12 @@ namespace DogGame.Modules
                 else
                     stopDistanceFromTarget = stopDistanceFromObject;
             }
-            else // not an object, point all the way to destination.
-                stopDistanceFromTarget = 999f;
+            else
+            {
+                stopDistanceFromTarget = 0f;
+            }
 
-            // clamp maxDistance if we are very close to avoid overshoot and stop at correct distance.
-            maxDistance = Mathf.Min(distanceToTarget, distanceToTarget-stopDistanceFromTarget, 1f); // never more than 1.0 per tick or we may end up running THROUGH walls.
-
-            // We now have desired_move = a vector to the destination we want to go.
-            //             
-            // note: no need to normalize, it will be done in the function.
-            SetDesiredMove(desired_move);
+            PointTowardWorldLocation(targetLocation.Value, stopDistanceFromTarget);
         }
 
         /// <summary>
@@ -200,7 +469,8 @@ namespace DogGame.Modules
             if (worldDirection01.sqrMagnitude > 1f)
                 worldDirection01.Normalize();               // unit vector
 
-            //speedFactor01 = Mathf.Clamp01(speedFactor);  // removed clamp to allow downhill speeds faster than 1.0x
+            this.maxDistance = Mathf.Max(0f, maxDistance);
+            speedFactor01 = Mathf.Max(0f, speedFactor);
 
             // If requested, change the walk mode
             if (changeWalkMode != WalkMode.None)
@@ -255,10 +525,22 @@ namespace DogGame.Modules
 
             if (worldObject.motionModule == null)
                 return;
+
+            if (smoothingCooldownSeconds > 0f)
+                smoothingCooldownSeconds = Mathf.Max(0f, smoothingCooldownSeconds - deltaTime);
+            if (movingTargetRepathCooldownSeconds > 0f)
+                movingTargetRepathCooldownSeconds = Mathf.Max(0f, movingTargetRepathCooldownSeconds - deltaTime);
+
             //Debug.Log($"{worldObject.DisplayName}:targetObject={targetObject},targetLocation={targetLocation}");
             if (targetObject != null || targetLocation != null)
             {
-                PointTowardTargetObjectLocation();   // sets targetLocation to point to the object if present, then GoTowardLocation.
+                UpdateTargetObjectAndMaybeRepath();
+
+                RebuildPathToCurrentTarget();
+                TrySmoothActivePath();
+
+                if (!FollowActivePath())
+                    PointTowardTargetObjectLocation();
             }
 
             // Decide which rate to use: acceleration vs deceleration
@@ -293,13 +575,18 @@ namespace DogGame.Modules
             targetObject = null;
             targetLocation = null;
             desiredVelocity = Vector3.zero;
+            ClearActivePath();
         }
 
-        public void SetDesiredTargetLocation(Vector3 targetLocation_world, WalkMode mode = WalkMode.Walk)
+        public void SetDesiredTargetLocation(Vector3 targetLocation_world, WalkMode mode = WalkMode.Walk, bool requestPathfinding = true)
         {
             targetObject = null;
             targetLocation = targetLocation_world;
             walkMode = mode;
+            if (requestPathfinding)
+                RebuildPathToCurrentTarget(forceRebuild: true);
+            else
+                ClearActivePath();
         }
 
         // function name is redundant to above function, but this one includes WalkMode.  Which is preferable to use?

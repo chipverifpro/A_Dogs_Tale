@@ -1,6 +1,7 @@
 #nullable enable
 using UnityEngine;
 using DogGame.LLM;
+using DogGame.Modules;
 
 namespace DogGame.Tasks
 {
@@ -25,9 +26,10 @@ namespace DogGame.Tasks
 
         public bool SetMoveTarget(Vector3 worldPosition)
         {
-            // Intent only: tell the movement module "go there".
-            // You mentioned you have SetDesiredTargetLocation(Vector3 targetLocation_world)
-            worldObject.agentMovementModule.SetDesiredTargetLocation(worldPosition);
+            worldObject.agentMovementModule.SetDesiredTargetLocation(
+                worldPosition,
+                mode: WalkMode.Walk,
+                requestPathfinding: true);
             return true;
         }
 

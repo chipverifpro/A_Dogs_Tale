@@ -9,6 +9,27 @@ public class Pathfinding : MonoBehaviour
 {
     public Dir dir;
 
+    private void Awake()
+    {
+        EnsureRuntimeReferences();
+    }
+
+    private void OnEnable()
+    {
+        EnsureRuntimeReferences();
+    }
+
+    private bool EnsureRuntimeReferences()
+    {
+        if (dir == null)
+            dir = Dir.Instance ?? FindFirstObjectByType<Dir>();
+
+        if (dir != null && dir.pathfinding == null)
+            dir.pathfinding = this;
+
+        return dir != null && dir.gen != null && dir.gen.cellGrid != null;
+    }
+
     // Map Dir8 -> integer offsets
     static readonly Vector2Int[] Offsets = new Vector2Int[8]
     {
@@ -43,6 +64,9 @@ public class Pathfinding : MonoBehaviour
         int maxNodesExpanded = 10000)
     {
         var result = new List<Vector2Int>();
+        if (!EnsureRuntimeReferences())
+            return result;
+
         if (start == goal) { result.Add(start); return result; }
 
         // Open set (min-heap by fScore)
@@ -230,6 +254,9 @@ public class Pathfinding : MonoBehaviour
     {
         Cell startCell;
         Cell destCell;
+
+        if (!EnsureRuntimeReferences())
+            return 0f;
 
         // if either endpoint is out-of-bounds, return blocked.
         if (!dir.gen.In(start.x, start.y)) return 0f;

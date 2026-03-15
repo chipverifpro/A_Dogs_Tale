@@ -20,7 +20,7 @@ public class Dir : MonoBehaviour
     public DungeonGenerator gen;
     public DungeonGUISelector dungeonGUISelector;
     public DungeonBuildSettingsUI dungeonBuildSettingsUI;
-    //public Pathfinding pathfinding;
+    public Pathfinding pathfinding;
 
 
     [Header("Audio Objects")]
@@ -88,6 +88,7 @@ public class Dir : MonoBehaviour
             return;
 
         if (gameInputRouter==null) gameInputRouter=FindFirstObjectByType<GameInputRouter>();
+        if (pathfinding == null) pathfinding = FindFirstObjectByType<Pathfinding>();
         pass_num = 0;
         AllReady = false;
         ValidateDirectory();
@@ -100,6 +101,8 @@ public class Dir : MonoBehaviour
 
         if (gameInputRouter == null)
             gameInputRouter = FindFirstObjectByType<GameInputRouter>();
+        if (pathfinding == null)
+            pathfinding = FindFirstObjectByType<Pathfinding>();
     }
 
     private bool TryRegisterSingletonInstance()

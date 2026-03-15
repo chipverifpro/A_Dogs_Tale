@@ -8147,6 +8147,10 @@ MonoBehaviour:
   targetObject: {fileID: 0}
   keepFollowingTargetObject: 0
   stopDistanceFromObject: 0
+  useGridPathfinding: 1
+  pathWaypointArrivalRadius: 0.2
+  pathSmoothingIntervalSeconds: 0.2
+  enablePathDebugLogging: 0
   accelerationMetersPerSecondSquared: 12
   decelerationMetersPerSecondSquared: 16
   enableDebugLogging: 0
@@ -11382,6 +11386,10 @@ MonoBehaviour:
   targetObject: {fileID: 6544990386685219154}
   keepFollowingTargetObject: 0
   stopDistanceFromObject: 0
+  useGridPathfinding: 1
+  pathWaypointArrivalRadius: 0.2
+  pathSmoothingIntervalSeconds: 0.2
+  enablePathDebugLogging: 0
   accelerationMetersPerSecondSquared: 12
   decelerationMetersPerSecondSquared: 16
   enableDebugLogging: 0
@@ -13338,6 +13346,7 @@ MonoBehaviour:
   gen: {fileID: 409665914}
   dungeonGUISelector: {fileID: 2032406100}
   dungeonBuildSettingsUI: {fileID: 2015256706}
+  pathfinding: {fileID: 0}
   audioPlayer: {fileID: 215243009}
   audioCatalog: {fileID: 215243011}
   audioMixerGroups: {fileID: 215243010}
@@ -14871,6 +14880,10 @@ MonoBehaviour:
   targetObject: {fileID: 0}
   keepFollowingTargetObject: 0
   stopDistanceFromObject: 0
+  useGridPathfinding: 1
+  pathWaypointArrivalRadius: 0.2
+  pathSmoothingIntervalSeconds: 0.2
+  enablePathDebugLogging: 0
   accelerationMetersPerSecondSquared: 12
   decelerationMetersPerSecondSquared: 16
   enableDebugLogging: 0
@@ -15275,6 +15288,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2140542027}
+  - component: {fileID: 2140542028}
   m_Layer: 0
   m_Name: Agents
   m_TagString: Untagged
@@ -15299,6 +15313,19 @@ Transform:
   - {fileID: 1168471414}
   m_Father: {fileID: 1767335688}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2140542028
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2140542026}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1bb42b4948b4e46bfaf958b4a4ca94e0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Pathfinding
+  dir: {fileID: 1920128612}
 --- !u!4 &6191479115019793372 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 7997089769847479514, guid: 2ce0050a816054aaca2a1076f182f7a8,
@@ -15652,6 +15679,10 @@ MonoBehaviour:
   targetObject: {fileID: 0}
   keepFollowingTargetObject: 0
   stopDistanceFromObject: 0
+  useGridPathfinding: 1
+  pathWaypointArrivalRadius: 0.2
+  pathSmoothingIntervalSeconds: 0.2
+  enablePathDebugLogging: 0
   accelerationMetersPerSecondSquared: 12
   decelerationMetersPerSecondSquared: 16
   enableDebugLogging: 0
