@@ -10509,6 +10509,9 @@ MonoBehaviour:
   runOnStart: 1
   practically_zero: 0.0001
   elementStore: {fileID: 11400000, guid: 12ce8f64c30bc4bbfa007792bc781b21, type: 2}
+  enableScentDiagnostics: 1
+  scentDiagnosticsEveryNFrames: 500
+  logScentReclamation: 0
   scentVisualThreshold: 0.00390625
   maxVisualIntensity: 0.5
   airBaseColor: {r: 0.2, g: 1, b: 1, a: 1}
