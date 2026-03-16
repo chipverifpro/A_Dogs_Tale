@@ -109,6 +109,7 @@ namespace DogGame.LLM
             return cachedClient!;
         }
 
+        /*
         /// <summary>
         /// Optional: call this if you change settings at runtime and need fresh clients.
         /// </summary>
@@ -116,6 +117,7 @@ namespace DogGame.LLM
         {
             cachedClient = null;
         }
+        */
 
         // --- runtime-only ---
         [NonSerialized] private readonly Dictionary<string, float> requestStartTimes = new();
@@ -685,6 +687,7 @@ public class LLMWorldScheduler : MonoBehaviour
         return best;
     }
 
+    /*
     private void MarkInFlight(LLMModelSelection model, string requestId)
     {
         model.currentRequests ??= new List<string>();
@@ -701,4 +704,5 @@ public class LLMWorldScheduler : MonoBehaviour
         if (!succeeded)
             model.totalFailures++;
     }
+    */
 }

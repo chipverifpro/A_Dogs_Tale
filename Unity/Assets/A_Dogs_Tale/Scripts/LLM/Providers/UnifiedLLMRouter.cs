@@ -34,6 +34,7 @@ namespace DogGame.LLM.Providers
             InitializeClients(); 
         }
 
+        /*
         public void BeginNewSession()
         {
             CancelAll("New session");
@@ -42,6 +43,7 @@ namespace DogGame.LLM.Providers
             geminiClient?.BumpSessionToken();
             ollamaClient?.BumpSessionToken();
         }
+        */
 
         public void CancelAll(string reason)
         {

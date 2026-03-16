@@ -53,13 +53,9 @@ namespace DogGame.LLM.Agent
         /// Returns the JSON string describing available tools/tasks the LLM may reference.
         /// Source: TextAsset if provided, otherwise a minimal fallback.
         /// </summary>
+        /*
         public JObject OLD_BuildToolDefinitionsJson()
         {
-            //if (toolCatalogJson != null && !string.IsNullOrWhiteSpace(toolCatalogJson.text))
-            //    return toolCatalogJson.text.Trim();
-
-            // Minimal fallback so the field is never empty.
-            // You can replace this later with a generator over your Tasks directory.
             var fallback = new JObject
             {
                 ["schema"] = "ToolCatalogV1",
@@ -67,6 +63,7 @@ namespace DogGame.LLM.Agent
             };
             return fallback;
         }
+        */
 
         private const string ToolCatalogResourcePath = "LLM/Tools/ToolCatalogV1";
         private JObject cachedToolCatalog;
@@ -117,6 +114,7 @@ namespace DogGame.LLM.Agent
                 };
             }
         }
+        /*
         public JObject BuildToolDefinitionsJson_OLD2()
         {
             if (toolCatalogJson == null || string.IsNullOrWhiteSpace(toolCatalogJson.text))
@@ -142,6 +140,7 @@ namespace DogGame.LLM.Agent
                 };
             }
         }
+        */
 
         /// <summary>
         /// Returns the JSON string describing the expected response shape.

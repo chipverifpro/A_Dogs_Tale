@@ -14,6 +14,7 @@ namespace DogGame.LLM.Unity
     {
         private static CoroutineRunner? instance;
 
+        /*
         public static CoroutineRunner Instance
         {
             get
@@ -75,5 +76,6 @@ namespace DogGame.LLM.Unity
             if (exception != null) tcs.SetException(exception);
             else tcs.SetResult(true);
         }
+        */
     }
 }

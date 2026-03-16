@@ -5,6 +5,7 @@ namespace DogGame.LLM.Prompting
 {
     public static partial class PromptBlocks
     {
+        /*
         public static string CharacterPersonaBlock(CharacterBuild c)
         {
             var sb = new StringBuilder(512);
@@ -30,5 +31,6 @@ namespace DogGame.LLM.Prompting
 
             return sb.ToString().TrimEnd();
         }
+        */
     }
 }

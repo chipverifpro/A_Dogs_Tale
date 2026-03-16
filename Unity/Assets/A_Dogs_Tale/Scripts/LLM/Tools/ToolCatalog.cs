@@ -3,6 +3,7 @@ namespace DogGame.LLM.Tools
 {
     public static class ToolCatalog
     {
+        /*
         public static string PlanIntentionTypeListText =>
 @"ALLOWED intention.type (PlanIntentionType):
 - noop
@@ -94,6 +95,7 @@ Rules:
 - Use only the actions listed above.
 - Do NOT invent new actions.
 - If no action is appropriate, return a single noop intention.";
+        */
 
     }
 }

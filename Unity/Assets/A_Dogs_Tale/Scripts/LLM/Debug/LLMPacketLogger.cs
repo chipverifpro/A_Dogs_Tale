@@ -25,6 +25,7 @@ namespace DogGame.LLM.Debugging
             }
         }
 
+        /*
         public static void LogRequest(
             string agentId,
             string requestId,
@@ -39,6 +40,7 @@ namespace DogGame.LLM.Debugging
                 kind: "request",
                 payload: requestJson);
         }
+        */
 
         public static void LogResponse(
             string agentId,

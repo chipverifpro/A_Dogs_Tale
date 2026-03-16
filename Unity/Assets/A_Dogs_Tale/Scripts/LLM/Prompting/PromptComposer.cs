@@ -8,6 +8,7 @@ namespace DogGame.LLM.Prompting
 {
     public sealed class PromptComposer
     {
+        /*
         public LLMRequest Compose(
             string requestId,
             LLMProfile profile,
@@ -57,5 +58,6 @@ namespace DogGame.LLM.Prompting
 
             return request;
         }
+        */
     }
 }

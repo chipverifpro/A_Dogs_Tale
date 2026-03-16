@@ -7,6 +7,7 @@ namespace DogGame.LLM.Core
 {
     public static class LLMRequestPacketFormatter
     {
+        /*
         public static string BuildPacketText(LLMRequest request)
         {
             var builder = new StringBuilder(4096);
@@ -48,5 +49,6 @@ namespace DogGame.LLM.Core
 
             return builder.ToString().Trim();
         }
+        */
     }
 }

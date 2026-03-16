@@ -4,6 +4,7 @@ using Newtonsoft.Json.Linq;
 
 public static class LLMJsonBlockHelpers
 {
+    /*
     public static string NormalizeJsonForPrompt(string jsonMaybe)
     {
         if (string.IsNullOrWhiteSpace(jsonMaybe))
@@ -47,4 +48,5 @@ public static class LLMJsonBlockHelpers
             return false;
         }
     }
+    */
 }

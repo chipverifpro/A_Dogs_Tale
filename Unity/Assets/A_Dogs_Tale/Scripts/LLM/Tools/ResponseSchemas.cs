@@ -3,6 +3,7 @@ namespace DogGame.LLM.Tools
 {
     public static class ResponseSchemas
     {
+        /*
         public const string PlanResponseV1Name = "PlanResponseV1";
 
         // This is written to match PlanResponseV1Parser's expectations.
@@ -57,5 +58,6 @@ PARAMETERS REQUIREMENTS BY type:
 
 SAFETY:
 - Do NOT include disallowed control keys anywhere inside parameters (examples: teleport, setPosition, setHealth, killEntity, spawnItem, revealMap, setDoorState, etc).";
+        */
     }
 }

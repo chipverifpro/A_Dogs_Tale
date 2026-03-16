@@ -23,10 +23,12 @@ namespace DogGame.LLM.Prompting
             };
         }
 
+        /*
         public static string ContextHeader(string title)
         {
             return $"CONTEXT: {title}";
         }
+        */
 
         public static string ValidationAwareRulesBlock() =>
 @"VALIDATION RULES (must pass):
@@ -55,6 +57,7 @@ $@"REQUEST IDENTITY:
 You MUST copy requestId and agentId exactly into the JSON response.";
 
 #nullable enable
+        /*
         public static string IdentityBlock(string? species, string? job)
         {
             string speciesClean = (species ?? "").Trim();
@@ -71,6 +74,7 @@ You MUST copy requestId and agentId exactly into the JSON response.";
 
             return $"IDENTITY: Job={jobClean}.";
         }
+        */
 
         // ============ Golden Example ================
 //Optional refinement (recommended later)

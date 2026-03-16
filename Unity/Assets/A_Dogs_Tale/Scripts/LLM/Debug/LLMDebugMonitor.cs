@@ -122,6 +122,7 @@ public class LLMDebugMonitor : MonoBehaviour
         return log;
     }
 
+    /*
     private void TrimAgentLog(LLMDebugAgentLog log)
     {
         if (log == null) return;
@@ -134,18 +135,14 @@ public class LLMDebugMonitor : MonoBehaviour
 
         if (log.entries.Count <= max) return;
 
-        // Remove oldest entries (end of list) until we're at capacity.
         for (int i = log.entries.Count - 1; i >= max; i--)
         {
             var removed = log.entries[i];
 
-            // If we are trimming an entry that still has a pending response,
-            // remove it from the pending dictionary too.
             if (removed != null &&
                 removed.pendingResponse &&
                 !string.IsNullOrWhiteSpace(removed.requestId))
             {
-                // Only remove if the dictionary points to this exact entry (safe).
                 if (log.pendingByRequestId.TryGetValue(removed.requestId, out var pendingEntry) &&
                     ReferenceEquals(pendingEntry, removed))
                 {
@@ -156,6 +153,7 @@ public class LLMDebugMonitor : MonoBehaviour
             log.entries.RemoveAt(i);
         }
     }
+    */
 
 /*
     public void DebugLLMRequest_Input(string request, WorldObject agent)
@@ -230,11 +228,12 @@ public class LLMDebugMonitor : MonoBehaviour
     }
 
     // Optional helper if you want to clear all history via inspector context menu
+    /*
     [ContextMenu("Clear All LLM Debug Logs")]
     public void ClearAllLogs()
     {
         logsByAgent.Clear();
         agentIdToLog.Clear();
-        //ClearLatestFields();
     }
+    */
 }

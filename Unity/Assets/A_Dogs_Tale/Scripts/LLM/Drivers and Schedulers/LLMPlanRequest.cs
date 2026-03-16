@@ -29,6 +29,7 @@ namespace DogGame.LLM
         public Action<string> OnResponseJson;
         public float RequestTime;  
 
+        /*
         private static float UrgencyScore(LLMPlanUrgency u) => u switch
         {
             LLMPlanUrgency.Emergency => 1.0f,
@@ -36,6 +37,7 @@ namespace DogGame.LLM
             LLMPlanUrgency.Normal => 0.6f,
             _ => 0.3f
         };
+        */
 
         public LLMPlanRequestOnDemand(
             string agentId,

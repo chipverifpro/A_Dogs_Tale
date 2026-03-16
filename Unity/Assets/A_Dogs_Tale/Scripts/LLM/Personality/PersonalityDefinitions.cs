@@ -47,6 +47,7 @@ namespace DogGame.LLM.Personality
 
         public string personaBlock = "";
 
+        /*
         public string DebugSummary()
         {
             string species = string.IsNullOrWhiteSpace(speciesId) ? "none" : speciesId;
@@ -56,5 +57,6 @@ namespace DogGame.LLM.Personality
 
             return $"species={species} role={role}{legacy} complication={complication} quirks={quirkIds.Count} goals={goals.Count}";
         }
+        */
     }
 }
