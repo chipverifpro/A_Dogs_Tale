@@ -15,6 +15,7 @@ public class ScentAirGround : MonoBehaviour
 
     [Tooltip("All cells that participate in scent simulation.")]
     public List<Cell> cellsContainingScents = new List<Cell>(); // Cache a list including only cells with any scent
+    private readonly HashSet<Cell> activeScentCellSet = new();
     
     public int currentAgentId = -1;      // if this changes, redraw all scents
     public int previousAgentIdVisualized = -1;  // used to tell if currentAgentId changed
@@ -57,6 +58,11 @@ public class ScentAirGround : MonoBehaviour
     [Header("Visualization")]
     public ElementStore elementStore;   // ScriptableObject you already use
 
+    [Header("Debug")]
+    public bool enableScentDiagnostics = true;
+    public int scentDiagnosticsEveryNFrames = 500;
+    public bool logScentReclamation = true;
+
     // Minimum change before we bother updating visuals.
     // 1 / 256 ~ alpha resolution in 8-bit channel.
     public float scentVisualThreshold = 1f / 256f;
@@ -79,6 +85,7 @@ public class ScentAirGround : MonoBehaviour
 
 
     private Coroutine _simulationCoroutine;     // keep pointer in order to stop.
+    private int nextScentDiagnosticsFrame = 500;
 
     /*
         USAGE call...
@@ -134,6 +141,8 @@ public class ScentAirGround : MonoBehaviour
     {
         if (dir.gen.buildComplete == false) 
             return; // don't do anything until build is done.
+
+        MaybeLogScentDiagnostics();
 
         bool visibilityOrAgentChanged =
             (groundScentVisible != groundScentWasVisible) ||
@@ -199,6 +208,7 @@ public class ScentAirGround : MonoBehaviour
         }
 
         currentAgentId = 1;
+        nextScentDiagnosticsFrame = Time.frameCount + Mathf.Max(1, scentDiagnosticsEveryNFrames);
         Debug.Log($"StartScentSimulation");
         // Call this every time we change map structure (load/build complete): likely to start empty or nearly so before scents start appearing.
         ScentCellsListCreate();
@@ -221,12 +231,13 @@ public class ScentAirGround : MonoBehaviour
     public void ScentCellsListCreate()
     {
         cellsContainingScents = new();
+        activeScentCellSet.Clear();
         foreach (Room room in dir.gen.rooms)
         {
             foreach (Cell cell in room.cells)
             {
                 if ((cell != null) && (cell.scents != null) && (cell.scents.Count != 0))
-                    cellsContainingScents.Add(cell);
+                    AddToScentCellsList(cell);
             }
         }
     }
@@ -343,6 +354,7 @@ public class ScentAirGround : MonoBehaviour
         if (cellsContainingScents == null || cellsContainingScents.Count == 0)
         {
             cellsContainingScents = new(); // create it empty.
+            activeScentCellSet.Clear();
             return;
         }
         //Debug.Log($"StepOnce: cellsContainingScents has {cellsContainingScents.Count} entries.");
@@ -395,6 +407,7 @@ public class ScentAirGround : MonoBehaviour
             neighborCount = 0;  // count them for later averaging or skipping later loop
             for (nIdx = 0; nIdx < 4; nIdx++)                    // loop 8 times if you want diagonals
             {
+                neighborCells[nIdx] = null;
                 DirFlags dirF = DirFlagsEx.AllCardinals[nIdx];  // use All8[nIdx] if you want diagonals
                 DirFlags dDoor = (cell.doors & dirF);
                 DirFlags dWall = (cell.walls & dirF);
@@ -407,8 +420,8 @@ public class ScentAirGround : MonoBehaviour
                 }
                 if (neighborCells[nIdx] != null) neighborCount++;
                 // if we are going to propogate scents to this cell soon, it better be on the cellsContainingScents list.
-                if (i_have_scents && (neighborCells[nIdx] != null) && !cellsContainingScents.Contains(neighborCells[nIdx])) // WARNING: Contains() is O(N) search, revisit as hashset if many scents coexist.
-                    cellsContainingScents.Add(neighborCells[nIdx]);           // add neighbor cell to list
+                if (i_have_scents && neighborCells[nIdx] != null)
+                    AddToScentCellsList(neighborCells[nIdx]);           // add neighbor cell to list
             }
 
             // for each different scent at this location
@@ -567,6 +580,8 @@ public class ScentAirGround : MonoBehaviour
  //           }
             dir.activityStats.scentsProcessed = scentsProcessed;
         }
+
+        PruneInactiveScentState();
         //float endTime = Time.realtimeSinceStartup;
         //Debug.Log($"ScentAirGround: ScentPhysicsStepOnce completed in {(endTime - startTime)*1000f} ms.");
     }
@@ -590,7 +605,8 @@ public class ScentAirGround : MonoBehaviour
 
         // If we have the cell count before the previous physics step, we don't need to look at the newly created entries.
         // Or, we can just look at everything.  The last entries should all nave no scents and loop quickly.
-        if (original_cell_count == -1) original_cell_count=cellsContainingScents.Count;
+        if (original_cell_count == -1 || original_cell_count > cellsContainingScents.Count)
+            original_cell_count = cellsContainingScents.Count;
 
         for (cIdx = 0; cIdx < original_cell_count; cIdx++)  // still doesnt include recent additions to list
         {
@@ -811,10 +827,7 @@ public class ScentAirGround : MonoBehaviour
         cell.scents[sIdx].airNextDelta += airAmount * airScentDepositRate;
         cell.scents[sIdx].groundNextDelta += groundAmount * groundScentDepositRate;
         // add cell to the list if it isn't there already
-        if (!cellsContainingScents.Contains(cell)) {
-            cellsContainingScents.Add(cell);
-            //Debug.Log($"Added scent cell at {cell.pos} for agent {agentId}");
-        }
+        AddToScentCellsList(cell);
     }
 
     /// <summary>
@@ -891,8 +904,238 @@ public class ScentAirGround : MonoBehaviour
     // adds the cell to the current big scent list if it isn't already there.
     void AddToScentCellsList(Cell cell)
     {
-        if (!cellsContainingScents.Contains(cell))
+        if (cell == null)
+            return;
+
+        if (activeScentCellSet.Add(cell))
             cellsContainingScents.Add(cell);
+    }
+
+    void RemoveFromScentCellsListAt(int index)
+    {
+        Cell cell = cellsContainingScents[index];
+        if (cell != null)
+            activeScentCellSet.Remove(cell);
+
+        cellsContainingScents.RemoveAt(index);
+    }
+
+    bool HasMeaningfulScent(ScentInCell scent)
+    {
+        if (scent == null)
+            return false;
+
+        return scent.airIntensity > practically_zero ||
+               scent.groundIntensity > practically_zero ||
+               Mathf.Abs(scent.airNextDelta) > practically_zero ||
+               Mathf.Abs(scent.groundNextDelta) > practically_zero;
+    }
+
+    bool HasActiveNeighborScent(Cell cell, int agentId)
+    {
+        if (cell == null || dir == null || dir.gen == null)
+            return false;
+
+        for (int nIdx = 0; nIdx < 4; nIdx++)
+        {
+            DirFlags dirF = DirFlagsEx.AllCardinals[nIdx];
+            if ((cell.walls & dirF) != DirFlags.None || (cell.doors & dirF) != DirFlags.None)
+                continue;
+
+            Vector2Int step = DirFlagsEx.ToVector2Int(dirF);
+            Cell neighbor = dir.gen.GetCellFromHf(cell.pos3d.x + step.x, cell.pos3d.y + step.y, cell.pos3d.z, threshold: 50);
+            if (neighbor == null || neighbor.scents == null || neighbor.scents.Count == 0)
+                continue;
+
+            int neighborScentIndex = FindAgentIdScentIndex(neighbor, agentId, createIfNeeded: false);
+            if (neighborScentIndex >= 0 && HasMeaningfulScent(neighbor.scents[neighborScentIndex]))
+                return true;
+        }
+
+        return false;
+    }
+
+    void ReclaimScentVisuals(Cell cell, ScentInCell scent)
+    {
+        ReclaimScentVisuals(cell, scent, out _, out _);
+    }
+
+    void ReclaimScentVisuals(Cell cell, ScentInCell scent, out int reclaimedAirVisuals, out int reclaimedGroundVisuals)
+    {
+        reclaimedAirVisuals = 0;
+        reclaimedGroundVisuals = 0;
+
+        if (scent == null)
+            return;
+
+        if (scent.airGOindex >= 0)
+        {
+            bool reclaimed = dir != null && dir.manufactureGO != null &&
+                             dir.manufactureGO.ReclaimInstance(ElementLayerKind.ScentAir, scent.airGOindex);
+
+            if (!reclaimed && elementStore != null)
+            {
+                Color color = airBaseColor;
+                color.a = 0f;
+                elementStore.ChangeColor(ElementLayerKind.ScentAir, scent.airGOindex, cell, color);
+            }
+
+            scent.airGOindex = -1;
+            scent.airLastVisualized = 0f;
+            anyScentAirChanged = true;
+            reclaimedAirVisuals = 1;
+        }
+
+        if (scent.groundGOindex >= 0)
+        {
+            bool reclaimed = dir != null && dir.manufactureGO != null &&
+                             dir.manufactureGO.ReclaimInstance(ElementLayerKind.ScentGround, scent.groundGOindex);
+
+            if (!reclaimed && elementStore != null)
+            {
+                Color color = groundBaseColor;
+                color.a = 0f;
+                elementStore.ChangeColor(ElementLayerKind.ScentGround, scent.groundGOindex, cell, color);
+            }
+
+            scent.groundGOindex = -1;
+            scent.groundLastVisualized = 0f;
+            anyScentGroundChanged = true;
+            reclaimedGroundVisuals = 1;
+        }
+    }
+
+    void PruneInactiveScentState()
+    {
+        if (cellsContainingScents == null || cellsContainingScents.Count == 0)
+        {
+            activeScentCellSet.Clear();
+            return;
+        }
+
+        int removedCells = 0;
+        int removedScents = 0;
+        int reclaimedAirVisuals = 0;
+        int reclaimedGroundVisuals = 0;
+
+        for (int cIdx = cellsContainingScents.Count - 1; cIdx >= 0; cIdx--)
+        {
+            Cell cell = cellsContainingScents[cIdx];
+            if (cell == null)
+            {
+                RemoveFromScentCellsListAt(cIdx);
+                removedCells++;
+                continue;
+            }
+
+            if (cell.scents == null || cell.scents.Count == 0)
+            {
+                cell.scents = null;
+                RemoveFromScentCellsListAt(cIdx);
+                removedCells++;
+                continue;
+            }
+
+            for (int sIdx = cell.scents.Count - 1; sIdx >= 0; sIdx--)
+            {
+                ScentInCell scent = cell.scents[sIdx];
+                if (scent == null)
+                {
+                    cell.scents.RemoveAt(sIdx);
+                    continue;
+                }
+
+                if (HasMeaningfulScent(scent))
+                    continue;
+
+                if (HasActiveNeighborScent(cell, scent.agentId))
+                    continue;
+
+                ReclaimScentVisuals(cell, scent, out int reclaimedAir, out int reclaimedGround);
+                reclaimedAirVisuals += reclaimedAir;
+                reclaimedGroundVisuals += reclaimedGround;
+                cell.scents.RemoveAt(sIdx);
+                removedScents++;
+            }
+
+            if (cell.scents.Count == 0)
+            {
+                cell.scents = null;
+                RemoveFromScentCellsListAt(cIdx);
+                removedCells++;
+            }
+        }
+
+        if (logScentReclamation && (removedScents > 0 || reclaimedAirVisuals > 0 || reclaimedGroundVisuals > 0 || removedCells > 0))
+        {
+            Debug.Log($"[ScentAirGround] Reclaimed scent state: removedScents={removedScents}, removedCells={removedCells}, reclaimedAirVisuals={reclaimedAirVisuals}, reclaimedGroundVisuals={reclaimedGroundVisuals}, activeCellsNow={cellsContainingScents.Count}");
+        }
+    }
+
+    void MaybeLogScentDiagnostics()
+    {
+        if (!enableScentDiagnostics)
+            return;
+
+        int interval = Mathf.Max(1, scentDiagnosticsEveryNFrames);
+        if (Time.frameCount < nextScentDiagnosticsFrame)
+            return;
+
+        nextScentDiagnosticsFrame = Time.frameCount + interval;
+
+        CountTrackedScentEntries(out int scentCellsWithEntries, out int totalScentEntries);
+
+        string airElementStats = DescribeElementLayerStats(ElementLayerKind.ScentAir);
+        string groundElementStats = DescribeElementLayerStats(ElementLayerKind.ScentGround);
+        string airObjectStats = DescribeObjectLayerStats(ElementLayerKind.ScentAir);
+        string groundObjectStats = DescribeObjectLayerStats(ElementLayerKind.ScentGround);
+
+        Debug.Log(
+            $"[ScentAirGround] frame={Time.frameCount} activeScentCells={cellsContainingScents.Count} setCount={activeScentCellSet.Count} " +
+            $"cellsWithEntries={scentCellsWithEntries} totalScentEntries={totalScentEntries} " +
+            $"airData=({airElementStats}) groundData=({groundElementStats}) " +
+            $"airObjects=({airObjectStats}) groundObjects=({groundObjectStats})");
+    }
+
+    void CountTrackedScentEntries(out int cellsWithEntries, out int totalScentEntries)
+    {
+        cellsWithEntries = 0;
+        totalScentEntries = 0;
+
+        if (cellsContainingScents == null)
+            return;
+
+        for (int i = 0; i < cellsContainingScents.Count; i++)
+        {
+            Cell cell = cellsContainingScents[i];
+            if (cell == null || cell.scents == null || cell.scents.Count == 0)
+                continue;
+
+            cellsWithEntries++;
+            totalScentEntries += cell.scents.Count;
+        }
+    }
+
+    string DescribeElementLayerStats(ElementLayerKind kind)
+    {
+        if (elementStore == null)
+            return "no_element_store";
+
+        if (!elementStore.TryGetLayerInstanceStats(kind, out int totalSlots, out int liveInstances, out int freeSlots))
+            return "missing";
+
+        return $"slots={totalSlots}, live={liveInstances}, free={freeSlots}";
+    }
+
+    string DescribeObjectLayerStats(ElementLayerKind kind)
+    {
+        if (dir == null || dir.manufactureGO == null)
+            return "no_factory";
+
+        if (!dir.manufactureGO.TryGetLayerObjectStats(kind, out int totalObjects, out int activeObjects, out int inactiveObjects, out int nullObjects))
+            return "missing";
+
+        return $"slots={totalObjects}, active={activeObjects}, inactive={inactiveObjects}, null={nullObjects}";
     }
 
 

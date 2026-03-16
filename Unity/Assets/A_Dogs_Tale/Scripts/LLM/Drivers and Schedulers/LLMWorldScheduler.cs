@@ -282,6 +282,21 @@ public class LLMWorldScheduler : MonoBehaviour
     // One in-flight request per agent.
     private readonly HashSet<string> inflightAgents = new();
     private readonly Dictionary<string, string> inflightRequestIdByAgent = new();
+    private readonly Dictionary<string, AgentModuleCacheEntry> agentModuleCache = new();
+
+    private readonly struct AgentModuleCacheEntry
+    {
+        public readonly LLMConfigModule Config;
+        public readonly LLMWorldStateModule WorldState;
+        public readonly GameObject AgentGameObject;
+
+        public AgentModuleCacheEntry(LLMConfigModule config, LLMWorldStateModule worldState, GameObject agentGameObject)
+        {
+            Config = config;
+            WorldState = worldState;
+            AgentGameObject = agentGameObject;
+        }
+    }
 
     public void OnValidate()
     {
@@ -318,6 +333,8 @@ public class LLMWorldScheduler : MonoBehaviour
                 }
             }
         }
+
+        RefreshAgentModuleCache();
         //Debug.Log($"LLMWalkthroughScheduler.Awake: pendingRequests(initial)={pendingRequests.Count}", this);
     }
 
@@ -529,30 +546,61 @@ public class LLMWorldScheduler : MonoBehaviour
         if (string.IsNullOrWhiteSpace(agentId))
             return false;
 
-        // Scan active configs (cheap enough for now; can be cached later)
+        if (TryGetCachedAgentModules(agentId, out config, out worldState, out agentGameObject))
+            return true;
+
+        RefreshAgentModuleCache();
+        return TryGetCachedAgentModules(agentId, out config, out worldState, out agentGameObject);
+    }
+
+    private bool TryGetCachedAgentModules(
+        string agentId,
+        out LLMConfigModule config,
+        out LLMWorldStateModule worldState,
+        out GameObject agentGameObject)
+    {
+        config = null!;
+        worldState = null!;
+        agentGameObject = null!;
+
+        if (!agentModuleCache.TryGetValue(agentId, out AgentModuleCacheEntry cached))
+            return false;
+
+        if (cached.Config == null || cached.WorldState == null || cached.AgentGameObject == null)
+        {
+            agentModuleCache.Remove(agentId);
+            return false;
+        }
+
+        config = cached.Config;
+        worldState = cached.WorldState;
+        agentGameObject = cached.AgentGameObject;
+        return true;
+    }
+
+    private void RefreshAgentModuleCache()
+    {
+        agentModuleCache.Clear();
+
         var configs = UnityEngine.Object.FindObjectsByType<LLMConfigModule>(FindObjectsSortMode.None);
         foreach (var c in configs)
         {
-            if (c == null) continue;
+            if (c == null)
+                continue;
 
             string resolvedId = c.identity.ResolveAgentId(c.gameObject);
-            if (!string.Equals(resolvedId, agentId, StringComparison.Ordinal))
+            if (string.IsNullOrWhiteSpace(resolvedId))
                 continue;
 
             var ws = c.GetComponent<LLMWorldStateModule>();
             if (ws == null)
             {
-                Debug.LogWarning($"[LLM Scheduler] Agent {c.gameObject.name} matches id={agentId} but has no LLMWorldStateModule.");
-                return false;
+                Debug.LogWarning($"[LLM Scheduler] Agent {c.gameObject.name} matches id={resolvedId} but has no LLMWorldStateModule.");
+                continue;
             }
 
-            config = c;
-            worldState = ws;
-            agentGameObject = c.gameObject;
-            return true;
+            agentModuleCache[resolvedId] = new AgentModuleCacheEntry(c, ws, c.gameObject);
         }
-
-        return false;
     }
 
     private void OnDisable()
@@ -567,6 +615,7 @@ public class LLMWorldScheduler : MonoBehaviour
         LLMSessionToken.Bump();
         inflightAgents.Clear();
         inflightRequestIdByAgent.Clear();
+        agentModuleCache.Clear();
     }
 
     private static bool MeetsSophistication(LLMModelSelection model, Sophistication needed)

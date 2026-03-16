@@ -223,6 +223,7 @@ public class ElementStore : ScriptableObject
     /// Lookup cache from archetype id to index for fast access at runtime.
     /// </summary>
     [NonSerialized] private Dictionary<string, int> archetypeLookup;
+    [NonSerialized] private Dictionary<ElementLayerKind, Stack<int>> reusableInstanceIndices;
 
     private void OnEnable()
     {
@@ -230,6 +231,7 @@ public class ElementStore : ScriptableObject
         {
             // Start fresh at runtime
             layers = new List<ElementLayer>(); // clear legacy junk
+            reusableInstanceIndices = new Dictionary<ElementLayerKind, Stack<int>>();
         }
     }
     /// <summary>
@@ -335,6 +337,12 @@ public class ElementStore : ScriptableObject
             }
         }
 
+        if (TryTakeReusableIndex(instance.layerKind, layer, out int reuseIndex))
+        {
+            layer.instances[reuseIndex] = instance;
+            return reuseIndex;
+        }
+
         // Append; ElementInstanceData is a class, no need to copy back data
         layer.instances.Add(instance);
 
@@ -360,6 +368,7 @@ public class ElementStore : ScriptableObject
         }
 
         runtimeAllInstances?.Clear();
+        reusableInstanceIndices?.Clear();
     }
 
     /// <summary>
@@ -378,7 +387,12 @@ public class ElementStore : ScriptableObject
             foreach (var layer in layers)
             {
                 if (layer.instances == null) continue;
-                runtimeAllInstances.AddRange(layer.instances);
+                for (int i = 0; i < layer.instances.Count; i++)
+                {
+                    ElementInstanceData inst = layer.instances[i];
+                    if (inst != null)
+                        runtimeAllInstances.Add(inst);
+                }
             }
         }
 
@@ -758,6 +772,8 @@ public class ElementStore : ScriptableObject
         if (GOindex >= 0)
         {
             var inst = layer.instances[GOindex];
+            if (inst == null)
+                return false;
             inst.color = newColor;
             inst.dirtyFlags |= ElementUpdateFlags.Color;
             layer.instances[GOindex] = inst; // copy back
@@ -795,6 +811,80 @@ public class ElementStore : ScriptableObject
     {
         if (layers == null) return null;
         return layers.Find(l => l != null && l.kind == kind);
+    }
+
+    public bool ReleaseInstance(ElementLayerKind kind, int index)
+    {
+        ElementLayer layer = GetLayer(kind);
+        if (layer == null || layer.instances == null || index < 0 || index >= layer.instances.Count)
+            return false;
+
+        if (layer.instances[index] == null)
+            return false;
+
+        layer.instances[index] = null;
+
+        reusableInstanceIndices ??= new Dictionary<ElementLayerKind, Stack<int>>();
+        if (!reusableInstanceIndices.TryGetValue(kind, out Stack<int> freeList))
+        {
+            freeList = new Stack<int>();
+            reusableInstanceIndices[kind] = freeList;
+        }
+
+        freeList.Push(index);
+        return true;
+    }
+
+    private bool TryTakeReusableIndex(ElementLayerKind kind, ElementLayer layer, out int index)
+    {
+        index = -1;
+
+        reusableInstanceIndices ??= new Dictionary<ElementLayerKind, Stack<int>>();
+        if (!reusableInstanceIndices.TryGetValue(kind, out Stack<int> freeList) || freeList.Count == 0)
+            return false;
+
+        while (freeList.Count > 0)
+        {
+            int candidate = freeList.Pop();
+            if (candidate < 0)
+                continue;
+
+            if (layer.instances == null)
+                return false;
+
+            if (candidate >= layer.instances.Count)
+                continue;
+
+            if (layer.instances[candidate] != null)
+                continue;
+
+            index = candidate;
+            return true;
+        }
+
+        return false;
+    }
+
+    public bool TryGetLayerInstanceStats(ElementLayerKind kind, out int totalSlots, out int liveInstances, out int freeSlots)
+    {
+        totalSlots = 0;
+        liveInstances = 0;
+        freeSlots = 0;
+
+        ElementLayer layer = GetLayer(kind);
+        if (layer == null || layer.instances == null)
+            return false;
+
+        totalSlots = layer.instances.Count;
+        for (int i = 0; i < layer.instances.Count; i++)
+        {
+            if (layer.instances[i] == null)
+                freeSlots++;
+            else
+                liveInstances++;
+        }
+
+        return true;
     }
 
     #endregion

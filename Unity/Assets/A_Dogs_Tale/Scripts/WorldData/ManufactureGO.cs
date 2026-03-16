@@ -90,10 +90,20 @@ public class ManufactureGO : MonoBehaviour
             var dataLayer = elementStore.layers[dlIdx];
             if (dataLayer == null || dataLayer.instances == null) continue;
 
+            var bucket = warehouse.GetOrCreateLayer(dataLayer.kind);
+            if (bucket.objects == null)
+                bucket.objects = new System.Collections.Generic.List<GameObject>();
+
             for (int iIdx = 0; iIdx < dataLayer.instances.Count; iIdx++)
             {
                 var inst = dataLayer.instances[iIdx];
-                ManufactureInstance(inst, baseParent);
+                if (inst == null)
+                {
+                    warehouse.RegisterInstanceAt(dataLayer.kind, iIdx, null);
+                    continue;
+                }
+
+                ManufactureInstance(inst, baseParent, iIdx);
                 // ManufactureInstance internally calls warehouse.RegisterInstance(inst.layerKind, go)
                 // in that same order, so indices will align.
 
@@ -141,6 +151,8 @@ public class ManufactureGO : MonoBehaviour
         for (int i = existingCount; i < total; i++)
         {
             var inst = dataLayer.instances[i];
+            if (inst == null)
+                continue;
             ManufactureInstance(inst, baseParent); // this will RegisterInstance internally
             //Debug.LogWarning("Manufactured instance");
         }
@@ -155,7 +167,7 @@ public class ManufactureGO : MonoBehaviour
     /// <summary>
     /// Creates a single GameObject for the given instance and registers it with the WarehouseGO.
     /// </summary>
-    void ManufactureInstance(ElementInstanceData inst, Transform baseParent)
+    void ManufactureInstance(ElementInstanceData inst, Transform baseParent, int targetIndex = -1)
     {
         var archetype = elementStore.GetArchetype(inst.archetypeId);
         if (archetype == null)
@@ -232,7 +244,10 @@ public class ManufactureGO : MonoBehaviour
         if ((archetype.renderFlags & ElementRenderFlags.StaticBatch) != 0)
             go.isStatic = true;
 
-        warehouse.RegisterInstance(inst.layerKind, go);
+        if (targetIndex >= 0)
+            warehouse.RegisterInstanceAt(inst.layerKind, targetIndex, go);
+        else
+            warehouse.RegisterInstance(inst.layerKind, go);
     }
 
     /// <summary>
@@ -289,6 +304,9 @@ public class ManufactureGO : MonoBehaviour
             for (int i = 0; i < count; i++)
             {
                 var inst = dataLayer.instances[i];
+                if (inst == null)
+                    continue;
+
                 if (inst.dirtyFlags == ElementUpdateFlags.None)
                     continue;
 
@@ -307,6 +325,14 @@ public class ManufactureGO : MonoBehaviour
                 }
 
                 // Apply color if it changed
+                if ((inst.dirtyFlags & ElementUpdateFlags.All) != 0)
+                {
+                    go.SetActive(true);
+                    go.transform.position = inst.position;
+                    go.transform.rotation = inst.rotation;
+                    go.transform.localScale = inst.scale;
+                }
+
                 if ((inst.dirtyFlags & (ElementUpdateFlags.Color | ElementUpdateFlags.All)) != 0)
                 {
                     //Debug.Log($"ManufactureGO: Applying color update to instance {i} of layer {dataLayer.kind}. GO.name={go.name}, alpha={inst.color.a}");
@@ -324,6 +350,55 @@ public class ManufactureGO : MonoBehaviour
             dir.activityStats.ApplyUpdates_cumulative += (endTime - startTime);
         }
         dir.activityStats.ApplyUpdates_calls += 1;
+    }
+
+    public bool ReclaimInstance(ElementLayerKind kind, int index)
+    {
+        if (elementStore == null || warehouse == null)
+            return false;
+
+        var bucket = warehouse.GetLayerBucket(kind);
+        if (bucket == null || bucket.objects == null || index < 0 || index >= bucket.objects.Count)
+            return false;
+
+        GameObject go = bucket.objects[index];
+        if (go != null)
+            go.SetActive(false);
+
+        return elementStore.ReleaseInstance(kind, index);
+    }
+
+    public bool TryGetLayerObjectStats(ElementLayerKind kind, out int totalObjects, out int activeObjects, out int inactiveObjects, out int nullObjects)
+    {
+        totalObjects = 0;
+        activeObjects = 0;
+        inactiveObjects = 0;
+        nullObjects = 0;
+
+        if (warehouse == null)
+            return false;
+
+        var bucket = warehouse.GetLayerBucket(kind);
+        if (bucket == null || bucket.objects == null)
+            return false;
+
+        totalObjects = bucket.objects.Count;
+        for (int i = 0; i < bucket.objects.Count; i++)
+        {
+            GameObject go = bucket.objects[i];
+            if (go == null)
+            {
+                nullObjects++;
+                continue;
+            }
+
+            if (go.activeSelf)
+                activeObjects++;
+            else
+                inactiveObjects++;
+        }
+
+        return true;
     }
 
     void ApplyInstanceColor(GameObject go, ElementArchetype archetype, ElementInstanceData inst)

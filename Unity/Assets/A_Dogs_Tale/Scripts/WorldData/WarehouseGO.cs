@@ -96,6 +96,18 @@ public class WarehouseGO : MonoBehaviour
         bucket.objects.Add(instance);
     }
 
+    public void RegisterInstanceAt(ElementLayerKind kind, int index, GameObject instance)
+    {
+        if (index < 0)
+            return;
+
+        var bucket = GetOrCreateLayer(kind);
+        while (bucket.objects.Count <= index)
+            bucket.objects.Add(null);
+
+        bucket.objects[index] = instance;
+    }
+
     /// <summary>
     /// Destroy all manufactured GameObjects and clear the layer buckets.
     /// Does not touch the WarehouseGO GameObject itself.
