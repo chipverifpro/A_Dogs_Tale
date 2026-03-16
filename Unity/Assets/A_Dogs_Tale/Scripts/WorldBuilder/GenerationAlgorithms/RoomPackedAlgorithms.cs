@@ -1373,7 +1373,8 @@ public partial class DungeonGenerator : MonoBehaviour
         }
     }
 
-    // unused.  Obsolete. Use CanPlaceSeed() instead.
+    /*
+    // unused. Obsolete. Use CanPlaceSeed() instead.
     bool CanPlaceReSeed(int x, int y, int moatCells)
     {
         if (!In(x, y)) return false;
@@ -1393,6 +1394,7 @@ public partial class DungeonGenerator : MonoBehaviour
             }
         return true;
     }
+    */
 
     // ROOM READY
     // used in Scraps_SeedAndGrowUntilPacked() to verify seeds are far enough apart.
@@ -1460,12 +1462,12 @@ public partial class DungeonGenerator : MonoBehaviour
         return false;
     }
 
-    // unused.  Probably replaced by frontiers?
+    /*
+    // unused. Probably replaced by frontiers?
     // checks for a cell on each side of the room's bounding box until it finds an open cell.
     Vector2Int LookForOpenNeighborCell(int room_num, int moat)
     {
         Vector2Int starter = new();
-        //Vector2Int pt = new();
         RectInt box = rooms[room_num].GetBounds();
         starter.x = rng.Next(box.x, box.x + box.width);
         starter.y = rng.Next(box.y, box.y + box.height);
@@ -1477,7 +1479,7 @@ public partial class DungeonGenerator : MonoBehaviour
         EE = new Vector2Int(starter.x, box.y - moat - 1);
 
         Cell N, S, E, W;
-        N = new Cell(NN.x, NN.y);   // unnecessary assignments
+        N = new Cell(NN.x, NN.y);
         S = new Cell(SS.x, SS.y);
         E = new Cell(EE.x, EE.y);
         W = new Cell(WW.x, WW.y);
@@ -1502,7 +1504,6 @@ public partial class DungeonGenerator : MonoBehaviour
         foreach (var p in frontier)
         {
             int s = 0;
-            // score by how many owned neighbors (smooth boundary) and how far from corridors
             foreach (var nb in FourNeighbors(p.x, p.y))
             {
                 if (!In(nb.x, nb.y)) continue;
@@ -1511,10 +1512,11 @@ public partial class DungeonGenerator : MonoBehaviour
             }
             if (s > bestScore) { bestScore = s; best = p; }
         }
-        // fallback if set somehow empty
+
         if (best.x < 0 && frontier.Count > 0) foreach (var p in frontier) { best = p; break; }
         return best;
     }
+    */
 
     // ROOM READY
     // Checks if the room is big enough and stretched enough to split.
