@@ -252,7 +252,11 @@ public class AudioCatalog : MonoBehaviour
         // A new clip completely replaces an old one of the same name.  Just in case more than one entry exists, loop through all.
         while ((clipCfg_old = clipCfgList.Find(e => e.name == name)) != null)
         {
-            Debug.LogWarning($"Warning: Replacing old clipCfg '{clipCfg_old.name}' which has {clipCfg_old.running_Tasks.Count} running tasks which will be stopped.");
+            if (clipCfg_old.running_Tasks.Count>0)
+                Debug.LogWarning($"Warning: Replacing old clipCfg '{clipCfg_old.name}' which has {clipCfg_old.running_Tasks.Count} running tasks which will be stopped.");
+            else
+                Debug.Log($"Replacing old clipCfg '{clipCfg_old.name}' which has {clipCfg_old.running_Tasks.Count} running tasks which will be stopped.");
+            
             UnloadClipCfg(clipCfg_old, fadeOut: 0f); // spawns coroutines to stop tasks and unload audio.
             clipCfgList.Remove(clipCfg_old);  // we can remove the old entry now (even if tasks are still stopping)
         }

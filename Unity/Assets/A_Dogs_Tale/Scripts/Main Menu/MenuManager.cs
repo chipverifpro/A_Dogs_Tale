@@ -146,9 +146,9 @@ public class MenuManager : MonoBehaviour
     // ---------- Utilities ----------
     Button FindButton(string name)
     {
-        var go = GameObject.Find(name);
+        var go = FindIncludingInactive(name);
         if (!go)
-            go = GameObject.Find($"Button {name}");
+            go = FindIncludingInactive($"Button {name}");
         if (!go)
         {
             Debug.LogWarning($"[MenuManager] Could not find button '{name}'.", this);
@@ -164,6 +164,21 @@ public class MenuManager : MonoBehaviour
 
         Debug.Log($"[MenuManager] Resolved button '{name}' to scene object '{go.name}'.", button);
         return button;
+    }
+
+    GameObject FindIncludingInactive(string name)
+    {
+        GameObject[] allObjects = Resources.FindObjectsOfTypeAll<GameObject>();
+
+        foreach (GameObject obj in allObjects)
+        {
+            // Skip prefabs (assets not in scene)
+            if (obj.hideFlags == HideFlags.None && obj.name == name)
+            {
+                return obj;
+            }
+        }
+        return null;
     }
 
     void Hook(Button btn, UnityEngine.Events.UnityAction action)

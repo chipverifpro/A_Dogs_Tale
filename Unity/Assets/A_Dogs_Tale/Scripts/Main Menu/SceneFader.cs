@@ -144,7 +144,8 @@ public class SceneFader : MonoBehaviour
         SetRandomSplashSprite();
 
         yield return null; // let things settle out before beginning this.
-        BottomBanner.Show("🐾 Welcome, Pup! Sniffing out treasures...");
+        //BottomBanner.Show("🐾 Welcome, Pup! Sniffing out treasures...");
+        BottomBanner.Show("Welcome, Pup! Sniffing out treasures...");
 
         // Display just the splash screen.
         splashCanvasGroup.alpha = 1;
@@ -159,6 +160,7 @@ public class SceneFader : MonoBehaviour
         yield return StartCoroutine(Fade(menuCanvasGroup, 0f, 1f));
     }
 
+/*
     private IEnumerator CrossFade_OLD()
     {
         yield return null;      // let things settle out before beginning this.
@@ -180,11 +182,12 @@ public class SceneFader : MonoBehaviour
         // Simultaneously fade in menu...
         yield return StartCoroutine(Fade(menuCanvasGroup, 0f, 1f));
     }
-
+*/
 
     public IEnumerator FadeToGame()
     {
-        BottomBanner.Show("🐾 Welcome, Pup! On the way to Adventure...");
+        //BottomBanner.Show("🐾 Welcome, Pup! On the way to Adventure...");
+        BottomBanner.Show("Welcome, Pup! On the way to Adventure...");
 
         // LEGACY:
         //MusicPlayer musicPlayer = FindFirstObjectByType<MusicPlayer>();

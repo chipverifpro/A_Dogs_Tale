@@ -52,7 +52,8 @@ public class ScentSource
         //Debug.Log($"[{agentId} Emit]");
         if (cell==null)
         {
-            Debug.LogError($"Scent Emit {scentName}: cell is null");
+            // This can happen if the scent emit starts before heightfield is built
+            Debug.Log($"Scent Emit {scentName}: cell is null");
             return; // need location
         }
         if (scentAirGround == null) // need physics controller

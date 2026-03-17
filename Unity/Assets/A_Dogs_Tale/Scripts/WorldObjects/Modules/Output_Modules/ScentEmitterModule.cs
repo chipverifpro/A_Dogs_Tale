@@ -43,6 +43,8 @@ namespace DogGame.Modules
 
             //Debug.Log($"ScentEmitterModule {worldObject.DisplayName}: Tick {deltaTime}");
 
+            if (!dir.gen.buildComplete)
+                return; // map build must complete before scent physics runs.
             if (dir.gen.hf_valid == false || dir.gen.hf==null)
                 return;     // scent cannot be added before heightfield is created.
             
