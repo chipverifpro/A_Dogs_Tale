@@ -19,18 +19,18 @@ public class MenuManager : MonoBehaviour
     void Awake()
     {
         // If not assigned, try to find by name under the Canvas
-        btnNewMap = btnNewMap ?? FindButton("NewMap");
-        btnEditMap = btnEditMap ?? FindButton("EditMap");
-        btnExplore = btnExplore ?? FindButton("Explore");
+        btnSimulation = btnSimulation ?? FindButton("Simulation");
         btnFlyover = btnFlyover ?? FindButton("Flyover");
+        btnLoad = btnLoad ?? FindButton("Load");
+        btnDocumentation = btnDocumentation ?? FindButton("Documentation");
         btnSettings = btnSettings ?? FindButton("Settings");
         btnQuit = btnQuit ?? FindButton("Quit");
 
         // Clear any existing listeners and add ours
-        Hook(btnNewMap, OnNewMap);
-        Hook(btnEditMap, OnEditMap);
-        Hook(btnExplore, OnExplore);
+        Hook(btnSimulation, OnSimulation);
         Hook(btnFlyover, OnFlyover);
+        Hook(btnLoad, OnLoad);
+        Hook(btnDocumentation, OnDocumentation);
         Hook(btnSettings, OnSettings);
         Hook(btnQuit, QuitGame);
 
@@ -62,10 +62,11 @@ public class MenuManager : MonoBehaviour
 
     // === BUTTON HOOKS ===
 
-    public void OnNewMap()
+    public void OnSimulation()
     {
-        Debug.Log($"[MenuManager] OnNewMap invoked. fader={(fader ? fader.name : "null")} dir={(dir ? dir.name : "null")}", this);
-        BottomBanner.Show("🐾 Digging a brand new hole...");
+        Debug.Log($"[MenuManager] OnSimulation invoked. fader={(fader ? fader.name : "null")} dir={(dir ? dir.name : "null")}", this);
+        //BottomBanner.Show("🐾 Digging a brand new hole...");
+        BottomBanner.Show("Digging a brand new hole...");
         dir.audioPlayer.PlayClip("Button-Click");
         StartCoroutine(fader.FadeToGame());
         //SceneManager.LoadScene("2D_Fargoal_Map");  // your map gen scene
@@ -75,33 +76,37 @@ public class MenuManager : MonoBehaviour
         // You can also call generator.NewMap() if you keep it same-scene
     }
 
-    public void OnEditMap()
-    {
-        BottomBanner.Show("🐾 Burying bones... entering Edit Mode.");
-        // TODO: load editor tools scene or toggle editor UI
-    }
-
-    public void OnExplore()
-    {
-        BottomBanner.Show("🐾 Sniff sniff... Dog Mode engaged!");
-        // TODO: spawn player prefab in first-person
-    }
-
     public void OnFlyover()
     {
-        BottomBanner.Show("🐦 Flap flap... Birdy Mode overhead!");
-        // TODO: switch to FlyoverCamera routine
+        //BottomBanner.Show("🐦 Flap flap... Birdy Mode overhead!");
+        BottomBanner.Show("Flap flap... Birdy Mode overhead!");
+// TODO: switch to FlyoverCamera routine
+    }
+
+    public void OnLoad()
+    {
+        //BottomBanner.Show("🐾 Digging up bones... entering Load Mode.");
+        BottomBanner.Show("Digging up bones... entering Load Mode.");
+    }
+
+    public void OnDocumentation()
+    {
+        OpenDocs();
+        //BottomBanner.Show("🐾 Sniff sniff... Doggy documentation engaged!");
+        BottomBanner.Show("Sniff sniff... Doggy documentation engaged!");
     }
 
     public void OnSettings()
     {
-        BottomBanner.Show("🎨 Adjusting imagination...");
+        //BottomBanner.Show("🎨 Adjusting imagination...");
+        BottomBanner.Show("Adjusting imagination...");
         // TODO: open settings panel or scene
     }
 
     public void QuitGame()
     {
-        BottomBanner.Show("💤 Curling up for a nap...");
+        //BottomBanner.Show("💤 Curling up for a nap...");
+        BottomBanner.Show("Curling up for a nap...");
 #if UNITY_EDITOR
         UnityEditor.EditorApplication.isPlaying = false;
 #else
@@ -115,6 +120,11 @@ public class MenuManager : MonoBehaviour
         QuitGame();
     }
 
+    public void OpenDocs()
+    {
+        Application.OpenURL("https://github.com/chipverifpro/A_Dogs_Tale");
+    }
+
     private IEnumerator SwitchScenes(string sceneName)
     {
         // Load new scene
@@ -122,10 +132,10 @@ public class MenuManager : MonoBehaviour
     }
 
     [Header("Optional direct refs (drag from Canvas)")]
-    public Button btnNewMap;
-    public Button btnEditMap;
-    public Button btnExplore;   // Dog Mode
-    public Button btnFlyover;   // Birdy Mode
+    public Button btnSimulation;
+    public Button btnFlyover;
+    public Button btnLoad;
+    public Button btnDocumentation;
     public Button btnSettings;  // Imagination Adjustment
     public Button btnQuit;
 
