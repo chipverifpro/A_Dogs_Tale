@@ -9,6 +9,7 @@ namespace DogGame.Lua
     {
         private static bool userdataTypesRegistered = false;
         private readonly Script script;
+        private readonly AgentState defaultState = new();
         private readonly ScentState defaultScentState = new();
         private readonly PackState defaultPackState = new();
         private readonly EnvState defaultEnvState = new();
@@ -34,6 +35,7 @@ namespace DogGame.Lua
             if (userdataTypesRegistered)
                 return;
 
+            UserData.RegisterType<AgentState>();
             UserData.RegisterType<DogState>();
             UserData.RegisterType<VisionState>();
             UserData.RegisterType<VisionAgentState>();
@@ -92,6 +94,17 @@ namespace DogGame.Lua
             MemoryState memoryState,
             TimeState timeState)
         {
+            defaultState.Dog = dogState;
+            defaultState.Vision = visionState;
+            defaultState.Hearing = hearingState;
+            defaultState.Scent = scentState;
+            defaultState.Pack = packState;
+            defaultState.Env = envState;
+            defaultState.Task = taskState;
+            defaultState.Memory = memoryState;
+            defaultState.Time = timeState;
+
+            script.Globals["State"] = defaultState;
             script.Globals["Dog"] = dogState;
             script.Globals["Vision"] = visionState;
             script.Globals["Hearing"] = hearingState;
