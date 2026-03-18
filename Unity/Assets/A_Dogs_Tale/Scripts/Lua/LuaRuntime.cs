@@ -9,6 +9,12 @@ namespace DogGame.Lua
     {
         private static bool userdataTypesRegistered = false;
         private readonly Script script;
+        private readonly ScentState defaultScentState = new();
+        private readonly PackState defaultPackState = new();
+        private readonly EnvState defaultEnvState = new();
+        private readonly TaskState defaultTaskState = new();
+        private readonly MemoryState defaultMemoryState = new();
+        private readonly TimeState defaultTimeState = new();
         private DogLuaBindings bindings;
 
         public LuaRuntime()
@@ -30,7 +36,17 @@ namespace DogGame.Lua
 
             UserData.RegisterType<DogState>();
             UserData.RegisterType<VisionState>();
+            UserData.RegisterType<VisionAgentState>();
+            UserData.RegisterType<VisionObjectState>();
             UserData.RegisterType<HearingState>();
+            UserData.RegisterType<HearingSoundState>();
+            UserData.RegisterType<ScentState>();
+            UserData.RegisterType<PackState>();
+            UserData.RegisterType<PackMemberState>();
+            UserData.RegisterType<EnvState>();
+            UserData.RegisterType<TaskState>();
+            UserData.RegisterType<MemoryState>();
+            UserData.RegisterType<TimeState>();
             UserData.RegisterType<PerceptionEventState>();
 
             userdataTypesRegistered = true;
@@ -53,9 +69,38 @@ namespace DogGame.Lua
 
         public void SetState(DogState dogState, VisionState visionState, HearingState hearingState)
         {
+            SetState(
+                dogState,
+                visionState,
+                hearingState,
+                defaultScentState,
+                defaultPackState,
+                defaultEnvState,
+                defaultTaskState,
+                defaultMemoryState,
+                defaultTimeState);
+        }
+
+        public void SetState(
+            DogState dogState,
+            VisionState visionState,
+            HearingState hearingState,
+            ScentState scentState,
+            PackState packState,
+            EnvState envState,
+            TaskState taskState,
+            MemoryState memoryState,
+            TimeState timeState)
+        {
             script.Globals["Dog"] = dogState;
             script.Globals["Vision"] = visionState;
             script.Globals["Hearing"] = hearingState;
+            script.Globals["Scent"] = scentState;
+            script.Globals["Pack"] = packState;
+            script.Globals["Env"] = envState;
+            script.Globals["Task"] = taskState;
+            script.Globals["Memory"] = memoryState;
+            script.Globals["Time"] = timeState;
             script.Globals["Event"] = DynValue.Nil;
         }
 
