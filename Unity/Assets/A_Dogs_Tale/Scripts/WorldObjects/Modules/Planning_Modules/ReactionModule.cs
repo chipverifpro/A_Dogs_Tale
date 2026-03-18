@@ -133,7 +133,7 @@ public sealed class ReactionModule : WorldModule
             string.Equals(loadedLuaScript, luaReactionScript, StringComparison.Ordinal))
             return;
 
-        luaDogState.isHungry = luaDogIsHungry;
+        //luaDogState.isHungry = luaDogIsHungry;
         luaDogState.hunger = Mathf.Clamp01(luaDogHunger01);
         luaVisionState.foodVisible = false;
         luaHearingState.barkHeard = false;

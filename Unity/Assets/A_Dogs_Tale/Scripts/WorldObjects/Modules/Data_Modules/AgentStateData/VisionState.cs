@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using DogGame.Modules;
 
 namespace DogGame.Lua
 {
@@ -38,7 +39,26 @@ namespace DogGame.Lua
         public VisionObjectState nearestFood = new();
         public VisionAgentState nearestThreat = new();
 
-        public bool smallAnimalVisible;
-        public bool foodVisible;
+        public bool smallAnimalVisible = false;
+        public bool foodVisible = false;
+
+        public WorldObject worldObject;
+        public AgentState  state;
+
+        public void InitState(WorldObject worldObject, AgentState state)
+        {
+            this.worldObject = worldObject;
+            this.state = state;
+        }
+
+        public void UpdateState(Detail detail)
+        {
+            // Placeholder for vision-perception pulls.
+        }
+
+        public void Tick(float interval)
+        {
+            // Vision is refreshed from perception; no passive drift needed yet.
+        }
     }
 }

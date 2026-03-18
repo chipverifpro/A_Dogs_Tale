@@ -47,15 +47,15 @@ namespace DogGame.Lua
         // every interval, grow or decay relevant parameters
         public void Tick(float interval)
         {
-            hunger      = Mathf.Clamp01(hunger + interval * .01f);
-            thirst      = Mathf.Clamp01(thirst + interval * .01f);
-            energy      = Mathf.Clamp01(energy - interval * .01f);
-            pain        = Mathf.Clamp01(pain   - interval * .01f);
-            boredom     = Mathf.Clamp01(hunger + interval * .01f);
-            fear        = Mathf.Clamp01(hunger - interval * .01f);
-            curiosity   = Mathf.Clamp01(hunger + interval * .01f);
-            excitement  = Mathf.Clamp01(hunger - interval * .01f);
-            confidence  = Mathf.Clamp01(hunger + interval * .01f);
+            hunger      = Mathf.Clamp01(hunger     + interval * .01f);
+            thirst      = Mathf.Clamp01(thirst     + interval * .01f);
+            energy      = Mathf.Clamp01(energy     - interval * .01f);
+            pain        = Mathf.Clamp01(pain       - interval * .01f);
+            boredom     = Mathf.Clamp01(hunger     + interval * .01f);
+            fear        = Mathf.Clamp01(fear       - interval * .01f);
+            curiosity   = Mathf.Clamp01(curiosity  + interval * .01f);
+            excitement  = Mathf.Clamp01(excitement - interval * .01f);
+            confidence  = Mathf.Clamp01(confidence + interval * .01f);
         }
     }
 }

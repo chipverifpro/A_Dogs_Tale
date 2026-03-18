@@ -94,7 +94,7 @@ end
 
             dogState = new DogState
             {
-                isHungry = true,
+                //isHungry = true,
                 hunger = 0.8f
             };
 

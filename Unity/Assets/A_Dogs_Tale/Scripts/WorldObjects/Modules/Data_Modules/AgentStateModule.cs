@@ -31,8 +31,6 @@ namespace DogGame.Modules
             // todo: the rest
         }
 
-        // Move this into each state class, not here.
-
         public void UpdateStateAll(Detail detail)
         {
             state.Dog.UpdateState(detail);
@@ -46,9 +44,10 @@ namespace DogGame.Modules
             state.Vision.UpdateState(detail);
         }
 
-        TickAllState()
+        public override void Tick(float dt)
         {
             // determine how long since last tick.
+            // could use dt instead.
             float interval = Time.time - prevIntervalTime;
             prevIntervalTime = Time.time;
 

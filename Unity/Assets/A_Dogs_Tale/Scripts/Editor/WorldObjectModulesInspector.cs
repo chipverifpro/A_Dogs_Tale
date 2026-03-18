@@ -76,7 +76,7 @@ public class WorldObjectModulesInspector : Editor
     {
         typeof(BlackboardModule),   // Generic data storage
         typeof(PlacementModule),    // Furniture placement definitions
-        typeof(StatusModule),       // Conditions (hungry, tired, alert, training)
+        typeof(AgentStateModule),       // Conditions (hungry, tired, alert, training)
         typeof(TaskListModule),     // Current list of tasks to perform
         typeof(ContainerModule),    // Inventory management
     };

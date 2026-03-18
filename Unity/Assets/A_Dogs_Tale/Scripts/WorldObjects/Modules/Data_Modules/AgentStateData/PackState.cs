@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using DogGame.Modules;
 
 namespace DogGame.Lua
 {
@@ -13,18 +14,38 @@ namespace DogGame.Lua
 
     public class PackState
     {
-        public int size;
-        public bool isLeader;
-        public PackMemberState leader = new();
+        public int size                       = 0;
+        public bool isLeader                 = false;
+        public PackMemberState leader        = new();
         public List<PackMemberState> members = new();
 
-        public float leaderDistance;
-        public bool formationBroken;
-        public bool memberInTrouble;
-        public bool memberBarking;
+        public float leaderDistance          = 0.0f;
+        public bool formationBroken          = false;
+        public bool memberInTrouble          = false;
+        public bool memberBarking            = false;
 
-        public bool isSeparated;
-        public bool memberMissing;
-        public bool regroupRequested;
+        public bool isSeparated              = false;
+        public bool memberMissing            = false;
+        public bool regroupRequested         = false;
+
+        public WorldObject worldObject;
+        public AgentState  state;
+
+        public void InitState(WorldObject worldObject, AgentState state)
+        {
+            this.worldObject = worldObject;
+            this.state = state;
+        }
+
+        public void UpdateState(Detail detail)
+        {
+            // Placeholder for pack-member module integration.
+        }
+
+        public void Tick(float interval)
+        {
+            size = members.Count;
+            leaderDistance = UnityEngine.Mathf.Max(0f, leaderDistance);
+        }
     }
 }

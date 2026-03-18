@@ -76,7 +76,7 @@ public enum ModuleFlags : ulong
     // --- Data ---
     blackboardModule    = 1UL << 51,
     placementModule     = 1UL << 52,
-    statusModule        = 1UL << 53,
+    agentStateModule    = 1UL << 53,
     taskListModule      = 1UL << 54,
     containerModule     = 1UL << 55,
 
@@ -195,7 +195,7 @@ public class WorldObject : MonoBehaviour
     // Data:
     public BlackboardModule blackboardModule { get; private set; }
     public PlacementModule placementModule { get; private set; }
-    public StatusModule statusModule { get; private set; }
+    public AgentStateModule agentStateModule { get; private set; }
     public TaskListModule taskListModule { get; private set; }
 
     // Quest:
@@ -291,7 +291,7 @@ public class WorldObject : MonoBehaviour
         // --- Data ---
         blackboardModule  = GetComponent<BlackboardModule>();
         placementModule   = GetComponent<PlacementModule>();
-        statusModule      = GetComponent<StatusModule>();
+        agentStateModule  = GetComponent<AgentStateModule>();
         taskListModule    = GetComponent<TaskListModule>();
         containerModule   = GetComponent<ContainerModule>();
 
@@ -380,7 +380,7 @@ public class WorldObject : MonoBehaviour
         // DATA                             // No need to tick
         //blackboardModule?.Tick(dt);
         //placementModule?.Tick(dt);
-        //statusModule?.Tick(dt);
+        agentStateModule?.Tick(dt);
 
         // OUTPUT
         //appearanceModule?.Tick(dt);
@@ -628,10 +628,10 @@ public class WorldObject : MonoBehaviour
         }
 
 
-        if (enables.HasFlag(ModuleFlags.statusModule))
+        if (enables.HasFlag(ModuleFlags.agentStateModule))
         {
-            statusModule = EnsureComponent<StatusModule>();
-            if (statusModule == null) Debug.LogWarning($"statusModule = null");
+            agentStateModule = EnsureComponent<AgentStateModule>();
+            if (agentStateModule == null) Debug.LogWarning($"agentStateModule = null");
         }
 
 
