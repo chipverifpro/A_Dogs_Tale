@@ -8,6 +8,9 @@ public class LeashVisualizer : MonoBehaviour
 
     public void SetEndpoints(Vector3 a, Vector3 b)
     {
+        a.y += 0.3f;  // move both endpoints up off the floor
+        b.y += 0.3f;
+
         Vector3 delta = b - a;
         float length = delta.magnitude;
 
@@ -28,6 +31,7 @@ public class LeashVisualizer : MonoBehaviour
         // Scale to match length (assumes unit length mesh)
         Vector3 scale = transform.localScale;
         scale.z = length;
+        scale.y = 0.05f;
         transform.localScale = scale;
     }
 }

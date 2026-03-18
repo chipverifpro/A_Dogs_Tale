@@ -402,6 +402,8 @@ public class NewInputAdapter : MonoBehaviour
             if (cameraMode == CameraModes.FP)
                 cameraMode = CameraModes.Overhead;
             else if (cameraMode == CameraModes.Overhead)
+                cameraMode = CameraModes.Nose;
+            else if (cameraMode == CameraModes.Nose)
                 cameraMode = CameraModes.Perspective;
             else if (cameraMode == CameraModes.Perspective)
                 cameraMode = CameraModes.FP;
