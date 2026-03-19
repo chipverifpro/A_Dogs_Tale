@@ -1,3 +1,6 @@
+using System;
+using System.Collections.Generic;
+using System.Text;
 using DogGame.Modules;
 using UnityEngine;
 
@@ -56,6 +59,24 @@ namespace DogGame.Lua
             curiosity   = Mathf.Clamp01(curiosity  + interval * .01f);
             excitement  = Mathf.Clamp01(excitement - interval * .01f);
             confidence  = Mathf.Clamp01(confidence + interval * .01f);
+        
+            //Debug.Log(StateToString(Detail.High));
+        }
+
+        public String StateToString(Detail detail)
+        {
+            if (detail == Detail.None) return "";   // disabled
+
+            var pieces = new List<string>();
+            if (isHungry)  pieces.Add($"Hungry({hunger:.0})");
+            if (isThirsty) pieces.Add($"Thirsty({thirst:.0})");
+            if (isTired)   pieces.Add($"Tired({energy:.0})");
+            if (isBored)   pieces.Add($"Bored({excitement:.0})");
+            if (isAfraid)  pieces.Add($"Afraid({fear:.0})");
+
+            if (pieces.Count > 0)
+                return worldObject.DisplayName + " is " + string.Join(" and ", pieces);
+            return "";
         }
     }
 }

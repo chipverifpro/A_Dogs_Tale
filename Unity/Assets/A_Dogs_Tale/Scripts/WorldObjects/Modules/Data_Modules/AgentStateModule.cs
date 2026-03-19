@@ -31,6 +31,7 @@ namespace DogGame.Modules
             // todo: the rest
         }
 
+        // call this to get latest detailed information filled in.
         public void UpdateStateAll(Detail detail)
         {
             state.Dog.UpdateState(detail);
@@ -44,6 +45,7 @@ namespace DogGame.Modules
             state.Vision.UpdateState(detail);
         }
 
+        // This updates things based on time elapsed, such as hunger.
         public override void Tick(float dt)
         {
             // determine how long since last tick.
