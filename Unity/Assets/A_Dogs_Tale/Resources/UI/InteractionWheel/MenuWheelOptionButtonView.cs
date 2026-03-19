@@ -27,6 +27,11 @@ namespace DogGame.UI.InteractionWheel
         [SerializeField] private float highlightedScale = 1.07f;
 
         private Button button = null!;
+        private RectTransform rectTransform = null!;
+        private HorizontalLayoutGroup? horizontalLayoutGroup;
+        private ContentSizeFitter? contentSizeFitter;
+        private LayoutElement? rootLayoutElement;
+        private LayoutElement? labelLayoutElement;
         public WheelOption? BoundOption { get; private set; }
 
         // Controller hooks
@@ -37,21 +42,16 @@ namespace DogGame.UI.InteractionWheel
 
         private void Awake()
         {
-            button = GetComponent<Button>();
-            baseScale = transform.localScale;
-
-            button.onClick.AddListener(() =>
-            {
-                onClicked?.Invoke();
-            });
+            EnsureInitialized();
         }
 
         public void Bind(WheelOption option)
         {
+            EnsureInitialized();
+
             BoundOption = option;
 
             labelText.text = option.label ?? "";
-            Debug.Log($"Bind Button: {labelText.text}");
             bool enabled = option.isEnabled;
             button.interactable = enabled;
 
@@ -74,8 +74,29 @@ namespace DogGame.UI.InteractionWheel
             SetHighlighted(false);
         }
 
+        public RectTransform RectTransform => rectTransform;
+
+        public void ApplyManualLayout(Vector2 size, Vector4 labelInsets)
+        {
+            EnsureInitialized();
+            DisableAutomaticLayout();
+
+            rectTransform.anchorMin = new Vector2(0.5f, 0.5f);
+            rectTransform.anchorMax = new Vector2(0.5f, 0.5f);
+            rectTransform.pivot = new Vector2(0.5f, 0.5f);
+            rectTransform.sizeDelta = size;
+
+            RectTransform labelRect = labelText.rectTransform;
+            labelRect.anchorMin = Vector2.zero;
+            labelRect.anchorMax = Vector2.one;
+            labelRect.pivot = new Vector2(0.5f, 0.5f);
+            labelRect.offsetMin = new Vector2(labelInsets.x, labelInsets.y);
+            labelRect.offsetMax = new Vector2(-labelInsets.z, -labelInsets.w);
+        }
+
         public void SetHighlighted(bool highlighted)
         {
+            EnsureInitialized();
             transform.localScale = highlighted ? (baseScale * highlightedScale) : baseScale;
         }
 
@@ -89,6 +110,55 @@ namespace DogGame.UI.InteractionWheel
         {
             if (BoundOption == null) return;
             onHoverChanged?.Invoke(false, BoundOption, (RectTransform)transform);
+        }
+
+        private void EnsureInitialized()
+        {
+            if (rectTransform == null)
+                rectTransform = (RectTransform)transform;
+
+            if (button == null)
+            {
+                button = GetComponent<Button>();
+                button.onClick.AddListener(HandleClicked);
+            }
+
+            if (horizontalLayoutGroup == null)
+                horizontalLayoutGroup = GetComponent<HorizontalLayoutGroup>();
+
+            if (contentSizeFitter == null)
+                contentSizeFitter = GetComponent<ContentSizeFitter>();
+
+            if (rootLayoutElement == null)
+                rootLayoutElement = GetComponent<LayoutElement>();
+
+            if (labelLayoutElement == null && labelText != null)
+                labelLayoutElement = labelText.GetComponent<LayoutElement>();
+
+            if (baseScale == default)
+                baseScale = transform.localScale;
+
+            DisableAutomaticLayout();
+        }
+
+        private void HandleClicked()
+        {
+            onClicked?.Invoke();
+        }
+
+        private void DisableAutomaticLayout()
+        {
+            if (horizontalLayoutGroup != null)
+                horizontalLayoutGroup.enabled = false;
+
+            if (contentSizeFitter != null)
+                contentSizeFitter.enabled = false;
+
+            if (rootLayoutElement != null)
+                rootLayoutElement.ignoreLayout = true;
+
+            if (labelLayoutElement != null)
+                labelLayoutElement.ignoreLayout = true;
         }
     }
 }

@@ -17,18 +17,10 @@ namespace DogGame.UI.InteractionWheel
         [SerializeField] private MenuWheelTooltipView tooltipView = null!;
         [SerializeField] private MenuWheelInputBlocker inputBlocker = null!;
         [SerializeField] private Canvas rootCanvas = null!;
-        private RectTransform canvasRect = null!;
+        [SerializeField] private Camera? worldCamera;
+
         [Header("Layout")]
-        [Tooltip("Wheel radius as fraction of min(screenWidth, screenHeight).")]
-        [Range(0.10f, 0.60f)]
-        [SerializeField] private float wheelRadiusFactor = 0.38f;
-
-        [Tooltip("Deadzone radius as fraction of min(screenWidth, screenHeight). Inside = no option highlighted.")]
-        [Range(0.02f, 0.25f)]
-        [SerializeField] private float deadzoneFactor = 0.10f;
-
-        [Tooltip("Angle offset in degrees. 90 means first option starts at top.")]
-        [SerializeField] private float startAngleDegrees = 90f;
+        [SerializeField] private MenuWheelLayoutSettings layoutSettings = new();
 
         [Header("Behavior")]
         [Tooltip("Default timescale while menu is open. 0 = pause, 1 = normal, 0.25 = slow.")]
@@ -40,7 +32,9 @@ namespace DogGame.UI.InteractionWheel
         [Tooltip("If true, right-click closes the wheel.")]
         [SerializeField] private bool rightClickCloses = true;
 
-        // Runtime state
+        private RectTransform canvasRect = null!;
+        private CanvasScaler? canvasScaler;
+
         private bool isOpen;
         private float previousTimeScale;
         private WheelMenuModel? currentMenu;
@@ -48,8 +42,9 @@ namespace DogGame.UI.InteractionWheel
 
         private readonly List<MenuWheelOptionButtonView> spawnedButtons = new();
         private int highlightedIndex = -1;
+        private MenuWheelResolvedLayout currentLayout;
+        private bool hasCurrentLayout;
 
-        // Needed so the blocker can close us without direct scene references.
         public bool IsOpen => isOpen;
 
         private void Awake()
@@ -58,12 +53,22 @@ namespace DogGame.UI.InteractionWheel
                 rootCanvas = GetComponentInParent<Canvas>();
 
             canvasRect = rootCanvas.GetComponent<RectTransform>();
+            canvasScaler = rootCanvas.GetComponent<CanvasScaler>();
+
+            if (worldCamera == null)
+                worldCamera = Camera.main;
+
+            if (layoutSettings == null)
+                layoutSettings = new MenuWheelLayoutSettings();
+
+            DisableAutomaticScaling();
+            NormalizeCanvasHierarchy();
 
             var rootGraphic = GetComponent<Graphic>();
             if (rootGraphic != null)
                 rootGraphic.raycastTarget = false;
 
-            SetVisible(false);   // DEBUG: should be false
+            SetVisible(false);
 
             if (inputBlocker != null)
                 inputBlocker.onPressedOutside = HandlePressedOutside;
@@ -71,20 +76,16 @@ namespace DogGame.UI.InteractionWheel
 
         private void OnDestroy()
         {
-            // Restore timescale if the object is destroyed while open.
             if (isOpen)
                 RestoreTimeScale();
         }
 
-        /// <summary>
-        /// Open wheel UI with the already-resolved menu model (Step 2 output).
-        /// Starts at page 0.
-        /// </summary>
         public void OpenMenuWheel(WheelMenuModel menuModel, float? overrideTimeScale = null)
         {
-            if (menuModel == null) throw new ArgumentNullException(nameof(menuModel));
+            if (menuModel == null)
+                throw new ArgumentNullException(nameof(menuModel));
 
-            gameObject.SetActive(true); // <- re-enable before building
+            gameObject.SetActive(true);
 
             currentMenu = menuModel;
             currentPageIndex = 0;
@@ -94,18 +95,19 @@ namespace DogGame.UI.InteractionWheel
             SetVisible(true);
             isOpen = true;
 
-            // Cancel button is always present and acts as a close.
+            if (tooltipView != null)
+                tooltipView.HideTooltip();
+
             ConfigureCancelButton();
-
             BuildPage(pageIndex: 0);
-
-            // Start with nothing highlighted until pointer moves out of deadzone.
+            ApplyManualLayout();
             SetHighlightedIndex(-1);
         }
 
         public void CloseMenuWheel()
         {
             ClearSpawnedButtons();
+
             if (tooltipView != null)
                 tooltipView.HideTooltip();
 
@@ -114,6 +116,8 @@ namespace DogGame.UI.InteractionWheel
             if (isOpen)
                 RestoreTimeScale();
 
+            hasCurrentLayout = false;
+            highlightedIndex = -1;
             isOpen = false;
             currentMenu = null;
             currentPageIndex = 0;
@@ -127,7 +131,8 @@ namespace DogGame.UI.InteractionWheel
             if (!isOpen || currentMenu == null)
                 return;
 
-            // Close hotkeys (Input System)
+            ApplyManualLayout();
+
             var keyboard = Keyboard.current;
             if (keyboard != null && keyboard.escapeKey.wasPressedThisFrame)
             {
@@ -142,7 +147,6 @@ namespace DogGame.UI.InteractionWheel
                 return;
             }
 
-            // Update highlight from pointer position (mouse or touch)
             Vector2 pointerScreenPos;
             bool pointerIsDown;
             bool pointerReleasedThisFrame;
@@ -156,16 +160,12 @@ namespace DogGame.UI.InteractionWheel
 
             UpdateHighlight(pointerScreenPos);
 
-            // Only select on an actual release *this frame*
             if (pointerReleasedThisFrame)
-            {
                 HandlePointerReleased();
-            }
         }
 
         private void HandlePointerReleased()
         {
-            // Choose selection
             if (highlightedIndex < 0)
             {
                 if (releaseWithNoSelectionCancels)
@@ -180,14 +180,8 @@ namespace DogGame.UI.InteractionWheel
             WheelOption selectedOption = selectedButton.BoundOption!;
 
             if (!selectedOption.isEnabled)
-            {
-                // Disabled: just close or keep open? You asked for hints explaining disabled.
-                // I'd keep open so the user can choose something else.
-                // But release is the "confirm" action, so we should NOT close on disabled selection.
                 return;
-            }
 
-            // Navigation options are handled by UI
             if (selectedOption.id == WheelMenuResolver.MoreOptionId)
             {
                 SwitchToPage(1);
@@ -200,8 +194,8 @@ namespace DogGame.UI.InteractionWheel
                 return;
             }
 
-            // Normal option: execute callback if present.
             WheelContext context = currentMenu!.context;
+
             try
             {
                 selectedOption.callback?.Invoke(context);
@@ -224,20 +218,19 @@ namespace DogGame.UI.InteractionWheel
 
             currentPageIndex = pageIndex;
             BuildPage(pageIndex);
+            ApplyManualLayout();
             SetHighlightedIndex(-1);
         }
 
         private void BuildPage(int pageIndex)
         {
-            Debug.Log("[WheelUI] BuildPage called");
-
-            if (currentMenu == null) return;
+            if (currentMenu == null)
+                return;
 
             ClearSpawnedButtons();
 
             List<WheelOption> pageOptions = currentMenu.pages[pageIndex];
 
-            // Instantiate
             for (int optionIndex = 0; optionIndex < pageOptions.Count; optionIndex++)
             {
                 WheelOption option = pageOptions[optionIndex];
@@ -250,29 +243,38 @@ namespace DogGame.UI.InteractionWheel
 
                 spawnedButtons.Add(buttonView);
             }
-
-            // Let TMP + ContentSizeFitter compute final sizes before we place in a circle.
-            Canvas.ForceUpdateCanvases();
-            for (int i = 0; i < spawnedButtons.Count; i++)
-            {
-                var rt = spawnedButtons[i].GetComponent<RectTransform>();
-                UnityEngine.UI.LayoutRebuilder.ForceRebuildLayoutImmediate(rt);
-            }
-            Canvas.ForceUpdateCanvases();
-
-            LayoutButtonsInCircle(spawnedButtons, wheelRadiusFactor, startAngleDegrees);
         }
 
-        private void LayoutButtonsInCircle(List<MenuWheelOptionButtonView> buttons, float radiusFactor, float startAngleDeg)
+        private void ApplyManualLayout()
         {
-            if (canvasRect == null) return;
+            NormalizeCanvasHierarchy();
 
-            // Canvas units (after CanvasScaler) — stable.
-            float canvasMin = Mathf.Min(canvasRect.rect.width, canvasRect.rect.height);
-            float radius = canvasMin * radiusFactor;
+            currentLayout = layoutSettings.Resolve(new Vector2(Screen.width, Screen.height));
+            hasCurrentLayout = true;
 
+            Vector2 wheelCenterScreen = ClampCenterToScreen(ResolveWheelCenterScreen(currentLayout), currentLayout);
+            Vector2 wheelCenterOffset = wheelCenterScreen - (currentLayout.ScreenSize * 0.5f);
+
+            optionsContainer.anchorMin = new Vector2(0.5f, 0.5f);
+            optionsContainer.anchorMax = new Vector2(0.5f, 0.5f);
+            optionsContainer.pivot = new Vector2(0.5f, 0.5f);
+            optionsContainer.sizeDelta = currentLayout.ScreenSize;
+            optionsContainer.anchoredPosition = wheelCenterOffset;
+
+            LayoutButtonsInCircle(spawnedButtons, currentLayout.WheelRadius, layoutSettings.StartAngleDegrees);
+
+            for (int i = 0; i < spawnedButtons.Count; i++)
+                spawnedButtons[i].ApplyManualLayout(currentLayout.OptionButtonSize, currentLayout.LabelInsets);
+
+            cancelButton.ApplyManualLayout(currentLayout.CancelButtonSize, currentLayout.LabelInsets);
+            cancelButton.RectTransform.anchoredPosition = wheelCenterOffset + (Vector2.down * currentLayout.CancelOffset);
+        }
+
+        private void LayoutButtonsInCircle(List<MenuWheelOptionButtonView> buttons, float radius, float startAngleDeg)
+        {
             int count = buttons.Count;
-            if (count == 0) return;
+            if (count == 0)
+                return;
 
             float angleStep = 360f / count;
 
@@ -284,16 +286,59 @@ namespace DogGame.UI.InteractionWheel
                 float x = Mathf.Cos(angleRad) * radius;
                 float y = Mathf.Sin(angleRad) * radius;
 
-                RectTransform rt = buttons[i].GetComponent<RectTransform>();
-
-                // Because OptionsContainer is anchored/pivoted at center,
-                // anchoredPosition is in its local canvas units.
-                rt.anchoredPosition = new Vector2(x, y);
+                buttons[i].RectTransform.anchoredPosition = new Vector2(x, y);
             }
         }
+
+        private Vector2 ResolveWheelCenterScreen(MenuWheelResolvedLayout layout)
+        {
+            Vector2 screenCenter = layout.ScreenSize * 0.5f;
+
+            if (layoutSettings.CenterMode == MenuWheelCenterMode.CenterOnScreen)
+                return screenCenter;
+
+            if (currentMenu == null || currentMenu.context.actor == null)
+                return screenCenter;
+
+            Camera? cameraToUse = worldCamera != null ? worldCamera : Camera.main;
+            if (cameraToUse == null)
+                return screenCenter;
+
+            Vector3 worldAnchor = GetActorAnchor(currentMenu.context.actor);
+            Vector3 projected = cameraToUse.WorldToScreenPoint(worldAnchor);
+
+            if (projected.z <= 0f)
+                return screenCenter;
+
+            return new Vector2(projected.x, projected.y);
+        }
+
+        private static Vector3 GetActorAnchor(WorldObject actor)
+        {
+            if (actor.appearanceModule != null && actor.appearanceModule.mainRenderer != null)
+                return actor.appearanceModule.mainRenderer.bounds.center;
+
+            if (actor.TryGetComponent<Collider>(out Collider collider))
+                return collider.bounds.center;
+
+            return actor.transform.position + (Vector3.up * Mathf.Max(0.5f, actor.sizeRadius));
+        }
+
+        private static Vector2 ClampCenterToScreen(Vector2 desiredCenterScreen, MenuWheelResolvedLayout layout)
+        {
+            float horizontalExtent = layout.WheelRadius + (layout.OptionButtonSize.x * 0.5f) + layout.EdgePadding;
+            float topExtent = layout.WheelRadius + (layout.OptionButtonSize.y * 0.5f) + layout.EdgePadding;
+            float bottomExtent = Mathf.Max(
+                layout.WheelRadius + (layout.OptionButtonSize.y * 0.5f),
+                layout.CancelOffset + (layout.CancelButtonSize.y * 0.5f)) + layout.EdgePadding;
+
+            return new Vector2(
+                Mathf.Clamp(desiredCenterScreen.x, horizontalExtent, layout.ScreenSize.x - horizontalExtent),
+                Mathf.Clamp(desiredCenterScreen.y, bottomExtent, layout.ScreenSize.y - topExtent));
+        }
+
         private void ConfigureCancelButton()
         {
-            // Cancel button is special: always enabled, always visible, closes on click.
             cancelButton.Bind(new WheelOption
             {
                 id = "cancel",
@@ -306,7 +351,7 @@ namespace DogGame.UI.InteractionWheel
                 callback = null
             });
 
-            cancelButton.onClicked = () => CloseMenuWheel();
+            cancelButton.onClicked = CloseMenuWheel;
             cancelButton.onHoverChanged = (isHovering, option, rectTransform) =>
             {
                 if (!isHovering)
@@ -326,16 +371,17 @@ namespace DogGame.UI.InteractionWheel
                 if (spawnedButtons[i] != null)
                     Destroy(spawnedButtons[i].gameObject);
             }
+
             spawnedButtons.Clear();
         }
 
         private void UpdateHighlight(Vector2 pointerScreenPos)
         {
-            if (canvasRect == null) return;
+            if (!hasCurrentLayout)
+                return;
 
             Camera? uiCamera = rootCanvas.renderMode == RenderMode.ScreenSpaceOverlay ? null : rootCanvas.worldCamera;
 
-            // Convert screen pointer to local coordinates in the OptionsContainer space (center is 0,0).
             if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(
                     optionsContainer, pointerScreenPos, uiCamera, out Vector2 localPos))
             {
@@ -344,10 +390,7 @@ namespace DogGame.UI.InteractionWheel
                 return;
             }
 
-            float canvasMin = Mathf.Min(canvasRect.rect.width, canvasRect.rect.height);
-            float deadzone = canvasMin * deadzoneFactor;
-
-            if (localPos.magnitude < deadzone)
+            if (localPos.magnitude < currentLayout.DeadzoneRadius)
             {
                 SetHighlightedIndex(-1);
                 tooltipView.HideTooltip();
@@ -359,10 +402,10 @@ namespace DogGame.UI.InteractionWheel
 
             if (bestIndex >= 0)
             {
-                var button = spawnedButtons[bestIndex];
-                var option = button.BoundOption!;
+                MenuWheelOptionButtonView button = spawnedButtons[bestIndex];
+                WheelOption option = button.BoundOption!;
                 string hintText = option.isEnabled ? option.hint : option.disabledHint;
-                tooltipView.ShowTooltip(hintText, button.GetComponent<RectTransform>());
+                tooltipView.ShowTooltip(hintText, button.RectTransform);
             }
         }
 
@@ -371,18 +414,14 @@ namespace DogGame.UI.InteractionWheel
             if (spawnedButtons.Count == 0)
                 return -1;
 
-            // Determine pointer angle in degrees
             float pointerAngleDeg = Mathf.Atan2(localDirectionFromCenter.y, localDirectionFromCenter.x) * Mathf.Rad2Deg;
 
-            // Buttons are placed at known angles based on their anchored positions.
             int bestIndex = -1;
             float bestDelta = float.MaxValue;
 
             for (int i = 0; i < spawnedButtons.Count; i++)
             {
-                RectTransform buttonTransform = spawnedButtons[i].GetComponent<RectTransform>();
-                Vector2 buttonPos = buttonTransform.anchoredPosition;
-
+                Vector2 buttonPos = spawnedButtons[i].RectTransform.anchoredPosition;
                 float buttonAngleDeg = Mathf.Atan2(buttonPos.y, buttonPos.x) * Mathf.Rad2Deg;
                 float angleDelta = Mathf.Abs(Mathf.DeltaAngle(pointerAngleDeg, buttonAngleDeg));
 
@@ -398,24 +437,20 @@ namespace DogGame.UI.InteractionWheel
 
         private void SetHighlightedIndex(int newIndex)
         {
-            return;
             if (highlightedIndex == newIndex)
                 return;
 
-            // Clear old
             if (highlightedIndex >= 0 && highlightedIndex < spawnedButtons.Count)
                 spawnedButtons[highlightedIndex].SetHighlighted(false);
 
             highlightedIndex = newIndex;
 
-            // Set new
             if (highlightedIndex >= 0 && highlightedIndex < spawnedButtons.Count)
                 spawnedButtons[highlightedIndex].SetHighlighted(true);
         }
 
         private void HandleButtonHoverChanged(bool isHovering, WheelOption option, RectTransform sourceRect)
         {
-            // Mouse hover support (drag highlight also shows tooltip; both can coexist)
             if (!isOpen)
                 return;
 
@@ -431,7 +466,6 @@ namespace DogGame.UI.InteractionWheel
 
         private void HandlePressedOutside()
         {
-            // Click/tap outside wheel -> close
             CloseMenuWheel();
         }
 
@@ -448,25 +482,50 @@ namespace DogGame.UI.InteractionWheel
 
         private void SetVisible(bool visible)
         {
-            if (wheelRoot != null) wheelRoot.gameObject.SetActive(visible);
-            if (inputBlocker != null) inputBlocker.gameObject.SetActive(visible);
+            if (wheelRoot != null)
+                wheelRoot.gameObject.SetActive(visible);
+
+            if (inputBlocker != null)
+                inputBlocker.gameObject.SetActive(visible);
+        }
+
+        private void DisableAutomaticScaling()
+        {
+            if (canvasScaler != null)
+                canvasScaler.enabled = false;
+        }
+
+        private void NormalizeCanvasHierarchy()
+        {
+            canvasRect.anchorMin = Vector2.zero;
+            canvasRect.anchorMax = Vector2.one;
+            canvasRect.pivot = new Vector2(0.5f, 0.5f);
+            canvasRect.anchoredPosition = Vector2.zero;
+            canvasRect.sizeDelta = Vector2.zero;
+            canvasRect.localScale = Vector3.one;
+
+            wheelRoot.anchorMin = Vector2.zero;
+            wheelRoot.anchorMax = Vector2.one;
+            wheelRoot.pivot = new Vector2(0.5f, 0.5f);
+            wheelRoot.anchoredPosition = Vector2.zero;
+            wheelRoot.sizeDelta = Vector2.zero;
+            wheelRoot.localScale = Vector3.one;
         }
 
         private static bool TryGetPointer(out Vector2 pointerScreenPos, out bool pointerIsDown, out bool pointerReleasedThisFrame)
         {
-            // Touch priority
             var touchscreen = Touchscreen.current;
             if (touchscreen != null && touchscreen.touches.Count > 0)
             {
-                // Pick the first active touch
                 foreach (var touchControl in touchscreen.touches)
                 {
-                    if (touchControl == null) continue;
+                    if (touchControl == null)
+                        continue;
 
                     var press = touchControl.press;
-                    if (press == null) continue;
+                    if (press == null)
+                        continue;
 
-                    // Consider it active if currently pressed OR just released this frame
                     bool isPressed = press.isPressed;
                     bool releasedThisFrame = press.wasReleasedThisFrame;
 
@@ -480,7 +539,6 @@ namespace DogGame.UI.InteractionWheel
                 }
             }
 
-            // Mouse
             var mouse = Mouse.current;
             if (mouse != null)
             {
@@ -490,46 +548,10 @@ namespace DogGame.UI.InteractionWheel
                 return true;
             }
 
-            // No pointer device
             pointerScreenPos = default;
             pointerIsDown = false;
             pointerReleasedThisFrame = false;
             return false;
-        }
-
-        private Vector2 _lastWheelRootPos;
-        private Vector2 _lastOptionsPos;
-        private int _lastButtonsHash;
-
-        private void LateUpdate()
-        {
-            if (!isOpen) return;
-
-            var wr = wheelRoot.anchoredPosition;
-            var oc = optionsContainer.anchoredPosition;
-
-            if (wr != _lastWheelRootPos || oc != _lastOptionsPos)
-            {
-                Debug.Log($"[WheelUI] MOVED: WheelRoot={wr} OptionsContainer={oc}", this);
-                _lastWheelRootPos = wr;
-                _lastOptionsPos = oc;
-            }
-
-            // Also detect if any button's anchoredPosition changes unchecked
-            {
-                int hash = 17;
-                for (int i = 0; i < spawnedButtons.Count; i++)
-                {
-                    var rt = spawnedButtons[i].GetComponent<RectTransform>();
-                    hash = hash * 31 + rt.anchoredPosition.GetHashCode();
-                }
-
-                if (hash != _lastButtonsHash)
-                {
-                    Debug.Log($"[WheelUI] BUTTON POSITIONS CHANGED (hash { _lastButtonsHash } -> { hash })", this);
-                    _lastButtonsHash = hash;
-                }
-            }
         }
     }
 }
