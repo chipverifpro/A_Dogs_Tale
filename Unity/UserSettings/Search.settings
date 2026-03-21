@@ -13,9 +13,9 @@ scopes = {
 	"picker_visibility_flags.075BCD15" = "264"
 	"picker_item_size.075BCD15" = "96"
 	"picker_inspector.075BCD15" = "0"
-	"last_search.66F56946" = "disable no cameras rendering warning"
+	"last_search.66F56946" = "layout"
 	"OpenInspectorPreview.66F56946" = "0"
-	"currentGroup.66F56946" = null
+	"currentGroup.66F56946" = "all"
 	"picker_window_position_offset.00000000" = "88.5;93;320;550"
 	"picker_visibility_flags.00000000" = "0"
 	"picker_item_size.00000000" = "1"
@@ -106,6 +106,7 @@ providers = {
 objectSelectors = {
 }
 recentSearches = [
+	"layout"
 	"Stai"
 	"disable no cameras rendering warning"
 	"disable no cameras renderi"

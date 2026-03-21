@@ -197,6 +197,7 @@ public class WorldObject : MonoBehaviour
     public PlacementModule placementModule { get; private set; }
     public AgentStateModule agentStateModule { get; private set; }
     public TaskListModule taskListModule { get; private set; }
+    public KnowledgeModule knowledgeModule { get; private set; }
 
     // Quest:
     public QuestModuleBase fetchQuestModule { get; private set; }
@@ -294,7 +295,7 @@ public class WorldObject : MonoBehaviour
         agentStateModule  = GetComponent<AgentStateModule>();
         taskListModule    = GetComponent<TaskListModule>();
         containerModule   = GetComponent<ContainerModule>();
-
+        knowledgeModule   = GetComponent<KnowledgeModule>();
         // --- Quest ---
         fetchQuestModule  = GetComponent<FetchQuestModule>();
 

@@ -13,3 +13,7 @@ curl -X POST http://127.0.0.1:8081/world_state \
 {
     "world_state_text": "I am clipped to a 3m long leash held by germanshepherd at [5.33,4.48].\n[cur] CONTEXT: Agent position: [5.3, 4.4]. in room type Bathroom and size 24,8. Vision:\n - VISION: seen germanshepherd entityId=6 (Dog,PackLeader) dist=0.1m speed=0.0m/s position=[5,1].\n - VISION: seen chihuahua entityId=5 (Dog,NonPack) dist=0.6m speed=0.0m/s position=[5,1]."
 }%                                                                                    
+
+# if port is in use (previous session didnt close cleanly, run 
+lsof -i :8000
+# then kill processes listed.

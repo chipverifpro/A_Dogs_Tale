@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using DogGame.Modules;
+using Unity.AppUI.UI;
 using UnityEngine;
 
 namespace DogGame.Lua
@@ -9,14 +10,16 @@ namespace DogGame.Lua
     {
         public WorldObject listener;        // provided by creator
         public WorldObject noiseMaker;      // provided by creator
-        public string type = "";            // provided by creator
-        public float loudnessDb;            // provided by creator (usually defined as volume at 1m in decibels)
-        
+        public string soundType = "";       // provided by creator
+        public string humanWords;           // provided by creator
+        public float loudnessDb;            // provided by creator, defined as volume at 1m in decibels
+
         public Vector3 noiseMakerLocation;  // collected by constructor
         public Vector3 listenerLocation;    // collected by constructor
         public float distance;              // calc by constructor
         public string direction = "";       // calc by constructor
-
+        public string humanToDogWords = ""; // converted by constructor
+        public string humanToDogTone = "";  // extracted by constructor, negative, neutral, positive
         public float perceivedVolumeDb;     // calc by constructor (in decibels)
         public float time;                  // collected by constructor
         public bool reported = false;       // updated by SendToLLM to identify as old info, don't resend as new event. (or just delete it?)
@@ -24,13 +27,158 @@ namespace DogGame.Lua
         // derived-on-the-fly parameters
         public float age => Time.time - time;
 
+        public string TryHearingSoundToText (Detail detail,
+                                             float threshold,
+                                             out bool heard)
+        {
+            // outputs:
+            string description = ""; 
+            heard = false;
+
+            if (detail == Detail.None)      // early exit optimization
+            {
+                heard = false;
+                return "";
+            }
+
+            // ---- begin variable list----
+            // Listener
+            String softListener;            // Fido
+            string speciesListener;         // dog
+
+            // NoiseMaker
+            bool knowsNoiseMaker;           // false or true
+            String softNoiseMaker;          // cat   or Fifi
+            string speciesNoiseMaker;       // cat
+            
+            // Sound
+            String softSoundType;           // bark
+            String softDirection;           // northeast
+            String softDistance;            // 5m
+            String softVolume;              // faintly, clearly, loudly, etc
+            // bool heard is a parameter    // false iff inaudible
+            string softHowLongAgo = "";     // about 3 seconds ago
+            
+            // human words
+            String humanToDogWords = "";    // Bad dog! blah blah blah shoe
+            String humanToDogTone = "";     // negative, neutral, positive
+            
+            // ---- begin converting ----
+            softListener = listener.DisplayName;
+            speciesListener = listener.llmConfigModule.identity.species.ToString();
+
+            softNoiseMaker = listener.knowledgeModule.KnowsAgentAs(noiseMaker, out knowsNoiseMaker);         
+            speciesNoiseMaker = noiseMaker.llmConfigModule.identity.species.ToString();
+
+            softSoundType = soundType;
+            softDirection = direction;
+            softDistance = distance.ToString();
+            softVolume = GetSoftVolume(speciesListener, perceivedVolumeDb, out heard);
+
+            if (age > 2f)
+            {
+                softHowLongAgo = $"About {age:0} seconds ago, ";
+            }
+
+            if (humanWords != "" && speciesListener == "dog")
+            {
+                humanToDogWords = listener.knowledgeModule.TranslateFromHuman(humanWords, out humanToDogTone);                
+            }
+            
+            if (heard==false) return "";
+
+            if (humanToDogWords == "")
+            {    
+                // not human speech
+                switch (detail)
+                {
+                    case Detail.Low:
+                        description = $"You heard a {softVolume} {softSoundType} to the {softDirection}.";
+                        break;
+                    case Detail.Medium:
+                        description = $"You heard a {softSoundType} sound to the {softDirection} about {softDistance} away that is {softVolume}.";
+                        break;
+                    case Detail.High:
+                        description = $"{softListener} heard a {softSoundType} sound to the {softDirection} about {softDistance} away that is {softVolume}.";
+                        break;
+                    default:
+                        description = "";
+                        break;
+                }
+            }
+            else    // translatedWords != ""
+            {
+                // human speech
+                switch (detail)
+                {
+                    case Detail.Low:
+                        description = $"You heard \"{humanToDogWords}\" in a {humanToDogTone} tone from the {softDirection}.";
+                        break;
+                    case Detail.Medium:
+                        description = $"{softHowLongAgo}, you heard {noiseMaker} say \"{humanToDogWords}\" in a {humanToDogTone} tone from the {softDirection} about {softDistance} away that is {softVolume}.";
+                        break;
+                    case Detail.High:
+                        description = $"{softHowLongAgo}, {softListener} heard {noiseMaker} say \"{humanToDogWords}\" in a {humanToDogTone} tone from the {softDirection} about {softDistance} away that is {softVolume}.";
+                        break;
+                    default:
+                        description = "";
+                        break;
+                }
+            }
+
+
+            return description;
+        }
+
+
+        string GetSoftVolume (string species, float perceivedVolumeDb, out bool heard)
+        {
+            float dbBoost;
+            string softLoudness;
+
+            heard = false;
+            dbBoost = GetSpeciesHearingDbBoost(species);
+            softLoudness = LoudnessTerm(perceivedVolumeDb + dbBoost);
+            if (softLoudness != "") heard = true;
+            return softLoudness;
+        }
+
+        float GetSpeciesHearingDbBoost(string species) => species.ToLowerInvariant() switch
+        {
+            "human" => 0f,
+            "dog" => 5f,
+            "cat" => 7f,
+            "bird" => 8f,
+            "lizard" => -2f,
+            "squirrel" => 6f,
+            "monkey" => 3f,
+            _ => 0f
+        };
+
+        string LoudnessTerm(float db) => db switch
+        {
+            < 10f => "",                // inaudible
+            < 20f => "barely audible",
+            < 30f => "very faintly",
+            < 40f => "faintly",
+            < 50f => "softly",
+            < 60f => "clearly",
+            < 70f => "noticeably loudly",
+            < 80f => "loudly",
+            < 90f => "very loudly",
+            < 100f => "extremely loudly",
+            _ => "deafeningly"
+        };
+
         // constructor
         public HearingSoundState (WorldObject listener, WorldObject noiseMaker, 
-                                  String type, float loudnessDb)
+                                  String soundType, String humanWords, float loudnessDb)
         {
+            // copy provided parameters to structure
             this.listener = listener;
             this.noiseMaker = noiseMaker;
-            this.type = type;
+            this.soundType = soundType;
+            this.humanWords = humanWords;
             this.loudnessDb = loudnessDb;
 
             // get current locations
@@ -163,6 +311,7 @@ namespace DogGame.Lua
 
 // ================================================================ //
 //      HearingState class
+//         Deals with a list of HearingSoundState (above)
 // ================================================================ //
 
     public class HearingState
@@ -198,9 +347,9 @@ namespace DogGame.Lua
 
         // must prefill heard with:
         //  type, noiseMakerLocation, loudness
-        public void AddSoundHeard(WorldObject listener, WorldObject noiseMaker, string type, float loudness)
+        public void AddSoundHeard(WorldObject listener, WorldObject noiseMaker, string type, string humanWords, float loudness)
         {
-            HearingSoundState heard = new(listener, noiseMaker, type, loudness);
+            HearingSoundState heard = new(listener, noiseMaker, type, humanWords, loudness);
             // everything else is calculated during construction
 
             // Add the new sound to the list
