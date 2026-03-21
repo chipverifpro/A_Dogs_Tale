@@ -862,6 +862,7 @@ MonoBehaviour:
   inputBlocker: {fileID: 7617353905598823730}
   rootCanvas: {fileID: 5778082345947544518}
   worldCamera: {fileID: 0}
+  centerPreviewView: {fileID: 0}
   layoutSettings:
     centerMode: 0
     edgePaddingPercent: 0.06
@@ -873,6 +874,7 @@ MonoBehaviour:
     cancelWidthPercent: 0.14
     cancelHeightPercent: 0.055
     cancelOffsetPercent: 0.07
+    previewSizePercent: 0.16
     horizontalLabelInsetPercent: 0.012
     verticalLabelInsetPercent: 0.008
   openTimeScale: 1

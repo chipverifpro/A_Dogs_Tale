@@ -54,6 +54,11 @@ namespace DogGame.UI.InteractionWheel
         [Range(0.00f, 0.25f)]
         [SerializeField] private float cancelOffsetPercent = 0.07f;
 
+        [Header("Center Preview")]
+        [Tooltip("Preview size as a fraction of the smaller screen dimension.")]
+        [Range(0.05f, 0.30f)]
+        [SerializeField] private float previewSizePercent = 0.16f;
+
         [Header("Label Insets")]
         [Tooltip("Horizontal inset inside each button as a fraction of the smaller screen dimension.")]
         [Range(0.00f, 0.06f)]
@@ -82,6 +87,7 @@ namespace DogGame.UI.InteractionWheel
                     screenMin * cancelWidthPercent,
                     screenMin * cancelHeightPercent),
                 cancelOffset: screenMin * cancelOffsetPercent,
+                previewSize: screenMin * previewSizePercent,
                 edgePadding: screenMin * edgePaddingPercent,
                 labelInsets: new Vector4(
                     screenMin * horizontalLabelInsetPercent,
@@ -101,6 +107,7 @@ namespace DogGame.UI.InteractionWheel
             Vector2 optionButtonSize,
             Vector2 cancelButtonSize,
             float cancelOffset,
+            float previewSize,
             float edgePadding,
             Vector4 labelInsets)
         {
@@ -111,6 +118,7 @@ namespace DogGame.UI.InteractionWheel
             OptionButtonSize = optionButtonSize;
             CancelButtonSize = cancelButtonSize;
             CancelOffset = cancelOffset;
+            PreviewSize = previewSize;
             EdgePadding = edgePadding;
             LabelInsets = labelInsets;
         }
@@ -122,6 +130,7 @@ namespace DogGame.UI.InteractionWheel
         public Vector2 OptionButtonSize { get; }
         public Vector2 CancelButtonSize { get; }
         public float CancelOffset { get; }
+        public float PreviewSize { get; }
         public float EdgePadding { get; }
         public Vector4 LabelInsets { get; }
     }

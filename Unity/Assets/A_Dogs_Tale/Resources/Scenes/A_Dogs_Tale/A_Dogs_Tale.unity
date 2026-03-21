@@ -5968,7 +5968,6 @@ GameObject:
   - component: {fileID: 942637350}
   - component: {fileID: 942637351}
   - component: {fileID: 942637352}
-  - component: {fileID: 942637353}
   - component: {fileID: 942637354}
   m_Layer: 0
   m_Name: Input
@@ -6177,34 +6176,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::MenuWheelSystem
   wheelPrefab: {fileID: 4222713848330073877, guid: f44fa092563394f01827985a538ac751,
     type: 3}
---- !u!114 &942637353
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 942637342}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5e4a80f5fa64f44b487f6b5faba35798, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::MenuWheelLongPressOpener
-  mainCamera: {fileID: 1815589284}
-  actorWorldObject: {fileID: 0}
-  interactableMask:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  maxRayDistance: 2000
-  holdToOpenSeconds: 0.45
-  maxMovePixelsBeforeAcquire: 45
-  allowAcquireDuringHold: 1
-  useAimAssist: 1
-  aimAssistRadiusPixels: 26
-  aimAssistSamples: 8
-  lockTargetOnceAcquired: 1
-  maxPrimaryOptions: 8
-  preventOpenIfNoOptions: 0
-  menuOpenTimeScale: 1
 --- !u!114 &942637354
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -12933,7 +12904,7 @@ MonoBehaviour:
   toggleKey: 9
   target: {fileID: 6544990386685219154}
   height: 20
-  zoomStep: 2
+  zoomStep: 0.1
   minZoom: 2
   maxZoom: 50
   minFOV: 30
@@ -15699,6 +15670,10 @@ PrefabInstance:
         type: 3}
       insertIndex: -1
       addedObject: {fileID: 6544990386685219193}
+    - targetCorrespondingSourceObject: {fileID: 8843402266763018810, guid: 2ce0050a816054aaca2a1076f182f7a8,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 6544990386685219195}
   m_SourcePrefab: {fileID: 100100000, guid: 2ce0050a816054aaca2a1076f182f7a8, type: 3}
 --- !u!1 &6544990386685219093 stripped
 GameObject:
@@ -16427,6 +16402,21 @@ MonoBehaviour:
     icon: {fileID: 21300004, guid: 215687feeab0b7445b4a1cd86c82c2e1, type: 3}
     isVisible: 1
     isEnabled: 1
+--- !u!114 &6544990386685219195
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6544990386685219093}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e2ccdaf84ad0b4ce8b235ae14f53ad68, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.KnowledgeModule
+  knownAgents: []
+  knownWords: []
+  substituteUnknownWord: '{-blah-}'
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

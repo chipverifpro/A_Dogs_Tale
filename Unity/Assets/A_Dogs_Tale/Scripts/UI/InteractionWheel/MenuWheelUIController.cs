@@ -18,6 +18,7 @@ namespace DogGame.UI.InteractionWheel
         [SerializeField] private MenuWheelInputBlocker inputBlocker = null!;
         [SerializeField] private Canvas rootCanvas = null!;
         [SerializeField] private Camera? worldCamera;
+        [SerializeField] private MenuWheelCenterPreviewView? centerPreviewView;
 
         [Header("Layout")]
         [SerializeField] private MenuWheelLayoutSettings layoutSettings = new();
@@ -63,6 +64,7 @@ namespace DogGame.UI.InteractionWheel
 
             DisableAutomaticScaling();
             NormalizeCanvasHierarchy();
+            EnsureCenterPreviewView();
 
             var rootGraphic = GetComponent<Graphic>();
             if (rootGraphic != null)
@@ -101,6 +103,10 @@ namespace DogGame.UI.InteractionWheel
             ConfigureCancelButton();
             BuildPage(pageIndex: 0);
             ApplyManualLayout();
+            WorldObject previewTarget = menuModel.context.target != null
+                ? menuModel.context.target
+                : menuModel.context.actor;
+            centerPreviewView?.Show(previewTarget);
             SetHighlightedIndex(-1);
         }
 
@@ -111,6 +117,7 @@ namespace DogGame.UI.InteractionWheel
             if (tooltipView != null)
                 tooltipView.HideTooltip();
 
+            centerPreviewView?.Hide();
             SetVisible(false);
 
             if (isOpen)
@@ -268,6 +275,7 @@ namespace DogGame.UI.InteractionWheel
 
             cancelButton.ApplyManualLayout(currentLayout.CancelButtonSize, currentLayout.LabelInsets);
             cancelButton.RectTransform.anchoredPosition = wheelCenterOffset + (Vector2.down * currentLayout.CancelOffset);
+            centerPreviewView?.ApplyLayout(wheelCenterOffset, currentLayout);
         }
 
         private void LayoutButtonsInCircle(List<MenuWheelOptionButtonView> buttons, float radius, float startAngleDeg)
@@ -390,6 +398,8 @@ namespace DogGame.UI.InteractionWheel
                 return;
             }
 
+            centerPreviewView?.SetFacingDirection(localPos);
+
             if (localPos.magnitude < currentLayout.DeadzoneRadius)
             {
                 SetHighlightedIndex(-1);
@@ -497,19 +507,41 @@ namespace DogGame.UI.InteractionWheel
 
         private void NormalizeCanvasHierarchy()
         {
-            canvasRect.anchorMin = Vector2.zero;
-            canvasRect.anchorMax = Vector2.one;
+            canvasRect.anchorMin = new Vector2(0.5f, 0.5f);
+            canvasRect.anchorMax = new Vector2(0.5f, 0.5f);
             canvasRect.pivot = new Vector2(0.5f, 0.5f);
-            canvasRect.anchoredPosition = Vector2.zero;
+            canvasRect.anchoredPosition = new Vector2(0.5f, 0.5f);;
             canvasRect.sizeDelta = Vector2.zero;
             canvasRect.localScale = Vector3.one;
 
-            wheelRoot.anchorMin = Vector2.zero;
-            wheelRoot.anchorMax = Vector2.one;
+            wheelRoot.anchorMin = new Vector2(0.5f, 0.5f);
+            wheelRoot.anchorMax = new Vector2(0.5f, 0.5f);
             wheelRoot.pivot = new Vector2(0.5f, 0.5f);
-            wheelRoot.anchoredPosition = Vector2.zero;
+            wheelRoot.anchoredPosition = new Vector2(0.5f, 0.5f);
             wheelRoot.sizeDelta = Vector2.zero;
             wheelRoot.localScale = Vector3.one;
+        }
+
+        private void EnsureCenterPreviewView()
+        {
+            if (centerPreviewView != null)
+                return;
+
+            Transform? existing = wheelRoot.Find("CenterPreview");
+            GameObject previewObject;
+            if (existing != null)
+            {
+                previewObject = existing.gameObject;
+            }
+            else
+            {
+                previewObject = new GameObject("CenterPreview", typeof(RectTransform));
+                previewObject.transform.SetParent(wheelRoot, false);
+            }
+
+            centerPreviewView = previewObject.GetComponent<MenuWheelCenterPreviewView>();
+            if (centerPreviewView == null)
+                centerPreviewView = previewObject.AddComponent<MenuWheelCenterPreviewView>();
         }
 
         private static bool TryGetPointer(out Vector2 pointerScreenPos, out bool pointerIsDown, out bool pointerReleasedThisFrame)
