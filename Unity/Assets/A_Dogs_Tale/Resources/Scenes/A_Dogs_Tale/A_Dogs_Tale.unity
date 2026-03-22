@@ -9139,7 +9139,7 @@ GameObject:
   - component: {fileID: 1326159948}
   m_Layer: 0
   m_Name: FogCamera
-  m_TagString: MainCamera
+  m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -10481,7 +10481,7 @@ MonoBehaviour:
   practically_zero: 0.0001
   elementStore: {fileID: 11400000, guid: 12ce8f64c30bc4bbfa007792bc781b21, type: 2}
   enableScentDiagnostics: 1
-  scentDiagnosticsEveryNFrames: 500
+  scentDiagnosticsEveryNFrames: 5000
   logScentReclamation: 0
   scentVisualThreshold: 0.00390625
   maxVisualIntensity: 0.5
@@ -11861,6 +11861,51 @@ MonoBehaviour:
     label: Sniff
     hint: Nose to the ground
     disabledHint: Got a cold?
+    icon: {fileID: 0}
+    isVisible: 1
+    isEnabled: 1
+  - id: scent_sniff
+    actionKey: 
+    sortPriority: 0
+    label: Sniff
+    hint: Nose to the ground
+    disabledHint: Got a cold?
+    icon: {fileID: 0}
+    isVisible: 1
+    isEnabled: 1
+  - id: Dig.Up
+    actionKey: 
+    sortPriority: 0
+    label: Dig Up
+    hint: 
+    disabledHint: 
+    icon: {fileID: 0}
+    isVisible: 1
+    isEnabled: 1
+  - id: Dig.Bury
+    actionKey: 
+    sortPriority: 0
+    label: Bury Item
+    hint: 
+    disabledHint: 
+    icon: {fileID: 0}
+    isVisible: 1
+    isEnabled: 1
+  - id: Dig.Hole
+    actionKey: 
+    sortPriority: 0
+    label: Dig Hole
+    hint: 
+    disabledHint: 
+    icon: {fileID: 0}
+    isVisible: 1
+    isEnabled: 1
+  - id: Item.Drop
+    actionKey: 
+    sortPriority: 0
+    label: Drop Item
+    hint: 
+    disabledHint: 
     icon: {fileID: 0}
     isVisible: 1
     isEnabled: 1

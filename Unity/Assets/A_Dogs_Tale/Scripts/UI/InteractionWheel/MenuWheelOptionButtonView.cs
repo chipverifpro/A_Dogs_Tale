@@ -85,13 +85,14 @@ namespace DogGame.UI.InteractionWheel
             rectTransform.anchorMax = new Vector2(0.5f, 0.5f);
             rectTransform.pivot = new Vector2(0.5f, 0.5f);
             rectTransform.sizeDelta = size;
-
+            
             RectTransform labelRect = labelText.rectTransform;
             labelRect.anchorMin = Vector2.zero;
             labelRect.anchorMax = Vector2.one;
             labelRect.pivot = new Vector2(0.5f, 0.5f);
             labelRect.offsetMin = new Vector2(labelInsets.x, labelInsets.y);
             labelRect.offsetMax = new Vector2(-labelInsets.z, -labelInsets.w);
+            //Debug.Log($"rectTransform.sizeDelta = {size}, labelInsets = {labelInsets}");
         }
 
         public void SetHighlighted(bool highlighted)
@@ -113,9 +114,11 @@ namespace DogGame.UI.InteractionWheel
         }
 
         private void EnsureInitialized()
-        {
+        {            
             if (rectTransform == null)
                 rectTransform = (RectTransform)transform;
+
+            //Debug.Log($"EnsureInitialized(): rectTransform={rectTransform}");
 
             if (button == null)
             {
@@ -138,7 +141,7 @@ namespace DogGame.UI.InteractionWheel
             if (baseScale == default)
                 baseScale = transform.localScale;
 
-            DisableAutomaticLayout();
+            //DisableAutomaticLayout();
         }
 
         private void HandleClicked()
@@ -148,6 +151,8 @@ namespace DogGame.UI.InteractionWheel
 
         private void DisableAutomaticLayout()
         {
+            //Debug.Log($"DisableAutomaticLayout()");
+
             if (horizontalLayoutGroup != null)
                 horizontalLayoutGroup.enabled = false;
 

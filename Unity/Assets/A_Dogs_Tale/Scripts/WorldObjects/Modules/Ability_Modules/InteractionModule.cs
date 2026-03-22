@@ -105,9 +105,13 @@ namespace DogGame.UI.InteractionWheel
         private Action<WheelContext>? ResolveCallbackOrNull(Entry entry)
         {
             if (!entry.isEnabled) return null;
-            if (string.IsNullOrWhiteSpace(entry.actionKey)) return null;
+            string bindingKey = !string.IsNullOrWhiteSpace(entry.actionKey)
+                ? entry.actionKey
+                : entry.id;
 
-            if (boundActions.TryGetValue(entry.actionKey, out var callback))
+            if (string.IsNullOrWhiteSpace(bindingKey)) return null;
+
+            if (boundActions.TryGetValue(bindingKey, out var callback))
                 return callback;
 
             return null;
@@ -117,6 +121,14 @@ namespace DogGame.UI.InteractionWheel
         {
             base.Awake();
             BindAction("Quest.Get", ctx => Debug.Log("Quest.Get fired for " + ctx.target.name));
+            BindAction("Follow_nose", ctx => Debug.Log("Follow_nose fired for " + ctx.target.name));
+            BindAction("sound_bark", ctx => Debug.Log("sound_bark fired for " + ctx.target.name));
+            BindAction("scent_sniff", ctx => Debug.Log("scent_sniff fired for " + ctx.target.name));
+            BindAction("Dig.Up", ctx => Debug.Log("Dig.Up fired for " + ctx.target.name));
+            BindAction("Dig.Bury", ctx => Debug.Log("Dig.Bury fired for " + ctx.target.name));
+            BindAction("Dig.Hole", ctx => Debug.Log("Dig.Hole fired for " + ctx.target.name));
+            BindAction("Item.Drop", ctx => Debug.Log("Item.Drop fired for " + ctx.target.name));
+        
         }
 
 /*
