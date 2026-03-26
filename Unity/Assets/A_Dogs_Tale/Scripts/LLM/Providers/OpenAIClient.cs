@@ -49,8 +49,7 @@ namespace DogGame.LLM.Providers
                 ["model"] = string.IsNullOrWhiteSpace(request.profile?.model) ? model : request.profile.model,
                 ["instructions"] = modelUniqueInstructions,
                 ["input"] =
-                    $"requestId={requestId}\nagentId={agentId}\n" +
-                    "Return ONLY JSON matching responseSchemaJson.\n\n" +
+                    BuildCommandModeInstruction(request, requestId, agentId) +
                     "REQUEST_PACKET:\n" + requestText,
                 ["temperature"] = temperature,
                 ["max_output_tokens"] = maxOutputTokens,

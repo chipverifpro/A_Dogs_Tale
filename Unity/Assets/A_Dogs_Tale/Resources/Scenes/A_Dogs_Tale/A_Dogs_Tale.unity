@@ -3660,22 +3660,23 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7218e3fb1f54040bcb853b10dd1e8ede, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::LLMWorldScheduler
-  llmVendorAndModel: 4194304
+  llmVendorAndModel: 1
   llmModelsAvailable:
-  - displayName: "Ollama \xB7 Gemma3 \xB7 Medium"
-    llmVendorAndModel: 4194304
-    llmVendor: 2
-    llmModelString: Gemma3
-    remote: 0
+  - displayName: "OpenAI \xB7 gpt-4.1-mini \xB7 Medium"
+    llmVendorAndModel: 1
+    llmVendor: 0
+    llmModelString: gpt-4.1-mini
+    remote: 1
     sophistication: 1
     vendorMaxConcurrentRequests: 1
-    successRate: 0.8
-    typicalResponseTime: 20
-    typicalCost: 0
+    successRate: 0.9
+    typicalResponseTime: 10
+    typicalCost: 0.01
     totalRequests: 0
     totalFailures: 0
     currentRequests: []
-  router: {fileID: 0}
+  router: {fileID: 494970100}
+  commandMode: 1
   pendingRequests: []
 --- !u!114 &494970099
 MonoBehaviour:
@@ -8334,6 +8335,7 @@ MonoBehaviour:
     responseSchemaJson: {fileID: 0}
     embedAsStructuredJson: 1
     toolCatalogResourcePath: ToolCatalogV1
+    responseSchemaResourcePath: LLM/Schemas/PlanResponseV3.schema
   modelOverrides:
     vendorOverride: 
     modelLow: 
@@ -11720,6 +11722,7 @@ MonoBehaviour:
     responseSchemaJson: {fileID: 0}
     embedAsStructuredJson: 1
     toolCatalogResourcePath: ToolCatalogV1
+    responseSchemaResourcePath: LLM/Schemas/PlanResponseV3.schema
   modelOverrides:
     vendorOverride: 
     modelLow: 
@@ -15153,6 +15156,7 @@ MonoBehaviour:
     responseSchemaJson: {fileID: 0}
     embedAsStructuredJson: 1
     toolCatalogResourcePath: ToolCatalogV1
+    responseSchemaResourcePath: LLM/Schemas/PlanResponseV3.schema
   modelOverrides:
     vendorOverride: 
     modelLow: 
@@ -16392,6 +16396,7 @@ MonoBehaviour:
       type: 3}
     embedAsStructuredJson: 1
     toolCatalogResourcePath: ToolCatalogV1
+    responseSchemaResourcePath: LLM/Schemas/PlanResponseV3.schema
   modelOverrides:
     vendorOverride: 
     modelLow: 

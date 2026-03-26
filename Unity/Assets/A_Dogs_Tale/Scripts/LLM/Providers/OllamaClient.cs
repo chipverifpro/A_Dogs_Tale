@@ -23,9 +23,8 @@ namespace DogGame.LLM.Providers
         public readonly int timeoutSeconds = 300;
         public readonly float temperature = 0.2f;
         public readonly int maxOutputTokens = 800;
-        public readonly string modelUniqueInstructions =          
-            "You MUST output ONLY a single JSON object that matches the PlanResponseV1 schema.\n" +
-            "No markdown, no commentary, no code fences. JSON only.";
+        public readonly string modelUniqueInstructions =
+            "You MUST output only the requested structured result. No markdown, no commentary, no code fences.";
 
         // constructor:
         public OllamaClient(string model = "Gemma3:1b")
@@ -45,8 +44,7 @@ namespace DogGame.LLM.Providers
                 ["model"] = string.IsNullOrWhiteSpace(request.profile?.model) ? model : request.profile.model,
                 ["instructions"] = modelUniqueInstructions,
                 ["input"] =
-                    $"requestId={requestId}\nagentId={agentId}\n" +
-                    "Return ONLY JSON matching responseSchemaJson.\n\n" +
+                    BuildCommandModeInstruction(request, requestId, agentId) +
                     "REQUEST_PACKET:\n" + requestText,
                 ["temperature"] = temperature,
                 ["max_output_tokens"] = maxOutputTokens,

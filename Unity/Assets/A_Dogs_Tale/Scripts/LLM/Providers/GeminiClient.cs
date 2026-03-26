@@ -46,8 +46,7 @@ namespace DogGame.LLM.Providers
             // We keep your same core instruction style: "JSON only", then supply the request packet.
             string prompt =
                 modelUniqueInstructions + "\n\n" +
-                $"requestId={requestId}\nagentId={agentId}\n" +
-                "Return ONLY JSON matching responseSchemaJson.\n\n" +
+                BuildCommandModeInstruction(request, requestId, agentId) +
                 "REQUEST_PACKET:\n" + requestText;
 
             var payload = new JObject

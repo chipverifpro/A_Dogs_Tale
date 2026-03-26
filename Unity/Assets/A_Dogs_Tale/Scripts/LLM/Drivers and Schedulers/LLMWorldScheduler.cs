@@ -4,6 +4,9 @@ using System.Collections.Generic;
 using DogGame.LLM.Agent;
 using DogGame.LLM.Core;
 using DogGame.LLM.Providers;
+using CoreLLMResponse = DogGame.LLM.Core.LLMResponse;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using UnityEngine;
 using DogGame.LLM;
 
@@ -217,6 +220,12 @@ public class LLMWorldScheduler : MonoBehaviour
 {
     public static LLMWorldScheduler Instance { get; private set; } = null!;
 
+    public enum SchedulerCommandMode
+    {
+        JsonCommands,
+        McpToolCalls
+    }
+
     [Header("LLM Providers Available")]
     [Tooltip("Enable/Disable available models")]
     public LLMVendorAndModel llmVendorAndModel;
@@ -271,6 +280,9 @@ public class LLMWorldScheduler : MonoBehaviour
 
     [Header("Unified LLM Router")]
     [SerializeField] private UnifiedLLMRouter? router;
+
+    [Header("Command Mode")]
+    [SerializeField] private SchedulerCommandMode commandMode = SchedulerCommandMode.JsonCommands;
 
     [SerializeField] public List<LLMPlanRequestOnDemand> pendingRequests = new();
 
@@ -411,6 +423,8 @@ public class LLMWorldScheduler : MonoBehaviour
             userTaskPrompt: request.Prompt
         );
 
+        ApplyCommandMode(llmRequest);
+
         // Force vendor/model to match the selection (prevents the “why is it using OpenAI” bug)
         llmRequest.profile.vendor = selection.VendorName;
         llmRequest.profile.model = selection.llmModelString;
@@ -432,7 +446,8 @@ public class LLMWorldScheduler : MonoBehaviour
         }
         catch (Exception ex)
         {
-            selection.currentRequests.Remove(request.RequestId);
+            ReleaseInflightAgent(request.AgentId);
+            selection.OnDispatchFailure(requestName);
             UnityEngine.Debug.LogWarning($"[LLM Scheduler] Client creation failed vendor={selection.llmVendor} model={selection.llmModelString}: {ex.Message}");
             return;
         }
@@ -450,14 +465,8 @@ public class LLMWorldScheduler : MonoBehaviour
         try
         {
             var response = await client.SendAsync(llmRequest, default);
+            ReleaseInflightAgent(schedulerRequest.AgentId);
 
-            // Always release slot
-            selection.currentRequests.Remove(schedulerRequest.RequestId);
-            if (!string.IsNullOrWhiteSpace(schedulerRequest.AgentId))
-            {
-                inflightAgents.Remove(schedulerRequest.AgentId);
-                inflightRequestIdByAgent.Remove(schedulerRequest.AgentId);
-            }
             if (response == null)
             {
                 selection.OnDispatchFailure(schedulerRequest.RequestId);
@@ -479,20 +488,283 @@ public class LLMWorldScheduler : MonoBehaviour
                 return;
             }
 
-            selection.OnDispatchSuccess(schedulerRequest.RequestId);
-            string planJson =
+            string rawPayload =
                 !string.IsNullOrWhiteSpace(response.rawText) ? response.rawText :
                 !string.IsNullOrWhiteSpace(response.rawProviderPayloadJson) ? response.rawProviderPayloadJson :
                 "";
 
-            schedulerRequest.OnResponseJson?.Invoke(planJson);
+            if (!TryBuildSchedulerResponsePayload(llmRequest, response, schedulerRequest, rawPayload, out string callbackPayload, out string? modeError))
+            {
+                selection.OnDispatchFailure(schedulerRequest.RequestId);
+                UnityEngine.Debug.LogWarning($"[LLM Scheduler] Response hook failed requestId={schedulerRequest.RequestId} agentId={schedulerRequest.AgentId} err={modeError}");
+                return;
+            }
+
+            selection.OnDispatchSuccess(schedulerRequest.RequestId);
+            schedulerRequest.OnResponseJson?.Invoke(callbackPayload);
         }
         catch (Exception ex)
         {
-            selection.currentRequests.Remove(schedulerRequest.RequestId);
+            ReleaseInflightAgent(schedulerRequest.AgentId);
             selection.OnDispatchFailure(schedulerRequest.RequestId);
             UnityEngine.Debug.LogWarning($"[LLM Scheduler] Send failed vendor={selection.llmVendor} model={selection.llmModelString} requestId={schedulerRequest.RequestId}: {ex.GetType().Name}: {ex.Message}");
         }
+    }
+
+    private void ReleaseInflightAgent(string? agentId)
+    {
+        if (string.IsNullOrWhiteSpace(agentId))
+            return;
+
+        inflightAgents.Remove(agentId);
+        inflightRequestIdByAgent.Remove(agentId);
+    }
+
+    private void ApplyCommandMode(LLMRequest llmRequest)
+    {
+        llmRequest.commandMode = commandMode == SchedulerCommandMode.McpToolCalls
+            ? LLMCommandMode.McpToolCalls
+            : LLMCommandMode.JsonCommands;
+
+        if (llmRequest.commandMode == LLMCommandMode.McpToolCalls)
+        {
+            llmRequest.responseSchema = null;
+            llmRequest.responseSchemaJson = "";
+            llmRequest.systemBlocks.Add("COMMAND MODE OVERRIDE: Use MCP tool call JSON, not PlanResponseV3.");
+        }
+        else
+        {
+            llmRequest.toolDefinitions = null;
+            llmRequest.systemBlocks.Add("COMMAND MODE OVERRIDE: Use PlanResponseV3 JSON.");
+        }
+    }
+
+    private static bool TryBuildSchedulerResponsePayload(
+        LLMRequest llmRequest,
+        CoreLLMResponse response,
+        LLMPlanRequestOnDemand schedulerRequest,
+        string rawPayload,
+        out string callbackPayload,
+        out string? error)
+    {
+        callbackPayload = rawPayload;
+        error = null;
+
+        if (llmRequest.commandMode != LLMCommandMode.McpToolCalls)
+            return true;
+
+        if (!TryExtractMcpToolCalls(response, rawPayload, out var toolCalls, out error))
+            return false;
+
+        var plan = new JObject
+        {
+            ["schema"] = "PlanResponseV3",
+            ["requestId"] = schedulerRequest.RequestId ?? "",
+            ["agentId"] = schedulerRequest.AgentId ?? "",
+            ["intentions"] = ConvertToolCallsToIntentions(toolCalls)
+        };
+
+        callbackPayload = plan.ToString(Formatting.None);
+        return true;
+    }
+
+    private static bool TryExtractMcpToolCalls(
+        CoreLLMResponse response,
+        string rawPayload,
+        out List<CoreLLMResponse.ToolCall> toolCalls,
+        out string? error)
+    {
+        toolCalls = new List<CoreLLMResponse.ToolCall>();
+        error = null;
+
+        if (response.toolCalls != null && response.toolCalls.Count > 0)
+        {
+            toolCalls.AddRange(response.toolCalls);
+            return true;
+        }
+
+        string? extracted = ExtractFirstJsonObject(rawPayload);
+        if (string.IsNullOrWhiteSpace(extracted))
+        {
+            error = "Could not find MCP tool call JSON in provider output.";
+            return false;
+        }
+
+        JToken rootToken;
+        try
+        {
+            rootToken = JToken.Parse(extracted);
+        }
+        catch (Exception ex)
+        {
+            error = $"MCP tool call JSON parse failed: {ex.Message}";
+            return false;
+        }
+
+        JArray? callsArray = rootToken as JArray;
+        if (callsArray == null && rootToken is JObject rootObject)
+        {
+            callsArray =
+                rootObject["tool_calls"] as JArray ??
+                rootObject["toolCalls"] as JArray ??
+                rootObject["calls"] as JArray;
+        }
+
+        if (callsArray == null || callsArray.Count == 0)
+        {
+            error = "MCP tool call JSON did not contain any tool calls.";
+            return false;
+        }
+
+        for (int i = 0; i < callsArray.Count; i++)
+        {
+            if (callsArray[i] is not JObject callObject)
+                continue;
+
+            string? name =
+                callObject.Value<string>("name") ??
+                callObject.Value<string>("tool_name");
+
+            if (string.IsNullOrWhiteSpace(name))
+                continue;
+
+            string argumentsJson = "{}";
+            if (callObject["arguments"] is JObject argumentsObject)
+                argumentsJson = argumentsObject.ToString(Formatting.None);
+            else if (callObject["arguments"] is JValue argumentsValue && argumentsValue.Type == JTokenType.String)
+                argumentsJson = argumentsValue.Value<string>() ?? "{}";
+
+            toolCalls.Add(new CoreLLMResponse.ToolCall
+            {
+                name = name.Trim(),
+                argumentsJson = string.IsNullOrWhiteSpace(argumentsJson) ? "{}" : argumentsJson
+            });
+        }
+
+        if (toolCalls.Count == 0)
+        {
+            error = "MCP tool call JSON contained no valid tool calls.";
+            return false;
+        }
+
+        return true;
+    }
+
+    private static JArray ConvertToolCallsToIntentions(List<CoreLLMResponse.ToolCall> toolCalls)
+    {
+        var intentions = new JArray();
+
+        for (int i = 0; i < toolCalls.Count; i++)
+        {
+            var call = toolCalls[i];
+            var intention = new JObject
+            {
+                ["action"] = call.name ?? ""
+            };
+
+            if (!string.IsNullOrWhiteSpace(call.argumentsJson))
+            {
+                try
+                {
+                    if (JObject.Parse(call.argumentsJson) is JObject argumentsObject)
+                        intention.Merge(argumentsObject, new JsonMergeSettings { MergeArrayHandling = MergeArrayHandling.Replace });
+                }
+                catch
+                {
+                    intention["reasoning"] = $"Invalid MCP arguments JSON for tool {call.name}.";
+                }
+            }
+
+            if (string.IsNullOrWhiteSpace(intention.Value<string>("reasoning")))
+                intention["reasoning"] = $"Selected tool {call.name}.";
+
+            intentions.Add(intention);
+        }
+
+        return intentions;
+    }
+
+    private static string? ExtractFirstJsonObject(string text)
+    {
+        if (string.IsNullOrWhiteSpace(text))
+            return null;
+
+        text = text.Replace("```json", "", StringComparison.OrdinalIgnoreCase)
+                .Replace("```", "", StringComparison.OrdinalIgnoreCase)
+                .Trim();
+
+        int firstBracket = text.IndexOf('[');
+        int firstBrace = text.IndexOf('{');
+        int firstIndex;
+        char openChar;
+        char closeChar;
+
+        if (firstBracket >= 0 && (firstBrace < 0 || firstBracket < firstBrace))
+        {
+            firstIndex = firstBracket;
+            openChar = '[';
+            closeChar = ']';
+        }
+        else if (firstBrace >= 0)
+        {
+            firstIndex = firstBrace;
+            openChar = '{';
+            closeChar = '}';
+        }
+        else
+        {
+            return null;
+        }
+
+        int depth = 0;
+        bool inString = false;
+        bool escape = false;
+
+        for (int i = firstIndex; i < text.Length; i++)
+        {
+            char c = text[i];
+
+            if (inString)
+            {
+                if (escape)
+                {
+                    escape = false;
+                    continue;
+                }
+
+                if (c == '\\')
+                {
+                    escape = true;
+                    continue;
+                }
+
+                if (c == '"')
+                    inString = false;
+
+                continue;
+            }
+
+            if (c == '"')
+            {
+                inString = true;
+                continue;
+            }
+
+            if (c == openChar)
+            {
+                depth++;
+                continue;
+            }
+
+            if (c != closeChar)
+                continue;
+
+            depth--;
+            if (depth == 0)
+                return text.Substring(firstIndex, i - firstIndex + 1);
+        }
+
+        return null;
     }
 
     private void TryDispatchRequests()

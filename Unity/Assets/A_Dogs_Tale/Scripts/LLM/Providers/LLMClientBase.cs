@@ -360,6 +360,28 @@ namespace DogGame.LLM.Core
             return sb.ToString().Trim();
         }
 
+        protected static string BuildCommandModeInstruction(LLMRequest request, string requestId, string agentId)
+        {
+            if (request.commandMode == LLMCommandMode.McpToolCalls)
+            {
+                return
+                    $"requestId={requestId}\nagentId={agentId}\n" +
+                    "COMMAND MODE: MCP_TOOL_CALLS.\n" +
+                    "Return ONLY JSON in this exact shape:\n" +
+                    "{\"tool_calls\":[{\"name\":\"tool_name\",\"arguments\":{}}]}\n" +
+                    "Rules:\n" +
+                    "- Use only tool names listed in the TOOLS JSON section of the request packet.\n" +
+                    "- arguments must be a JSON object containing only fields allowed by that tool.\n" +
+                    "- Do not return PlanResponseV3 directly in this mode.\n" +
+                    "- Do not include markdown, commentary, or extra top-level keys.\n\n";
+            }
+
+            return
+                $"requestId={requestId}\nagentId={agentId}\n" +
+                "COMMAND MODE: JSON_COMMANDS.\n" +
+                "Return ONLY JSON matching the RESPONSE SCHEMA JSON section of the request packet.\n\n";
+        }
+
         // OpenAI/Ollama Responses API extraction: root.output[].content[].type == "output_text"
         protected static ParseResult ParseResponsesApi_OutputText(string responsesApiJson)
         {

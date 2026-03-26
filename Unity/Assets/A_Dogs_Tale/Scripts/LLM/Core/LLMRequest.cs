@@ -5,6 +5,11 @@ using Newtonsoft.Json.Linq;
 
 namespace DogGame.LLM.Core
 {
+    public enum LLMCommandMode
+    {
+        JsonCommands,
+        McpToolCalls
+    }
 
     public sealed class LLMRequestPacket
     {
@@ -14,6 +19,7 @@ namespace DogGame.LLM.Core
         public string userPrompt = "";
         public JObject? toolDefinitions;
         public JObject? responseSchema;
+        public LLMCommandMode commandMode = LLMCommandMode.JsonCommands;
         public Dictionary<string, string> metadata = new();
     }
 
@@ -32,6 +38,8 @@ namespace DogGame.LLM.Core
 
         // The immediate user/task prompt (what the agent wants now)
         public string userPrompt = "";
+
+        public LLMCommandMode commandMode = LLMCommandMode.JsonCommands;
 
         // ----------------------------
         // Legacy string JSON fields (keep during migration)
