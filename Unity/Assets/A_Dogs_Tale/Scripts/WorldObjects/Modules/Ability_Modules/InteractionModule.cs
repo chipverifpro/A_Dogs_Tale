@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using DogGame.Modules;
+using Unity.InferenceEngine;
 using UnityEngine;
 
 namespace DogGame.UI.InteractionWheel
@@ -117,18 +118,55 @@ namespace DogGame.UI.InteractionWheel
             return null;
         }
 
+        public enum EnableState { disabled, enabled, unavailable };
+        public enum ActionCategory { Hearing,
+                                     Knowledge,
+                                     ScentPerception,
+                                     VisionPerception,
+                                     Motion,
+                                     Appearance,
+                                     NoiseMaker,
+                                     ScentEmitter,
+                                     AgentState,
+                                     TaskList,
+                                     WorldState,
+                                   };
+        
+        public bool RegisterAction( string actionName,
+                                    string actionCategory, // for sorting
+                                    //function callback,
+                                    EnableState enable = EnableState.enabled
+                                    )
+        {
+            return true;
+        }
+
         protected override void Awake()
         {
             base.Awake();
+            // Quests
             BindAction("Quest.Get", ctx => Debug.Log("Quest.Get fired for " + ctx.target.name));
-            BindAction("Follow_nose", ctx => Debug.Log("Follow_nose fired for " + ctx.target.name));
-            BindAction("sound_bark", ctx => Debug.Log("sound_bark fired for " + ctx.target.name));
-            BindAction("scent_sniff", ctx => Debug.Log("scent_sniff fired for " + ctx.target.name));
+            // Scent Perception
+            BindAction("Scent.Follow", ctx => Debug.Log("Follow_nose fired for " + ctx.target.name));
+            // Hearing
+            BindAction("Sound.Bark", ctx => Debug.Log("sound_bark fired for " + ctx.target.name));
+            // ScentPerception
+            BindAction("Scent.Sniff", ctx => Debug.Log("scent_sniff fired for " + ctx.target.name));
+            // Inventory
             BindAction("Dig.Up", ctx => Debug.Log("Dig.Up fired for " + ctx.target.name));
             BindAction("Dig.Bury", ctx => Debug.Log("Dig.Bury fired for " + ctx.target.name));
             BindAction("Dig.Hole", ctx => Debug.Log("Dig.Hole fired for " + ctx.target.name));
             BindAction("Item.Drop", ctx => Debug.Log("Item.Drop fired for " + ctx.target.name));
-        
+            // Movement
+            BindAction("Move.Sneak", ctx => Debug.Log("Pack.Leave fired for " + ctx.target.name));
+            BindAction("Move.Leave", ctx => Debug.Log("Pack.Leave fired for " + ctx.target.name));
+            
+            // Pack Member
+            BindAction("Pack.Leave", ctx => Debug.Log("Pack.Leave fired for " + ctx.target.name));
+            BindAction("Pack.Join", ctx => Debug.Log("Pack.Leave fired for " + ctx.target.name));
+            BindAction("Pack.Lead", ctx => Debug.Log("Pack.Leave fired for " + ctx.target.name));
+            BindAction("Pack.Formation", ctx => Debug.Log("Pack.Leave fired for " + ctx.target.name));
+            
         }
 
 /*

@@ -5,6 +5,7 @@ using DogGame.Tasks;
 using System.Collections.Generic;
 using DogGame.LLM.Debugging;
 using NUnit.Framework.Interfaces;
+using Newtonsoft.Json.Linq;
 
 namespace DogGame.LLM
 {
@@ -94,6 +95,19 @@ namespace DogGame.LLM
                 return false;
             }
 
+            string? schema = null;
+            try
+            {
+                schema = JObject.Parse(cleanJson).Value<string>("schema");
+            }
+            catch
+            {
+                // Fall through into the normal parser error path below.
+            }
+
+            if (string.Equals(schema, "PlanResponseV3", System.StringComparison.Ordinal))
+                return TryApplyPlanJsonV3(planResponseJson, cleanJson);
+
             var (plan, validation) = PlanResponseV1Parser.ParseAndValidate(cleanJson);
 
             if (plan == null)
@@ -124,6 +138,41 @@ namespace DogGame.LLM
             if (!PlanIntentMapper.TryEnqueueTasksFromPlan(plan, taskQueue, out var error))
             {
                 Debug.LogWarning("Plan mapped to zero tasks: " + error);
+                return false;
+            }
+
+            return true;
+        }
+
+        private bool TryApplyPlanJsonV3(string originalPlanResponseJson, string cleanJson)
+        {
+            var (plan, validation) = PlanResponseV3Parser.ParseAndValidate(cleanJson);
+
+            if (plan == null)
+            {
+                Debug.LogWarning("PlanResponseV3 invalid:\n" + string.Join("\n", validation.Errors));
+
+                LLMPacketLogger.LogResponse(
+                    agentId,
+                    "requestID",
+                    provider: "ParserErrorV3 " + string.Join("\n", validation.Errors),
+                    responseJson: originalPlanResponseJson);
+
+                return false;
+            }
+
+            if (plan.AgentId != agentId)
+            {
+                Debug.LogWarning($"Plan agent mismatch: plan.AgentId={plan.AgentId}, controller.AgentId={agentId}");
+                return false;
+            }
+
+            if (clearQueueOnNewPlan)
+                taskExecutor.ClearAll(taskContext);
+
+            if (!PlanIntentMapper.TryEnqueueTasksFromPlan(plan, taskQueue, out var error))
+            {
+                Debug.LogWarning("PlanResponseV3 mapped to zero tasks: " + error);
                 return false;
             }
 

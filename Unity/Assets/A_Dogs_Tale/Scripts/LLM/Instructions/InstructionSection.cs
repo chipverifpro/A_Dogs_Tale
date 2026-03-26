@@ -25,16 +25,8 @@ namespace DogGame.LLM.Agent
         [Tooltip("If true, embed tool catalog + schema as JSON objects in the request packet (preferred). If false, embed as raw strings.")]
         public bool embedAsStructuredJson = true;
 
-        [SerializeField] private string toolCatalogResourcePath = "ToolCatalogV1"; // no extension
-
-        private void Awake()
-        {
-            if (toolCatalogJson == null)
-                toolCatalogJson = Resources.Load<TextAsset>(toolCatalogResourcePath);
-
-            if (toolCatalogJson == null)
-                Debug.LogError($"ToolCatalogV1.json not found. Expected Resources/{toolCatalogResourcePath}.json");
-        }
+        [SerializeField] private string toolCatalogResourcePath = "LLM/Tools/ToolCatalogV3"; // no extension
+        [SerializeField] private string responseSchemaResourcePath = "LLM/Schemas/PlanResponseV3.schema"; // no extension
 
         public void AddSystemBlocks(List<string> systemBlocks)
         {
@@ -65,24 +57,25 @@ namespace DogGame.LLM.Agent
         }
         */
 
-        private const string ToolCatalogResourcePath = "LLM/Tools/ToolCatalogV1";
-        private JObject cachedToolCatalog;
+        private JObject? cachedToolCatalog;
+        private JObject? cachedResponseSchema;
 
         public JObject BuildToolDefinitionsJson()
         {
             if (cachedToolCatalog != null)
                 return (JObject)cachedToolCatalog.DeepClone();
 
-            if (toolCatalogJson == null)
-                toolCatalogJson = Resources.Load<TextAsset>(ToolCatalogResourcePath);
+            string resolvedToolCatalogResourcePath = ResolveToolCatalogResourcePath();
+            if (toolCatalogJson == null || string.Equals(toolCatalogJson.name, "ToolCatalogV1", StringComparison.Ordinal))
+                toolCatalogJson = Resources.Load<TextAsset>(resolvedToolCatalogResourcePath) ?? toolCatalogJson;
 
             if (toolCatalogJson == null)
             {
-                Debug.LogError($"ToolCatalogV1.json not found at Resources/{ToolCatalogResourcePath}.json");
+                Debug.LogError($"Tool catalog JSON not found at Resources/{resolvedToolCatalogResourcePath}.json");
 
                 return new JObject
                 {
-                    ["schema"] = "ToolCatalogV1",
+                    ["schema"] = "ToolCatalogV3",
                     ["tools"] = new JArray()
                 };
             }
@@ -93,11 +86,12 @@ namespace DogGame.LLM.Agent
 
                 var result = new JObject
                 {
-                    ["schema"] = parsed.Value<string>("schema") ?? "ToolCatalogV1",
+                    ["schema"] = parsed.Value<string>("schema") ?? "ToolCatalogV3",
                     ["description"] = parsed.Value<string>("description") ?? "",
                     ["criticalRules"] = parsed["criticalRules"]?.DeepClone(),
+                    ["notes"] = parsed["notes"]?.DeepClone(),
                     ["taskParameterConvention"] = parsed["taskParameterConvention"]?.DeepClone(),
-                    ["tools"] = parsed["tasks"]?.DeepClone() ?? new JArray()
+                    ["tools"] = parsed["tools"]?.DeepClone() ?? parsed["tasks"]?.DeepClone() ?? new JArray()
                 };
 
                 cachedToolCatalog = result;
@@ -105,11 +99,11 @@ namespace DogGame.LLM.Agent
             }
             catch (Exception ex)
             {
-                Debug.LogError($"ToolCatalogV1 parse failed: {ex.Message}");
+                Debug.LogError($"Tool catalog parse failed: {ex.Message}");
 
                 return new JObject
                 {
-                    ["schema"] = "ToolCatalogV1",
+                    ["schema"] = "ToolCatalogV3",
                     ["tools"] = new JArray()
                 };
             }
@@ -148,26 +142,69 @@ namespace DogGame.LLM.Agent
         /// </summary>
         public JObject BuildResponseSchemaJson()
         {
-            //if (responseSchemaJson != null && !string.IsNullOrWhiteSpace(responseSchemaJson.text))
-            //    return responseSchemaJson.text.Trim();
+            if (cachedResponseSchema != null)
+                return (JObject)cachedResponseSchema.DeepClone();
+
+            string resolvedResponseSchemaResourcePath = ResolveResponseSchemaResourcePath();
+            if (responseSchemaJson == null || string.Equals(responseSchemaJson.name, "PlanResponseV1.schema", StringComparison.Ordinal))
+                responseSchemaJson = Resources.Load<TextAsset>(resolvedResponseSchemaResourcePath) ?? responseSchemaJson;
+
+            if (responseSchemaJson != null && !string.IsNullOrWhiteSpace(responseSchemaJson.text))
+            {
+                try
+                {
+                    cachedResponseSchema = JObject.Parse(responseSchemaJson.text);
+                    return (JObject)cachedResponseSchema.DeepClone();
+                }
+                catch (Exception ex)
+                {
+                    Debug.LogError($"Response schema parse failed: {ex.Message}");
+                }
+            }
 
             // Minimal fallback that still tells the model what we want.
             var fallback = new JObject
             {
-                ["schema"] = "PlanResponseV1",
+                ["schema"] = "PlanResponseV3",
                 ["type"] = "object",
-                ["required"] = new JArray("schema", "requestId", "agentId", "intentions", "debug"),
+                ["required"] = new JArray("schema", "requestId", "agentId", "intentions"),
                 ["properties"] = new JObject
                 {
-                    ["schema"] = new JObject { ["type"] = "string", ["const"] = "PlanResponseV1" },
+                    ["schema"] = new JObject { ["type"] = "string", ["const"] = "PlanResponseV3" },
                     ["requestId"] = new JObject { ["type"] = "string" },
                     ["agentId"] = new JObject { ["type"] = "string" },
+                    ["plan_summary"] = new JObject { ["type"] = "string" },
                     ["intentions"] = new JObject { ["type"] = "array" },
                     ["questionsForNextContext"] = new JObject { ["type"] = "array" },
                     ["debug"] = new JObject { ["type"] = "object" }
                 }
             };
-            return fallback;
+            cachedResponseSchema = fallback;
+            return (JObject)cachedResponseSchema.DeepClone();
+        }
+
+        private string ResolveToolCatalogResourcePath()
+        {
+            if (string.IsNullOrWhiteSpace(toolCatalogResourcePath) ||
+                string.Equals(toolCatalogResourcePath, "ToolCatalogV1", StringComparison.Ordinal) ||
+                string.Equals(toolCatalogResourcePath, "LLM/Tools/ToolCatalogV1", StringComparison.Ordinal))
+            {
+                return "LLM/Tools/ToolCatalogV3";
+            }
+
+            return toolCatalogResourcePath;
+        }
+
+        private string ResolveResponseSchemaResourcePath()
+        {
+            if (string.IsNullOrWhiteSpace(responseSchemaResourcePath) ||
+                string.Equals(responseSchemaResourcePath, "PlanResponseV1.schema", StringComparison.Ordinal) ||
+                string.Equals(responseSchemaResourcePath, "LLM/Schemas/PlanResponseV1.schema", StringComparison.Ordinal))
+            {
+                return "LLM/Schemas/PlanResponseV3.schema";
+            }
+
+            return responseSchemaResourcePath;
         }
     }
 }
