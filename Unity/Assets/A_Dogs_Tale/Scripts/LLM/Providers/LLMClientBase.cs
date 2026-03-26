@@ -203,11 +203,15 @@ namespace DogGame.LLM.Core
             string payloadJson = spec.payload.ToString();
             string agentId = ExtractAgentId(payloadJson) ?? "<unknown>";
             string requestId = Guid.NewGuid().ToString("N");
-            Dir.Instance.llmDebugMonitor.DebugLLMRequest(
-                payloadJson,
-                agentId,
-                requestId
-            );
+            var debugMonitor = Dir.Instance != null ? Dir.Instance.llmDebugMonitor : null;
+            if (debugMonitor != null)
+            {
+                debugMonitor.DebugLLMRequest(
+                    payloadJson,
+                    agentId,
+                    requestId
+                );
+            }
 
             var tcs = new TaskCompletionSource<LLMResponse>(TaskCreationOptions.RunContinuationsAsynchronously);
 
@@ -226,12 +230,15 @@ namespace DogGame.LLM.Core
                     bool stale = tokenAtStart != CurrentSessionToken;
 
                     string raw = unityRequest.downloadHandler?.text ?? "";
-                    Dir.Instance.llmDebugMonitor.DebugLLMResponse(
-                        raw,
-                        agentId,
-                        requestId,
-                        stale
-                    );
+                    if (debugMonitor != null)
+                    {
+                        debugMonitor.DebugLLMResponse(
+                            raw,
+                            agentId,
+                            requestId,
+                            stale
+                        );
+                    }
 
                     // Stale-session check at completion time
                     if (stale)

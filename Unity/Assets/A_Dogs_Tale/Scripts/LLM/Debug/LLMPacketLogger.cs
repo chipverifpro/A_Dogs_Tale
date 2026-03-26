@@ -48,7 +48,9 @@ namespace DogGame.LLM.Debugging
             string provider,
             string responseJson)
         {
-            Dir.Instance.llmDebugMonitor.DebugLLMResponse(responseJson, agentId, requestId, wasStale:false);
+            if (Dir.Instance != null && Dir.Instance.llmDebugMonitor != null)
+                Dir.Instance.llmDebugMonitor.DebugLLMResponse(responseJson, agentId, requestId, wasStale:false);
+
             WritePacket(
                 agentId,
                 requestId,
