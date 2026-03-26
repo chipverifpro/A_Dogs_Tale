@@ -501,6 +501,8 @@ public class LLMWorldScheduler : MonoBehaviour
             }
 
             selection.OnDispatchSuccess(schedulerRequest.RequestId);
+            UnityEngine.Debug.Log(
+                $"[LLM Scheduler] Delivering callback requestId={schedulerRequest.RequestId} agentId={schedulerRequest.AgentId} mode={llmRequest.commandMode} chars={callbackPayload.Length}");
             schedulerRequest.OnResponseJson?.Invoke(callbackPayload);
         }
         catch (Exception ex)

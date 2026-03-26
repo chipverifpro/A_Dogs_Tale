@@ -159,6 +159,8 @@ namespace DogGame.LLM.Core
             public JObject payload = new JObject();
             public int timeoutSeconds = 300;
             public Dictionary<string, string>? headers;
+            public string debugRequestId = "";
+            public string debugAgentId = "";
         }
 
         protected struct ParseResult
@@ -201,8 +203,12 @@ namespace DogGame.LLM.Core
 
             // Optional debug monitor hook (your project has Dir.Instance.llmDebugMonitor)
             string payloadJson = spec.payload.ToString();
-            string agentId = ExtractAgentId(payloadJson) ?? "<unknown>";
-            string requestId = LLMRequestId.NewShortHex();
+            string agentId = !string.IsNullOrWhiteSpace(spec.debugAgentId)
+                ? spec.debugAgentId
+                : (ExtractAgentId(payloadJson) ?? "<unknown>");
+            string requestId = !string.IsNullOrWhiteSpace(spec.debugRequestId)
+                ? spec.debugRequestId
+                : LLMRequestId.NewShortHex();
             var debugMonitor = Dir.Instance != null ? Dir.Instance.llmDebugMonitor : null;
             if (debugMonitor != null)
             {

@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using Newtonsoft.Json.Linq;
+using UnityEngine;
 
 namespace DogGame.LLM
 {
@@ -21,6 +22,7 @@ namespace DogGame.LLM
         public static (PlanResponseV3? Response, ValidationResult Result) ParseAndValidate(string jsonText)
         {
             var validationResult = new ValidationResult();
+            Debug.Log($"[PlanResponseV3Parser] ParseAndValidate start chars={jsonText?.Length ?? 0}");
 
             if (string.IsNullOrWhiteSpace(jsonText))
             {
@@ -65,6 +67,9 @@ namespace DogGame.LLM
                 validationResult.Errors.Add("JSON deserialize produced null response.");
                 return (null, validationResult);
             }
+
+            Debug.Log(
+                $"[PlanResponseV3Parser] Parsed top-level requestId={parsedResponse.RequestId} agentId={parsedResponse.AgentId} schema={parsedResponse.Schema} intentions={parsedResponse.Intentions?.Count ?? 0}");
 
             ValidateTopLevel(parsedResponse, validationResult);
             ValidateIntentions(parsedResponse, validationResult);
@@ -163,6 +168,7 @@ namespace DogGame.LLM
             }
 
             action = action.Trim();
+            Debug.Log($"[PlanResponseV3Parser] intentions[{index}] action={action} params={SummarizeIntention(intention)}");
 
             switch (action)
             {
@@ -263,6 +269,26 @@ namespace DogGame.LLM
                     result.Errors.Add($"intentions[{index}].action \"{action}\" is not supported by PlanResponseV3.");
                     break;
             }
+        }
+
+        private static string SummarizeIntention(JObject intention)
+        {
+            var parts = new List<string>();
+
+            foreach (var property in intention.Properties())
+            {
+                if (string.Equals(property.Name, "action", StringComparison.Ordinal))
+                    continue;
+
+                string value = property.Value.Type == JTokenType.String
+                    ? property.Value.Value<string>() ?? ""
+                    : property.Value.ToString(Newtonsoft.Json.Formatting.None);
+
+                if (!string.IsNullOrWhiteSpace(value))
+                    parts.Add($"{property.Name}={value}");
+            }
+
+            return parts.Count == 0 ? "<none>" : string.Join(", ", parts);
         }
 
         private static void ValidateAllowedKeys(int index, JObject intention, ValidationResult result, params string[] allowedKeys)

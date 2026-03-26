@@ -45,698 +45,699 @@
   }
 },
 "definitions": {
-"type": "object",
-"properties": {
-    "plan_summary": {
-      "type": "string"
+  "type": "object",
+  "properties": {
+      "plan_summary": {
+        "type": "string"
+      },
+      "intentions": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/intention"
+        }
+      }
     },
-    "intentions": {
-      "type": "array",
-      "items": {
-        "$ref": "#/$defs/intention"
+    "required": [
+      "intentions"
+    ],
+    "additionalProperties": false,
+    "$defs": {
+      "intention": {
+        "oneOf": [
+          { "$ref": "#/$defs/bark" },
+          { "$ref": "#/$defs/emote" },
+          { "$ref": "#/$defs/set_walk_mode" },
+          { "$ref": "#/$defs/face_object" },
+          { "$ref": "#/$defs/move_to_object" },
+          { "$ref": "#/$defs/examine_object" },
+          { "$ref": "#/$defs/sniff" },
+          { "$ref": "#/$defs/take_object" },
+          { "$ref": "#/$defs/drop_object" },
+          { "$ref": "#/$defs/bury_object" },
+          { "$ref": "#/$defs/dig" },
+          { "$ref": "#/$defs/go_through_door" },
+          { "$ref": "#/$defs/open_door" },
+          { "$ref": "#/$defs/close_door" },
+          { "$ref": "#/$defs/interact_with_object" },
+          { "$ref": "#/$defs/interact_with_held_object" },
+          { "$ref": "#/$defs/join_pack" },
+          { "$ref": "#/$defs/become_pack_leader" },
+          { "$ref": "#/$defs/leave_pack" },
+          { "$ref": "#/$defs/start_exploring" },
+          { "$ref": "#/$defs/start_follow_pack_leader" },
+          { "$ref": "#/$defs/start_follow_on_leash" },
+          { "$ref": "#/$defs/start_follow_object" },
+          { "$ref": "#/$defs/start_follow_scent" },
+          { "$ref": "#/$defs/start_patrol_room" },
+          { "$ref": "#/$defs/start_patrol_around_object" },
+          { "$ref": "#/$defs/start_stay" },
+          { "$ref": "#/$defs/stop_current_mode" },
+          { "$ref": "#/$defs/nap" },
+          { "$ref": "#/$defs/wait" }
+        ]
+      },
+      "bark": {
+        "type": "object",
+        "description": "Make a bark with a social or tactical intent. Optionally include a target if the bark is about a specific object or entity.",
+        "properties": {
+          "action": {
+            "const": "bark"
+          },
+          "bark_intent": {
+            "type": "string",
+            "enum": [
+              "social",
+              "suspicious",
+              "alert_pack",
+              "threat",
+              "found",
+              "need_help"
+            ]
+          },
+          "target_id": {
+            "type": "string"
+          },
+          "reasoning": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "action",
+          "bark_intent",
+          "reasoning"
+        ],
+        "additionalProperties": false
+      },
+      "emote": {
+        "type": "object",
+        "description": "Display a visible body-language emotion or social signal without barking. Use this for posture, tail, ears, playfulness, fear, submission, or excitement.",
+        "properties": {
+          "action": {
+            "const": "emote"
+          },
+          "emote_intent": {
+            "type": "string",
+            "enum": [
+              "friendly",
+              "playful",
+              "excited",
+              "curious",
+              "suspicious",
+              "fearful",
+              "submissive",
+              "happy"
+            ]
+          },
+          "reasoning": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "action",
+          "emote_intent",
+          "reasoning"
+        ],
+        "additionalProperties": false
+      },
+      "set_walk_mode": {
+        "type": "object",
+        "description": "Change style of walking.",
+        "properties": {
+          "action": {
+            "const": "set_walk_mode"
+          },
+          "walk_mode": {
+            "type": "string",
+            "enum": [
+              "Walk",
+              "Run",
+              "Sneak",
+              "Cautious",
+              "Crawl"
+            ]
+          },
+          "reasoning": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "action",
+          "walk_mode",
+          "reasoning"
+        ],
+        "additionalProperties": false
+      },
+      "face_object": {
+        "type": "object",
+        "description": "Turn to face a target.",
+        "properties": {
+          "action": {
+            "const": "face_object"
+          },
+          "target_id": {
+            "type": "string"
+          },
+          "persistence": {
+            "type": "boolean",
+            "description": "Persistence true means remain facing target while performing follow-up actions. Canceled by stop_current_mode."
+          },
+          "reasoning": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "action",
+          "target_id",
+          "reasoning"
+        ],
+        "additionalProperties": false
+      },
+      "move_to_object": {
+        "type": "object",
+        "description": "Move to target.",
+        "properties": {
+          "action": {
+            "const": "move_to_object"
+          },
+          "target_id": {
+            "type": "string"
+          },
+          "reasoning": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "action",
+          "target_id",
+          "reasoning"
+        ],
+        "additionalProperties": false
+      },
+      "examine_object": {
+        "type": "object",
+        "description": "Move to target and examine by looking, sniffing, and listening to target.",
+        "properties": {
+          "action": {
+            "const": "examine_object"
+          },
+          "target_id": {
+            "type": "string"
+          },
+          "reasoning": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "action",
+          "target_id",
+          "reasoning"
+        ],
+        "additionalProperties": false
+      },
+      "sniff": {
+        "type": "object",
+        "description": "Sniff the ground and air at the current location.",
+        "properties": {
+          "action": {
+            "const": "sniff"
+          },
+          "reasoning": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "action",
+          "reasoning"
+        ],
+        "additionalProperties": false
+      },
+      "take_object": {
+        "type": "object",
+        "description": "Move to target and pick it up in mouth. Carrying is limited to one object at a time, of an appropriate size.",
+        "properties": {
+          "action": {
+            "const": "take_object"
+          },
+          "target_id": {
+            "type": "string"
+          },
+          "reasoning": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "action",
+          "target_id",
+          "reasoning"
+        ],
+        "additionalProperties": false
+      },
+      "drop_object": {
+        "type": "object",
+        "description": "Drop currently held object.",
+        "properties": {
+          "action": {
+            "const": "drop_object"
+          },
+          "reasoning": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "action",
+          "reasoning"
+        ],
+        "additionalProperties": false
+      },
+      "bury_object": {
+        "type": "object",
+        "description": "Dig a hole and bury currently held object.",
+        "properties": {
+          "action": {
+            "const": "bury_object"
+          },
+          "reasoning": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "action",
+          "reasoning"
+        ],
+        "additionalProperties": false
+      },
+      "dig": {
+        "type": "object",
+        "description": "Dig a hole. If an object is found, pick it up in your mouth.",
+        "properties": {
+          "action": {
+            "const": "dig"
+          },
+          "reasoning": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "action",
+          "reasoning"
+        ],
+        "additionalProperties": false
+      },
+      "go_through_door": {
+        "type": "object",
+        "description": "Move to target door, open it if necessary, go through to the other side, and examine what is there.",
+        "properties": {
+          "action": {
+            "const": "go_through_door"
+          },
+          "target_id": {
+            "type": "string"
+          },
+          "reasoning": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "action",
+          "target_id",
+          "reasoning"
+        ],
+        "additionalProperties": false
+      },
+      "open_door": {
+        "type": "object",
+        "description": "Move to target door and open it. Examine what is on the other side.",
+        "properties": {
+          "action": {
+            "const": "open_door"
+          },
+          "target_id": {
+            "type": "string"
+          },
+          "reasoning": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "action",
+          "target_id",
+          "reasoning"
+        ],
+        "additionalProperties": false
+      },
+      "close_door": {
+        "type": "object",
+        "description": "Move to target door and close it.",
+        "properties": {
+          "action": {
+            "const": "close_door"
+          },
+          "target_id": {
+            "type": "string"
+          },
+          "reasoning": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "action",
+          "target_id",
+          "reasoning"
+        ],
+        "additionalProperties": false
+      },
+      "interact_with_object": {
+        "type": "object",
+        "description": "Move to target object and manipulate it in a relevant way, such as open, close, push, pull, or scratch. Not for doors.",
+        "properties": {
+          "action": {
+            "const": "interact_with_object"
+          },
+          "target_id": {
+            "type": "string"
+          },
+          "interaction": {
+            "type": "string",
+            "enum": [
+              "open",
+              "close",
+              "push",
+              "pull",
+              "scratch"
+            ]
+          },
+          "reasoning": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "action",
+          "target_id",
+          "interaction",
+          "reasoning"
+        ],
+        "additionalProperties": false
+      },
+      "interact_with_held_object": {
+        "type": "object",
+        "description": "Do something with the item currently carried in your mouth, such as drop, bury, eat, chew, or destroy.",
+        "properties": {
+          "action": {
+            "const": "interact_with_held_object"
+          },
+          "interaction": {
+            "type": "string",
+            "enum": [
+              "drop",
+              "bury",
+              "eat",
+              "chew",
+              "destroy"
+            ]
+          },
+          "reasoning": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "action",
+          "interaction",
+          "reasoning"
+        ],
+        "additionalProperties": false
+      },
+      "join_pack": {
+        "type": "object",
+        "description": "Become a member of the target's pack.",
+        "properties": {
+          "action": {
+            "const": "join_pack"
+          },
+          "target_id": {
+            "type": "string"
+          },
+          "reasoning": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "action",
+          "target_id",
+          "reasoning"
+        ],
+        "additionalProperties": false
+      },
+      "become_pack_leader": {
+        "type": "object",
+        "description": "Become the leader of your current pack.",
+        "properties": {
+          "action": {
+            "const": "become_pack_leader"
+          },
+          "reasoning": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "action",
+          "reasoning"
+        ],
+        "additionalProperties": false
+      },
+      "leave_pack": {
+        "type": "object",
+        "description": "Leave your current pack.",
+        "properties": {
+          "action": {
+            "const": "leave_pack"
+          },
+          "reasoning": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "action",
+          "reasoning"
+        ],
+        "additionalProperties": false
+      },
+      "start_exploring": {
+        "type": "object",
+        "description": "Begin wandering the area, exploring new rooms and objects encountered. Continues until replaced or stopped.",
+        "properties": {
+          "action": {
+            "const": "start_exploring"
+          },
+          "reasoning": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "action",
+          "reasoning"
+        ],
+        "additionalProperties": false
+      },
+      "start_follow_pack_leader": {
+        "type": "object",
+        "description": "Begin following the current pack leader. Continues until replaced or stopped.",
+        "properties": {
+          "action": {
+            "const": "start_follow_pack_leader"
+          },
+          "reasoning": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "action",
+          "reasoning"
+        ],
+        "additionalProperties": false
+      },
+      "start_follow_on_leash": {
+        "type": "object",
+        "description": "Begin following the leash holder, trying to stay close enough not to pull back on the leash. Continues until replaced or stopped.",
+        "properties": {
+          "action": {
+            "const": "start_follow_on_leash"
+          },
+          "reasoning": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "action",
+          "reasoning"
+        ],
+        "additionalProperties": false
+      },
+      "start_follow_object": {
+        "type": "object",
+        "description": "Begin following the target, trying to stay at a distance. Continues until replaced or stopped.",
+        "properties": {
+          "action": {
+            "const": "start_follow_object"
+          },
+          "target_id": {
+            "type": "string"
+          },
+          "distance": {
+            "type": "integer",
+            "maximum": 5
+          },
+          "reasoning": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "action",
+          "target_id",
+          "reasoning"
+        ],
+        "additionalProperties": false
+      },
+      "start_follow_scent": {
+        "type": "object",
+        "description": "Begin searching for the source of a scent target. Follow the strongest scent, searching around scent pools to pick up the trail again.",
+        "properties": {
+          "action": {
+            "const": "start_follow_scent"
+          },
+          "target_id": {
+            "type": "string"
+          },
+          "reasoning": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "action",
+          "target_id",
+          "reasoning"
+        ],
+        "additionalProperties": false
+      },
+      "start_patrol_room": {
+        "type": "object",
+        "description": "Begin circling the current room watching for intruders. Continues until replaced or stopped.",
+        "properties": {
+          "action": {
+            "const": "start_patrol_room"
+          },
+          "reasoning": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "action",
+          "reasoning"
+        ],
+        "additionalProperties": false
+      },
+      "start_patrol_around_object": {
+        "type": "object",
+        "description": "Begin circling the target object watching for intruders. Continues until replaced or stopped.",
+        "properties": {
+          "action": {
+            "const": "start_patrol_around_object"
+          },
+          "target_id": {
+            "type": "string"
+          },
+          "distance": {
+            "type": "integer",
+            "maximum": 5
+          },
+          "reasoning": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "action",
+          "target_id",
+          "reasoning"
+        ],
+        "additionalProperties": false
+      },
+      "start_stay": {
+        "type": "object",
+        "description": "Stay in place until stopped or a reaction stronger than training breaks the stay.",
+        "properties": {
+          "action": {
+            "const": "start_stay"
+          },
+          "reasoning": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "action",
+          "reasoning"
+        ],
+        "additionalProperties": false
+      },
+      "stop_current_mode": {
+        "type": "object",
+        "description": "Stop any continuous command such as explore, follow, patrol, stay, or persistent facing.",
+        "properties": {
+          "action": {
+            "const": "stop_current_mode"
+          },
+          "reasoning": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "action",
+          "reasoning"
+        ],
+        "additionalProperties": false
+      },
+      "nap": {
+        "type": "object",
+        "description": "Lay down, close eyes, and rest for the specified duration in seconds.",
+        "properties": {
+          "action": {
+            "const": "nap"
+          },
+          "duration": {
+            "type": "integer",
+            "maximum": 300
+          },
+          "reasoning": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "action",
+          "duration",
+          "reasoning"
+        ],
+        "additionalProperties": false
+      },
+      "wait": {
+        "type": "object",
+        "description": "Do nothing for the specified duration in seconds.",
+        "properties": {
+          "action": {
+            "const": "wait"
+          },
+          "duration": {
+            "type": "integer",
+            "maximum": 30
+          },
+          "reasoning": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "action",
+          "duration",
+          "reasoning"
+        ],
+        "additionalProperties": false
       }
     }
-  },
-  "required": [
-    "intentions"
-  ],
-  "additionalProperties": false,
-  "$defs": {
-    "intention": {
-      "oneOf": [
-        { "$ref": "#/$defs/bark" },
-        { "$ref": "#/$defs/emote" },
-        { "$ref": "#/$defs/set_walk_mode" },
-        { "$ref": "#/$defs/face_object" },
-        { "$ref": "#/$defs/move_to_object" },
-        { "$ref": "#/$defs/examine_object" },
-        { "$ref": "#/$defs/sniff" },
-        { "$ref": "#/$defs/take_object" },
-        { "$ref": "#/$defs/drop_object" },
-        { "$ref": "#/$defs/bury_object" },
-        { "$ref": "#/$defs/dig" },
-        { "$ref": "#/$defs/go_through_door" },
-        { "$ref": "#/$defs/open_door" },
-        { "$ref": "#/$defs/close_door" },
-        { "$ref": "#/$defs/interact_with_object" },
-        { "$ref": "#/$defs/interact_with_held_object" },
-        { "$ref": "#/$defs/join_pack" },
-        { "$ref": "#/$defs/become_pack_leader" },
-        { "$ref": "#/$defs/leave_pack" },
-        { "$ref": "#/$defs/start_exploring" },
-        { "$ref": "#/$defs/start_follow_pack_leader" },
-        { "$ref": "#/$defs/start_follow_on_leash" },
-        { "$ref": "#/$defs/start_follow_object" },
-        { "$ref": "#/$defs/start_follow_scent" },
-        { "$ref": "#/$defs/start_patrol_room" },
-        { "$ref": "#/$defs/start_patrol_around_object" },
-        { "$ref": "#/$defs/start_stay" },
-        { "$ref": "#/$defs/stop_current_mode" },
-        { "$ref": "#/$defs/nap" },
-        { "$ref": "#/$defs/wait" }
-      ]
-    },
-    "bark": {
-      "type": "object",
-      "description": "Make a bark with a social or tactical intent. Optionally include a target if the bark is about a specific object or entity.",
-      "properties": {
-        "action": {
-          "const": "bark"
-        },
-        "bark_intent": {
-          "type": "string",
-          "enum": [
-            "social",
-            "suspicious",
-            "alert_pack",
-            "threat",
-            "found",
-            "need_help"
-          ]
-        },
-        "target_id": {
-          "type": "string"
-        },
-        "reasoning": {
-          "type": "string"
-        }
-      },
-      "required": [
-        "action",
-        "bark_intent",
-        "reasoning"
-      ],
-      "additionalProperties": false
-    },
-    "emote": {
-      "type": "object",
-      "description": "Display a visible body-language emotion or social signal without barking. Use this for posture, tail, ears, playfulness, fear, submission, or excitement.",
-      "properties": {
-        "action": {
-          "const": "emote"
-        },
-        "emote_intent": {
-          "type": "string",
-          "enum": [
-            "friendly",
-            "playful",
-            "excited",
-            "curious",
-            "suspicious",
-            "fearful",
-            "submissive",
-            "happy"
-          ]
-        },
-        "reasoning": {
-          "type": "string"
-        }
-      },
-      "required": [
-        "action",
-        "emote_intent",
-        "reasoning"
-      ],
-      "additionalProperties": false
-    },
-    "set_walk_mode": {
-      "type": "object",
-      "description": "Change style of walking.",
-      "properties": {
-        "action": {
-          "const": "set_walk_mode"
-        },
-        "walk_mode": {
-          "type": "string",
-          "enum": [
-            "Walk",
-            "Run",
-            "Sneak",
-            "Cautious",
-            "Crawl"
-          ]
-        },
-        "reasoning": {
-          "type": "string"
-        }
-      },
-      "required": [
-        "action",
-        "walk_mode",
-        "reasoning"
-      ],
-      "additionalProperties": false
-    },
-    "face_object": {
-      "type": "object",
-      "description": "Turn to face a target.",
-      "properties": {
-        "action": {
-          "const": "face_object"
-        },
-        "target_id": {
-          "type": "string"
-        },
-        "persistence": {
-          "type": "boolean",
-          "description": "Persistence true means remain facing target while performing follow-up actions. Canceled by stop_current_mode."
-        },
-        "reasoning": {
-          "type": "string"
-        }
-      },
-      "required": [
-        "action",
-        "target_id",
-        "reasoning"
-      ],
-      "additionalProperties": false
-    },
-    "move_to_object": {
-      "type": "object",
-      "description": "Move to target.",
-      "properties": {
-        "action": {
-          "const": "move_to_object"
-        },
-        "target_id": {
-          "type": "string"
-        },
-        "reasoning": {
-          "type": "string"
-        }
-      },
-      "required": [
-        "action",
-        "target_id",
-        "reasoning"
-      ],
-      "additionalProperties": false
-    },
-    "examine_object": {
-      "type": "object",
-      "description": "Move to target and examine by looking, sniffing, and listening to target.",
-      "properties": {
-        "action": {
-          "const": "examine_object"
-        },
-        "target_id": {
-          "type": "string"
-        },
-        "reasoning": {
-          "type": "string"
-        }
-      },
-      "required": [
-        "action",
-        "target_id",
-        "reasoning"
-      ],
-      "additionalProperties": false
-    },
-    "sniff": {
-      "type": "object",
-      "description": "Sniff the ground and air at the current location.",
-      "properties": {
-        "action": {
-          "const": "sniff"
-        },
-        "reasoning": {
-          "type": "string"
-        }
-      },
-      "required": [
-        "action",
-        "reasoning"
-      ],
-      "additionalProperties": false
-    },
-    "take_object": {
-      "type": "object",
-      "description": "Move to target and pick it up in mouth. Carrying is limited to one object at a time, of an appropriate size.",
-      "properties": {
-        "action": {
-          "const": "take_object"
-        },
-        "target_id": {
-          "type": "string"
-        },
-        "reasoning": {
-          "type": "string"
-        }
-      },
-      "required": [
-        "action",
-        "target_id",
-        "reasoning"
-      ],
-      "additionalProperties": false
-    },
-    "drop_object": {
-      "type": "object",
-      "description": "Drop currently held object.",
-      "properties": {
-        "action": {
-          "const": "drop_object"
-        },
-        "reasoning": {
-          "type": "string"
-        }
-      },
-      "required": [
-        "action",
-        "reasoning"
-      ],
-      "additionalProperties": false
-    },
-    "bury_object": {
-      "type": "object",
-      "description": "Dig a hole and bury currently held object.",
-      "properties": {
-        "action": {
-          "const": "bury_object"
-        },
-        "reasoning": {
-          "type": "string"
-        }
-      },
-      "required": [
-        "action",
-        "reasoning"
-      ],
-      "additionalProperties": false
-    },
-    "dig": {
-      "type": "object",
-      "description": "Dig a hole. If an object is found, pick it up in your mouth.",
-      "properties": {
-        "action": {
-          "const": "dig"
-        },
-        "reasoning": {
-          "type": "string"
-        }
-      },
-      "required": [
-        "action",
-        "reasoning"
-      ],
-      "additionalProperties": false
-    },
-    "go_through_door": {
-      "type": "object",
-      "description": "Move to target door, open it if necessary, go through to the other side, and examine what is there.",
-      "properties": {
-        "action": {
-          "const": "go_through_door"
-        },
-        "target_id": {
-          "type": "string"
-        },
-        "reasoning": {
-          "type": "string"
-        }
-      },
-      "required": [
-        "action",
-        "target_id",
-        "reasoning"
-      ],
-      "additionalProperties": false
-    },
-    "open_door": {
-      "type": "object",
-      "description": "Move to target door and open it. Examine what is on the other side.",
-      "properties": {
-        "action": {
-          "const": "open_door"
-        },
-        "target_id": {
-          "type": "string"
-        },
-        "reasoning": {
-          "type": "string"
-        }
-      },
-      "required": [
-        "action",
-        "target_id",
-        "reasoning"
-      ],
-      "additionalProperties": false
-    },
-    "close_door": {
-      "type": "object",
-      "description": "Move to target door and close it.",
-      "properties": {
-        "action": {
-          "const": "close_door"
-        },
-        "target_id": {
-          "type": "string"
-        },
-        "reasoning": {
-          "type": "string"
-        }
-      },
-      "required": [
-        "action",
-        "target_id",
-        "reasoning"
-      ],
-      "additionalProperties": false
-    },
-    "interact_with_object": {
-      "type": "object",
-      "description": "Move to target object and manipulate it in a relevant way, such as open, close, push, pull, or scratch. Not for doors.",
-      "properties": {
-        "action": {
-          "const": "interact_with_object"
-        },
-        "target_id": {
-          "type": "string"
-        },
-        "interaction": {
-          "type": "string",
-          "enum": [
-            "open",
-            "close",
-            "push",
-            "pull",
-            "scratch"
-          ]
-        },
-        "reasoning": {
-          "type": "string"
-        }
-      },
-      "required": [
-        "action",
-        "target_id",
-        "interaction",
-        "reasoning"
-      ],
-      "additionalProperties": false
-    },
-    "interact_with_held_object": {
-      "type": "object",
-      "description": "Do something with the item currently carried in your mouth, such as drop, bury, eat, chew, or destroy.",
-      "properties": {
-        "action": {
-          "const": "interact_with_held_object"
-        },
-        "interaction": {
-          "type": "string",
-          "enum": [
-            "drop",
-            "bury",
-            "eat",
-            "chew",
-            "destroy"
-          ]
-        },
-        "reasoning": {
-          "type": "string"
-        }
-      },
-      "required": [
-        "action",
-        "interaction",
-        "reasoning"
-      ],
-      "additionalProperties": false
-    },
-    "join_pack": {
-      "type": "object",
-      "description": "Become a member of the target's pack.",
-      "properties": {
-        "action": {
-          "const": "join_pack"
-        },
-        "target_id": {
-          "type": "string"
-        },
-        "reasoning": {
-          "type": "string"
-        }
-      },
-      "required": [
-        "action",
-        "target_id",
-        "reasoning"
-      ],
-      "additionalProperties": false
-    },
-    "become_pack_leader": {
-      "type": "object",
-      "description": "Become the leader of your current pack.",
-      "properties": {
-        "action": {
-          "const": "become_pack_leader"
-        },
-        "reasoning": {
-          "type": "string"
-        }
-      },
-      "required": [
-        "action",
-        "reasoning"
-      ],
-      "additionalProperties": false
-    },
-    "leave_pack": {
-      "type": "object",
-      "description": "Leave your current pack.",
-      "properties": {
-        "action": {
-          "const": "leave_pack"
-        },
-        "reasoning": {
-          "type": "string"
-        }
-      },
-      "required": [
-        "action",
-        "reasoning"
-      ],
-      "additionalProperties": false
-    },
-    "start_exploring": {
-      "type": "object",
-      "description": "Begin wandering the area, exploring new rooms and objects encountered. Continues until replaced or stopped.",
-      "properties": {
-        "action": {
-          "const": "start_exploring"
-        },
-        "reasoning": {
-          "type": "string"
-        }
-      },
-      "required": [
-        "action",
-        "reasoning"
-      ],
-      "additionalProperties": false
-    },
-    "start_follow_pack_leader": {
-      "type": "object",
-      "description": "Begin following the current pack leader. Continues until replaced or stopped.",
-      "properties": {
-        "action": {
-          "const": "start_follow_pack_leader"
-        },
-        "reasoning": {
-          "type": "string"
-        }
-      },
-      "required": [
-        "action",
-        "reasoning"
-      ],
-      "additionalProperties": false
-    },
-    "start_follow_on_leash": {
-      "type": "object",
-      "description": "Begin following the leash holder, trying to stay close enough not to pull back on the leash. Continues until replaced or stopped.",
-      "properties": {
-        "action": {
-          "const": "start_follow_on_leash"
-        },
-        "reasoning": {
-          "type": "string"
-        }
-      },
-      "required": [
-        "action",
-        "reasoning"
-      ],
-      "additionalProperties": false
-    },
-    "start_follow_object": {
-      "type": "object",
-      "description": "Begin following the target, trying to stay at a distance. Continues until replaced or stopped.",
-      "properties": {
-        "action": {
-          "const": "start_follow_object"
-        },
-        "target_id": {
-          "type": "string"
-        },
-        "distance": {
-          "type": "integer",
-          "maximum": 5
-        },
-        "reasoning": {
-          "type": "string"
-        }
-      },
-      "required": [
-        "action",
-        "target_id",
-        "reasoning"
-      ],
-      "additionalProperties": false
-    },
-    "start_follow_scent": {
-      "type": "object",
-      "description": "Begin searching for the source of a scent target. Follow the strongest scent, searching around scent pools to pick up the trail again.",
-      "properties": {
-        "action": {
-          "const": "start_follow_scent"
-        },
-        "target_id": {
-          "type": "string"
-        },
-        "reasoning": {
-          "type": "string"
-        }
-      },
-      "required": [
-        "action",
-        "target_id",
-        "reasoning"
-      ],
-      "additionalProperties": false
-    },
-    "start_patrol_room": {
-      "type": "object",
-      "description": "Begin circling the current room watching for intruders. Continues until replaced or stopped.",
-      "properties": {
-        "action": {
-          "const": "start_patrol_room"
-        },
-        "reasoning": {
-          "type": "string"
-        }
-      },
-      "required": [
-        "action",
-        "reasoning"
-      ],
-      "additionalProperties": false
-    },
-    "start_patrol_around_object": {
-      "type": "object",
-      "description": "Begin circling the target object watching for intruders. Continues until replaced or stopped.",
-      "properties": {
-        "action": {
-          "const": "start_patrol_around_object"
-        },
-        "target_id": {
-          "type": "string"
-        },
-        "distance": {
-          "type": "integer",
-          "maximum": 5
-        },
-        "reasoning": {
-          "type": "string"
-        }
-      },
-      "required": [
-        "action",
-        "target_id",
-        "reasoning"
-      ],
-      "additionalProperties": false
-    },
-    "start_stay": {
-      "type": "object",
-      "description": "Stay in place until stopped or a reaction stronger than training breaks the stay.",
-      "properties": {
-        "action": {
-          "const": "start_stay"
-        },
-        "reasoning": {
-          "type": "string"
-        }
-      },
-      "required": [
-        "action",
-        "reasoning"
-      ],
-      "additionalProperties": false
-    },
-    "stop_current_mode": {
-      "type": "object",
-      "description": "Stop any continuous command such as explore, follow, patrol, stay, or persistent facing.",
-      "properties": {
-        "action": {
-          "const": "stop_current_mode"
-        },
-        "reasoning": {
-          "type": "string"
-        }
-      },
-      "required": [
-        "action",
-        "reasoning"
-      ],
-      "additionalProperties": false
-    },
-    "nap": {
-      "type": "object",
-      "description": "Lay down, close eyes, and rest for the specified duration in seconds.",
-      "properties": {
-        "action": {
-          "const": "nap"
-        },
-        "duration": {
-          "type": "integer",
-          "maximum": 300
-        },
-        "reasoning": {
-          "type": "string"
-        }
-      },
-      "required": [
-        "action",
-        "duration",
-        "reasoning"
-      ],
-      "additionalProperties": false
-    },
-    "wait": {
-      "type": "object",
-      "description": "Do nothing for the specified duration in seconds.",
-      "properties": {
-        "action": {
-          "const": "wait"
-        },
-        "duration": {
-          "type": "integer",
-          "maximum": 30
-        },
-        "reasoning": {
-          "type": "string"
-        }
-      },
-      "required": [
-        "action",
-        "duration",
-        "reasoning"
-      ],
-      "additionalProperties": false
-    }
   }
-}}
+}

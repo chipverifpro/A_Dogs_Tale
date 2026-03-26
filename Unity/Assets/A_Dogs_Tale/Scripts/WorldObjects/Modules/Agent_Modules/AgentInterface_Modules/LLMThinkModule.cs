@@ -96,6 +96,9 @@ namespace DogGame.LLM
         {
             // Clear inflight FIRST so subscribers can immediately request again if they want
             isInflight = false;
+            Debug.Log($"[LLMThinkModule] OnPlanJsonFromScheduler agent={gameObject.name} chars={planJson?.Length ?? 0}");
+            int subscriberCount = PlanJsonReceived?.GetInvocationList()?.Length ?? 0;
+            Debug.Log($"[LLMThinkModule] PlanJsonReceived subscribers={subscriberCount} agent={gameObject.name}");
 
             try
             {

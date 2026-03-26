@@ -92,10 +92,14 @@ namespace DogGame.LLM
                 if (intention == null)
                     continue;
 
+                string action = intention.Value<string>("action") ?? "<missing>";
+                Debug.Log($"[PlanIntentMapper] Mapping action={action} requestId={plan.RequestId} params={SummarizeIntention(intention)}");
+
                 if (TryBuildTaskFromAction(intention, out var task, out var taskError))
                 {
                     var request = BuildRequestForAction(task!, plan.RequestId);
                     queue.Enqueue(request);
+                    Debug.Log($"[PlanIntentMapper] Enqueued action={action} task={task!.GetType().Name} requestId={plan.RequestId}");
                     enqueuedCount++;
                 }
                 else
@@ -111,6 +115,26 @@ namespace DogGame.LLM
             }
 
             return true;
+        }
+
+        private static string SummarizeIntention(JObject intention)
+        {
+            var parts = new System.Collections.Generic.List<string>();
+
+            foreach (var property in intention.Properties())
+            {
+                if (string.Equals(property.Name, "action", System.StringComparison.Ordinal))
+                    continue;
+
+                string value = property.Value.Type == JTokenType.String
+                    ? property.Value.Value<string>() ?? ""
+                    : property.Value.ToString(Newtonsoft.Json.Formatting.None);
+
+                if (!string.IsNullOrWhiteSpace(value))
+                    parts.Add($"{property.Name}={value}");
+            }
+
+            return parts.Count == 0 ? "<none>" : string.Join(", ", parts);
         }
 
         private static TaskRequest BuildRequestForAddTask(PlanIntentionV1 intention, IAgentTask task)

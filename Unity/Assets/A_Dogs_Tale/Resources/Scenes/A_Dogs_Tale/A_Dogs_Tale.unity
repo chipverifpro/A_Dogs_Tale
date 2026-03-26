@@ -3668,7 +3668,7 @@ MonoBehaviour:
     llmModelString: gpt-4.1-mini
     remote: 1
     sophistication: 1
-    vendorMaxConcurrentRequests: 1
+    vendorMaxConcurrentRequests: 2
     successRate: 0.9
     typicalResponseTime: 10
     typicalCost: 0.01
@@ -11302,6 +11302,18 @@ PrefabInstance:
         type: 3}
       insertIndex: -1
       addedObject: {fileID: 1651296810}
+    - targetCorrespondingSourceObject: {fileID: 4477274621950385561, guid: da33ad6d2d1f9483faa117084b30e547,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1651296812}
+    - targetCorrespondingSourceObject: {fileID: 4477274621950385561, guid: da33ad6d2d1f9483faa117084b30e547,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1651296813}
+    - targetCorrespondingSourceObject: {fileID: 4477274621950385561, guid: da33ad6d2d1f9483faa117084b30e547,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1651296814}
   m_SourcePrefab: {fileID: 100100000, guid: da33ad6d2d1f9483faa117084b30e547, type: 3}
 --- !u!4 &1651296778 stripped
 Transform:
@@ -11500,11 +11512,11 @@ MonoBehaviour:
   navigationSource: 0
   cameraForMovement: {fileID: 1815589284}
   cameraModeSwitcher: {fileID: 1815589288}
-  currentDestinationObject: {fileID: 0}
-  llmConfig: {fileID: 0}
-  llmWorldState: {fileID: 0}
-  llmFacade: {fileID: 0}
-  taskRunnerComponent: {fileID: 0}
+  currentDestinationObject: {fileID: 1651296793}
+  llmConfig: {fileID: 1651296804}
+  llmWorldState: {fileID: 1651296805}
+  llmFacade: {fileID: 1651296813}
+  taskRunnerComponent: {fileID: 1651296793}
 --- !u!114 &1651296791
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -11912,6 +11924,47 @@ MonoBehaviour:
     icon: {fileID: 0}
     isVisible: 1
     isEnabled: 1
+--- !u!114 &1651296812
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1651296779}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 42d2b00efd2b3458793ba80cc8cdc2c2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TaskListModule
+--- !u!114 &1651296813
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1651296779}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6e55b4afbe2cd45a0925b2aeb372034c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DogGame.LLM.Agent.LLMAgentFacade
+  config: {fileID: 1651296804}
+  worldState: {fileID: 1651296805}
+  llmServiceBehaviour: {fileID: 1651296793}
+--- !u!114 &1651296814
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1651296779}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 125bcf5342852454cb41e5e24582147a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DogGame.LLM.TaskController
+  agentId: cur
+  clearQueueOnNewPlan: 1
 --- !u!1 &1653904421
 GameObject:
   m_ObjectHideFlags: 0
@@ -15915,7 +15968,7 @@ MonoBehaviour:
   llmConfig: {fileID: 6544990386685219188}
   llmWorldState: {fileID: 6544990386685219187}
   llmFacade: {fileID: 6544990386685219191}
-  taskRunnerComponent: {fileID: 0}
+  taskRunnerComponent: {fileID: 6544990386685219154}
 --- !u!114 &6544990386685219154
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -16420,7 +16473,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.LLM.Agent.LLMAgentFacade
   config: {fileID: 6544990386685219188}
   worldState: {fileID: 6544990386685219187}
-  llmServiceBehaviour: {fileID: 0}
+  llmServiceBehaviour: {fileID: 6544990386685219154}
 --- !u!114 &6544990386685219193
 MonoBehaviour:
   m_ObjectHideFlags: 0

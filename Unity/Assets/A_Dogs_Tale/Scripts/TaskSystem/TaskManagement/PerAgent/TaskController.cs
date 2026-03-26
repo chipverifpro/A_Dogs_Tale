@@ -88,6 +88,8 @@ namespace DogGame.LLM
             if (!EnsureRuntimeState())
                 return false;
 
+            Debug.Log($"[TaskController] TryApplyPlanJson invoked controllerAgentId={agentId} rawChars={planResponseJson?.Length ?? 0}");
+
             // sanitize the LLM Response.
             if (!DogGame.LLM.LLMResponseSanitizer.TryExtractJsonObject(planResponseJson, out string cleanJson, out string err))
             {
@@ -95,18 +97,18 @@ namespace DogGame.LLM
                 return false;
             }
 
-            string? schema = null;
-            try
-            {
-                schema = JObject.Parse(cleanJson).Value<string>("schema");
-            }
-            catch
-            {
-                // Fall through into the normal parser error path below.
-            }
+            ExtractPlanLogContext(cleanJson, out string loggedRequestId, out string? schema, out string? loggedAgentId);
+            string loggerAgentId = string.IsNullOrWhiteSpace(loggedAgentId) ? agentId : loggedAgentId!;
+
+            Debug.Log($"[TaskController] Received plan JSON agentId={loggerAgentId} requestId={loggedRequestId} schema={schema ?? "<unknown>"} chars={cleanJson.Length}");
+            LLMPacketLogger.LogResponse(
+                loggerAgentId,
+                loggedRequestId,
+                provider: "SanitizedPlanJson",
+                responseJson: cleanJson);
 
             if (string.Equals(schema, "PlanResponseV3", System.StringComparison.Ordinal))
-                return TryApplyPlanJsonV3(planResponseJson, cleanJson);
+                return TryApplyPlanJsonV3(planResponseJson, cleanJson, loggedRequestId, loggerAgentId);
 
             var (plan, validation) = PlanResponseV1Parser.ParseAndValidate(cleanJson);
 
@@ -115,8 +117,8 @@ namespace DogGame.LLM
                 Debug.LogWarning("PlanResponseV1 invalid:\n" + string.Join("\n", validation.Errors));
                 
                 LLMPacketLogger.LogResponse(
-                    agentId,
-                    "requestID",
+                    loggerAgentId,
+                    loggedRequestId,
                     provider: "ParserError" + string.Join("\n", validation.Errors),
                     responseJson: planResponseJson);
                 
@@ -129,6 +131,8 @@ namespace DogGame.LLM
                 return false;
             }
 
+            Debug.Log($"[TaskController] Accepted requestId={plan.RequestId} for controllerAgentId={agentId}");
+
             if (clearQueueOnNewPlan)
             {
                 // Cancel all execution state + queued tasks, not just the queue list.
@@ -138,13 +142,25 @@ namespace DogGame.LLM
             if (!PlanIntentMapper.TryEnqueueTasksFromPlan(plan, taskQueue, out var error))
             {
                 Debug.LogWarning("Plan mapped to zero tasks: " + error);
+                LLMPacketLogger.LogResponse(
+                    loggerAgentId,
+                    plan.RequestId ?? loggedRequestId,
+                    provider: "PlanResponseV1_EnqueueRejected",
+                    responseJson: cleanJson);
                 return false;
             }
+
+            Debug.Log($"[TaskController] Applied PlanResponseV1 requestId={plan.RequestId} agentId={plan.AgentId} intentions={plan.Intentions.Count}");
+            LLMPacketLogger.LogResponse(
+                loggerAgentId,
+                plan.RequestId ?? loggedRequestId,
+                provider: "PlanResponseV1_Applied",
+                responseJson: cleanJson);
 
             return true;
         }
 
-        private bool TryApplyPlanJsonV3(string originalPlanResponseJson, string cleanJson)
+        private bool TryApplyPlanJsonV3(string originalPlanResponseJson, string cleanJson, string loggedRequestId, string loggerAgentId)
         {
             var (plan, validation) = PlanResponseV3Parser.ParseAndValidate(cleanJson);
 
@@ -153,8 +169,8 @@ namespace DogGame.LLM
                 Debug.LogWarning("PlanResponseV3 invalid:\n" + string.Join("\n", validation.Errors));
 
                 LLMPacketLogger.LogResponse(
-                    agentId,
-                    "requestID",
+                    loggerAgentId,
+                    loggedRequestId,
                     provider: "ParserErrorV3 " + string.Join("\n", validation.Errors),
                     responseJson: originalPlanResponseJson);
 
@@ -167,16 +183,66 @@ namespace DogGame.LLM
                 return false;
             }
 
+            Debug.Log($"[TaskController] Accepted requestId={plan.RequestId} for controllerAgentId={agentId}");
+
             if (clearQueueOnNewPlan)
                 taskExecutor.ClearAll(taskContext);
 
             if (!PlanIntentMapper.TryEnqueueTasksFromPlan(plan, taskQueue, out var error))
             {
                 Debug.LogWarning("PlanResponseV3 mapped to zero tasks: " + error);
+                LLMPacketLogger.LogResponse(
+                    loggerAgentId,
+                    plan.RequestId ?? loggedRequestId,
+                    provider: "PlanResponseV3_EnqueueRejected",
+                    responseJson: cleanJson);
                 return false;
             }
 
+            string actions = string.Join(", ", ExtractActionNames(plan.Intentions));
+            Debug.Log($"[TaskController] Applied PlanResponseV3 requestId={plan.RequestId} agentId={plan.AgentId} intentions={plan.Intentions.Count} actions=[{actions}]");
+            LLMPacketLogger.LogResponse(
+                loggerAgentId,
+                plan.RequestId ?? loggedRequestId,
+                provider: "PlanResponseV3_Applied",
+                responseJson: cleanJson);
+
             return true;
+        }
+
+        private static void ExtractPlanLogContext(string cleanJson, out string requestId, out string? schema, out string? loggedAgentId)
+        {
+            requestId = "unknown";
+            schema = null;
+            loggedAgentId = null;
+
+            try
+            {
+                var root = JObject.Parse(cleanJson);
+                schema = root.Value<string>("schema");
+                requestId = root.Value<string>("requestId") ?? "unknown";
+                loggedAgentId = root.Value<string>("agentId");
+            }
+            catch
+            {
+                // Keep fallback values.
+            }
+        }
+
+        private static List<string> ExtractActionNames(List<JObject> intentions)
+        {
+            var actions = new List<string>();
+            if (intentions == null)
+                return actions;
+
+            for (int i = 0; i < intentions.Count; i++)
+            {
+                string? action = intentions[i]?.Value<string>("action");
+                if (!string.IsNullOrWhiteSpace(action))
+                    actions.Add(action.Trim());
+            }
+
+            return actions;
         }
 
         private bool wasDrivingMovementLastTick;

@@ -12,6 +12,8 @@ using Unity.Tutorials.Core.Editor;
 
 namespace DogGame.Modules
 {
+    [RequireComponent(typeof(TaskController))]
+    [RequireComponent(typeof(LLMAgentFacade))]
     public class PlayerDecisionModule : AgentDecisionModuleBase
     {
         //    [Header("Input Source")]
@@ -23,6 +25,7 @@ namespace DogGame.Modules
 
         private PlayerInputState inputState;   // a pointer, not a local copy
         private GameInputRouter gameInputRouter;
+        private bool llmThinkSubscribed;
 
         //[Header("Movement")]
         //[SerializeField] private float moveSpeed = 3.5f;  // now in agentMovementModule
@@ -37,10 +40,12 @@ namespace DogGame.Modules
 
         // these store the last given instructions regarding where to go.
         public Vector3? currentDestinationPosition = null;
+ 
         public WorldObject currentDestinationObject = null;
         public Vector3? currentManualWorldMoveDir = null;
-
-        TaskController taskController = null;
+        
+        [Header("LLM Components")]
+        public TaskController taskController = null;
 
         //public float thinkIntervalSeconds = 10f;
         //private float nextThinkTime = 0f;
@@ -58,6 +63,7 @@ namespace DogGame.Modules
         private void OnEnable()
         {
             TryBindRuntimeReferences(logFailure: false);
+            TrySubscribeToThinkModule();
         }
 
         private void Start()
@@ -117,7 +123,28 @@ namespace DogGame.Modules
 
             llmConfig ??= worldObject.llmConfigModule;
             llmWorldState ??= worldObject.llmWorldStateModule;
+            TrySubscribeToThinkModule();
             return taskController != null;
+        }
+
+        private void TrySubscribeToThinkModule()
+        {
+            if (llmThinkSubscribed || worldObject == null || worldObject.llmThinkModule == null)
+                return;
+
+            worldObject.llmThinkModule.PlanJsonReceived += OnLLMResponseJson;
+            llmThinkSubscribed = true;
+            Debug.Log($"[PlayerDecisionModule] Subscribed to LLMThinkModule agent={worldObject.DisplayName}");
+        }
+
+        private void UnsubscribeFromThinkModule()
+        {
+            if (!llmThinkSubscribed || worldObject == null || worldObject.llmThinkModule == null)
+                return;
+
+            worldObject.llmThinkModule.PlanJsonReceived -= OnLLMResponseJson;
+            llmThinkSubscribed = false;
+            Debug.Log($"[PlayerDecisionModule] Unsubscribed from LLMThinkModule agent={worldObject.DisplayName}");
         }
 
         private int debugDoubleTick = -1;
@@ -191,6 +218,7 @@ namespace DogGame.Modules
         }
 
 #nullable enable
+        [Header("LLM Components required")]
         [SerializeField] private LLMConfigModule? llmConfig;
         [SerializeField] private LLMWorldStateModule? llmWorldState;
 
@@ -291,7 +319,18 @@ namespace DogGame.Modules
                 Debug.LogError("OnLLMResponseJson: planJson is null or empty.");
                 return;
             }
-            worldObject.taskController.TryApplyPlanJson(planJson!);
+
+            TryBindRuntimeReferences(logFailure: true);
+
+            if (taskController == null)
+            {
+                Debug.LogError($"[PlayerDecisionModule] No TaskController available for agent={worldObject?.DisplayName ?? gameObject.name}.");
+                return;
+            }
+
+            Debug.Log($"[PlayerDecisionModule] Forwarding plan to TaskController agent={worldObject.DisplayName} chars={planJson.Length}");
+            bool applied = taskController.TryApplyPlanJson(planJson!);
+            Debug.Log($"[PlayerDecisionModule] TaskController.TryApplyPlanJson returned {applied} for agent={worldObject.DisplayName}");
         }
             
         #region One-shot actions
@@ -766,6 +805,7 @@ namespace DogGame.Modules
 
         private void OnDisable()
         {
+            UnsubscribeFromThinkModule();
             planCts?.Cancel();
             planCts?.Dispose();
             planCts = null;

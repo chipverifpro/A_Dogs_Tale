@@ -84,7 +84,9 @@ namespace DogGame.LLM.Providers
                 url = url,
                 payload = payload,
                 timeoutSeconds = timeoutSeconds,
-                headers = null
+                headers = null,
+                debugRequestId = requestId,
+                debugAgentId = agentId
             };
 
             return PostJsonAsync(spec, cancellationToken, ParseGeminiGenerateContent);
