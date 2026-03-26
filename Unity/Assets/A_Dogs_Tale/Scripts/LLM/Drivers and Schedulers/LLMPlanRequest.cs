@@ -63,9 +63,7 @@ namespace DogGame.LLM
             Sophistication = sophistication;
             OnResponseJson = onResponseJson;
 
-            RequestId = Guid.NewGuid().ToString("N");
-            // Concept for a requestID that isn't a huge random number.
-            //RequestId = $"{sessionToken}:{++requestCounter}";
+            RequestId = LLMRequestId.NewShortHex();
             RequestTime = UnityEngine.Time.time;
 
             PriorityScore = priorityScoreOverride ?? DefaultPriorityFromUrgency(urgency);

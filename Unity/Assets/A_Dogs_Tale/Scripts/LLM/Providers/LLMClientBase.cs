@@ -202,7 +202,7 @@ namespace DogGame.LLM.Core
             // Optional debug monitor hook (your project has Dir.Instance.llmDebugMonitor)
             string payloadJson = spec.payload.ToString();
             string agentId = ExtractAgentId(payloadJson) ?? "<unknown>";
-            string requestId = Guid.NewGuid().ToString("N");
+            string requestId = LLMRequestId.NewShortHex();
             var debugMonitor = Dir.Instance != null ? Dir.Instance.llmDebugMonitor : null;
             if (debugMonitor != null)
             {

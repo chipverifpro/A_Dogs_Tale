@@ -3676,7 +3676,7 @@ MonoBehaviour:
     totalFailures: 0
     currentRequests: []
   router: {fileID: 494970100}
-  commandMode: 1
+  commandMode: 0
   pendingRequests: []
 --- !u!114 &494970099
 MonoBehaviour:

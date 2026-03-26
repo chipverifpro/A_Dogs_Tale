@@ -42,7 +42,7 @@ namespace DogGame.LLM.Agent
 
             // Agent identity is ultimately set in LLMConfigModule (IdentitySection).
             // Facade just needs a unique requestId.
-            string requestId = $"{gameObject.name}:{DateTime.UtcNow.Ticks}";
+            string requestId = LLMRequestId.NewShortHex();
 
             string agentId = gameObject.name; // default
 
