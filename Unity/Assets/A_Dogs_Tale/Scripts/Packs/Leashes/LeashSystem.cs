@@ -47,7 +47,7 @@ public class LeashSystem : MonoBehaviour // or your Subsystem base
         if (leashPrefab==null) leashPrefab = LoadLeashPrefab();
 
         // Assumes packs are already created.
-        CreateInitialLeashesFromEndpoints();
+        //CreateInitialLeashesFromEndpoints();
     }
 
     private void CreateInitialLeashesFromEndpoints()

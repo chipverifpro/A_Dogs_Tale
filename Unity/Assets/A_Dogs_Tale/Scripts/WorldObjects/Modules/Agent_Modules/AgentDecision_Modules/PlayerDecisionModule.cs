@@ -328,7 +328,7 @@ namespace DogGame.Modules
                 return;
             }
 
-            Debug.Log($"[PlayerDecisionModule] Forwarding plan to TaskController agent={worldObject.DisplayName} chars={planJson.Length}");
+            Debug.Log($"[PlayerDecisionModule] Forwarding plan to TaskController agent={worldObject.DisplayName} chars={planJson!.Length}");
             bool applied = taskController.TryApplyPlanJson(planJson!);
             Debug.Log($"[PlayerDecisionModule] TaskController.TryApplyPlanJson returned {applied} for agent={worldObject.DisplayName}");
         }

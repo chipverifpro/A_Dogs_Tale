@@ -128,6 +128,12 @@ namespace DogGame.Modules
                     WandererDecisionModule wandererDecisionModule = (WandererDecisionModule) currentDecisionModule;
                 }
 
+                if(currentDecisionModule.DecisionType == AgentDecisionType.Explorer)
+                {
+                    // cast the decision module
+                    ExploreDecisionModule exploreDecisionModule = (ExploreDecisionModule) currentDecisionModule;
+                }
+
                 if(currentDecisionModule.DecisionType == AgentDecisionType.Player)
                 {
                     // cast the decision module
@@ -181,6 +187,11 @@ namespace DogGame.Modules
             SwitchDecisionModule(AgentDecisionType.Wanderer);
         }
 
+        public void BecomeExplorer()
+        {
+            SwitchDecisionModule(AgentDecisionType.Explorer);
+        }
+
         public void BecomeLLM()
         {
             SwitchDecisionModule(AgentDecisionType.LLM);
@@ -200,7 +211,8 @@ namespace DogGame.Modules
         Wanderer,       // simple wanderer
         Immobile,       // just sits there
         LLM,            // driven by LLM (obsolete)
-        TaskFollower,   // drives based on Task list
+        TaskFollower,   // drives based on Task
+        Explorer,      // goes through all doors it sees
 
         // Add more: Predator, Boss, Civilian, Summoned, etc.
     }

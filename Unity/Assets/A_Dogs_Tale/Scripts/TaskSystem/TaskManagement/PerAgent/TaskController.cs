@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using DogGame.LLM.Debugging;
 using NUnit.Framework.Interfaces;
 using Newtonsoft.Json.Linq;
+using Unity.Tutorials.Core.Editor;
 
 namespace DogGame.LLM
 {
@@ -89,6 +90,11 @@ namespace DogGame.LLM
                 return false;
 
             Debug.Log($"[TaskController] TryApplyPlanJson invoked controllerAgentId={agentId} rawChars={planResponseJson?.Length ?? 0}");
+            if (planResponseJson.IsNullOrEmpty())
+            {
+                Debug.LogWarning("planResponseJson is null or empty.\n");
+                return false;
+            }
 
             // sanitize the LLM Response.
             if (!DogGame.LLM.LLMResponseSanitizer.TryExtractJsonObject(planResponseJson, out string cleanJson, out string err))
@@ -108,7 +114,7 @@ namespace DogGame.LLM
                 responseJson: cleanJson);
 
             if (string.Equals(schema, "PlanResponseV3", System.StringComparison.Ordinal))
-                return TryApplyPlanJsonV3(planResponseJson, cleanJson, loggedRequestId, loggerAgentId);
+                return TryApplyPlanJsonV3(planResponseJson!, cleanJson, loggedRequestId, loggerAgentId);
 
             var (plan, validation) = PlanResponseV1Parser.ParseAndValidate(cleanJson);
 
@@ -120,7 +126,7 @@ namespace DogGame.LLM
                     loggerAgentId,
                     loggedRequestId,
                     provider: "ParserError" + string.Join("\n", validation.Errors),
-                    responseJson: planResponseJson);
+                    responseJson: planResponseJson!);
                 
                 return false;
             }

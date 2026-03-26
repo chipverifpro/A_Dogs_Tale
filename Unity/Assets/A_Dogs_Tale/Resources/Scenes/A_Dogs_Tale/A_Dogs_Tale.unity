@@ -3660,21 +3660,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7218e3fb1f54040bcb853b10dd1e8ede, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::LLMWorldScheduler
-  llmVendorAndModel: 1
-  llmModelsAvailable:
-  - displayName: "OpenAI \xB7 gpt-4.1-mini \xB7 Medium"
-    llmVendorAndModel: 1
-    llmVendor: 0
-    llmModelString: gpt-4.1-mini
-    remote: 1
-    sophistication: 1
-    vendorMaxConcurrentRequests: 2
-    successRate: 0.9
-    typicalResponseTime: 10
-    typicalCost: 0.01
-    totalRequests: 0
-    totalFailures: 0
-    currentRequests: []
+  llmVendorAndModel: 0
+  llmModelsAvailable: []
   router: {fileID: 494970100}
   commandMode: 0
   pendingRequests: []
@@ -6737,6 +6724,18 @@ PrefabInstance:
         type: 3}
       insertIndex: -1
       addedObject: {fileID: 1253610063}
+    - targetCorrespondingSourceObject: {fileID: 7970140317087810869, guid: e2802ce6b21f34344bc910cf30e9b3a8,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1253610070}
+    - targetCorrespondingSourceObject: {fileID: 7970140317087810869, guid: e2802ce6b21f34344bc910cf30e9b3a8,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1253610069}
+    - targetCorrespondingSourceObject: {fileID: 7970140317087810869, guid: e2802ce6b21f34344bc910cf30e9b3a8,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1253610068}
   m_SourcePrefab: {fileID: 100100000, guid: e2802ce6b21f34344bc910cf30e9b3a8, type: 3}
 --- !u!1 &1041234624
 GameObject:
@@ -8396,6 +8395,68 @@ MonoBehaviour:
     width: 0
     height: 0
   maxVisionContextLines: 6
+--- !u!114 &1253610065 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 4671468726509197285, guid: e2802ce6b21f34344bc910cf30e9b3a8,
+    type: 3}
+  m_PrefabInstance: {fileID: 1036249802}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1253610019}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d5bfcb675901bc6468cd417ef699d90e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &1253610068
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1253610019}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 40e29a7f84b4b443a858e5012f88be27, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.PlayerDecisionModule
+  navigationSource: 0
+  cameraForMovement: {fileID: 1815589284}
+  cameraModeSwitcher: {fileID: 1815589288}
+  currentDestinationObject: {fileID: 0}
+  taskController: {fileID: 1253610070}
+  llmConfig: {fileID: 1253610061}
+  llmWorldState: {fileID: 1253610063}
+  llmFacade: {fileID: 1253610069}
+  taskRunnerComponent: {fileID: 1253610065}
+--- !u!114 &1253610069
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1253610019}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6e55b4afbe2cd45a0925b2aeb372034c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DogGame.LLM.Agent.LLMAgentFacade
+  config: {fileID: 1253610061}
+  worldState: {fileID: 1253610063}
+  llmServiceBehaviour: {fileID: 1253610065}
+--- !u!114 &1253610070
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1253610019}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 125bcf5342852454cb41e5e24582147a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DogGame.LLM.TaskController
+  agentId: player
+  clearQueueOnNewPlan: 0
 --- !u!1 &1255866326
 GameObject:
   m_ObjectHideFlags: 0
@@ -11305,10 +11366,6 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 4477274621950385561, guid: da33ad6d2d1f9483faa117084b30e547,
         type: 3}
       insertIndex: -1
-      addedObject: {fileID: 1651296812}
-    - targetCorrespondingSourceObject: {fileID: 4477274621950385561, guid: da33ad6d2d1f9483faa117084b30e547,
-        type: 3}
-      insertIndex: -1
       addedObject: {fileID: 1651296813}
     - targetCorrespondingSourceObject: {fileID: 4477274621950385561, guid: da33ad6d2d1f9483faa117084b30e547,
         type: 3}
@@ -11513,6 +11570,7 @@ MonoBehaviour:
   cameraForMovement: {fileID: 1815589284}
   cameraModeSwitcher: {fileID: 1815589288}
   currentDestinationObject: {fileID: 1651296793}
+  taskController: {fileID: 1651296814}
   llmConfig: {fileID: 1651296804}
   llmWorldState: {fileID: 1651296805}
   llmFacade: {fileID: 1651296813}
@@ -11924,18 +11982,6 @@ MonoBehaviour:
     icon: {fileID: 0}
     isVisible: 1
     isEnabled: 1
---- !u!114 &1651296812
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1651296779}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 42d2b00efd2b3458793ba80cc8cdc2c2, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::TaskListModule
 --- !u!114 &1651296813
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -15711,10 +15757,6 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 8843402266763018810, guid: 2ce0050a816054aaca2a1076f182f7a8,
         type: 3}
       insertIndex: -1
-      addedObject: {fileID: 6544990386685219177}
-    - targetCorrespondingSourceObject: {fileID: 8843402266763018810, guid: 2ce0050a816054aaca2a1076f182f7a8,
-        type: 3}
-      insertIndex: -1
       addedObject: {fileID: 6544990386685219176}
     - targetCorrespondingSourceObject: {fileID: 8843402266763018810, guid: 2ce0050a816054aaca2a1076f182f7a8,
         type: 3}
@@ -15776,6 +15818,10 @@ PrefabInstance:
         type: 3}
       insertIndex: -1
       addedObject: {fileID: 6544990386685219195}
+    - targetCorrespondingSourceObject: {fileID: 8843402266763018810, guid: 2ce0050a816054aaca2a1076f182f7a8,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 6544990386685219197}
   m_SourcePrefab: {fileID: 100100000, guid: 2ce0050a816054aaca2a1076f182f7a8, type: 3}
 --- !u!1 &6544990386685219093 stripped
 GameObject:
@@ -15796,7 +15842,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.AgentModule
   agentName: German Shepherd
-  initialDecisionType: 1
+  initialDecisionType: 7
   currentDecisionModule: {fileID: 6544990386685219152}
 --- !u!114 &6544990386685219144
 MonoBehaviour:
@@ -15965,6 +16011,7 @@ MonoBehaviour:
   cameraForMovement: {fileID: 1815589284}
   cameraModeSwitcher: {fileID: 1815589288}
   currentDestinationObject: {fileID: 0}
+  taskController: {fileID: 0}
   llmConfig: {fileID: 6544990386685219188}
   llmWorldState: {fileID: 6544990386685219187}
   llmFacade: {fileID: 6544990386685219191}
@@ -16185,18 +16232,6 @@ MonoBehaviour:
   luaReactionScript: 
   luaDogIsHungry: 0
   luaDogHunger01: 0
---- !u!114 &6544990386685219177
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6544990386685219093}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 42d2b00efd2b3458793ba80cc8cdc2c2, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::TaskListModule
 --- !u!114 &6544990386685219178
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -16520,6 +16555,22 @@ MonoBehaviour:
   knownAgents: []
   knownWords: []
   substituteUnknownWord: '{-blah-}'
+--- !u!114 &6544990386685219197
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6544990386685219093}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2fe19957d107c44258eff6ab342bfd1a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.ExploreDecisionModule
+  navigationSource: 0
+  exploreWalkMode: 1
+  arriveDistance: 0.1
+  maxDoorsPerRefresh: 32
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

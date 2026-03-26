@@ -309,47 +309,52 @@ namespace DogGame.LLM.Agent
             public DirFlags direction;
         }
 
-        public string BuildDoorsList(Vector3 worldPos, Room room, RectInt radiusBounds, int maxDoors)
+        public List<FoundDoor> GetDoorsInRoom(Vector3 worldPos, Room room, RectInt radiusBounds, int maxDoors)
         {
-            Debug.Log($"BuildDoorsList: {room.cells.Count}");
-            doorsContext = "";
             List<FoundDoor> foundDoors = new();
 
             foreach (Cell c in room.cells)
             {
-                if (c.doors != DirFlags.None)
+                if (c.doors == DirFlags.None)
+                    continue;
+
+                if (!radiusBounds.Contains(c.pos))
+                    continue;
+
+                foreach (DirFlags dir in DirFlagsEx.AllCardinals)
                 {
-                    if (!radiusBounds.Contains(c.pos))
+                    if ((c.doors & dir) == 0)
                         continue;
 
-                    foreach (DirFlags dir in DirFlagsEx.AllCardinals)
+                    FoundDoor door = new FoundDoor
                     {
-                        if ((c.doors & dir) != 0)
-                        {
-                            Debug.Log($"Found door @ {c.pos}");
+                        pos = c.pos,
+                        distSqr = Vector3.SqrMagnitude(worldPos - c.pos3d_world),
+                        direction = dir,
+                        open = false,
+                    };
+                    door.IsOpen = door.open ? "Open" : "Closed";
 
-                            FoundDoor door = new FoundDoor
-                            {
-                                pos = c.pos,
-                                distSqr = Vector3.SqrMagnitude(worldPos - c.pos3d_world),
-                                direction = dir,
-                                open = false,
-                            };
-                            door.IsOpen = door.open ? "Open" : "Closed";
-
-                            foundDoors.Add(door);
-                        }
-                    }
+                    foundDoors.Add(door);
                 }
             }
-
-            if (foundDoors.Count == 0)
-                return "";
 
             foundDoors.Sort((a, b) => a.distSqr.CompareTo(b.distSqr));
 
             if (maxDoors > 0 && foundDoors.Count > maxDoors)
                 foundDoors.RemoveRange(maxDoors, foundDoors.Count - maxDoors);
+
+            return foundDoors;
+        }
+
+        public string BuildDoorsList(Vector3 worldPos, Room room, RectInt radiusBounds, int maxDoors)
+        {
+            Debug.Log($"BuildDoorsList: {room.cells.Count}");
+            doorsContext = "";
+            List<FoundDoor> foundDoors = GetDoorsInRoom(worldPos, room, radiusBounds, maxDoors);
+
+            if (foundDoors.Count == 0)
+                return "";
 
             doorsContext = $"{foundDoors.Count} room exits nearby: ";
             foreach (FoundDoor foundDoor in foundDoors)
