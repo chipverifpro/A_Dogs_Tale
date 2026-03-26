@@ -1,0 +1,425 @@
+{
+  "schema": "ToolCatalogV3",
+  "description": "Allowed high-level MCP tools the dog agent may invoke. These are declarative behavior requests; the game resolves them into existing tasks, sequences, or decision modules.",
+  "criticalRules": [
+    "Use only tool names listed in this catalog.",
+    "Do not invent tools or arguments that are not listed here.",
+    "Prefer concrete object-grounded actions using target_id over vague spatial descriptions.",
+    "For object-based tools, target_id must exactly match a known object or entity id from the prompt context.",
+    "reasoning should be a short single-line explanation of why the tool was chosen, for later history and continuity.",
+    "Use persistent mode tools only when the intent is ongoing behavior until replaced or stopped.",
+    "Do not output engine-level or direct-control commands such as transforms, coordinates, teleporting, health changes, or inventory mutation outside the listed tools.",
+    "If uncertain and no better grounded action is available, prefer wait, sniff, examine_object, or start_exploring depending on context."
+  ],
+  "notes": {
+    "mcpConvention": [
+      "In MCP, the tool name identifies the action.",
+      "Arguments should include only the fields listed in that tool's inputSchema.",
+      "The game may apply default execution settings such as interruption behavior, stack behavior, and source tagging."
+    ],
+    "planResponseV3Mapping": "Each MCP tool name corresponds directly to the PlanResponseV3 action name of the same string."
+  },
+  "tools": [
+    {
+      "name": "bark",
+      "description": "Make a bark with a social or tactical intent. Optionally include a target if the bark is about a specific object or entity.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "bark_intent": {
+            "type": "string",
+            "enum": ["social", "suspicious", "alert_pack", "threat", "found", "need_help"]
+          },
+          "target_id": { "type": "string" },
+          "reasoning": { "type": "string" }
+        },
+        "required": ["bark_intent", "reasoning"],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "emote",
+      "description": "Display a visible body-language emotion or social signal without barking. Use this for posture, tail, ears, playfulness, fear, submission, or excitement.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "emote_intent": {
+            "type": "string",
+            "enum": ["friendly", "playful", "excited", "curious", "suspicious", "fearful", "submissive", "happy"]
+          },
+          "reasoning": { "type": "string" }
+        },
+        "required": ["emote_intent", "reasoning"],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "set_walk_mode",
+      "description": "Change style of walking.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "walk_mode": {
+            "type": "string",
+            "enum": ["Walk", "Run", "Sneak", "Cautious", "Crawl"]
+          },
+          "reasoning": { "type": "string" }
+        },
+        "required": ["walk_mode", "reasoning"],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "face_object",
+      "description": "Turn to face a target.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "target_id": { "type": "string" },
+          "persistence": {
+            "type": "boolean",
+            "description": "If true, remain facing the target while performing follow-up actions until stopped or replaced."
+          },
+          "reasoning": { "type": "string" }
+        },
+        "required": ["target_id", "reasoning"],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "move_to_object",
+      "description": "Move to target.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "target_id": { "type": "string" },
+          "reasoning": { "type": "string" }
+        },
+        "required": ["target_id", "reasoning"],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "examine_object",
+      "description": "Move to target and examine by looking, sniffing, and listening to target.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "target_id": { "type": "string" },
+          "reasoning": { "type": "string" }
+        },
+        "required": ["target_id", "reasoning"],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "sniff",
+      "description": "Sniff the ground and air at the current location.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "reasoning": { "type": "string" }
+        },
+        "required": ["reasoning"],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "take_object",
+      "description": "Move to target and pick it up in mouth. Carrying is limited to one object at a time, of an appropriate size.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "target_id": { "type": "string" },
+          "reasoning": { "type": "string" }
+        },
+        "required": ["target_id", "reasoning"],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "drop_object",
+      "description": "Drop currently held object.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "reasoning": { "type": "string" }
+        },
+        "required": ["reasoning"],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "bury_object",
+      "description": "Dig a hole and bury currently held object.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "reasoning": { "type": "string" }
+        },
+        "required": ["reasoning"],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "dig",
+      "description": "Dig a hole. If an object is found, pick it up in your mouth.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "reasoning": { "type": "string" }
+        },
+        "required": ["reasoning"],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "go_through_door",
+      "description": "Move to target door, open it if necessary, go through to the other side, and examine what is there.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "target_id": { "type": "string" },
+          "reasoning": { "type": "string" }
+        },
+        "required": ["target_id", "reasoning"],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "open_door",
+      "description": "Move to target door and open it. Examine what is on the other side.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "target_id": { "type": "string" },
+          "reasoning": { "type": "string" }
+        },
+        "required": ["target_id", "reasoning"],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "close_door",
+      "description": "Move to target door and close it.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "target_id": { "type": "string" },
+          "reasoning": { "type": "string" }
+        },
+        "required": ["target_id", "reasoning"],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "interact_with_object",
+      "description": "Move to target object and manipulate it in a relevant way, such as open, close, push, pull, or scratch. Not for doors.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "target_id": { "type": "string" },
+          "interaction": {
+            "type": "string",
+            "enum": ["open", "close", "push", "pull", "scratch"]
+          },
+          "reasoning": { "type": "string" }
+        },
+        "required": ["target_id", "interaction", "reasoning"],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "interact_with_held_object",
+      "description": "Do something with the item currently carried in your mouth, such as drop, bury, eat, chew, or destroy.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "interaction": {
+            "type": "string",
+            "enum": ["drop", "bury", "eat", "chew", "destroy"]
+          },
+          "reasoning": { "type": "string" }
+        },
+        "required": ["interaction", "reasoning"],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "join_pack",
+      "description": "Become a member of the target's pack.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "target_id": { "type": "string" },
+          "reasoning": { "type": "string" }
+        },
+        "required": ["target_id", "reasoning"],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "become_pack_leader",
+      "description": "Become the leader of your current pack.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "reasoning": { "type": "string" }
+        },
+        "required": ["reasoning"],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "leave_pack",
+      "description": "Leave your current pack.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "reasoning": { "type": "string" }
+        },
+        "required": ["reasoning"],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "start_exploring",
+      "description": "Begin wandering the area, exploring new rooms and objects encountered. Continues until replaced or stopped.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "reasoning": { "type": "string" }
+        },
+        "required": ["reasoning"],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "start_follow_pack_leader",
+      "description": "Begin following the current pack leader. Continues until replaced or stopped.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "reasoning": { "type": "string" }
+        },
+        "required": ["reasoning"],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "start_follow_on_leash",
+      "description": "Begin following the leash holder, trying to stay close enough not to pull back on the leash. Continues until replaced or stopped.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "reasoning": { "type": "string" }
+        },
+        "required": ["reasoning"],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "start_follow_object",
+      "description": "Begin following the target, trying to stay at a distance. Continues until replaced or stopped.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "target_id": { "type": "string" },
+          "distance": { "type": "integer", "maximum": 5 },
+          "reasoning": { "type": "string" }
+        },
+        "required": ["target_id", "reasoning"],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "start_follow_scent",
+      "description": "Begin searching for the source of a scent target. Follow the strongest scent, searching around scent pools to pick up the trail again.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "target_id": { "type": "string" },
+          "reasoning": { "type": "string" }
+        },
+        "required": ["target_id", "reasoning"],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "start_patrol_room",
+      "description": "Begin circling the current room watching for intruders. Continues until replaced or stopped.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "reasoning": { "type": "string" }
+        },
+        "required": ["reasoning"],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "start_patrol_around_object",
+      "description": "Begin circling the target object watching for intruders. Continues until replaced or stopped.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "target_id": { "type": "string" },
+          "distance": { "type": "integer", "maximum": 5 },
+          "reasoning": { "type": "string" }
+        },
+        "required": ["target_id", "reasoning"],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "start_stay",
+      "description": "Stay in place until stopped or a reaction stronger than training breaks the stay.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "reasoning": { "type": "string" }
+        },
+        "required": ["reasoning"],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "stop_current_mode",
+      "description": "Stop any continuous command such as explore, follow, patrol, stay, or persistent facing.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "reasoning": { "type": "string" }
+        },
+        "required": ["reasoning"],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "nap",
+      "description": "Lay down, close eyes, and rest for the specified duration in seconds.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "duration": { "type": "integer", "maximum": 300 },
+          "reasoning": { "type": "string" }
+        },
+        "required": ["duration", "reasoning"],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "wait",
+      "description": "Do nothing for the specified duration in seconds.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "duration": { "type": "integer", "maximum": 30 },
+          "reasoning": { "type": "string" }
+        },
+        "required": ["duration", "reasoning"],
+        "additionalProperties": false
+      }
+    }
+  ]
+}
