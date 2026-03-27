@@ -204,12 +204,12 @@ namespace DogGame.Modules
         /// Convenience: instantly teleport the body to a new position without any velocity.
         /// Useful for respawns, teleports, etc.
         /// </summary>
-        public void Teleport(Vector3 worldPosition, bool resetMotion = true)
+        public void Teleport(Vector3? worldPosition, bool resetMotion = true)
         {
-            if (bodyRoot == null)
+            if (bodyRoot == null || worldPosition==null)
                 return;
-
-            bodyRoot.position = worldPosition;
+            Debug.Log($"{worldObject.DisplayName} Teleport from {bodyRoot.position} to {worldPosition}");
+            bodyRoot.position = (Vector3)worldPosition;
             if (resetMotion)
             {
                 ResetMotionState();

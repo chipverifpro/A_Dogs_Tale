@@ -635,6 +635,7 @@ namespace DogGame.Modules
                 RebuildPathToCurrentTarget(forceRebuild: true);
             else
                 ClearActivePath();
+            Debug.Log($"SetDesiredTargetLocation {targetLocation_world}");
         }
 
         // function name is redundant to above function, but this one includes WalkMode.  Which is preferable to use?
@@ -650,7 +651,7 @@ namespace DogGame.Modules
 
         private void UpdateStallRecoveryState()
         {
-            if (!enableStallRecovery || worldObject == null || worldObject.locationModule == null)
+            if (!enableStallRecovery || worldObject == null || worldObject.locationModule == null || !dir.gen.buildComplete)
                 return;
 
             bool hasMovementIntent =
@@ -660,9 +661,14 @@ namespace DogGame.Modules
 
             Vector3 currentPos = worldObject.pos3d_world;
             Vector3 delta = currentPos - lastStallCheckPosition;
+            
+            Debug.Log($"{worldObject.DisplayName} {currentPos} - {lastStallCheckPosition} = {delta}");
             delta.y = 0f;
             float epsilonSqr = stallPositionEpsilon * stallPositionEpsilon;
 
+            lastStallCheckPosition = currentPos;
+            Debug.Log($"@{currentPos} [AgentMovementModule] {worldObject.DisplayName} hasMovementIntent={hasMovementIntent}, delta^2={delta.sqrMagnitude}, stallTicks={consecutiveStallTicks}");
+                
             if (!hasMovementIntent)
             {
                 consecutiveStallTicks = 0;
@@ -677,13 +683,22 @@ namespace DogGame.Modules
             }
             else
             {
-                if (consecutiveStallTicks>5) Debug.Log($"consecutiveStallTicks={consecutiveStallTicks} reset");
+                if (consecutiveStallTicks>2) Debug.Log($"consecutiveStallTicks={consecutiveStallTicks} reset");
                 consecutiveStallTicks = 0;
             }
-
+            
             if (recoveringToCellCenter)
+            {
+                Debug.Log($"@{currentPos} [AgentMovementModule] {worldObject.DisplayName} recovering");
+                Vector3 teleportDestination = (Vector3)targetLocation;
+                
+                //Vector3 teleportDestination = worldObject.locationModule.cell.pos3d_world;
+                //teleportDestination.x = Mathf.Floor(teleportDestination.x) + 0.5f;
+                //teleportDestination.z = Mathf.Floor(teleportDestination.z) + 0.5f;
+                worldObject.motionModule.Teleport(teleportDestination, false);
+                consecutiveStallTicks = 0;
                 return;
-
+            }
             if (consecutiveStallTicks < Mathf.Max(1, stallTicksBeforeRecover))
                 return;
 
