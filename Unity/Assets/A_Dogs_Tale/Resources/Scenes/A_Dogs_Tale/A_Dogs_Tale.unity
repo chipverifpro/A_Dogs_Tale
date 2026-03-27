@@ -3021,7 +3021,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4e8ae2607ef234a90bf3971761052f8b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  hf_valid: 0
+  hf_valid: 1
   dir: {fileID: 1920128612}
   cfg: {fileID: 11400000, guid: 2050485d3f2754bfcb547b81523f9099, type: 2}
   buildComplete: 0
@@ -8194,6 +8194,11 @@ MonoBehaviour:
   pathSmoothingIntervalSeconds: 0.2
   movingTargetRepathIntervalSeconds: 0.2
   enablePathDebugLogging: 0
+  enableStallRecovery: 1
+  stallTicksBeforeRecover: 3
+  stallPositionEpsilon: 0.03
+  centerRecoveryArrivalRadius: 0.08
+  enableStallDebugLogging: 0
   accelerationMetersPerSecondSquared: 12
   decelerationMetersPerSecondSquared: 16
   enableDebugLogging: 0
@@ -11515,6 +11520,11 @@ MonoBehaviour:
   pathSmoothingIntervalSeconds: 0.2
   movingTargetRepathIntervalSeconds: 0.2
   enablePathDebugLogging: 0
+  enableStallRecovery: 1
+  stallTicksBeforeRecover: 3
+  stallPositionEpsilon: 0.03
+  centerRecoveryArrivalRadius: 0.08
+  enableStallDebugLogging: 0
   accelerationMetersPerSecondSquared: 12
   decelerationMetersPerSecondSquared: 16
   enableDebugLogging: 0
@@ -13561,7 +13571,7 @@ MonoBehaviour:
   gen: {fileID: 409665914}
   dungeonGUISelector: {fileID: 2032406100}
   dungeonBuildSettingsUI: {fileID: 2015256706}
-  pathfinding: {fileID: 0}
+  pathfinding: {fileID: 2140542028}
   audioPlayer: {fileID: 215243009}
   audioCatalog: {fileID: 215243011}
   audioMixerGroups: {fileID: 215243010}
@@ -15140,6 +15150,11 @@ MonoBehaviour:
   pathSmoothingIntervalSeconds: 0.2
   movingTargetRepathIntervalSeconds: 0.2
   enablePathDebugLogging: 0
+  enableStallRecovery: 1
+  stallTicksBeforeRecover: 3
+  stallPositionEpsilon: 0.03
+  centerRecoveryArrivalRadius: 0.08
+  enableStallDebugLogging: 0
   accelerationMetersPerSecondSquared: 12
   decelerationMetersPerSecondSquared: 16
   enableDebugLogging: 0
@@ -15842,7 +15857,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.AgentModule
   agentName: German Shepherd
-  initialDecisionType: 7
+  initialDecisionType: 1
   currentDecisionModule: {fileID: 6544990386685219152}
 --- !u!114 &6544990386685219144
 MonoBehaviour:
@@ -15955,7 +15970,12 @@ MonoBehaviour:
   pathWaypointArrivalRadius: 0.2
   pathSmoothingIntervalSeconds: 0.2
   movingTargetRepathIntervalSeconds: 0.2
-  enablePathDebugLogging: 0
+  enablePathDebugLogging: 1
+  enableStallRecovery: 1
+  stallTicksBeforeRecover: 120
+  stallPositionEpsilon: 0.5
+  centerRecoveryArrivalRadius: 0.05
+  enableStallDebugLogging: 1
   accelerationMetersPerSecondSquared: 12
   decelerationMetersPerSecondSquared: 16
   enableDebugLogging: 0

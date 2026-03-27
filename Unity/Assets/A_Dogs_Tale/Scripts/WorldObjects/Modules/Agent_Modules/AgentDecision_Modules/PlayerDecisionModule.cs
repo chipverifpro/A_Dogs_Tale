@@ -552,7 +552,7 @@ namespace DogGame.Modules
         {
             {
                 taskController.Submit(new TaskRequest(
-                    task: new Task_MoveToLocation(targetLocation.x, targetLocation.z, stopRadius: 0.3f),
+                    task: new Task_MoveToLocation(targetLocation.x, targetLocation.z, stopRadius: 0.05f),
                     priority: 100,
                     source: TaskSource.Player,
                     canInterrupt: true,

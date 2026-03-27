@@ -51,8 +51,8 @@ namespace DogGame.Reactions
 
             if (name == "move_to_event_location")
             {
-                float stopRadius = GetFloat(spec, "stopRadius", 0.25f);
-                stopRadius = Mathf.Clamp(stopRadius, 0.05f, 3.0f);
+                float stopRadius = GetFloat(spec, "stopRadius", 0.08f);
+                stopRadius = Mathf.Clamp(stopRadius, 0.05f, .08f);
 
                 // Uses the event’s world position as destination
                 task = new Task_MoveToLocation(e.WorldPos.x, e.WorldPos.z, stopRadius);
@@ -143,8 +143,8 @@ namespace DogGame.Reactions
 
             if (name == "move_to_event")
             {
-                float stopRadius = GetFloat(spec, "stopRadius", 0.6f);
-                stopRadius = Mathf.Clamp(stopRadius, 0.05f, 3.0f);
+                float stopRadius = GetFloat(spec, "stopRadius", 0.08f);
+                stopRadius = Mathf.Clamp(stopRadius, 0.05f, 0.08f);
 
                 task = new Task_MoveToLocation(e.WorldPos.x, e.WorldPos.z, stopRadius);
                 return true;
@@ -155,9 +155,9 @@ namespace DogGame.Reactions
                 float x = GetFloat(spec, "x", observer.transform.position.x);
                 float y = GetFloat(spec, "y", observer.transform.position.y);
                 float z = GetFloat(spec, "z", observer.transform.position.z);
-                float stopRadius = GetFloat(spec, "stopRadius", 0.6f);
+                float stopRadius = GetFloat(spec, "stopRadius", 0.08f);
 
-                stopRadius = Mathf.Clamp(stopRadius, 0.05f, 3.0f);
+                stopRadius = Mathf.Clamp(stopRadius, 0.05f, 0.08f);
 
                 task = new Task_MoveToLocation(x, z, stopRadius);
                 return true;

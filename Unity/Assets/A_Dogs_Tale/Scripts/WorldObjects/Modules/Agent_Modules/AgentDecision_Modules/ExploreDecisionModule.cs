@@ -253,7 +253,7 @@ namespace DogGame.Modules
 
         private Vector3 CellCenterWorld(Cell cell)
         {
-            Vector3 mapCenter = new Vector3(cell.x + 0.5f, cell.height, cell.y + 0.5f);
+            Vector3 mapCenter = new Vector3(Mathf.Floor(cell.x) + 0.5f, cell.height, Mathf.Floor(cell.y) + 0.5f);
             return worldObject.MapToWorldPosition(mapCenter);
         }
 
