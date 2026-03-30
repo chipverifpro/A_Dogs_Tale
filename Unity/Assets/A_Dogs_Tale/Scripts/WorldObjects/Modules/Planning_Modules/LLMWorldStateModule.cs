@@ -223,9 +223,10 @@ namespace DogGame.LLM.Agent
             string roomContext = "";
 
             Vector3 currentAgentWorldPosition = worldObject.pos3d_world;
+            Vector3 currentAgentMapPosition = worldObject.pos3d_map;
             Cell? cell = worldObject.locationModule?.cell;
 
-            radiusBounds = GetRadiusBounds(currentAgentWorldPosition, suggestedTravelRadius);
+            radiusBounds = GetRadiusBounds(currentAgentMapPosition, suggestedTravelRadius);
 
             if (cell != null)
             {
@@ -254,7 +255,7 @@ namespace DogGame.LLM.Agent
                     roomContext += ". ";
 
                 maxDoors = wantBrief ? 2 : wantDetailed ? 8 : 4;
-                BuildDoorsList(currentAgentWorldPosition, room, radiusBounds, maxDoors);
+                BuildDoorsList(currentAgentMapPosition, room, radiusBounds, maxDoors);
             }
             else
             {
@@ -309,7 +310,7 @@ namespace DogGame.LLM.Agent
             public DirFlags direction;
         }
 
-        public List<FoundDoor> GetDoorsInRoom(Vector3 worldPos, Room room, RectInt radiusBounds, int maxDoors)
+        public List<FoundDoor> GetDoorsInRoom(Vector3 mapPos, Room room, RectInt radiusBounds, int maxDoors)
         {
             List<FoundDoor> foundDoors = new();
 
@@ -329,7 +330,7 @@ namespace DogGame.LLM.Agent
                     FoundDoor door = new FoundDoor
                     {
                         pos = c.pos,
-                        distSqr = Vector3.SqrMagnitude(worldPos - c.pos3d_world),
+                        distSqr = Vector3.SqrMagnitude(mapPos - new Vector3(c.x + 0.5f, c.height, c.y + 0.5f)),
                         direction = dir,
                         open = false,
                     };
@@ -347,11 +348,11 @@ namespace DogGame.LLM.Agent
             return foundDoors;
         }
 
-        public string BuildDoorsList(Vector3 worldPos, Room room, RectInt radiusBounds, int maxDoors)
+        public string BuildDoorsList(Vector3 mapPos, Room room, RectInt radiusBounds, int maxDoors)
         {
             Debug.Log($"BuildDoorsList: {room.cells.Count}");
             doorsContext = "";
-            List<FoundDoor> foundDoors = GetDoorsInRoom(worldPos, room, radiusBounds, maxDoors);
+            List<FoundDoor> foundDoors = GetDoorsInRoom(mapPos, room, radiusBounds, maxDoors);
 
             if (foundDoors.Count == 0)
                 return "";
@@ -388,12 +389,12 @@ namespace DogGame.LLM.Agent
             return true;
         }
 
-        public RectInt GetRadiusBounds(Vector3 centerWorldPos, int radius)
+        public RectInt GetRadiusBounds(Vector3 centerMapPos, int radius)
         {
             RectInt tgt = new();
 
-            tgt.x = Mathf.FloorToInt(centerWorldPos.x) - radius;
-            tgt.y = Mathf.FloorToInt(centerWorldPos.z) - radius;
+            tgt.x = Mathf.FloorToInt(centerMapPos.x) - radius;
+            tgt.y = Mathf.FloorToInt(centerMapPos.z) - radius;
             tgt.width = radius * 2 + 1;
             tgt.height = radius * 2 + 1;
             return tgt;

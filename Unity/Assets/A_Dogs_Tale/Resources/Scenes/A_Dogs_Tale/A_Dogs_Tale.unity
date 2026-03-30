@@ -15967,18 +15967,18 @@ MonoBehaviour:
   keepFollowingTargetObject: 0
   stopDistanceFromObject: 0
   useGridPathfinding: 1
-  pathWaypointArrivalRadius: 0.2
+  pathWaypointArrivalRadius: 0.3
   pathSmoothingIntervalSeconds: 0.2
   movingTargetRepathIntervalSeconds: 0.2
   enablePathDebugLogging: 1
   enableStallRecovery: 1
-  stallTicksBeforeRecover: 10
-  stallPositionEpsilon: 0.01
-  centerRecoveryArrivalRadius: 0.05
+  stallTicksBeforeRecover: 100
+  stallPositionEpsilon: 0.001
+  centerRecoveryArrivalRadius: 0.3
   enableStallDebugLogging: 1
   accelerationMetersPerSecondSquared: 12
   decelerationMetersPerSecondSquared: 16
-  enableDebugLogging: 1
+  enableDebugLogging: 0
   walkMode: 0
   maxWalkModeSpeed: 0
   maxDistance: 1

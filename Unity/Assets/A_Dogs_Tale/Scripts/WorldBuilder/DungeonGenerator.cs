@@ -68,6 +68,7 @@ public partial class DungeonGenerator : MonoBehaviour
         InitializeConnections();
         SceneManager.sceneLoaded -= OnSceneLoaded;
         SceneManager.sceneLoaded += OnSceneLoaded;
+        buildComplete = false;  // do this really really early
         Awake_Tilemap();
     }
 
@@ -407,10 +408,10 @@ public partial class DungeonGenerator : MonoBehaviour
             if (hf == null) PrepareHeightfield();
 
             BottomBanner.ShowFor("Dungeon generation complete!", 5f);
-
+            Debug.Log("buildComplete");
             buildComplete = true;
             regenerateCoroutine = null;
-
+            
             // this must be after buildComplete = true;
             //yield return StartCoroutine(dir.player.DetermineStartPosition());
         }

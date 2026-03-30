@@ -21,8 +21,8 @@ namespace DogGame.Modules
             public Vector2Int doorCell;
             public Vector2Int throughCell;
             public DirFlags direction;
-            public Vector3 doorWorld;
-            public Vector3 throughWorld;
+            public Vector3 doorMap;
+            public Vector3 throughMap;
             public string key;
             public string reverseKey;
         }
@@ -70,7 +70,7 @@ namespace DogGame.Modules
                 return;
             }
 
-            if (needsDoorRefresh || queuedRoomIndex != currentCell.room_number)
+            if (needsDoorRefresh)
             {
                 RefreshDoorsForRoom(currentCell.room_number);
                 queuedRoomIndex = currentCell.room_number;
@@ -87,17 +87,16 @@ namespace DogGame.Modules
                 return;
             }
 
-            if (phase == ExplorePhase.MoveToDoor && (currentCell.pos == activeDoor.doorCell || HasArrived(activeDoor.doorWorld)))
+            if (phase == ExplorePhase.MoveToDoor && !worldObject.agentMovementModule.MoveToDestinationInProgress)
             {
                 phase = ExplorePhase.MoveThroughDoor;
-                worldObject.agentMovementModule.SetDesiredTargetLocation(activeDoor.throughWorld, exploreWalkMode, requestPathfinding: true);
+                worldObject.agentMovementModule.SetDesiredTargetLocationMap(activeDoor.throughMap, exploreWalkMode, requestPathfinding: true);
                 Debug.Log(
                     $"[ExploreDecisionModule] {worldObject.DisplayName} reached door {activeDoor.key}; moving through to [{activeDoor.throughCell.x},{activeDoor.throughCell.y}]");
                 return;
             }
 
-            if (phase == ExplorePhase.MoveThroughDoor &&
-                (currentCell.room_number == activeDoor.neighborRoomIndex || currentCell.pos == activeDoor.throughCell || HasArrived(activeDoor.throughWorld)))
+            if (phase == ExplorePhase.MoveThroughDoor && !worldObject.agentMovementModule.MoveToDestinationInProgress)
             {
                 Debug.Log(
                     $"[ExploreDecisionModule] {worldObject.DisplayName} completed door traversal {activeDoor.key} -> room {activeDoor.neighborRoomIndex}");
@@ -120,10 +119,10 @@ namespace DogGame.Modules
                 return;
 
             RectInt roomBounds = room.GetBounds();
-            worldObject.llmWorldStateModule.BuildDoorsList(worldObject.pos3d_world, room, roomBounds, maxDoorsPerRefresh);
+            worldObject.llmWorldStateModule.BuildDoorsList(worldObject.pos3d_map, room, roomBounds, maxDoorsPerRefresh);
 
             List<DogGame.LLM.Agent.LLMWorldStateModule.FoundDoor> foundDoors =
-                worldObject.llmWorldStateModule.GetDoorsInRoom(worldObject.pos3d_world, room, roomBounds, maxDoorsPerRefresh);
+                worldObject.llmWorldStateModule.GetDoorsInRoom(worldObject.pos3d_map, room, roomBounds, maxDoorsPerRefresh);
 
             for (int i = 0; i < foundDoors.Count; i++)
             {
@@ -160,7 +159,7 @@ namespace DogGame.Modules
 
                 activeDoor = goal;
                 phase = ExplorePhase.MoveToDoor;
-                worldObject.agentMovementModule.SetDesiredTargetLocation(goal.doorWorld, exploreWalkMode, requestPathfinding: true);
+                worldObject.agentMovementModule.SetDesiredTargetLocationMap(goal.doorMap, exploreWalkMode, requestPathfinding: true);
                 Debug.Log(
                     $"[ExploreDecisionModule] {worldObject.DisplayName} heading to door {goal.key} from room {goal.roomIndex} toward room {goal.neighborRoomIndex}");
                 return true;
@@ -180,12 +179,12 @@ namespace DogGame.Modules
             int bestFallbackIndex = -1;
             float bestFallbackDist = float.PositiveInfinity;
 
-            Vector3 currentPos = worldObject.pos3d_world;
+            Vector3 currentPos = worldObject.pos3d_map;
 
             for (int i = 0; i < toExplore.Count; i++)
             {
                 DoorGoal goal = toExplore[i];
-                float dist = (goal.doorWorld - currentPos).sqrMagnitude;
+                float dist = (goal.doorMap - currentPos).sqrMagnitude;
 
                 if (goal.roomIndex == currentCell.room_number)
                 {
@@ -236,25 +235,18 @@ namespace DogGame.Modules
                 doorCell = foundDoor.pos,
                 throughCell = throughCell,
                 direction = foundDoor.direction,
-                doorWorld = CellCenterWorld(doorCell),
-                throughWorld = CellCenterWorld(nextCell),
+                doorMap = CellCenterMap(doorCell),
+                throughMap = CellCenterMap(nextCell),
                 key = BuildDoorKey(roomIndex, foundDoor.pos, foundDoor.direction),
                 reverseKey = BuildDoorKey(neighborRoomIndex, throughCell, foundDoor.direction.Opposite())
             };
+            Debug.Log($"new DoorGoal: doorMap = {goal.doorMap}, throughMap = {goal.throughMap}");
             return true;
         }
 
-        private bool HasArrived(Vector3 targetWorld)
+        private static Vector3 CellCenterMap(Cell cell)
         {
-            Vector3 delta = targetWorld - worldObject.pos3d_world;
-            delta.y = 0f;
-            return delta.sqrMagnitude <= arriveDistance * arriveDistance;
-        }
-
-        private Vector3 CellCenterWorld(Cell cell)
-        {
-            Vector3 mapCenter = new Vector3(Mathf.Floor(cell.x) + 0.5f, cell.height, Mathf.Floor(cell.y) + 0.5f);
-            return worldObject.MapToWorldPosition(mapCenter);
+            return new Vector3(Mathf.Floor(cell.x) + 0.5f, cell.height, Mathf.Floor(cell.y) + 0.5f);
         }
 
         private static string BuildDoorKey(int roomIndex, Vector2Int cell, DirFlags direction)

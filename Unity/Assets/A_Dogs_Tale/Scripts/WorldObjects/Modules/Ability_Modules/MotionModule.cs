@@ -26,8 +26,8 @@ namespace DogGame.Modules
     /// This component should be the ONLY place that writes to position/rotation for the agent.
     /// 
     /// Higher-level code (AgentMovementModule, decision modules) should:
-    ///   - Compute a desired world-space velocity
-    ///   - Call Move(desiredVelocity, deltaTime) every frame
+    ///   - Compute a desired map-space velocity
+    ///   - Call ApplyMotionMap(desiredVelocity, deltaTime) every frame
     /// </summary>
     
     public enum MotionControlMode
@@ -249,6 +249,24 @@ namespace DogGame.Modules
         }
 
         private int debugDoubleTick = -1;
+        public void ApplyMotionMap(Vector3 desiredMapVelocity, float deltaTime, float maxDistanceMap)
+        {
+            if (worldObject == null || deltaTime <= 0f)
+            {
+                ApplyMotion(desiredMapVelocity, deltaTime, maxDistanceMap);
+                return;
+            }
+
+            Vector3 currentMapPosition = worldObject.WorldToMapPosition(bodyRoot != null ? bodyRoot.position : transform.position);
+            Vector3 targetMapPosition = currentMapPosition + (desiredMapVelocity * deltaTime);
+            Vector3 currentWorldPosition = bodyRoot != null ? bodyRoot.position : transform.position;
+            Vector3 targetWorldPosition = worldObject.MapToWorldPosition(targetMapPosition);
+            Vector3 desiredWorldVelocity = (targetWorldPosition - currentWorldPosition) / deltaTime;
+
+            // The current map<->world transform is translational, so the scalar stop radius carries over directly.
+            ApplyMotion(desiredWorldVelocity, deltaTime, maxDistanceMap);
+        }
+
         public void ApplyMotion(Vector3 desiredHorizontalVelocity, float deltaTime, float maxDistance)
         {
             //Debug.Log($"{worldObject.DisplayName}:MotionModule.ApplyMotion({desiredHorizontalVelocity}, {deltaTime}, {maxDistance})");

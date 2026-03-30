@@ -8,7 +8,7 @@ This should be your locomotion controller, not a physics thing.
 
 Responsibilities:
 	•	Owns the current desired velocity / direction for the agent:
-	•	World-space move vector
+	•	Map-space move vector
 	•	Desired speed (walk, trot, sprint)
 	•	Handles:
 	•	Blending between input / pathfinding / steering
@@ -25,7 +25,7 @@ namespace DogGame.Modules
     /// velocity and delegates to MotionModule to move the agent.
     ///
     /// Responsibilities:
-    ///   - Store a desired world-space velocity (from decisions / input).
+    ///   - Store a desired map-space velocity (from decisions / input).
     ///   - Apply acceleration and deceleration toward that desired velocity.
     ///   - Call MotionModule.Move() each frame with the current velocity.
     ///
@@ -43,10 +43,10 @@ namespace DogGame.Modules
         [Header("Current Destination")]
         // Object or Location we are going towards.
         public WorldObject targetObject;        // for continuous tracking of a (possibly moving) target object
-                                                // every tick, update targetLocation to it's current world location
+                                                // every tick, update targetLocationMap to its current map location
         public bool keepFollowingTargetObject;  // if (true) then upon arrival, we wait for the target to move and keep following it indefinitely.
                                                 // if (false) then upon arrival, this task is complete.
-        public Vector3? targetLocation;         // for travelling to a destination location or current location of target object
+        public Vector3? targetLocationMap;      // map-space destination
 
         public float stopDistanceFromObject;    // when heading to an object, don't run inside it.
                                                 //   (should be radius of agent + radius of target)
@@ -78,7 +78,7 @@ namespace DogGame.Modules
         private Vector3 lastStallCheckPosition = Vector3.zero;
         private int consecutiveStallTicks = 0;
         private bool recoveringToCellCenter = false;
-        private Vector3 recoveryTargetWorld = Vector3.zero;
+        private Vector3 recoveryTargetMap = Vector3.zero;
         
         [Header("Acceleration")]
         [Tooltip("Acceleration toward desired velocity in meters per second squared.")]
@@ -91,10 +91,10 @@ namespace DogGame.Modules
         [SerializeField] private bool enableDebugLogging = false;
 
         [Header("Velocity")]
-        // Current velocity we are actually moving with (world-space, horizontal+vertical from MotionModule)
+        // Current velocity we are actually moving with (map-space, horizontal+vertical from MotionModule)
         private Vector3 currentVelocity = Vector3.zero;
 
-        // Desired velocity requested by decision modules (world-space, horizontal only here)
+        // Desired velocity requested by decision modules (map-space, horizontal only here)
         private Vector3 desiredVelocity = Vector3.zero;
 
         [Header("Max Speed")]
@@ -114,6 +114,7 @@ namespace DogGame.Modules
         ///    so don't move beyond that until we have checked again.
         /// </summary>
         public float maxDistance = 1f;      // TODO: Move to MotionModule
+        public bool MoveToDestinationInProgress { get; private set; }
 
 
         protected override void Awake()
@@ -133,10 +134,27 @@ namespace DogGame.Modules
             worldObject.motionModule.SetWalkMode(walkMode);
         }
 
-        // Set target in world location space, and we will travel to it until arrived.
+        // Backward-compatible wrapper: accepts a world-space target and converts to map-space.
         public void SetDesiredTargetLocation(UnityEngine.Vector3 targetLocation_world)
         {
-            SetDesiredTargetLocation(targetLocation_world, WalkMode.None, requestPathfinding: true);
+            Vector3 targetLocation_map = worldObject != null
+                ? worldObject.WorldToMapPosition(targetLocation_world)
+                : targetLocation_world;
+            SetDesiredTargetLocationMap(targetLocation_map, WalkMode.None, requestPathfinding: true);
+        }
+
+        // Backward-compatible overload for existing named-argument callers.
+        public void SetDesiredTargetLocation(UnityEngine.Vector3 targetLocation_world, WalkMode mode = WalkMode.Walk, bool requestPathfinding = true)
+        {
+            Vector3 targetLocation_map = worldObject != null
+                ? worldObject.WorldToMapPosition(targetLocation_world)
+                : targetLocation_world;
+            SetDesiredTargetLocationMap(targetLocation_map, mode, requestPathfinding);
+        }
+
+        public void SetDesiredTargetLocationMap(Vector3 targetLocation_map)
+        {
+            SetDesiredTargetLocationMap(targetLocation_map, WalkMode.None, requestPathfinding: true);
         }
 
         // Set target once, and we will keep following it until we arrive.
@@ -144,7 +162,8 @@ namespace DogGame.Modules
         {
             this.targetObject = target;
             this.keepFollowingTargetObject = keepFollowing;
-            this.targetLocation = target != null ? target.pos3d_world : null;
+            this.targetLocationMap = target != null ? target.pos3d_map : null;
+            MoveToDestinationInProgress = target != null;
             CacheTargetObjectCell();
             RebuildPathToCurrentTarget(forceRebuild: true);
         }
@@ -165,11 +184,12 @@ namespace DogGame.Modules
 
         public void ClearDesiredTargetLocation()
         {
-            targetLocation = null;
+            targetLocationMap = null;
             ClearActivePath();
             hasLastKnownTargetObjectCell = false;
             recoveringToCellCenter = false;
             consecutiveStallTicks = 0;
+            MoveToDestinationInProgress = false;
         }
 
         public void UpdateDesiredVelocityFromTargetIfAny()
@@ -205,7 +225,7 @@ namespace DogGame.Modules
 
         private void CacheTargetObjectCell()
         {
-            if (targetLocation.HasValue && TryGetGridCell(targetLocation.Value, GetTargetCoordinateSpaceOwner(), out Vector2Int cell))
+            if (targetLocationMap.HasValue && TryGetGridCellFromMap(targetLocationMap.Value, out Vector2Int cell))
             {
                 lastKnownTargetObjectCell = cell;
                 hasLastKnownTargetObjectCell = true;
@@ -216,19 +236,15 @@ namespace DogGame.Modules
             }
         }
 
-        private bool TryGetGridCell(Vector3 worldPosition, WorldObject coordinateSpaceOwner, out Vector2Int cell)
+        private bool TryGetGridCellFromMap(Vector3 mapPosition, out Vector2Int cell)
         {
             cell = default;
 
             if (dir == null || dir.gen == null || !dir.gen.buildComplete || dir.gen.cellGrid == null)
                 return false;
 
-            Vector3 mapPosition = coordinateSpaceOwner != null
-                ? coordinateSpaceOwner.WorldToMapPosition(worldPosition)
-                : worldPosition;
-
             int x = Mathf.FloorToInt(mapPosition.x);
-            int y = Mathf.FloorToInt(mapPosition.z);
+            int y = Mathf.FloorToInt(mapPosition.y);
             if (!dir.gen.In(x, y))
                 return false;
 
@@ -250,19 +266,18 @@ namespace DogGame.Modules
             return cell != null;
         }
 
-        private Vector3 CellCenterWorld(Vector2Int cell, float fallbackHeight)
+        private Vector3 CellCenterMap(Vector2Int cell, float fallbackHeight)
         {
             float height = fallbackHeight;
             if (dir != null && dir.gen != null && dir.gen.cellGrid != null && dir.gen.In(cell.x, cell.y))
             {
                 Cell gridCell = dir.gen.cellGrid[cell.x, cell.y];
                 if (gridCell != null)
-                    height = gridCell.height;
+                    height = gridCell.height + 0.5f;
             }
 
-            Vector3 mapPosition = new Vector3(Mathf.Floor(cell.x) + 0.5f, height, Mathf.Floor(cell.y) + 0.5f);
+            Vector3 mapPosition = new Vector3(Mathf.Floor(cell.x) + 0.5f, Mathf.Floor(cell.y) + 0.5f, height);
             return mapPosition;
-            //return worldObject != null ? worldObject.MapToWorldPosition(mapPosition) : mapPosition;
         }
 
         private WorldObject GetTargetCoordinateSpaceOwner()
@@ -272,7 +287,7 @@ namespace DogGame.Modules
 
         private bool RebuildPathToCurrentTarget(bool forceRebuild = false)
         {
-            if (!useGridPathfinding || targetLocation == null)
+            if (!useGridPathfinding || targetLocationMap == null)
             {
                 ClearActivePath();
                 return false;
@@ -284,8 +299,8 @@ namespace DogGame.Modules
                 return false;
             }
 
-            if (!TryGetGridCell(worldObject.pos3d_world, worldObject, out Vector2Int startCell) ||
-                !TryGetGridCell(targetLocation.Value, GetTargetCoordinateSpaceOwner(), out Vector2Int goalCell))
+            if (!TryGetGridCellFromMap(worldObject.pos3d_map, out Vector2Int startCell) ||
+                !TryGetGridCellFromMap(targetLocationMap.Value, out Vector2Int goalCell))
             {
                 ClearActivePath();
                 return false;
@@ -323,8 +338,8 @@ namespace DogGame.Modules
 
             while (activePathIndex < activePathCells.Count)
             {
-                Vector3 waypoint = CellCenterWorld(activePathCells[activePathIndex], worldObject.locationModule.height);
-                if (!PointTowardWorldLocation(waypoint, pathWaypointArrivalRadius))
+                Vector3 waypoint = CellCenterMap(activePathCells[activePathIndex], worldObject.locationModule.height);
+                if (!PointTowardMapLocation(waypoint, pathWaypointArrivalRadius))
                     return true;
 
                 activePathIndex++;
@@ -349,7 +364,7 @@ namespace DogGame.Modules
                 smoothingCooldownSeconds = pathSmoothingIntervalSeconds;
             }
 
-            if (!TryGetGridCell(worldObject.pos3d_world, worldObject, out Vector2Int currentCellPos))
+            if (!TryGetGridCellFromMap(worldObject.pos3d_map, out Vector2Int currentCellPos))
                 return;
 
             if (!TryGetGridCellData(currentCellPos, out Cell currentCell))
@@ -393,12 +408,12 @@ namespace DogGame.Modules
             if (targetObject == null)
                 return;
 
-            targetLocation = targetObject.pos3d_world;
+            targetLocationMap = targetObject.pos3d_map;
 
             if (!useGridPathfinding)
                 return;
 
-            if (!targetLocation.HasValue || !TryGetGridCell(targetLocation.Value, GetTargetCoordinateSpaceOwner(), out Vector2Int targetCell))
+            if (!targetLocationMap.HasValue || !TryGetGridCellFromMap(targetLocationMap.Value, out Vector2Int targetCell))
             {
                 hasLastKnownTargetObjectCell = false;
                 return;
@@ -429,11 +444,11 @@ namespace DogGame.Modules
             RebuildPathToCurrentTarget(forceRebuild: true);
         }
 
-        private bool PointTowardWorldLocation(Vector3 targetLocation_world, float stopDistance = 0f)
+        private bool PointTowardMapLocation(Vector3 targetLocation_map, float stopDistance = 0f)
         {
             maxDistance = 1f;
 
-            Vector3 desired_move = targetLocation_world - worldObject.pos3d_world;
+            Vector3 desired_move = targetLocation_map - worldObject.pos3d_map;
             desired_move.y = 0f;
 
             float distanceToTarget = desired_move.magnitude;
@@ -452,15 +467,15 @@ namespace DogGame.Modules
 
         // Called every tick when a target object is not null.  Finds target and heads to it.
         // (DecisionModule probably should check if we can still see it or still guess it's location)
-        public void PointTowardTargetObjectLocation()
+        public bool PointTowardTargetObjectLocation()
         {
             if (targetObject!=null) 
             {
-                targetLocation = targetObject.pos3d_world;
+                targetLocationMap = targetObject.pos3d_map;
             }
 
-            if (targetLocation == null) 
-                return;
+            if (targetLocationMap == null) 
+                return true;
 
             // determine if we should limit the distance travelled (because we are close)
             float stopDistanceFromTarget;
@@ -476,13 +491,13 @@ namespace DogGame.Modules
                 stopDistanceFromTarget = 0f;
             }
 
-            PointTowardWorldLocation(targetLocation.Value, stopDistanceFromTarget);
+            return PointTowardMapLocation(targetLocationMap.Value, stopDistanceFromTarget);
         }
 
         /// <summary>
         /// Called by decision modules to set a desired movement direction and speed.
         ///
-        /// worldDirection01: world-space direction, will be normalized and Y set to 0.
+        /// mapDirection01: map-space direction, will be normalized and Y set to 0.
         /// speedFactor: scale applied to walk/run speed. (USE CASE: for up/down slopes?)
         /// changeWalkMode: if not None, changes walkMode before moving.  Allows simple commands Run(direction) / Walk(direction instead of two separate actions.
         /// </summary>
@@ -510,13 +525,13 @@ namespace DogGame.Modules
         }
 
         /// <summary>
-        /// Directly sets a desired world-space velocity (horizontal only).
+        /// Directly sets a desired map-space velocity (horizontal only).
         /// Use this when AI/pathfinding already computed an exact velocity vector.
         /// </summary>
-        public void SetDesiredVelocity(Vector3 worldVelocity)
+        public void SetDesiredVelocity(Vector3 mapVelocity)
         {
-            worldVelocity.y = 0f;
-            desiredVelocity = worldVelocity;
+            mapVelocity.y = 0f;
+            desiredVelocity = mapVelocity;
         }
 
         /// <summary>
@@ -540,10 +555,15 @@ namespace DogGame.Modules
                 Debug.LogError("ERROR: Tick run more than once per frame");
             debugDoubleTick = Time.frameCount;
 
+            if (!dir.gen.buildComplete)
+            {
+                //Debug.Log("AgentMovementModule.Tick: buildIncomplete");
+                return; // wait for build to finish
+            }
             if (enableDebugLogging && Time.frameCount % 30 == 0)
             {
                 Debug.Log($"[{worldObject.DisplayName}] MoveTick: targetObj={(targetObject? targetObject.DisplayName : "null")} " +
-                        $"targetPos={(targetLocation.HasValue ? targetLocation.Value.ToString() : "null")} " +
+                        $"targetPosMap={(targetLocationMap.HasValue ? targetLocationMap.Value.ToString() : "null")} " +
                         $"desiredVel={desiredVelocity} currentVel={currentVelocity} walkMode={walkMode}", this);
             }
 
@@ -555,12 +575,15 @@ namespace DogGame.Modules
             if (movingTargetRepathCooldownSeconds > 0f)
                 movingTargetRepathCooldownSeconds = Mathf.Max(0f, movingTargetRepathCooldownSeconds - deltaTime);
 
-            //Debug.Log($"{worldObject.DisplayName}:targetObject={targetObject},targetLocation={targetLocation}");
-            if (targetObject != null || targetLocation != null)
+            MoveToDestinationInProgress = false;
+
+            //Debug.Log($"{worldObject.DisplayName}:targetObject={targetObject},targetLocationMap={targetLocationMap}");
+            if (targetObject != null || targetLocationMap != null)
             {
                 if (recoveringToCellCenter)
                 {
-                    if (PointTowardWorldLocation(recoveryTargetWorld, centerRecoveryArrivalRadius))
+                    MoveToDestinationInProgress = true;
+                    if (PointTowardMapLocation(recoveryTargetMap, centerRecoveryArrivalRadius))
                     {
                         recoveringToCellCenter = false;
                         consecutiveStallTicks = 0;
@@ -576,13 +599,16 @@ namespace DogGame.Modules
                     TrySmoothActivePath();
 
                     if (!FollowActivePath())
-                        PointTowardTargetObjectLocation();
+                        MoveToDestinationInProgress = !PointTowardTargetObjectLocation();
+                    else
+                        MoveToDestinationInProgress = true;
                 }
             }
             else
             {
                 recoveringToCellCenter = false;
                 consecutiveStallTicks = 0;
+                MoveToDestinationInProgress = false;
             }
 
             // Decide which rate to use: acceleration vs deceleration
@@ -608,45 +634,51 @@ namespace DogGame.Modules
             }
 
             // Delegate to MotionModule for actual movement + rotation, clamp at maxDistance.
-            worldObject.motionModule.ApplyMotion(currentVelocity, deltaTime, maxDistance);
+            worldObject.motionModule.ApplyMotionMap(currentVelocity, deltaTime, maxDistance);
 
             UpdateStallRecoveryState();
 
+            if (recoveringToCellCenter)
+            {
+                Debug.Log($"{worldObject.DisplayName}: recoveringToCellCenter: recoveryTargetMap={recoveryTargetMap}, posMap={worldObject.pos3d_map}, MoveToDestinationInProgress={MoveToDestinationInProgress}");
+            }
         }
 
         public void ClearDesiredMovement()
         {
             targetObject = null;
-            targetLocation = null;
+            targetLocationMap = null;
             desiredVelocity = Vector3.zero;
             ClearActivePath();
             recoveringToCellCenter = false;
             consecutiveStallTicks = 0;
+            MoveToDestinationInProgress = false;
         }
 
-        public void SetDesiredTargetLocation(Vector3 targetLocation_world, WalkMode mode = WalkMode.Walk, bool requestPathfinding = true)
+        public void SetDesiredTargetLocationMap(Vector3 targetLocation_map, WalkMode mode = WalkMode.Walk, bool requestPathfinding = true)
         {
             targetObject = null;
-            targetLocation = targetLocation_world;
+            targetLocationMap = targetLocation_map;
             walkMode = mode;
             recoveringToCellCenter = false;
             consecutiveStallTicks = 0;
+            MoveToDestinationInProgress = true;
             if (requestPathfinding)
                 RebuildPathToCurrentTarget(forceRebuild: true);
             else
                 ClearActivePath();
-            Debug.Log($"SetDesiredTargetLocation {targetLocation_world}");
         }
 
         // function name is redundant to above function, but this one includes WalkMode.  Which is preferable to use?
-        public void SetDesiredVelocity(Vector3 worldVelocity, WalkMode mode = WalkMode.Walk)
+        public void SetDesiredVelocity(Vector3 mapVelocity, WalkMode mode = WalkMode.Walk)
         {
             targetObject = null;
-            targetLocation = null;
+            targetLocationMap = null;
             walkMode = mode;
 
             // Optionally clamp here by mode max speed
-            desiredVelocity = worldVelocity;
+            desiredVelocity = mapVelocity;
+            MoveToDestinationInProgress = false;
         }
 
         private void UpdateStallRecoveryState()
@@ -655,19 +687,16 @@ namespace DogGame.Modules
                 return;
 
             bool hasMovementIntent =
-                (targetObject != null || targetLocation != null) &&
+                (targetObject != null || targetLocationMap != null) &&
                 desiredVelocity.sqrMagnitude > 0.0001f &&
                 maxDistance > 0.001f;
 
-            Vector3 currentPos = worldObject.pos3d_world;
+            Vector3 currentPos = worldObject.pos3d_map;
             Vector3 delta = currentPos - lastStallCheckPosition;
-            
-            Debug.Log($"{worldObject.DisplayName} {currentPos} - {lastStallCheckPosition} = {delta}");
             delta.y = 0f;
             float epsilonSqr = stallPositionEpsilon * stallPositionEpsilon;
 
             lastStallCheckPosition = currentPos;
-            Debug.Log($"@{currentPos} [AgentMovementModule] {worldObject.DisplayName} hasMovementIntent={hasMovementIntent}, delta^2={delta.sqrMagnitude}, stallTicks={consecutiveStallTicks}");
                 
             if (!hasMovementIntent)
             {
@@ -683,22 +712,12 @@ namespace DogGame.Modules
             }
             else
             {
-                if (consecutiveStallTicks>2) Debug.Log($"consecutiveStallTicks={consecutiveStallTicks} reset");
                 consecutiveStallTicks = 0;
             }
             
             if (recoveringToCellCenter)
-            {
-                Debug.Log($"@{currentPos} [AgentMovementModule] {worldObject.DisplayName} recovering");
-                Vector3 teleportDestination = (Vector3)targetLocation;
-                
-                //Vector3 teleportDestination = worldObject.locationModule.cell.pos3d_world;
-                //teleportDestination.x = Mathf.Floor(teleportDestination.x) + 0.5f;
-                //teleportDestination.z = Mathf.Floor(teleportDestination.z) + 0.5f;
-                worldObject.motionModule.Teleport(teleportDestination, false);
-                consecutiveStallTicks = 0;
                 return;
-            }
+
             if (consecutiveStallTicks < Mathf.Max(1, stallTicksBeforeRecover))
                 return;
 
@@ -706,15 +725,14 @@ namespace DogGame.Modules
             if (currentCell == null)
                 return;
 
-            recoveryTargetWorld = CellCenterWorld(currentCell.pos, currentCell.height);
-            //recoveryTargetWorld += new Vector3(-0.5f, 0f, +0.5f);
+            recoveryTargetMap = CellCenterMap(currentCell.pos, currentCell.height);
             recoveringToCellCenter = true;
             consecutiveStallTicks = 0;
 
             if (enableStallDebugLogging)
             {
                 Debug.Log(
-                    $"[AgentMovementModule] {worldObject.DisplayName} stall detected; recovering to cell center {currentCell.pos} = {recoveryTargetWorld}.",
+                    $"[AgentMovementModule] {worldObject.DisplayName} stall detected; recovering to cell center {currentCell.pos} = {recoveryTargetMap}.",
                     this);
             }
         }
