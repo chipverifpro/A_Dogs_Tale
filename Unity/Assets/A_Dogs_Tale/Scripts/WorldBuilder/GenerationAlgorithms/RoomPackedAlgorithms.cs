@@ -6,6 +6,23 @@ using UnityEngine;
 using Random = System.Random;
 using UnityEngine.Tilemaps;
 
+/// <summary>
+/// At the end of the function GeneratePackedRooms add a function to
+/// Start with room 0 (the corridor).  For each door in the room,
+/// mark the room it goes to as Rooms[i].connectedToCorridor=true.
+/// continue this through all rooms that are already marked
+/// connected to corridor, marking all the rooms connected by
+/// doors as also connectedToCorridor.  Keep repeating this
+/// loop until no more rooms get marked during a pass.
+/// Then, for each room that is not marked connectedToCorridor,
+/// Look for all rooms adjacent to it that are marked
+/// connectedToCorridor.  When one is found, add a door between
+/// them.  If none are found (like when a group of rooms are
+/// not connected), skip it and mark that you need another pass.
+/// Finish all rooms and repeat it only if another pass is needed.
+/// Now all rooms should connect to room 0 by at least one door.
+/// </summary>
+
 public partial class DungeonGenerator : MonoBehaviour
 {
     // This is all that is left from PackMap:
@@ -81,6 +98,8 @@ public partial class DungeonGenerator : MonoBehaviour
             yield return new WaitForSeconds(1f);
         }
 
+        yield return StartCoroutine(EnsurePackedRoomsConnectToCorridor());
+
         //UpdateCellGridFromRooms(rooms);
         UpdateRoomsFromCellGrid();
         DrawMapByRooms(rooms);
@@ -91,6 +110,204 @@ public partial class DungeonGenerator : MonoBehaviour
         CheckRoomsToGridConsistancy();
         
         BottomBanner.Show($"Done seed={seed} in {(Time.realtimeSinceStartup - t0):F2}s");
+    }
+
+    IEnumerator EnsurePackedRoomsConnectToCorridor(int yieldEvery = 64)
+    {
+        if (rooms == null || rooms.Count == 0)
+            yield break;
+
+        int W = cfg.mapWidth;
+        int H = cfg.mapHeight;
+        int moat = cfg.useThinWalls ? 0 : Mathf.Max(0, cfg.wallThickness);
+        int maxPasses = Mathf.Max(1, rooms.Count * 2);
+
+        for (int pass = 0; pass < maxPasses; pass++)
+        {
+            var candidates = CollectDoorCandidates(W, H, moat, cfg.doors.minDoorSpacing, yieldEvery);
+            RefreshRoomsConnectedToCorridor(candidates);
+
+            int connectedBefore = CountRoomsConnectedToCorridor();
+            if (connectedBefore >= rooms.Count)
+                yield break;
+
+            bool placedAnyDoorThisPass = false;
+            bool needAnotherPass = false;
+            int processed = 0;
+
+            for (int roomId = 1; roomId < rooms.Count; roomId++)
+            {
+                if (rooms[roomId] == null || rooms[roomId].connectedToCorridor)
+                    continue;
+
+                if (TryFindBridgeCandidateToConnectedRoom(candidates, roomId, out DoorCandidate repairCandidate))
+                {
+                    if (TryPlaceDoor(repairCandidate, moat))
+                    {
+                        repairCandidate.placed = true;
+                        placedAnyDoorThisPass = true;
+                        Debug.Log($"Placed a door into room {roomId}");
+                    }
+                    else
+                    {
+                        needAnotherPass = true;
+                    }
+                }
+                else
+                {
+                    needAnotherPass = true;
+                }
+
+                if ((++processed % yieldEvery) == 0)
+                    yield return null;
+            }
+
+            candidates = CollectDoorCandidates(W, H, moat, cfg.doors.minDoorSpacing, yieldEvery);
+            RefreshRoomsConnectedToCorridor(candidates);
+
+            int connectedAfter = CountRoomsConnectedToCorridor();
+            if (connectedAfter >= rooms.Count)
+            {
+                Debug.Log($"[PackedRooms] Corridor connectivity repaired in {pass + 1} pass(es).");
+                yield break;
+            }
+
+            if (!placedAnyDoorThisPass || connectedAfter <= connectedBefore)
+            {
+                Debug.LogWarning($"[PackedRooms] Unable to fully connect packed rooms to corridor. Connected {connectedAfter}/{rooms.Count} rooms.");
+                yield break;
+            }
+
+            if (!needAnotherPass)
+                yield break;
+        }
+
+        var finalCandidates = CollectDoorCandidates(W, H, cfg.useThinWalls ? 0 : Mathf.Max(0, cfg.wallThickness), cfg.doors.minDoorSpacing, yieldEvery);
+        RefreshRoomsConnectedToCorridor(finalCandidates);
+        Debug.LogWarning($"[PackedRooms] Connectivity repair hit max passes. Connected {CountRoomsConnectedToCorridor()}/{rooms.Count} rooms.");
+    }
+
+    void RefreshRoomsConnectedToCorridor(List<DoorCandidate> candidates)
+    {
+        if (rooms == null || rooms.Count == 0)
+            return;
+
+        for (int roomId = 0; roomId < rooms.Count; roomId++)
+            rooms[roomId].connectedToCorridor = false;
+
+        rooms[0].connectedToCorridor = true;
+
+        var queue = new Queue<int>();
+        queue.Enqueue(0);
+
+        while (queue.Count > 0)
+        {
+            int connectedRoomId = queue.Dequeue();
+
+            for (int i = 0; i < candidates.Count; i++)
+            {
+                DoorCandidate c = candidates[i];
+                if (!IsDoorCandidatePlacedByGrid(c))
+                    continue;
+
+                if (c.toCorridor)
+                {
+                    if (!rooms[c.roomId].connectedToCorridor)
+                    {
+                        rooms[c.roomId].connectedToCorridor = true;
+                        queue.Enqueue(c.roomId);
+                    }
+                    continue;
+                }
+
+                if (c.roomId == connectedRoomId && !rooms[c.targetRoomId].connectedToCorridor)
+                {
+                    rooms[c.targetRoomId].connectedToCorridor = true;
+                    queue.Enqueue(c.targetRoomId);
+                }
+                else if (c.targetRoomId == connectedRoomId && !rooms[c.roomId].connectedToCorridor)
+                {
+                    rooms[c.roomId].connectedToCorridor = true;
+                    queue.Enqueue(c.roomId);
+                }
+            }
+        }
+    }
+
+    int CountRoomsConnectedToCorridor()
+    {
+        if (rooms == null)
+            return 0;
+
+        int count = 0;
+        for (int roomId = 0; roomId < rooms.Count; roomId++)
+        {
+            if (rooms[roomId] != null && rooms[roomId].connectedToCorridor)
+                count++;
+        }
+        return count;
+    }
+
+    bool TryFindBridgeCandidateToConnectedRoom(List<DoorCandidate> candidates, int roomId, out DoorCandidate bestCandidate)
+    {
+        bestCandidate = null;
+        int bestRank = int.MaxValue;
+        int bestScore = int.MaxValue;
+
+        for (int i = 0; i < candidates.Count; i++)
+        {
+            DoorCandidate c = candidates[i];
+            if (IsDoorCandidatePlacedByGrid(c))
+                continue;
+
+            bool bridgesToConnectedRoom = false;
+            int rank = 1;
+
+            if (c.toCorridor)
+            {
+                bridgesToConnectedRoom = c.roomId == roomId;
+                rank = 0;
+            }
+            else if (c.roomId == roomId && c.targetRoomId >= 0 && rooms[c.targetRoomId].connectedToCorridor)
+            {
+                bridgesToConnectedRoom = true;
+            }
+            else if (c.targetRoomId == roomId && c.roomId >= 0 && rooms[c.roomId].connectedToCorridor)
+            {
+                bridgesToConnectedRoom = true;
+            }
+
+            if (!bridgesToConnectedRoom)
+                continue;
+
+            if (rank < bestRank || (rank == bestRank && c.score < bestScore))
+            {
+                bestCandidate = c;
+                bestRank = rank;
+                bestScore = c.score;
+            }
+        }
+
+        return bestCandidate != null;
+    }
+
+    bool IsDoorCandidatePlacedByGrid(DoorCandidate c)
+    {
+        if (cellGrid == null || !In(c.x, c.y))
+            return false;
+
+        var a = cellGrid[c.x, c.y];
+        if (a == null || !a.doors.HasFlag(c.dir))
+            return false;
+
+        var dv = DirVec(c.dir);
+        int nearX = c.x + dv.x;
+        int nearY = c.y + dv.y;
+        if (!In(nearX, nearY))
+            return false;
+
+        var near = cellGrid[nearX, nearY];
+        return near != null && near.doors.HasFlag(Opp(c.dir));
     }
 
     // ---------- Stage switches ----------

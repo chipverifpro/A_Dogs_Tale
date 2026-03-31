@@ -26,7 +26,7 @@ public class Room
     public Color colorFloor = new(1f, 0.4f, 0.7f, 0.5f); // semi-transparent pink; // Color for the whole room, cell may override this
     public List<int> neighbors = new(); // List of neighboring rooms by index into global "rooms" list
     public bool isCorridor = false;     // Indicate if this room was generated as a corridor
-    
+    public bool connectedToCorridor = false; // Corridor defined as room 0.  gets set during build.  Should all be true for a fully connected map.
     [Header("Ceiling / Environment")]
     public float ceilingHeight = 3.5f;   // world units above floor
     public bool isOutdoor = false;       // or infer from placementTypes
