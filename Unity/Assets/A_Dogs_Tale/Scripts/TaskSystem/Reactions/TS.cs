@@ -22,7 +22,6 @@ namespace DogGame.Reactions
         public static TaskSpec MoveToLocation(bool useEventWorldPos = true, float stopRadius = 0.6f) =>
             TaskSpecBuilder.Task("move_to_event_location")
                 .Arg("useEventWorldPos", useEventWorldPos)
-                .Arg("stopRadius", stopRadius)
                 .Build();
 
         public static TaskSpec Try(TaskSpec tryTask, TaskSpec onFail) =>
@@ -53,9 +52,7 @@ namespace DogGame.Reactions
         /// Common for vision/scent investigation.
         /// </summary>
         public static TaskSpec MoveToEvent(float stopRadius = 0.6f) =>
-            TaskSpecBuilder.Task("move_to_event")
-                .Arg("stopRadius", stopRadius)
-                .Build();
+            TaskSpecBuilder.Task("move_to_event").Build();
 
         /// <summary>
         /// Move to a specific world location.
@@ -65,16 +62,13 @@ namespace DogGame.Reactions
                 .Arg("x", worldPos.x)
                 .Arg("y", worldPos.y)
                 .Arg("z", worldPos.z)
-                .Arg("stopRadius", stopRadius)
                 .Build();
 
         /// <summary>
         /// Move to the perceived target object (vision-based).
         /// </summary>
         public static TaskSpec MoveToTarget(float stopRadius = 0.8f) =>
-            TaskSpecBuilder.Task("move_to_target")
-                .Arg("stopRadius", stopRadius)
-                .Build();
+            TaskSpecBuilder.Task("move_to_target").Build();
 
         /// <summary>
         /// Small exploratory movement around current position.
@@ -113,7 +107,6 @@ namespace DogGame.Reactions
             float fovDeg = 160.0f,
             bool requireFov = true) =>
             TaskSpecBuilder.Task("move_until_seen")
-                .Arg("stopRadius", stopRadius)
                 .Arg("maxSeconds", maxSeconds)
                 .Arg("viewRadius", viewRadius)
                 .Arg("fovDeg", fovDeg)

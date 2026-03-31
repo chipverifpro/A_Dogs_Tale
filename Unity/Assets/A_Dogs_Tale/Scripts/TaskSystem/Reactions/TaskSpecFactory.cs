@@ -51,11 +51,8 @@ namespace DogGame.Reactions
 
             if (name == "move_to_event_location")
             {
-                float stopRadius = GetFloat(spec, "stopRadius", 0.08f);
-                stopRadius = Mathf.Clamp(stopRadius, 0.05f, .08f);
-
                 // Uses the event’s world position as destination
-                task = new Task_MoveToLocation(e.WorldPos.x, e.WorldPos.z, stopRadius);
+                task = new Task_MoveToLocation(e.WorldPos.x, e.WorldPos.z);
                 return true;
             }
 
@@ -143,10 +140,7 @@ namespace DogGame.Reactions
 
             if (name == "move_to_event")
             {
-                float stopRadius = GetFloat(spec, "stopRadius", 0.08f);
-                stopRadius = Mathf.Clamp(stopRadius, 0.05f, 0.08f);
-
-                task = new Task_MoveToLocation(e.WorldPos.x, e.WorldPos.z, stopRadius);
+                task = new Task_MoveToLocation(e.WorldPos.x, e.WorldPos.z);
                 return true;
             }
 
@@ -155,11 +149,8 @@ namespace DogGame.Reactions
                 float x = GetFloat(spec, "x", observer.transform.position.x);
                 float y = GetFloat(spec, "y", observer.transform.position.y);
                 float z = GetFloat(spec, "z", observer.transform.position.z);
-                float stopRadius = GetFloat(spec, "stopRadius", 0.08f);
 
-                stopRadius = Mathf.Clamp(stopRadius, 0.05f, 0.08f);
-
-                task = new Task_MoveToLocation(x, z, stopRadius);
+                task = new Task_MoveToLocation(x, z);
                 return true;
             }
 
@@ -178,10 +169,7 @@ namespace DogGame.Reactions
                     return false;
                 }
 
-                float stopRadius = GetFloat(spec, "stopRadius", 0.8f);
-                stopRadius = Mathf.Clamp(stopRadius, 0.05f, 3.0f);
-
-                task = new Task_MoveToObject(target, stopRadius);
+                task = new Task_MoveToObject(target);
                 return true;
             }
 
@@ -229,20 +217,17 @@ namespace DogGame.Reactions
                     return false;
                 }
 
-                float stopRadius = GetFloat(spec, "stopRadius", 1.0f);
                 float maxSeconds = GetFloat(spec, "maxSeconds", 4.0f);
                 float viewRadius = GetFloat(spec, "viewRadius", 12.0f);
                 float fovDeg = GetFloat(spec, "fovDeg", 160.0f);
                 bool requireFov = GetBool(spec, "requireFov", true);
 
-                stopRadius = Mathf.Clamp(stopRadius, 0.05f, 5.0f);
                 maxSeconds = Mathf.Clamp(maxSeconds, 0.05f, 30f);
                 viewRadius = Mathf.Clamp(viewRadius, 0.5f, 100f);
                 fovDeg = Mathf.Clamp(fovDeg, 10f, 360f);
 
                 task = new Task_MoveUntilSeen(
                     target: e.Target!,
-                    stopRadius: stopRadius,
                     maxSeconds: maxSeconds,
                     viewRadius: viewRadius,
                     fovDeg: fovDeg,

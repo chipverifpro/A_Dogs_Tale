@@ -7,11 +7,10 @@ namespace DogGame.Tasks
 {
     public sealed class Task_MoveToCell : IAgentTask
     {
-        public string DebugName => $"MoveToCell([{cellX},{cellY}], r={stopRadius:0.00})";
+        public string DebugName => $"MoveToCell([{cellX},{cellY}])";
 
         private readonly int cellX;
         private readonly int cellY;
-        private readonly float stopRadius;
 
         private Vector3 destinationWorld;
 
@@ -19,7 +18,6 @@ namespace DogGame.Tasks
         {
             this.cellX = cellX;
             this.cellY = cellY;
-            this.stopRadius = Mathf.Max(0.05f, stopRadius);
             Debug.Log(DebugName);
         }
 
@@ -37,7 +35,7 @@ namespace DogGame.Tasks
             debugDoubleTick = Time.frameCount;
 
             //Debug.Log ($"Task_MoveToCell.Tick ({context.Agent.DisplayName}, {deltaTimeSeconds})");
-            if (context.Motion.IsAt(destinationWorld, stopRadius))
+            if (context.Motion.IsAt(destinationWorld))
                 return TaskTickResult.Succeeded();
 
             bool couldMove = context.Motion.SetMoveTarget(destinationWorld);

@@ -1,6 +1,7 @@
 using UnityEngine;
 using System;
 using System.Collections.Generic;
+using UnityEngine.Serialization;
 
 /*
 AgentMovementModule (high-level locomotion)
@@ -49,14 +50,13 @@ namespace DogGame.Modules
                                                 // if (false) then upon arrival, this task is complete.
         public Vector3? targetLocationMap;      // map-space destination
 
-        public float stopDistanceFromObject;    // when heading to an object, don't run inside it.
-                                                //   (should be radius of agent + radius of target)
-                                                // also used as follow distance when continuing to follow agents.
-                                                //   (should be packModule.followDistanceMeters)
+        [FormerlySerializedAs("stopDistanceFromObject")]
+        [Header("Arrival")]
+        [Range(0.10f, 0.35f)]
+        [SerializeField] private float stopDistance = 0.20f;
 
         [Header("Pathfinding")]
         [SerializeField] private bool useGridPathfinding = true;
-        [SerializeField] private float pathWaypointArrivalRadius = 0.20f;
         [SerializeField] private float pathSmoothingIntervalSeconds = 0.20f;
         [SerializeField] private float movingTargetRepathIntervalSeconds = 0.20f;
         [SerializeField] private bool enablePathDebugLogging = false;
@@ -74,7 +74,6 @@ namespace DogGame.Modules
         [SerializeField] private bool enableStallRecovery = true;
         [SerializeField] private int stallTicksBeforeRecover = 3;
         [SerializeField] private float stallPositionEpsilon = 0.01f;
-        [SerializeField] private float centerRecoveryArrivalRadius = 0.08f;
         [SerializeField] private bool enableStallDebugLogging = false;
         private Vector3 lastStallCheckPosition = Vector3.zero;
         private int consecutiveStallTicks = 0;
@@ -116,17 +115,25 @@ namespace DogGame.Modules
         /// </summary>
         public float maxDistance = 1f;      // TODO: Move to MotionModule
         public bool MoveToDestinationInProgress { get; private set; }
+        public float StopDistance => Mathf.Clamp(stopDistance, 0.10f, 0.25f);
 
 
         protected override void Awake()
         {
             base.Awake();
+            ClampStopDistance();
             EnsureRuntimeReferences();
         }
 
         private void OnEnable()
         {
+            ClampStopDistance();
             EnsureRuntimeReferences();
+        }
+
+        private void OnValidate()
+        {
+            ClampStopDistance();
         }
 
         // this just forwards the change to motionModule where it is kept.
@@ -339,7 +346,7 @@ namespace DogGame.Modules
             while (activePathIndex < activePathCells.Count)
             {
                 Vector3 waypoint = CellCenterMap(activePathCells[activePathIndex], worldObject.locationModule.height);
-                if (!PointTowardMapLocation(waypoint, pathWaypointArrivalRadius))
+                if (!PointTowardMapLocation(waypoint))
                     return true;
 
                 activePathIndex++;
@@ -444,23 +451,29 @@ namespace DogGame.Modules
             RebuildPathToCurrentTarget(forceRebuild: true);
         }
 
-        private bool PointTowardMapLocation(Vector3 targetLocation_map, float stopDistance = 0f)
+        private void ClampStopDistance()
         {
-            maxDistance = 1f;
+            stopDistance = Mathf.Clamp(stopDistance, 0.10f, 0.25f);
+        }
+
+        private bool PointTowardMapLocation(Vector3 targetLocation_map)
+        {
+            float arrivalDistance = StopDistance;
+            maxDistance = arrivalDistance;
 
             Vector3 desired_move = targetLocation_map - worldObject.pos3d_map;
             desired_move.y = 0f;
 
             float distanceToTarget = desired_move.magnitude;
-            if (distanceToTarget <= stopDistance)
+            if (distanceToTarget <= arrivalDistance)
             {
                 maxDistance = 0f;
                 desiredVelocity = Vector3.zero;
                 return true;
             }
 
-            float remainingDistance = Mathf.Max(0f, distanceToTarget - stopDistance);
-            maxDistance = Mathf.Clamp(Mathf.Min(remainingDistance, 1f), 0f, 1f);
+            float remainingDistance = Mathf.Max(0f, distanceToTarget - arrivalDistance);
+            maxDistance = Mathf.Clamp(Mathf.Min(remainingDistance, arrivalDistance), 0f, arrivalDistance);
             SetDesiredMove(desired_move, maxDistance: maxDistance);
             return false;
         }
@@ -477,21 +490,7 @@ namespace DogGame.Modules
             if (targetLocationMap == null) 
                 return true;
 
-            // determine if we should limit the distance travelled (because we are close)
-            float stopDistanceFromTarget;
-            if (targetObject) // if object, don't bump into it; or use pack's formationSpacing to determine follow distance.
-            {
-                if (keepFollowingTargetObject && worldObject.packMemberModule!=null && worldObject.packMemberModule.currentPack!=null)
-                    stopDistanceFromTarget = worldObject.packMemberModule.currentPack.formationSpacing;
-                else
-                    stopDistanceFromTarget = stopDistanceFromObject;
-            }
-            else
-            {
-                stopDistanceFromTarget = 0f;
-            }
-
-            return PointTowardMapLocation(targetLocationMap.Value, stopDistanceFromTarget);
+            return PointTowardMapLocation(targetLocationMap.Value);
         }
 
         /// <summary>
@@ -596,11 +595,11 @@ namespace DogGame.Modules
                     pos3d_noheight.y = 0f;  // Note: ignoring height.  This may bite us in the case of vertically overlapping rooms.
                     Vector3 recoveryTargetMap_noheight = recoveryTargetMap;
                     recoveryTargetMap_noheight.y = 0f;
-                    if ((pos3d_noheight - recoveryTargetMap_noheight).sqrMagnitude < centerRecoveryArrivalRadius * centerRecoveryArrivalRadius)
+                    if ((pos3d_noheight - recoveryTargetMap_noheight).sqrMagnitude < StopDistance * StopDistance)
                     {
                         recoveringToCellCenter = false;
                         consecutiveStallTicks = 0;
-                        PointTowardMapLocation(targetLocationMap.Value, stopDistanceFromObject);
+                        PointTowardMapLocation(targetLocationMap.Value);
                         if (enableStallDebugLogging)
                         {
                             Debug.Log($"{worldObject.DisplayName}[AgentMovementModule] close enough: {worldObject.DisplayName} finished center-cell recovery.", this);
@@ -617,15 +616,14 @@ namespace DogGame.Modules
 
                     if (!FollowActivePath())
                     {
-                        //MoveToDestinationInProgress = !PointTowardTargetObjectLocation();
-
+                        MoveToDestinationInProgress = !PointTowardTargetObjectLocation();
                     } else
                     {
                         Vector3 targetLocationMap_noheight = (Vector3)targetLocationMap;
                         targetLocationMap_noheight.y = 0;
                         Vector3 pos3d_map_noheight = worldObject.pos3d_map;
                         pos3d_map_noheight.y = 0;
-                        if ((targetLocationMap_noheight - pos3d_map_noheight).sqrMagnitude < pathWaypointArrivalRadius * pathWaypointArrivalRadius)
+                        if ((targetLocationMap_noheight - pos3d_map_noheight).sqrMagnitude < StopDistance * StopDistance)
                         {
                             Debug.Log($"{worldObject.DisplayName}: close_enough to target_noheight {targetLocationMap_noheight} at {pos3d_map_noheight}");
                             MoveToDestinationInProgress = false;

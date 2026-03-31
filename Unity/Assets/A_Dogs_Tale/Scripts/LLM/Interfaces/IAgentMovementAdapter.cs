@@ -28,6 +28,6 @@ namespace DogGame.LLM
         /// <summary>
         /// Returns whether the agent is considered "at" the destination.
         /// </summary>
-        bool IsAt(Vector3 worldPosition, float stopRadius);
+        bool IsAt(Vector3 worldPosition);
     }
 }

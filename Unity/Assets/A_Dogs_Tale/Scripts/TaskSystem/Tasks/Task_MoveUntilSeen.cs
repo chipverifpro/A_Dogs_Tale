@@ -13,7 +13,6 @@ namespace DogGame.Tasks
         public string DebugName => $"MoveUntilSeen({target?.DisplayName ?? "null"})";
 
         private readonly WorldObject target;
-        private readonly float stopRadius;
         private readonly float maxSeconds;
         private readonly float viewRadius;
         private readonly float fovDeg;
@@ -30,7 +29,6 @@ namespace DogGame.Tasks
             bool requireFov = true)
         {
             this.target = target;
-            this.stopRadius = Mathf.Max(0.05f, stopRadius);
             this.maxSeconds = Mathf.Max(0.05f, maxSeconds);
             this.viewRadius = Mathf.Max(0.5f, viewRadius);
             this.fovDeg = Mathf.Clamp(fovDeg, 10f, 360f);
@@ -60,7 +58,7 @@ namespace DogGame.Tasks
                 return TaskTickResult.Failed("Movement adapter rejected move");
 
             // 3) If we arrived near target but still can't see => fail (or succeed; your call)
-            if (context.Motion.IsAt(targetPos, stopRadius))
+            if (context.Motion.IsAt(targetPos))
                 return TaskTickResult.Failed("Arrived but not visible");
 
             if (elapsed >= maxSeconds)

@@ -7,15 +7,13 @@ namespace DogGame.Tasks
 {
     public sealed class Task_MoveToObject : IAgentTask
     {
-        public string DebugName => $"MoveToObject({target?.DisplayName ?? "null"}, r={stopRadius:0.00})";
+        public string DebugName => $"MoveToObject({target?.DisplayName ?? "null"})";
 
         private readonly WorldObject target;
-        private readonly float stopRadius;
 
         public Task_MoveToObject(WorldObject target, float stopRadius = 0.5f)
         {
             this.target = target;
-            this.stopRadius = Mathf.Clamp(stopRadius, 0.05f, 5.0f);
         }
 
         public void Start(TaskContext context)
@@ -30,7 +28,7 @@ namespace DogGame.Tasks
 
             Vector3 targetWorld = target.locationModule.pos3d_world;
 
-            if (context.Motion.IsAt(targetWorld, stopRadius))
+            if (context.Motion.IsAt(targetWorld))
                 return TaskTickResult.Succeeded();
 
             context.Motion.SetMoveTarget(targetWorld);

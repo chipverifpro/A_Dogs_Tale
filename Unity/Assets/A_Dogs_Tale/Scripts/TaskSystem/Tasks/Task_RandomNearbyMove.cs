@@ -9,13 +9,11 @@ namespace DogGame.Tasks
         public string DebugName => $"RandomNearbyMove(r={radiusCells})";
 
         private readonly int radiusCells;
-        private readonly float stopRadius;
         private Task_MoveToCell? move;
 
         public Task_RandomNearbyMove(int radiusCells = 3, float stopRadius = 0.35f)
         {
             this.radiusCells = Mathf.Clamp(radiusCells, 1, 10);
-            this.stopRadius = Mathf.Clamp(stopRadius, 0.05f, 2f);
         }
 
         public void Start(TaskContext context)
@@ -32,7 +30,7 @@ namespace DogGame.Tasks
             }
 
             var target = new Vector2Int(here.x + dx, here.y + dy);
-            move = new Task_MoveToCell(target.x, target.y, stopRadius);
+            move = new Task_MoveToCell(target.x, target.y);
             move.Start(context);
         }
 

@@ -8188,16 +8188,14 @@ MonoBehaviour:
     whichFollowersArrived: 
   targetObject: {fileID: 0}
   keepFollowingTargetObject: 0
-  stopDistanceFromObject: 0
+  stopDistance: 0.1
   useGridPathfinding: 1
-  pathWaypointArrivalRadius: 0.2
   pathSmoothingIntervalSeconds: 0.2
   movingTargetRepathIntervalSeconds: 0.2
   enablePathDebugLogging: 0
   enableStallRecovery: 1
   stallTicksBeforeRecover: 3
   stallPositionEpsilon: 0.03
-  centerRecoveryArrivalRadius: 0.08
   enableStallDebugLogging: 0
   accelerationMetersPerSecondSquared: 12
   decelerationMetersPerSecondSquared: 16
@@ -11514,16 +11512,14 @@ MonoBehaviour:
     whichFollowersArrived: 
   targetObject: {fileID: 6544990386685219154}
   keepFollowingTargetObject: 0
-  stopDistanceFromObject: 0
+  stopDistance: 0.1
   useGridPathfinding: 1
-  pathWaypointArrivalRadius: 0.2
   pathSmoothingIntervalSeconds: 0.2
   movingTargetRepathIntervalSeconds: 0.2
   enablePathDebugLogging: 0
   enableStallRecovery: 1
   stallTicksBeforeRecover: 3
   stallPositionEpsilon: 0.03
-  centerRecoveryArrivalRadius: 0.08
   enableStallDebugLogging: 0
   accelerationMetersPerSecondSquared: 12
   decelerationMetersPerSecondSquared: 16
@@ -15144,16 +15140,14 @@ MonoBehaviour:
     whichFollowersArrived: 
   targetObject: {fileID: 0}
   keepFollowingTargetObject: 0
-  stopDistanceFromObject: 0
+  stopDistance: 0.1
   useGridPathfinding: 1
-  pathWaypointArrivalRadius: 0.2
   pathSmoothingIntervalSeconds: 0.2
   movingTargetRepathIntervalSeconds: 0.2
   enablePathDebugLogging: 0
   enableStallRecovery: 1
   stallTicksBeforeRecover: 3
   stallPositionEpsilon: 0.03
-  centerRecoveryArrivalRadius: 0.08
   enableStallDebugLogging: 0
   accelerationMetersPerSecondSquared: 12
   decelerationMetersPerSecondSquared: 16
@@ -15857,7 +15851,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.AgentModule
   agentName: German Shepherd
-  initialDecisionType: 7
+  initialDecisionType: 1
   currentDecisionModule: {fileID: 6544990386685219152}
 --- !u!114 &6544990386685219144
 MonoBehaviour:
@@ -15965,16 +15959,14 @@ MonoBehaviour:
     whichFollowersArrived: 
   targetObject: {fileID: 0}
   keepFollowingTargetObject: 0
-  stopDistanceFromObject: 0
+  stopDistance: 0.2
   useGridPathfinding: 1
-  pathWaypointArrivalRadius: 0.3
   pathSmoothingIntervalSeconds: 0.2
   movingTargetRepathIntervalSeconds: 0.2
   enablePathDebugLogging: 1
   enableStallRecovery: 1
   stallTicksBeforeRecover: 5
   stallPositionEpsilon: 0.001
-  centerRecoveryArrivalRadius: 0.35
   enableStallDebugLogging: 1
   accelerationMetersPerSecondSquared: 12
   decelerationMetersPerSecondSquared: 16

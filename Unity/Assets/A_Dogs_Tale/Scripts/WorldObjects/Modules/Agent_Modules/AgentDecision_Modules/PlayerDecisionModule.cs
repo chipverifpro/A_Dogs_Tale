@@ -537,7 +537,7 @@ namespace DogGame.Modules
             if (targetWorldObject != null)
             {
                 taskController.Submit(new TaskRequest(
-                    task: new Task_MoveToObject(targetWorldObject, stopRadius: 0.6f),
+                    task: new Task_MoveToObject(targetWorldObject),
                     priority: 100,
                     source: TaskSource.Player,
                     canInterrupt: true,
@@ -552,7 +552,7 @@ namespace DogGame.Modules
         {
             {
                 taskController.Submit(new TaskRequest(
-                    task: new Task_MoveToLocation(targetLocation.x, targetLocation.z, stopRadius: 0.05f),
+                    task: new Task_MoveToLocation(targetLocation.x, targetLocation.z),
                     priority: 100,
                     source: TaskSource.Player,
                     canInterrupt: true,

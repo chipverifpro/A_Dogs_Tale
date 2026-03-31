@@ -45,17 +45,17 @@ namespace DogGame.Lua
         public void MoveToEvent(float stopRadius)
         {
             Enqueue(
-                taskSpec: TS.MoveToEvent(stopRadius),
+                taskSpec: TS.MoveToEvent(),
                 priority: 55,
-                tag: $"Lua:MoveToEvent:{stopRadius:0.##}");
+                tag: "Lua:MoveToEvent");
         }
 
         public void MoveToTarget(float stopRadius)
         {
             Enqueue(
-                taskSpec: TS.MoveToTarget(stopRadius),
+                taskSpec: TS.MoveToTarget(),
                 priority: 55,
-                tag: $"Lua:MoveToTarget:{stopRadius:0.##}");
+                tag: "Lua:MoveToTarget");
         }
 
         public void FaceEventTarget(float toleranceDeg, float maxSeconds)
@@ -70,10 +70,9 @@ namespace DogGame.Lua
         {
             Enqueue(
                 taskSpec: TS.MoveUntilSeen(
-                    stopRadius: stopRadius,
                     maxSeconds: maxSeconds),
                 priority: 56,
-                tag: $"Lua:MoveUntilEventSeen:{stopRadius:0.##}:{maxSeconds:0.##}");
+                tag: $"Lua:MoveUntilEventSeen:{maxSeconds:0.##}");
         }
 
         public void MoveToEventSound(float stopRadius)
@@ -85,9 +84,9 @@ namespace DogGame.Lua
             }
 
             Enqueue(
-                taskSpec: TS.MoveToEvent(stopRadius),
+                taskSpec: TS.MoveToEvent(),
                 priority: 56,
-                tag: $"Lua:MoveToEventSound:{stopRadius:0.##}");
+                tag: "Lua:MoveToEventSound");
         }
 
         public void Sniff(float seconds)

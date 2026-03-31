@@ -255,7 +255,7 @@ namespace DogGame.LLM
                     if (!TryResolveTarget(intention, out var target, out error))
                         return false;
 
-                    task = new Task_MoveToObject(target!, stopRadius: 0.35f);
+                    task = new Task_MoveToObject(target!);
                     return true;
                 }
 
@@ -266,7 +266,7 @@ namespace DogGame.LLM
 
                     task = new Task_Sequence(new IAgentTask[]
                     {
-                        new Task_MoveToObject(target!, stopRadius: 0.5f),
+                        new Task_MoveToObject(target!),
                         new Task_FaceTarget(target!, toleranceDeg: 8f, maxSeconds: 1.0f),
                         new Task_Sniff(null)
                     });
@@ -287,7 +287,7 @@ namespace DogGame.LLM
                     int targetId = target!.ObjectId;
                     task = new Task_Sequence(new IAgentTask[]
                     {
-                        new Task_MoveToObject(target!, stopRadius: 0.45f),
+                        new Task_MoveToObject(target!),
                         new Task_SetInt("item.targetId", targetId),
                         new Task_SetInt("vision.lastTargetId", targetId),
                         new Task_TakeItem()
@@ -368,7 +368,7 @@ namespace DogGame.LLM
                              string.Equals(action, "start_patrol_around_object", System.StringComparison.Ordinal))
                         detail = $"distance={intention.Value<int?>("distance")?.ToString() ?? "default"}";
 
-                    task = BuildTargetedPlaceholderSequence(action, intention, target!, detail, stopRadius: 0.6f);
+                    task = BuildTargetedPlaceholderSequence(action, intention, target!, detail);
                     return true;
                 }
 
@@ -467,12 +467,11 @@ namespace DogGame.LLM
             string action,
             JObject intention,
             WorldObject target,
-            string? detail = null,
-            float stopRadius = 0.6f)
+            string? detail = null)
         {
             return new Task_Sequence(new IAgentTask[]
             {
-                new Task_MoveToObject(target, stopRadius),
+                new Task_MoveToObject(target),
                 BuildPlaceholderAction(action, intention, target, detail)
             });
         }
@@ -594,10 +593,7 @@ namespace DogGame.LLM
                     int cellX = arr[0]!.Value<int>();
                     int cellY = arr[1]!.Value<int>();
 
-                    float stopRadius = (float)(parameters.Value<double?>("stopRadius") ?? 0.35);
-                    stopRadius = Mathf.Clamp(stopRadius, 0.05f, 2.0f);
-
-                    task = new Task_MoveToCell(cellX, cellY, stopRadius);
+                    task = new Task_MoveToCell(cellX, cellY);
                     return true;
                 }
 
@@ -619,10 +615,7 @@ namespace DogGame.LLM
                         error = $"move_to_object parameters.targetEntityId {targetEntityId} matched no objects.";
                         return false;
                     }                    
-                    float stopRadius = (float)(parameters.Value<float?>("stopRadius") ?? 0.35);
-                    stopRadius = Mathf.Clamp(stopRadius, 0.05f, 2.0f);
-
-                    task = new Task_MoveToObject(targetEntity, stopRadius);
+                    task = new Task_MoveToObject(targetEntity);
                     return true;
                 }
 

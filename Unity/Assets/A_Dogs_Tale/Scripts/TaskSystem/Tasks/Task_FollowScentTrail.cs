@@ -12,7 +12,6 @@ namespace DogGame.Tasks
     {
         public Dir? dir;
         private readonly int trackedScentAgentId;
-        private readonly float stopRadius;
         private readonly int queryThreshold;
 
         private readonly float airWeight;
@@ -52,7 +51,6 @@ namespace DogGame.Tasks
             float repickIntervalSeconds = 0.2f)
         {
             this.trackedScentAgentId = trackedScentAgentId;
-            this.stopRadius = stopRadius;
             this.queryThreshold = queryThreshold;
 
             this.airWeight = airWeight;
@@ -104,7 +102,7 @@ namespace DogGame.Tasks
             if (currentTargetCell != null)
             {
                 Vector3 targetWorld = CenterOfCellWorld(currentTargetCell);
-                if (!context.Motion.IsAt(targetWorld, stopRadius))
+                if (!context.Motion.IsAt(targetWorld))
                 {
                     // Keep heading toward it.
                     context.Motion.SetMoveTarget(targetWorld);

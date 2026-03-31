@@ -39,10 +39,13 @@ namespace DogGame.Tasks
             worldObject.agentMovementModule.ClearDesiredMovement();
         }
 
-        public bool IsAt(Vector3 worldPosition, float stopRadius)
+        public bool IsAt(Vector3 worldPosition)
         {
             Vector3 delta = worldPosition - worldObject.locationModule.pos3d_world;
             delta.y = 0f;
+            float stopRadius = worldObject.agentMovementModule != null
+                ? worldObject.agentMovementModule.StopDistance
+                : 0.20f;
             return delta.sqrMagnitude <= stopRadius * stopRadius;
         }
     }
