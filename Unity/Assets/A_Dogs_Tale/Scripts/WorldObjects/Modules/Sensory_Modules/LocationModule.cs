@@ -27,10 +27,11 @@ namespace DogGame.Modules
         public Vector3 pos3d_world => this.transform.position;
         public Vector3 pos3d_map => worldObject != null ? worldObject.WorldToMapPosition(pos3d_world) : pos3d_world;
 
-        // translate and decompose world-space position into map space
+        // Raw map-space Vector3 order matches world-space component order: x, height, row.
+        // The scalar x/y/z accessors below remain semantic grid accessors: x, row, height.
         public float x_f => pos3d_map.x;
-        public float y_f => pos3d_map.z;  // map Y is world Z
-        public float z_f => pos3d_map.y;  // map Z (height) is world Y
+        public float y_f => pos3d_map.z;  // semantic grid row
+        public float z_f => pos3d_map.y;  // semantic height alias
         public float height_f => z_f;
 
         public int x => Mathf.FloorToInt(x_f);
@@ -38,8 +39,8 @@ namespace DogGame.Modules
         public int z => Mathf.FloorToInt(z_f);
         public int height => z;
 
-        public Vector3 pos3d_f => new(x_f, y_f, z_f);
-        public Vector3Int pos3d => new(x, y, z);
+        public Vector3 pos3d_f => pos3d_map;
+        public Vector3Int pos3d => new(x, z, y);
         public Vector2 pos2_f => new(x_f, y_f);
         public Vector2Int pos2 => new(x, y);
 

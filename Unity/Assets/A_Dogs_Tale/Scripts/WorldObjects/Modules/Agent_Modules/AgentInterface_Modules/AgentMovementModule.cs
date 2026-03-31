@@ -1,6 +1,7 @@
 using UnityEngine;
 using System;
 using System.Collections.Generic;
+
 /*
 AgentMovementModule (high-level locomotion)
 
@@ -244,7 +245,7 @@ namespace DogGame.Modules
                 return false;
 
             int x = Mathf.FloorToInt(mapPosition.x);
-            int y = Mathf.FloorToInt(mapPosition.y);
+            int y = Mathf.FloorToInt(mapPosition.z);
             if (!dir.gen.In(x, y))
                 return false;
 
@@ -268,15 +269,14 @@ namespace DogGame.Modules
 
         private Vector3 CellCenterMap(Vector2Int cell, float fallbackHeight)
         {
-            float height = fallbackHeight;
             if (dir != null && dir.gen != null && dir.gen.cellGrid != null && dir.gen.In(cell.x, cell.y))
             {
                 Cell gridCell = dir.gen.cellGrid[cell.x, cell.y];
                 if (gridCell != null)
-                    height = gridCell.height + 0.5f;
+                    return gridCell.center3d_f;
             }
 
-            Vector3 mapPosition = new Vector3(Mathf.Floor(cell.x) + 0.5f, Mathf.Floor(cell.y) + 0.5f, height);
+            Vector3 mapPosition = new Vector3(Mathf.Floor(cell.x) + 0.5f, fallbackHeight, Mathf.Floor(cell.y) + 0.5f);
             return mapPosition;
         }
 
@@ -583,12 +583,29 @@ namespace DogGame.Modules
                 if (recoveringToCellCenter)
                 {
                     MoveToDestinationInProgress = true;
-                    if (PointTowardMapLocation(recoveryTargetMap, centerRecoveryArrivalRadius))
+                    //if (PointTowardMapLocation(recoveryTargetMap, centerRecoveryArrivalRadius))
+                    //{
+                    //    recoveringToCellCenter = false;
+                    //    consecutiveStallTicks = 0;
+                    //    if (enableStallDebugLogging)
+                    //        Debug.Log($"[AgentMovementModule] {worldObject.DisplayName} finished center-cell recovery.", this);
+                    //}
+
+                    // Alternate version of above.
+                    Vector3 pos3d_noheight = worldObject.pos3d_map;
+                    pos3d_noheight.y = 0f;  // Note: ignoring height.  This may bite us in the case of vertically overlapping rooms.
+                    Vector3 recoveryTargetMap_noheight = recoveryTargetMap;
+                    recoveryTargetMap_noheight.y = 0f;
+                    if ((pos3d_noheight - recoveryTargetMap_noheight).sqrMagnitude < centerRecoveryArrivalRadius * centerRecoveryArrivalRadius)
                     {
                         recoveringToCellCenter = false;
                         consecutiveStallTicks = 0;
+                        PointTowardMapLocation(targetLocationMap.Value, stopDistanceFromObject);
                         if (enableStallDebugLogging)
-                            Debug.Log($"[AgentMovementModule] {worldObject.DisplayName} finished center-cell recovery.", this);
+                        {
+                            Debug.Log($"{worldObject.DisplayName}[AgentMovementModule] close enough: {worldObject.DisplayName} finished center-cell recovery.", this);
+                            Debug.Log($"{worldObject.DisplayName} resuming route to {targetLocationMap}?");
+                        }
                     }
                 }
                 else
@@ -599,9 +616,23 @@ namespace DogGame.Modules
                     TrySmoothActivePath();
 
                     if (!FollowActivePath())
-                        MoveToDestinationInProgress = !PointTowardTargetObjectLocation();
-                    else
-                        MoveToDestinationInProgress = true;
+                    {
+                        //MoveToDestinationInProgress = !PointTowardTargetObjectLocation();
+
+                    } else
+                    {
+                        Vector3 targetLocationMap_noheight = (Vector3)targetLocationMap;
+                        targetLocationMap_noheight.y = 0;
+                        Vector3 pos3d_map_noheight = worldObject.pos3d_map;
+                        pos3d_map_noheight.y = 0;
+                        if ((targetLocationMap_noheight - pos3d_map_noheight).sqrMagnitude < pathWaypointArrivalRadius * pathWaypointArrivalRadius)
+                        {
+                            Debug.Log($"{worldObject.DisplayName}: close_enough to target_noheight {targetLocationMap_noheight} at {pos3d_map_noheight}");
+                            MoveToDestinationInProgress = false;
+                        } else {
+                            MoveToDestinationInProgress = true;
+                        }
+                    }
                 }
             }
             else

@@ -92,14 +92,14 @@ namespace DogGame.Modules
                 phase = ExplorePhase.MoveThroughDoor;
                 worldObject.agentMovementModule.SetDesiredTargetLocationMap(activeDoor.throughMap, exploreWalkMode, requestPathfinding: true);
                 Debug.Log(
-                    $"[ExploreDecisionModule] {worldObject.DisplayName} reached door {activeDoor.key}; moving through to [{activeDoor.throughCell.x},{activeDoor.throughCell.y}]");
+                    $"{worldObject.DisplayName} [ExploreDecisionModule] reached door {activeDoor.key}; moving through to [{activeDoor.throughCell.x},{activeDoor.throughCell.y}]");
                 return;
             }
 
             if (phase == ExplorePhase.MoveThroughDoor && !worldObject.agentMovementModule.MoveToDestinationInProgress)
             {
                 Debug.Log(
-                    $"[ExploreDecisionModule] {worldObject.DisplayName} completed door traversal {activeDoor.key} -> room {activeDoor.neighborRoomIndex}");
+                    $"{worldObject.DisplayName} [ExploreDecisionModule] completed door traversal {activeDoor.key} -> room {activeDoor.neighborRoomIndex}");
                 phase = ExplorePhase.None;
                 needsDoorRefresh = true;
                 queuedRoomIndex = -1;
@@ -135,7 +135,7 @@ namespace DogGame.Modules
                 toExplore.Add(goal);
                 queuedDoorKeys.Add(goal.key);
                 Debug.Log(
-                    $"[ExploreDecisionModule] Queued door {goal.key} -> room {goal.neighborRoomIndex} for {worldObject.DisplayName}");
+                    $"{worldObject.DisplayName} [ExploreDecisionModule] Queued door {goal.key} -> room {goal.neighborRoomIndex} for {worldObject.DisplayName}");
             }
         }
 
@@ -161,7 +161,7 @@ namespace DogGame.Modules
                 phase = ExplorePhase.MoveToDoor;
                 worldObject.agentMovementModule.SetDesiredTargetLocationMap(goal.doorMap, exploreWalkMode, requestPathfinding: true);
                 Debug.Log(
-                    $"[ExploreDecisionModule] {worldObject.DisplayName} heading to door {goal.key} from room {goal.roomIndex} toward room {goal.neighborRoomIndex}");
+                    $"{worldObject.DisplayName} [ExploreDecisionModule] heading to door {goal.key} from room {goal.roomIndex} toward room {goal.neighborRoomIndex}");
                 return true;
             }
 
@@ -240,13 +240,13 @@ namespace DogGame.Modules
                 key = BuildDoorKey(roomIndex, foundDoor.pos, foundDoor.direction),
                 reverseKey = BuildDoorKey(neighborRoomIndex, throughCell, foundDoor.direction.Opposite())
             };
-            Debug.Log($"new DoorGoal: doorMap = {goal.doorMap}, throughMap = {goal.throughMap}");
+            Debug.Log($"{worldObject.DisplayName} new DoorGoal: doorMap = {goal.doorMap}, throughMap = {goal.throughMap}");
             return true;
         }
 
         private static Vector3 CellCenterMap(Cell cell)
         {
-            return new Vector3(Mathf.Floor(cell.x) + 0.5f, cell.height, Mathf.Floor(cell.y) + 0.5f);
+            return cell.center3d_f;
         }
 
         private static string BuildDoorKey(int roomIndex, Vector2Int cell, DirFlags direction)

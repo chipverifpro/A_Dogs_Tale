@@ -413,9 +413,9 @@ public class ScentAirGround : MonoBehaviour
                 DirFlags dWall = (cell.walls & dirF);
                 if (dWall==DirFlags.None && dDoor==DirFlags.None) // TODO: add open doors
                 {
-                    neighborCells[nIdx] = dir.gen.GetCellFromHf(cell.pos3d.x + DirFlagsEx.ToVector2Int(dirF).x,
-                                                            cell.pos3d.y + DirFlagsEx.ToVector2Int(dirF).y,
-                                                            cell.pos3d.z,
+                    neighborCells[nIdx] = dir.gen.GetCellFromHf(cell.x + DirFlagsEx.ToVector2Int(dirF).x,
+                                                            cell.y + DirFlagsEx.ToVector2Int(dirF).y,
+                                                            cell.z,
                                                             threshold: 50); // returns null if no neighbor. that's ok.
                 }
                 if (neighborCells[nIdx] != null) neighborCount++;
@@ -943,7 +943,7 @@ public class ScentAirGround : MonoBehaviour
                 continue;
 
             Vector2Int step = DirFlagsEx.ToVector2Int(dirF);
-            Cell neighbor = dir.gen.GetCellFromHf(cell.pos3d.x + step.x, cell.pos3d.y + step.y, cell.pos3d.z, threshold: 50);
+            Cell neighbor = dir.gen.GetCellFromHf(cell.x + step.x, cell.y + step.y, cell.z, threshold: 50);
             if (neighbor == null || neighbor.scents == null || neighbor.scents.Count == 0)
                 continue;
 

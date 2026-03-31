@@ -515,13 +515,12 @@ public class ElementStore : ScriptableObject
             return -1;
         }
 
-        // Work in GRID space: x,y = room plane, z = height.
+        // Raw map Vector3 order is x, height, row.
         // We ignore floor tilt for now: ceiling is a flat slab at (cell.height + ceilingHeight).
         Vector3 pos = cell.pos3d_f;
-        pos.z += ceilingHeight;  // vertical offset in grid units
+        pos.y += ceilingHeight;  // vertical offset in map/world-up units
 
-        // If you prefer ceilingHeight in world units and grid z==world y, this is still fine.
-        int heightSteps = Mathf.RoundToInt(pos.z);
+        int heightSteps = Mathf.RoundToInt(pos.y);
 
         var inst = new ElementInstanceData(
             archetypeId: "PF_Ceiling",           // must match your archetype / warehouse ID

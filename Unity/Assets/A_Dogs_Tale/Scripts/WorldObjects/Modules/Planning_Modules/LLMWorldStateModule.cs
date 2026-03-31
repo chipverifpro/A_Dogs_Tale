@@ -330,7 +330,7 @@ namespace DogGame.LLM.Agent
                     FoundDoor door = new FoundDoor
                     {
                         pos = c.pos,
-                        distSqr = Vector3.SqrMagnitude(mapPos - new Vector3(c.x + 0.5f, c.height, c.y + 0.5f)),
+                        distSqr = Vector3.SqrMagnitude(mapPos - c.center3d_f),
                         direction = dir,
                         open = false,
                     };

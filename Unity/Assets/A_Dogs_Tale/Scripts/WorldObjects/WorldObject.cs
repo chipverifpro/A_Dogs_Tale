@@ -218,7 +218,7 @@ public class WorldObject : MonoBehaviour
     //   LocationModule.
     public Vector3 pos3d_world => this.transform.position;
     public Vector3 pos3d_map => WorldToMapPosition(pos3d_world);
-    public Vector3 pos3d_f => new(pos3d_map.x, pos3d_map.z, pos3d_map.y);
+    public Vector3 pos3d_f => pos3d_map;
 
     public Vector3 MapToWorldPosition(Vector3 mapPosition)
     {

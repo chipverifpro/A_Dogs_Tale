@@ -974,8 +974,7 @@ public partial class DungeonGenerator : MonoBehaviour
                         cell.walls |= dir_flag;
 
                         // Debug to map display:
-                        Vector3Int pos3d = cell.pos3d;
-                        pos3d.z = 0;
+                        Vector3Int pos3d = new Vector3Int(cell.x, cell.y, 0);
                         tilemap.SetTile(pos3d, wallTile);
                         tilemap.SetTileFlags(pos3d, TileFlags.None);
                         tilemap.SetColor(pos3d, Color.red);

@@ -15972,16 +15972,16 @@ MonoBehaviour:
   movingTargetRepathIntervalSeconds: 0.2
   enablePathDebugLogging: 1
   enableStallRecovery: 1
-  stallTicksBeforeRecover: 100
+  stallTicksBeforeRecover: 5
   stallPositionEpsilon: 0.001
-  centerRecoveryArrivalRadius: 0.3
+  centerRecoveryArrivalRadius: 0.35
   enableStallDebugLogging: 1
   accelerationMetersPerSecondSquared: 12
   decelerationMetersPerSecondSquared: 16
   enableDebugLogging: 0
   walkMode: 0
   maxWalkModeSpeed: 0
-  maxDistance: 1
+  maxDistance: 0.7
 --- !u!114 &6544990386685219150
 MonoBehaviour:
   m_ObjectHideFlags: 0

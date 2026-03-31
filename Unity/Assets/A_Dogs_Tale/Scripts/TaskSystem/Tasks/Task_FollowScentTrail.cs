@@ -164,8 +164,7 @@ namespace DogGame.Tasks
 
         private static Vector3 CenterOfCellWorld(Cell cell)
         {
-            // You provided this mapping:
-            return new Vector3(cell.pos.x + 0.5f, cell.height, cell.pos.y + 0.5f);
+            return cell.center3d_f;
         }
 
         private static float GetScentStrengthOrZero(Cell cell, int targetAgentId, float airW, float groundW)
