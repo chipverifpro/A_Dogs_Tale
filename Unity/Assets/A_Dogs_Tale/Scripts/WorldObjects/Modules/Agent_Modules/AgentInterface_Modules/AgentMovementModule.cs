@@ -596,7 +596,7 @@ namespace DogGame.Modules
                     Vector3 recoveryTargetMap_noheight = recoveryTargetMap;
                     recoveryTargetMap_noheight.y = 0f;
                     float deltaDistanceSqr = (recoveryTargetMap_noheight - pos3d_noheight).sqrMagnitude;
-                    float stopDistanceSqr = (StopDistance * StopDistance)+0.01f;
+                    float stopDistanceSqr = (StopDistance * StopDistance)*1.05f;
                     if (deltaDistanceSqr < stopDistanceSqr)
                     {
                         recoveringToCellCenter = false;
@@ -629,7 +629,7 @@ namespace DogGame.Modules
                         Vector3 pos3d_map_noheight = worldObject.pos3d_map;
                         pos3d_map_noheight.y = 0;
                         float deltaDistanceSqr = (targetLocationMap_noheight - pos3d_map_noheight).sqrMagnitude;
-                        float stopDistanceSqr = (StopDistance * StopDistance)+0.01f;
+                        float stopDistanceSqr = (StopDistance * StopDistance)*1.05f;
                         if (deltaDistanceSqr < stopDistanceSqr)
                         {
                             Debug.Log($"{worldObject.DisplayName}: NOT_RECOV close_enough ({deltaDistanceSqr:0.000}<{stopDistanceSqr:0.000}) to target_noheight {targetLocationMap_noheight} at {pos3d_map_noheight}");
