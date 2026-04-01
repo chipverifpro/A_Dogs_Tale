@@ -7,6 +7,10 @@ public partial class DungeonGenerator : MonoBehaviour
 {
     [SerializeField] private ElementStore elementStore;
 
+    [Header("Floor Appearance")]
+    [Tooltip("0 = solid color, 1 = black & white check")]
+    public float checkerFloorStrength = 0.25f; 
+
     [Header("Ceiling Appearance")]
 
     [Tooltip("Tiny extra z-offset in grid units if you want ceilings slightly above nominal height.")]
@@ -383,8 +387,9 @@ public partial class DungeonGenerator : MonoBehaviour
                     Vector3 finalScale = new Vector3(scaleX, 1f, scaleZ);
                     
                     // checkerboard floor:
-                    colorFloor = (Mathf.Floor(world.x + world.z)%2 == 0) ? Color.white : Color.black;
-                    
+                    Color colorCheckerBoard = (Mathf.Floor(world.x + world.z)%2 == 0) ? Color.white : Color.black;
+                    colorFloor = (colorFloor * (1-checkerFloorStrength)) + (colorCheckerBoard * checkerFloorStrength);
+
                     if (use_triangle_floor)
                     {
                         Quaternion triangleFloorRot = Quaternion.Euler(-90f, triangle_floor_dir * 90f, 90f);

@@ -3070,6 +3070,7 @@ MonoBehaviour:
   doorsName: Doors3D
   rngSeed: 0
   elementStore: {fileID: 11400000, guid: 12ce8f64c30bc4bbfa007792bc781b21, type: 2}
+  checkerFloorStrength: 0.1
   ceilingZOffset: 0
 --- !u!1 &428731488
 GameObject:
@@ -8216,9 +8217,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.WandererDecisionModule
   navigationSource: 0
-  wanderRadius: 4
-  minTimeBetweenTargets: 1.5
-  maxTimeBetweenTargets: 4
+  dwellSecondsAtDestination: 2
+  wanderWalkMode: 1
 --- !u!114 &1253610051
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -11557,9 +11557,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.WandererDecisionModule
   navigationSource: 0
-  wanderRadius: 4
-  minTimeBetweenTargets: 1.5
-  maxTimeBetweenTargets: 4
+  dwellSecondsAtDestination: 2
+  wanderWalkMode: 1
 --- !u!114 &1651296789
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -15168,9 +15167,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.WandererDecisionModule
   navigationSource: 0
-  wanderRadius: 20
-  minTimeBetweenTargets: 1.5
-  maxTimeBetweenTargets: 4
+  dwellSecondsAtDestination: 2
+  wanderWalkMode: 1
 --- !u!114 &2108676847
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -15851,7 +15849,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.AgentModule
   agentName: German Shepherd
-  initialDecisionType: 1
+  initialDecisionType: 7
   currentDecisionModule: {fileID: 6544990386685219152}
 --- !u!114 &6544990386685219144
 MonoBehaviour:
@@ -15959,7 +15957,7 @@ MonoBehaviour:
     whichFollowersArrived: 
   targetObject: {fileID: 0}
   keepFollowingTargetObject: 0
-  stopDistance: 0.2
+  stopDistance: 0.15
   useGridPathfinding: 1
   pathSmoothingIntervalSeconds: 0.2
   movingTargetRepathIntervalSeconds: 0.2
@@ -16004,9 +16002,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.WandererDecisionModule
   navigationSource: 0
-  wanderRadius: 4
-  minTimeBetweenTargets: 1.5
-  maxTimeBetweenTargets: 4
+  dwellSecondsAtDestination: 2
+  wanderWalkMode: 1
 --- !u!114 &6544990386685219152
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -16195,7 +16192,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.LLM.AgentTaskController
   agentId: player
-  clearQueueOnNewPlan: 1
+  clearQueueOnNewPlan: 0
 --- !u!114 &6544990386685219174
 MonoBehaviour:
   m_ObjectHideFlags: 0
