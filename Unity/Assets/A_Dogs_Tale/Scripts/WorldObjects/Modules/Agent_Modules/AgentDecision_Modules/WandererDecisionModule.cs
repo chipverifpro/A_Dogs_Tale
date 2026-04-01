@@ -1,5 +1,5 @@
-using System.ComponentModel;
 using UnityEngine;
+using System.Collections.Generic;
 
 namespace DogGame.Modules
 {
@@ -7,12 +7,20 @@ namespace DogGame.Modules
     {
         public override AgentDecisionType DecisionType => AgentDecisionType.Wanderer;
 
-        private Vector3 currentWanderTarget;
-        private float timeUntilNewTarget;
+        [SerializeField] private float dwellSecondsAtDestination = 2f;
+        [SerializeField] private WalkMode wanderWalkMode = WalkMode.Walk;
 
-        public float wanderRadius = 4f;
-        public float minTimeBetweenTargets = 1.5f;
-        public float maxTimeBetweenTargets = 4f;
+        private Vector3 currentWanderTargetMap;
+        private float dwellRemainingSeconds;
+
+        private enum WanderState
+        {
+            PickTarget,
+            MoveToTarget,
+            WaitAtTarget
+        }
+
+        private WanderState state = WanderState.PickTarget;
 
         public override void Initialize(AgentModule agentController)
         {
@@ -37,48 +45,31 @@ namespace DogGame.Modules
                 return;
             }
 
-            // Countdown to pick a new wander target
-            timeUntilNewTarget -= deltaTime;
-
-            Vector3 currentPos = worldObject.agentModule.transform.position;
-
-            // How close is "close enough" to the wander target?
-            const float arriveDistance = 0.5f;
-            float sqrDistToTarget = (currentWanderTarget - currentPos).sqrMagnitude;
-
-            bool needNewTarget =
-                timeUntilNewTarget <= 0f ||
-                sqrDistToTarget < arriveDistance * arriveDistance;
-
-            if (needNewTarget)
+            switch (state)
             {
-                PickNewTarget();
-                currentWanderTarget.y = currentPos.y; // keep on same height if needed
+                case WanderState.PickTarget:
+                    if (!PickNewTargetInCurrentRoom())
+                    {
+                        worldObject.agentMovementModule.ClearDesiredMove();
+                        return;
+                    }
+                    break;
 
-                // Reset timer, e.g. random interval; assuming PickNewTarget sets it or:
-                // timeUntilNewTarget = Random.Range(minWanderInterval, maxWanderInterval);
+                case WanderState.MoveToTarget:
+                    if (!worldObject.agentMovementModule.MoveToDestinationInProgress)
+                    {
+                        dwellRemainingSeconds = Mathf.Max(0f, dwellSecondsAtDestination);
+                        state = WanderState.WaitAtTarget;
+                        worldObject.agentMovementModule.ClearDesiredMove();
+                    }
+                    break;
 
-                sqrDistToTarget = (currentWanderTarget - currentPos).sqrMagnitude;
-            }
-
-            // Now steer toward the current wander target
-            Vector3 toTarget = currentWanderTarget - currentPos;
-            toTarget.y = 0f;
-
-            if (toTarget.sqrMagnitude > arriveDistance * arriveDistance)
-            {
-                Vector3 worldDir = toTarget.normalized;
-
-                // Wander is usually a walk, not a run
-                //bool run = false;
-                float speedFactor = 1.0f; // full walkSpeed from AgentMovementModule
-
-                worldObject.agentMovementModule.SetDesiredMove(worldDir, maxDistance:1.0f, speedFactor:speedFactor, changeWalkMode:WalkMode.Walk);
-            }
-            else
-            {
-                // We are close enough: slow to a stop
-                worldObject.agentMovementModule.ClearDesiredMove();
+                case WanderState.WaitAtTarget:
+                    dwellRemainingSeconds -= deltaTime;
+                    worldObject.agentMovementModule.ClearDesiredMove();
+                    if (dwellRemainingSeconds <= 0f)
+                        state = WanderState.PickTarget;
+                    break;
             }
         }
 
@@ -87,59 +78,66 @@ namespace DogGame.Modules
     //   [SerializeField] private float minTimeBetweenTargets = 1.5f;
     //   [SerializeField] private float maxTimeBetweenTargets = 4.0f;
 
-        private void PickNewTarget()
+        private bool PickNewTargetInCurrentRoom()
         {
-            // 1. Determine origin of wandering
-            // Prefer LocationModule if present, otherwise use the agent's transform.
-            Vector3 origin;
+            Room room = GetCurrentRoom();
+            if (room == null || room.cells == null || room.cells.Count == 0)
+                return false;
 
-            if (worldObject.locationModule != null)
-            {
-                // For now assume LocationModule exposes current world position:
-                // origin = locationModule.CurrentWorldPosition;
-                origin = worldObject.locationModule.transform.position;  // adjust when LocationModule is fleshed out
-            }
-            else if (worldObject != null && worldObject.agentModule != null)
-            {
-                origin = worldObject.agentModule.transform.position;
-            }
-            else
-            {
-                origin = transform.position;
-            }
+            List<Cell> candidates = room.cells;
+            int currentCellX = Mathf.FloorToInt(worldObject.pos3d_map.x);
+            int currentCellY = Mathf.FloorToInt(worldObject.pos3d_map.z);
 
-            // 2. Choose a random point in a circle around origin (XZ plane)
-            Vector2 randomCircle = Random.insideUnitCircle * wanderRadius;
-
-            // clamp to map dimensions
-            Vector3 candidate = new Vector3(
-                Mathf.Clamp(origin.x + randomCircle.x, 0f, dir.cfg.mapWidth),
-                origin.y,
-                Mathf.Clamp(origin.z + randomCircle.y, 0f, dir.cfg.mapHeight)
-            );
-
-            // 3. Optionally clamp to navigable / walkable area via LocationModule
-            if (worldObject.locationModule != null)
+            Cell chosen = null;
+            int startIndex = Random.Range(0, candidates.Count);
+            for (int attempt = 0; attempt < candidates.Count; attempt++)
             {
-                // When you implement LocationModule, you might have:
-                // candidate = locationModule.ClampToWalkable(candidate);
-                // candidate.y = locationModule.GetGroundHeightAt(candidate);
+                Cell candidate = candidates[(startIndex + attempt) % candidates.Count];
+                if (candidate == null)
+                    continue;
+
+                if (candidate.x == currentCellX && candidate.y == currentCellY && candidates.Count > 1)
+                    continue;
+
+                chosen = candidate;
+                break;
             }
 
+            if (chosen == null)
+                return false;
 
-            currentWanderTarget = candidate;
+            currentWanderTargetMap = chosen.center3d_f;
+            state = WanderState.MoveToTarget;
+            worldObject.agentMovementModule.SetDesiredTargetLocationMap(
+                currentWanderTargetMap,
+                wanderWalkMode,
+                requestPathfinding: true,
+                allowDoors: false);
+            return true;
+        }
 
-            // 4. Pick a new time window before we wander somewhere else
-            timeUntilNewTarget = Random.Range(minTimeBetweenTargets, maxTimeBetweenTargets);
+        private Room GetCurrentRoom()
+        {
+            Cell currentCell = worldObject?.locationModule?.cell;
+            if (currentCell == null || dir?.gen?.rooms == null)
+                return null;
+
+            int roomIndex = currentCell.room_number;
+            if (roomIndex < 0 || roomIndex >= dir.gen.rooms.Count)
+                return null;
+
+            return dir.gen.rooms[roomIndex];
         }
 
         public override void BeginDecisionModule(bool resume=false)
         {
-            
+            state = WanderState.PickTarget;
+            dwellRemainingSeconds = 0f;
         }
         public override void EndDecisionModule()
         {
-            
+            dwellRemainingSeconds = 0f;
+            worldObject?.agentMovementModule?.ClearDesiredMove();
         }
     }
 }

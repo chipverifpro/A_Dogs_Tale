@@ -61,6 +61,7 @@ public class Pathfinding : MonoBehaviour
     public List<Vector2Int> FindPath(
         Vector2Int start,
         Vector2Int goal,
+        bool allowDoors = true,
         int maxNodesExpanded = 10000)
     {
         var result = new List<Vector2Int>();
@@ -113,7 +114,7 @@ public class Pathfinding : MonoBehaviour
             {
                 var dir = (Dir8)d;
                 // Your function: returns >0 cost if the edge is traversable, else 0
-                float edgeCost = DirectionMoveCost(new Vector2Int(current.x, current.y), Offsets[d], d);
+                float edgeCost = DirectionMoveCost(new Vector2Int(current.x, current.y), Offsets[d], d, allowDoors);
                 if (edgeCost <= 0f) continue; // blocked
 
                 var neighbor = current + Offsets[d];
@@ -250,7 +251,7 @@ public class Pathfinding : MonoBehaviour
         }
     }
 
-    float DirectionMoveCost(Vector2Int start, Vector2Int direction, int dir_num)
+    float DirectionMoveCost(Vector2Int start, Vector2Int direction, int dir_num, bool allowDoors = true)
     {
         Cell startCell;
         Cell destCell;
@@ -271,7 +272,7 @@ public class Pathfinding : MonoBehaviour
         {
             case 0:  // N
                 if (startCell.walls.HasFlag(DirFlags.N))
-                    if (!startCell.doors.HasFlag(DirFlags.N)) // assume door is unlocked for now
+                    if (!(allowDoors && startCell.doors.HasFlag(DirFlags.N))) // assume door is unlocked for now
                         return 0f;
                 return 1f;
             case 1:  // NE
@@ -280,7 +281,7 @@ public class Pathfinding : MonoBehaviour
                 return 1f;
             case 2:  // E
                 if (startCell.walls.HasFlag(DirFlags.E))
-                    if (!startCell.doors.HasFlag(DirFlags.E)) // assume door is unlocked for now
+                    if (!(allowDoors && startCell.doors.HasFlag(DirFlags.E))) // assume door is unlocked for now
                         return 0f;
                 return 1f;
             case 3:  // SE
@@ -289,7 +290,7 @@ public class Pathfinding : MonoBehaviour
                 return 1f;
             case 4:  // S
                 if (startCell.walls.HasFlag(DirFlags.S))
-                    if (!startCell.doors.HasFlag(DirFlags.S)) // assume door is unlocked for now
+                    if (!(allowDoors && startCell.doors.HasFlag(DirFlags.S))) // assume door is unlocked for now
                         return 0f;
                 return 1f;
             case 5:  // SW
@@ -298,7 +299,7 @@ public class Pathfinding : MonoBehaviour
                 return 1f;
             case 6:  // W
                 if (startCell.walls.HasFlag(DirFlags.W))
-                    if (!startCell.doors.HasFlag(DirFlags.W)) // assume door is unlocked for now
+                    if (!(allowDoors && startCell.doors.HasFlag(DirFlags.W))) // assume door is unlocked for now
                         return 0f;
                 return 1f;
             case 7:  // NW

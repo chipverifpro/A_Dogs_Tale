@@ -68,6 +68,7 @@ namespace DogGame.Modules
         private float movingTargetRepathCooldownSeconds = 0f;
         private Vector2Int lastKnownTargetObjectCell;
         private bool hasLastKnownTargetObjectCell = false;
+        private bool allowPathThroughDoors = true;
         private Pathfinding pathfinding;
 
         [Header("Stall Recovery")]
@@ -171,6 +172,7 @@ namespace DogGame.Modules
             this.targetObject = target;
             this.keepFollowingTargetObject = keepFollowing;
             this.targetLocationMap = target != null ? target.pos3d_map : null;
+            this.allowPathThroughDoors = true;
             MoveToDestinationInProgress = target != null;
             CacheTargetObjectCell();
             RebuildPathToCurrentTarget(forceRebuild: true);
@@ -316,7 +318,7 @@ namespace DogGame.Modules
             if (!forceRebuild && hasActivePath && goalCell == activePathGoalCell)
                 return true;
 
-            List<Vector2Int> path = pathfinding.FindPath(startCell, goalCell);
+            List<Vector2Int> path = pathfinding.FindPath(startCell, goalCell, allowDoors: allowPathThroughDoors);
             ClearActivePath();
             activePathGoalCell = goalCell;
 
@@ -694,9 +696,15 @@ namespace DogGame.Modules
 
         public void SetDesiredTargetLocationMap(Vector3 targetLocation_map, WalkMode mode = WalkMode.Walk, bool requestPathfinding = true)
         {
+            SetDesiredTargetLocationMap(targetLocation_map, mode, requestPathfinding, allowDoors: true);
+        }
+
+        public void SetDesiredTargetLocationMap(Vector3 targetLocation_map, WalkMode mode, bool requestPathfinding, bool allowDoors)
+        {
             targetObject = null;
             targetLocationMap = targetLocation_map;
             walkMode = mode;
+            allowPathThroughDoors = allowDoors;
             recoveringToCellCenter = false;
             consecutiveStallTicks = 0;
             MoveToDestinationInProgress = true;
