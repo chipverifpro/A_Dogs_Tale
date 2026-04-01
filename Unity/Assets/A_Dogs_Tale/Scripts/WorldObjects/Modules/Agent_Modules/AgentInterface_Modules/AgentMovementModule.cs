@@ -52,7 +52,7 @@ namespace DogGame.Modules
 
         [FormerlySerializedAs("stopDistanceFromObject")]
         [Header("Arrival")]
-        [Range(0.10f, 0.35f)]
+        [Range(0.10f, 0.5f)]
         [SerializeField] private float stopDistance = 0.20f;
 
         [Header("Pathfinding")]
@@ -115,7 +115,7 @@ namespace DogGame.Modules
         /// </summary>
         public float maxDistance = 1f;      // TODO: Move to MotionModule
         public bool MoveToDestinationInProgress { get; private set; }
-        public float StopDistance => Mathf.Clamp(stopDistance, 0.10f, 0.25f);
+        public float StopDistance => Mathf.Clamp(stopDistance, 0.10f, 0.5f);
 
 
         protected override void Awake()
@@ -453,7 +453,7 @@ namespace DogGame.Modules
 
         private void ClampStopDistance()
         {
-            stopDistance = Mathf.Clamp(stopDistance, 0.10f, 0.25f);
+            stopDistance = Mathf.Clamp(stopDistance, 0.10f, 0.50f);
         }
 
         private bool PointTowardMapLocation(Vector3 targetLocation_map)
@@ -595,7 +595,9 @@ namespace DogGame.Modules
                     pos3d_noheight.y = 0f;  // Note: ignoring height.  This may bite us in the case of vertically overlapping rooms.
                     Vector3 recoveryTargetMap_noheight = recoveryTargetMap;
                     recoveryTargetMap_noheight.y = 0f;
-                    if ((pos3d_noheight - recoveryTargetMap_noheight).sqrMagnitude < StopDistance * StopDistance)
+                    float deltaDistanceSqr = (recoveryTargetMap_noheight - pos3d_noheight).sqrMagnitude;
+                    float stopDistanceSqr = (StopDistance * StopDistance)+0.01f;
+                    if (deltaDistanceSqr < stopDistanceSqr)
                     {
                         recoveringToCellCenter = false;
                         consecutiveStallTicks = 0;
@@ -605,6 +607,9 @@ namespace DogGame.Modules
                             Debug.Log($"{worldObject.DisplayName}[AgentMovementModule] close enough: {worldObject.DisplayName} finished center-cell recovery.", this);
                             Debug.Log($"{worldObject.DisplayName} resuming route to {targetLocationMap}?");
                         }
+                        Debug.Log($"{worldObject.DisplayName}: WAS_RECOV close_enough ({deltaDistanceSqr:0.000}<{stopDistanceSqr:0.000}) to target_noheight {recoveryTargetMap_noheight} at {pos3d_noheight}");
+                    } else {
+                        Debug.Log($"{worldObject.DisplayName}: WAS_RECOV  NOT_CLOSE   ({deltaDistanceSqr:0.000}>{stopDistanceSqr:0.000}) to target_noheight {recoveryTargetMap_noheight} at {pos3d_noheight}");
                     }
                 }
                 else
@@ -623,11 +628,14 @@ namespace DogGame.Modules
                         targetLocationMap_noheight.y = 0;
                         Vector3 pos3d_map_noheight = worldObject.pos3d_map;
                         pos3d_map_noheight.y = 0;
-                        if ((targetLocationMap_noheight - pos3d_map_noheight).sqrMagnitude < StopDistance * StopDistance)
+                        float deltaDistanceSqr = (targetLocationMap_noheight - pos3d_map_noheight).sqrMagnitude;
+                        float stopDistanceSqr = (StopDistance * StopDistance)+0.01f;
+                        if (deltaDistanceSqr < stopDistanceSqr)
                         {
-                            Debug.Log($"{worldObject.DisplayName}: close_enough to target_noheight {targetLocationMap_noheight} at {pos3d_map_noheight}");
+                            Debug.Log($"{worldObject.DisplayName}: NOT_RECOV close_enough ({deltaDistanceSqr:0.000}<{stopDistanceSqr:0.000}) to target_noheight {targetLocationMap_noheight} at {pos3d_map_noheight}");
                             MoveToDestinationInProgress = false;
                         } else {
+                            Debug.Log($"{worldObject.DisplayName}: NOT_RECOV  NOT_CLOSE   ({deltaDistanceSqr:0.000}>{stopDistanceSqr:0.000}) to target_noheight {targetLocationMap_noheight} at {pos3d_map_noheight}");
                             MoveToDestinationInProgress = true;
                         }
                     }

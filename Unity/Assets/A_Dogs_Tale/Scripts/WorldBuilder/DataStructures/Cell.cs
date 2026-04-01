@@ -51,11 +51,11 @@ public class Cell       // one cell in a Room
     }
 
     // Constructors:
-    public Cell(int x, int y, int z)
+    public Cell(int x, int y, int height)
     {
         this.pos.x = x;
         this.pos.y = y;
-        this.height = z;
+        this.height = height;
     }
 
     public Cell(int x, int y)
