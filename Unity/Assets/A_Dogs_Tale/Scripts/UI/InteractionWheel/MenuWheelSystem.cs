@@ -4,7 +4,7 @@ using DogGame.UI.InteractionWheel;
 
 public sealed class MenuWheelSystem : MonoBehaviour
 {
-    [SerializeField] private MenuWheelUIController wheelPrefab;
+    [SerializeField] private MenuWheelUIController? wheelPrefab;
 
     private MenuWheelUIController? wheelInstance;
 

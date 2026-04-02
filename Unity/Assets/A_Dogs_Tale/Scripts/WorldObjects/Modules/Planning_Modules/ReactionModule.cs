@@ -21,7 +21,7 @@ public sealed class ReactionModule : WorldModule
     [SerializeField] private bool runLuaOnPerceptionEvents = false;
     [TextArea(8, 30)]
     [SerializeField] private string luaReactionScript = "";
-    [SerializeField] private bool luaDogIsHungry = false;
+    private bool luaDogIsHungry => luaDogHunger01 > 0.8f;
     [Range(0f, 1f)]
     [SerializeField] private float luaDogHunger01 = 0f;
 

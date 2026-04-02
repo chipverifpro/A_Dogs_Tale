@@ -28,7 +28,7 @@ namespace DogGame.LLM
             }
             else
             {
-                TryAddParsedJson(root, "toolDefinitions", request.toolDefinitions.ToString());
+                TryAddParsedJson(root, "toolDefinitions", request.toolDefinitions?.ToString());
             }
 
             if (request.responseSchema != null)

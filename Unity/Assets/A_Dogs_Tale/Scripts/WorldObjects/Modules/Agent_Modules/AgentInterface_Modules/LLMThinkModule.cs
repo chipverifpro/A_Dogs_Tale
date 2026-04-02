@@ -102,7 +102,10 @@ namespace DogGame.LLM
 
             try
             {
-                PlanJsonReceived?.Invoke(planJson);
+                if (planJson != null)
+                {
+                    PlanJsonReceived?.Invoke(planJson);
+                }
             }
             catch (Exception ex)
             {

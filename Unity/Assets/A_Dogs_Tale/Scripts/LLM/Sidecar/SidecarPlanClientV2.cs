@@ -15,8 +15,8 @@ namespace DogGame.LLM
         [SerializeField] private float requestTimeoutSeconds = 10f;
 
         // Asynchronous Management
-        private bool plannerRequestInFlight = false;
-        private float plannerRequestStartTime = 0f;
+        //private bool plannerRequestInFlight = false;
+        //private float plannerRequestStartTime = 0f;
 
         // ------------------------------------------------------------
         // Public entry point
