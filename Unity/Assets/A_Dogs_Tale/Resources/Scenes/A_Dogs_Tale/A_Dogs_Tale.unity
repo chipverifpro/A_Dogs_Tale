@@ -11512,14 +11512,14 @@ MonoBehaviour:
     whichFollowersArrived: 
   targetObject: {fileID: 6544990386685219154}
   keepFollowingTargetObject: 0
-  stopDistance: 0.1
+  stopDistance: 0.15
   useGridPathfinding: 1
   pathSmoothingIntervalSeconds: 0.2
   movingTargetRepathIntervalSeconds: 0.2
   enablePathDebugLogging: 0
   enableStallRecovery: 1
-  stallTicksBeforeRecover: 3
-  stallPositionEpsilon: 0.03
+  stallTicksBeforeRecover: 5
+  stallPositionEpsilon: 0.001
   enableStallDebugLogging: 0
   accelerationMetersPerSecondSquared: 12
   decelerationMetersPerSecondSquared: 16
@@ -16266,7 +16266,6 @@ MonoBehaviour:
   sameEventTypeCooldownSeconds: 0.75
   runLuaOnPerceptionEvents: 0
   luaReactionScript: 
-  luaDogIsHungry: 0
   luaDogHunger01: 0
 --- !u!114 &6544990386685219178
 MonoBehaviour:
@@ -16605,7 +16604,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.ExploreDecisionModule
   navigationSource: 0
   exploreWalkMode: 1
-  arriveDistance: 0.1
   maxDoorsPerRefresh: 32
 --- !u!1660057539 &9223372036854775807
 SceneRoots:

@@ -32,6 +32,15 @@ namespace DogGame.UI.InteractionWheel
             public bool isEnabled = true;
         }
 
+        [Header("Button Group Enables")]
+        bool includeModeButtons = true;
+        bool includePackButtons = true;
+        bool includeMoveButtons = true;
+        bool includeInventoryButtons = true;
+        bool includeDigButtons = true;
+        bool includeScentButtons = true;
+        bool includeSoundButtons = true;
+
         [Header("Inspector-defined interactions for this WorldObject")]
         [SerializeField] private List<Entry> entries = new();
 
@@ -66,6 +75,9 @@ namespace DogGame.UI.InteractionWheel
         public void BuildWheelOptions(WheelContext context, List<WheelOption> results)
         {
             if (results == null) throw new ArgumentNullException(nameof(results));
+
+            BuildDefaultEntriesIfNeeded();
+            UpdateEntryStates(context);
 
             for (int entryIndex = 0; entryIndex < entries.Count; entryIndex++)
             {
@@ -306,24 +318,216 @@ namespace DogGame.UI.InteractionWheel
             Debug.Log($"[InteractionModule] Set {target.DisplayName} to mode Player.");
         }
 
+        // DONE with ChatGPT: 
+        // Create a function that auto-adds to entries list to include the selected groups of buttons.  See Button Group Enables section of parameters.
+        // Do this once before first time displayed.
+        // Manually added items in Unity are still supported for special characters with unique skills.
+        // Don't duplicate or replace items already on the list.
+        // Set sort priority to different values (10,20,...) per category, so they always stay grouped in the preferred order.  custom commands can be inserted between groups (ex 15)
+        // A whole group is not enabled when the Agent doesn't support that feature, is should not be visible (example: humans wouldn't have scent category.)
+        
+        private bool defaultEntriesBuilt = false;
+
+        private void BuildDefaultEntriesIfNeeded()
+        {
+            if (defaultEntriesBuilt)
+                return;
+
+            defaultEntriesBuilt = true;
+
+            // Helper to avoid duplicates
+            bool HasEntry(string id)
+            {
+                for (int i = 0; i < entries.Count; i++)
+                {
+                    if (entries[i] != null && entries[i].id == id)
+                        return true;
+                }
+                return false;
+            }
+
+            void Add(string id, string actionKey, string label, int sortPriority)
+            {
+                if (HasEntry(id))
+                    return;
+
+                entries.Add(new Entry
+                {
+                    id = id,
+                    actionKey = actionKey,
+                    label = label,
+                    sortPriority = sortPriority,
+                    isVisible = true,
+                    isEnabled = true
+                });
+            }
+
+            int basePriority = 10;
+
+            // ===== Movement =====
+            if (includeMoveButtons)
+            {
+                Add("Move.Sneak", "Move.Sneak", "Sneak", basePriority);
+                Add("Move.Run",   "Move.Run",   "Run",   basePriority);
+                basePriority += 10;
+            }
+
+            // ===== Pack =====
+            if (includePackButtons)
+            {
+                Add("Pack.Join",  "Pack.Join",  "Join Pack",  basePriority);
+                Add("Pack.Leave", "Pack.Leave", "Leave Pack", basePriority);
+                Add("Pack.Lead",  "Pack.Lead",  "Lead Pack",  basePriority);
+                basePriority += 10;
+            }
+
+            // ===== Inventory =====
+            if (includeInventoryButtons)
+            {
+                Add("Item.Get",  "Item.Get",  "Pick Up", basePriority);
+                Add("Item.Drop", "Item.Drop", "Drop",    basePriority);
+                basePriority += 10;
+            }
+
+            // ===== Dig =====
+            if (includeDigButtons)
+            {
+                Add("Dig.Hole", "Dig.Hole", "Dig Hole", basePriority);
+                Add("Dig.Up",   "Dig.Up",   "Dig Up",   basePriority);
+                Add("Dig.Bury", "Dig.Bury", "Bury",     basePriority);
+                basePriority += 10;
+            }
+
+            // ===== Scent =====
+            if (includeScentButtons)
+            {
+                Add("Scent.Sniff",   "Scent.Sniff",   "Sniff",        basePriority);
+                Add("Scent.Follow",  "Scent.Follow",  "Follow Scent", basePriority);
+                Add("Scent.Deposit", "Scent.Deposit", "Mark",         basePriority);
+                basePriority += 10;
+            }
+
+            // ===== Sound =====
+            if (includeSoundButtons)
+            {
+                Add("Sound.Bark", "Sound.Bark", "Bark", basePriority);
+                basePriority += 10;
+            }
+
+            // ===== Mode =====
+            if (includeModeButtons)
+            {
+                Add("Mode.Player", "Mode.Player", "Take Control", basePriority);
+                basePriority += 10;
+            }
+        }
+        
+        // DONE wity ChatGPT
+        // -- Second function to call before opening the list each time:
+        // Buttons will be enabled/visible depending on other things (example: if not currently a pack member, then pack.leave would be disabled)
+        
+        private void UpdateEntryStates(WheelContext ctx)
+        {
+            if (ctx == null || ctx.target == null)
+                return;
+
+            WorldObject target = ctx.target;
+
+            bool hasAgent = target.agentModule != null;
+            bool hasPack = target.packMemberModule != null;
+            bool inPack = hasPack && target.packMemberModule!.currentPack != null;
+
+            bool hasScent = target.scentPerceptionModule != null;
+            bool hasInventory = target.containerModule != null;
+
+            for (int i = 0; i < entries.Count; i++)
+            {
+                Entry entry = entries[i];
+                if (entry == null)
+                    continue;
+
+                string key = entry.actionKey;
+
+                // Default baseline
+                entry.isVisible = true;
+                entry.isEnabled = true;
+
+                // ===== PACK =====
+                if (key == "Pack.Join")
+                {
+                    entry.isEnabled = hasAgent && !inPack;
+                }
+                else if (key == "Pack.Leave")
+                {
+                    entry.isEnabled = hasAgent && inPack;
+                }
+                else if (key == "Pack.Lead")
+                {
+                    entry.isEnabled = hasAgent && inPack;
+                }
+
+                // ===== SCENT =====
+                else if (key.StartsWith("Scent."))
+                {
+                    entry.isVisible = hasScent;
+                    entry.isEnabled = hasScent;
+                }
+
+                // ===== INVENTORY =====
+                else if (key.StartsWith("Item."))
+                {
+                    entry.isVisible = hasInventory;
+                    entry.isEnabled = hasInventory;
+                }
+
+                // ===== MOVEMENT =====
+                else if (key.StartsWith("Move."))
+                {
+                    entry.isEnabled = hasAgent;
+                }
+
+                // ===== MODE =====
+                else if (key == "Mode.Player")
+                {
+                    entry.isEnabled = hasAgent;
+                }
+
+                // You can extend this with:
+                // - distance checks
+                // - LOS
+                // - cooldowns
+                // - stamina
+            }
+        }
+        
         protected override void Awake()
         {
             base.Awake();
+            BindAllActions();
+        }
+
+        public void BindAllActions()
+        {
             // Quests
             BindAction("Quest.Get", ctx => Debug.Log("Quest.Get fired for " + ctx.target.name));
+
             // Sound
             BindAction("Sound.Bark", ctx => Debug.Log("Sound.Bark fired for " + ctx.target.name));
+
             // ScentPerception
             BindAction("Scent.Sniff", ctx => Debug.Log("Scent.Sniff fired for " + ctx.target.name));
             BindAction("Scent.Deposit", ctx => Debug.Log("Scent.Deposit fired for " + ctx.target.name));
             BindAction("Scent.Follow", ctx => Debug.Log("Scent.Follow fired for " + ctx.target.name));
+
             // Dig
             BindAction("Dig.Up", ctx => Debug.Log("Dig.Up fired for " + ctx.target.name));
             BindAction("Dig.Bury", ctx => Debug.Log("Dig.Bury fired for " + ctx.target.name));
             BindAction("Dig.Hole", ctx => Debug.Log("Dig.Hole fired for " + ctx.target.name));
+
             // Inventory
             BindAction("Item.Drop", ctx => Debug.Log("Item.Drop fired for " + ctx.target.name));
             BindAction("Item.Get", ctx => Debug.Log("Item.Get fired for " + ctx.target.name));
+
             // Movement
             BindAction("Move.Sneak", ctx => SetTargetWalkMode(ctx, WalkMode.Sneak));
             BindAction("Move.Run", ctx => SetTargetWalkMode(ctx, WalkMode.Run));
@@ -342,37 +546,5 @@ namespace DogGame.UI.InteractionWheel
             BindAction("Mode.Follow", ctx => SetTargetMode(ctx, AgentDecisionType.Follower));
         }
 
-/*
-        public void Start()
-        {
-            // Debug 1
-            var options = WheelOptionCollector.CollectFromTarget(Dir.Instance.playerPack.packLeader, worldObject);
-            Debug.Log($"Start InteractionModule {worldObject.DisplayName}: {options.Count} options:");
-            foreach (var opt in options) Debug.Log(opt.ToString());
-
-            // Debug 2
-            int maxPrimaryOptions = 8; // parameter later
-            var menuModel = WheelMenuResolver.CreateWheelMenu(Dir.Instance.playerPack.packLeader, worldObject, worldPoint: null, maxPrimaryOptions);
-            Debug.Log($"Wheel menu for target={worldObject.DisplayName}: pages={menuModel.pages.Count}");
-            for (int p = 0; p < menuModel.pages.Count; p++)
-            {
-                Debug.Log($"  Page {p}:");
-                foreach (var opt in menuModel.pages[p])
-                    Debug.Log($"    - {opt}");
-            } 
-
-
-
-            // Debug 3
-            WheelMenuModel model = WheelMenuResolver.CreateWheelMenu(
-                actor: Dir.Instance.playerPack.packLeader,
-                target: worldObject,
-                worldPoint: null,
-                maxPrimaryOptions: 8
-            );
-            MenuWheelUIController menuWheelUIController = FindFirstObjectByType<MenuWheelUIController>(UnityEngine.FindObjectsInactive.Include);
-            menuWheelUIController.OpenMenuWheel(model, overrideTimeScale: 0f);
-        }
-    */
     }
 }
