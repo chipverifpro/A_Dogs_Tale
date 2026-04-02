@@ -28,7 +28,7 @@ namespace DogGame.Modules
         }
 
         [SerializeField] private WalkMode exploreWalkMode = WalkMode.Walk;
-        [SerializeField] private float arriveDistance = 0.35f;
+        //[SerializeField] private float arriveDistance = 0.35f;
         [SerializeField] private int maxDoorsPerRefresh = 32;
 
         private readonly List<DoorGoal> toExplore = new();

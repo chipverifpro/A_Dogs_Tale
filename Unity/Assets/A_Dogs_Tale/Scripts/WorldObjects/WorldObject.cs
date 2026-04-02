@@ -53,6 +53,7 @@ public enum ModuleFlags : ulong
     wanderDecisionModule        = 1UL << 13,
     immobileDecisionModule      = 1UL << 14,
     taskFollowerDecisionModule  = 1UL << 15,
+    exploreDecisionModule       = 1UL << 16,
 
     // --- Agent Interface Modules ---
     agentModule           = 1UL << 21,
@@ -103,7 +104,8 @@ public static class ModuleFlagsTemplates  // extension functions for the ModuleF
                                                        | ModuleFlags.followerDecisionModule
                                                        | ModuleFlags.wanderDecisionModule
                                                        | ModuleFlags.immobileDecisionModule
-                                                       | ModuleFlags.taskFollowerDecisionModule;
+                                                       | ModuleFlags.taskFollowerDecisionModule
+                                                       | ModuleFlags.exploreDecisionModule;
     public static readonly ModuleFlags ScatterTerrain = ModuleFlags.placementModule
                                                        | ModuleFlags.locationModule
                                                        | ModuleFlags.scentEmitterModule
@@ -157,6 +159,7 @@ public class WorldObject : MonoBehaviour
     public WandererDecisionModule wandererDecisionModule { get; private set; }
     public ImmobileDecisionModule immobileDecisionModule { get; private set; }
     public TaskFollowerDecisionModule taskFollowerDecisionModule { get; private set; }
+    public ExploreDecisionModule exploreDecisionModule { get; private set; }
     
     // --- Agent Interface Modules ---
     public AgentModule  agentModule { get; private set; }
@@ -267,6 +270,7 @@ public class WorldObject : MonoBehaviour
         wandererDecisionModule = GetComponent<WandererDecisionModule>();
         immobileDecisionModule = GetComponent<ImmobileDecisionModule>();
         taskFollowerDecisionModule = GetComponent<TaskFollowerDecisionModule>();
+        exploreDecisionModule = GetComponent<ExploreDecisionModule>();
         
         // --- Agent Interface Modules ---
         agentModule           = GetComponent<AgentModule>();
@@ -522,6 +526,12 @@ public class WorldObject : MonoBehaviour
         {
             immobileDecisionModule = EnsureComponent<ImmobileDecisionModule>();
             if (immobileDecisionModule == null) Debug.LogWarning($"immobileDecisionModule = null");
+        }
+
+        if (enables.HasFlag(ModuleFlags.exploreDecisionModule))
+        {
+            exploreDecisionModule = EnsureComponent<ExploreDecisionModule>();
+            if (exploreDecisionModule == null) Debug.LogWarning($"exploreDecisionModule = null");
         }
 
         // ===============================

@@ -277,9 +277,13 @@ public class Pack : MonoBehaviour
         if (oldPosition==-1) return false;  // agent not found.
         if (oldPosition==0) return true;    // already leader.
 
+        WorldObject newLeader = packAgentList[oldPosition];
+
         // Shift [0..index-1] right by one. // faster than remove+insert list operations
         for (int i = oldPosition; i > 0; i--)
             packAgentList[i] = packAgentList[i - 1];
+
+        packAgentList[0] = newLeader;
 
         SetPackFollowChain();   // do this after any change to packAgentList
         

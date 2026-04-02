@@ -141,32 +141,205 @@ namespace DogGame.UI.InteractionWheel
             return true;
         }
 
+        private bool TryGetTargetAgent(WheelContext ctx, out WorldObject target)
+        {
+            if (ctx==null)
+            {
+                target=new();
+                Debug.LogError("[InteractionModule] Mode action fired without a context.", this);
+                return false;
+            }
+            target = ctx.target;
+            if (target == null)
+            {
+                target = new();
+                Debug.LogWarning("[InteractionModule] Mode action fired without a target.", this);
+                return false;
+            }
+
+            if (target.agentModule == null)
+                target.CreateModulesIfNeeded(ModuleFlagsTemplates.FullAgent);
+
+            if (target.agentModule == null)
+            {
+                Debug.LogWarning($"[InteractionModule] {target.name} has no AgentModule; cannot change mode.", this);
+                return false;
+            }
+
+            return true;
+        }
+
+        private void SetTargetMode(WheelContext ctx, AgentDecisionType decisionType)
+        {
+            if (!TryGetTargetAgent(ctx, out WorldObject target))
+                return;
+
+            target.agentModule.SwitchDecisionModule(decisionType);
+            Debug.Log($"[InteractionModule] Set {target.DisplayName} to mode {decisionType}.");
+        }
+
+        private Vector3 GetInteractionWorldPoint(WheelContext ctx, WorldObject target)
+        {
+            if (ctx != null && ctx.worldPoint.HasValue)
+                return ctx.worldPoint.Value;
+
+            if (target.locationModule != null)
+                return target.locationModule.pos3d_world;
+
+            return target.transform.position;
+        }
+
+        private void SetTargetWalkMode(WheelContext ctx, WalkMode walkMode)
+        {
+            if (!TryGetTargetAgent(ctx, out WorldObject target))
+                return;
+
+            if (target.agentMovementModule == null || target.motionModule == null)
+                target.CreateModulesIfNeeded(ModuleFlags.agentMovementModule | ModuleFlags.motionModule);
+
+            if (target.agentMovementModule == null || target.motionModule == null)
+            {
+                Debug.LogWarning($"[InteractionModule] {target.DisplayName} cannot change walk mode to {walkMode}; missing movement modules.", this);
+                return;
+            }
+
+            target.agentMovementModule.SetWalkMode(walkMode);
+            Debug.Log($"[InteractionModule] Set {target.DisplayName} walk mode to {walkMode}.");
+        }
+
+        private void HandlePackJoin(WheelContext ctx)
+        {
+            if (!TryGetTargetAgent(ctx, out WorldObject target))
+                return;
+
+            WorldObject instigator = ctx?.actor != null ? ctx.actor : target;
+            GameMode gameMode = GameInputRouter.Instance != null ? GameInputRouter.Instance.currentGameMode : GameMode.Explore;
+            Vector3 hitPoint = GetInteractionWorldPoint(ctx!, target);
+
+            var activateContext = new ActivateContext(
+                userIsInstigator: false,
+                instigator: instigator,
+                target: target,
+                gameMode: gameMode,
+                hitPoint: hitPoint,
+                promoteTarget: true);
+
+            ActivateResult result = target.Activate(activateContext, new ActivateRequest(ActivateKind.RequestToJoinPack));
+            if (!string.IsNullOrWhiteSpace(result.message))
+                Debug.Log($"[InteractionModule] Pack.Join on {target.DisplayName}: {result.kind} ({result.message})");
+            else
+                Debug.Log($"[InteractionModule] Pack.Join on {target.DisplayName}: {result.kind}");
+        }
+
+        private void HandlePackLeave(WheelContext ctx)
+        {
+            if (!TryGetTargetAgent(ctx, out WorldObject target))
+                return;
+
+            if (target.packMemberModule == null)
+            {
+                Debug.LogWarning($"[InteractionModule] {target.DisplayName} has no PackMemberModule; cannot leave pack.", this);
+                return;
+            }
+
+            Pack previousPack = target.packMemberModule.currentPack;
+            bool leftPack = target.packMemberModule.LeaveCurrentPack();
+            if (!leftPack)
+            {
+                string packName = previousPack != null ? previousPack.packName : "(none)";
+                Debug.Log($"[InteractionModule] Pack.Leave on {target.DisplayName} failed for {packName}.");
+                return;
+            }
+
+            target.agentModule.SwitchDecisionModule(AgentDecisionType.Wanderer);
+            string oldPackName = previousPack != null ? previousPack.packName : "(none)";
+            Debug.Log($"[InteractionModule] {target.DisplayName} left pack {oldPackName} and is now wandering.");
+        }
+
+        private void HandlePackLead(WheelContext ctx)
+        {
+            if (!TryGetTargetAgent(ctx, out WorldObject target))
+                return;
+
+            if (target.packMemberModule == null || target.packMemberModule.currentPack == null)
+            {
+                Debug.LogWarning($"[InteractionModule] {target.DisplayName} is not in a pack; cannot become leader.", this);
+                return;
+            }
+
+            target.packMemberModule.RequestBecomeLeader();
+            Debug.Log($"[InteractionModule] {target.DisplayName} is now leading pack {target.packMemberModule.currentPack.packName}.");
+        }
+
+        private void SetTargetPlayerMode(WheelContext ctx)
+        {
+            if (!TryGetTargetAgent(ctx, out WorldObject target))
+                return;
+
+            if (target==null || target.packMemberModule==null)
+                return;
+
+            Pack? targetPack = target.packMemberModule != null ? target.packMemberModule.currentPack : null;
+            WorldObject[] worldObjects = FindObjectsByType<WorldObject>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+
+            for (int index = 0; index < worldObjects.Length; index++)
+            {
+                WorldObject candidate = worldObjects[index];
+                if (candidate == null || candidate == target || candidate.agentModule == null)
+                    continue;
+
+                AgentDecisionModuleBase currentDecisionModule = candidate.agentModule.currentDecisionModule;
+                if (currentDecisionModule == null || currentDecisionModule.DecisionType != AgentDecisionType.Player)
+                    continue;
+
+                Pack? candidatePack = candidate.packMemberModule != null ? candidate.packMemberModule.currentPack : null;
+                AgentDecisionType fallbackMode =
+                    targetPack != null && candidatePack == targetPack
+                        ? AgentDecisionType.Follower
+                        : AgentDecisionType.Wanderer;
+
+                candidate.agentModule.SwitchDecisionModule(fallbackMode);
+                Debug.Log($"[InteractionModule] Set previous player {candidate.DisplayName} to mode {fallbackMode}.");
+            }
+
+            target.agentModule.SwitchDecisionModule(AgentDecisionType.Player);
+            Debug.Log($"[InteractionModule] Set {target.DisplayName} to mode Player.");
+        }
+
         protected override void Awake()
         {
             base.Awake();
             // Quests
             BindAction("Quest.Get", ctx => Debug.Log("Quest.Get fired for " + ctx.target.name));
-            // Scent Perception
-            BindAction("Scent.Follow", ctx => Debug.Log("Follow_nose fired for " + ctx.target.name));
-            // Hearing
-            BindAction("Sound.Bark", ctx => Debug.Log("sound_bark fired for " + ctx.target.name));
+            // Sound
+            BindAction("Sound.Bark", ctx => Debug.Log("Sound.Bark fired for " + ctx.target.name));
             // ScentPerception
-            BindAction("Scent.Sniff", ctx => Debug.Log("scent_sniff fired for " + ctx.target.name));
-            // Inventory
+            BindAction("Scent.Sniff", ctx => Debug.Log("Scent.Sniff fired for " + ctx.target.name));
+            BindAction("Scent.Deposit", ctx => Debug.Log("Scent.Deposit fired for " + ctx.target.name));
+            BindAction("Scent.Follow", ctx => Debug.Log("Scent.Follow fired for " + ctx.target.name));
+            // Dig
             BindAction("Dig.Up", ctx => Debug.Log("Dig.Up fired for " + ctx.target.name));
             BindAction("Dig.Bury", ctx => Debug.Log("Dig.Bury fired for " + ctx.target.name));
             BindAction("Dig.Hole", ctx => Debug.Log("Dig.Hole fired for " + ctx.target.name));
+            // Inventory
             BindAction("Item.Drop", ctx => Debug.Log("Item.Drop fired for " + ctx.target.name));
+            BindAction("Item.Get", ctx => Debug.Log("Item.Get fired for " + ctx.target.name));
             // Movement
-            BindAction("Move.Sneak", ctx => Debug.Log("Pack.Leave fired for " + ctx.target.name));
-            BindAction("Move.Leave", ctx => Debug.Log("Pack.Leave fired for " + ctx.target.name));
-            
+            BindAction("Move.Sneak", ctx => SetTargetWalkMode(ctx, WalkMode.Sneak));
+            BindAction("Move.Run", ctx => SetTargetWalkMode(ctx, WalkMode.Run));
+            BindAction("Move.Walk", ctx => SetTargetWalkMode(ctx, WalkMode.Walk));
+
             // Pack Member
-            BindAction("Pack.Leave", ctx => Debug.Log("Pack.Leave fired for " + ctx.target.name));
-            BindAction("Pack.Join", ctx => Debug.Log("Pack.Leave fired for " + ctx.target.name));
-            BindAction("Pack.Lead", ctx => Debug.Log("Pack.Leave fired for " + ctx.target.name));
-            BindAction("Pack.Formation", ctx => Debug.Log("Pack.Leave fired for " + ctx.target.name));
+            BindAction("Pack.Leave", HandlePackLeave);
+            BindAction("Pack.Join", HandlePackJoin);
+            BindAction("Pack.Lead", HandlePackLead);
+            BindAction("Pack.Formation", ctx => Debug.Log("Pack.Formation fired for " + ctx.target.name));
             
+            // Mode
+            BindAction("Mode.Explore", ctx => SetTargetMode(ctx, AgentDecisionType.Explorer));
+            BindAction("Mode.Wander", ctx => SetTargetMode(ctx, AgentDecisionType.Wanderer));
+            BindAction("Mode.Player", SetTargetPlayerMode);
+            BindAction("Mode.Follow", ctx => SetTargetMode(ctx, AgentDecisionType.Follower));
         }
 
 /*

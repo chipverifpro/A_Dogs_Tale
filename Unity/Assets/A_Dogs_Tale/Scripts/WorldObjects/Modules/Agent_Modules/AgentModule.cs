@@ -84,12 +84,13 @@ namespace DogGame.Modules
         public void SwitchDecisionModule(AgentDecisionType decisionType)
         {
             Debug.Log($"AgentModule.SwitchDecisionModule {agentName}: decisionType = {decisionType}", this);
+            AgentDecisionModuleBase previousModule = currentDecisionModule;
 
             // Disable the current one if any
-            if (currentDecisionModule != null)
+            if (previousModule != null)
             {
-                currentDecisionModule.EndDecisionModule();  // notify the old module it is losing control.
-                currentDecisionModule.enabled = false;
+                previousModule.EndDecisionModule();  // notify the old module it is losing control.
+                previousModule.enabled = false;
             }
 
             // Find a module with matching DecisionType
@@ -102,7 +103,20 @@ namespace DogGame.Modules
                 allDecisionModules = GetComponents<AgentDecisionModuleBase>();
                 nextModule = allDecisionModules.FirstOrDefault(m => m.DecisionType == decisionType);
             }
-            if (nextModule.DecisionType != decisionType) Debug.LogError($"ERROR A: nextModule.DecisionType={nextModule.DecisionType},decisionType={decisionType},currentDecisionModule.DecisionType={currentDecisionModule.DecisionType}");
+
+            if (nextModule == null)
+            {
+                Debug.LogWarning($"[AgentModule {agentName}] No decision module found for {decisionType}.", this);
+                currentDecisionModule = previousModule;
+                if (currentDecisionModule != null)
+                {
+                    currentDecisionModule.enabled = true;
+                    currentDecisionModule.BeginDecisionModule(resume: true);
+                }
+                return;
+            }
+
+            nextModule.Initialize(this);
             currentDecisionModule = nextModule;
 
             if (currentDecisionModule != null)

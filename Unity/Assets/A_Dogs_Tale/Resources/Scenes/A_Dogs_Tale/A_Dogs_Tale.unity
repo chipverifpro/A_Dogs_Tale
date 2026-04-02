@@ -11987,6 +11987,33 @@ MonoBehaviour:
     icon: {fileID: 0}
     isVisible: 1
     isEnabled: 1
+  - id: Mode.Explore
+    actionKey: 
+    sortPriority: 1
+    label: Explore Mode
+    hint: 
+    disabledHint: 
+    icon: {fileID: 0}
+    isVisible: 1
+    isEnabled: 1
+  - id: Mode.Wander
+    actionKey: 
+    sortPriority: 1
+    label: Wander Mode
+    hint: 
+    disabledHint: 
+    icon: {fileID: 0}
+    isVisible: 1
+    isEnabled: 1
+  - id: Mode.Player
+    actionKey: 
+    sortPriority: 1
+    label: Player Mode
+    hint: 
+    disabledHint: 
+    icon: {fileID: 0}
+    isVisible: 1
+    isEnabled: 1
 --- !u!114 &1651296813
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -15849,7 +15876,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.AgentModule
   agentName: German Shepherd
-  initialDecisionType: 7
+  initialDecisionType: 1
   currentDecisionModule: {fileID: 6544990386685219152}
 --- !u!114 &6544990386685219144
 MonoBehaviour:
