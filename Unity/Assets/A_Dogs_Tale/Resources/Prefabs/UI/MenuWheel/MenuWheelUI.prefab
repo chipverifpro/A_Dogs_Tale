@@ -118,6 +118,9 @@ MonoBehaviour:
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
+  colorRingOuter: {fileID: 0}
+  colorRingInner: {fileID: 0}
+  optionsContainer: {fileID: 0}
   m_FillMethod: 4
   m_FillAmount: 1
   m_FillClockwise: 1
@@ -205,6 +208,9 @@ MonoBehaviour:
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
+  colorRingOuter: {fileID: 0}
+  colorRingInner: {fileID: 0}
+  optionsContainer: {fileID: 0}
   m_FillMethod: 4
   m_FillAmount: 1
   m_FillClockwise: 1
@@ -456,6 +462,9 @@ MonoBehaviour:
   m_Type: 1
   m_PreserveAspect: 0
   m_FillCenter: 1
+  colorRingOuter: {fileID: 0}
+  colorRingInner: {fileID: 0}
+  optionsContainer: {fileID: 0}
   m_FillMethod: 4
   m_FillAmount: 1
   m_FillClockwise: 1
@@ -615,6 +624,9 @@ MonoBehaviour:
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
+  colorRingOuter: {fileID: 0}
+  colorRingInner: {fileID: 0}
+  optionsContainer: {fileID: 0}
   m_FillMethod: 4
   m_FillAmount: 1
   m_FillClockwise: 1
@@ -736,6 +748,9 @@ MonoBehaviour:
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
+  colorRingOuter: {fileID: 0}
+  colorRingInner: {fileID: 0}
+  optionsContainer: {fileID: 0}
   m_FillMethod: 4
   m_FillAmount: 1
   m_FillClockwise: 1
@@ -768,7 +783,7 @@ MonoBehaviour:
     edgePaddingPercent: 0.06
     enableOuterRing: 1
     innerRadiusPercent: 0.22
-    outerRadiusPercent: 0.33
+    outerRadiusPercent: 0.375
     deadzonePercent: 0.1
     startAngleDegrees: 90
     outerRingStartAngleDegrees: 90
