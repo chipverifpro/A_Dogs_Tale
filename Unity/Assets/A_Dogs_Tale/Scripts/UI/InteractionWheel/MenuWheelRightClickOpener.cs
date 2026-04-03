@@ -30,7 +30,7 @@ namespace DogGame.UI.InteractionWheel
 
         [Header("Wheel Behavior")]
         [SerializeField] private float menuOpenTimeScale = 0f;
-        [SerializeField] private bool rightClickTogglesClosedWhenOpen = true;
+        [SerializeField] private bool shiftLeftClickTogglesClosedWhenOpen = true;
 
         private void Reset()
         {
@@ -55,15 +55,15 @@ namespace DogGame.UI.InteractionWheel
             if (debugLogs && debugLogEveryFrame)
             {
                 Vector2 pos = mouse.position.ReadValue();
-                Debug.Log($"[WheelRC] frame; mousePos={pos} rightPressedThisFrame={mouse.rightButton.wasPressedThisFrame} rightIsPressed={mouse.rightButton.isPressed}", this);
+                Debug.Log($"[WheelRC] frame; mousePos={pos} leftPressedThisFrame={mouse.leftButton.wasPressedThisFrame} leftIsPressed={mouse.leftButton.isPressed} shiftPressed={IsShiftPressed()}", this);
             }
 
-            // Only act on right-click down
-            if (!mouse.rightButton.wasPressedThisFrame)
+            // Only act on shift + left-click down
+            if (!mouse.leftButton.wasPressedThisFrame || !IsShiftPressed())
                 return;
 
             if (debugLogs)
-                Debug.Log("[WheelRC] Right-click detected (wasPressedThisFrame).", this);
+                Debug.Log("[WheelRC] Shift+Left click detected (wasPressedThisFrame).", this);
 
             // Ensure wheel UI exists
             MenuWheelUIController wheelUI = MenuWheelUIFactory.GetOrCreate();
@@ -78,9 +78,9 @@ namespace DogGame.UI.InteractionWheel
             if (wheelUI.IsOpen)
             {
                 if (debugLogs)
-                    Debug.Log($"[WheelRC] Wheel already open. ToggleClose={rightClickTogglesClosedWhenOpen}", this);
+                    Debug.Log($"[WheelRC] Wheel already open. ToggleClose={shiftLeftClickTogglesClosedWhenOpen}", this);
 
-                if (rightClickTogglesClosedWhenOpen)
+                if (shiftLeftClickTogglesClosedWhenOpen)
                     wheelUI.CloseMenuWheel();
 
                 return;
@@ -91,7 +91,7 @@ namespace DogGame.UI.InteractionWheel
             if (IsPointerOverBlockingUI(screenPos))
             {
                 if (debugLogs)
-                    Debug.Log("[WheelRC] Pointer is over BLOCKING UI; ignoring right-click.", this);
+                    Debug.Log("[WheelRC] Pointer is over BLOCKING UI; ignoring Shift+Left click.", this);
                 return;
             }
 
@@ -260,6 +260,12 @@ namespace DogGame.UI.InteractionWheel
                 return EventSystem.current.IsPointerOverGameObject();
 
             return EventSystem.current.IsPointerOverGameObject(pointerId);
+        }
+
+        private static bool IsShiftPressed()
+        {
+            Keyboard keyboard = Keyboard.current;
+            return keyboard != null && keyboard.shiftKey.isPressed;
         }
     }
 }

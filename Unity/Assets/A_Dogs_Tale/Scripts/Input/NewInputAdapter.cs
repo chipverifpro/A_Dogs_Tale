@@ -628,6 +628,12 @@ public class NewInputAdapter : MonoBehaviour
 
         if (Mouse.current.leftButton.wasPressedThisFrame)
         {
+            if (IsShiftClickModifierActive())
+            {
+                ClearTapTracking();
+                return false;
+            }
+
             if (IsPointerOverUI(-1))
             {
                 Vector2 mousePos = Mouse.current.position.ReadValue();
@@ -664,8 +670,12 @@ public class NewInputAdapter : MonoBehaviour
                 float moved = Vector2.Distance(currentPos, primaryPressStartPos);
 
                 bool isTap = held <= tapMaxSeconds && moved <= tapMaxMovePixels;
+                bool suppressTap = IsShiftClickModifierActive();
 
                 ClearTapTracking();
+
+                if (isTap && suppressTap)
+                    return false;
 
                 if (isTap && !IsPointerOverUI(-1))
                 {
@@ -681,6 +691,12 @@ public class NewInputAdapter : MonoBehaviour
         }
 
         return false;
+    }
+
+    private static bool IsShiftClickModifierActive()
+    {
+        Keyboard keyboard = Keyboard.current;
+        return keyboard != null && keyboard.shiftKey.isPressed;
     }
 
     private void ClearTapTracking()

@@ -6191,7 +6191,7 @@ MonoBehaviour:
   maxPrimaryOptions: 8
   preventOpenIfNoOptions: 0
   menuOpenTimeScale: 1
-  rightClickTogglesClosedWhenOpen: 0
+  shiftLeftClickTogglesClosedWhenOpen: 1
 --- !u!1 &976222952
 GameObject:
   m_ObjectHideFlags: 0
@@ -15988,11 +15988,11 @@ MonoBehaviour:
   useGridPathfinding: 1
   pathSmoothingIntervalSeconds: 0.2
   movingTargetRepathIntervalSeconds: 0.2
-  enablePathDebugLogging: 1
+  enablePathDebugLogging: 0
   enableStallRecovery: 1
   stallTicksBeforeRecover: 5
   stallPositionEpsilon: 0.001
-  enableStallDebugLogging: 1
+  enableStallDebugLogging: 0
   accelerationMetersPerSecondSquared: 12
   decelerationMetersPerSecondSquared: 16
   enableDebugLogging: 0

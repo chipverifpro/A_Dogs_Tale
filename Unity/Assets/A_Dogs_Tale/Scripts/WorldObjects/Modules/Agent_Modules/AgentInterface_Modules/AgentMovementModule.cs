@@ -608,10 +608,13 @@ namespace DogGame.Modules
                         {
                             Debug.Log($"{worldObject.DisplayName}[AgentMovementModule] close enough: {worldObject.DisplayName} finished center-cell recovery.", this);
                             Debug.Log($"{worldObject.DisplayName} resuming route to {targetLocationMap}?");
+                            Debug.Log($"{worldObject.DisplayName}: WAS_RECOV close_enough ({deltaDistanceSqr:0.000}<{stopDistanceSqr:0.000}) to target_noheight {recoveryTargetMap_noheight} at {pos3d_noheight}");
                         }
-                        Debug.Log($"{worldObject.DisplayName}: WAS_RECOV close_enough ({deltaDistanceSqr:0.000}<{stopDistanceSqr:0.000}) to target_noheight {recoveryTargetMap_noheight} at {pos3d_noheight}");
                     } else {
-                        Debug.Log($"{worldObject.DisplayName}: WAS_RECOV  NOT_CLOSE   ({deltaDistanceSqr:0.000}>{stopDistanceSqr:0.000}) to target_noheight {recoveryTargetMap_noheight} at {pos3d_noheight}");
+                        if (enableStallDebugLogging)
+                        {
+                            Debug.Log($"{worldObject.DisplayName}: WAS_RECOV  NOT_CLOSE   ({deltaDistanceSqr:0.000}>{stopDistanceSqr:0.000}) to target_noheight {recoveryTargetMap_noheight} at {pos3d_noheight}");
+                        }
                     }
                 }
                 else
@@ -634,10 +637,16 @@ namespace DogGame.Modules
                         float stopDistanceSqr = (StopDistance * StopDistance)*1.05f;
                         if (deltaDistanceSqr < stopDistanceSqr)
                         {
-                            Debug.Log($"{worldObject.DisplayName}: NOT_RECOV close_enough ({deltaDistanceSqr:0.000}<{stopDistanceSqr:0.000}) to target_noheight {targetLocationMap_noheight} at {pos3d_map_noheight}");
+                            if (enableStallDebugLogging)
+                            {
+                                Debug.Log($"{worldObject.DisplayName}: NOT_RECOV close_enough ({deltaDistanceSqr:0.000}<{stopDistanceSqr:0.000}) to target_noheight {targetLocationMap_noheight} at {pos3d_map_noheight}");
+                            }
                             MoveToDestinationInProgress = false;
                         } else {
-                            Debug.Log($"{worldObject.DisplayName}: NOT_RECOV  NOT_CLOSE   ({deltaDistanceSqr:0.000}>{stopDistanceSqr:0.000}) to target_noheight {targetLocationMap_noheight} at {pos3d_map_noheight}");
+                            if (enableStallDebugLogging)
+                            {
+                                Debug.Log($"{worldObject.DisplayName}: NOT_RECOV  NOT_CLOSE   ({deltaDistanceSqr:0.000}>{stopDistanceSqr:0.000}) to target_noheight {targetLocationMap_noheight} at {pos3d_map_noheight}");
+                            }
                             MoveToDestinationInProgress = true;
                         }
                     }
@@ -677,7 +686,7 @@ namespace DogGame.Modules
 
             UpdateStallRecoveryState();
 
-            if (recoveringToCellCenter)
+            if (recoveringToCellCenter && enableStallDebugLogging)
             {
                 Debug.Log($"{worldObject.DisplayName}: recoveringToCellCenter: recoveryTargetMap={recoveryTargetMap}, posMap={worldObject.pos3d_map}, MoveToDestinationInProgress={MoveToDestinationInProgress}");
             }

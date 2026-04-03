@@ -44,6 +44,7 @@ namespace DogGame.UI.InteractionWheel
         private int highlightedIndex = -1;
         private MenuWheelResolvedLayout currentLayout;
         private bool hasCurrentLayout;
+        private bool ignoreOpeningPointerUntilRelease;
 
         public bool IsOpen => isOpen;
 
@@ -105,6 +106,7 @@ namespace DogGame.UI.InteractionWheel
                 : menuModel.context.actor;
             centerPreviewView?.Show(previewTarget);
             SetHighlightedIndex(-1);
+            ignoreOpeningPointerUntilRelease = IsPrimaryPointerCurrentlyDown();
         }
 
         public void CloseMenuWheel()
@@ -119,6 +121,7 @@ namespace DogGame.UI.InteractionWheel
 
             hasCurrentLayout = false;
             highlightedIndex = -1;
+            ignoreOpeningPointerUntilRelease = false;
             isOpen = false;
             currentMenu = null;
             currentPageIndex = 0;
@@ -159,6 +162,14 @@ namespace DogGame.UI.InteractionWheel
             }
 
             UpdateHighlight(pointerScreenPos);
+
+            if (ignoreOpeningPointerUntilRelease)
+            {
+                if (pointerReleasedThisFrame || !pointerIsDown)
+                    ignoreOpeningPointerUntilRelease = false;
+
+                return;
+            }
 
             if (pointerReleasedThisFrame)
             {
@@ -445,6 +456,9 @@ namespace DogGame.UI.InteractionWheel
 
         private void HandlePressedOutside()
         {
+            if (ignoreOpeningPointerUntilRelease)
+                return;
+
             CloseMenuWheel();
         }
 
@@ -562,6 +576,22 @@ namespace DogGame.UI.InteractionWheel
             pointerIsDown = false;
             pointerReleasedThisFrame = false;
             return false;
+        }
+
+        private static bool IsPrimaryPointerCurrentlyDown()
+        {
+            var touchscreen = Touchscreen.current;
+            if (touchscreen != null && touchscreen.touches.Count > 0)
+            {
+                foreach (var touchControl in touchscreen.touches)
+                {
+                    if (touchControl?.press != null && touchControl.press.isPressed)
+                        return true;
+                }
+            }
+
+            var mouse = Mouse.current;
+            return mouse != null && mouse.leftButton.isPressed;
         }
     }
 }
