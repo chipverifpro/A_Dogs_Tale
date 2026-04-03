@@ -192,7 +192,7 @@ namespace DogGame.UI.InteractionWheel
                 actor: actorWorldObject,
                 target: target,
                 worldPoint: worldPoint,
-                maxPrimaryOptions: maxPrimaryOptions
+                maxPrimaryOptions: wheelUI.GetPrimaryOptionCapacity(maxPrimaryOptions)
             );
 
             if (preventOpenIfNoOptions)

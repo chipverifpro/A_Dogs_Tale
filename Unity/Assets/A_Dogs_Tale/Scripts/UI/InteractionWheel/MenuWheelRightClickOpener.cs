@@ -109,7 +109,7 @@ namespace DogGame.UI.InteractionWheel
                 actor: actorWorldObject,
                 target: target,
                 worldPoint: worldPoint,
-                maxPrimaryOptions: maxPrimaryOptions
+                maxPrimaryOptions: wheelUI.GetPrimaryOptionCapacity(maxPrimaryOptions)
             );
 
             int optionCountPage0 = (model.pages.Count > 0) ? model.pages[0].Count : 0;

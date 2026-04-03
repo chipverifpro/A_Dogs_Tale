@@ -48,6 +48,19 @@ namespace DogGame.UI.InteractionWheel
 
         public bool IsOpen => isOpen;
 
+        [Header("Color Ring Transforms")]
+        [SerializeField] private RectTransform colorRingOuter = null!;
+        [SerializeField] private RectTransform colorRingInner = null!;
+        [Range(0.50f, 2.00f)]
+        [SerializeField] private float colorRingRadiusScale = 1.15f;
+
+        public int GetPrimaryOptionCapacity(int fallbackMaxPrimaryOptions)
+        {
+            return layoutSettings != null
+                ? layoutSettings.GetPrimaryOptionCapacity(fallbackMaxPrimaryOptions)
+                : Mathf.Max(3, fallbackMaxPrimaryOptions);
+        }
+
         private void Awake()
         {
             if (rootCanvas == null)
@@ -278,20 +291,58 @@ namespace DogGame.UI.InteractionWheel
             optionsContainer.pivot = new Vector2(0.5f, 0.5f);
             optionsContainer.sizeDelta = currentLayout.ScreenSize;
             optionsContainer.anchoredPosition = wheelCenterOffset;
+            UpdateRingSizes(wheelCenterOffset);
 
-            LayoutButtonsInCircle(spawnedButtons, currentLayout.WheelRadius, layoutSettings.StartAngleDegrees);
+            LayoutButtons(spawnedButtons, currentLayout);
 
             for (int i = 0; i < spawnedButtons.Count; i++)
+            {
                 spawnedButtons[i].ApplyManualLayout(currentLayout.OptionButtonSize, currentLayout.LabelInsets);
+                spawnedButtons[i].ApplyVisualScale(currentLayout.ButtonScale);
+            }
 
             cancelButton.ApplyManualLayout(currentLayout.CancelButtonSize, currentLayout.LabelInsets);
+            cancelButton.ApplyVisualScale(currentLayout.ButtonScale);
             cancelButton.RectTransform.anchoredPosition = wheelCenterOffset + (Vector2.down * currentLayout.CancelOffset);
             centerPreviewView?.ApplyLayout(wheelCenterOffset, currentLayout);
         }
 
-        private void LayoutButtonsInCircle(List<MenuWheelOptionButtonView> buttons, float radius, float startAngleDeg)
+        private static void LayoutButtons(List<MenuWheelOptionButtonView> buttons, MenuWheelResolvedLayout layout)
         {
-            int count = buttons.Count;
+            if (buttons.Count == 0)
+                return;
+
+            if (!layout.UseOuterRing || buttons.Count <= layout.MaxInnerRingButtons)
+            {
+                LayoutButtonsInCircle(
+                    buttons,
+                    startIndex: 0,
+                    count: buttons.Count,
+                    radius: layout.InnerRingRadius,
+                    startAngleDeg: layout.InnerRingStartAngleDegrees);
+                return;
+            }
+
+            int innerCount = Mathf.Min(layout.MaxInnerRingButtons, buttons.Count);
+            int outerCount = Mathf.Min(layout.OuterRingCapacity, buttons.Count - innerCount);
+
+            LayoutButtonsInCircle(
+                buttons,
+                startIndex: 0,
+                count: innerCount,
+                radius: layout.InnerRingRadius,
+                startAngleDeg: layout.InnerRingStartAngleDegrees);
+
+            LayoutButtonsInCircle(
+                buttons,
+                startIndex: innerCount,
+                count: outerCount,
+                radius: layout.OuterRingRadius,
+                startAngleDeg: layout.OuterRingStartAngleDegrees);
+        }
+
+        private static void LayoutButtonsInCircle(List<MenuWheelOptionButtonView> buttons, int startIndex, int count, float radius, float startAngleDeg)
+        {
             if (count == 0)
                 return;
 
@@ -305,7 +356,7 @@ namespace DogGame.UI.InteractionWheel
                 float x = Mathf.Cos(angleRad) * radius;
                 float y = Mathf.Sin(angleRad) * radius;
 
-                buttons[i].RectTransform.anchoredPosition = new Vector2(x, y);
+                buttons[startIndex + i].RectTransform.anchoredPosition = new Vector2(x, y);
             }
         }
 
@@ -347,11 +398,15 @@ namespace DogGame.UI.InteractionWheel
         {
             //Debug.Log($"ClampCenterToScreen({desiredCenterScreen})");
 
-            float horizontalExtent = layout.WheelRadius + (layout.OptionButtonSize.x * 0.5f) + layout.EdgePadding;
-            float topExtent = layout.WheelRadius + (layout.OptionButtonSize.y * 0.5f) + layout.EdgePadding;
+            Vector2 effectiveButtonSize = layout.EffectiveOptionButtonSize;
+            Vector2 effectiveCancelSize = layout.EffectiveCancelButtonSize;
+            float maxButtonRadius = layout.MaxButtonRadius;
+
+            float horizontalExtent = maxButtonRadius + (effectiveButtonSize.x * 0.5f) + layout.EdgePadding;
+            float topExtent = maxButtonRadius + (effectiveButtonSize.y * 0.5f) + layout.EdgePadding;
             float bottomExtent = Mathf.Max(
-                layout.WheelRadius + (layout.OptionButtonSize.y * 0.5f),
-                layout.CancelOffset + (layout.CancelButtonSize.y * 0.5f)) + layout.EdgePadding;
+                maxButtonRadius + (effectiveButtonSize.y * 0.5f),
+                layout.CancelOffset + (effectiveCancelSize.y * 0.5f)) + layout.EdgePadding;
 
             return new Vector2(
                 Mathf.Clamp(desiredCenterScreen.x, horizontalExtent, layout.ScreenSize.x - horizontalExtent),
@@ -409,30 +464,27 @@ namespace DogGame.UI.InteractionWheel
                 return;
             }
 
-            int bestIndex = FindClosestButtonByAngle(localPos);
+            int bestIndex = FindClosestButton(localPos);
             //Debug.Log($"[MenuWheelUI] UpdateHighlight() localPos={localPos}, bestIndex={bestIndex}, deadzone={currentLayout.DeadzoneRadius}");
             SetHighlightedIndex(bestIndex);
         }
 
-        private int FindClosestButtonByAngle(Vector2 localDirectionFromCenter)
+        private int FindClosestButton(Vector2 localDirectionFromCenter)
         {
             if (spawnedButtons.Count == 0)
                 return -1;
 
-            float pointerAngleDeg = Mathf.Atan2(localDirectionFromCenter.y, localDirectionFromCenter.x) * Mathf.Rad2Deg;
-
             int bestIndex = -1;
-            float bestDelta = float.MaxValue;
+            float bestDistance = float.MaxValue;
 
             for (int i = 0; i < spawnedButtons.Count; i++)
             {
                 Vector2 buttonPos = spawnedButtons[i].RectTransform.anchoredPosition;
-                float buttonAngleDeg = Mathf.Atan2(buttonPos.y, buttonPos.x) * Mathf.Rad2Deg;
-                float angleDelta = Mathf.Abs(Mathf.DeltaAngle(pointerAngleDeg, buttonAngleDeg));
+                float distance = (localDirectionFromCenter - buttonPos).sqrMagnitude;
 
-                if (angleDelta < bestDelta)
+                if (distance < bestDistance)
                 {
-                    bestDelta = angleDelta;
+                    bestDistance = distance;
                     bestIndex = i;
                 }
             }
@@ -592,6 +644,35 @@ namespace DogGame.UI.InteractionWheel
 
             var mouse = Mouse.current;
             return mouse != null && mouse.leftButton.isPressed;
+        }
+
+        private void UpdateRingSizes(Vector2 wheelCenterOffset)
+        {
+            if (!hasCurrentLayout)
+                return;
+
+            UpdateRingRect(colorRingInner, wheelCenterOffset, currentLayout.InnerRingRadius, colorRingRadiusScale, visible: true);
+            UpdateRingRect(colorRingOuter, wheelCenterOffset, currentLayout.OuterRingRadius, colorRingRadiusScale, visible: currentLayout.UseOuterRing);
+        }
+
+        private static void UpdateRingRect(RectTransform rect, Vector2 wheelCenterOffset, float radius, float radiusScale, bool visible)
+        {
+            if (rect == null)
+                return;
+
+            rect.gameObject.SetActive(visible);
+            if (!visible)
+                return;
+
+            rect.anchorMin = new Vector2(0.5f, 0.5f);
+            rect.anchorMax = new Vector2(0.5f, 0.5f);
+            rect.pivot = new Vector2(0.5f, 0.5f);
+            rect.anchoredPosition = wheelCenterOffset;
+
+            float diameter = radius * 2f * radiusScale;
+
+            rect.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, diameter);
+            rect.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, diameter);
         }
     }
 }

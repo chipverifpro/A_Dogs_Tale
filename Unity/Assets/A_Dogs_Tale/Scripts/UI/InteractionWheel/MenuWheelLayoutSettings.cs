@@ -1,6 +1,7 @@
 #nullable enable
 using System;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace DogGame.UI.InteractionWheel
 {
@@ -21,16 +22,31 @@ namespace DogGame.UI.InteractionWheel
         [SerializeField] private float edgePaddingPercent = 0.06f;
 
         [Header("Wheel")]
-        [Tooltip("Wheel radius as a fraction of the smaller screen dimension.")]
+        [Tooltip("Enable a second ring of buttons. The outer ring capacity is twice the inner ring capacity.")]
+        [SerializeField] private bool enableOuterRing = false;
+
+        [Tooltip("Inner ring radius as a fraction of the smaller screen dimension.")]
         [Range(0.08f, 0.45f)]
-        [SerializeField] private float wheelRadiusPercent = 0.22f;
+        [FormerlySerializedAs("wheelRadiusPercent")]
+        [SerializeField] private float innerRadiusPercent = 0.22f;
+
+        [Tooltip("Outer ring radius as a fraction of the smaller screen dimension.")]
+        [Range(0.12f, 0.50f)]
+        [SerializeField] private float outerRadiusPercent = 0.33f;
 
         [Tooltip("Deadzone radius as a fraction of the smaller screen dimension.")]
         [Range(0.02f, 0.25f)]
         [SerializeField] private float deadzonePercent = 0.10f;
 
-        [Tooltip("Angle offset in degrees. 90 means the first option starts at the top.")]
+        [Tooltip("Angle offset in degrees for the inner ring. 90 means the first option starts at the top.")]
         [SerializeField] private float startAngleDegrees = 90f;
+
+        [Tooltip("Angle offset in degrees for the outer ring.")]
+        [SerializeField] private float outerRingStartAngleDegrees = 90f;
+
+        [Tooltip("Maximum buttons on the inner ring when the outer ring is enabled. The outer ring can hold twice this amount.")]
+        [Range(1, 16)]
+        [SerializeField] private int maxButtonsOnInnerRing = 6;
 
         [Header("Option Buttons")]
         [Tooltip("Option button width as a fraction of the smaller screen dimension.")]
@@ -40,6 +56,10 @@ namespace DogGame.UI.InteractionWheel
         [Tooltip("Option button height as a fraction of the smaller screen dimension.")]
         [Range(0.03f, 0.16f)]
         [SerializeField] private float optionHeightPercent = 0.06f;
+
+        [Tooltip("Uniform scale applied to option and cancel buttons, including their text.")]
+        [Range(0.50f, 2.00f)]
+        [SerializeField] private float buttonScale = 1.0f;
 
         [Header("Cancel Button")]
         [Tooltip("Cancel button width as a fraction of the smaller screen dimension.")]
@@ -70,19 +90,42 @@ namespace DogGame.UI.InteractionWheel
 
         public MenuWheelCenterMode CenterMode => centerMode;
         public float StartAngleDegrees => startAngleDegrees;
+        public float OuterRingStartAngleDegrees => outerRingStartAngleDegrees;
+        public bool EnableOuterRing => enableOuterRing;
+
+        public int GetPrimaryOptionCapacity(int fallbackMaxPrimaryOptions)
+        {
+            if (!enableOuterRing)
+                return Mathf.Max(3, fallbackMaxPrimaryOptions);
+
+            int innerCapacity = Mathf.Max(1, maxButtonsOnInnerRing);
+            int outerCapacity = innerCapacity * 2;
+            return innerCapacity + outerCapacity;
+        }
 
         public MenuWheelResolvedLayout Resolve(Vector2 screenSize)
         {
             float screenMin = Mathf.Min(screenSize.x, screenSize.y);
+            int innerCapacity = Mathf.Max(1, maxButtonsOnInnerRing);
+            float innerRadius = screenMin * innerRadiusPercent;
+            float outerRadius = enableOuterRing ? screenMin * outerRadiusPercent : innerRadius;
+            Vector2 optionButtonSize = new Vector2(
+                screenMin * optionWidthPercent,
+                screenMin * optionHeightPercent);
 
             return new MenuWheelResolvedLayout(
                 screenSize: screenSize,
                 screenMin: screenMin,
-                wheelRadius: screenMin * wheelRadiusPercent,
+                useOuterRing: enableOuterRing,
+                innerRingRadius: innerRadius,
+                outerRingRadius: outerRadius,
+                maxInnerRingButtons: innerCapacity,
+                outerRingCapacity: innerCapacity * 2,
+                innerRingStartAngleDegrees: startAngleDegrees,
+                outerRingStartAngleDegrees: outerRingStartAngleDegrees,
                 deadzoneRadius: screenMin * deadzonePercent,
-                optionButtonSize: new Vector2(
-                    screenMin * optionWidthPercent,
-                    screenMin * optionHeightPercent),
+                optionButtonSize: optionButtonSize,
+                buttonScale: buttonScale,
                 cancelButtonSize: new Vector2(
                     screenMin * cancelWidthPercent,
                     screenMin * cancelHeightPercent),
@@ -102,9 +145,16 @@ namespace DogGame.UI.InteractionWheel
         public MenuWheelResolvedLayout(
             Vector2 screenSize,
             float screenMin,
-            float wheelRadius,
+            bool useOuterRing,
+            float innerRingRadius,
+            float outerRingRadius,
+            int maxInnerRingButtons,
+            int outerRingCapacity,
+            float innerRingStartAngleDegrees,
+            float outerRingStartAngleDegrees,
             float deadzoneRadius,
             Vector2 optionButtonSize,
+            float buttonScale,
             Vector2 cancelButtonSize,
             float cancelOffset,
             float previewSize,
@@ -113,9 +163,16 @@ namespace DogGame.UI.InteractionWheel
         {
             ScreenSize = screenSize;
             ScreenMin = screenMin;
-            WheelRadius = wheelRadius;
+            UseOuterRing = useOuterRing;
+            InnerRingRadius = innerRingRadius;
+            OuterRingRadius = outerRingRadius;
+            MaxInnerRingButtons = maxInnerRingButtons;
+            OuterRingCapacity = outerRingCapacity;
+            InnerRingStartAngleDegrees = innerRingStartAngleDegrees;
+            OuterRingStartAngleDegrees = outerRingStartAngleDegrees;
             DeadzoneRadius = deadzoneRadius;
             OptionButtonSize = optionButtonSize;
+            ButtonScale = buttonScale;
             CancelButtonSize = cancelButtonSize;
             CancelOffset = cancelOffset;
             PreviewSize = previewSize;
@@ -125,13 +182,23 @@ namespace DogGame.UI.InteractionWheel
 
         public Vector2 ScreenSize { get; }
         public float ScreenMin { get; }
-        public float WheelRadius { get; }
+        public bool UseOuterRing { get; }
+        public float InnerRingRadius { get; }
+        public float OuterRingRadius { get; }
+        public int MaxInnerRingButtons { get; }
+        public int OuterRingCapacity { get; }
+        public float InnerRingStartAngleDegrees { get; }
+        public float OuterRingStartAngleDegrees { get; }
         public float DeadzoneRadius { get; }
         public Vector2 OptionButtonSize { get; }
+        public float ButtonScale { get; }
         public Vector2 CancelButtonSize { get; }
         public float CancelOffset { get; }
         public float PreviewSize { get; }
         public float EdgePadding { get; }
         public Vector4 LabelInsets { get; }
+        public Vector2 EffectiveOptionButtonSize => OptionButtonSize * ButtonScale;
+        public Vector2 EffectiveCancelButtonSize => CancelButtonSize * ButtonScale;
+        public float MaxButtonRadius => UseOuterRing ? Mathf.Max(InnerRingRadius, OuterRingRadius) : InnerRingRadius;
     }
 }

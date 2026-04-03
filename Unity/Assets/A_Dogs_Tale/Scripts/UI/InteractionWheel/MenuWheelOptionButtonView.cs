@@ -39,6 +39,7 @@ namespace DogGame.UI.InteractionWheel
         public Action? onClicked;
 
         private Vector3 baseScale;
+        private float visualScale = 1f;
 
         private void Awake()
         {
@@ -95,10 +96,18 @@ namespace DogGame.UI.InteractionWheel
             //Debug.Log($"rectTransform.sizeDelta = {size}, labelInsets = {labelInsets}");
         }
 
+        public void ApplyVisualScale(float scale)
+        {
+            EnsureInitialized();
+            visualScale = scale;
+            transform.localScale = baseScale * visualScale;
+        }
+
         public void SetHighlighted(bool highlighted)
         {
             EnsureInitialized();
-            transform.localScale = highlighted ? (baseScale * highlightedScale) : baseScale;
+            float highlightMultiplier = highlighted ? highlightedScale : 1f;
+            transform.localScale = baseScale * (visualScale * highlightMultiplier);
         }
 
         public void OnPointerEnter(PointerEventData eventData)
