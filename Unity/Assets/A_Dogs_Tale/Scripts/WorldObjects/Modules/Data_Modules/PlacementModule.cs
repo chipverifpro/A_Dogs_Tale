@@ -17,6 +17,11 @@ public enum PlacementRoomTypeFlags
     Generic = 1 << 6,
     Corridor = 1 << 7,
     Outdoor = 1 << 8,
+    Grass = 1 << 9,
+    Garden = 1 << 10,
+    SportsField = 1 << 11,
+    Wooded = 1 << 12,
+    PicnicStructure = 1 << 13,
     Any = ~0
 }
 

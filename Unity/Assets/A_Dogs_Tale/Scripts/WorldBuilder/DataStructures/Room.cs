@@ -403,7 +403,9 @@ public partial class DungeonGenerator : MonoBehaviour
 
             // For all cells, find walls around floors
             // use an appropriate policy for the type of map:
-            NeighborPolicy policy = cfg.useThinWalls ? NeighborPolicy.TreatDifferentRoomAsWall : NeighborPolicy.SameLevelOnly;
+            NeighborPolicy policy = cfg.GenerateWallsBetweenTouchingRoomsEffective()
+                ? NeighborPolicy.TreatDifferentRoomAsWall
+                : NeighborPolicy.SameLevelOnly;
             int room_number = 0;
             foreach (Room room in rooms)
             {

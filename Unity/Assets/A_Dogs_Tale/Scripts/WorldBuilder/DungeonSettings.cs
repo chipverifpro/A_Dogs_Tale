@@ -7,6 +7,7 @@ public class DungeonSettings : ScriptableObject
     // Type enumerations...
     public enum RoomAlgorithm_e { Scatter_Overlap, Scatter_NoOverlap, CellularAutomata, CellularAutomataPerlin, Tavern, PackedRooms }
     public enum TunnelsAlgorithm_e { TunnelsOrthogonal, TunnelsStraight, TunnelsOrganic, TunnelsCurved }
+    public enum PackedRoomTheme_e { House, Park }
 
     [Header("Master Configurations")]
     public RoomAlgorithm_e RoomAlgorithm = RoomAlgorithm_e.Scatter_Overlap;
@@ -52,6 +53,8 @@ public class DungeonSettings : ScriptableObject
     public bool useDiagonalCorners = true;      // if exactly 2 adjacent walls, convert to a diagonal wall
     public bool skipOrthogonalWhenDiagonal = true; // don't add both square and diagonal walls at the same time
     public int perimeterWallSteps = 30; // height of walls in steps
+    [Tooltip("If false, touching rooms at the same height are treated as open transitions instead of wall boundaries.")]
+    public bool generateWallsBetweenTouchingRooms = true;
 
 
     [Header("Scatter Room Settings")]
@@ -135,6 +138,7 @@ public class DungeonSettings : ScriptableObject
     [Header("Packed Room Params")]
     public bool usePackedRooms = false;
     public bool useRoundPen = false;    // for corridors only???
+    public PackedRoomTheme_e packedRoomTheme = PackedRoomTheme_e.House;
 
     [System.Serializable]
     public struct CorridorParams
@@ -160,6 +164,37 @@ public class DungeonSettings : ScriptableObject
     }
     [Header("Room Seeding Params")]
     public SeedParams RoomSeeding = new SeedParams { spacing=8, alternateSides=1f, jitter=2 };
+
+    [System.Serializable]
+    public struct RoomTypeWeight
+    {
+        public PlacementRoomTypeFlags type;
+        public int weight;
+    }
+
+    [Header("Packed Room Use Weights")]
+    [Tooltip("Weighted room-use assignment for the current indoor packed-room workflow.")]
+    public RoomTypeWeight[] packedHouseRoomTypes = new[]
+    {
+        new RoomTypeWeight { type = PlacementRoomTypeFlags.Bedroom,  weight = 3 },
+        new RoomTypeWeight { type = PlacementRoomTypeFlags.Living,   weight = 3 },
+        new RoomTypeWeight { type = PlacementRoomTypeFlags.Kitchen,  weight = 2 },
+        new RoomTypeWeight { type = PlacementRoomTypeFlags.Bathroom, weight = 2 },
+        new RoomTypeWeight { type = PlacementRoomTypeFlags.Utility,  weight = 1 },
+        new RoomTypeWeight { type = PlacementRoomTypeFlags.Hallway,  weight = 1 },
+        new RoomTypeWeight { type = PlacementRoomTypeFlags.Generic,  weight = 4 },
+        new RoomTypeWeight { type = PlacementRoomTypeFlags.Outdoor,  weight = 1 },
+    };
+
+    [Tooltip("Weighted room-use assignment for a future park-style packed-room workflow. Corridor rooms continue to map to pathways.")]
+    public RoomTypeWeight[] packedParkRoomTypes = new[]
+    {
+        new RoomTypeWeight { type = PlacementRoomTypeFlags.Grass,           weight = 5 },
+        new RoomTypeWeight { type = PlacementRoomTypeFlags.Garden,          weight = 3 },
+        new RoomTypeWeight { type = PlacementRoomTypeFlags.SportsField,     weight = 2 },
+        new RoomTypeWeight { type = PlacementRoomTypeFlags.Wooded,          weight = 3 },
+        new RoomTypeWeight { type = PlacementRoomTypeFlags.PicnicStructure, weight = 1 },
+    };
 
 
     [System.Serializable]
@@ -197,5 +232,34 @@ public class DungeonSettings : ScriptableObject
     [Header("Door Params")]
     public DoorParams doors = new DoorParams { loopiness=0.25f, minDoorSpacing=3, maxDoorsPerRoom=6, deadEndReach=6 };
 
-}
+    public RoomTypeWeight[] GetActivePackedRoomTypeWeights()
+    {
+        return packedRoomTheme == PackedRoomTheme_e.Park ? packedParkRoomTypes : packedHouseRoomTypes;
+    }
 
+    public bool IsPackedParkTheme()
+    {
+        return packedRoomTheme == PackedRoomTheme_e.Park;
+    }
+
+    public bool UseThinWallsEffective()
+    {
+        return IsPackedParkTheme() || useThinWalls;
+    }
+
+    public bool GenerateWallsBetweenTouchingRoomsEffective()
+    {
+        return !IsPackedParkTheme() && generateWallsBetweenTouchingRooms;
+    }
+
+    public int GetEffectivePackedWallMoat()
+    {
+        return UseThinWallsEffective() ? 0 : Mathf.Max(0, wallThickness);
+    }
+
+    public int GetEffectiveGrowWallMoat()
+    {
+        return IsPackedParkTheme() ? 0 : Mathf.Max(0, grow.wallMoat);
+    }
+
+}

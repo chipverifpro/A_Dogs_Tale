@@ -30,7 +30,7 @@ MonoBehaviour:
   scentSpreadAmount: 0.05
   scentMinimum: 0.001
   scentPhysicsConsistancey: 1
-  perlinFloorHeights: 0
+  perlinFloorHeights: 5
   perlinFloorWavelength: 0.05
   GlobalPerlinSeed: 1
   slopeRoomMaxAngle: 0
@@ -40,6 +40,7 @@ MonoBehaviour:
   useDiagonalCorners: 0
   skipOrthogonalWhenDiagonal: 1
   perimeterWallSteps: 30
+  generateWallsBetweenTouchingRooms: 1
   useScatterRooms: 0
   roomAttempts: 50
   roomsMax: 15
@@ -83,6 +84,7 @@ MonoBehaviour:
   doorAlgo: 0
   usePackedRooms: 1
   useRoundPen: 0
+  packedRoomTheme: 1
   corridor:
     corridorWidth: 3
     spineCount: 8
@@ -95,6 +97,34 @@ MonoBehaviour:
     spacing: 12
     alternateSides: 1
     jitter: 2
+  packedHouseRoomTypes:
+  - type: 1
+    weight: 3
+  - type: 4
+    weight: 3
+  - type: 2
+    weight: 2
+  - type: 8
+    weight: 2
+  - type: 32
+    weight: 1
+  - type: 16
+    weight: 1
+  - type: 64
+    weight: 4
+  - type: 256
+    weight: 1
+  packedParkRoomTypes:
+  - type: 512
+    weight: 5
+  - type: 1024
+    weight: 3
+  - type: 2048
+    weight: 2
+  - type: 4096
+    weight: 3
+  - type: 8192
+    weight: 1
   grow:
     stripRounds: 40
     areaCreditMin: 200

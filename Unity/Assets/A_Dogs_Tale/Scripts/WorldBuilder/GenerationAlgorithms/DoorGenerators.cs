@@ -10,7 +10,7 @@ public partial class DungeonGenerator : MonoBehaviour
     {
         int doorsYieldEvery = 300;
         int W = cfg.mapWidth, H = cfg.mapHeight;
-        int moat = cfg.useThinWalls ? 0 : Mathf.Max(0, cfg.wallThickness);
+        int moat = cfg.GetEffectivePackedWallMoat();
 
         // 1) Collect candidate door sites (room-edge touching room/corridor within ≤ moat cells in a straight line)
         var candidates = CollectDoorCandidates(W, H, moat, cfg.doors.minDoorSpacing, doorsYieldEvery);
