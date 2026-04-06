@@ -77,8 +77,12 @@ public class NonAgentUserInputHandler : MonoBehaviour
         {
             if (Mathf.Abs(state.zoomDelta) > 0.0001f)
             {
-                Debug.Log($"ApplyZoomDelta: {state.zoomDelta}");
-                dir.cameraModeSwitcher.ApplyZoomDelta(state.zoomDelta);
+                bool pointerOverBottomBanner = BottomBanner.Instance != null && BottomBanner.Instance.IsPointerOverPanel();
+                if (!pointerOverBottomBanner)
+                {
+                    Debug.Log($"ApplyZoomDelta: {state.zoomDelta}");
+                    dir.cameraModeSwitcher.ApplyZoomDelta(state.zoomDelta);
+                }
             }
 
             if (state.cameraViewSelect != CameraModes.Unchanged)

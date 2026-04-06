@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using DogGame;
 using TMPro;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
 public enum BannerSense
@@ -79,6 +80,24 @@ public class BottomBanner : MonoBehaviour
     bool legacyStyleMigrated;
 
     public IReadOnlyList<BannerMessageEntry> MessageHistory => messageHistory;
+
+    public bool IsPointerOverPanel()
+    {
+        if (panelRT == null || panel == null || !panel.activeInHierarchy)
+            return false;
+
+        Vector2 screenPoint;
+        if (Mouse.current != null)
+        {
+            screenPoint = Mouse.current.position.ReadValue();
+        }
+        else
+        {
+            screenPoint = Input.mousePosition;
+        }
+
+        return RectTransformUtility.RectangleContainsScreenPoint(panelRT, screenPoint, null);
+    }
 
     void Awake()
     {
@@ -429,7 +448,7 @@ public class BottomBanner : MonoBehaviour
         rowGroup.padding = new RectOffset(4, 4, 2, 2);
         rowGroup.childAlignment = TextAnchor.UpperLeft;
         rowGroup.childControlHeight = true;
-        rowGroup.childControlWidth = false;
+        rowGroup.childControlWidth = true;
         rowGroup.childForceExpandHeight = false;
         rowGroup.childForceExpandWidth = false;
 
@@ -453,6 +472,7 @@ public class BottomBanner : MonoBehaviour
         textGO.transform.SetParent(row.transform, false);
 
         LayoutElement textLayout = textGO.GetComponent<LayoutElement>();
+        textLayout.minWidth = 0f;
         textLayout.flexibleWidth = 1f;
 
         TextMeshProUGUI text = textGO.GetComponent<TextMeshProUGUI>();
@@ -533,7 +553,8 @@ public class BottomBanner : MonoBehaviour
         if (hideRoutine != null)
             StopCoroutine(hideRoutine);
 
-        hideRoutine = StartCoroutine(HideAfter(seconds));
+        // Disable Hide mode for now
+        //hideRoutine = StartCoroutine(HideAfter(seconds));
     }
 
     IEnumerator HideAfter(float seconds)
