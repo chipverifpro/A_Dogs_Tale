@@ -30,7 +30,7 @@ MonoBehaviour:
   scentSpreadAmount: 0.05
   scentMinimum: 0.001
   scentPhysicsConsistancey: 1
-  perlinFloorHeights: 5
+  perlinFloorHeights: 0
   perlinFloorWavelength: 0.05
   GlobalPerlinSeed: 1
   slopeRoomMaxAngle: 0
@@ -84,7 +84,7 @@ MonoBehaviour:
   doorAlgo: 0
   usePackedRooms: 1
   useRoundPen: 0
-  packedRoomTheme: 1
+  packedRoomTheme: 0
   corridor:
     corridorWidth: 3
     spineCount: 8
