@@ -1250,6 +1250,8 @@ public class ScentAirGround : MonoBehaviour
             for (int i = 0; i < airLayer.instances.Count; i++)
             {
                 var inst = airLayer.instances[i];
+                if (inst == null)
+                    continue;
                 var c = inst.color;
                 c.a = 0f;
                 inst.color = c;
@@ -1265,6 +1267,8 @@ public class ScentAirGround : MonoBehaviour
             for (int i = 0; i < groundLayer.instances.Count; i++)
             {
                 var inst = groundLayer.instances[i];
+                if (inst == null)
+                    continue;
                 var c = inst.color;
                 c.a = 0f;
                 inst.color = c;
@@ -1288,6 +1292,8 @@ public class ScentAirGround : MonoBehaviour
             for (sIdx = 0; sIdx < cell.scents.Count; sIdx++)
             {
                 scent = cell.scents[sIdx];
+                if (scent == null)
+                    continue;
                 // reset last visualized values to match zero alpha we just set
                 scent.airLastVisualized = 0f;
                 scent.groundLastVisualized = 0f;

@@ -350,7 +350,7 @@ namespace DogGame.LLM.Agent
 
         public string BuildDoorsList(Vector3 mapPos, Room room, RectInt radiusBounds, int maxDoors)
         {
-            Debug.Log($"BuildDoorsList: {room.cells.Count}");
+            //Debug.Log($"BuildDoorsList: {room.cells.Count}");
             doorsContext = "";
             List<FoundDoor> foundDoors = GetDoorsInRoom(mapPos, room, radiusBounds, maxDoors);
 

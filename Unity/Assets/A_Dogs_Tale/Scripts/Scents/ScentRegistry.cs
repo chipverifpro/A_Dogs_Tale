@@ -292,11 +292,14 @@ public class ScentRegistry : MonoBehaviour
     /// </summary>
     public void ActivateScentOverlay(ScentSource scentSource = null)
     {
-        //if (scentSource == null)
-        //{
-        //    return;
-        //}
-        dir.scents.ActivateOverlayForSource(scentSource);
+        if (dir == null || dir.scents == null)
+        {
+            Debug.LogError("ScentRegistry.ActivateScentOverlay called without Dir.scents assigned.");
+            return;
+        }
+
+        ScentSource resolvedSource = scentSource ?? ResolveDefaultOverlaySource();
+        dir.scents.ActivateOverlayForSource(resolvedSource);
     }
 
     /// <summary>
@@ -304,7 +307,48 @@ public class ScentRegistry : MonoBehaviour
     /// </summary>
     public void DeactivateScentOverlay()
     {
-        // TODO: Restore default visualization mode (all scents, or none, etc.).
+        if (dir == null || dir.scents == null)
+        {
+            Debug.LogError("ScentRegistry.DeactivateScentOverlay called without Dir.scents assigned.");
+            return;
+        }
+
+        dir.scents.ActivateOverlayForSource(null);
+    }
+
+    private ScentSource ResolveDefaultOverlaySource()
+    {
+        WorldObject playerLeader = dir != null && dir.playerPack != null
+            ? dir.playerPack.packLeader
+            : null;
+
+        if (playerLeader != null && playerLeader.ObjectId > 0)
+        {
+            return GetOrCreateScentSource(
+                playerLeader.ObjectId,
+                playerLeader,
+                ScentCategory.Dog,
+                defaultName: playerLeader.DisplayName);
+        }
+
+        int currentAgentId = dir != null && dir.scents != null ? dir.scents.currentAgentId : -1;
+        if (currentAgentId > 0)
+        {
+            WorldObject agent = dir != null && dir.scents != null
+                ? dir.scents.GetAgentFromAgentId(currentAgentId)
+                : null;
+            if (agent != null)
+            {
+                return GetOrCreateScentSource(
+                    currentAgentId,
+                    agent,
+                    ScentCategory.Dog,
+                    defaultName: agent.DisplayName);
+            }
+        }
+
+        Debug.LogWarning("ScentRegistry could not resolve a default scent overlay source.");
+        return null;
     }
 
     #endregion

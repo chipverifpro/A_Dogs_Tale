@@ -11,7 +11,8 @@ namespace DogGame.Modules
         {
             None,
             MoveToDoor,
-            MoveThroughDoor
+            MoveThroughDoor,
+            MoveToRoomCenter
         }
 
         private struct DoorGoal
@@ -28,6 +29,8 @@ namespace DogGame.Modules
         }
 
         [SerializeField] private WalkMode exploreWalkMode = WalkMode.Walk;
+        [Tooltip("When enabled, a dead-end room is explored by moving to its center before the dog backtracks.")]
+        [SerializeField] private bool visitRoomCenterBeforeBacktracking = true;
         //[SerializeField] private float arriveDistance = 0.35f;
         [SerializeField] private int maxDoorsPerRefresh = 32;
 
@@ -36,6 +39,7 @@ namespace DogGame.Modules
         private readonly HashSet<string> exploredDoorKeys = new();
 
         private DoorGoal activeDoor;
+        private Vector3 activeRoomCenterMap;
         private ExplorePhase phase;
         private bool needsDoorRefresh = true;
         private int queuedRoomIndex = -1;
@@ -91,18 +95,29 @@ namespace DogGame.Modules
             {
                 phase = ExplorePhase.MoveThroughDoor;
                 worldObject.agentMovementModule.SetDesiredTargetLocationMap(activeDoor.throughMap, exploreWalkMode, requestPathfinding: true);
-                Debug.Log(
-                    $"{worldObject.DisplayName} [ExploreDecisionModule] reached door {activeDoor.key}; moving through to [{activeDoor.throughCell.x},{activeDoor.throughCell.y}]");
+                //Debug.Log(
+                //    $"{worldObject.DisplayName} [ExploreDecisionModule] reached door {activeDoor.key}; moving through to [{activeDoor.throughCell.x},{activeDoor.throughCell.y}]");
                 return;
             }
 
             if (phase == ExplorePhase.MoveThroughDoor && !worldObject.agentMovementModule.MoveToDestinationInProgress)
             {
-                Debug.Log(
-                    $"{worldObject.DisplayName} [ExploreDecisionModule] completed door traversal {activeDoor.key} -> room {activeDoor.neighborRoomIndex}");
+                //Debug.Log(
+                //    $"{worldObject.DisplayName} [ExploreDecisionModule] completed door traversal {activeDoor.key} -> room {activeDoor.neighborRoomIndex}");
                 phase = ExplorePhase.None;
-                needsDoorRefresh = true;
-                queuedRoomIndex = -1;
+                RefreshDoorsForRoom(activeDoor.neighborRoomIndex);
+                queuedRoomIndex = activeDoor.neighborRoomIndex;
+                needsDoorRefresh = false;
+
+                if (TryStartDeadEndRoomCenterVisit(activeDoor.neighborRoomIndex))
+                    return;
+            }
+
+            if (phase == ExplorePhase.MoveToRoomCenter && !worldObject.agentMovementModule.MoveToDestinationInProgress)
+            {
+                //Debug.Log(
+                //    $"{worldObject.DisplayName} [ExploreDecisionModule] reached room center at {activeRoomCenterMap}; resuming door search");
+                phase = ExplorePhase.None;
             }
         }
 
@@ -134,8 +149,8 @@ namespace DogGame.Modules
 
                 toExplore.Add(goal);
                 queuedDoorKeys.Add(goal.key);
-                Debug.Log(
-                    $"{worldObject.DisplayName} [ExploreDecisionModule] Queued door {goal.key} -> room {goal.neighborRoomIndex} for {worldObject.DisplayName}");
+                //Debug.Log(
+                //    $"{worldObject.DisplayName} [ExploreDecisionModule] Queued door {goal.key} -> room {goal.neighborRoomIndex} for {worldObject.DisplayName}");
             }
         }
 
@@ -160,8 +175,8 @@ namespace DogGame.Modules
                 activeDoor = goal;
                 phase = ExplorePhase.MoveToDoor;
                 worldObject.agentMovementModule.SetDesiredTargetLocationMap(goal.doorMap, exploreWalkMode, requestPathfinding: true);
-                Debug.Log(
-                    $"{worldObject.DisplayName} [ExploreDecisionModule] heading to door {goal.key} from room {goal.roomIndex} toward room {goal.neighborRoomIndex}");
+                //Debug.Log(
+                //    $"{worldObject.DisplayName} [ExploreDecisionModule] heading to door {goal.key} from room {goal.roomIndex} toward room {goal.neighborRoomIndex}");
                 return true;
             }
 
@@ -206,6 +221,79 @@ namespace DogGame.Modules
             return bestCurrentRoomIndex >= 0 ? bestCurrentRoomIndex : bestFallbackIndex;
         }
 
+        private bool TryStartDeadEndRoomCenterVisit(int roomIndex)
+        {
+            if (!visitRoomCenterBeforeBacktracking)
+                return false;
+
+            if (HasQueuedDoorForRoom(roomIndex))
+                return false;
+
+            if (!TryGetRoomCenterMap(roomIndex, out Vector3 roomCenterMap))
+                return false;
+
+            float stopDistance = worldObject.agentMovementModule.StopDistance;
+            Vector3 delta = roomCenterMap - worldObject.pos3d_map;
+            if (delta.sqrMagnitude <= stopDistance * stopDistance)
+                return false;
+
+            activeRoomCenterMap = roomCenterMap;
+            phase = ExplorePhase.MoveToRoomCenter;
+            worldObject.agentMovementModule.SetDesiredTargetLocationMap(activeRoomCenterMap, exploreWalkMode, requestPathfinding: true);
+            Debug.Log(
+                $"{worldObject.DisplayName} [ExploreDecisionModule] room {roomIndex} is a dead end; visiting center at {activeRoomCenterMap} before backtracking");
+            return true;
+        }
+
+        private bool HasQueuedDoorForRoom(int roomIndex)
+        {
+            for (int i = 0; i < toExplore.Count; i++)
+            {
+                if (toExplore[i].roomIndex == roomIndex)
+                    return true;
+            }
+
+            return false;
+        }
+
+        private bool TryGetRoomCenterMap(int roomIndex, out Vector3 roomCenterMap)
+        {
+            roomCenterMap = default;
+
+            if (dir == null || dir.gen == null || dir.gen.rooms == null)
+                return false;
+
+            if (roomIndex < 0 || roomIndex >= dir.gen.rooms.Count)
+                return false;
+
+            Room room = dir.gen.rooms[roomIndex];
+            if (room == null || room.cells == null || room.cells.Count == 0)
+                return false;
+
+            Vector3 averageCenter = Vector3.zero;
+            for (int i = 0; i < room.cells.Count; i++)
+                averageCenter += room.cells[i].center3d_f;
+
+            averageCenter /= room.cells.Count;
+
+            Cell bestCell = room.cells[0];
+            float bestDistance = float.PositiveInfinity;
+
+            for (int i = 0; i < room.cells.Count; i++)
+            {
+                Cell candidate = room.cells[i];
+                float distance = (candidate.center3d_f - averageCenter).sqrMagnitude;
+                if (distance < bestDistance)
+                {
+                    bestDistance = distance;
+                    bestCell = candidate;
+                }
+            }
+
+            roomCenterMap = bestCell.center3d_f;
+            return true;
+        }
+
         private bool TryCreateDoorGoal(int roomIndex, DogGame.LLM.Agent.LLMWorldStateModule.FoundDoor foundDoor, out DoorGoal goal)
         {
             goal = default;
@@ -242,7 +330,7 @@ namespace DogGame.Modules
             };
             Vector3 doorDelta = (goal.throughMap - goal.doorMap).normalized;
             goal.throughMap += doorDelta * 0.3f;
-            Debug.Log($"{worldObject.DisplayName} new DoorGoal: doorMap = {goal.doorMap}, throughMap = {goal.throughMap}");
+            //Debug.Log($"{worldObject.DisplayName} new DoorGoal: doorMap = {goal.doorMap}, throughMap = {goal.throughMap}");
             return true;
         }
 

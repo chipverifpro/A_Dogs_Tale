@@ -466,8 +466,8 @@ namespace DogGame.Modules
             Vector3 desired_move = targetLocation_map - worldObject.pos3d_map;
             desired_move.y = 0f;
             float distanceToTarget = desired_move.magnitude;
-            if (worldObject.DisplayName == "germanshepherd")
-                Debug.Log($"{worldObject.DisplayName} tgt={targetLocation_map}, pos={worldObject.pos3d_map} desiredMove={desired_move} distanceToTarget={distanceToTarget} arrivalDistance={arrivalDistance}");
+            //if (worldObject.DisplayName == "germanshepherd")
+            //    Debug.Log($"{worldObject.DisplayName} tgt={targetLocation_map}, pos={worldObject.pos3d_map} desiredMove={desired_move} distanceToTarget={distanceToTarget} arrivalDistance={arrivalDistance}");
             if (distanceToTarget <= arrivalDistance+0.05f)
             {
                 maxDistance = 0f;

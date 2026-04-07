@@ -10625,7 +10625,7 @@ MonoBehaviour:
   groundScentVisible: 1
   groundScentDepositRate: 1
   groundDiffusionRate: 0.01
-  groundDecayRate: 0.08
+  groundDecayRate: 0.02
   airToGroundRate: 0.2
   groundToAirRate: 0.03
   simulationTimeStep: 0.25
@@ -16778,6 +16778,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.ExploreDecisionModule
   navigationSource: 0
   exploreWalkMode: 1
+  visitRoomCenterBeforeBacktracking: 1
   maxDoorsPerRefresh: 32
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
