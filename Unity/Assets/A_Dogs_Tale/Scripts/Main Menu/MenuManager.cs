@@ -58,6 +58,8 @@ public class MenuManager : MonoBehaviour
             subtitle: "[Button Click]",
             channel: "UI"
         );
+
+        if (buttonsParent) buttonsParent.SetActive(true);
     }
 
     // === BUTTON HOOKS ===
@@ -130,6 +132,8 @@ public class MenuManager : MonoBehaviour
         // Load new scene
         yield return SceneManager.LoadSceneAsync(sceneName);
     }
+
+    public GameObject buttonsParent;
 
     [Header("Optional direct refs (drag from Canvas)")]
     public Button btnSimulation;
