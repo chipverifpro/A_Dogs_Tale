@@ -9,6 +9,7 @@ using DogGame.LLM.Agent;
 using DogGame;
 using DogGame.Noise;
 using DogGame.UI.InteractionWheel;
+using DogGame.World;
 
 
 /// <summary>
@@ -33,6 +34,7 @@ public enum WorldObjectKind
     Portal  ,    // transport to other places or levels
     UI      ,    // if you ever want world-linked UI, optional
     Puzzle  ,    // World monitor/controller to tell stories
+    Door    ,    // can open and close
     // More...
 }
 
@@ -66,6 +68,7 @@ public enum ModuleFlags : ulong
     // --- Ability ---
     activatorModule     = 1UL << 31,
     interactionModule   = 1UL << 32,
+    doorModule          = 1UL << 33,
     
     
     // --- Output ---
@@ -194,6 +197,7 @@ public class WorldObject : MonoBehaviour
     public InteractionModule interactionModule { get; private set; }
     public LocationModule locationModule { get; private set; }
     public MotionModule motionModule { get; private set; }
+    public DoorModule doorModule { get; private set; }
     
     // Data:
     public BlackboardModule blackboardModule { get; private set; }
@@ -286,6 +290,7 @@ public class WorldObject : MonoBehaviour
         // --- Ability ---
         activatorModule   = GetComponent<ActivatorModule>();
         interactionModule = GetComponent<InteractionModule>();
+        doorModule        = GetComponent<DoorModule>();
         
         // --- Output ---
         motionModule      = GetComponent<MotionModule>();

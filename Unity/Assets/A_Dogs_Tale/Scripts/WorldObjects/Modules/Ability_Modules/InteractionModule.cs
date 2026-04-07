@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using DogGame.Modules;
+using DogGame.World;
 using Unity.InferenceEngine;
 using UnityEngine;
 
@@ -40,6 +41,7 @@ namespace DogGame.UI.InteractionWheel
         bool includeDigButtons = true;
         bool includeScentButtons = true;
         bool includeSoundButtons = true;
+        bool includeDoorButtons = true;
 
         [Header("Inspector-defined interactions for this WorldObject")]
         [SerializeField] private List<Entry> entries = new();
@@ -87,11 +89,6 @@ namespace DogGame.UI.InteractionWheel
 
                 Action<WheelContext>? resolvedCallback = ResolveCallbackOrNull(entry);
 
-                // If it's enabled but callback missing, we have two choices:
-                // A) disable it with a wiring hint
-                // B) keep enabled but log when clicked
-                //
-                // I recommend A so you catch setup issues immediately during testing.
                 bool isActuallyEnabled = entry.isEnabled && resolvedCallback != null;
 
                 var option = new WheelOption
@@ -131,36 +128,39 @@ namespace DogGame.UI.InteractionWheel
         }
 
         public enum EnableState { disabled, enabled, unavailable };
-        public enum ActionCategory { Hearing,
-                                     Knowledge,
-                                     ScentPerception,
-                                     VisionPerception,
-                                     Motion,
-                                     Appearance,
-                                     NoiseMaker,
-                                     ScentEmitter,
-                                     AgentState,
-                                     TaskList,
-                                     WorldState,
-                                   };
-        
-        public bool RegisterAction( string actionName,
-                                    string actionCategory, // for sorting
-                                    //function callback,
-                                    EnableState enable = EnableState.enabled
-                                    )
+        public enum ActionCategory
+        {
+            Hearing,
+            Knowledge,
+            ScentPerception,
+            VisionPerception,
+            Motion,
+            Appearance,
+            NoiseMaker,
+            ScentEmitter,
+            AgentState,
+            TaskList,
+            WorldState,
+        };
+
+        public bool RegisterAction(
+            string actionName,
+            string actionCategory,
+            EnableState enable = EnableState.enabled
+        )
         {
             return true;
         }
 
         private bool TryGetTargetAgent(WheelContext ctx, out WorldObject target)
         {
-            if (ctx==null)
+            if (ctx == null)
             {
-                target=new();
+                target = new();
                 Debug.LogError("[InteractionModule] Mode action fired without a context.", this);
                 return false;
             }
+
             target = ctx.target;
             if (target == null)
             {
@@ -175,6 +175,43 @@ namespace DogGame.UI.InteractionWheel
             if (target.agentModule == null)
             {
                 Debug.LogWarning($"[InteractionModule] {target.name} has no AgentModule; cannot change mode.", this);
+                return false;
+            }
+
+            return true;
+        }
+
+        private bool TryGetTargetWorldObject(WheelContext? ctx, out WorldObject target)
+        {
+            if (ctx == null)
+            {
+                target = new();
+                Debug.LogError("[InteractionModule] Action fired without a context.", this);
+                return false;
+            }
+
+            target = ctx.target;
+            if (target == null)
+            {
+                target = new();
+                Debug.LogWarning("[InteractionModule] Action fired without a target.", this);
+                return false;
+            }
+
+            return true;
+        }
+
+        private bool TryGetDoorModule(WheelContext? ctx, out WorldObject target, out DoorModule? doorModule)
+        {
+            doorModule = null;
+
+            if (!TryGetTargetWorldObject(ctx, out target))
+                return false;
+
+            doorModule = target.GetComponent<DoorModule>();
+            if (doorModule == null)
+            {
+                Debug.LogWarning($"[InteractionModule] {target.DisplayName} has no DoorModule.", this);
                 return false;
             }
 
@@ -288,7 +325,7 @@ namespace DogGame.UI.InteractionWheel
             if (!TryGetTargetAgent(ctx, out WorldObject target))
                 return;
 
-            if (target==null || target.packMemberModule==null)
+            if (target == null || target.packMemberModule == null)
                 return;
 
             Pack? targetPack = target.packMemberModule != null ? target.packMemberModule.currentPack : null;
@@ -318,14 +355,28 @@ namespace DogGame.UI.InteractionWheel
             Debug.Log($"[InteractionModule] Set {target.DisplayName} to mode Player.");
         }
 
-        // DONE with ChatGPT: 
-        // Create a function that auto-adds to entries list to include the selected groups of buttons.  See Button Group Enables section of parameters.
-        // Do this once before first time displayed.
-        // Manually added items in Unity are still supported for special characters with unique skills.
-        // Don't duplicate or replace items already on the list.
-        // Set sort priority to different values (10,20,...) per category, so they always stay grouped in the preferred order.  custom commands can be inserted between groups (ex 15)
-        // A whole group is not enabled when the Agent doesn't support that feature, is should not be visible (example: humans wouldn't have scent category.)
-        
+        private void HandleDoorOpen(WheelContext ctx)
+        {
+            if (!TryGetDoorModule(ctx, out WorldObject target, out DoorModule? doorModule) || doorModule == null)
+                return;
+
+            bool opened = doorModule.OpenDoor();
+            Debug.Log(opened
+                ? $"[InteractionModule] Opened door on {target.DisplayName}."
+                : $"[InteractionModule] Could not open door on {target.DisplayName}.");
+        }
+
+        private void HandleDoorClose(WheelContext ctx)
+        {
+            if (!TryGetDoorModule(ctx, out WorldObject target, out DoorModule? doorModule) || doorModule == null)
+                return;
+
+            bool closed = doorModule.CloseDoor();
+            Debug.Log(closed
+                ? $"[InteractionModule] Closed door on {target.DisplayName}."
+                : $"[InteractionModule] Could not close door on {target.DisplayName}.");
+        }
+
         private bool defaultEntriesBuilt = false;
 
         private void BuildDefaultEntriesIfNeeded()
@@ -335,7 +386,6 @@ namespace DogGame.UI.InteractionWheel
 
             defaultEntriesBuilt = true;
 
-            // Helper to avoid duplicates
             bool HasEntry(string id)
             {
                 for (int i = 0; i < entries.Count; i++)
@@ -414,6 +464,14 @@ namespace DogGame.UI.InteractionWheel
                 basePriority += 10;
             }
 
+            // ===== Door =====
+            if (includeDoorButtons)
+            {
+                Add("Door.Open",  "Door.Open",  "Open Door",  basePriority);
+                Add("Door.Close", "Door.Close", "Close Door", basePriority);
+                basePriority += 10;
+            }
+
             // ===== Mode =====
             if (includeModeButtons)
             {
@@ -421,11 +479,7 @@ namespace DogGame.UI.InteractionWheel
                 basePriority += 10;
             }
         }
-        
-        // DONE wity ChatGPT
-        // -- Second function to call before opening the list each time:
-        // Buttons will be enabled/visible depending on other things (example: if not currently a pack member, then pack.leave would be disabled)
-        
+
         private void UpdateEntryStates(WheelContext ctx)
         {
             if (ctx == null || ctx.target == null)
@@ -440,6 +494,12 @@ namespace DogGame.UI.InteractionWheel
             bool hasScent = target.scentPerceptionModule != null;
             bool hasInventory = target.containerModule != null;
 
+            DoorModule? doorModule = target.GetComponent<DoorModule>();
+            bool hasDoor = doorModule != null;
+            bool canOpenDoor = hasDoor && doorModule!.CanOpen();
+            bool canCloseDoor = hasDoor && doorModule!.CanClose();
+            bool doorLocked = hasDoor && doorModule!.IsLocked;
+
             for (int i = 0; i < entries.Count; i++)
             {
                 Entry entry = entries[i];
@@ -448,9 +508,10 @@ namespace DogGame.UI.InteractionWheel
 
                 string key = entry.actionKey;
 
-                // Default baseline
                 entry.isVisible = true;
                 entry.isEnabled = true;
+                entry.hint = "";
+                entry.disabledHint = "";
 
                 // ===== PACK =====
                 if (key == "Pack.Join")
@@ -486,20 +547,34 @@ namespace DogGame.UI.InteractionWheel
                     entry.isEnabled = hasAgent;
                 }
 
+                // ===== DOOR =====
+                else if (key == "Door.Open")
+                {
+                    entry.isVisible = hasDoor;
+                    entry.isEnabled = canOpenDoor;
+                    entry.hint = "Swing the door open.";
+                    if (doorLocked)
+                        entry.disabledHint = "The door is locked.";
+                    else if (hasDoor && !canOpenDoor)
+                        entry.disabledHint = "The door is already open.";
+                }
+                else if (key == "Door.Close")
+                {
+                    entry.isVisible = hasDoor;
+                    entry.isEnabled = canCloseDoor;
+                    entry.hint = "Swing the door closed.";
+                    if (hasDoor && !canCloseDoor)
+                        entry.disabledHint = "The door is already closed.";
+                }
+
                 // ===== MODE =====
                 else if (key == "Mode.Player")
                 {
                     entry.isEnabled = hasAgent;
                 }
-
-                // You can extend this with:
-                // - distance checks
-                // - LOS
-                // - cooldowns
-                // - stamina
             }
         }
-        
+
         protected override void Awake()
         {
             base.Awake();
@@ -538,13 +613,16 @@ namespace DogGame.UI.InteractionWheel
             BindAction("Pack.Join", HandlePackJoin);
             BindAction("Pack.Lead", HandlePackLead);
             BindAction("Pack.Formation", ctx => Debug.Log("Pack.Formation fired for " + ctx.target.name));
-            
+
+            // Door
+            BindAction("Door.Open", HandleDoorOpen);
+            BindAction("Door.Close", HandleDoorClose);
+
             // Mode
             BindAction("Mode.Explore", ctx => SetTargetMode(ctx, AgentDecisionType.Explorer));
             BindAction("Mode.Wander", ctx => SetTargetMode(ctx, AgentDecisionType.Wanderer));
             BindAction("Mode.Player", SetTargetPlayerMode);
             BindAction("Mode.Follow", ctx => SetTargetMode(ctx, AgentDecisionType.Follower));
         }
-
     }
 }
