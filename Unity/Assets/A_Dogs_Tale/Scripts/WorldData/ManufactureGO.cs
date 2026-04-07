@@ -418,9 +418,17 @@ public class ManufactureGO : MonoBehaviour
 
         foreach (var r in renderers)
         {
-            r.GetPropertyBlock(mpb);
+            mpb.Clear();
             mpb.SetColor("_Color",     finalColor);
             mpb.SetColor("_BaseColor", finalColor); // URP/HDRP compatibility
+
+            Texture textureOverride = inst.textureOverride;
+            if (textureOverride != null)
+            {
+                mpb.SetTexture("_BaseMap", textureOverride);
+                mpb.SetTexture("_MainTex", textureOverride);
+            }
+
             r.SetPropertyBlock(mpb);
 
             // Optional: shadow flags from archetype

@@ -138,6 +138,9 @@ public class ElementInstanceData
     public int customFlags;
 
     [NonSerialized]
+    public Texture textureOverride;
+
+    [NonSerialized]
     public ElementUpdateFlags dirtyFlags;
 
     public ElementInstanceData(
@@ -150,6 +153,7 @@ public class ElementInstanceData
         Quaternion rotation,
         Vector3 scale,
         Color color,
+        Texture textureOverride = null,
         int customFlags = 0,
         float customValue = 0f)
     {
@@ -162,6 +166,7 @@ public class ElementInstanceData
         this.rotation = rotation;
         this.scale = scale;
         this.color = color;
+        this.textureOverride = textureOverride;
         this.customFlags = customFlags;
         this.customValue = customValue;
         this.dirtyFlags = ElementUpdateFlags.All | ElementUpdateFlags.Color;
@@ -555,6 +560,7 @@ public class ElementStore : ScriptableObject
         Quaternion rotation,
         Vector3 scale,
         Color color,
+        Texture textureOverride = null,
         int customFlags = 0)
     {
         var kind = isDiagonal ? ElementLayerKind.DiagonalWall : ElementLayerKind.Wall;
@@ -569,6 +575,7 @@ public class ElementStore : ScriptableObject
             rotation: rotation,
             scale: scale,
             color: color,
+            textureOverride: textureOverride,
             customFlags: customFlags,
             customValue: 0f
         );

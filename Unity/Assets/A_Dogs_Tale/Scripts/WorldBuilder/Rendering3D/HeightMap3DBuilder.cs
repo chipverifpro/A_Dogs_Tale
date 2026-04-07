@@ -6,6 +6,10 @@ using UnityEngine;
 public partial class DungeonGenerator : MonoBehaviour
 {
     [SerializeField] private ElementStore elementStore;
+    [SerializeField] private string wallpaperResourcesPath = "Sprites/Wallpaper";
+
+    private readonly Dictionary<int, Texture2D> roomWallpaperByRoomIndex = new();
+    private Texture2D[] cachedWallpaperTextures;
 
     [Header("Floor Appearance")]
     [Tooltip("0 = solid color, 1 = black & white check")]
@@ -15,6 +19,10 @@ public partial class DungeonGenerator : MonoBehaviour
 
     [Tooltip("Tiny extra z-offset in grid units if you want ceilings slightly above nominal height.")]
     public float ceilingZOffset = 20f;
+
+    [Header("Wall Appearance")]
+    [Tooltip("Inset orthogonal wall segments slightly toward the room interior to avoid z-fighting with adjacent-room walls.")]
+    [SerializeField] private float wallInsetIntoRoom = 0.01f;
 
     // If your ramp mesh "forward" is +Z, map directions to rotations:
     static readonly Vector2Int[] Dir4 = { new(0, 1), new(1, 0), new(0, -1), new(-1, 0) };
@@ -82,6 +90,8 @@ public partial class DungeonGenerator : MonoBehaviour
 
             //Destroy3D(); // Clear old objects -- old version
             elementStore.ClearInstances(); // New version using ManufactureGO
+            roomWallpaperByRoomIndex.Clear();
+            cachedWallpaperTextures = null;
 
             for (int room_number = 0; room_number < rooms.Count; room_number++)
             {
@@ -117,6 +127,7 @@ public partial class DungeonGenerator : MonoBehaviour
             DirFlags mywalls = DirFlags.None;
             DirFlags mydoors = DirFlags.None;
             Color colorScent = getColor(Color.purple);
+            Texture2D roomWallpaper = GetWallpaperTextureForRoom(room_number);
 
             string room_name = rooms[room_number].name;
             int num_cells = rooms[room_number].cells.Count;
@@ -184,6 +195,7 @@ public partial class DungeonGenerator : MonoBehaviour
                                 rotation: rot,
                                 scale: scale,
                                 color: Color.white,
+                                textureOverride: roomWallpaper,
                                 customFlags: 0
                             );
 
@@ -208,6 +220,7 @@ public partial class DungeonGenerator : MonoBehaviour
                                 rotation: rot,
                                 scale: scale,
                                 color: Color.white,
+                                textureOverride: roomWallpaper,
                                 customFlags: 0
                             );
 
@@ -232,6 +245,7 @@ public partial class DungeonGenerator : MonoBehaviour
                                 rotation: rot,
                                 scale: scale,
                                 color: Color.white,
+                                textureOverride: roomWallpaper,
                                 customFlags: 0
                             );
 
@@ -256,6 +270,7 @@ public partial class DungeonGenerator : MonoBehaviour
                                 rotation: rot,
                                 scale: scale,
                                 color: Color.white,
+                                textureOverride: roomWallpaper,
                                 customFlags: 0
                             );
 
@@ -314,6 +329,7 @@ public partial class DungeonGenerator : MonoBehaviour
                             float baseY = floorSteps * cfg.unitHeight;
 
                             Vector3 wallPos = mid + new Vector3(0, baseY + (0.5f * ht), 0);
+                            wallPos += new Vector3(-d.x, 0f, -d.y) * wallInsetIntoRoom;
                             Quaternion wallRot = RotFromDir(new Vector2Int(nx - x, nz - z));
                             Vector3 wallScale = new Vector3(cell.x, ht, cell.y * 0.1f);
 
@@ -332,6 +348,7 @@ public partial class DungeonGenerator : MonoBehaviour
                                 rotation: wallRot,
                                 scale: wallScale,
                                 color: wallColor,
+                                textureOverride: nIsDoor ? null : roomWallpaper,
                                 customFlags: customFlags
                             );
                         }
@@ -447,6 +464,75 @@ public partial class DungeonGenerator : MonoBehaviour
         finally
         {
             if (local_tm) tm.End();
+        }
+    }
+
+    private Texture2D GetWallpaperTextureForRoom(int roomIndex)
+    {
+        if (roomWallpaperByRoomIndex.TryGetValue(roomIndex, out Texture2D cachedWallpaper))
+            return cachedWallpaper;
+
+        Texture2D[] wallpaperTextures = GetAvailableWallpaperTextures();
+        if (wallpaperTextures == null || wallpaperTextures.Length == 0)
+            return null;
+
+        int index = GetDeterministicWallpaperIndex(roomIndex, wallpaperTextures.Length);
+        Texture2D selectedWallpaper = wallpaperTextures[index];
+        roomWallpaperByRoomIndex[roomIndex] = selectedWallpaper;
+        return selectedWallpaper;
+    }
+
+    private Texture2D[] GetAvailableWallpaperTextures()
+    {
+        if (cachedWallpaperTextures != null)
+            return cachedWallpaperTextures;
+
+        List<Texture2D> wallpapers = new();
+        HashSet<Texture2D> seenTextures = new();
+
+        Sprite[] wallpaperSprites = Resources.LoadAll<Sprite>(wallpaperResourcesPath);
+        for (int i = 0; i < wallpaperSprites.Length; i++)
+        {
+            Texture2D texture = wallpaperSprites[i] != null ? wallpaperSprites[i].texture : null;
+            if (texture == null || !seenTextures.Add(texture))
+                continue;
+
+            wallpapers.Add(texture);
+        }
+
+        if (wallpapers.Count == 0)
+        {
+            Texture2D[] loadedTextures = Resources.LoadAll<Texture2D>(wallpaperResourcesPath);
+            for (int i = 0; i < loadedTextures.Length; i++)
+            {
+                Texture2D texture = loadedTextures[i];
+                if (texture == null || !seenTextures.Add(texture))
+                    continue;
+
+                wallpapers.Add(texture);
+            }
+        }
+
+        cachedWallpaperTextures = wallpapers.ToArray();
+
+        if (cachedWallpaperTextures.Length == 0)
+            Debug.LogWarning($"No wallpaper textures found at Resources/{wallpaperResourcesPath}.");
+
+        return cachedWallpaperTextures;
+    }
+
+    private int GetDeterministicWallpaperIndex(int roomIndex, int wallpaperCount)
+    {
+        unchecked
+        {
+            int seed = cfg != null ? cfg.seed : 0;
+            int hash = seed;
+            hash = (hash * 397) ^ roomIndex;
+            hash ^= unchecked((int)0x9e3779b9u);
+            if (hash < 0)
+                hash = ~hash;
+
+            return wallpaperCount > 0 ? hash % wallpaperCount : 0;
         }
     }
 
