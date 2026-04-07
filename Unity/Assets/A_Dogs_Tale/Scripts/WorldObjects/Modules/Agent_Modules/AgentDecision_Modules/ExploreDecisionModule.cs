@@ -240,6 +240,8 @@ namespace DogGame.Modules
                 key = BuildDoorKey(roomIndex, foundDoor.pos, foundDoor.direction),
                 reverseKey = BuildDoorKey(neighborRoomIndex, throughCell, foundDoor.direction.Opposite())
             };
+            Vector3 doorDelta = (goal.throughMap - goal.doorMap).normalized;
+            goal.throughMap += doorDelta * 0.3f;
             Debug.Log($"{worldObject.DisplayName} new DoorGoal: doorMap = {goal.doorMap}, throughMap = {goal.throughMap}");
             return true;
         }

@@ -465,9 +465,10 @@ namespace DogGame.Modules
 
             Vector3 desired_move = targetLocation_map - worldObject.pos3d_map;
             desired_move.y = 0f;
-
             float distanceToTarget = desired_move.magnitude;
-            if (distanceToTarget <= arrivalDistance)
+            if (worldObject.DisplayName == "germanshepherd")
+                Debug.Log($"{worldObject.DisplayName} tgt={targetLocation_map}, pos={worldObject.pos3d_map} desiredMove={desired_move} distanceToTarget={distanceToTarget} arrivalDistance={arrivalDistance}");
+            if (distanceToTarget <= arrivalDistance+0.05f)
             {
                 maxDistance = 0f;
                 desiredVelocity = Vector3.zero;
@@ -584,15 +585,16 @@ namespace DogGame.Modules
                 if (recoveringToCellCenter)
                 {
                     MoveToDestinationInProgress = true;
-                    //if (PointTowardMapLocation(recoveryTargetMap, centerRecoveryArrivalRadius))
-                    //{
-                    //    recoveringToCellCenter = false;
-                    //    consecutiveStallTicks = 0;
-                    //    if (enableStallDebugLogging)
-                    //        Debug.Log($"[AgentMovementModule] {worldObject.DisplayName} finished center-cell recovery.", this);
-                    //}
+                    if (PointTowardMapLocation(recoveryTargetMap))//, centerRecoveryArrivalRadius))
+                    {
+                        recoveringToCellCenter = false;
+                        consecutiveStallTicks = 0;
+                        if (enableStallDebugLogging)
+                            Debug.Log($"[AgentMovementModule] {worldObject.DisplayName} finished center-cell recovery.", this);
+                    }
 
                     // Alternate version of above.
+                    /*
                     Vector3 pos3d_noheight = worldObject.pos3d_map;
                     pos3d_noheight.y = 0f;  // Note: ignoring height.  This may bite us in the case of vertically overlapping rooms.
                     Vector3 recoveryTargetMap_noheight = recoveryTargetMap;
@@ -616,6 +618,7 @@ namespace DogGame.Modules
                             Debug.Log($"{worldObject.DisplayName}: WAS_RECOV  NOT_CLOSE   ({deltaDistanceSqr:0.000}>{stopDistanceSqr:0.000}) to target_noheight {recoveryTargetMap_noheight} at {pos3d_noheight}");
                         }
                     }
+                    */
                 }
                 else
                 {

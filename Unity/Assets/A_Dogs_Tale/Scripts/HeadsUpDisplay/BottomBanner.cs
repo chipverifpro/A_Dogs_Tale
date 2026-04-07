@@ -58,6 +58,7 @@ public class BottomBanner : MonoBehaviour
     [SerializeField] float rowMinHeight = 42f;
     [SerializeField] float rowSpacing = 4f;
     [SerializeField] float iconSize = 28f;
+    [SerializeField] int maxMessageLines = 2;
     [SerializeField] string spriteSheetResourcePath = "Sprites/SensesSymbolsColor_v4";
     [SerializeField] bool defaultDisplayUsesRichText = true;
     [SerializeField] bool autoScrollToNewest = true;
@@ -284,7 +285,16 @@ public class BottomBanner : MonoBehaviour
 
     float GetMinimumPanelHeight()
     {
-        return 20f + visibleLineCount * rowMinHeight + Mathf.Max(0, visibleLineCount - 1) * rowSpacing;
+        return 20f + visibleLineCount * GetRowHeight() + Mathf.Max(0, visibleLineCount - 1) * rowSpacing;
+    }
+
+    float GetRowHeight()
+    {
+        int lineCount = Mathf.Max(1, maxMessageLines);
+        float estimatedTextHeight = fontSize * lineCount * 1.2f;
+        float estimatedPadding = 12f;
+        float estimatedIconHeight = iconSize + 4f;
+        return Mathf.Max(rowMinHeight, estimatedTextHeight + estimatedPadding, estimatedIconHeight);
     }
 
     void MigrateLegacyStyleIfNeeded()
@@ -440,8 +450,9 @@ public class BottomBanner : MonoBehaviour
         row.transform.SetParent(contentRT, false);
 
         LayoutElement rowLayout = row.GetComponent<LayoutElement>();
-        rowLayout.minHeight = rowMinHeight;
-        rowLayout.preferredHeight = rowMinHeight;
+        float rowHeight = GetRowHeight();
+        rowLayout.minHeight = rowHeight;
+        rowLayout.preferredHeight = rowHeight;
 
         HorizontalLayoutGroup rowGroup = row.GetComponent<HorizontalLayoutGroup>();
         rowGroup.spacing = 8f;
@@ -481,7 +492,8 @@ public class BottomBanner : MonoBehaviour
         text.color = textColor;
         text.richText = true;
         text.textWrappingMode = TextWrappingModes.Normal;
-        text.overflowMode = TextOverflowModes.Overflow;
+        text.maxVisibleLines = Mathf.Max(1, maxMessageLines);
+        text.overflowMode = TextOverflowModes.Ellipsis;
         text.alignment = TextAlignmentOptions.TopLeft;
         text.margin = Vector4.zero;
 
@@ -563,6 +575,22 @@ public class BottomBanner : MonoBehaviour
         _Clear();
     }
 
+    static BottomBanner GetOrCreateInstance()
+    {
+        if (Instance == null)
+        {
+#if UNITY_2023_1_OR_NEWER
+            Instance = FindFirstObjectByType<BottomBanner>(FindObjectsInactive.Include);
+#else
+            Instance = FindFirstObjectByType<BottomBanner>();
+#endif
+            if (Instance == null)
+                CreateSingleton();
+        }
+
+        return Instance;
+    }
+
     static void CreateSingleton()
     {
         GameObject go = new GameObject("BottomBanner");
@@ -576,15 +604,17 @@ public class BottomBanner : MonoBehaviour
 
     public static void Show(BannerSense sense, BannerLevel level, string message, bool includeGameTime = false)
     {
-        if (Instance == null)
-            CreateSingleton();
-
-        Instance.AddMessageInternal(sense, level, message, includeGameTime, false);
+        GetOrCreateInstance()?.AddMessageInternal(sense, level, message, includeGameTime, false);
     }
 
     public static void LogMessage(BannerSense sense, BannerLevel level, string message, bool includeGameTime = false)
     {
         Show(sense, level, message, includeGameTime);
+    }
+
+    public static void LogRichMessage(BannerSense sense, BannerLevel level, string richMessage, bool includeGameTime = false)
+    {
+        GetOrCreateInstance()?.AddMessageInternal(sense, level, richMessage, includeGameTime, true);
     }
 
     public static void ShowFor(string message, float seconds)
@@ -594,10 +624,7 @@ public class BottomBanner : MonoBehaviour
 
     public static void ShowFor(BannerSense sense, BannerLevel level, string message, float seconds, bool includeGameTime = false)
     {
-        if (Instance == null)
-            CreateSingleton();
-
-        Instance._ShowFor(sense, level, message, seconds, includeGameTime, false);
+        GetOrCreateInstance()?._ShowFor(sense, level, message, seconds, includeGameTime, false);
     }
 
     public static void Clear()
@@ -626,6 +653,13 @@ public class BottomBanner : MonoBehaviour
 
     public void Display(string message)
     {
+        BottomBanner liveInstance = GetOrCreateInstance();
+        if (liveInstance != null && liveInstance != this)
+        {
+            liveInstance.Display(message);
+            return;
+        }
+
         if (defaultDisplayUsesRichText)
             DisplayRich(message);
         else
@@ -634,21 +668,49 @@ public class BottomBanner : MonoBehaviour
 
     public void DisplayPlain(string message)
     {
-        AddMessage(BannerSense.None, BannerLevel.None, message, false);
+        BottomBanner liveInstance = GetOrCreateInstance();
+        if (liveInstance != null && liveInstance != this)
+        {
+            liveInstance.DisplayPlain(message);
+            return;
+        }
+
+        AddMessageInternal(BannerSense.None, BannerLevel.None, message, false, false);
     }
 
     public void DisplayRich(string richMessage)
     {
-        AddRichMessage(BannerSense.None, BannerLevel.None, richMessage, false);
+        BottomBanner liveInstance = GetOrCreateInstance();
+        if (liveInstance != null && liveInstance != this)
+        {
+            liveInstance.DisplayRich(richMessage);
+            return;
+        }
+
+        AddMessageInternal(BannerSense.None, BannerLevel.None, richMessage, false, true);
     }
 
     public void AddMessage(BannerSense sense, BannerLevel level, string message, bool includeGameTime = false)
     {
+        BottomBanner liveInstance = GetOrCreateInstance();
+        if (liveInstance != null && liveInstance != this)
+        {
+            liveInstance.AddMessage(sense, level, message, includeGameTime);
+            return;
+        }
+
         AddMessageInternal(sense, level, message, includeGameTime, false);
     }
 
     public void AddRichMessage(BannerSense sense, BannerLevel level, string richMessage, bool includeGameTime = false)
     {
+        BottomBanner liveInstance = GetOrCreateInstance();
+        if (liveInstance != null && liveInstance != this)
+        {
+            liveInstance.AddRichMessage(sense, level, richMessage, includeGameTime);
+            return;
+        }
+
         AddMessageInternal(sense, level, richMessage, includeGameTime, true);
     }
 }

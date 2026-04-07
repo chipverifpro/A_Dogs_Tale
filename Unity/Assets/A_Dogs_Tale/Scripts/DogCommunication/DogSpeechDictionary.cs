@@ -74,15 +74,8 @@ namespace DogGame.Language
         /// </summary>
         public void Speak(WorldObject speaker, WorldObject listener, string message)
         {
-            if (bottomBanner == null)
-            {
-                Debug.LogWarning("Speak called but bottomBanner is null.");
-                return;
-            }
-
             string richText = TranslateHumanToDogSimple(message);
-
-            bottomBanner.DisplayRich(richText);
+            BottomBanner.LogRichMessage(BannerSense.None, BannerLevel.None, richText);
             Debug.Log($"Speech {message} -> {richText}");
             if (justLearnedWords != null && justLearnedWords.Count > 0)
             {

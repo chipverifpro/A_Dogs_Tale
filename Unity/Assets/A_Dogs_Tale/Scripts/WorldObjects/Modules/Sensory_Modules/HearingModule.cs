@@ -218,15 +218,17 @@ namespace DogGame.Modules
             
             foreach (var h in summarizedForLLM)
             {
-                Debug.Log(
+                string hearingEventString = 
                     $"[{worldObject.DisplayName}] heard " +
                     $"{h.category}/{h.subtype} " +
                     $"from {GetSourceNameForDebug(h)} " +
                     $"loud={h.perceivedLoudness01:0.00} " +
                     $"dist={h.distanceMeters:0.0}m " +
                     $"room={h.roomRelation} " +
-                    $"{(string.IsNullOrEmpty(h.notesShort) ? "" : $"notes={h.notesShort}")}"
-                );
+                    $"{(string.IsNullOrEmpty(h.notesShort) ? "" : $"notes={h.notesShort}")}";
+                
+                Debug.Log(hearingEventString);
+                BottomBanner.LogMessage(BannerSense.Hearing, BannerLevel.High, hearingEventString, true);
             }            
             //if (summarizedForLLM.Count > 0)
             //    Debug.Log($"[{worldObject.DisplayName}] Heard: {summarizedForLLM[0].category}/{summarizedForLLM[0].subtype} loud={summarizedForLLM[0].perceivedLoudness01:0.00} notes={summarizedForLLM[0].notesShort}");

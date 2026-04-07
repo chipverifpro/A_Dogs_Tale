@@ -277,7 +277,15 @@ namespace DogGame.Noise
                     // If we have multiple impulses, summarize as continuing movement
                     if (count >= 2)
                     {
-                        rep.notesShort = Append(rep.notesShort, $"footsteps x{count}");
+                        if (oldestDistance > newestDistance)
+                        {
+                            rep.notesShort = Append(rep.notesShort, $"footsteps receeding");
+                        }
+                        else
+                        {
+                            rep.notesShort = Append(rep.notesShort, $"footsteps approaching");
+                        }
+                        //rep.notesShort = Append(rep.notesShort, $"footsteps x{count}");
 
                         string trend = ComputeDistanceTrend(oldestDistance, newestDistance, count);
                         if (!string.IsNullOrEmpty(trend))
