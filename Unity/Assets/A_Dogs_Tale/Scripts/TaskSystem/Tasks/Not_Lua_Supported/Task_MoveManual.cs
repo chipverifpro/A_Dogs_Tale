@@ -8,6 +8,7 @@ namespace DogGame.Tasks
     public sealed class Task_MoveManual : IAgentTask
     {
         public string DebugName => "MoveManual";
+        public string Description = "Drives agent velocity directly from a manual input callback until the input returns to zero, then stops and succeeds.";
 
         private readonly System.Func<Vector2> readMoveInput;  // returns XZ intent in [-1..1]
         private readonly float maxSpeed;

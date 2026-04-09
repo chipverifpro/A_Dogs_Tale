@@ -125,6 +125,24 @@ namespace DogGame.Lua
             FollowEventScentInternal(ScentMedium.Air);
         }
 
+        public void GoThroughDoor(int doorId)
+        {
+            Debug.Log($"[DogLuaBindings] Enqueue GoThroughDoor({doorId}) for {observer.DisplayName}");
+            EnqueueTask(
+                task: new Task_GoThroughDoor(doorId),
+                priority: 58,
+                tag: $"Lua:GoThroughDoor:{doorId}");
+        }
+
+        public void GoToRoomCenter()
+        {
+            Debug.Log($"[DogLuaBindings] Enqueue GoToRoomCenter() for {observer.DisplayName}");
+            EnqueueTask(
+                task: new Task_GoToRoomCenter(),
+                priority: 57,
+                tag: "Lua:GoToRoomCenter");
+        }
+
         private void FollowEventScentInternal(ScentMedium medium)
         {
             if (!perceptionEvent.Scent.HasValue)

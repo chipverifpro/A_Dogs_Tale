@@ -8,6 +8,7 @@ namespace DogGame.Tasks
     public sealed class Task_WaitUntil : IAgentTask
     {
         public string DebugName => $"WaitUntil(timeout={timeoutSeconds:0.0}s)";
+        public string Description = "Waits until a predicate returns true, or fails if the predicate throws or the timeout expires.";
 
         private readonly Func<TaskContext, bool> predicate;
         private readonly float timeoutSeconds;

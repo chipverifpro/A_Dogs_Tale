@@ -7,6 +7,7 @@ namespace DogGame.Tasks
     public sealed class Task_RandomNearbyMove : IAgentTask
     {
         public string DebugName => $"RandomNearbyMove(r={radiusCells})";
+        public string Description = "Chooses a random nearby cell within the configured radius and moves to it using Task_MoveToCell.";
 
         private readonly int radiusCells;
         private Task_MoveToCell? move;

@@ -12,6 +12,7 @@ namespace DogGame.Tasks
     public sealed class Task_ScentFollow : IAgentTask
     {
         public string DebugName => $"ScentFollow({scentKey},{medium})";
+        public string Description = "Tracks a specific scent across nearby cells by maintaining local scent memory, choosing promising next steps, and moving cell by cell until the trail is found, exhausted, or graceful limits are reached.";
 
         private readonly string scentKey;
         private readonly ScentMedium medium;

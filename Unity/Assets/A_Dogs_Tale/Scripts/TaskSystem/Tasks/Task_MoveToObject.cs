@@ -8,6 +8,7 @@ namespace DogGame.Tasks
     public sealed class Task_MoveToObject : IAgentTask
     {
         public string DebugName => $"MoveToObject({target?.DisplayName ?? "null"})";
+        public string Description = "Moves toward a target WorldObject's current world position until arrival, or fails if the target is missing.";
 
         private readonly WorldObject target;
 

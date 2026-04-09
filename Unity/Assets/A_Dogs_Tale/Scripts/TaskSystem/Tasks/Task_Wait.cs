@@ -7,6 +7,7 @@ namespace DogGame.Tasks
     public sealed class Task_Wait : IAgentTask
     {
         public string DebugName => $"Wait({durationSeconds:0.00}s)";
+        public string Description = "Stops the agent and waits for the specified duration before succeeding.";
 
         private readonly float durationSeconds;
         private float remainingSeconds;

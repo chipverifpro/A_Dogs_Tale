@@ -13,6 +13,7 @@ namespace DogGame.Tasks
     public sealed class Task_TakeItem : IAgentTask
     {
         public string DebugName => "TakeItem";
+        public string Description = "Takes a target item by parenting it to the agent, disabling its collider and physics, and recording the carried item on the blackboard.";
         //private readonly WorldObject item;
 
         //public Task_TakeItem(WorldObject item)

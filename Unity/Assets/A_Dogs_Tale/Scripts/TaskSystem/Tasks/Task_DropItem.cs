@@ -11,6 +11,7 @@ namespace DogGame.Tasks
     public sealed class Task_DropItem : IAgentTask
     {
         public string DebugName => "DropItem";
+        public string Description = "Drops the currently carried item at the agent's feet, reenables its collider and physics, and clears the carried-item blackboard state.";
 
         public void Start(TaskContext context) { }
 

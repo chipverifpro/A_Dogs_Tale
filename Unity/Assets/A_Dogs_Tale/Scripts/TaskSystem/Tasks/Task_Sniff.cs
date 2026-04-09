@@ -16,6 +16,7 @@ namespace DogGame.Tasks
     public sealed class Task_Sniff : IAgentTask, ITaskWithReport
     {
         public string DebugName => "Sniff";
+        public string Description = "Performs a one-shot sniff at the agent's current cell, collects air and ground scent results after filtering ignored or weak scents, and logs the strongest nearby scent directions.";
 
         private readonly HashSet<string> ignoreKeys;
         private bool executed;

@@ -6,6 +6,7 @@ namespace DogGame.Tasks
     public sealed class Task_SetBool : IAgentTask
     {
         public string DebugName => $"SetBool({key}={value})";
+        public string Description = "Sets a blackboard bool key to the specified value and succeeds immediately.";
         private readonly string key;
         private readonly bool value;
 

@@ -7,6 +7,7 @@ namespace DogGame.Tasks
     public sealed class Task_UntilSuccess : IAgentTask
     {
         public string DebugName => $"UntilSuccess(elapsed={elapsed:0.0}s)";
+        public string Description = "Repeatedly runs a child task until it succeeds, restarting it after failures unless an optional timeout expires.";
 
         private readonly IAgentTask attempt;
         private readonly float timeoutSeconds;   // <=0 means infinite

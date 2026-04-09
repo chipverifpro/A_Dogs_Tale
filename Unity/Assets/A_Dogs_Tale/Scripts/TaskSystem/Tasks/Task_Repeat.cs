@@ -7,6 +7,7 @@ namespace DogGame.Tasks
     public sealed class Task_Repeat : IAgentTask
     {
         public string DebugName => $"Repeat(n={repeatCount}, i={completed})";
+        public string Description = "Runs a child task repeatedly for a fixed number of completions, or indefinitely when repeatCount is int.MaxValue.";
 
         private readonly IAgentTask child;
         private readonly int repeatCount;   // use int.MaxValue for "infinite"

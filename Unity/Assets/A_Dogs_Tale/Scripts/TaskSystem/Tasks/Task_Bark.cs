@@ -7,7 +7,7 @@ namespace DogGame.Tasks
     public sealed class Task_Bark : IAgentTask
     {
         public string DebugName => $"Bark({volume})";
-
+        public string Description = "Agent emits a bark sound at a specified volume between 1 and 10.  Then waits 0.5 seconds.";
         private int volume;
         private readonly float barkVolume01;
         private readonly float durationSeconds;

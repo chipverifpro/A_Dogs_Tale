@@ -9,6 +9,7 @@ namespace DogGame.Tasks
     public sealed class Task_PushGoal : IAgentTask
     {
         public string DebugName => $"PushGoal('{goalId}')";
+        public string Description = "Writes the current goal id to the blackboard, optionally leaving an existing goal unchanged.";
 
         private readonly string goalId;
         private readonly bool overwrite;

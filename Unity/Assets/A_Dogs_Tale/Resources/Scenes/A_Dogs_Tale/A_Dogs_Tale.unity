@@ -6758,14 +6758,14 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1041234624}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b8956e57f4c814637862b21852297782, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.Lua.LuaAgentTest
   taskController: {fileID: 6544990386685219172}
   observer: {fileID: 6544990386685219154}
-  reactToPerceptionEvents: 1
+  reactToPerceptionEvents: 0
   sameEventTypeCooldownSeconds: 0.75
   luaScript: "function react(event)\n    if event ~= nil and event.hasScent then\n       
     print('Scent event: ' .. event.scentCategory .. ' ' .. event.scentName)\n       
@@ -12750,14 +12750,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::BottomBanner
   backgroundColor: {r: 0.9, g: 0.9, b: 0.9, a: 0.75}
   textColor: {r: 0.13, g: 0.13, b: 0.13, a: 1}
-  fontSize: 22
+  fontSize: 50
   height: 172
   sidePadding: 16
   useSafeArea: 1
   visibleLineCount: 3
-  rowMinHeight: 42
+  rowMinHeight: 84
   rowSpacing: 4
-  iconSize: 28
+  iconSize: 72
   maxMessageLines: 2
   spriteSheetResourcePath: Sprites/SensesSymbolsColor_v4
   defaultDisplayUsesRichText: 1
@@ -16781,6 +16781,54 @@ MonoBehaviour:
   navigationSource: 0
   exploreWalkMode: 1
   visitRoomCenterBeforeBacktracking: 1
+  useLuaExploreScript: 1
+  debugLuaExplore: 1
+  luaExploreScript: "state = {\n    roomPath = {},\n    enteredByDoor = {},\n   
+    usedDoors = {},\n    centeredRooms = {},\n    pendingAction = nil,\n    pendingDoorId
+    = nil,\n    lastLog = nil\n}\n\nlocal function topRoomId()\n    return state.roomPath[#state.roomPath]\nend\n\nlocal
+    function log(message)\n    if state.lastLog ~= message then\n        print(\"[ExploreLua]
+    \" .. message)\n        state.lastLog = message\n    end\nend\n\nlocal function
+    clearPendingAction()\n    state.pendingAction = nil\n    state.pendingDoorId
+    = nil\nend\n\nlocal function syncCurrentRoom()\n    if Room == nil or not Room.IsValid
+    then\n        log(\"Room invalid; waiting for room state\")\n        return false\n   
+    end\n\n    local currentRoomId = Room.Id\n    local topRoom = topRoomId()\n\n   
+    if topRoom == nil then\n        state.roomPath[1] = currentRoomId\n        state.enteredByDoor[1]
+    = nil\n        log(\"Starting explore in room \" .. tostring(currentRoomId) ..
+    \" with \" .. tostring(Room.DoorCount) .. \" doors\")\n        clearPendingAction()\n       
+    return true\n    end\n\n    if topRoom == currentRoomId then\n        clearPendingAction()\n       
+    return true\n    end\n\n    if state.pendingAction == \"forward\" then\n       
+    state.roomPath[#state.roomPath + 1] = currentRoomId\n        state.enteredByDoor[#state.enteredByDoor
+    + 1] = state.pendingDoorId\n        log(\"Entered room \" .. tostring(currentRoomId)
+    .. \" through door \" .. tostring(state.pendingDoorId))\n    elseif state.pendingAction
+    == \"backtrack\" then\n        if #state.roomPath > 1 then\n            state.roomPath[#state.roomPath]
+    = nil\n            state.enteredByDoor[#state.enteredByDoor] = nil\n        end\n\n       
+    if topRoomId() ~= currentRoomId then\n            state.roomPath[#state.roomPath
+    + 1] = currentRoomId\n            state.enteredByDoor[#state.enteredByDoor +
+    1] = state.pendingDoorId\n        end\n        log(\"Backtracked into room \"
+    .. tostring(currentRoomId) .. \" through door \" .. tostring(state.pendingDoorId))\n   
+    else\n        state.roomPath = { currentRoomId }\n        state.enteredByDoor
+    = { nil }\n        log(\"Room changed without pending action; resetting path
+    in room \" .. tostring(currentRoomId))\n    end\n\n    clearPendingAction()\n   
+    return true\nend\n\nlocal function chooseNearestUnusedDoor()\n    if Room ==
+    nil or not Room.IsValid then\n        return nil\n    end\n\n    for i = 1, Room.DoorCount
+    do\n        local doorId = Room.GetDoorId(i)\n        if doorId ~= nil and doorId
+    >= 0 and not state.usedDoors[doorId] then\n            return doorId\n       
+    end\n    end\n\n    return nil\nend\n\nfunction tick()\n    if not syncCurrentRoom()
+    then\n        return\n    end\n\n    log(\"tick room=\" .. tostring(Room.Id)
+    .. \" doorCount=\" .. tostring(Room.DoorCount) .. \" pending=\" .. tostring(state.pendingAction))\n\n   
+    local nextDoorId = chooseNearestUnusedDoor()\n    if nextDoorId ~= nil then\n       
+    state.usedDoors[nextDoorId] = true\n        state.pendingAction = \"forward\"\n       
+    state.pendingDoorId = nextDoorId\n        log(\"Issuing GoThroughDoor(\" .. tostring(nextDoorId)
+    .. \")\")\n        GoThroughDoor(nextDoorId)\n        return\n    end\n\n   
+    if VisitRoomCenterBeforeBacktracking and not state.centeredRooms[Room.Id] then\n       
+    state.centeredRooms[Room.Id] = true\n        state.pendingAction = \"center\"\n       
+    log(\"No unused doors in room \" .. tostring(Room.Id) .. \"; issuing GoToRoomCenter()\")\n       
+    GoToRoomCenter()\n        return\n    end\n\n    local entryDoorId = state.enteredByDoor[#state.enteredByDoor]\n   
+    if entryDoorId ~= nil then\n        state.pendingAction = \"backtrack\"\n       
+    state.pendingDoorId = entryDoorId\n        log(\"Backtracking through door \"
+    .. tostring(entryDoorId))\n        GoThroughDoor(entryDoorId)\n        return\n   
+    end\n\n    log(\"No unused doors and no entry door to backtrack through; idle
+    in room \" .. tostring(Room.Id))\nend\n"
   maxDoorsPerRefresh: 32
 --- !u!1660057539 &9223372036854775807
 SceneRoots:

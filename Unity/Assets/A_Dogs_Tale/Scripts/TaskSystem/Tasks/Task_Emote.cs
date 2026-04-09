@@ -7,6 +7,7 @@ namespace DogGame.Tasks
     public sealed class Task_Emote : IAgentTask
     {
         public string DebugName => $"Emote({emote})";
+        public string Description = "Logs the specified emote for the agent and succeeds immediately.";
         private readonly string emote;
 
         public Task_Emote(string emote)

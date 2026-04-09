@@ -36,6 +36,7 @@ namespace DogGame.Tasks
         private Cell? currentTargetCell;
 
         public string DebugName => $"Task_FollowScentTrail(agentId={trackedScentAgentId})";
+        public string Description = "Follows an already selected scent trail by repeatedly choosing the strongest neighboring cell in a local 3x3 search and moving toward it until the trail is lost or its limits are reached.";
 
         public Task_FollowScentTrail(
             int trackedScentAgentId,

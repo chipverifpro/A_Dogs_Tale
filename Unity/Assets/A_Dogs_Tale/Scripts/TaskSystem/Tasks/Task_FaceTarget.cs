@@ -8,6 +8,7 @@ namespace DogGame.Tasks
     public sealed class Task_FaceTarget : IAgentTask
     {
         public string DebugName => $"FaceTarget({target?.DisplayName ?? "null"})";
+        public string Description = "Rotates the agent to face a target object until within the yaw tolerance, or fails if the target is missing or the timeout expires.";
 
         private readonly WorldObject target;
         private readonly float toleranceDeg;

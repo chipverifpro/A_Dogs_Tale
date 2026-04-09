@@ -11,6 +11,7 @@ namespace DogGame.Tasks
     public sealed class Task_MoveUntilSeen : IAgentTask
     {
         public string DebugName => $"MoveUntilSeen({target?.DisplayName ?? "null"})";
+        public string Description = "Moves toward a target object until it becomes visible according to LOS and optional FOV checks, or fails on timeout, move rejection, or arrival without visibility.";
 
         private readonly WorldObject target;
         private readonly float maxSeconds;

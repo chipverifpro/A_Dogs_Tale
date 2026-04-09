@@ -12,6 +12,7 @@ namespace DogGame.Tasks
     public sealed class Task_Random : IAgentTask
     {
         public string DebugName { get; }
+        public string Description = "Chooses one subtask at random on first tick, runs that task to completion, and forwards its result.";
 
         private readonly IAgentTask[] options;
         private IAgentTask? chosen;

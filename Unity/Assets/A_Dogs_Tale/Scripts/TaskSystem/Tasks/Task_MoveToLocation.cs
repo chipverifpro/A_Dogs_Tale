@@ -8,6 +8,7 @@ namespace DogGame.Tasks
     public sealed class Task_MoveToLocation : IAgentTask
     {
         public string DebugName => $"MoveToLocation([{mapX},{mapY}])";
+        public string Description = "Moves the agent toward the specified map location, currently snapped to integer cell coordinates, until arrival or movement rejection.";
 
         private readonly float mapX;
         private readonly float mapY;

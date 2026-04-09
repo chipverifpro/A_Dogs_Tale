@@ -13,6 +13,7 @@ namespace DogGame.Tasks
     public sealed class Task_RequestLLMPlan : IAgentTask
     {
         public string DebugName => $"RequestLLMPlan({tag ?? "generic"}, {urgency}, {applyMode})";
+        public string Description = "Attempts to request an on-demand LLM plan, but the current implementation always fails if no planner is available because it does not yet resolve one.";
 
         private readonly string prompt;
         private readonly Vector2Int? eventCell;

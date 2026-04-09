@@ -7,6 +7,7 @@ namespace DogGame.Tasks
     public sealed class Task_PlaceholderAction : IAgentTask
     {
         public string DebugName => $"PlaceholderAction({actionName})";
+        public string Description = "Records a placeholder LLM action and its reasoning on the blackboard, logs it, and succeeds immediately.";
 
         private readonly string actionName;
         private readonly string reasoning;

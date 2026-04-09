@@ -41,6 +41,7 @@ namespace DogGame.Tasks
                 return $"Try({p}): {c}";
             }
         }
+        public string Description = "Runs a primary task and optionally follows success or failure with secondary tasks, treating a successful fallback as a handled failure.";
 
         public Task_Try(IAgentTask tryTask, IAgentTask? onFail = null, IAgentTask? onSuccess = null)
         {

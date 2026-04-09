@@ -12,6 +12,7 @@ namespace DogGame.Tasks
     public sealed class Task_Branch : IAgentTask
     {
         public string DebugName { get; }
+        public string Description = "Evaluates a condition once, enqueues either the then-task list or the else-task list onto the queue, and then succeeds immediately.";
 
         private readonly Func<TaskContext, bool> condition;
         private readonly IAgentTask[] thenTasks;

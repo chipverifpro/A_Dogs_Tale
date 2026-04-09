@@ -28,6 +28,7 @@ namespace DogGame.Modules
             state.Task.InitState(worldObject, state);
             state.Time.InitState(worldObject, state);
             state.Vision.InitState(worldObject, state);
+            state.Room.InitState(worldObject, state);
             // todo: the rest
         }
 
@@ -43,6 +44,7 @@ namespace DogGame.Modules
             state.Task.UpdateState(detail);
             state.Time.UpdateState(detail);
             state.Vision.UpdateState(detail);
+            state.Room.UpdateState(detail);
         }
 
         // This updates things based on time elapsed, such as hunger.
@@ -62,6 +64,7 @@ namespace DogGame.Modules
             state.Task.Tick(interval);
             state.Time.Tick(interval);
             state.Vision.Tick(interval);
+            state.Room.Tick(interval);
         }
     }
 }

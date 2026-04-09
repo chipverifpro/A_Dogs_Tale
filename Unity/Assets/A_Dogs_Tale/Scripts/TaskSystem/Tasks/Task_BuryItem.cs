@@ -13,6 +13,7 @@ namespace DogGame.Tasks
     public sealed class Task_BuryItem : IAgentTask
     {
         public string DebugName => $"BuryItem(depth={depthMeters:0.00})";
+        public string Description = "Buries the currently carried item by detaching it, moving it below the agent, disabling its collider, physics, and renderers, and updating blackboard item state.";
 
         private readonly float depthMeters;
 

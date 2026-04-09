@@ -25,6 +25,7 @@ namespace DogGame.Tasks
                 return $"Sequence[{stepIndex + 1}/{steps.Count}]: {currentStep.DebugName}";
             }
         }
+        public string Description = "Runs a list of child tasks in order as a single composite task and fails immediately if any step fails.";
 
         public Task_Sequence(IEnumerable<IAgentTask> tasks)
         {

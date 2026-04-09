@@ -1,10 +1,141 @@
+#nullable enable
+using System;
 using System.Collections.Generic;
 using UnityEngine;
+using DogGame.Lua;
+using DogGame.LLM;
 
 namespace DogGame.Modules
 {
     public class ExploreDecisionModule : AgentDecisionModuleBase
     {
+private const string DefaultLuaExploreScript = @"state = {
+    roomPath = {},
+    enteredByDoor = {},
+    usedDoors = {},
+    centeredRooms = {},
+    pendingAction = nil,
+    pendingDoorId = nil,
+    lastLog = nil
+}
+
+local function topRoomId()
+    return state.roomPath[#state.roomPath]
+end
+
+local function log(message)
+    if state.lastLog ~= message then
+        print('[ExploreLua] ' .. message)
+        state.lastLog = message
+    end
+end
+
+local function clearPendingAction()
+    state.pendingAction = nil
+    state.pendingDoorId = nil
+end
+
+local function syncCurrentRoom()
+    if Room == nil or not Room.IsValid then
+        log('Room invalid; waiting for room state')
+        return false
+    end
+
+    local currentRoomId = Room.Id
+    local topRoom = topRoomId()
+
+    if topRoom == nil then
+        state.roomPath[1] = currentRoomId
+        state.enteredByDoor[1] = nil
+        log('Starting explore in room ' .. tostring(currentRoomId) .. ' with ' .. tostring(Room.DoorCount) .. ' doors')
+        clearPendingAction()
+        return true
+    end
+
+    if topRoom == currentRoomId then
+        clearPendingAction()
+        return true
+    end
+
+    if state.pendingAction == 'forward' then
+        state.roomPath[#state.roomPath + 1] = currentRoomId
+        state.enteredByDoor[#state.enteredByDoor + 1] = state.pendingDoorId
+        log('Entered room ' .. tostring(currentRoomId) .. ' through door ' .. tostring(state.pendingDoorId))
+    elseif state.pendingAction == 'backtrack' then
+        if #state.roomPath > 1 then
+            state.roomPath[#state.roomPath] = nil
+            state.enteredByDoor[#state.enteredByDoor] = nil
+        end
+
+        if topRoomId() ~= currentRoomId then
+            state.roomPath[#state.roomPath + 1] = currentRoomId
+            state.enteredByDoor[#state.enteredByDoor + 1] = state.pendingDoorId
+        end
+
+        log('Backtracked into room ' .. tostring(currentRoomId) .. ' through door ' .. tostring(state.pendingDoorId))
+    else
+        state.roomPath = { currentRoomId }
+        state.enteredByDoor = { nil }
+        log('Room changed without pending action; resetting path in room ' .. tostring(currentRoomId))
+    end
+
+    clearPendingAction()
+    return true
+end
+
+local function chooseNearestUnusedDoor()
+    if Room == nil or not Room.IsValid then
+        return nil
+    end
+
+    for i = 1, Room.DoorCount do
+        local doorId = Room.GetDoorId(i)
+        if doorId ~= nil and doorId >= 0 and not state.usedDoors[doorId] then
+            return doorId
+        end
+    end
+
+    return nil
+end
+
+function tick()
+    if not syncCurrentRoom() then
+        return
+    end
+
+    log('tick room=' .. tostring(Room.Id) .. ' doorCount=' .. tostring(Room.DoorCount) .. ' pending=' .. tostring(state.pendingAction))
+
+    local nextDoorId = chooseNearestUnusedDoor()
+    if nextDoorId ~= nil then
+        state.usedDoors[nextDoorId] = true
+        state.pendingAction = 'forward'
+        state.pendingDoorId = nextDoorId
+        log('Issuing GoThroughDoor(' .. tostring(nextDoorId) .. ')')
+        GoThroughDoor(nextDoorId)
+        return
+    end
+
+    if VisitRoomCenterBeforeBacktracking and not state.centeredRooms[Room.Id] then
+        state.centeredRooms[Room.Id] = true
+        state.pendingAction = 'center'
+        log('No unused doors in room ' .. tostring(Room.Id) .. '; issuing GoToRoomCenter()')
+        GoToRoomCenter()
+        return
+    end
+
+    local entryDoorId = state.enteredByDoor[#state.enteredByDoor]
+    if entryDoorId ~= nil then
+        state.pendingAction = 'backtrack'
+        state.pendingDoorId = entryDoorId
+        log('Backtracking through door ' .. tostring(entryDoorId))
+        GoThroughDoor(entryDoorId)
+        return
+    end
+
+    log('No unused doors and no entry door to backtrack through; idle in room ' .. tostring(Room.Id))
+end
+";
+
         public override AgentDecisionType DecisionType => AgentDecisionType.Explorer;
 
         private enum ExplorePhase
@@ -31,6 +162,12 @@ namespace DogGame.Modules
         [SerializeField] private WalkMode exploreWalkMode = WalkMode.Walk;
         [Tooltip("When enabled, a dead-end room is explored by moving to its center before the dog backtracks.")]
         [SerializeField] private bool visitRoomCenterBeforeBacktracking = true;
+        [Header("Lua Explore")]
+        [Tooltip("Runs the explore behavior through the Lua runtime instead of the built-in C# door queue.")]
+        [SerializeField] private bool useLuaExploreScript = false;
+        [SerializeField] private bool debugLuaExplore = true;
+        [TextArea(8, 30)]
+        [SerializeField] private string luaExploreScript = "";
         //[SerializeField] private float arriveDistance = 0.35f;
         [SerializeField] private int maxDoorsPerRefresh = 32;
 
@@ -43,6 +180,17 @@ namespace DogGame.Modules
         private ExplorePhase phase;
         private bool needsDoorRefresh = true;
         private int queuedRoomIndex = -1;
+
+        private LuaRuntime? luaRuntime;
+        private TaskController? luaTaskController;
+        private bool luaScriptLoaded;
+        private string loadedLuaExploreScript = "";
+        private readonly AgentState luaAgentState = new();
+        private bool lastLuaTaskControllerDriving;
+        private string lastLuaTaskName = "";
+        private int lastLuaRoomId = int.MinValue;
+        private int lastLuaDoorCount = -1;
+        private bool lastLuaRoomValid;
 
         public override void Initialize(AgentModule agentController)
         {
@@ -58,6 +206,12 @@ namespace DogGame.Modules
             debugDoubleTick = Time.frameCount;
 
             if (dir.gen.buildComplete == false) return;
+
+            if (useLuaExploreScript)
+            {
+                TickLuaExplore(deltaTime);
+                return;
+            }
             
             if (worldObject.agentMovementModule == null || worldObject.locationModule == null)
             {
@@ -119,6 +273,182 @@ namespace DogGame.Modules
                 //    $"{worldObject.DisplayName} [ExploreDecisionModule] reached room center at {activeRoomCenterMap}; resuming door search");
                 phase = ExplorePhase.None;
             }
+        }
+
+        private void TickLuaExplore(float deltaTime)
+        {
+            if (!EnsureLuaExploreReady())
+            {
+                LogLuaExplore("Tick skipped because Lua explore runtime is not ready.");
+                return;
+            }
+
+            UpdateLuaExploreState();
+            luaRuntime!.SetState(
+                luaAgentState.Dog,
+                luaAgentState.Vision,
+                luaAgentState.Hearing,
+                luaAgentState.Scent,
+                luaAgentState.Pack,
+                luaAgentState.Env,
+                luaAgentState.Room,
+                luaAgentState.Task,
+                luaAgentState.Memory,
+                luaAgentState.Time);
+            luaRuntime.SetGlobal("VisitRoomCenterBeforeBacktracking", visitRoomCenterBeforeBacktracking);
+
+            LogLuaRoomState();
+            LogLuaTaskState();
+
+            if (luaTaskController!.IsDriving)
+            {
+                LogLuaExplore($"Ticking TaskController for active task '{luaTaskController.taskExecutor.CurrentTaskName ?? "<unknown>"}'.");
+                luaTaskController.Tick(deltaTime);
+                return;
+            }
+
+            LogLuaExplore("Calling Lua tick().");
+            luaRuntime.CallTick();
+
+            if (luaTaskController.IsDriving)
+            {
+                LogLuaExplore($"Lua enqueued '{luaTaskController.taskExecutor.CurrentTaskName ?? "<queued>"}'; ticking TaskController immediately.");
+                luaTaskController.Tick(deltaTime);
+            }
+        }
+
+        private bool EnsureLuaExploreReady()
+        {
+            luaTaskController ??= GetComponent<TaskController>();
+            if (luaTaskController == null)
+            {
+                Debug.LogWarning($"[ExploreDecisionModule {worldObject.DisplayName}] Lua explore requires a TaskController.");
+                return false;
+            }
+
+            if (luaRuntime == null)
+            {
+                luaRuntime = new LuaRuntime();
+                LogLuaExplore("Created LuaRuntime for explore mode.");
+
+                var bootstrapEvent = new PerceptionEvent(
+                    observer: worldObject,
+                    sense: PerceptionSense.Scent,
+                    type: PerceptionEventType.SomethingInteresting,
+                    worldPos: worldObject.transform.position,
+                    target: null,
+                    strength01: 0f,
+                    novelty01: 0f,
+                    interest01: 0f);
+
+                luaRuntime.RegisterBindings(new DogLuaBindings(luaTaskController, worldObject, bootstrapEvent));
+                luaAgentState.InitState(worldObject, luaAgentState);
+                LogLuaExplore("Registered DogLuaBindings and initialized AgentState.");
+            }
+
+            string scriptSource = string.IsNullOrWhiteSpace(luaExploreScript)
+                ? DefaultLuaExploreScript
+                : luaExploreScript;
+
+            if (luaScriptLoaded &&
+                string.Equals(loadedLuaExploreScript, scriptSource, StringComparison.Ordinal))
+            {
+                return true;
+            }
+
+            UpdateLuaExploreState();
+            luaRuntime.SetState(
+                luaAgentState.Dog,
+                luaAgentState.Vision,
+                luaAgentState.Hearing,
+                luaAgentState.Scent,
+                luaAgentState.Pack,
+                luaAgentState.Env,
+                luaAgentState.Room,
+                luaAgentState.Task,
+                luaAgentState.Memory,
+                luaAgentState.Time);
+            luaRuntime.SetGlobal("VisitRoomCenterBeforeBacktracking", visitRoomCenterBeforeBacktracking);
+
+            LogLuaExplore($"Loading Lua explore script. chars={scriptSource.Length}");
+            luaScriptLoaded = luaRuntime.LoadScript(scriptSource);
+            if (luaScriptLoaded)
+            {
+                loadedLuaExploreScript = scriptSource;
+                LogLuaExplore("Lua explore script loaded successfully.");
+            }
+            else
+            {
+                LogLuaExplore("Lua explore script failed to load.");
+            }
+
+            return luaScriptLoaded;
+        }
+
+        private void UpdateLuaExploreState()
+        {
+            luaAgentState.Room.UpdateState(Detail.High);
+            luaAgentState.Task.UpdateState(Detail.Low);
+            luaAgentState.Time.UpdateState(Detail.Low);
+        }
+
+        private void ResetLuaExploreRuntime()
+        {
+            luaRuntime = null;
+            luaTaskController = null;
+            luaScriptLoaded = false;
+            loadedLuaExploreScript = "";
+            lastLuaTaskControllerDriving = false;
+            lastLuaTaskName = "";
+            lastLuaRoomId = int.MinValue;
+            lastLuaDoorCount = -1;
+            lastLuaRoomValid = false;
+        }
+
+        private void LogLuaExplore(string message)
+        {
+            if (!debugLuaExplore)
+                return;
+
+            //Debug.Log($"[ExploreDecisionModule {worldObject.DisplayName}][Lua] {message}", this);
+        }
+
+        private void LogLuaRoomState()
+        {
+            if (!debugLuaExplore)
+                return;
+
+            bool roomValid = luaAgentState.Room.IsValid;
+            int roomId = luaAgentState.Room.Id;
+            int doorCount = luaAgentState.Room.DoorCount;
+
+            if (roomValid == lastLuaRoomValid &&
+                roomId == lastLuaRoomId &&
+                doorCount == lastLuaDoorCount)
+            {
+                return;
+            }
+
+            lastLuaRoomValid = roomValid;
+            lastLuaRoomId = roomId;
+            lastLuaDoorCount = doorCount;
+            LogLuaExplore($"RoomState valid={roomValid} roomId={roomId} doorCount={doorCount}");
+        }
+
+        private void LogLuaTaskState()
+        {
+            if (!debugLuaExplore || luaTaskController == null)
+                return;
+
+            bool isDriving = luaTaskController.IsDriving;
+            string taskName = luaTaskController.taskExecutor.CurrentTaskName ?? "";
+
+            if (isDriving == lastLuaTaskControllerDriving && taskName == lastLuaTaskName)
+                return;
+
+            lastLuaTaskControllerDriving = isDriving;
+            lastLuaTaskName = taskName;
+            LogLuaExplore($"TaskController driving={isDriving} currentTask='{(string.IsNullOrEmpty(taskName) ? "<none>" : taskName)}'");
         }
 
         private void RefreshDoorsForRoom(int roomIndex)
@@ -352,6 +682,7 @@ namespace DogGame.Modules
             phase = ExplorePhase.None;
             needsDoorRefresh = true;
             queuedRoomIndex = -1;
+            ResetLuaExploreRuntime();
         }
         public override void EndDecisionModule()
         {
@@ -361,6 +692,7 @@ namespace DogGame.Modules
             phase = ExplorePhase.None;
             needsDoorRefresh = true;
             queuedRoomIndex = -1;
+            ResetLuaExploreRuntime();
         }
     }
 }

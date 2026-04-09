@@ -7,6 +7,8 @@ namespace DogGame.Lua
         public string current            = "";
         public string target             = "";
         public string destination        = "";
+        public bool hasTask              = false;
+        public bool isIdle               = true;
 
         public bool targetVisible        = false;
         public float targetDistance      = 0.0f;
@@ -24,7 +26,18 @@ namespace DogGame.Lua
 
         public void UpdateState(Detail detail)
         {
-            // Placeholder for task-controller pulls.
+            var taskController = worldObject != null ? worldObject.GetComponent<DogGame.LLM.TaskController>() : null;
+            if (taskController == null || taskController.taskExecutor == null)
+            {
+                current = "";
+                hasTask = false;
+                isIdle = true;
+                return;
+            }
+
+            current = taskController.taskExecutor.CurrentTaskName ?? "";
+            hasTask = taskController.IsDriving;
+            isIdle = !hasTask;
         }
 
         public void Tick(float interval)

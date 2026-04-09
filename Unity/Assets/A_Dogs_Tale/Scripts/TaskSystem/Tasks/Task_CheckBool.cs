@@ -6,6 +6,7 @@ namespace DogGame.Tasks
     public sealed class Task_CheckBool : IAgentTask
     {
         public string DebugName => $"CheckBool({key}=={expected})";
+        public string Description = "Checks whether a blackboard bool key matches the expected value and fails if the key is missing or does not match.";
         private readonly string key;
         private readonly bool expected;
 

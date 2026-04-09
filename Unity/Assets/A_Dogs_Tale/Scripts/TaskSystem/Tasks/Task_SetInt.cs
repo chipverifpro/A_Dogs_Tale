@@ -6,6 +6,7 @@ namespace DogGame.Tasks
     public sealed class Task_SetInt : IAgentTask
     {
         public string DebugName => $"SetInt({key}={value})";
+        public string Description = "Sets a blackboard int key to the specified value and succeeds immediately.";
 
         private readonly string key;
         private readonly int value;

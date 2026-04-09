@@ -1,0 +1,124 @@
+state = {
+    roomPath = {},
+    enteredByDoor = {},
+    usedDoors = {},
+    centeredRooms = {},
+    pendingAction = nil,
+    pendingDoorId = nil,
+    lastLog = nil
+}
+
+local function topRoomId()
+    return state.roomPath[#state.roomPath]
+end
+
+local function log(message)
+    if state.lastLog ~= message then
+        print("[ExploreLua] " .. message)
+        state.lastLog = message
+    end
+end
+
+local function clearPendingAction()
+    state.pendingAction = nil
+    state.pendingDoorId = nil
+end
+
+local function syncCurrentRoom()
+    if Room == nil or not Room.IsValid then
+        log("Room invalid; waiting for room state")
+        return false
+    end
+
+    local currentRoomId = Room.Id
+    local topRoom = topRoomId()
+
+    if topRoom == nil then
+        state.roomPath[1] = currentRoomId
+        state.enteredByDoor[1] = nil
+        log("Starting explore in room " .. tostring(currentRoomId) .. " with " .. tostring(Room.DoorCount) .. " doors")
+        clearPendingAction()
+        return true
+    end
+
+    if topRoom == currentRoomId then
+        clearPendingAction()
+        return true
+    end
+
+    if state.pendingAction == "forward" then
+        state.roomPath[#state.roomPath + 1] = currentRoomId
+        state.enteredByDoor[#state.enteredByDoor + 1] = state.pendingDoorId
+        log("Entered room " .. tostring(currentRoomId) .. " through door " .. tostring(state.pendingDoorId))
+    elseif state.pendingAction == "backtrack" then
+        if #state.roomPath > 1 then
+            state.roomPath[#state.roomPath] = nil
+            state.enteredByDoor[#state.enteredByDoor] = nil
+        end
+
+        if topRoomId() ~= currentRoomId then
+            state.roomPath[#state.roomPath + 1] = currentRoomId
+            state.enteredByDoor[#state.enteredByDoor + 1] = state.pendingDoorId
+        end
+        log("Backtracked into room " .. tostring(currentRoomId) .. " through door " .. tostring(state.pendingDoorId))
+    else
+        state.roomPath = { currentRoomId }
+        state.enteredByDoor = { nil }
+        log("Room changed without pending action; resetting path in room " .. tostring(currentRoomId))
+    end
+
+    clearPendingAction()
+    return true
+end
+
+local function chooseNearestUnusedDoor()
+    if Room == nil or not Room.IsValid then
+        return nil
+    end
+
+    for i = 1, Room.DoorCount do
+        local doorId = Room.GetDoorId(i)
+        if doorId ~= nil and doorId >= 0 and not state.usedDoors[doorId] then
+            return doorId
+        end
+    end
+
+    return nil
+end
+
+function tick()
+    if not syncCurrentRoom() then
+        return
+    end
+
+    log("tick room=" .. tostring(Room.Id) .. " doorCount=" .. tostring(Room.DoorCount) .. " pending=" .. tostring(state.pendingAction))
+
+    local nextDoorId = chooseNearestUnusedDoor()
+    if nextDoorId ~= nil then
+        state.usedDoors[nextDoorId] = true
+        state.pendingAction = "forward"
+        state.pendingDoorId = nextDoorId
+        log("Issuing GoThroughDoor(" .. tostring(nextDoorId) .. ")")
+        GoThroughDoor(nextDoorId)
+        return
+    end
+
+    if VisitRoomCenterBeforeBacktracking and not state.centeredRooms[Room.Id] then
+        state.centeredRooms[Room.Id] = true
+        state.pendingAction = "center"
+        log("No unused doors in room " .. tostring(Room.Id) .. "; issuing GoToRoomCenter()")
+        GoToRoomCenter()
+        return
+    end
+
+    local entryDoorId = state.enteredByDoor[#state.enteredByDoor]
+    if entryDoorId ~= nil then
+        state.pendingAction = "backtrack"
+        state.pendingDoorId = entryDoorId
+        log("Backtracking through door " .. tostring(entryDoorId))
+        GoThroughDoor(entryDoorId)
+        return
+    end
+
+    log("No unused doors and no entry door to backtrack through; idle in room " .. tostring(Room.Id))
+end

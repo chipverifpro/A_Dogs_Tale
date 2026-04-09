@@ -7,6 +7,7 @@ namespace DogGame.Tasks
     public sealed class Task_Timeout : IAgentTask
     {
         public string DebugName => $"Timeout({timeoutSeconds:0.0}s): {child.DebugName}";
+        public string Description = "Runs a child task but fails if it does not finish before the timeout expires.";
 
         private readonly IAgentTask child;
         private readonly float timeoutSeconds;

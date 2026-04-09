@@ -7,6 +7,7 @@ namespace DogGame.Tasks
     public sealed class Task_Abort : IAgentTask
     {
         public string DebugName => succeed ? "AbortSuccess" : $"AbortFail({reason})";
+        public string Description = "Immediately returns either success or failure, optionally with a failure reason.";
 
         private readonly bool succeed;
         private readonly string? reason;

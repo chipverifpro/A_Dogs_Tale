@@ -1,3 +1,4 @@
+#nullable enable
 using System;
 using MoonSharp.Interpreter;
 using UnityEngine;
@@ -13,10 +14,11 @@ namespace DogGame.Lua
         private readonly ScentState defaultScentState = new();
         private readonly PackState defaultPackState = new();
         private readonly EnvState defaultEnvState = new();
+        private readonly RoomState defaultRoomState = new();
         private readonly TaskState defaultTaskState = new();
         private readonly MemoryState defaultMemoryState = new();
         private readonly TimeState defaultTimeState = new();
-        private DogLuaBindings bindings;
+        private DogLuaBindings? bindings;
 
         public LuaRuntime()
         {
@@ -27,6 +29,7 @@ namespace DogGame.Lua
             script.Options.DebugPrint = message =>
             {
                 Debug.Log("[Lua] " + message);
+                BottomBanner.LogRichMessage(BannerSense.None,BannerLevel.None,"<i>[Lua]</i> " + message, includeGameTime:true);
             };
         }
 
@@ -46,6 +49,7 @@ namespace DogGame.Lua
             UserData.RegisterType<PackState>();
             UserData.RegisterType<PackMemberState>();
             UserData.RegisterType<EnvState>();
+            UserData.RegisterType<RoomState>();
             UserData.RegisterType<TaskState>();
             UserData.RegisterType<MemoryState>();
             UserData.RegisterType<TimeState>();
@@ -67,6 +71,8 @@ namespace DogGame.Lua
             script.Globals["FollowScent"] = (Action<string, string>)bindings.FollowScent;
             script.Globals["FollowEventScent"] = (Action)bindings.FollowEventScent;
             script.Globals["FollowEventScentAir"] = (Action)bindings.FollowEventScentAir;
+            script.Globals["GoThroughDoor"] = (Action<int>)bindings.GoThroughDoor;
+            script.Globals["GoToRoomCenter"] = (Action)bindings.GoToRoomCenter;
         }
 
         public void SetState(DogState dogState, VisionState visionState, HearingState hearingState)
@@ -78,6 +84,7 @@ namespace DogGame.Lua
                 defaultScentState,
                 defaultPackState,
                 defaultEnvState,
+                defaultRoomState,
                 defaultTaskState,
                 defaultMemoryState,
                 defaultTimeState);
@@ -90,6 +97,7 @@ namespace DogGame.Lua
             ScentState scentState,
             PackState packState,
             EnvState envState,
+            RoomState roomState,
             TaskState taskState,
             MemoryState memoryState,
             TimeState timeState)
@@ -100,6 +108,7 @@ namespace DogGame.Lua
             defaultState.Scent = scentState;
             defaultState.Pack = packState;
             defaultState.Env = envState;
+            defaultState.Room = roomState;
             defaultState.Task = taskState;
             defaultState.Memory = memoryState;
             defaultState.Time = timeState;
@@ -111,10 +120,18 @@ namespace DogGame.Lua
             script.Globals["Scent"] = scentState;
             script.Globals["Pack"] = packState;
             script.Globals["Env"] = envState;
+            script.Globals["Room"] = roomState;
             script.Globals["Task"] = taskState;
             script.Globals["Memory"] = memoryState;
             script.Globals["Time"] = timeState;
             script.Globals["Event"] = DynValue.Nil;
+        }
+
+        public void SetGlobal(string name, object? value)
+        {
+            script.Globals[name] = value == null
+                ? DynValue.Nil
+                : DynValue.FromObject(script, value);
         }
 
         public void SetPerceptionEvent(PerceptionEvent perceptionEvent)
@@ -157,6 +174,33 @@ namespace DogGame.Lua
 
                 DynValue perceptionEvent = script.Globals.Get("Event");
                 script.Call(reactFunction, perceptionEvent);
+                return true;
+            }
+            catch (InterpreterException exception)
+            {
+                Debug.LogError("[LuaRuntime] Lua runtime error: " + exception.DecoratedMessage);
+                return false;
+            }
+            catch (Exception exception)
+            {
+                Debug.LogError("[LuaRuntime] General runtime error: " + exception);
+                return false;
+            }
+        }
+
+        public bool CallTick()
+        {
+            try
+            {
+                DynValue tickFunction = script.Globals.Get("tick");
+
+                if (tickFunction.IsNil())
+                {
+                    Debug.LogError("[LuaRuntime] Lua function 'tick' was not found.");
+                    return false;
+                }
+
+                script.Call(tickFunction);
                 return true;
             }
             catch (InterpreterException exception)

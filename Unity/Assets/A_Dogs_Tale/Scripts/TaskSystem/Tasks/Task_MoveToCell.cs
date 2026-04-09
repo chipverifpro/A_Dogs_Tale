@@ -8,6 +8,7 @@ namespace DogGame.Tasks
     public sealed class Task_MoveToCell : IAgentTask
     {
         public string DebugName => $"MoveToCell([{cellX},{cellY}])";
+        public string Description = "Moves the agent toward the specified integer cell coordinates until the movement adapter reports arrival, or fails if the move target is rejected.";
 
         private readonly int cellX;
         private readonly int cellY;

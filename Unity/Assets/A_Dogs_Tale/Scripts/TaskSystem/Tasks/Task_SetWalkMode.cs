@@ -8,6 +8,7 @@ namespace DogGame.Tasks
     public sealed class Task_SetWalkMode : IAgentTask
     {
         public string DebugName => $"SetWalkMode({walkMode})";
+        public string Description = "Sets the agent movement module's walk mode and succeeds immediately.";
         private readonly WalkMode walkMode;
 
         public Task_SetWalkMode(WalkMode walkMode)
