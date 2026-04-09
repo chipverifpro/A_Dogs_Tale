@@ -253,62 +253,72 @@ public class Pathfinding : MonoBehaviour
 
     float DirectionMoveCost(Vector2Int start, Vector2Int direction, int dir_num, bool allowDoors = true)
     {
-        Cell startCell;
-        Cell destCell;
-
-        if (!EnsureRuntimeReferences())
-            return 0f;
-
-        // if either endpoint is out-of-bounds, return blocked.
-        if (!dir.gen.In(start.x, start.y)) return 0f;
-        if (!dir.gen.In(start.x + direction.x, start.y + direction.y)) return 0f;
-
-        startCell = dir.gen.cellGrid[start.x, start.y];
-        destCell = dir.gen.cellGrid[start.x + direction.x, start.y + direction.y];
-
-        if (startCell == null || destCell == null) return 0f; // if either endpoint is not a valid Cell
-
         switch (dir_num)
         {
             case 0:  // N
-                if (startCell.walls.HasFlag(DirFlags.N))
-                    if (!(allowDoors && startCell.doors.HasFlag(DirFlags.N))) // assume door is unlocked for now
-                        return 0f;
-                return 1f;
+                return CardinalMoveCost(start, DirFlags.N, new Vector2Int(0, 1), allowDoors);
             case 1:  // NE
-                if (startCell.walls.HasFlag(DirFlags.N) || startCell.walls.HasFlag(DirFlags.E))
-                    return 0f;  // one or the other direction had a wall, don't go diagonal
-                return 1f;
+                return DiagonalMoveCost(start, new Vector2Int(0, 1), DirFlags.N, new Vector2Int(1, 0), DirFlags.E, allowDoors);
             case 2:  // E
-                if (startCell.walls.HasFlag(DirFlags.E))
-                    if (!(allowDoors && startCell.doors.HasFlag(DirFlags.E))) // assume door is unlocked for now
-                        return 0f;
-                return 1f;
+                return CardinalMoveCost(start, DirFlags.E, new Vector2Int(1, 0), allowDoors);
             case 3:  // SE
-                if (startCell.walls.HasFlag(DirFlags.E) || startCell.walls.HasFlag(DirFlags.S))
-                    return 0f;  // one or the other direction had a wall, don't go diagonal
-                return 1f;
+                return DiagonalMoveCost(start, new Vector2Int(1, 0), DirFlags.E, new Vector2Int(0, -1), DirFlags.S, allowDoors);
             case 4:  // S
-                if (startCell.walls.HasFlag(DirFlags.S))
-                    if (!(allowDoors && startCell.doors.HasFlag(DirFlags.S))) // assume door is unlocked for now
-                        return 0f;
-                return 1f;
+                return CardinalMoveCost(start, DirFlags.S, new Vector2Int(0, -1), allowDoors);
             case 5:  // SW
-                if (startCell.walls.HasFlag(DirFlags.S) || startCell.walls.HasFlag(DirFlags.W))
-                    return 0f;  // one or the other direction had a wall, don't go diagonal
-                return 1f;
+                return DiagonalMoveCost(start, new Vector2Int(0, -1), DirFlags.S, new Vector2Int(-1, 0), DirFlags.W, allowDoors);
             case 6:  // W
-                if (startCell.walls.HasFlag(DirFlags.W))
-                    if (!(allowDoors && startCell.doors.HasFlag(DirFlags.W))) // assume door is unlocked for now
-                        return 0f;
-                return 1f;
+                return CardinalMoveCost(start, DirFlags.W, new Vector2Int(-1, 0), allowDoors);
             case 7:  // NW
-                if (startCell.walls.HasFlag(DirFlags.N) || startCell.walls.HasFlag(DirFlags.W))
-                    return 0f;  // one or the other direction had a wall, don't go diagonal
-                return 1f;
+                return DiagonalMoveCost(start, new Vector2Int(0, 1), DirFlags.N, new Vector2Int(-1, 0), DirFlags.W, allowDoors);
             default:    // didn't understand the direction vector
                 return 0f;
         }
+    }
+
+    float CardinalMoveCost(Vector2Int start, DirFlags edge, Vector2Int offset, bool allowDoors)
+    {
+        if (!EnsureRuntimeReferences())
+            return 0f;
+
+        Vector2Int dest = start + offset;
+        if (!dir.gen.In(start.x, start.y) || !dir.gen.In(dest.x, dest.y))
+            return 0f;
+
+        Cell startCell = dir.gen.cellGrid[start.x, start.y];
+        Cell destCell = dir.gen.cellGrid[dest.x, dest.y];
+        if (startCell == null || destCell == null)
+            return 0f;
+
+        if (startCell.walls.HasFlag(edge) && !(allowDoors && startCell.doors.HasFlag(edge)))
+            return 0f;
+
+        return 1f;
+    }
+
+    float DiagonalMoveCost(
+        Vector2Int start,
+        Vector2Int firstOffset,
+        DirFlags firstEdge,
+        Vector2Int secondOffset,
+        DirFlags secondEdge,
+        bool allowDoors)
+    {
+        Vector2Int dest = start + firstOffset + secondOffset;
+        if (!EnsureRuntimeReferences() || !dir.gen.In(dest.x, dest.y))
+            return 0f;
+
+        // Reject the diagonal unless both orthogonal routes are clear.
+        if (CardinalMoveCost(start, firstEdge, firstOffset, allowDoors) <= 0f)
+            return 0f;
+        if (CardinalMoveCost(start, secondEdge, secondOffset, allowDoors) <= 0f)
+            return 0f;
+        if (CardinalMoveCost(start + firstOffset, secondEdge, secondOffset, allowDoors) <= 0f)
+            return 0f;
+        if (CardinalMoveCost(start + secondOffset, firstEdge, firstOffset, allowDoors) <= 0f)
+            return 0f;
+
+        return 1f;
     }
 /*
     public void TrySkippingWaypoints(Agent agent)
