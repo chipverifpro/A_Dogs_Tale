@@ -1,4 +1,6 @@
 using UnityEngine;
+//using UnityEditor;      // for InspectorNote MessageType
+using InspectorTools;   // for InspectorNote
 
 /// <summary>
 /// Flags for which types of rooms this object is appropriate for.
@@ -58,8 +60,10 @@ public enum RotationRule
 namespace DogGame.Modules
 {
     [DisallowMultipleComponent]
+    [InspectorNote("Thing_Modules/Placement Module", "Specifies room type and placement for random furniture.")]
     public class PlacementModule : WorldModule
     {
+
         [Header("Room Matching")]
         [Tooltip("Which room types this object is suitable for.")]
         public PlacementRoomTypeFlags allowedRooms = PlacementRoomTypeFlags.Any;

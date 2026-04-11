@@ -265,20 +265,23 @@ public sealed class PersonalitySection
 }
 
 // ================ 3 Instruction Section ===============
+// The InstructionSection copy in this file is likely stale/dead;
+// the active implementation is Scripts/LLM/Instructions/InstructionSection.cs (line 11),
+// which is the one that actually provides BuildToolDefinitionsJson() and BuildResponseSchemaJson().
 
-[Serializable]
-public sealed class InstructionSection
-{
-    [TextArea(3, 12)]
-    [Tooltip("Extra system-level instructions specific to this agent.")]
-    public string extraSystemInstructions = "";
-
-    public void AddSystemBlocks(List<string> systemBlocks)
-    {
-        if (!string.IsNullOrWhiteSpace(extraSystemInstructions))
-            systemBlocks.Add(extraSystemInstructions.Trim());
-    }
-}
+//[Serializable]
+//public sealed class InstructionSection
+//{
+//    [TextArea(3, 12)]
+//    [Tooltip("Extra system-level instructions specific to this agent.")]
+//    public string extraSystemInstructions = "";
+//
+//    public void AddSystemBlocks(List<string> systemBlocks)
+//    {
+//        if (!string.IsNullOrWhiteSpace(extraSystemInstructions))
+//            systemBlocks.Add(extraSystemInstructions.Trim());
+//    }
+//}
 
 // ================ 4 Model Override Section ===============
 

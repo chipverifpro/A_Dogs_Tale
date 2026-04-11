@@ -7,6 +7,19 @@ using DogGame.Modules;
 using UnityEngine;
 using UnityEngine.AI;
 
+        // This is the dynamic context provider for LLM agents. Today it mainly
+        //   contributes leash text, position/room/door context, vision summaries,
+        //   and queued task observations. 
+        //   It is used by LLMConfigModule, 
+        //   by the sidecar /world_state endpoint in UnitySidecarInboundServer.cs (line 204), 
+        //   by exploration logic for door discovery in ExploreDecisionModule.cs (line 466), 
+        //   and by TaskExecutor.cs (line 100) to store task reports as observations.
+
+        // LLMWorldStateModule is active, but several of its “auto-populate” fields like
+        //   distanceToPlayerMeters, isInCombat, isQuestCritical, and the summary strings
+        //   appear to have read sites but no write sites in the repo. So the module is real,
+        //   but parts of it are still unfinished.
+
 namespace DogGame.LLM.Agent
 {
     /// <summary>

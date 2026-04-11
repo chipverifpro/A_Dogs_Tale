@@ -3,6 +3,11 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
+// LLMConfigModuleSections_Character.cs (line 9): unused. 
+// Nothing instantiates CharacterSection, nothing serializes it into scenes/prefabs,
+// and the only related prompt helper is commented out in PromptBlocks.CharacterPersonaBlock.cs (line 8).
+
+/*
 namespace DogGame.LLM.Agent
 {
     [Serializable]
@@ -232,3 +237,4 @@ namespace DogGame.LLM.Agent
         }
     }
 }
+*/

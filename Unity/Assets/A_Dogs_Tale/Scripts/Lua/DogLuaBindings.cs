@@ -110,9 +110,9 @@ namespace DogGame.Lua
             ScentMedium scentMedium = ParseScentMedium(medium);
 
             EnqueueTask(
-                task: new Task_ScentFollow(scentKey.Trim(), scentMedium),
+                task: new Task_ScentFollowLua(scentKey.Trim(), scentMedium),
                 priority: 58,
-                tag: $"Lua:FollowScent:{scentMedium}:{scentKey.Trim()}");
+                tag: $"Lua:FollowScentLua:{scentMedium}:{scentKey.Trim()}");
         }
 
         public void FollowEventScent()
@@ -159,9 +159,9 @@ namespace DogGame.Lua
             }
 
             EnqueueTask(
-                task: new Task_ScentFollow(scentKey, medium),
+                task: new Task_ScentFollowLua(scentKey, medium),
                 priority: 58,
-                tag: $"Lua:FollowEventScent:{medium}:{scentKey}");
+                tag: $"Lua:FollowEventScentLua:{medium}:{scentKey}");
         }
 
         private static ScentMedium ParseScentMedium(string medium)

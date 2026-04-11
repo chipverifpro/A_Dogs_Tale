@@ -5,6 +5,7 @@ using DogGame.Modules;
 using DogGame.World;
 using Unity.InferenceEngine;
 using UnityEngine;
+using InspectorTools;
 
 namespace DogGame.UI.InteractionWheel
 {
@@ -12,6 +13,7 @@ namespace DogGame.UI.InteractionWheel
     /// Per-object interaction definitions (Inspector-populated) that can be turned into wheel options.
     /// Lives on the TARGET WorldObject as: target.interactionModule (may be null).
     /// </summary>
+    [InspectorNote("Ability_Modules/Interaction Module", "Custom buttons for Interaction Wheel Menu.")]
     public sealed class InteractionModule : WorldModule, IWheelOptionProvider
     {
         [Serializable]

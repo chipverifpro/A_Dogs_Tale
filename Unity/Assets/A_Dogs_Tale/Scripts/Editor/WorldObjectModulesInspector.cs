@@ -8,6 +8,8 @@ using DogGame.Modules;           // adjust to your namespaces
 using DogGame.AI;
 using DogGame.LLM;
 using DogGame.UI.InteractionWheel;
+using DogGame.World;
+using DogGame.LLM.Agent;
 
 [CustomEditor(typeof(WorldObject), true)]
 public class WorldObjectModulesInspector : Editor
@@ -16,14 +18,20 @@ public class WorldObjectModulesInspector : Editor
     private bool showAgents         = true;
     private bool showAgentInterface = true;
     private bool showOutput         = true;
+    private bool showAbility        = true;
+    private bool showPlanning       = true;
     private bool showData           = true;
+    private bool showThing          = true;
     private bool showQuest          = true;
 
     private int sensoryAddIndex      = 0;
     private int agentsAddIndex       = 0;
     private int agentInterfaceAddIndex = 0;
+    private int planningAddIndex     = 0;
+    private int abilityAddIndex      = 0;
     private int outputAddIndex       = 0;
     private int dataAddIndex         = 0;
+    private int thingAddIndex        = 0;
     private int questAddIndex        = 0;
 
 
@@ -42,6 +50,7 @@ public class WorldObjectModulesInspector : Editor
     private static readonly Type[] AgentDecisionModuleTypes =
     {
         typeof(PlayerDecisionModule),
+        typeof(ExploreDecisionModule),
         typeof(WandererDecisionModule),
         typeof(FollowerDecisionModule),
         typeof(ImmobileDecisionModule),
@@ -58,15 +67,15 @@ public class WorldObjectModulesInspector : Editor
         typeof(ReactionModule),         // detects conditions and trigger response scripts
     };
 
-    private static readonly Type[] AbilityTypes =
+    private static readonly Type[] AbilityModuleTypes =
     {
         typeof(ActivatorModule),        // Click on, step on, use, ...
-        typeof(InteractionModule),      // Dialog
+        typeof(InteractionModule),      // Interaction Wheel Commands
+        typeof(MotionModule),           // Low level movement
     };
 
     private static readonly Type[] OutputModuleTypes =
     {
-        typeof(MotionModule),           // Actual movement
         typeof(AppearanceModule),       // Animation, SFX
         typeof(ScentEmitterModule),     // Emit scent including on-demand
         typeof(NoiseMakerModule),       // Emit noise: bark, run, etc.
@@ -75,15 +84,36 @@ public class WorldObjectModulesInspector : Editor
     private static readonly Type[] DataModuleTypes =
     {
         typeof(BlackboardModule),   // Generic data storage
-        typeof(PlacementModule),    // Furniture placement definitions
-        typeof(AgentStateModule),       // Conditions (hungry, tired, alert, training)
-        typeof(TaskListModule),     // Current list of tasks to perform
-        typeof(ContainerModule),    // Inventory management
+        typeof(AgentStateModule),   // Conditions (hungry, tired, alert, training)
+        typeof(TaskListModule),     // Current list of tasks to perform (STUB)
+    };
+
+    private static readonly Type[] ThingModuleTypes =
+    {
+        typeof(PlacementModule),    // Furniture placement definitions (ONLY RANDOM OBJECTS)
+        typeof(DoorModule),         // Can open and close (doors, chests, holes)
+        typeof(ContainerModule),    // Can hold an item, inventory management
     };
 
     private static readonly Type[] QuestModuleTypes =
     {
         typeof(FetchQuestModule),   // simple parameterized quest
+    };
+
+    private static readonly Type[] PlanningModuleTypes =
+    {
+        typeof(LLMConfigModule),     // This is the per-agent LLM request builder. It picks a sophistication tier,
+                                     //   randomizes identity/personality, injects world-state observations, and 
+                                     //   builds tool/schema JSON for the scheduler. 
+                                     //   It is consumed by LLMThinkModule.cs (line 54) and
+                                     //   dispatched by LLMWorldScheduler.cs (line 409). 
+        typeof(LLMWorldStateModule), // This is the dynamic context provider for LLM agents. Today it mainly
+                                     //   contributes leash text, position/room/door context, vision summaries, 
+                                     //   and queued task observations. 
+                                     //   It is used by LLMConfigModule, 
+                                     //   by the sidecar /world_state endpoint in UnitySidecarInboundServer.cs (line 204), 
+                                     //   by exploration logic for door discovery in ExploreDecisionModule.cs (line 466), 
+                                     //   and by TaskExecutor.cs (line 100) to store task reports as observations.
     };
 
     public override void OnInspectorGUI()
@@ -103,14 +133,7 @@ public class WorldObjectModulesInspector : Editor
         EditorGUILayout.Space();
 
         DrawModuleCategory(
-            "Senses",
-            go,
-            ref showSensory,
-            SensoryModuleTypes,
-            ref sensoryAddIndex);
-
-        DrawModuleCategory(
-            "Agent Decisions",
+            "Agent Decision Modules",
             go,
             ref showAgents,
             AgentDecisionModuleTypes,
@@ -124,11 +147,25 @@ public class WorldObjectModulesInspector : Editor
             ref agentInterfaceAddIndex);
 
         DrawModuleCategory(
-            "Ability (click on, step on, use, talk)",
+            "LLM Planning",
             go,
-            ref showOutput,
-            OutputModuleTypes,
-            ref outputAddIndex);
+            ref showPlanning,
+            PlanningModuleTypes,
+            ref planningAddIndex);
+
+        DrawModuleCategory(
+            "Senses",
+            go,
+            ref showSensory,
+            SensoryModuleTypes,
+            ref sensoryAddIndex);
+
+        DrawModuleCategory(
+            "Ability (motion, activators, interaction wheel commands, container)",
+            go,
+            ref showAbility,
+            AbilityModuleTypes,
+            ref abilityAddIndex);
 
         DrawModuleCategory(
             "Outputs (motion, location, core agent)",
@@ -143,6 +180,13 @@ public class WorldObjectModulesInspector : Editor
             ref showData,
             DataModuleTypes,
             ref dataAddIndex);
+
+        DrawModuleCategory(
+            "ThingModules (applies to objects, not agents)",
+            go,
+            ref showThing,
+            ThingModuleTypes,
+            ref thingAddIndex);
 
         DrawModuleCategory(
             "QuestModules",
