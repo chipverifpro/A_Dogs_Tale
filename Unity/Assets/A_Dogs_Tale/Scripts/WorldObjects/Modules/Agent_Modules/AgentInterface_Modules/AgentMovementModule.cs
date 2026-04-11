@@ -2,7 +2,7 @@ using UnityEngine;
 using System;
 using System.Collections.Generic;
 using UnityEngine.Serialization;
-
+using InspectorTools;
 /*
 AgentMovementModule (high-level locomotion)
 
@@ -35,6 +35,7 @@ namespace DogGame.Modules
     /// Decision modules (Player, Wanderer, Follower, etc.) should call SetDesiredMove()
     /// or SetDesiredVelocity() based on their logic.
     /// </summary>
+    [InspectorNote("AgentInterface_Modules/Agent Movement Module", "High level motion module that converts movement intent into per-tick velocity vector passed to MotionModule to move the agent.")]
     public class AgentMovementModule : WorldModule
     {
         [Header("For following and routing")]

@@ -5,6 +5,7 @@ using System;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Globalization;
+using InspectorTools;
 
 //
 //   friends list
@@ -16,6 +17,7 @@ namespace DogGame.Modules
     /// <summary>
     /// Maintains and looks up friends and doggy dictionary words
     /// </summary>
+    [InspectorNote("Sensory_Modules/Knowledge Module", "Keep track of friends list, doggy dictionary, and commands and tricks known (future).")]
     public class KnowledgeModule : WorldModule
     {
         [Header("Information Known by this Agent")]

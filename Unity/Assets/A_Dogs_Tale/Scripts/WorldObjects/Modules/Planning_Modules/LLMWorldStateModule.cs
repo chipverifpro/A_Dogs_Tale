@@ -6,6 +6,7 @@ using DogGame.LLM.Policy;
 using DogGame.Modules;
 using UnityEngine;
 using UnityEngine.AI;
+using InspectorTools;
 
         // This is the dynamic context provider for LLM agents. Today it mainly
         //   contributes leash text, position/room/door context, vision summaries,
@@ -27,6 +28,7 @@ namespace DogGame.LLM.Agent
     /// This module should not require per-agent babysitting: it should populate itself
     /// from game systems (player, combat, perception, etc.).
     /// </summary>
+    [InspectorNote("Planning_Modules/LLM World State Module", "Dynamic self-updating context for LLM.  It should populate itself (dynamic context).")]
     public sealed class LLMWorldStateModule : WorldModule
     {
         public string positionContext = "";

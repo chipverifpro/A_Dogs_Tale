@@ -1,6 +1,7 @@
 using DogGame.Lua;
 using NUnit.Framework.Constraints;
 using UnityEngine;
+using InspectorTools;
 
 // at Update() it pulls in latest information
 namespace DogGame.Modules
@@ -8,6 +9,7 @@ namespace DogGame.Modules
     public enum Detail {None=0, Low=1, Medium=2, High=3};
 
     [DisallowMultipleComponent]
+    [InspectorNote("Data_Modules/Agent State Module", "Manages all state data modules, providing Agent, Dog, Env, Hearing, Memory, Pack, Perception, Room, Scent, Task, Time, and Vision state.")]
     public class AgentStateModule : WorldModule
     {
         public AgentState state = new();

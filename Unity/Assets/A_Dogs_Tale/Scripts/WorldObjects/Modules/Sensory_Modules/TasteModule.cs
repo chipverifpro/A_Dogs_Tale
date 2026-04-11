@@ -1,8 +1,10 @@
 using UnityEngine;
+using InspectorTools;
 
 namespace DogGame.Modules
 {
     [DisallowMultipleComponent]
+    [InspectorNote("Sensory_Modules/Taste Module", "PLACEHOLDER ONLY.",UnityEditor.MessageType.Warning)]
     public class TasteModule : WorldModule
     {
         public bool debugMode = false;

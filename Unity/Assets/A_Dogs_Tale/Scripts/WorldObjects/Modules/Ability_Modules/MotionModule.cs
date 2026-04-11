@@ -1,6 +1,7 @@
 using UnityEngine;
 using System;
 using System.Collections.Generic;
+using InspectorTools;
 
 /*
 MotionModule responsibilities:
@@ -64,6 +65,7 @@ namespace DogGame.Modules
         public float maxSpeed;
     }
 
+    [InspectorNote("Ability_Modules/Motion Module", "Convert desired velocity vector to motion, dealing with blockages, acceleration, speed.")]
     public class MotionModule : WorldModule
     {
         [Header("Body Setup")]

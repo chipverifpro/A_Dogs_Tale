@@ -2,6 +2,7 @@ using UnityEngine;
 using System.Linq;
 using DogGame.AI;
 using Unity.Tutorials.Core.Editor;
+using InspectorTools;
 
 // ----- Not a BASE CLASS -----
 
@@ -10,8 +11,8 @@ namespace DogGame.Modules
     [RequireComponent(typeof(AgentMovementModule))]
     [RequireComponent(typeof(PackMemberModule))]
     [RequireComponent(typeof(BlackboardModule))]
-    [RequireComponent(typeof(AgentDecisionModuleBase))]
     [RequireComponent(typeof(MotivationModule))]
+    [InspectorNote("AgentModules/Agent Module", "Switches AgentDecision_Modules, and forwards Tick appropriately.")]
     public class AgentModule : WorldModule
     {
         [Header("Debug / Identity")]

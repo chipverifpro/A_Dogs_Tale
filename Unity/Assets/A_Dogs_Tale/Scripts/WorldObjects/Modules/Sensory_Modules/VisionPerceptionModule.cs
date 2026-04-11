@@ -11,9 +11,11 @@
 using System.Collections.Generic;
 using UnityEngine;
 using DogGame.AI.Perception;
+using InspectorTools;
 
 namespace DogGame.Modules
 {
+    [InspectorNote("Sensory_Modules/Vision Perception Module", "Generate events for what is seen.")]
     public sealed class VisionPerceptionModule : WorldModule
     {
         [Header("Vision")]

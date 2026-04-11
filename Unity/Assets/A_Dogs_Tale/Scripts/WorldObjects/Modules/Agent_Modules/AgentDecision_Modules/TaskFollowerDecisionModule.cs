@@ -1,5 +1,5 @@
 using UnityEngine;
-
+using InspectorTools;
 
 // This is basically a module implementation of TaskController.cs
 // It parses the task list (in TaskListModule) and issues those commands.
@@ -11,6 +11,7 @@ using UnityEngine;
 // Hooks present for clearing the queue if resume is not desired.
 namespace DogGame.Modules
 {
+    [InspectorNote("AgentDecision_Modules/Task Follower Decision Module", "PLACEHOLDER. Agent responding to Tasks.",UnityEditor.MessageType.Warning)]
     public class TaskFollowerDecisionModule : AgentDecisionModuleBase
     {
         public override AgentDecisionType DecisionType => AgentDecisionType.TaskFollower;

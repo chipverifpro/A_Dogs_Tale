@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using DogGame.Noise;
+using InspectorTools;
 
 namespace DogGame.Modules
 {
@@ -8,6 +9,7 @@ namespace DogGame.Modules
     /// Per-agent listener module. Queries NoiseManager for recent NoiseEvents and produces HeardNoise results.
     /// First pass: distance + room penalties + basic voice targeting. LOS/occlusion comes next.
     /// </summary>
+    [InspectorNote("Sensory_Modules/Hearing Module", "Generate events for sounds heard.")]
     public class HearingModule : WorldModule
     {
         [Header("Update rate")]

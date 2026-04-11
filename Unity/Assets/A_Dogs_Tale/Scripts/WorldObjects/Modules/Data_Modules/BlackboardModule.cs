@@ -1,9 +1,11 @@
 using UnityEngine;
 using DogGame.Tasks;
+using InspectorTools;
 
 namespace DogGame.Modules
 {
     [DisallowMultipleComponent]
+    [InspectorNote("Data_Modules/Blackboard Module", "Creates an SimpleBlackboard which allows any module to store/retrieve any Key/Value pair of state data.")]
     public class BlackboardModule : WorldModule
     {
         public IBlackboard Blackboard { get; private set; } = null!;

@@ -1,5 +1,6 @@
 using UnityEngine;
 using DogGame.Modules;
+using InspectorTools;
 
 //  What we can fill in later (without changing the framework)
 //	•	Real pack centroid calculation (exclude self, smoothing, leader bias)
@@ -18,6 +19,7 @@ using DogGame.Modules;
 
 namespace DogGame.AI
 {
+    [InspectorNote("AgentInterface_Modules/Motivation Module", "PLACEHOLDER ONLY.",UnityEditor.MessageType.Warning)]
     public class MotivationModule : WorldModule
     {
         [Header("Tuning")]

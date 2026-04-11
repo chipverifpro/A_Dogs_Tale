@@ -1,7 +1,9 @@
 using UnityEngine;
+using InspectorTools;
 
 namespace DogGame.Modules
 {
+    [InspectorNote("AgentDecision_Modules/Follower Decision Module", "Follows another Agent.")]
     public class FollowerDecisionModule : AgentDecisionModuleBase
     {
         public override AgentDecisionType DecisionType => AgentDecisionType.Follower;

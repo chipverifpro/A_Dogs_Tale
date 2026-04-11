@@ -4,6 +4,7 @@ using UnityEngine;
 using DogGame.AI.Perception;
 using System;
 using static DungeonGenerator;
+using InspectorTools;
 
 namespace DogGame.Modules
 {
@@ -15,6 +16,7 @@ namespace DogGame.Modules
     //.  Field ides: agentId, pointer to scentinfo struct, airOrGround, lastStrength, lastTime, lastLocationCell, novelty/interest, currently tracking, nearby strengths (8 ways)
     //.  Function ideas: Create, update, sniff nearby, determine novelty/interest (functions exist below)
 
+    [InspectorNote("Sensory_Modules/Scent Perception Module", "Generate events for scents detected, sniff command.")]
     public sealed class ScentPerceptionModule : WorldModule
     {
         [Header("Inputs")]

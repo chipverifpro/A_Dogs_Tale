@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using InspectorTools;
 
 namespace DogGame.Modules
 {
@@ -12,6 +13,7 @@ namespace DogGame.Modules
     }
 
     [DisallowMultipleComponent]
+    [InspectorNote("Output_Modules/Scent Emitter Module", "Add to scent physics model for passive and on-demand scent emission.")]
     public class ScentEmitterModule : WorldModule
     {
         public ScentSource normalScentSource;       // constant scent

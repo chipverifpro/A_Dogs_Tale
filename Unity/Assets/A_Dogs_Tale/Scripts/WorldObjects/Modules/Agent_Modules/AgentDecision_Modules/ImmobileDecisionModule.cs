@@ -1,8 +1,10 @@
 using System.ComponentModel;
 using UnityEngine;
+using InspectorTools;
 
 namespace DogGame.Modules
 {
+    [InspectorNote("AgentDecision_Modules/Immobile Decision Module", "Agent stands still.")]
     public class ImmobileDecisionModule : AgentDecisionModuleBase
     {
         public override AgentDecisionType DecisionType => AgentDecisionType.Immobile;

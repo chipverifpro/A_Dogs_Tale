@@ -1,8 +1,10 @@
 using UnityEngine;
 using System.Collections.Generic;
+using InspectorTools;
 
 namespace DogGame.Modules
 {
+    [InspectorNote("AgentDecision_Modules/Wander Decision Module", "Agent wanders around the current room only.")]
     public class WandererDecisionModule : AgentDecisionModuleBase
     {
         public override AgentDecisionType DecisionType => AgentDecisionType.Wanderer;

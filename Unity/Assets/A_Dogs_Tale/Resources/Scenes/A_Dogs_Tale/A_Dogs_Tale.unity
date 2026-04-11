@@ -16196,10 +16196,6 @@ PrefabInstance:
         type: 3}
       insertIndex: -1
       addedObject: {fileID: 6544990386685219199}
-    - targetCorrespondingSourceObject: {fileID: 8843402266763018810, guid: 2ce0050a816054aaca2a1076f182f7a8,
-        type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 6544990386685219202}
   m_SourcePrefab: {fileID: 100100000, guid: 2ce0050a816054aaca2a1076f182f7a8, type: 3}
 --- !u!1 &6544990386685219093 stripped
 GameObject:
@@ -17022,27 +17018,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: daa15b5c085b642dfabf4a5a26b501fd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.ActivatorModule
---- !u!114 &6544990386685219202
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6544990386685219093}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3f6cda250b193442c9f59a935c554f95, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.PlacementModule
-  allowedRooms: -1
-  autoSizeFromMesh: 1
-  sizeInCells: {x: 0.5227917, y: 0.99527377, z: 1.2413847}
-  cellSize: 1
-  edgeHint: 0
-  rotationRule: 1
-  minClearCellsAround: 0
-  mustTouchWall: 0
-  wallPadding: 0.05
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

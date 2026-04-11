@@ -9,11 +9,13 @@ using System.Threading;
 using DogGame.LLM.Core;
 using System;
 using Unity.Tutorials.Core.Editor;
+using InspectorTools;
 
 namespace DogGame.Modules
 {
     [RequireComponent(typeof(TaskController))]
     [RequireComponent(typeof(LLMAgentFacade))]
+    [InspectorNote("AgentDecision_Modules/Player Decision Module", "Manual control of this Agent.")]
     public class PlayerDecisionModule : AgentDecisionModuleBase
     {
         //    [Header("Input Source")]

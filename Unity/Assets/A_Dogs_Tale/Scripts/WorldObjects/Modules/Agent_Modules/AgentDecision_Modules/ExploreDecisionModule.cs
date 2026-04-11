@@ -4,9 +4,11 @@ using System.Collections.Generic;
 using UnityEngine;
 using DogGame.Lua;
 using DogGame.LLM;
+using InspectorTools;
 
 namespace DogGame.Modules
 {
+    [InspectorNote("AgentDecision_Modules/Explore Decision Module", "Explores the entire map by going through every door.")]
     public class ExploreDecisionModule : AgentDecisionModuleBase
     {
 private const string DefaultLuaExploreScript = @"state = {

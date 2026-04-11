@@ -4,6 +4,7 @@ using DogGame.LLM.Agent;
 using DogGame.LLM.Core;
 using DogGame.Modules;
 using UnityEngine;
+using InspectorTools;
 
 namespace DogGame.LLM
 {
@@ -14,6 +15,7 @@ namespace DogGame.LLM
     /// </summary>
     [RequireComponent(typeof(LLMConfigModule))]
     [RequireComponent(typeof(LLMWorldStateModule))]
+    [InspectorNote("AgentInterface_Modules/LLM Think Module", "Per-agent module that can request LLM plans.  Builds/enqueues and routes responses back.")]
     public sealed class LLMThinkModule : WorldModule
     {
         [Header("Defaults")]

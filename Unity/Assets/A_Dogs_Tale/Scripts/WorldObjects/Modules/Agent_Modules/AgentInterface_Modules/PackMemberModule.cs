@@ -1,9 +1,11 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using InspectorTools;
 
 namespace DogGame.Modules
 {
+    [InspectorNote("AgentInterface_Modules/Pack Member Module", "Handles joining/leaving/order/formation for pack.")]
     public class PackMemberModule : WorldModule
     {
         public Pack currentPack;

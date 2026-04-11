@@ -1,9 +1,11 @@
 using System.Linq;
 using UnityEngine;
+using InspectorTools;
 
 namespace DogGame.Modules
 {
     [DisallowMultipleComponent]
+    [InspectorNote("Output_Modules/Appearance Module", "Camera parameter head_height, as well as function for color tint (convert a white dog to a brown one).")]
     public class AppearanceModule : WorldModule
     {
         [Header("Size")]

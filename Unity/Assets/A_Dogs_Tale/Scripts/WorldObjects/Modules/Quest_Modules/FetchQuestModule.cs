@@ -1,8 +1,10 @@
 using UnityEngine;
+using InspectorTools;
 
 namespace DogGame.Modules
 {
     [DisallowMultipleComponent]
+    [InspectorNote("Quest_Modules/Fetch Quest Module", "PLACEHOLDER ONLY.",UnityEditor.MessageType.Warning)]
     public class FetchQuestModule : QuestModuleBase
     {
         private int debugDoubleTick = -1;

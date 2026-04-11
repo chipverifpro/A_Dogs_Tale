@@ -1,8 +1,10 @@
 using UnityEngine;
+using InspectorTools;
 
 namespace DogGame.Modules
 {
     [DisallowMultipleComponent]
+    [InspectorNote("Ability_Modules/Activator Module", "What the agent or object does when clicked on.  To be replaced by Interaction Wheel?", UnityEditor.MessageType.Warning)]
     public class ActivatorModule : WorldModule
     {
         public ActivateResult HandleActivate(in ActivateContext context, in ActivateRequest request)

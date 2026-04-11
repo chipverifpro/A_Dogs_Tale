@@ -9,6 +9,7 @@ using DogGame.Modules;
 using Newtonsoft.Json.Linq;
 using UnityEngine;
 using static DogGame.LLM.Core.LLMClientBase;
+using InspectorTools;
 
 namespace DogGame.LLM.Agent
 {
@@ -17,6 +18,7 @@ namespace DogGame.LLM.Agent
     /// Sections declared in LLMConfigModuleSections.cs.
     /// Intended to be designer-tweaked. Pairs with LLMWorldStateModule (dynamic context).
     /// </summary>
+    [InspectorNote("Planning_Modules/LLM Config Module", "Static per-agent configuration for LLM.  Sections declared in LLMConfigModuleSections.cs.  Intended to be designer-tweaked. Pairs with LLMWorldStateModule (dynamic context).")]
     public sealed class LLMConfigModule : WorldModule
     {
         private readonly SophisticationPolicy sophisticationPolicy = new();
