@@ -8217,7 +8217,7 @@ MonoBehaviour:
   useGravity: 0
   gravityMetersPerSecondSquared: -9.81
   maxFallSpeedMetersPerSecond: 50
-  constrainToCellWalls: 1
+  constrainToCellWalls: 0
   wallConstraintIterations: 4
   motionControlMode: 0
   isBackpedaling: 0
@@ -11668,7 +11668,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.AgentModule
   agentName: Agent Cur
-  initialDecisionType: 4
+  initialDecisionType: 2
   currentDecisionModule: {fileID: 0}
 --- !u!114 &1651296781
 MonoBehaviour:
@@ -11699,7 +11699,7 @@ MonoBehaviour:
   useGravity: 0
   gravityMetersPerSecondSquared: -9.81
   maxFallSpeedMetersPerSecond: 50
-  constrainToCellWalls: 1
+  constrainToCellWalls: 0
   wallConstraintIterations: 4
   motionControlMode: 0
   isBackpedaling: 0
@@ -12146,6 +12146,9 @@ MonoBehaviour:
   rangeCrawl: 5
   rangeStrafe: 12
   rangeBackpedal: 12
+  barkClipName: Bark
+  barkLoudnessAtFullVolume: 1.6
+  barkRangeAtFullVolume: 24
 --- !u!114 &1651296809
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -15846,6 +15849,9 @@ MonoBehaviour:
   rangeCrawl: 5
   rangeStrafe: 12
   rangeBackpedal: 12
+  barkClipName: Bark
+  barkLoudnessAtFullVolume: 1.6
+  barkRangeAtFullVolume: 24
 --- !u!114 &2108676853
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -16360,7 +16366,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.AgentModule
   agentName: German Shepherd
-  initialDecisionType: 1
+  initialDecisionType: 7
   currentDecisionModule: {fileID: 6544990386685219152}
 --- !u!114 &6544990386685219144
 MonoBehaviour:
@@ -16403,7 +16409,7 @@ MonoBehaviour:
   useGravity: 0
   gravityMetersPerSecondSquared: -9.81
   maxFallSpeedMetersPerSecond: 50
-  constrainToCellWalls: 1
+  constrainToCellWalls: 0
   wallConstraintIterations: 4
   motionControlMode: 0
   isBackpedaling: 0
@@ -16779,6 +16785,9 @@ MonoBehaviour:
   rangeCrawl: 5
   rangeStrafe: 12
   rangeBackpedal: 12
+  barkClipName: Bark
+  barkLoudnessAtFullVolume: 1.6
+  barkRangeAtFullVolume: 24
 --- !u!114 &6544990386685219181
 MonoBehaviour:
   m_ObjectHideFlags: 0

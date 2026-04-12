@@ -47,12 +47,32 @@ namespace DogGame.Modules
         }
 
         private void OnscentFollowPerformed(InputAction.CallbackContext ctx)
-        {            
-            WorldObject playerAgent = Dir.Instance.playerPack.packLeader;
-            //HashSet<string> scentFollowContext = new(playerAgent.ObjectId);
+        {
+            Dir dir = Dir.Instance;
+            if (dir == null || dir.scentRegistry == null)
+            {
+                Debug.LogError("[ScentFollowInput] Missing Dir or ScentRegistry.");
+                return;
+            }
+
+            ScentSource selectedScent = dir.scentRegistry.SelectedTargetScent;
+            if (selectedScent == null || selectedScent.agentId < 0)
+            {
+                BottomBanner.Show(BannerSense.Smell, BannerLevel.Low, "Choose a scent from the nose menu first.");
+                return;
+            }
+
+            WorldObject playerAgent = dir.playerPack != null ? dir.playerPack.packLeader : null;
+            if (playerAgent == null || playerAgent.taskController == null)
+            {
+                Debug.LogError("[ScentFollowInput] Missing player agent or task controller.");
+                return;
+            }
+
             playerAgent.taskController.EnqueueTask(
-                // TODO: Replace hardcoded agent:3 with something else.
-                task: new Task_ScentFollow(scentKey: "agent:3", medium: ScentMedium.Ground),
+                task: new Task_ScentFollow(
+                    scentKey: dir.scentRegistry.SelectedTargetScentKey,
+                    medium: ScentMedium.Ground),
                 priority: 80,
                 source: TaskSource.Player,  // or AI/LLM/etc
                 applyMode: LLMApplyMode.Interrupt,
