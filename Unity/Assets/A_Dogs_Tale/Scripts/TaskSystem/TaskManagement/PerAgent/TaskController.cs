@@ -285,7 +285,7 @@ namespace DogGame.LLM
             var router = dir != null ? (dir.gameInputRouter != null ? dir.gameInputRouter : GameInputRouter.Instance) : GameInputRouter.Instance;
             if (dir && worldObject && router != null && router.InputState != null && router.InputState.anyKeyOrButtonDown)
             {
-                Debug.Log("DISABLED: TaskController: Cancelling tasks due to anyKeyOrButtonDown");
+                //Debug.Log("DISABLED: TaskController: Cancelling tasks due to anyKeyOrButtonDown");
                 //CancelAllTasks();
                 //return;
             }

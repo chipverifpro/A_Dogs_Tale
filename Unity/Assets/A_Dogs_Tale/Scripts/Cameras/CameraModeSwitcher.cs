@@ -1,6 +1,8 @@
 using System.Collections;
 using Cinemachine;
+using DogGame.Modules;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
 
 public enum CameraModes { Unchanged = 0, FP, Overhead, Perspective, Nose };   // Unchanged is not a valid camera, just means leave as-is
@@ -16,11 +18,18 @@ public class CameraModeSwitcher : MonoBehaviour
     public bool playerVisible = true;
 
     public CinemachineBrain brain;
-    public CinemachineVirtualCamera vcamFP, vcamPerspective, vcamOverhead, vcamNose;
+    public CinemachineVirtualCamera vcamFP, vcamPerspective, vcamOverhead, vcamNose, vcamFree;
     //public GameObject playerModel;
     public KeyCode toggleKey = KeyCode.Tab;
+    public KeyCode freeCameraToggleKey = KeyCode.BackQuote;
     public WorldObject target;
     public float height = 20f;
+
+    [Header("Free Camera")]
+    public bool freeCameraActive = false;
+    [SerializeField] private float freeCameraPriority = 20f;
+    [SerializeField] private CameraModes freeCameraRestoreMode = CameraModes.Perspective;
+    private FreeCameraController freeCameraController;
 
     private Coroutine waiter = null;
     private bool loggedTargetWarning = false;   // only display ONE target warning instead of spamming every frame.
@@ -67,6 +76,8 @@ public class CameraModeSwitcher : MonoBehaviour
         if (!vcamNose)
             vcamNose = GameObject.Find("vcamNose")?.GetComponent<CinemachineVirtualCamera>();
 
+        EnsureFreeCamera();
+
         // --- Find the player model ---
         //if (!playerModel)
         //    playerModel = GameObject.Find("PlayerModel");
@@ -91,11 +102,37 @@ public class CameraModeSwitcher : MonoBehaviour
     void Update()
     {
         // Temporary warning during development until we start doing cinematic sequences that would violate this.
-        if(target != dir.playerPack.packLeader && loggedTargetWarning==false)
+        if (!freeCameraActive &&
+            dir != null &&
+            dir.playerPack != null &&
+            dir.playerPack.packLeader != null &&
+            target != null &&
+            target != dir.playerPack.packLeader &&
+            loggedTargetWarning == false)
         {
             Debug.LogWarning($"Cameras are NOT configured to target playerPack.packLeader ({dir.playerPack.packLeader.DisplayName}, but instead {target.DisplayName})");
             loggedTargetWarning = true;
         }
+
+        if (WasFreeCameraTogglePressed())
+        {
+            if (freeCameraActive)
+                freeCameraController?.FocusLeaderNow();
+            else
+                EnableFreeCamera();
+        }
+
+        if (freeCameraActive && WasFreeCameraExitPressed())
+            DisableFreeCamera(restoreFollow: true);
+
+        if (freeCameraActive)
+        {
+            playerVisible = true;
+            if (dir != null && dir.playerPack != null && dir.playerPack.packLeader != null && dir.playerPack.packLeader.appearanceModule != null)
+                dir.playerPack.packLeader.appearanceModule.SetVisible(true);
+            return;
+        }
+
         // ===> camera_refresh_needed 
         //if (target.appearanceModule.camera_refresh_needed)
         //{
@@ -123,16 +160,22 @@ public class CameraModeSwitcher : MonoBehaviour
     public void SetViewTarget(WorldObject cameraTarget)
     {
         //if (target==cameraTarget) return; // nothing needed
-        
+
         if ((target != cameraTarget) && (target != null) && (target.appearanceModule != null))
         {
             // tell the old target we aren't following it anymore.
             target.appearanceModule.cameraFollowingMe = false;
         }
 
-        if (target.appearanceModule == null) 
+        if (cameraTarget == null)
         {
-            Debug.LogError($"Camera target set to WorldObject {target.DisplayName} which has no AppearanceModule attached.  Cameras not changed.");
+            Debug.LogError("Camera target cannot be null.");
+            return;
+        }
+
+        if (cameraTarget.appearanceModule == null)
+        {
+            Debug.LogError($"Camera target set to WorldObject {cameraTarget.DisplayName} which has no AppearanceModule attached.  Cameras not changed.");
             // Note that we could create one, but without the right safeguards, that might end in a nasty recursive loop.
             return;
         }
@@ -152,19 +195,24 @@ public class CameraModeSwitcher : MonoBehaviour
 
         dir.vcamPerspective.Follow = target.transform;
         dir.vcamPerspective.LookAt = target.transform;
-    
-        target.appearanceModule.cameraFollowingMe = true;
+
+        target.appearanceModule.cameraFollowingMe = !freeCameraActive;
     }
 
     public void SelectView(CameraModes newMode)
     {
         if ((newMode != cameraMode) && (newMode != CameraModes.Unchanged))
         {
+            if (freeCameraActive)
+                DisableFreeCamera(restoreFollow: false);
+
             cameraMode = newMode;
             vcamPerspective.Priority = 0;
             vcamFP.Priority = 0;
             vcamOverhead.Priority = 0;
             vcamNose.Priority = 0;
+            if (vcamFree != null)
+                vcamFree.Priority = 0;
             playerVisible = true;
             target.appearanceModule.camera_refresh_needed = true;
 
@@ -301,6 +349,7 @@ public class CameraModeSwitcher : MonoBehaviour
     CinemachineVirtualCamera GetLiveVCam()
     {
         // Prefer the one that is live according to Cinemachine
+        if (IsLive(vcamFree)) return vcamFree;
         if (IsLive(vcamFP)) return vcamFP;
         if (IsLive(vcamPerspective)) return vcamPerspective;
         if (IsLive(vcamOverhead)) return vcamOverhead;
@@ -309,7 +358,7 @@ public class CameraModeSwitcher : MonoBehaviour
         // Fallback: highest Priority
         CinemachineVirtualCamera best = null;
         int bestP = int.MinValue;
-        foreach (var v in new[] { vcamFP, vcamPerspective, vcamOverhead, vcamNose })
+        foreach (var v in new[] { vcamFree, vcamFP, vcamPerspective, vcamOverhead, vcamNose })
         {
             if (v != null && v.Priority > bestP) { best = v; bestP = v.Priority; }
         }
@@ -344,6 +393,16 @@ public class CameraModeSwitcher : MonoBehaviour
 
         if (Mathf.Approximately(delta, 0f))
             return;
+
+        if (freeCameraActive && vcamFree != null)
+        {
+            float fov = vcamFree.m_Lens.FieldOfView;
+            fov = Mathf.Clamp(fov + delta, minFOV, maxFOV);
+            vcamFree.m_Lens.FieldOfView = fov;
+            if (freeCameraController != null)
+                freeCameraController.NotifyZoomChanged();
+            return;
+        }
 
         // --- First Person: change FOV ---
         if (IsLive(vcamFP))
@@ -380,5 +439,149 @@ public class CameraModeSwitcher : MonoBehaviour
                 Debug.Log($"Overhead zoom transposer.y = {off.y:0.0}");
             }
         }
+    }
+
+    public void ToggleFreeCamera()
+    {
+        if (freeCameraActive)
+            DisableFreeCamera(restoreFollow: true);
+        else
+            EnableFreeCamera();
+    }
+
+    public void EnableFreeCamera()
+    {
+        EnsureFreeCamera();
+        if (vcamFree == null)
+            return;
+
+        freeCameraRestoreMode = cameraMode;
+
+        CopyMainCameraPoseToFreeCamera();
+
+        if (target != null && target.appearanceModule != null)
+            target.appearanceModule.cameraFollowingMe = false;
+
+        if (target != null &&
+            target.agentModule != null &&
+            target.agentModule.currentDecisionModule != null &&
+            target.agentModule.currentDecisionModule.DecisionType == AgentDecisionType.Player)
+        {
+            target.agentModule.SwitchDecisionModule(AgentDecisionType.Immobile);
+        }
+
+        vcamPerspective.Priority = 0;
+        vcamFP.Priority = 0;
+        vcamOverhead.Priority = 0;
+        vcamNose.Priority = 0;
+        vcamFree.Priority = (int)freeCameraPriority;
+
+        freeCameraActive = true;
+        if (freeCameraController != null)
+            freeCameraController.SetActive(true);
+
+        if (target != null && target.appearanceModule != null)
+            target.appearanceModule.SetVisible(true);
+    }
+
+    public void DisableFreeCamera(bool restoreFollow)
+    {
+        if (vcamFree != null)
+            vcamFree.Priority = 0;
+
+        freeCameraActive = false;
+        if (freeCameraController != null)
+            freeCameraController.SetActive(false);
+
+        if (restoreFollow)
+        {
+            if (target != null && target.appearanceModule != null)
+                target.appearanceModule.cameraFollowingMe = true;
+
+            SelectView(freeCameraRestoreMode);
+        }
+    }
+
+    private void EnsureFreeCamera()
+    {
+        if (vcamFree == null)
+            vcamFree = GameObject.Find("vcamFree")?.GetComponent<CinemachineVirtualCamera>();
+
+        if (vcamFree == null)
+        {
+            GameObject freeCameraObject = new("vcamFree");
+            freeCameraObject.transform.SetParent(transform, false);
+            vcamFree = freeCameraObject.AddComponent<CinemachineVirtualCamera>();
+            vcamFree.Priority = 0;
+            vcamFree.Follow = null;
+            vcamFree.LookAt = null;
+        }
+
+        freeCameraController = vcamFree.GetComponent<FreeCameraController>();
+        if (freeCameraController == null)
+            freeCameraController = vcamFree.gameObject.AddComponent<FreeCameraController>();
+
+        freeCameraController.SetSwitcher(this);
+        freeCameraController.SetActive(freeCameraActive);
+    }
+
+    private void CopyMainCameraPoseToFreeCamera()
+    {
+        if (vcamFree == null)
+            return;
+
+        Camera mainCamera = Camera.main;
+        if (mainCamera != null)
+        {
+            vcamFree.transform.SetPositionAndRotation(mainCamera.transform.position, mainCamera.transform.rotation);
+            LensSettings lens = vcamFree.m_Lens;
+            lens.FieldOfView = mainCamera.fieldOfView;
+            lens.Orthographic = mainCamera.orthographic;
+            lens.OrthographicSize = mainCamera.orthographicSize;
+            lens.NearClipPlane = mainCamera.nearClipPlane;
+            lens.FarClipPlane = mainCamera.farClipPlane;
+            vcamFree.m_Lens = lens;
+        }
+        else
+        {
+            CinemachineVirtualCamera live = GetLiveVCam();
+            if (live != null)
+            {
+                vcamFree.transform.SetPositionAndRotation(live.transform.position, live.transform.rotation);
+                vcamFree.m_Lens = live.m_Lens;
+            }
+        }
+
+        if (freeCameraController != null)
+            freeCameraController.SnapToCurrentTransform();
+    }
+
+    private bool WasFreeCameraTogglePressed()
+    {
+        if (Keyboard.current == null)
+            return false;
+
+        return freeCameraToggleKey switch
+        {
+            KeyCode.BackQuote => Keyboard.current.backquoteKey.wasPressedThisFrame,
+            KeyCode.F1 => Keyboard.current.f1Key.wasPressedThisFrame,
+            KeyCode.F2 => Keyboard.current.f2Key.wasPressedThisFrame,
+            KeyCode.F3 => Keyboard.current.f3Key.wasPressedThisFrame,
+            KeyCode.F4 => Keyboard.current.f4Key.wasPressedThisFrame,
+            KeyCode.F5 => Keyboard.current.f5Key.wasPressedThisFrame,
+            KeyCode.F6 => Keyboard.current.f6Key.wasPressedThisFrame,
+            KeyCode.F7 => Keyboard.current.f7Key.wasPressedThisFrame,
+            KeyCode.F8 => Keyboard.current.f8Key.wasPressedThisFrame,
+            KeyCode.F9 => Keyboard.current.f9Key.wasPressedThisFrame,
+            KeyCode.F10 => Keyboard.current.f10Key.wasPressedThisFrame,
+            KeyCode.F11 => Keyboard.current.f11Key.wasPressedThisFrame,
+            KeyCode.F12 => Keyboard.current.f12Key.wasPressedThisFrame,
+            _ => Input.GetKeyDown(freeCameraToggleKey)
+        };
+    }
+
+    private static bool WasFreeCameraExitPressed()
+    {
+        return Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame;
     }
 }

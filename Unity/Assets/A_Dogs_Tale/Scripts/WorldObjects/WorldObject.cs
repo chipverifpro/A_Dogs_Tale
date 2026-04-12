@@ -42,11 +42,12 @@ public enum WorldObjectKind
 public enum ModuleFlags : ulong
 {
     none                    = 0UL,
+
     // --- Sensory ---
     locationModule          = 1UL << 1,
     hearingModule           = 1UL << 2,
     scentPerceptionModule   = 1UL << 3,
-    visionPerceptionModule            = 1UL << 4,
+    visionPerceptionModule  = 1UL << 4,
     tasteModule             = 1UL << 5,
 
     // --- Agent Decision Modules
@@ -61,31 +62,36 @@ public enum ModuleFlags : ulong
     agentModule           = 1UL << 21,
     agentMovementModule   = 1UL << 22,
     packMemberModule      = 1UL << 23,
-    llmRequestResponseModule = 1UL << 24,
+    llmThinkModule        = 1UL << 24,
     reactionModule        = 1UL << 25,
     motivationModule      = 1UL << 26,
         
     // --- Ability ---
     activatorModule     = 1UL << 31,
     interactionModule   = 1UL << 32,
-    doorModule          = 1UL << 33,
-    
+    motionModule        = 1UL << 33,
     
     // --- Output ---
-    motionModule        = 1UL << 41,
     appearanceModule    = 1UL << 42,
     noiseMakerModule    = 1UL << 43,
     scentEmitterModule  = 1UL << 44,
 
     // --- Data ---
     blackboardModule    = 1UL << 51,
-    placementModule     = 1UL << 52,
     agentStateModule    = 1UL << 53,
     taskListModule      = 1UL << 54,
-    containerModule     = 1UL << 55,
 
     // --- Quest ---
     fetchQuestModule    = 1UL << 61,
+
+    // --- LLM Planning ---
+    llmConfigModule     = 1UL << 71,
+    llmWorldStateModule = 1UL << 72,
+
+    // --- Thing ---
+    containerModule     = 1UL << 81,
+    placementModule     = 1UL << 82,
+    doorModule          = 1UL << 83,
 }
 
 // The following templates can be used for configuring new WorldModule instantiations...
