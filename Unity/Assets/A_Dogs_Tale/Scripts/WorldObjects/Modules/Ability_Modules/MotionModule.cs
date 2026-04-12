@@ -93,6 +93,12 @@ namespace DogGame.Modules
         [SerializeField] private bool constrainToCellWalls = true;
         [SerializeField] private int wallConstraintIterations = 4;
 
+        public bool ConstrainToCellWalls
+        {
+            get => constrainToCellWalls;
+            set => constrainToCellWalls = value;
+        }
+
         // Internal vertical velocity (for gravity, jumps, etc.)
         private Vector3 verticalVelocity = Vector3.zero;
 

@@ -162,6 +162,8 @@ namespace DogGame.Modules
                 return;
             }
 
+            SetDirectInputWallConstraint(HasManualMoveInput(inputState));
+
             bool taskDrivingMovement = taskController != null && taskController.IsDrivingMovement;
             if (taskDrivingMovement)
             {
@@ -173,6 +175,7 @@ namespace DogGame.Modules
             // Only act if THIS worldObject is the one currently controlled
             if (!gameInputRouter.IsControlled(worldObject))
             {
+                SetDirectInputWallConstraint(false);
                 Debug.LogWarning($"[{worldObject.DisplayName}] Tick: IsControlled == false");
                 return;
             }
@@ -504,6 +507,14 @@ namespace DogGame.Modules
             return state.moveAxis.sqrMagnitude > 0.0001f || Mathf.Abs(state.strafeAxis) > 0.0001f;
         }
 
+        private void SetDirectInputWallConstraint(bool enable)
+        {
+            if (worldObject?.motionModule == null)
+                return;
+
+            worldObject.motionModule.ConstrainToCellWalls = enable;
+        }
+
         public void MovementHeadToDestination()
         {
             // bring in manual input desiredWorldDir
@@ -688,6 +699,7 @@ namespace DogGame.Modules
         // Run this when THIS decision module becomes active
         public override void BeginDecisionModule(bool resume=false)
         {
+            SetDirectInputWallConstraint(false);
             if (!(taskController != null && taskController.IsDrivingMovement))
             {
                 Debug.Log($"[{worldObject.DisplayName}] LLM was still driving movement when Player took over.");
@@ -715,6 +727,7 @@ namespace DogGame.Modules
         // Run this when THIS decision module becomes inactive
         public override void EndDecisionModule()
         {
+            SetDirectInputWallConstraint(false);
             // retain state (in case requested to resume): currentDestination*
             
             // stop actions in progress: Move
