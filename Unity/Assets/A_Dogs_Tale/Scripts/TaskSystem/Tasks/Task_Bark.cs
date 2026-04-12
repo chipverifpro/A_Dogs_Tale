@@ -8,35 +8,36 @@ namespace DogGame.Tasks
     {
         public string DebugName => $"Bark({volume})";
         public string Description = "Agent emits a bark sound at a specified volume between 1 and 10.  Then waits 0.5 seconds.";
-        private int volume;
+        private readonly int volume;
         private readonly float barkVolume01;
         private readonly float durationSeconds;
         private float remainingSeconds;
 
-        private static Dir? dir;
-
         public Task_Bark(float volume)
         { 
             // Clamp + normalize
-            this.barkVolume01 = Mathf.Clamp(volume, 1, 10) / 10f;
+            this.volume = Mathf.RoundToInt(Mathf.Clamp(volume, 1f, 10f));
+            this.barkVolume01 = this.volume / 10f;
             var duration = 0.5f;    // should get this from the audio clip chosen, or rewrite delay to wait for audio to complete.
-            bool success = false;
-            
-            // Start the bark audio
-            if (dir==null) dir=Object.FindFirstObjectByType<Dir>();
-            if (dir!=null && dir.audioPlayer!=null)
-                success = dir.audioPlayer.PlayClip("Bark");
 
             // for now, wait a half second for the audio to play
             this.durationSeconds = Mathf.Max(0f, duration);
             remainingSeconds = this.durationSeconds;
-            Debug.Log(DebugName+" "+success);
         }
 
         public void Start(TaskContext context)
         {
             remainingSeconds = durationSeconds;
             context.Motion.StopMoving();
+
+            if (context.Agent.noiseMakerModule != null)
+            {
+                context.Agent.noiseMakerModule.Bark(barkVolume01);
+            }
+            else
+            {
+                Debug.LogWarning($"[Task_Bark] {context.Agent.DisplayName} has no NoiseMakerModule; bark task produced no sound.");
+            }
         }
 
         private int debugDoubleTick = -1;

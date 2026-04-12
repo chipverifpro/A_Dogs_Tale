@@ -1,7 +1,9 @@
 #nullable enable
 using System;
 using System.Collections.Generic;
+using DogGame.LLM;
 using DogGame.Modules;
+using DogGame.Tasks;
 using DogGame.World;
 using Unity.InferenceEngine;
 using UnityEngine;
@@ -379,6 +381,62 @@ namespace DogGame.UI.InteractionWheel
                 : $"[InteractionModule] Could not close door on {target.DisplayName}.");
         }
 
+        private void HandleBark(WheelContext ctx)
+        {
+            if (ctx == null || ctx.actor == null || ctx.target == null)
+            {
+                Debug.LogWarning("[InteractionModule] Scent.Follow fired without a valid actor/target.", this);
+                return;
+            }
+
+            WorldObject actor = ctx.actor;
+
+            if (actor.taskController == null)
+            {
+                Debug.LogWarning($"[InteractionModule] {actor.DisplayName} has no TaskController; cannot bark.", this);
+                return;
+            }
+
+            actor.taskController.EnqueueTask(
+                task: new Task_Bark(volume:5),
+                priority: 80,
+                source: TaskSource.Player,
+                applyMode: LLMApplyMode.Interrupt,
+                tag: $"interaction_bark",
+                front: true);
+
+            Debug.Log($"[InteractionModule] {actor.DisplayName} enqueued bark.");
+
+        }
+        private void HandleScentFollow(WheelContext ctx)
+        {
+            if (ctx == null || ctx.actor == null || ctx.target == null)
+            {
+                Debug.LogWarning("[InteractionModule] Scent.Follow fired without a valid actor/target.", this);
+                return;
+            }
+
+            WorldObject actor = ctx.actor;
+            WorldObject target = ctx.target;
+
+            if (actor.taskController == null)
+            {
+                Debug.LogWarning($"[InteractionModule] {actor.DisplayName} has no TaskController; cannot follow scent.", this);
+                return;
+            }
+
+            string scentKey = $"agent:{target.ObjectId}";
+            actor.taskController.EnqueueTask(
+                task: new Task_ScentFollowLua(scentKey: scentKey, medium: ScentMedium.Ground),
+                priority: 80,
+                source: TaskSource.Player,
+                applyMode: LLMApplyMode.Interrupt,
+                tag: $"interaction_scent_follow:{scentKey}",
+                front: true);
+
+            Debug.Log($"[InteractionModule] {actor.DisplayName} following scent '{scentKey}' from target {target.DisplayName}.");
+        }
+
         private bool defaultEntriesBuilt = false;
 
         private void BuildDefaultEntriesIfNeeded()
@@ -589,12 +647,13 @@ namespace DogGame.UI.InteractionWheel
             BindAction("Quest.Get", ctx => Debug.Log("Quest.Get fired for " + ctx.target.name));
 
             // Sound
-            BindAction("Sound.Bark", ctx => Debug.Log("Sound.Bark fired for " + ctx.target.name));
+            //BindAction("Sound.Bark", ctx => Debug.Log("Sound.Bark fired for " + ctx.target.name));
+            BindAction("Sound.Bark", HandleBark);
 
             // ScentPerception
             BindAction("Scent.Sniff", ctx => Debug.Log("Scent.Sniff fired for " + ctx.target.name));
             BindAction("Scent.Deposit", ctx => Debug.Log("Scent.Deposit fired for " + ctx.target.name));
-            BindAction("Scent.Follow", ctx => Debug.Log("Scent.Follow fired for " + ctx.target.name));
+            BindAction("Scent.Follow", HandleScentFollow);
 
             // Dig
             BindAction("Dig.Up", ctx => Debug.Log("Dig.Up fired for " + ctx.target.name));

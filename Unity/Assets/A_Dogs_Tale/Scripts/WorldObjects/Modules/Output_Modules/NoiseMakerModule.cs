@@ -43,6 +43,11 @@ namespace DogGame.Modules
         [SerializeField] private float rangeStrafe = 12f;
         [SerializeField] private float rangeBackpedal = 12f;
 
+        [Header("Bark Noise")]
+        [SerializeField] private string barkClipName = "Bark";
+        [SerializeField] private float barkLoudnessAtFullVolume = 1.6f;
+        [SerializeField] private float barkRangeAtFullVolume = 24f;
+
         private MotionModule motionModule;
 
         private Vector3 lastPositionWorld;
@@ -263,9 +268,25 @@ namespace DogGame.Modules
             return NoiseManager.Instance.Add(ref noiseEvent);
         }
 
-        public void Bark()
+        public ulong Bark(float volume01 = 1f, VoiceIntentData? voiceIntentOverride = null)
         {
-            dir.audioPlayer.PlayClip("Bark_GS_once");
+            float clampedVolume = Mathf.Clamp01(volume01);
+
+            dir.audioPlayer?.PlayClip(barkClipName, Mathf.Max(0.1f, clampedVolume));
+
+            NoiseProfile profile = new NoiseProfile
+            {
+                profileId = "Dog.Bark",
+                category = NoiseCategory.Voice,
+                subtype = NoiseSubtype.Bark,
+                semanticTags = NoiseSemanticTags.None,
+                sourceLoudnessAtOneMeter = Mathf.Max(0.1f, barkLoudnessAtFullVolume * Mathf.Max(0.2f, clampedVolume)),
+                effectiveRangeHintMeters = Mathf.Max(1f, barkRangeAtFullVolume * Mathf.Lerp(0.35f, 1f, clampedVolume)),
+                priority = 1,
+                impulseIntervalSeconds = 0f
+            };
+
+            return Emit(profile, voiceIntentOverride: voiceIntentOverride);
         }
     }
 }

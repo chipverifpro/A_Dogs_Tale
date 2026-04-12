@@ -4,6 +4,7 @@ using UnityEngine;
 using DogGame.LLM;
 using DogGame.Tasks;
 using DogGame.Modules;
+using DogGame.Lua;
 
 namespace DogGame.Reactions
 {
@@ -273,6 +274,34 @@ namespace DogGame.Reactions
                 return true;
             }
 
+            if (name == "run_lua")
+            {
+                string fileNameLua = GetString(spec, "file", "");
+                if (string.IsNullOrWhiteSpace(fileNameLua))
+                {
+                    error = "run_lua requires file.";
+                    return false;
+                }
+
+                string entryFunction = GetString(spec, "entry", "tick");
+                float maxSeconds = GetFloat(spec, "maxSeconds", 120f);
+                string scentKey = GetString(spec, "scentKey", "");
+                string scentMedium = GetString(spec, "scentMedium", "ground");
+                float minThreshold = GetFloat(spec, "minThreshold", 0.0002f);
+                bool visitRoomCenterBeforeBacktracking = GetBool(spec, "visitRoomCenterBeforeBacktracking", true);
+
+                task = new Task_RunLua(
+                    fileNameLua: fileNameLua,
+                    entryFunction: entryFunction,
+                    maxSeconds: maxSeconds,
+                    scentKey: scentKey,
+                    scentMedium: ParseScentMedium(scentMedium),
+                    minThreshold: minThreshold,
+                    visitRoomCenterBeforeBacktracking: visitRoomCenterBeforeBacktracking,
+                    perceptionEvent: e);
+                return true;
+            }
+
             error = $"Unknown TaskSpec name '{spec.Name}'.";
             return false;
         }
@@ -340,6 +369,14 @@ namespace DogGame.Reactions
                 case "strafe": return WalkMode.Strafe;
                 default: return WalkMode.Walk;
             }
+        }
+
+        private static ScentMedium ParseScentMedium(string medium)
+        {
+            if (string.Equals(medium, "air", StringComparison.OrdinalIgnoreCase))
+                return ScentMedium.Air;
+
+            return ScentMedium.Ground;
         }
 
         private static bool TryGetTaskSpec(TaskSpec spec, string key, out TaskSpec value, out string? error)

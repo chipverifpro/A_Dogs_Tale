@@ -47,6 +47,7 @@ using UnityEditor.SettingsManagement;
 // Master Dungeon Generation Class...
 public partial class DungeonGenerator : MonoBehaviour
 {
+    #region parameters
     [Header("Dir Object")]
     public Dir dir;
 
@@ -63,6 +64,8 @@ public partial class DungeonGenerator : MonoBehaviour
     //void OnDisable() => Debug.Log($"[DG] OnDisable in scene '{gameObject.scene.name}' (id {GetInstanceID()})");
     //void OnDestroy() => Debug.LogWarning($"[DG] OnDestroy in scene '{gameObject.scene.name}' (id {GetInstanceID()})");
 
+    #endregion
+    #region Unity Functions
     void Awake()
     {
         InitializeConnections();
@@ -136,6 +139,8 @@ public partial class DungeonGenerator : MonoBehaviour
         EnableSplash();
     }
 
+    #endregion
+    #region TitleScreen
     // Enables the Splash screen in front of DungeonGenerator so start menu hides building process.
     public static void EnableSplash()
     {
@@ -161,6 +166,8 @@ public partial class DungeonGenerator : MonoBehaviour
         dir.audioPlayer.PlayClip("Mission Home Sweet Home");
     }
 
+    #endregion
+    
     // RegenerateDungeon is the main coroutine that handles dungeon generation.
     // It orchestrates the various steps involved in creating the dungeon layout.
     // Step 0: Select settings
@@ -174,6 +181,7 @@ public partial class DungeonGenerator : MonoBehaviour
     //  Draw Map by Rooms
     //  Draw Walls
 
+    #region RegenerateDungeon
     // call this instead of the coroutine directly to manage stopping previous runs.
     public void RegenerateDungeon()
     {
@@ -419,6 +427,9 @@ public partial class DungeonGenerator : MonoBehaviour
         TimeManager.Instance.DumpStats();
     }
 
+    #endregion
+
+    #region Floor tilt
     // ------------ Floor tile tilting functions ------------
     public IEnumerator TiltAllFloors(TimeTask tm = null)
     {
@@ -523,6 +534,8 @@ public partial class DungeonGenerator : MonoBehaviour
             (q.x == 0f && q.y == 0f && q.z == 0f && q.w == 0f); // invalid quaternion
     }
 
+    #endregion
+    #region DrawMapByRooms
 
     // Rooms list -> 2D tilemap
     public void DrawMapByRooms(List<Room> rooms, bool clearscreen = true)
@@ -996,6 +1009,8 @@ public partial class DungeonGenerator : MonoBehaviour
             }
     }
 
+    #endregion
+    #region MergeOverlappingRooms
     // NEW
     /// <summary>
     /// Merge rooms that overlap (share at least one tile).
@@ -1113,6 +1128,9 @@ public partial class DungeonGenerator : MonoBehaviour
         return true;
     }
 
+    #endregion
+    #region GetCellFromHf
+
     public Cell GetCellFromHf(int x, int y, int z, int threshold)
     {
         NeighborMatch match;
@@ -1137,6 +1155,8 @@ public partial class DungeonGenerator : MonoBehaviour
         return null;
     }
 
+    #endregion
+    #region Helper routines
     // =======================================================
     // helper routines
     // =======================================================
@@ -1192,5 +1212,7 @@ public partial class DungeonGenerator : MonoBehaviour
 
         //sceneryScatterer.ScatterScenery(floorCells);
     }
+
+    #endregion
 
 } // End class DungeonGenerator

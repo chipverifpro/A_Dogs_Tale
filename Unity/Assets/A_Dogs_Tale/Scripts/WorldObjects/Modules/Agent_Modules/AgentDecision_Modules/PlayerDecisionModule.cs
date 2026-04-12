@@ -690,7 +690,7 @@ namespace DogGame.Modules
         {
             if (!(taskController != null && taskController.IsDrivingMovement))
             {
-                Debug.Log("LLM was still driving movement when Player took over.");
+                Debug.Log($"[{worldObject.DisplayName}] LLM was still driving movement when Player took over.");
             }
             if (resume)
             {

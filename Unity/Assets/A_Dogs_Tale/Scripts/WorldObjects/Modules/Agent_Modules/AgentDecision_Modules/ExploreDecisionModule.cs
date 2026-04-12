@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using DogGame.Lua;
 using DogGame.LLM;
+using DogGame.Tasks;
 using InspectorTools;
 
 namespace DogGame.Modules
@@ -168,6 +169,7 @@ end
         [Tooltip("Runs the explore behavior through the Lua runtime instead of the built-in C# door queue.")]
         [SerializeField] private bool useLuaExploreScript = false;
         [SerializeField] private bool debugLuaExplore = true;
+        [SerializeField] private string luaExploreFileName = "ExploreMode.lua";
         [TextArea(8, 30)]
         [SerializeField] private string luaExploreScript = "";
         //[SerializeField] private float arriveDistance = 0.35f;
@@ -279,44 +281,40 @@ end
 
         private void TickLuaExplore(float deltaTime)
         {
-            if (!EnsureLuaExploreReady())
+            luaTaskController ??= GetComponent<TaskController>();
+            if (luaTaskController == null)
             {
-                LogLuaExplore("Tick skipped because Lua explore runtime is not ready.");
+                Debug.LogWarning($"[ExploreDecisionModule {worldObject.DisplayName}] Lua explore requires a TaskController.");
                 return;
             }
-
-            UpdateLuaExploreState();
-            luaRuntime!.SetState(
-                luaAgentState.Dog,
-                luaAgentState.Vision,
-                luaAgentState.Hearing,
-                luaAgentState.Scent,
-                luaAgentState.Pack,
-                luaAgentState.Env,
-                luaAgentState.Room,
-                luaAgentState.Task,
-                luaAgentState.Memory,
-                luaAgentState.Time);
-            luaRuntime.SetGlobal("VisitRoomCenterBeforeBacktracking", visitRoomCenterBeforeBacktracking);
-
-            LogLuaRoomState();
-            LogLuaTaskState();
-
-            if (luaTaskController!.IsDriving)
-            {
-                LogLuaExplore($"Ticking TaskController for active task '{luaTaskController.taskExecutor.CurrentTaskName ?? "<unknown>"}'.");
-                luaTaskController.Tick(deltaTime);
-                return;
-            }
-
-            LogLuaExplore("Calling Lua tick().");
-            luaRuntime.CallTick();
 
             if (luaTaskController.IsDriving)
             {
-                LogLuaExplore($"Lua enqueued '{luaTaskController.taskExecutor.CurrentTaskName ?? "<queued>"}'; ticking TaskController immediately.");
+                LogLuaTaskState();
                 luaTaskController.Tick(deltaTime);
+                return;
             }
+
+            string scriptFile = string.IsNullOrWhiteSpace(luaExploreFileName)
+                ? "ExploreMode.lua"
+                : luaExploreFileName.Trim();
+
+            LogLuaExplore($"Queueing Task_RunLua for '{scriptFile}'.");
+            luaTaskController.EnqueueTask(
+                task: new Task_RunLua(
+                    fileNameLua: scriptFile,
+                    entryFunction: "tick",
+                    maxSeconds: 600f,
+                    visitRoomCenterBeforeBacktracking: visitRoomCenterBeforeBacktracking),
+                priority: 35,
+                source: TaskSource.AI,
+                canInterrupt: false,
+                resumePrevious: false,
+                clearStackOnStart: false,
+                tag: $"LuaExplore:{scriptFile}",
+                front: false);
+
+            luaTaskController.Tick(deltaTime);
         }
 
         private bool EnsureLuaExploreReady()

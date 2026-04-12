@@ -127,6 +127,24 @@ namespace DogGame.Reactions
             TaskSpecBuilder.Task("routine_call")
                 .Arg("id", routineId)
                 .Build();
+
+        public static TaskSpec RunLua(
+            string fileNameLua,
+            string entryFunction = "tick",
+            float maxSeconds = 120f,
+            string scentKey = "",
+            string scentMedium = "ground",
+            float minThreshold = 0.0002f,
+            bool visitRoomCenterBeforeBacktracking = true) =>
+            TaskSpecBuilder.Task("run_lua")
+                .Arg("file", fileNameLua)
+                .Arg("entry", entryFunction)
+                .Arg("maxSeconds", maxSeconds)
+                .Arg("scentKey", scentKey)
+                .Arg("scentMedium", scentMedium)
+                .Arg("minThreshold", minThreshold)
+                .Arg("visitRoomCenterBeforeBacktracking", visitRoomCenterBeforeBacktracking)
+                .Build();
             
         // These take no explicit WorldObject parameter because routines/rules
         // typically act on the current Vision target or a blackboard-selected item.

@@ -1,5 +1,7 @@
 #nullable enable
 using System;
+using System.Diagnostics;
+using System.IO;
 using MoonSharp.Interpreter;
 using UnityEngine;
 using DogGame.Modules;
@@ -8,8 +10,15 @@ namespace DogGame.Lua
 {
     public class LuaRuntime
     {
+        private const int DefaultAutoYieldCounter = 2000;
+        private const int DefaultMaxResumeCount = 500;
+        private const long DefaultMaxCallMilliseconds = 8;
+
         private static bool userdataTypesRegistered = false;
         private readonly Script script;
+        private readonly int autoYieldCounter;
+        private readonly int maxResumeCount;
+        private readonly long maxCallMilliseconds;
         private readonly AgentState defaultState = new();
         private readonly ScentState defaultScentState = new();
         private readonly PackState defaultPackState = new();
@@ -18,20 +27,37 @@ namespace DogGame.Lua
         private readonly TaskState defaultTaskState = new();
         private readonly MemoryState defaultMemoryState = new();
         private readonly TimeState defaultTimeState = new();
-        private DogLuaBindings? bindings;
+        private LuaHelpers? bindings;
+        private string debugAgentName = "<unknown>";
+        private string debugScriptName = "<unloaded>";
 
         public LuaRuntime()
+            : this(
+                autoYieldCounter: DefaultAutoYieldCounter,
+                maxResumeCount: DefaultMaxResumeCount,
+                maxCallMilliseconds: DefaultMaxCallMilliseconds)
+        {
+        }
+
+        public LuaRuntime(int autoYieldCounter, int maxResumeCount, long maxCallMilliseconds)
         {
             RegisterUserdataTypesOnce();
+
+            this.autoYieldCounter = Math.Max(1, autoYieldCounter);
+            this.maxResumeCount = Math.Max(1, maxResumeCount);
+            this.maxCallMilliseconds = Math.Max(1L, maxCallMilliseconds);
 
             script = new Script();
 
             script.Options.DebugPrint = message =>
             {
-                Debug.Log("[Lua] " + message);
-                BottomBanner.LogRichMessage(BannerSense.None,BannerLevel.None,"<i>[Lua]</i> " + message, includeGameTime:true);
+                string prefix = BuildDebugPrefix();
+                UnityEngine.Debug.Log(prefix + " " + message);
+                BottomBanner.LogRichMessage(BannerSense.None,BannerLevel.None,"<i>" + prefix + "</i> " + message, includeGameTime:true);
             };
         }
+
+        public Script Script => script;
 
         private static void RegisterUserdataTypesOnce()
         {
@@ -58,21 +84,11 @@ namespace DogGame.Lua
             userdataTypesRegistered = true;
         }
 
-        public void RegisterBindings(DogLuaBindings bindings)
+        public void RegisterBindings(LuaHelpers bindings)
         {
             this.bindings = bindings;
-            script.Globals["Bark"] = (Action<int>)bindings.Bark;
-            script.Globals["MoveToEvent"] = (Action<float>)bindings.MoveToEvent;
-            script.Globals["MoveToTarget"] = (Action<float>)bindings.MoveToTarget;
-            script.Globals["FaceEventTarget"] = (Action<float, float>)bindings.FaceEventTarget;
-            script.Globals["MoveUntilEventSeen"] = (Action<float, float>)bindings.MoveUntilEventSeen;
-            script.Globals["MoveToEventSound"] = (Action<float>)bindings.MoveToEventSound;
-            script.Globals["Sniff"] = (Action<float>)bindings.Sniff;
-            script.Globals["FollowScent"] = (Action<string, string>)bindings.FollowScent;
-            script.Globals["FollowEventScent"] = (Action)bindings.FollowEventScent;
-            script.Globals["FollowEventScentAir"] = (Action)bindings.FollowEventScentAir;
-            script.Globals["GoThroughDoor"] = (Action<int>)bindings.GoThroughDoor;
-            script.Globals["GoToRoomCenter"] = (Action)bindings.GoToRoomCenter;
+            debugAgentName = bindings.ObserverDisplayName;
+            bindings.Register(script);
         }
 
         public void SetState(DogState dogState, VisionState visionState, HearingState hearingState)
@@ -88,6 +104,21 @@ namespace DogGame.Lua
                 defaultTaskState,
                 defaultMemoryState,
                 defaultTimeState);
+        }
+
+        public void SetState(AgentState agentState)
+        {
+            SetState(
+                agentState.Dog,
+                agentState.Vision,
+                agentState.Hearing,
+                agentState.Scent,
+                agentState.Pack,
+                agentState.Env,
+                agentState.Room,
+                agentState.Task,
+                agentState.Memory,
+                agentState.Time);
         }
 
         public void SetState(
@@ -143,76 +174,120 @@ namespace DogGame.Lua
 
         public bool LoadScript(string luaCode)
         {
+            return LoadScript(luaCode, "lua_script");
+        }
+
+        public bool LoadScript(string luaCode, string friendlyName)
+        {
+            debugScriptName = string.IsNullOrWhiteSpace(friendlyName)
+                ? "lua_script"
+                : Path.GetFileName(friendlyName);
+
             try
             {
-                script.DoString(luaCode);
+                script.DoString(luaCode, null, friendlyName);
                 return true;
             }
             catch (InterpreterException exception)
             {
-                Debug.LogError("[LuaRuntime] Lua load error: " + exception.DecoratedMessage);
+                UnityEngine.Debug.LogError("[LuaRuntime] Lua load error: " + exception.DecoratedMessage);
                 return false;
             }
             catch (Exception exception)
             {
-                Debug.LogError("[LuaRuntime] General load error: " + exception);
+                UnityEngine.Debug.LogError("[LuaRuntime] General load error: " + exception);
                 return false;
             }
         }
 
         public bool CallReact()
         {
-            try
-            {
-                DynValue reactFunction = script.Globals.Get("react");
-
-                if (reactFunction.IsNil())
-                {
-                    Debug.LogError("[LuaRuntime] Lua function 'react' was not found.");
-                    return false;
-                }
-
-                DynValue perceptionEvent = script.Globals.Get("Event");
-                script.Call(reactFunction, perceptionEvent);
-                return true;
-            }
-            catch (InterpreterException exception)
-            {
-                Debug.LogError("[LuaRuntime] Lua runtime error: " + exception.DecoratedMessage);
-                return false;
-            }
-            catch (Exception exception)
-            {
-                Debug.LogError("[LuaRuntime] General runtime error: " + exception);
-                return false;
-            }
+            DynValue perceptionEvent = script.Globals.Get("Event");
+            return CallFunction("react", perceptionEvent);
         }
 
         public bool CallTick()
         {
+            return CallFunction("tick");
+        }
+
+        public bool CallFunction(string functionName, params object?[] args)
+        {
             try
             {
-                DynValue tickFunction = script.Globals.Get("tick");
-
-                if (tickFunction.IsNil())
+                DynValue function = script.Globals.Get(functionName);
+                if (function.IsNil())
                 {
-                    Debug.LogError("[LuaRuntime] Lua function 'tick' was not found.");
+                    UnityEngine.Debug.LogError($"[LuaRuntime] Lua function '{functionName}' was not found.");
                     return false;
                 }
 
-                script.Call(tickFunction);
+                DynValue coroutineValue = script.CreateCoroutine(function);
+                MoonSharp.Interpreter.Coroutine coroutine = coroutineValue.Coroutine;
+                coroutine.AutoYieldCounter = autoYieldCounter;
+
+                Stopwatch stopwatch = Stopwatch.StartNew();
+                DynValue[] dynArgs = BuildDynArgs(args);
+                DynValue callResult = dynArgs.Length == 0
+                    ? coroutine.Resume()
+                    : coroutine.Resume(dynArgs);
+                int resumeCount = 0;
+
+                while (coroutine.State == CoroutineState.ForceSuspended)
+                {
+                    resumeCount++;
+                    if (resumeCount > maxResumeCount || stopwatch.ElapsedMilliseconds > maxCallMilliseconds+1000)
+                    {
+                        UnityEngine.Debug.LogError($"[LuaRuntime] Lua function '{functionName}' exceeded the execution budget.  stopwatch={stopwatch.ElapsedMilliseconds} > max={maxCallMilliseconds}");
+                        return false;
+                    }
+
+                    callResult = coroutine.Resume();
+                }
+
+                if (coroutine.State != CoroutineState.Dead)
+                {
+                    UnityEngine.Debug.LogError($"[LuaRuntime] Lua function '{functionName}' yielded unexpectedly (state={coroutine.State}, type={callResult.Type}).");
+                    return false;
+                }
+
                 return true;
             }
             catch (InterpreterException exception)
             {
-                Debug.LogError("[LuaRuntime] Lua runtime error: " + exception.DecoratedMessage);
+                UnityEngine.Debug.LogError("[LuaRuntime] Lua runtime error: " + exception.DecoratedMessage);
                 return false;
             }
             catch (Exception exception)
             {
-                Debug.LogError("[LuaRuntime] General runtime error: " + exception);
+                UnityEngine.Debug.LogError("[LuaRuntime] General runtime error: " + exception);
                 return false;
             }
+        }
+
+        private DynValue[] BuildDynArgs(object?[] args)
+        {
+            if (args == null || args.Length == 0)
+                return Array.Empty<DynValue>();
+
+            DynValue[] dynArgs = new DynValue[args.Length];
+            for (int i = 0; i < args.Length; i++)
+            {
+                object? arg = args[i];
+                dynArgs[i] = arg switch
+                {
+                    null => DynValue.Nil,
+                    DynValue dynValue => dynValue,
+                    _ => DynValue.FromObject(script, arg)
+                };
+            }
+
+            return dynArgs;
+        }
+
+        private string BuildDebugPrefix()
+        {
+            return $"[Lua agent={debugAgentName} script={debugScriptName}]";
         }
     }
 }
