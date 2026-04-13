@@ -5242,6 +5242,7 @@ Transform:
   m_Children:
   - {fileID: 6191479115019793372}
   - {fileID: 1651296778}
+  - {fileID: 1345767137}
   m_Father: {fileID: 125976611}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &766807149
@@ -5274,6 +5275,7 @@ MonoBehaviour:
   leader: {fileID: 6544990386685219154}
   followers:
   - {fileID: 1651296793}
+  - {fileID: 1345767169}
   crumbs: []
   lastDropPos: {x: 0, y: 0}
   hasAny: 0
@@ -7260,6 +7262,17 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ScentGUI
   sniffVisuals: {fileID: 1135862881}
+  scentSpriteResourcePath: Sprites/SensesSymbolsColor_v4
+  noseButtonSize: 88
+  noseButtonMargin: 24
+  dropdownWidth: 320
+  dropdownMaxHeight: 420
+  uiSortOrder: 5100
+  noseButtonColor: {r: 0.96, g: 0.95, b: 0.9, a: 0.96}
+  dropdownBackgroundColor: {r: 0.97, g: 0.96, b: 0.91, a: 0.98}
+  dropdownRowColor: {r: 1, g: 1, b: 1, a: 0.9}
+  dropdownSelectedColor: {r: 0.88, g: 0.79, b: 0.55, a: 0.95}
+  dropdownTextColor: {r: 0.19, g: 0.15, b: 0.08, a: 1}
 --- !u!1 &1153576251
 GameObject:
   m_ObjectHideFlags: 0
@@ -7549,6 +7562,104 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   m_IsOn: 1
+--- !u!1001 &1186582954
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 766807148}
+    m_Modifications:
+    - target: {fileID: -7755314165013992688, guid: bcc8732b8b44622449c23934f89e68c0,
+        type: 3}
+      propertyPath: targetObject
+      value: 
+      objectReference: {fileID: 6544990386685219154}
+    - target: {fileID: -7755314165013992688, guid: bcc8732b8b44622449c23934f89e68c0,
+        type: 3}
+      propertyPath: enableStallRecovery
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -7755314165013992688, guid: bcc8732b8b44622449c23934f89e68c0,
+        type: 3}
+      propertyPath: stallTicksBeforeRecover
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: -5624995233342408198, guid: bcc8732b8b44622449c23934f89e68c0,
+        type: 3}
+      propertyPath: initialDecisionType
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 186757882122740016, guid: bcc8732b8b44622449c23934f89e68c0,
+        type: 3}
+      propertyPath: m_Name
+      value: elder_Female_A
+      objectReference: {fileID: 0}
+    - target: {fileID: 710636224206764938, guid: bcc8732b8b44622449c23934f89e68c0,
+        type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 5.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 710636224206764938, guid: bcc8732b8b44622449c23934f89e68c0,
+        type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 710636224206764938, guid: bcc8732b8b44622449c23934f89e68c0,
+        type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 5.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 710636224206764938, guid: bcc8732b8b44622449c23934f89e68c0,
+        type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 710636224206764938, guid: bcc8732b8b44622449c23934f89e68c0,
+        type: 3}
+      propertyPath: m_LocalRotation.x
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 710636224206764938, guid: bcc8732b8b44622449c23934f89e68c0,
+        type: 3}
+      propertyPath: m_LocalRotation.y
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 710636224206764938, guid: bcc8732b8b44622449c23934f89e68c0,
+        type: 3}
+      propertyPath: m_LocalRotation.z
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 710636224206764938, guid: bcc8732b8b44622449c23934f89e68c0,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 710636224206764938, guid: bcc8732b8b44622449c23934f89e68c0,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 710636224206764938, guid: bcc8732b8b44622449c23934f89e68c0,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6862504200042160624, guid: bcc8732b8b44622449c23934f89e68c0,
+        type: 3}
+      propertyPath: m_ApplyRootMotion
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6964253449126897533, guid: bcc8732b8b44622449c23934f89e68c0,
+        type: 3}
+      propertyPath: PaletteOverride
+      value: 
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: bcc8732b8b44622449c23934f89e68c0, type: 3}
 --- !u!1 &1192071976
 GameObject:
   m_ObjectHideFlags: 0
@@ -9539,6 +9650,24 @@ Camera:
   m_OcclusionCulling: 1
   m_StereoConvergence: 10
   m_StereoSeparation: 0.022
+--- !u!4 &1345767137 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 710636224206764938, guid: bcc8732b8b44622449c23934f89e68c0,
+    type: 3}
+  m_PrefabInstance: {fileID: 1186582954}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1345767169 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: -1740260722340342959, guid: bcc8732b8b44622449c23934f89e68c0,
+    type: 3}
+  m_PrefabInstance: {fileID: 1186582954}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b112db3959c164550975dd26677f8e8e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::WorldObject
 --- !u!1 &1350611106
 GameObject:
   m_ObjectHideFlags: 0
@@ -13048,14 +13177,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::BottomBanner
   backgroundColor: {r: 0.9, g: 0.9, b: 0.9, a: 0.75}
   textColor: {r: 0.13, g: 0.13, b: 0.13, a: 1}
-  fontSize: 24
+  fontSize: 30
   height: 64
   sidePadding: 16
   useSafeArea: 1
   visibleLineCount: 3
   rowMinHeight: 32
   rowSpacing: 4
-  iconSize: 32
+  iconSize: 60
   maxMessageLines: 2
   spriteSheetResourcePath: Sprites/SensesSymbolsColor_v4
   defaultDisplayUsesRichText: 1
@@ -16366,7 +16495,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.AgentModule
   agentName: German Shepherd
-  initialDecisionType: 7
+  initialDecisionType: 1
   currentDecisionModule: {fileID: 6544990386685219152}
 --- !u!114 &6544990386685219144
 MonoBehaviour:
