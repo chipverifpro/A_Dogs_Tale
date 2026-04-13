@@ -16,10 +16,24 @@ namespace CityPeople
         private Material PaletteOverride;
         public string CurrentPaletteName { get; private set; }
 
+        [Header("All animations capable")]
         public AnimationClip[] myClips;
-        public AnimationClip cl;
+        [Header("Index of desired clip")]   // Adjust based on order of clips in Animator
+        public int idleClip = 0;
+        public int walkClip = 1;
+        public int jogClip = 2;
 
-        public Vector3 prev_pos3_world;
+        [Header("Current clip and speed")]
+        public AnimationClip cl;
+        public float currentSpeed;
+
+        [Header("Thresholds for walk/run detection")]
+        [Tooltip("Walk threshold set to < 2")]
+        public float walkSpeed = 0.25f;    // standard walk is 2
+        [Tooltip("Run threshold set to < 4.5")]
+        public float jogSpeed = 3.25f;     // standard run is 4.5
+
+        private Vector3 prev_pos3_world;
 
         private Animator animator;
         public const string people_pal_prefix = "people_pal";
@@ -116,21 +130,33 @@ namespace CityPeople
 
         public void Update()
         {
-            Debug.Log((transform.position - prev_pos3_world).sqrMagnitude);
-            if ((transform.position - prev_pos3_world).sqrMagnitude > 0.0001f)
+            float delta = Time.deltaTime;
+            float moveSqr = ((transform.position - prev_pos3_world)/delta).sqrMagnitude;
+            currentSpeed = Mathf.Sqrt(moveSqr);   // debug only, remove when not needed anymore
+            float jogSqr = jogSpeed * jogSpeed;
+            float walkSqr = walkSpeed * walkSpeed;
+            //Debug.Log((transform.position - prev_pos3_world).sqrMagnitude);
+            if (moveSqr > jogSqr)
             {
-                if (cl!=myClips[1])
+                if (cl!=myClips[jogClip])
                 {
-                    cl = myClips[1];  // walking
-                    animator.CrossFadeInFixedTime(cl.name, 1.0f, -1, Random.value * cl.length);
-                    transform.hasChanged = false;
+                    cl = myClips[jogClip];  // running
+                    animator.CrossFadeInFixedTime(cl.name, 0.25f, -1, Random.value * cl.length);
+                }
+            }
+            else if (moveSqr > walkSqr)
+            {
+                if (cl!=myClips[walkClip])
+                {
+                    cl = myClips[walkClip];  // walking
+                    animator.CrossFadeInFixedTime(cl.name, 0.25f, -1, Random.value * cl.length);
                 }
             }
             else
             {
-                if (cl!=myClips[0])
+                if (cl!=myClips[idleClip])
                 {
-                    cl = myClips[0];  // standing still
+                    cl = myClips[idleClip];  // standing still
                     animator.CrossFadeInFixedTime(cl.name, 1.0f, -1, Random.value * cl.length);
                 }            
             }
