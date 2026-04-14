@@ -18,11 +18,11 @@ namespace Seagull.Interior_I1.Inspector {
         public static void selectionChange(GameObject old, GameObject neu) {
             if (old != null) {
                 var hider = getHider(old);
-                hider?.update(false);
+                hider?.updateHider(false);
             }
             if (neu != null) {
                 var hider = getHider(neu);
-                hider?.update(true);
+                hider?.updateHider(true);
             }
         }
 

@@ -7,9 +7,12 @@ public partial class DungeonGenerator : MonoBehaviour
 {
     [SerializeField] private ElementStore elementStore;
     [SerializeField] private string wallpaperResourcesPath = "Sprites/Wallpaper";
+    [SerializeField] private string wallpaperResourcesPath_mirror = "Sprites/Wallpaper_Mirror";
 
     private readonly Dictionary<int, Texture2D> roomWallpaperByRoomIndex = new();
+    private readonly Dictionary<int, Texture2D> roomWallpaperMirrorByRoomIndex = new();
     private Texture2D[] cachedWallpaperTextures;
+    private Texture2D[] cachedWallpaperTexturesMirror;
 
     [Header("Floor Appearance")]
     [Tooltip("0 = solid color, 1 = black & white check")]
@@ -48,24 +51,24 @@ public partial class DungeonGenerator : MonoBehaviour
     static Vector3 CornerOffset(bool east, bool north, Vector3 cell)
     {
         // Don't offset, leaving wall diagonally across the center of the tile.
-        float ox = (east ? +1f : -1f) * (cell.x * 0f);
-        float oz = (north ? +1f : -1f) * (cell.y * 0f); // grid.y maps to world Z
+        float offsetX = (east ? +1f : -1f) * (cell.x * 0f);
+        float offsetZ = (north ? +1f : -1f) * (cell.y * 0f); // grid.y maps to world Z
 
         // Offset from tile center toward a corner (¼ cell each axis)
-        //float ox = (east  ? +1f : -1f) * (cell.x * 0.25f);
-        //float oz = (north ? +1f : -1f) * (cell.y * 0.25f); // grid.y maps to world Z
-        return new Vector3(ox, 0f, oz);
+        //float offsetX = (east  ? +1f : -1f) * (cell.x * 0.25f);
+        //float offsetZ = (north ? +1f : -1f) * (cell.y * 0.25f); // grid.y maps to world Z
+        return new Vector3(offsetX, 0f, offsetZ);
     }
 
     static float DiagonalInsideLength(Vector3 cell)
     {
         // Lenght of strip across the center of the tile (corner to corner):
-        float hx = cell.x * 1f;
-        float hz = cell.y * 1f;
+        float halfWidthX = cell.x * 1f;
+        float halfWidthZ = cell.y * 1f;
         // Length of a strip across the tile on a 45° diagonal (midpoint to midpoint):
-        //float hx = cell.x * 0.5f;
-        //float hz = cell.y * 0.5f;
-        return Mathf.Sqrt(hx * hx + hz * hz);
+        //float halfWidthX = cell.x * 0.5f;
+        //float halfWidthZ = cell.y * 0.5f;
+        return Mathf.Sqrt(halfWidthX * halfWidthX + halfWidthZ * halfWidthZ);
     }
 
     // if root exists, destroy all 3D objects under it.
@@ -73,8 +76,8 @@ public partial class DungeonGenerator : MonoBehaviour
     public void Destroy3D()
     {
         if (root == null) return;
-        for (int i = root.childCount - 1; i >= 0; i--)
-            Destroy(root.GetChild(i).gameObject);
+        for (int childIndex = root.childCount - 1; childIndex >= 0; childIndex--)
+            Destroy(root.GetChild(childIndex).gameObject);
     }
 
     // 3D Build routine from rooms list.  Places prefabs in correct places.
@@ -91,7 +94,9 @@ public partial class DungeonGenerator : MonoBehaviour
             //Destroy3D(); // Clear old objects -- old version
             elementStore.ClearInstances(); // New version using ManufactureGO
             roomWallpaperByRoomIndex.Clear();
+            roomWallpaperMirrorByRoomIndex.Clear();
             cachedWallpaperTextures = null;
+            cachedWallpaperTexturesMirror = null;
 
             for (int room_number = 0; room_number < rooms.Count; room_number++)
             {
@@ -118,16 +123,17 @@ public partial class DungeonGenerator : MonoBehaviour
 
         try
         {
-            Vector3 mid = new();
+            Vector3 wallMidpoint = new();
             Vector3 world = new();
-            Vector3 nWorld = new();
-            Vector3 cell = grid.cellSize;
-            bool use_triangle_floor = false;
-            int triangle_floor_dir = 0;
-            DirFlags mywalls = DirFlags.None;
-            DirFlags mydoors = DirFlags.None;
+            Vector3 neighborWorld = new();
+            Vector3 cellSize = grid.cellSize;
+            bool useTriangleFloor = false;
+            int triangleFloorDirection = 0;
+            DirFlags cellWalls = DirFlags.None;
+            DirFlags cellDoors = DirFlags.None;
             Color colorScent = getColor(Color.purple);
-            Texture2D roomWallpaper = GetWallpaperTextureForRoom(room_number);
+            Texture2D roomWallpaper = GetWallpaperTextureForRoom(room_number, useMirror: false);
+            Texture2D roomWallpaperMirror = GetWallpaperTextureForRoom(room_number, useMirror: true);
 
             string room_name = rooms[room_number].name;
             int num_cells = rooms[room_number].cells.Count;
@@ -142,7 +148,7 @@ public partial class DungeonGenerator : MonoBehaviour
                 int z = pos.y;
                 int ySteps = rooms[room_number].cells[cell_number].height;
                 bool isFloor = true;
-                use_triangle_floor = false;
+                useTriangleFloor = false;
                 Color colorFloor = rooms[room_number].cells[cell_number].colorFloor;
                 if (colorFloor == colorDefault) // if cell has no color, use room's color
                     colorFloor = rooms[room_number].colorFloor;
@@ -150,40 +156,43 @@ public partial class DungeonGenerator : MonoBehaviour
                 // Base world position of this tile center
                 world = grid.CellToWorld(new Vector3Int(x, z, 0));
 
-                mydoors = rooms[room_number].cells[cell_number].doors;
-                bool ND = mydoors.HasFlag(DirFlags.N);
-                bool ED = mydoors.HasFlag(DirFlags.E);
-                bool SD = mydoors.HasFlag(DirFlags.S);
-                bool WD = mydoors.HasFlag(DirFlags.W);
+                cellDoors = rooms[room_number].cells[cell_number].doors;
+                bool northDoor = cellDoors.HasFlag(DirFlags.N);
+                bool eastDoor = cellDoors.HasFlag(DirFlags.E);
+                bool southDoor = cellDoors.HasFlag(DirFlags.S);
+                bool westDoor = cellDoors.HasFlag(DirFlags.W);
 
-                int num_doors = (ND ? 1 : 0) + (SD ? 1 : 0) + (ED ? 1 : 0) + (WD ? 1 : 0);
+                int num_doors = (northDoor ? 1 : 0) + (southDoor ? 1 : 0) + (eastDoor ? 1 : 0) + (westDoor ? 1 : 0);
 
                 // -------- diagonal corner smoothing (before orthogonal perimeter faces) --------
-                bool suppressN = false, suppressE = false, suppressS = false, suppressW = false;
+                bool suppressNorth = false;
+                bool suppressEast = false;
+                bool suppressSouth = false;
+                bool suppressWest = false;
 
                 if (num_doors == 0 && cfg.useDiagonalCorners && isFloor && diagonalWallPrefab != null)
                 {
-                    mywalls = rooms[room_number].cells[cell_number].walls;
-                    bool N = mywalls.HasFlag(DirFlags.N);
-                    bool E = mywalls.HasFlag(DirFlags.E);
-                    bool S = mywalls.HasFlag(DirFlags.S);
-                    bool W = mywalls.HasFlag(DirFlags.W);
+                    cellWalls = rooms[room_number].cells[cell_number].walls;
+                    bool northWall = cellWalls.HasFlag(DirFlags.N);
+                    bool eastWall = cellWalls.HasFlag(DirFlags.E);
+                    bool southWall = cellWalls.HasFlag(DirFlags.S);
+                    bool westWall = cellWalls.HasFlag(DirFlags.W);
 
-                    int num_walls = (N ? 1 : 0) + (S ? 1 : 0) + (E ? 1 : 0) + (W ? 1 : 0);
+                    int num_walls = (northWall ? 1 : 0) + (southWall ? 1 : 0) + (eastWall ? 1 : 0) + (westWall ? 1 : 0);
 
                     if (num_walls == 2)  // must have exactly two walls to use diagonal wall
                     {
                         float floorY = ySteps * cfg.unitHeight;
-                        float wallH = Mathf.Max(1, cfg.perimeterWallSteps) * cfg.unitHeight;
-                        float diagLen = DiagonalInsideLength(cell);
-                        Vector3 baseY = new Vector3(0f, floorY + wallH * 0.5f, 0f);
+                        float wallHeight = Mathf.Max(1, cfg.perimeterWallSteps) * cfg.unitHeight;
+                        float diagonalLength = DiagonalInsideLength(cellSize);
+                        Vector3 wallVerticalOffset = new Vector3(0f, floorY + wallHeight * 0.5f, 0f);
 
                         // NE corner (N & E)
-                        if (N && E)
+                        if (northWall && eastWall)
                         {
-                            Vector3 posWorld = world + CornerOffset(east: true, north: true, cell) + baseY;
-                            Quaternion rot = Yaw45;
-                            Vector3 scale = new Vector3(cell.x * 0.1f, wallH, diagLen);
+                            Vector3 wallPosition = world + CornerOffset(east: true, north: true, cellSize) + wallVerticalOffset;
+                            Quaternion wallRotation = Yaw45;
+                            Vector3 wallScale = new Vector3(cellSize.x * 0.1f, wallHeight, diagonalLength);
 
                             elementStore.AddWall(
                                 archetypeId: "DiagonalWall",
@@ -191,24 +200,24 @@ public partial class DungeonGenerator : MonoBehaviour
                                 roomIndex: room_number,
                                 cellCoord: new Vector2Int(x, z),
                                 heightSteps: ySteps,
-                                worldPos: posWorld,
-                                rotation: rot,
-                                scale: scale,
+                                worldPos: wallPosition,
+                                rotation: wallRotation,
+                                scale: wallScale,
                                 color: Color.white,
                                 textureOverride: roomWallpaper,
                                 customFlags: 0
                             );
 
-                            use_triangle_floor = true;
-                            triangle_floor_dir = 0;
-                            if (cfg.skipOrthogonalWhenDiagonal) { suppressN = true; suppressE = true; }
+                            useTriangleFloor = true;
+                            triangleFloorDirection = 0;
+                            if (cfg.skipOrthogonalWhenDiagonal) { suppressNorth = true; suppressEast = true; }
                         }
                         // NW corner (N & W)
-                        if (N && W)
+                        if (northWall && westWall)
                         {
-                            Vector3 posWorld = world + CornerOffset(east: false, north: true, cell) + baseY;
-                            Quaternion rot = Yaw315;
-                            Vector3 scale = new Vector3(cell.x * 0.1f, wallH, diagLen);
+                            Vector3 wallPosition = world + CornerOffset(east: false, north: true, cellSize) + wallVerticalOffset;
+                            Quaternion wallRotation = Yaw315;
+                            Vector3 wallScale = new Vector3(cellSize.x * 0.1f, wallHeight, diagonalLength);
 
                             elementStore.AddWall(
                                 archetypeId: "DiagonalWall",
@@ -216,24 +225,24 @@ public partial class DungeonGenerator : MonoBehaviour
                                 roomIndex: room_number,
                                 cellCoord: new Vector2Int(x, z),
                                 heightSteps: ySteps,
-                                worldPos: posWorld,
-                                rotation: rot,
-                                scale: scale,
+                                worldPos: wallPosition,
+                                rotation: wallRotation,
+                                scale: wallScale,
                                 color: Color.white,
                                 textureOverride: roomWallpaper,
                                 customFlags: 0
                             );
 
-                            use_triangle_floor = true;
-                            triangle_floor_dir = 3;
-                            if (cfg.skipOrthogonalWhenDiagonal) { suppressN = true; suppressW = true; }
+                            useTriangleFloor = true;
+                            triangleFloorDirection = 3;
+                            if (cfg.skipOrthogonalWhenDiagonal) { suppressNorth = true; suppressWest = true; }
                         }
                         // SE corner (S & E)
-                        if (S && E)
+                        if (southWall && eastWall)
                         {
-                            Vector3 posWorld = world + CornerOffset(east: true, north: false, cell) + baseY;
-                            Quaternion rot = Yaw135;
-                            Vector3 scale = new Vector3(cell.x * 0.1f, wallH, diagLen);
+                            Vector3 wallPosition = world + CornerOffset(east: true, north: false, cellSize) + wallVerticalOffset;
+                            Quaternion wallRotation = Yaw135;
+                            Vector3 wallScale = new Vector3(cellSize.x * 0.1f, wallHeight, diagonalLength);
 
                             elementStore.AddWall(
                                 archetypeId: "DiagonalWall",
@@ -241,24 +250,24 @@ public partial class DungeonGenerator : MonoBehaviour
                                 roomIndex: room_number,
                                 cellCoord: new Vector2Int(x, z),
                                 heightSteps: ySteps,
-                                worldPos: posWorld,
-                                rotation: rot,
-                                scale: scale,
+                                worldPos: wallPosition,
+                                rotation: wallRotation,
+                                scale: wallScale,
                                 color: Color.white,
                                 textureOverride: roomWallpaper,
                                 customFlags: 0
                             );
 
-                            use_triangle_floor = true;
-                            triangle_floor_dir = 1;
-                            if (cfg.skipOrthogonalWhenDiagonal) { suppressS = true; suppressE = true; }
+                            useTriangleFloor = true;
+                            triangleFloorDirection = 1;
+                            if (cfg.skipOrthogonalWhenDiagonal) { suppressSouth = true; suppressEast = true; }
                         }
                         // SW corner (S & W)
-                        if (S && W)
+                        if (southWall && westWall)
                         {
-                            Vector3 posWorld = world + CornerOffset(east: false, north: false, cell) + baseY;
-                            Quaternion rot = Yaw225;
-                            Vector3 scale = new Vector3(cell.x * 0.1f, wallH, diagLen);
+                            Vector3 wallPosition = world + CornerOffset(east: false, north: false, cellSize) + wallVerticalOffset;
+                            Quaternion wallRotation = Yaw225;
+                            Vector3 wallScale = new Vector3(cellSize.x * 0.1f, wallHeight, diagonalLength);
 
                             elementStore.AddWall(
                                 archetypeId: "DiagonalWall",
@@ -266,124 +275,127 @@ public partial class DungeonGenerator : MonoBehaviour
                                 roomIndex: room_number,
                                 cellCoord: new Vector2Int(x, z),
                                 heightSteps: ySteps,
-                                worldPos: posWorld,
-                                rotation: rot,
-                                scale: scale,
+                                worldPos: wallPosition,
+                                rotation: wallRotation,
+                                scale: wallScale,
                                 color: Color.white,
                                 textureOverride: roomWallpaper,
                                 customFlags: 0
                             );
 
-                            use_triangle_floor = true;
-                            triangle_floor_dir = 2;
-                            if (cfg.skipOrthogonalWhenDiagonal) { suppressS = true; suppressW = true; }
+                            useTriangleFloor = true;
+                            triangleFloorDirection = 2;
+                            if (cfg.skipOrthogonalWhenDiagonal) { suppressSouth = true; suppressWest = true; }
                         }
                     }
                 }
                 // -------- end diagonal corner smoothing, start straight walls/cliffs --------
 
-                for (int i = 0; i < 4; i++)
+                for (int directionIndex = 0; directionIndex < 4; directionIndex++)
                 {
-                    Vector2Int d = Dir4[i];
-                    int nx = x + d.x;
-                    int nz = z + d.y;
-                    bool nIsWall = false;
-                    bool nIsDoor = false;
+                    Vector2Int direction = Dir4[directionIndex];
+                    int neighborX = x + direction.x;
+                    int neighborZ = z + direction.y;
+                    bool neighborIsWall = false;
+                    bool neighborIsDoor = false;
 
-                    mywalls = rooms[room_number].cells[cell_number].walls;
-                    mydoors = rooms[room_number].cells[cell_number].doors;
+                    cellWalls = rooms[room_number].cells[cell_number].walls;
+                    cellDoors = rooms[room_number].cells[cell_number].doors;
 
-                    if (nx < 0 || nz < 0 || nx >= cfg.mapWidth || nz >= cfg.mapHeight)
+                    if (neighborX < 0 || neighborZ < 0 || neighborX >= cfg.mapWidth || neighborZ >= cfg.mapHeight)
                     {
-                        nIsWall = true;     // off map
-                        nIsDoor = false;
+                        neighborIsWall = true;     // off map
+                        neighborIsDoor = false;
                     }
 
-                    if (d.x == 0 && d.y == 1) nIsWall = mywalls.HasFlag(DirFlags.N);
-                    if (d.x == 1 && d.y == 0) nIsWall = mywalls.HasFlag(DirFlags.E);
-                    if (d.x == 0 && d.y == -1) nIsWall = mywalls.HasFlag(DirFlags.S);
-                    if (d.x == -1 && d.y == 0) nIsWall = mywalls.HasFlag(DirFlags.W);
+                    if (direction.x == 0 && direction.y == 1) neighborIsWall = cellWalls.HasFlag(DirFlags.N);
+                    if (direction.x == 1 && direction.y == 0) neighborIsWall = cellWalls.HasFlag(DirFlags.E);
+                    if (direction.x == 0 && direction.y == -1) neighborIsWall = cellWalls.HasFlag(DirFlags.S);
+                    if (direction.x == -1 && direction.y == 0) neighborIsWall = cellWalls.HasFlag(DirFlags.W);
 
-                    if (d.x == 0 && d.y == 1) nIsDoor = mydoors.HasFlag(DirFlags.N);
-                    if (d.x == 1 && d.y == 0) nIsDoor = mydoors.HasFlag(DirFlags.E);
-                    if (d.x == 0 && d.y == -1) nIsDoor = mydoors.HasFlag(DirFlags.S);
-                    if (d.x == -1 && d.y == 0) nIsDoor = mydoors.HasFlag(DirFlags.W);
+                    if (direction.x == 0 && direction.y == 1) neighborIsDoor = cellDoors.HasFlag(DirFlags.N);
+                    if (direction.x == 1 && direction.y == 0) neighborIsDoor = cellDoors.HasFlag(DirFlags.E);
+                    if (direction.x == 0 && direction.y == -1) neighborIsDoor = cellDoors.HasFlag(DirFlags.S);
+                    if (direction.x == -1 && direction.y == 0) neighborIsDoor = cellDoors.HasFlag(DirFlags.W);
 
                     // If current is FLOOR and neighbor is WALL or DOOR => perimeter face
-                    if (isFloor && (nIsWall || nIsDoor) && cliffPrefab != null)
+                    if (isFloor && (neighborIsWall || neighborIsDoor) && cliffPrefab != null)
                     {
-                        if ((d.x == 0 && d.y == 1 && suppressN) ||
-                            (d.x == 1 && d.y == 0 && suppressE) ||
-                            (d.x == 0 && d.y == -1 && suppressS) ||
-                            (d.x == -1 && d.y == 0 && suppressW))
+                        if ((direction.x == 0 && direction.y == 1 && suppressNorth) ||
+                            (direction.x == 1 && direction.y == 0 && suppressEast) ||
+                            (direction.x == 0 && direction.y == -1 && suppressSouth) ||
+                            (direction.x == -1 && direction.y == 0 && suppressWest))
                         {
                             // skip orthogonal; diagonal was already placed
                         }
                         else
                         {
-                            nWorld = grid.CellToWorld(new Vector3Int(nx, nz, 0));
-                            mid = 0.5f * (world + nWorld);
+                            neighborWorld = grid.CellToWorld(new Vector3Int(neighborX, neighborZ, 0));
+                            wallMidpoint = 0.5f * (world + neighborWorld);
 
                             int floorSteps = rooms[room_number].cells[cell_number].height;
-                            float ht = Mathf.Max(1, cfg.perimeterWallSteps) * cfg.unitHeight;
+                            float wallHeight = Mathf.Max(1, cfg.perimeterWallSteps) * cfg.unitHeight;
                             float baseY = floorSteps * cfg.unitHeight;
 
-                            Vector3 wallPos = mid + new Vector3(0, baseY + (0.5f * ht), 0);
-                            wallPos += new Vector3(-d.x, 0f, -d.y) * wallInsetIntoRoom;
-                            Quaternion wallRot = RotFromDir(new Vector2Int(nx - x, nz - z));
-                            Vector3 wallScale = new Vector3(cell.x, ht, cell.y * 0.1f);
+                            Vector3 wallPosition = wallMidpoint + new Vector3(0, baseY + (0.5f * wallHeight), 0);
+                            wallPosition += new Vector3(-direction.x, 0f, -direction.y) * wallInsetIntoRoom;
+                            Quaternion wallRotation = RotFromDir(new Vector2Int(neighborX - x, neighborZ - z));
+                            Vector3 wallScale = new Vector3(cellSize.x, wallHeight, cellSize.y * 0.1f);
+
+                            bool mirrorWallpaper = !neighborIsDoor && (((x + z) % 2) == 0);
+                            Texture2D wallWallpaper = mirrorWallpaper ? roomWallpaperMirror : roomWallpaper;
 
                             // For now, store doors as walls with a flag + color.
-                            // Later you can route nIsDoor into elementStore.AddDoor instead.
-                            int customFlags = nIsDoor ? 1 : 0; // 1 = door segment
-                            Color wallColor = nIsDoor ? Color.red : Color.white;
+                            // Later you can route neighborIsDoor into elementStore.AddDoor instead.
+                            int customFlags = neighborIsDoor ? 1 : 0; // 1 = door segment
+                            Color wallColor = neighborIsDoor ? Color.red : Color.white;
 
                             elementStore.AddWall(
-                                archetypeId: nIsDoor ? "Door" : "Wall",
+                                archetypeId: neighborIsDoor ? "Door" : "Wall",
                                 isDiagonal: false,
                                 roomIndex: room_number,
                                 cellCoord: new Vector2Int(x, z),
                                 heightSteps: floorSteps,
-                                worldPos: wallPos,
-                                rotation: wallRot,
+                                worldPos: wallPosition,
+                                rotation: wallRotation,
                                 scale: wallScale,
                                 color: wallColor,
-                                textureOverride: nIsDoor ? null : roomWallpaper,
+                                textureOverride: neighborIsDoor ? null : wallWallpaper,
                                 customFlags: customFlags
                             );
                         }
                     }
 
                     // Height transitions (ramps / cliffs) between this cell and neighbor
-                    int nySteps = GetHeightInNeighborhood(room_number, new Vector2Int(nx, nz));
-                    int diff = nySteps - ySteps;
-                    if (diff == 0) continue;
+                    int neighborHeightSteps = GetHeightInNeighborhood(room_number, new Vector2Int(neighborX, neighborZ));
+                    int heightDifference = neighborHeightSteps - ySteps;
+                    if (heightDifference == 0) continue;
 
-                    nWorld = grid.CellToWorld(new Vector3Int(nx, nz, 0));
-                    mid = 0.5f * (world + nWorld);
+                    neighborWorld = grid.CellToWorld(new Vector3Int(neighborX, neighborZ, 0));
+                    wallMidpoint = 0.5f * (world + neighborWorld);
 
-                    if ((Mathf.Abs(diff) >= cfg.minimumRamp) &&
-                        (Mathf.Abs(diff) <= cfg.maximumRamp) &&
+                    if ((Mathf.Abs(heightDifference) >= cfg.minimumRamp) &&
+                        (Mathf.Abs(heightDifference) <= cfg.maximumRamp) &&
                         rampPrefab != null)
                     {
-                        bool up = diff > 0;
-                        if (up) continue; // keep your existing "only one side makes the ramp" rule
+                        bool goesUp = heightDifference > 0;
+                        if (goesUp) continue; // keep your existing "only one side makes the ramp" rule
 
-                        int upper = up ? nySteps : ySteps;
-                        var rot = RotFromDir(d * (up ? 1 : -1)); // face uphill
-                        Vector3 rampPos = nWorld + new Vector3(0, upper * cfg.unitHeight, 0);
-                        Vector3 rampScale = new Vector3(cell.x, Mathf.Abs(diff) * cfg.unitHeight * 1.2f, cell.y);
+                        int upperHeight = goesUp ? neighborHeightSteps : ySteps;
+                        Quaternion rampRotation = RotFromDir(direction * (goesUp ? 1 : -1)); // face uphill
+                        Vector3 rampPosition = neighborWorld + new Vector3(0, upperHeight * cfg.unitHeight, 0);
+                        Vector3 rampScale = new Vector3(cellSize.x, Mathf.Abs(heightDifference) * cfg.unitHeight * 1.2f, cellSize.y);
 
                         elementStore.AddRamp(
                             archetypeId: "Ramp",
                             roomIndex: room_number,
                             cellCoord: new Vector2Int(x, z),
                             heightSteps: ySteps,
-                            worldPos: rampPos,
-                            rotation: rot,
+                            worldPos: rampPosition,
+                            rotation: rampRotation,
                             scale: rampScale,
                             color: Color.white,
-                            heightDelta: diff
+                            heightDelta: heightDifference
                         );
                     }
                 } // end 4-direction loop
@@ -394,25 +406,25 @@ public partial class DungeonGenerator : MonoBehaviour
                     Quaternion tilt = rooms[room_number].cells[cell_number].tiltFloor;
                     Vector3 position = world + new Vector3(0f, ySteps * cfg.unitHeight, 0f);
 
-                    float rollRad = tilt.eulerAngles.z * Mathf.Deg2Rad;
-                    float pitchRad = tilt.eulerAngles.x * Mathf.Deg2Rad;
-                    float cosRoll = Mathf.Cos(rollRad);
-                    float cosPitch = Mathf.Cos(pitchRad);
+                    float rollRadians = tilt.eulerAngles.z * Mathf.Deg2Rad;
+                    float pitchRadians = tilt.eulerAngles.x * Mathf.Deg2Rad;
+                    float cosRoll = Mathf.Cos(rollRadians);
+                    float cosPitch = Mathf.Cos(pitchRadians);
                     float scaleX = (Mathf.Abs(cosRoll) > 1e-4f) ? 1f / cosRoll : 1f;
                     float scaleZ = (Mathf.Abs(cosPitch) > 1e-4f) ? 1f / cosPitch : 1f;
 
                     Vector3 finalScale = new Vector3(scaleX, 1f, scaleZ);
                     
                     // checkerboard floor:
-                    Color colorCheckerBoard = (Mathf.Floor(world.x + world.z)%2 == 0) ? Color.white : Color.black;
-                    colorFloor = (colorFloor * (1-checkerFloorStrength)) + (colorCheckerBoard * checkerFloorStrength);
+                    Color checkerboardColor = (Mathf.Floor(world.x + world.z) % 2 == 0) ? Color.white : Color.black;
+                    colorFloor = (colorFloor * (1 - checkerFloorStrength)) + (checkerboardColor * checkerFloorStrength);
 
-                    if (use_triangle_floor)
+                    if (useTriangleFloor)
                     {
-                        Quaternion triangleFloorRot = Quaternion.Euler(-90f, triangle_floor_dir * 90f, 90f);
+                        Quaternion triangleFloorRotation = Quaternion.Euler(-90f, triangleFloorDirection * 90f, 90f);
                         // Approximate final rotation: tilt then triangle orientation
-                        Quaternion finalRot = tilt * triangleFloorRot;
-                        Vector3 triScale = finalScale * 50f; // keep your existing fudge factor for now
+                        Quaternion finalRotation = tilt * triangleFloorRotation;
+                        Vector3 triangleScale = finalScale * 50f; // keep your existing fudge factor for now
 
                         elementStore.AddFloorTile(
                             archetypeId: "TriangleFloor",
@@ -421,14 +433,14 @@ public partial class DungeonGenerator : MonoBehaviour
                             cellCoord: new Vector2Int(x, z),
                             heightSteps: ySteps,
                             worldPos: position,
-                            rotation: finalRot,
-                            scale: triScale,
+                            rotation: finalRotation,
+                            scale: triangleScale,
                             color: colorFloor
                         );
                     }
                     else
                     {
-                        Quaternion finalRot = tilt;
+                        Quaternion finalRotation = tilt;
 
                         elementStore.AddFloorTile(
                             archetypeId: "Floor",
@@ -437,7 +449,7 @@ public partial class DungeonGenerator : MonoBehaviour
                             cellCoord: new Vector2Int(x, z),
                             heightSteps: ySteps,
                             worldPos: position,
-                            rotation: finalRot,
+                            rotation: finalRotation,
                             scale: finalScale,
                             color: colorFloor
                         );
@@ -447,13 +459,13 @@ public partial class DungeonGenerator : MonoBehaviour
                 if (rooms[room_number].ceilingHeight > 0f)
                 {
                     float ceilingY = rooms[room_number].ceilingHeight + ceilingZOffset;
-                    Vector3 ceilingPos = world + new Vector3(0f, ceilingY, 0f);
+                    Vector3 ceilingPosition = world + new Vector3(0f, ceilingY, 0f);
 
                     elementStore.AddCeilingTile(
                         archetypeId: "Ceiling",
                         roomIndex: room_number,
                         cellCoord: new Vector2Int(x, z),
-                        worldPos: ceilingPos,
+                        worldPos: ceilingPosition,
                         rotation: Quaternion.Euler(90f, 0f, 0f),
                         scale: new Vector3(1f, 1f, 1f),
                         color: rooms[room_number].colorCeiling
@@ -467,33 +479,47 @@ public partial class DungeonGenerator : MonoBehaviour
         }
     }
 
-    private Texture2D GetWallpaperTextureForRoom(int roomIndex)
+    private Texture2D GetWallpaperTextureForRoom(int roomIndex, bool useMirror = false)
     {
-        if (roomWallpaperByRoomIndex.TryGetValue(roomIndex, out Texture2D cachedWallpaper))
+        Dictionary<int, Texture2D> wallpaperCacheByRoom = useMirror
+            ? roomWallpaperMirrorByRoomIndex
+            : roomWallpaperByRoomIndex;
+
+        if (wallpaperCacheByRoom.TryGetValue(roomIndex, out Texture2D cachedWallpaper))
             return cachedWallpaper;
 
-        Texture2D[] wallpaperTextures = GetAvailableWallpaperTextures();
+        Texture2D[] wallpaperTextures = GetAvailableWallpaperTextures(useMirror);
         if (wallpaperTextures == null || wallpaperTextures.Length == 0)
             return null;
 
-        int index = GetDeterministicWallpaperIndex(roomIndex, wallpaperTextures.Length);
-        Texture2D selectedWallpaper = wallpaperTextures[index];
-        roomWallpaperByRoomIndex[roomIndex] = selectedWallpaper;
+        int wallpaperIndex = GetDeterministicWallpaperIndex(roomIndex, wallpaperTextures.Length);
+        Texture2D selectedWallpaper = wallpaperTextures[wallpaperIndex];
+        wallpaperCacheByRoom[roomIndex] = selectedWallpaper;
         return selectedWallpaper;
     }
 
-    private Texture2D[] GetAvailableWallpaperTextures()
+    private Texture2D[] GetAvailableWallpaperTextures(bool useMirror = false)
     {
-        if (cachedWallpaperTextures != null)
-            return cachedWallpaperTextures;
+        if (useMirror)
+        {
+            if (cachedWallpaperTexturesMirror != null)
+                return cachedWallpaperTexturesMirror;
+        }
+        else
+        {
+            if (cachedWallpaperTextures != null)
+                return cachedWallpaperTextures;
+        }
+
+        string resourcesPath = useMirror ? wallpaperResourcesPath_mirror : wallpaperResourcesPath;
 
         List<Texture2D> wallpapers = new();
         HashSet<Texture2D> seenTextures = new();
 
-        Sprite[] wallpaperSprites = Resources.LoadAll<Sprite>(wallpaperResourcesPath);
-        for (int i = 0; i < wallpaperSprites.Length; i++)
+        Sprite[] wallpaperSprites = Resources.LoadAll<Sprite>(resourcesPath);
+        for (int spriteIndex = 0; spriteIndex < wallpaperSprites.Length; spriteIndex++)
         {
-            Texture2D texture = wallpaperSprites[i] != null ? wallpaperSprites[i].texture : null;
+            Texture2D texture = wallpaperSprites[spriteIndex] != null ? wallpaperSprites[spriteIndex].texture : null;
             if (texture == null || !seenTextures.Add(texture))
                 continue;
 
@@ -502,10 +528,10 @@ public partial class DungeonGenerator : MonoBehaviour
 
         if (wallpapers.Count == 0)
         {
-            Texture2D[] loadedTextures = Resources.LoadAll<Texture2D>(wallpaperResourcesPath);
-            for (int i = 0; i < loadedTextures.Length; i++)
+            Texture2D[] loadedTextures = Resources.LoadAll<Texture2D>(resourcesPath);
+            for (int textureIndex = 0; textureIndex < loadedTextures.Length; textureIndex++)
             {
-                Texture2D texture = loadedTextures[i];
+                Texture2D texture = loadedTextures[textureIndex];
                 if (texture == null || !seenTextures.Add(texture))
                     continue;
 
@@ -513,12 +539,17 @@ public partial class DungeonGenerator : MonoBehaviour
             }
         }
 
-        cachedWallpaperTextures = wallpapers.ToArray();
+        Texture2D[] result = wallpapers.ToArray();
 
-        if (cachedWallpaperTextures.Length == 0)
-            Debug.LogWarning($"No wallpaper textures found at Resources/{wallpaperResourcesPath}.");
+        if (result.Length == 0)
+            Debug.LogWarning($"No wallpaper textures found at Resources/{resourcesPath}.");
 
-        return cachedWallpaperTextures;
+        if (useMirror)
+            cachedWallpaperTexturesMirror = result;
+        else
+            cachedWallpaperTextures = result;
+
+        return result;
     }
 
     private int GetDeterministicWallpaperIndex(int roomIndex, int wallpaperCount)
@@ -535,9 +566,6 @@ public partial class DungeonGenerator : MonoBehaviour
             return wallpaperCount > 0 ? hash % wallpaperCount : 0;
         }
     }
-
-
-
 
     public void BuildCeilings()
     {

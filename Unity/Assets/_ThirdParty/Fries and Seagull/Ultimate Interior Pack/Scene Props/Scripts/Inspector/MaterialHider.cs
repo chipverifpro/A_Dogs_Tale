@@ -15,7 +15,7 @@ namespace Seagull.Interior_I1.Inspector {
             }
         }
 
-        public void update(bool isHided) {
+        public void updateHider(bool isHided) {
             if (!hided) return;
             
             foreach (var material in gameObject.GetComponent<Renderer>().sharedMaterials) {

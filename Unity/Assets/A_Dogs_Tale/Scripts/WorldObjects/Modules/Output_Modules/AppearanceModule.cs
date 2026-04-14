@@ -253,10 +253,10 @@ namespace DogGame.Modules
         // select the type of animation controller based on what library asset came from
         public enum AnimationVersion {
             none = 0,
-            dog,
-            human,
-            animal,
-            furniture
+            dog,        // by Bublisher
+            human,      // by DenysAlmaral
+            animal,     // by ithappy
+            furniture   // by Pandazole or Fries_and_Seagull
         }
 
         public enum AnimationCategory
