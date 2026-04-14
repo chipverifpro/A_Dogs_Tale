@@ -167,12 +167,16 @@ namespace DogGame.Modules
             }
         }
 
+        #region Tick
+
         public override void Tick(float deltaTime)
         {
             Debug.LogWarning($"MotionModule {worldObject.DisplayName}: Tick {deltaTime} DOES NOTHING");
         
             // Tick Does NOTHING: everything is action calls.
         }
+
+        #endregion
 
         /// <summary>
         /// Main entry point: apply movement for this frame.
@@ -205,6 +209,7 @@ namespace DogGame.Modules
             // We do NOT change position or rotation here; Teleport already did that.
         }
 
+        #region Teleport
 
         // ===== Teleport family of commands =====
 
@@ -255,6 +260,9 @@ namespace DogGame.Modules
 
             TeleportWithRotate(position, finalRotation, resetMotion);
         }
+
+        #endregion
+        #region ApplyMotion
 
         private int debugDoubleTick = -1;
         public void ApplyMotionMap(Vector3 desiredMapVelocity, float deltaTime, float maxDistanceMap)
@@ -351,6 +359,9 @@ namespace DogGame.Modules
 
             //Debug.Log($"{worldObject.DisplayName}:MotionModule.ApplyMotion complete");
         }
+
+        #endregion
+        #region WallCollisions
 
         private Vector3 ConstrainPositionToWalls(Vector3 fromWorld, Vector3 toWorld)
         {
@@ -675,6 +686,9 @@ namespace DogGame.Modules
             }
         }
 
+        #endregion
+        #region ComputeVelocity
+
         private Vector3 ComputeHorizontalVelocity(
             Vector3 currentVelocity,
             Vector3 desiredVelocity,
@@ -771,6 +785,6 @@ namespace DogGame.Modules
                 verticalVelocity = Vector3.zero;
             }
         }
-
+        #endregion
     }
 }

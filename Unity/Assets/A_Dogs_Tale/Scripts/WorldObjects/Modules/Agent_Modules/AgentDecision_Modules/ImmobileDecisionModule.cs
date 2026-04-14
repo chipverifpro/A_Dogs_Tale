@@ -14,6 +14,8 @@ namespace DogGame.Modules
             base.Initialize(agentController);
         }
 
+        #region Tick
+
         private int debugDoubleTick = -1;
         public override void Tick(float deltaTime)
         {
@@ -25,6 +27,8 @@ namespace DogGame.Modules
             //Debug.Log($"ImmobileDecisionModule {worldObject.DisplayName}: Tick {deltaTime}");
         }
 
+        #endregion
+        
         public override void BeginDecisionModule(bool resume=false)
         {
             

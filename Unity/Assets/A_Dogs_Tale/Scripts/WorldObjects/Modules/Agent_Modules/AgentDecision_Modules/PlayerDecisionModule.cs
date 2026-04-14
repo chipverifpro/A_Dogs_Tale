@@ -52,6 +52,8 @@ namespace DogGame.Modules
         //public float thinkIntervalSeconds = 10f;
         //private float nextThinkTime = 0f;
 
+        #region Unity
+
         protected override void Awake()
         {
             if (taskController == null)
@@ -149,6 +151,8 @@ namespace DogGame.Modules
             Debug.Log($"[PlayerDecisionModule] Unsubscribed from LLMThinkModule agent={worldObject.DisplayName}");
         }
 
+        #endregion
+        #region Tick
         private int debugDoubleTick = -1;
         public override void Tick(float deltaTime)
         {
@@ -221,6 +225,9 @@ namespace DogGame.Modules
 //                nextThinkTime = Time.time + thinkIntervalSeconds;
 //            }
         }
+
+        #endregion
+        #region LLM
 
 #nullable enable
         [Header("LLM Components required")]
@@ -337,7 +344,8 @@ namespace DogGame.Modules
             bool applied = taskController.TryApplyPlanJson(planJson!);
             Debug.Log($"[PlayerDecisionModule] TaskController.TryApplyPlanJson returned {applied} for agent={worldObject.DisplayName}");
         }
-            
+
+        #endregion
         #region One-shot actions
 
         private void HandleOneShotActions(PlayerInputState state)

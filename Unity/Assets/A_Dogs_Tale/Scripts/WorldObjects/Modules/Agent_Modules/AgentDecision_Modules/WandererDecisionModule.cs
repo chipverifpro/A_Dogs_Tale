@@ -30,6 +30,8 @@ namespace DogGame.Modules
             //PickNewTarget();  // Don't do here, not everything needed has been initialized yet.
         }
 
+        #region Tick
+
         private int debugDoubleTick = -1;
         public override void Tick(float deltaTime)
         {
@@ -74,6 +76,8 @@ namespace DogGame.Modules
                     break;
             }
         }
+        
+        #endregion
 
     //   [SerializeField] private LocationModule locationModule;
     //   [SerializeField] private float wanderRadius = 5f;

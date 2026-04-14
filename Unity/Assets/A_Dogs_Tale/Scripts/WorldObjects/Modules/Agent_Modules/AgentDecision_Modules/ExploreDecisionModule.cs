@@ -9,6 +9,7 @@ using InspectorTools;
 
 namespace DogGame.Modules
 {
+    #region LuaScript
     [InspectorNote("AgentDecision_Modules/Explore Decision Module", "Explores the entire map by going through every door.")]
     public class ExploreDecisionModule : AgentDecisionModuleBase
     {
@@ -139,6 +140,8 @@ function tick()
 end
 ";
 
+        #endregion
+
         public override AgentDecisionType DecisionType => AgentDecisionType.Explorer;
 
         private enum ExplorePhase
@@ -200,6 +203,8 @@ end
         {
             base.Initialize(agentController);
         }
+
+        #region Tick
 
         private int debugDoubleTick = -1;
         public override void Tick(float deltaTime)
@@ -317,6 +322,8 @@ end
             luaTaskController.Tick(deltaTime);
         }
 
+        # endregion
+        
         private bool EnsureLuaExploreReady()
         {
             luaTaskController ??= GetComponent<TaskController>();

@@ -124,6 +124,8 @@ namespace DogGame.Modules
             }
         }
 
+        #region Tick
+
         private int debugDoubleTick = -1;
         public override void Tick(float deltaTime)
         {
@@ -194,6 +196,8 @@ namespace DogGame.Modules
             }
         }
 
+        #endregion
+        
         public override void BeginDecisionModule(bool resume=false)
         {
             
