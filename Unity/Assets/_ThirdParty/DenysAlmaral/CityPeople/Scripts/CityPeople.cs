@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
@@ -23,9 +24,9 @@ namespace CityPeople
         public int walkClip = 1;
         public int jogClip = 2;
 
-        [Header("Current clip and speed")]
+        [Header("Current clip")]
         public AnimationClip cl;
-        public float currentSpeed;
+        //public float currentSpeed;
 
         [Header("Thresholds for walk/run detection")]
         [Tooltip("Walk threshold set to < 2")]
@@ -130,9 +131,11 @@ namespace CityPeople
 
         public void Update()
         {
+            if (myClips.Count()==0) return; // this has no defined animations.
+
             float delta = Time.deltaTime;
             float moveSqr = ((transform.position - prev_pos3_world)/delta).sqrMagnitude;
-            currentSpeed = Mathf.Sqrt(moveSqr);   // debug only, remove when not needed anymore
+            //currentSpeed = Mathf.Sqrt(moveSqr);   // debug only, remove when not needed anymore
             float jogSqr = jogSpeed * jogSpeed;
             float walkSqr = walkSpeed * walkSpeed;
             //Debug.Log((transform.position - prev_pos3_world).sqrMagnitude);
@@ -141,7 +144,8 @@ namespace CityPeople
                 if (cl!=myClips[jogClip])
                 {
                     cl = myClips[jogClip];  // running
-                    animator.CrossFadeInFixedTime(cl.name, 0.25f, -1, Random.value * cl.length);
+                    Debug.Log($"{name} Jog:");
+                    animator.CrossFadeInFixedTime(cl.name, 0.25f, 0, Random.value * cl.length);
                 }
             }
             else if (moveSqr > walkSqr)
@@ -149,7 +153,8 @@ namespace CityPeople
                 if (cl!=myClips[walkClip])
                 {
                     cl = myClips[walkClip];  // walking
-                    animator.CrossFadeInFixedTime(cl.name, 0.25f, -1, Random.value * cl.length);
+                    Debug.Log($"{name} Walk:");
+                    animator.CrossFadeInFixedTime(cl.name, 0.25f, 0, Random.value * cl.length);
                 }
             }
             else
@@ -157,7 +162,8 @@ namespace CityPeople
                 if (cl!=myClips[idleClip])
                 {
                     cl = myClips[idleClip];  // standing still
-                    animator.CrossFadeInFixedTime(cl.name, 1.0f, -1, Random.value * cl.length);
+                    Debug.Log($"{name} Idle:");
+                    animator.CrossFadeInFixedTime(cl.name, 1.0f, 0, Random.value * cl.length);
                 }            
             }
             prev_pos3_world = transform.position;

@@ -131,7 +131,6 @@ GameObject:
   m_Component:
   - component: {fileID: 710636224206764938}
   - component: {fileID: 6862504200042160624}
-  - component: {fileID: 6964253449126897533}
   - component: {fileID: -1740260722340342959}
   - component: {fileID: 4210292868870172452}
   - component: {fileID: -2155675083373634893}
@@ -212,20 +211,6 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
---- !u!114 &6964253449126897533
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 186757882122740016}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 54f141628068b9b4493f69f797f003b2, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  AutoPlayAnimations: 1
-  PaletteOverride: {fileID: 0}
 --- !u!114 &-1740260722340342959
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -800,6 +785,17 @@ MonoBehaviour:
   debugMode: 0
   mainRenderer: {fileID: 0}
   extraRenderers: []
+  animationVersion: 0
+  AutoPlayAnimations: 1
+  PaletteOverride: {fileID: 0}
+  myClips: []
+  idleClip: 0
+  walkClip: 1
+  jogClip: 2
+  currentAnimation: 0
+  cl: {fileID: 0}
+  walkSpeed: 0.25
+  jogSpeed: 3.25
 --- !u!114 &-8789948206032805471
 MonoBehaviour:
   m_ObjectHideFlags: 0
