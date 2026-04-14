@@ -255,6 +255,7 @@ namespace DogGame.Modules
             none = 0,
             dog,
             human,
+            animal,
             furniture
         }
 
@@ -384,11 +385,17 @@ namespace DogGame.Modules
                 {
                     currentAnimation = AnimationCategory.run;
                     cl = myClips[jogClip];  // running
-                    Debug.Log($"{name} Jog:");
+                    //Debug.Log($"{name} Jog:");
                     if (animationVersion == AnimationVersion.dog)
                         animator.SetInteger("AnimationID",jogClip);
                     else if (animationVersion == AnimationVersion.human)
                         animator.CrossFadeInFixedTime(cl.name, 0.25f, 0, Random.value * cl.length);
+                    else if (animationVersion == AnimationVersion.animal)
+                    {
+                        animator.SetFloat("Vert", 1f);
+                        animator.SetFloat("State", 1f);
+                    }
+
                 }
             }
             else if (moveSqr > walkSqr)
@@ -397,11 +404,16 @@ namespace DogGame.Modules
                 {
                     currentAnimation = AnimationCategory.walk;
                     cl = myClips[walkClip];  // walking
-                    Debug.Log($"{name} Walk:");
+                    //Debug.Log($"{name} Walk:");
                     if (animationVersion == AnimationVersion.dog)
                         animator.SetInteger("AnimationID",walkClip);
                     else if (animationVersion == AnimationVersion.human)
                         animator.CrossFadeInFixedTime(cl.name, 0.25f, 0, Random.value * cl.length);
+                    else if (animationVersion == AnimationVersion.animal)
+                    {
+                        animator.SetFloat("Vert", 1f);
+                        animator.SetFloat("State", 0f);
+                    }
                 }
             }
             else
@@ -410,11 +422,16 @@ namespace DogGame.Modules
                 {
                     currentAnimation = AnimationCategory.idle;
                     cl = myClips[idleClip];  // standing still
-                    Debug.Log($"{name} Idle:");
+                    //Debug.Log($"{name} Idle:");
                     if (animationVersion == AnimationVersion.dog)
                         animator.SetInteger("AnimationID",idleClip);
                     else if (animationVersion == AnimationVersion.human)
                         animator.CrossFadeInFixedTime(cl.name, 1.0f, 0, Random.value * cl.length);
+                    else if (animationVersion == AnimationVersion.animal)
+                    {
+                        animator.SetFloat("Vert", 0f);
+                        animator.SetFloat("State", 0f);
+                    }
                 }            
             }
             prev_pos3_world = transform.position;
