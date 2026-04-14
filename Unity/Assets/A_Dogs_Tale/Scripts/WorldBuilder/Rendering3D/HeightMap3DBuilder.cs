@@ -24,6 +24,9 @@ public partial class DungeonGenerator : MonoBehaviour
     public float ceilingZOffset = 20f;
 
     [Header("Wall Appearance")]
+    [Tooltip("Enable applying wallpaper textures to generated wall tiles.")]
+    [SerializeField] private bool applyWallpaperOnWallTiles = true;
+
     [Tooltip("Inset orthogonal wall segments slightly toward the room interior to avoid z-fighting with adjacent-room walls.")]
     [SerializeField] private float wallInsetIntoRoom = 0.01f;
 
@@ -132,8 +135,12 @@ public partial class DungeonGenerator : MonoBehaviour
             DirFlags cellWalls = DirFlags.None;
             DirFlags cellDoors = DirFlags.None;
             Color colorScent = getColor(Color.purple);
-            Texture2D roomWallpaper = GetWallpaperTextureForRoom(room_number, useMirror: false);
-            Texture2D roomWallpaperMirror = GetWallpaperTextureForRoom(room_number, useMirror: true);
+            Texture2D roomWallpaper = applyWallpaperOnWallTiles
+                ? GetWallpaperTextureForRoom(room_number, useMirror: false)
+                : null;
+            Texture2D roomWallpaperMirror = applyWallpaperOnWallTiles
+                ? GetWallpaperTextureForRoom(room_number, useMirror: true)
+                : null;
 
             string room_name = rooms[room_number].name;
             int num_cells = rooms[room_number].cells.Count;

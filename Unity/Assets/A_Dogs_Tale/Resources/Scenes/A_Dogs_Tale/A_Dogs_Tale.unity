@@ -4176,6 +4176,7 @@ MonoBehaviour:
   wallpaperResourcesPath_mirror: Sprites/Wallpaper_Mirror
   checkerFloorStrength: 0.1
   ceilingZOffset: 0
+  applyWallpaperOnWallTiles: 1
   wallInsetIntoRoom: 0.05
 --- !u!1 &419386528 stripped
 GameObject:
@@ -11134,6 +11135,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: elder_Female_A
+      objectReference: {fileID: 0}
+    - target: {fileID: 186757882122740016, guid: bcc8732b8b44622449c23934f89e68c0,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 710636224206764938, guid: bcc8732b8b44622449c23934f89e68c0,
         type: 3}
