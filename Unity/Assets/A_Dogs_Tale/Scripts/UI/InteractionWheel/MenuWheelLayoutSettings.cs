@@ -5,6 +5,20 @@ using UnityEngine.Serialization;
 
 namespace DogGame.UI.InteractionWheel
 {
+    public readonly struct MenuWheelPageCapacity
+    {
+        public MenuWheelPageCapacity(int innerRingCapacity, int outerRingCapacity)
+        {
+            InnerRingCapacity = Mathf.Max(1, innerRingCapacity);
+            OuterRingCapacity = Mathf.Max(0, outerRingCapacity);
+        }
+
+        public int InnerRingCapacity { get; }
+        public int OuterRingCapacity { get; }
+        public int TotalCapacity => InnerRingCapacity + OuterRingCapacity;
+        public bool UsesOuterRing => OuterRingCapacity > 0;
+    }
+
     public enum MenuWheelCenterMode
     {
         CenterOnScreen = 0,
@@ -93,14 +107,18 @@ namespace DogGame.UI.InteractionWheel
         public float OuterRingStartAngleDegrees => outerRingStartAngleDegrees;
         public bool EnableOuterRing => enableOuterRing;
 
-        public int GetPrimaryOptionCapacity(int fallbackMaxPrimaryOptions)
+        public MenuWheelPageCapacity GetPageCapacity(int fallbackMaxPrimaryOptions)
         {
             if (!enableOuterRing)
-                return Mathf.Max(3, fallbackMaxPrimaryOptions);
+                return new MenuWheelPageCapacity(Mathf.Max(3, fallbackMaxPrimaryOptions), 0);
 
             int innerCapacity = Mathf.Max(1, maxButtonsOnInnerRing);
-            int outerCapacity = innerCapacity * 2;
-            return innerCapacity + outerCapacity;
+            return new MenuWheelPageCapacity(innerCapacity, innerCapacity * 2);
+        }
+
+        public int GetPrimaryOptionCapacity(int fallbackMaxPrimaryOptions)
+        {
+            return GetPageCapacity(fallbackMaxPrimaryOptions).TotalCapacity;
         }
 
         public MenuWheelResolvedLayout Resolve(Vector2 screenSize)

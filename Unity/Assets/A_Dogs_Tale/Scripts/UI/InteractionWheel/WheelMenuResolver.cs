@@ -21,16 +21,10 @@ namespace DogGame.UI.InteractionWheel
             WorldObject actor,
             WorldObject target,
             Vector3? worldPoint,
-            int maxPrimaryOptions)
+            MenuWheelPageCapacity pageCapacity)
         {
             if (actor == null) throw new ArgumentNullException(nameof(actor));
             if (target == null) throw new ArgumentNullException(nameof(target));
-
-            if (maxPrimaryOptions < 3)
-            {
-                // Needs room for at least 1 real option plus "More" (rare) plus comfortable spacing.
-                maxPrimaryOptions = 3;
-            }
 
             var context = new WheelContext(actor, target, worldPoint);
 
@@ -41,7 +35,7 @@ namespace DogGame.UI.InteractionWheel
             List<WheelOption> normalized = Normalize(raw);
 
             // Step 3: bundle into pages
-            List<List<WheelOption>> pages = BuildPages(context, normalized, maxPrimaryOptions);
+            List<List<WheelOption>> pages = BuildPages(context, normalized, pageCapacity);
 
             return new WheelMenuModel(context, pages);
         }
@@ -125,38 +119,159 @@ namespace DogGame.UI.InteractionWheel
             return string.Compare(a.id, b.id, StringComparison.Ordinal);
         }
 
-        private static List<List<WheelOption>> BuildPages(WheelContext context, List<WheelOption> normalized, int maxPrimaryOptions)
+        private static List<List<WheelOption>> BuildPages(WheelContext context, List<WheelOption> normalized, MenuWheelPageCapacity pageCapacity)
         {
-            // If fits, one page.
-            if (normalized.Count <= maxPrimaryOptions)
-                return new List<List<WheelOption>> { normalized };
+            int innerCapacity = Math.Max(1, pageCapacity.InnerRingCapacity);
+            int outerCapacity = Math.Max(0, pageCapacity.OuterRingCapacity);
 
-            // We need "More..." on page 0. That consumes one slot.
-            int page0RealSlots = Math.Max(1, maxPrimaryOptions - 1);
+            if (normalized.Count == 0)
+                return new List<List<WheelOption>> { new List<WheelOption>() };
 
-            var page0 = new List<WheelOption>(capacity: maxPrimaryOptions);
-            for (int i = 0; i < page0RealSlots && i < normalized.Count; i++)
-                page0.Add(normalized[i]);
+            var explicitInner = new List<WheelOption>(normalized.Count);
+            var explicitOuter = new List<WheelOption>(normalized.Count);
+            var automatic = new List<WheelOption>(normalized.Count);
 
-            var overflow = new List<WheelOption>(capacity: Math.Max(0, normalized.Count - page0.Count));
-            for (int i = page0.Count; i < normalized.Count; i++)
-                overflow.Add(normalized[i]);
-
-            // Add "More..." which switches to page 1.
-            var more = CreateMoreOption(context);
-            page0.Add(more);
-
-            // Page 1 includes "Back" + overflow (and if overflow is still huge, we could paginate again later).
-            var page1 = new List<WheelOption>(capacity: overflow.Count + 1)
+            for (int i = 0; i < normalized.Count; i++)
             {
-                CreateBackOption(context)
-            };
-            page1.AddRange(overflow);
+                WheelOption option = normalized[i];
+                option.navigationPageIndex = -1;
+                option.resolvedRingPlacement = WheelOptionRingPlacement.Auto;
 
-            return new List<List<WheelOption>> { page0, page1 };
+                switch (option.ringPlacement)
+                {
+                    case WheelOptionRingPlacement.Inner:
+                        explicitInner.Add(option);
+                        break;
+                    case WheelOptionRingPlacement.Outer:
+                        explicitOuter.Add(option);
+                        break;
+                    default:
+                        automatic.Add(option);
+                        break;
+                }
+            }
+
+            int innerIndex = 0;
+            int outerIndex = 0;
+            int autoIndex = 0;
+            var pages = new List<List<WheelOption>>();
+
+            while (innerIndex < explicitInner.Count || outerIndex < explicitOuter.Count || autoIndex < automatic.Count)
+            {
+                bool hasBackLink = pages.Count > 0;
+                int availableInner = innerCapacity;
+                int availableOuter = outerCapacity;
+
+                if (hasBackLink)
+                {
+                    if (availableOuter > 0)
+                        availableOuter -= 1;
+                    else
+                        availableInner = Math.Max(0, availableInner - 1);
+                }
+
+                var pageInner = new List<WheelOption>(innerCapacity);
+                var pageOuter = new List<WheelOption>(Math.Max(outerCapacity, 1));
+
+                while (pageInner.Count < availableInner && innerIndex < explicitInner.Count)
+                {
+                    WheelOption option = explicitInner[innerIndex++];
+                    option.resolvedRingPlacement = WheelOptionRingPlacement.Inner;
+                    pageInner.Add(option);
+                }
+
+                while (pageOuter.Count < availableOuter && outerIndex < explicitOuter.Count)
+                {
+                    WheelOption option = explicitOuter[outerIndex++];
+                    option.resolvedRingPlacement = WheelOptionRingPlacement.Outer;
+                    pageOuter.Add(option);
+                }
+
+                while (pageInner.Count < availableInner && autoIndex < automatic.Count)
+                {
+                    WheelOption option = automatic[autoIndex++];
+                    option.resolvedRingPlacement = WheelOptionRingPlacement.Inner;
+                    pageInner.Add(option);
+                }
+
+                while (pageOuter.Count < availableOuter && autoIndex < automatic.Count)
+                {
+                    WheelOption option = automatic[autoIndex++];
+                    option.resolvedRingPlacement = outerCapacity > 0
+                        ? WheelOptionRingPlacement.Outer
+                        : WheelOptionRingPlacement.Inner;
+
+                    if (outerCapacity > 0)
+                        pageOuter.Add(option);
+                    else
+                        pageInner.Add(option);
+                }
+
+                bool hasMoreLink =
+                    innerIndex < explicitInner.Count ||
+                    outerIndex < explicitOuter.Count ||
+                    autoIndex < automatic.Count;
+
+                if (hasMoreLink)
+                {
+                    if (outerCapacity > 0)
+                    {
+                        int outerContentBudget = outerCapacity - (hasBackLink ? 1 : 0);
+                        if (pageOuter.Count >= outerContentBudget)
+                            PushLastOptionBack(pageOuter, ref outerIndex, ref autoIndex);
+
+                        pageOuter.Add(CreateMoreOption(context, pages.Count + 1, WheelOptionRingPlacement.Outer));
+                    }
+                    else
+                    {
+                        int innerContentBudget = innerCapacity - (hasBackLink ? 1 : 0);
+                        if (pageInner.Count >= innerContentBudget)
+                            PushLastOptionBack(pageInner, ref innerIndex, ref autoIndex);
+
+                        pageInner.Add(CreateMoreOption(context, pages.Count + 1, WheelOptionRingPlacement.Inner));
+                    }
+                }
+
+                if (hasBackLink)
+                {
+                    if (outerCapacity > 0)
+                        pageOuter.Insert(0, CreateBackOption(context, pages.Count - 1, WheelOptionRingPlacement.Outer));
+                    else
+                        pageInner.Insert(0, CreateBackOption(context, pages.Count - 1, WheelOptionRingPlacement.Inner));
+                }
+
+                var page = new List<WheelOption>(pageInner.Count + pageOuter.Count);
+                page.AddRange(pageInner);
+                page.AddRange(pageOuter);
+                pages.Add(page);
+            }
+
+            return pages;
         }
 
-        private static WheelOption CreateMoreOption(WheelContext context)
+        private static void PushLastOptionBack(
+            List<WheelOption> pageOptions,
+            ref int explicitIndex,
+            ref int autoIndex)
+        {
+            if (pageOptions.Count == 0)
+                return;
+
+            WheelOption option = pageOptions[pageOptions.Count - 1];
+            pageOptions.RemoveAt(pageOptions.Count - 1);
+
+            if (option.ringPlacement == WheelOptionRingPlacement.Auto)
+            {
+                autoIndex = Math.Max(0, autoIndex - 1);
+                option.resolvedRingPlacement = WheelOptionRingPlacement.Auto;
+                return;
+            }
+
+            explicitIndex = Math.Max(0, explicitIndex - 1);
+            option.resolvedRingPlacement = WheelOptionRingPlacement.Auto;
+        }
+
+        private static WheelOption CreateMoreOption(WheelContext context, int targetPageIndex, WheelOptionRingPlacement ringPlacement)
         {
             return new WheelOption
             {
@@ -166,23 +281,29 @@ namespace DogGame.UI.InteractionWheel
                 disabledHint = "",
                 isVisible = true,
                 isEnabled = true,
-                sortPriority = int.MinValue, // keep it at the end after sorting; we add it manually anyway
-                callback = null // UI handles page switching; callback not used
+                sortPriority = int.MinValue,
+                ringPlacement = ringPlacement,
+                resolvedRingPlacement = ringPlacement,
+                navigationPageIndex = targetPageIndex,
+                callback = null
             };
         }
 
-        private static WheelOption CreateBackOption(WheelContext context)
+        private static WheelOption CreateBackOption(WheelContext context, int targetPageIndex, WheelOptionRingPlacement ringPlacement)
         {
             return new WheelOption
             {
                 id = BackOptionId,
                 label = "Back",
-                hint = "Return to main options",
+                hint = "Return to previous options",
                 disabledHint = "",
                 isVisible = true,
                 isEnabled = true,
-                sortPriority = int.MaxValue, // want it first on page 1 (we insert it first anyway)
-                callback = null // UI handles page switching
+                sortPriority = int.MaxValue,
+                ringPlacement = ringPlacement,
+                resolvedRingPlacement = ringPlacement,
+                navigationPageIndex = targetPageIndex,
+                callback = null
             };
         }
     }

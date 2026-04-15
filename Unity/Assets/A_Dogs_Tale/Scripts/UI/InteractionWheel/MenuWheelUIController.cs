@@ -61,6 +61,13 @@ namespace DogGame.UI.InteractionWheel
                 : Mathf.Max(3, fallbackMaxPrimaryOptions);
         }
 
+        public MenuWheelPageCapacity GetPageCapacity(int fallbackMaxPrimaryOptions)
+        {
+            return layoutSettings != null
+                ? layoutSettings.GetPageCapacity(fallbackMaxPrimaryOptions)
+                : new MenuWheelPageCapacity(Mathf.Max(3, fallbackMaxPrimaryOptions), 0);
+        }
+
         private void Awake()
         {
             if (rootCanvas == null)
@@ -212,15 +219,9 @@ namespace DogGame.UI.InteractionWheel
             if (!selectedOption.isEnabled)
                 return;
 
-            if (selectedOption.id == WheelMenuResolver.MoreOptionId)
+            if (selectedOption.navigationPageIndex >= 0)
             {
-                SwitchToPage(1);
-                return;
-            }
-
-            if (selectedOption.id == WheelMenuResolver.BackOptionId)
-            {
-                SwitchToPage(0);
+                SwitchToPage(selectedOption.navigationPageIndex);
                 return;
             }
 
@@ -312,43 +313,43 @@ namespace DogGame.UI.InteractionWheel
             if (buttons.Count == 0)
                 return;
 
-            if (!layout.UseOuterRing || buttons.Count <= layout.MaxInnerRingButtons)
+            var innerButtons = new List<MenuWheelOptionButtonView>(buttons.Count);
+            var outerButtons = new List<MenuWheelOptionButtonView>(buttons.Count);
+
+            for (int i = 0; i < buttons.Count; i++)
             {
-                LayoutButtonsInCircle(
-                    buttons,
-                    startIndex: 0,
-                    count: buttons.Count,
-                    radius: layout.InnerRingRadius,
-                    startAngleDeg: layout.InnerRingStartAngleDegrees);
-                return;
+                MenuWheelOptionButtonView button = buttons[i];
+                WheelOptionRingPlacement ringPlacement = button.BoundOption != null
+                    ? (button.BoundOption.resolvedRingPlacement != WheelOptionRingPlacement.Auto
+                        ? button.BoundOption.resolvedRingPlacement
+                        : button.BoundOption.ringPlacement)
+                    : WheelOptionRingPlacement.Auto;
+
+                if (layout.UseOuterRing && ringPlacement == WheelOptionRingPlacement.Outer)
+                    outerButtons.Add(button);
+                else
+                    innerButtons.Add(button);
             }
 
-            int innerCount = Mathf.Min(layout.MaxInnerRingButtons, buttons.Count);
-            int outerCount = Mathf.Min(layout.OuterRingCapacity, buttons.Count - innerCount);
-
             LayoutButtonsInCircle(
-                buttons,
-                startIndex: 0,
-                count: innerCount,
+                innerButtons,
                 radius: layout.InnerRingRadius,
                 startAngleDeg: layout.InnerRingStartAngleDegrees);
 
             LayoutButtonsInCircle(
-                buttons,
-                startIndex: innerCount,
-                count: outerCount,
+                outerButtons,
                 radius: layout.OuterRingRadius,
                 startAngleDeg: layout.OuterRingStartAngleDegrees);
         }
 
-        private static void LayoutButtonsInCircle(List<MenuWheelOptionButtonView> buttons, int startIndex, int count, float radius, float startAngleDeg)
+        private static void LayoutButtonsInCircle(List<MenuWheelOptionButtonView> buttons, float radius, float startAngleDeg)
         {
-            if (count == 0)
+            if (buttons.Count == 0)
                 return;
 
-            float angleStep = 360f / count;
+            float angleStep = 360f / buttons.Count;
 
-            for (int i = 0; i < count; i++)
+            for (int i = 0; i < buttons.Count; i++)
             {
                 float angleDeg = startAngleDeg - (angleStep * i);
                 float angleRad = angleDeg * Mathf.Deg2Rad;
@@ -356,7 +357,7 @@ namespace DogGame.UI.InteractionWheel
                 float x = Mathf.Cos(angleRad) * radius;
                 float y = Mathf.Sin(angleRad) * radius;
 
-                buttons[startIndex + i].RectTransform.anchoredPosition = new Vector2(x, y);
+                buttons[i].RectTransform.anchoredPosition = new Vector2(x, y);
             }
         }
 

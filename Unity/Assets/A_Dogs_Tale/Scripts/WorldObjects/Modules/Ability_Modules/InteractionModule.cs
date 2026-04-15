@@ -31,6 +31,7 @@ namespace DogGame.UI.InteractionWheel
             [TextArea] public string hint = "";
             [TextArea] public string disabledHint = "";
             public Sprite? icon;
+            public WheelOptionRingPlacement ringPlacement = WheelOptionRingPlacement.Auto;
 
             [Header("State")]
             public bool isVisible = true;
@@ -107,6 +108,7 @@ namespace DogGame.UI.InteractionWheel
                             ? $"'{entry.actionKey}' not bound."
                             : entry.disabledHint),
                     icon = entry.icon,
+                    ringPlacement = entry.ringPlacement,
                     isVisible = true,
                     isEnabled = isActuallyEnabled,
                     callback = resolvedCallback
@@ -456,7 +458,7 @@ namespace DogGame.UI.InteractionWheel
                 return false;
             }
 
-            void Add(string id, string actionKey, string label, int sortPriority)
+            void Add(string id, string actionKey, string label, int sortPriority, WheelOptionRingPlacement ringPlacement)
             {
                 if (HasEntry(id))
                     return;
@@ -467,6 +469,7 @@ namespace DogGame.UI.InteractionWheel
                     actionKey = actionKey,
                     label = label,
                     sortPriority = sortPriority,
+                    ringPlacement = ringPlacement,
                     isVisible = true,
                     isEnabled = true
                 });
@@ -477,66 +480,108 @@ namespace DogGame.UI.InteractionWheel
             // ===== Movement =====
             if (includeMoveButtons)
             {
-                Add("Move.Sneak", "Move.Sneak", "Sneak", basePriority);
-                Add("Move.Run",   "Move.Run",   "Run",   basePriority);
+                Add("Move.Sneak", "Move.Sneak", "Sneak", basePriority, WheelOptionRingPlacement.Outer);
+                Add("Move.Run",   "Move.Run",   "Run",   basePriority, WheelOptionRingPlacement.Outer);
                 basePriority += 10;
             }
 
             // ===== Pack =====
             if (includePackButtons)
             {
-                Add("Pack.Join",  "Pack.Join",  "Join Pack",  basePriority);
-                Add("Pack.Leave", "Pack.Leave", "Leave Pack", basePriority);
-                Add("Pack.Lead",  "Pack.Lead",  "Lead Pack",  basePriority);
+                Add("Pack.Join",  "Pack.Join",  "Join Pack",  basePriority, WheelOptionRingPlacement.Inner);
+                Add("Pack.Leave", "Pack.Leave", "Leave Pack", basePriority, WheelOptionRingPlacement.Inner);
+                Add("Pack.Lead",  "Pack.Lead",  "Lead Pack",  basePriority, WheelOptionRingPlacement.Inner);
                 basePriority += 10;
             }
 
             // ===== Inventory =====
             if (includeInventoryButtons)
             {
-                Add("Item.Get",  "Item.Get",  "Pick Up", basePriority);
-                Add("Item.Drop", "Item.Drop", "Drop",    basePriority);
+                Add("Item.Get",  "Item.Get",  "Pick Up", basePriority, WheelOptionRingPlacement.Inner);
+                Add("Item.Drop", "Item.Drop", "Drop",    basePriority, WheelOptionRingPlacement.Inner);
                 basePriority += 10;
             }
 
             // ===== Dig =====
             if (includeDigButtons)
             {
-                Add("Dig.Hole", "Dig.Hole", "Dig Hole", basePriority);
-                Add("Dig.Up",   "Dig.Up",   "Dig Up",   basePriority);
-                Add("Dig.Bury", "Dig.Bury", "Bury",     basePriority);
+                Add("Dig.Hole", "Dig.Hole", "Dig Hole", basePriority, WheelOptionRingPlacement.Inner);
+                Add("Dig.Up",   "Dig.Up",   "Dig Up",   basePriority, WheelOptionRingPlacement.Inner);
+                Add("Dig.Bury", "Dig.Bury", "Bury",     basePriority, WheelOptionRingPlacement.Inner);
                 basePriority += 10;
             }
 
             // ===== Scent =====
             if (includeScentButtons)
             {
-                Add("Scent.Sniff",   "Scent.Sniff",   "Sniff",        basePriority);
-                Add("Scent.Follow",  "Scent.Follow",  "Follow Scent", basePriority);
-                Add("Scent.Deposit", "Scent.Deposit", "Mark",         basePriority);
+                Add("Scent.Sniff",   "Scent.Sniff",   "Sniff",        basePriority, WheelOptionRingPlacement.Inner);
+                Add("Scent.Follow",  "Scent.Follow",  "Follow Scent", basePriority, WheelOptionRingPlacement.Outer);
+                Add("Scent.Deposit", "Scent.Deposit", "Mark",         basePriority, WheelOptionRingPlacement.Inner);
                 basePriority += 10;
             }
 
             // ===== Sound =====
             if (includeSoundButtons)
             {
-                Add("Sound.Bark", "Sound.Bark", "Bark", basePriority);
+                Add("Sound.Bark", "Sound.Bark", "Bark", basePriority, WheelOptionRingPlacement.Inner);
                 basePriority += 10;
             }
 
             // ===== Door =====
             if (includeDoorButtons)
             {
-                Add("Door.Open",  "Door.Open",  "Open Door",  basePriority);
-                Add("Door.Close", "Door.Close", "Close Door", basePriority);
+                Add("Door.Open",  "Door.Open",  "Open Door",  basePriority, WheelOptionRingPlacement.Inner);
+                Add("Door.Close", "Door.Close", "Close Door", basePriority, WheelOptionRingPlacement.Inner);
                 basePriority += 10;
             }
 
             // ===== Mode =====
             if (includeModeButtons)
             {
-                Add("Mode.Player", "Mode.Player", "Take Control", basePriority);
+                Add("Mode.Player", "Mode.Player", "Take Control", basePriority, WheelOptionRingPlacement.Outer);
                 basePriority += 10;
+            }
+
+            ApplyDefaultRingPlacementOverrides();
+        }
+
+        private void ApplyDefaultRingPlacementOverrides()
+        {
+            for (int i = 0; i < entries.Count; i++)
+            {
+                Entry entry = entries[i];
+                if (entry == null || entry.ringPlacement != WheelOptionRingPlacement.Auto)
+                    continue;
+
+                switch (entry.id)
+                {
+                    case "Move.Sneak":
+                    case "Move.Run":
+                    case "Move.Walk":
+                    case "Mode.Player":
+                    case "Mode.Explore":
+                    case "Mode.Wander":
+                    case "Mode.Follow":
+                    case "Scent.Follow":
+                        entry.ringPlacement = WheelOptionRingPlacement.Outer;
+                        break;
+
+                    case "Pack.Join":
+                    case "Pack.Leave":
+                    case "Pack.Lead":
+                    case "Item.Get":
+                    case "Item.Drop":
+                    case "Dig.Hole":
+                    case "Dig.Up":
+                    case "Dig.Bury":
+                    case "Scent.Sniff":
+                    case "Scent.Deposit":
+                    case "Sound.Bark":
+                    case "Door.Open":
+                    case "Door.Close":
+                        entry.ringPlacement = WheelOptionRingPlacement.Inner;
+                        break;
+                }
             }
         }
 

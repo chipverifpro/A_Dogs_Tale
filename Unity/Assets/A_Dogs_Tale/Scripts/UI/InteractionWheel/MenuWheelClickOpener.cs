@@ -5,7 +5,7 @@ using UnityEngine.InputSystem;
 
 namespace DogGame.UI.InteractionWheel
 {
-    public sealed class MenuWheelRightClickOpener : MonoBehaviour
+    public sealed class MenuWheelClickOpener : MonoBehaviour
     {
         [Header("Debug")]
         [SerializeField] private bool debugLogs = true;
@@ -109,7 +109,7 @@ namespace DogGame.UI.InteractionWheel
                 actor: actorWorldObject,
                 target: target,
                 worldPoint: worldPoint,
-                maxPrimaryOptions: wheelUI.GetPrimaryOptionCapacity(maxPrimaryOptions)
+                pageCapacity: wheelUI.GetPageCapacity(maxPrimaryOptions)
             );
 
             int optionCountPage0 = (model.pages.Count > 0) ? model.pages[0].Count : 0;

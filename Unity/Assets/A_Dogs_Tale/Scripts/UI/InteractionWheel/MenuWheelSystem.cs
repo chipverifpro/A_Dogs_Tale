@@ -15,18 +15,12 @@ public sealed class MenuWheelSystem : MonoBehaviour
     
     public void Initialize()
     {
-        Transform? parent = FindGameInputParent();
-        wheelInstance = Instantiate(wheelPrefab,parent);
-        Debug.Log ($"instantiated wheelInstance");
-        //wheelInstance.CloseMenuWheel(); // ensure hidden
+        EnsureWheelInstance();
     }
 
     public void Open(WheelMenuModel model, float? timeScaleOverride = null)
     {
-        if (wheelInstance == null)
-        {
-            wheelInstance = Instantiate(wheelPrefab);
-        }
+        EnsureWheelInstance();
         wheelInstance?.OpenMenuWheel(model, timeScaleOverride);
     }
 
@@ -36,6 +30,30 @@ public sealed class MenuWheelSystem : MonoBehaviour
     }
 
     public bool IsOpen => wheelInstance != null && wheelInstance.IsOpen;
+
+    private void EnsureWheelInstance()
+    {
+        if (wheelInstance != null)
+            return;
+
+        wheelInstance = FindFirstObjectByType<MenuWheelUIController>(FindObjectsInactive.Include);
+        if (wheelInstance != null)
+        {
+            Debug.Log("Reusing existing MenuWheelUIController instance.");
+            return;
+        }
+
+        if (wheelPrefab == null)
+        {
+            Debug.LogError("MenuWheelSystem has no wheelPrefab assigned.", this);
+            return;
+        }
+
+        Transform? parent = FindGameInputParent();
+        wheelInstance = Instantiate(wheelPrefab, parent);
+        Debug.Log("Instantiated MenuWheelUIController from prefab.");
+        wheelInstance.CloseMenuWheel();
+    }
 
     private Transform? FindGameInputParent()
     {
