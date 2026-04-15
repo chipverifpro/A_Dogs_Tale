@@ -22,7 +22,7 @@ public class ScentGUI : MonoBehaviour
     [SerializeField] private float dropdownMaxHeight = 420f;
     [SerializeField] private int uiSortOrder = 5100;
     [SerializeField] private Color noseButtonColor = new Color(0.96f, 0.95f, 0.9f, 0.96f);
-    [SerializeField] private Color dropdownBackgroundColor = new Color(0.97f, 0.96f, 0.91f, 0.98f);
+    [SerializeField] private Color dropdownBackgroundColor = new Color(0.97f, 0.96f, 0.91f, 0f);
     [SerializeField] private Color dropdownRowColor = new Color(1f, 1f, 1f, 0.9f);
     [SerializeField] private Color dropdownSelectedColor = new Color(0.88f, 0.79f, 0.55f, 0.95f);
     [SerializeField] private Color dropdownTextColor = new Color(0.19f, 0.15f, 0.08f, 1f);
@@ -156,15 +156,24 @@ public class ScentGUI : MonoBehaviour
 
         uiBuilt = true;
 
-        GameObject canvasObject = new GameObject(
-            "ScentTargetCanvas",
-            typeof(RectTransform),
-            typeof(Canvas),
-            typeof(CanvasScaler),
-            typeof(GraphicRaycaster));
-        canvasObject.transform.SetParent(transform, false);
+        Transform canvasTransform = FindExistingScentTargetCanvas();
+        GameObject canvasObject;
+        if (canvasTransform != null)
+        {
+            canvasObject = canvasTransform.gameObject;
+        }
+        else
+        {
+            canvasObject = new GameObject(
+                "ScentTargetCanvas",
+                typeof(RectTransform),
+                typeof(Canvas),
+                typeof(CanvasScaler),
+                typeof(GraphicRaycaster));
+            canvasObject.transform.SetParent(transform, false);
+        }
 
-        overlayCanvas = canvasObject.GetComponent<Canvas>();
+        overlayCanvas = GetOrAddComponent<Canvas>(canvasObject);
         overlayCanvas.renderMode = RenderMode.ScreenSpaceOverlay;
         overlayCanvas.overrideSorting = true;
         overlayCanvas.sortingOrder = uiSortOrder;
@@ -175,10 +184,11 @@ public class ScentGUI : MonoBehaviour
         canvasRect.offsetMin = Vector2.zero;
         canvasRect.offsetMax = Vector2.zero;
 
-        CanvasScaler scaler = canvasObject.GetComponent<CanvasScaler>();
+        CanvasScaler scaler = GetOrAddComponent<CanvasScaler>(canvasObject);
         scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
         scaler.referenceResolution = new Vector2(1920f, 1080f);
         scaler.matchWidthOrHeight = 1f;
+        GetOrAddComponent<GraphicRaycaster>(canvasObject);
 
         BuildNoseButton(canvasObject.transform);
         BuildModeButton(canvasObject.transform);
@@ -186,41 +196,89 @@ public class ScentGUI : MonoBehaviour
         BuildModePanel(canvasObject.transform);
     }
 
+    private Transform FindExistingScentTargetCanvas()
+    {
+        Transform localCanvas = transform.Find("ScentTargetCanvas");
+        if (localCanvas != null)
+            return localCanvas;
+
+        GameObject sceneCanvas = GameObject.Find("ScentTargetCanvas");
+        if (sceneCanvas != null)
+            return sceneCanvas.transform;
+
+        RectTransform[] rectTransforms = FindObjectsByType<RectTransform>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+        for (int i = 0; i < rectTransforms.Length; i++)
+        {
+            RectTransform rectTransform = rectTransforms[i];
+            if (rectTransform != null && rectTransform.name == "ScentTargetCanvas")
+                return rectTransform;
+        }
+
+        return null;
+    }
+
     private void BuildNoseButton(Transform parent)
     {
-        GameObject buttonObject = new GameObject(
-            "ScentTargetButton",
-            typeof(RectTransform),
-            typeof(Image),
-            typeof(Button));
-        buttonObject.transform.SetParent(parent, false);
+        Transform existingButton = parent.Find("ScentTargetButton");
+        GameObject buttonObject;
+        bool createdButton = existingButton == null;
+        if (createdButton)
+        {
+            buttonObject = new GameObject(
+                "ScentTargetButton",
+                typeof(RectTransform),
+                typeof(Image),
+                typeof(Button));
+            buttonObject.transform.SetParent(parent, false);
+        }
+        else
+        {
+            buttonObject = existingButton.gameObject;
+        }
 
         noseButtonRect = buttonObject.GetComponent<RectTransform>();
-        noseButtonRect.anchorMin = new Vector2(1f, 1f);
-        noseButtonRect.anchorMax = new Vector2(1f, 1f);
-        noseButtonRect.pivot = new Vector2(1f, 1f);
-        noseButtonRect.anchoredPosition = new Vector2(-noseButtonMargin, -noseButtonMargin);
-        noseButtonRect.sizeDelta = new Vector2(noseButtonSize, noseButtonSize);
+        if (createdButton)
+        {
+            noseButtonRect.anchorMin = new Vector2(1f, 1f);
+            noseButtonRect.anchorMax = new Vector2(1f, 1f);
+            noseButtonRect.pivot = new Vector2(1f, 1f);
+            noseButtonRect.anchoredPosition = new Vector2(-noseButtonMargin, -noseButtonMargin);
+            noseButtonRect.sizeDelta = new Vector2(noseButtonSize, noseButtonSize);
+        }
 
-        noseButtonImage = buttonObject.GetComponent<Image>();
+        noseButtonImage = GetOrAddComponent<Image>(buttonObject);
         noseButtonImage.color = noseButtonColor;
         noseButtonImage.raycastTarget = true;
 
-        Button button = buttonObject.GetComponent<Button>();
+        Button button = GetOrAddComponent<Button>(buttonObject);
         button.targetGraphic = noseButtonImage;
+        button.onClick.RemoveListener(ToggleDropdown);
         button.onClick.AddListener(ToggleDropdown);
 
-        GameObject iconObject = new GameObject("Icon", typeof(RectTransform), typeof(Image));
-        iconObject.transform.SetParent(buttonObject.transform, false);
+        Transform existingIcon = buttonObject.transform.Find("Icon");
+        GameObject iconObject;
+        bool createdIcon = existingIcon == null;
+        if (createdIcon)
+        {
+            iconObject = new GameObject("Icon", typeof(RectTransform), typeof(Image));
+            iconObject.transform.SetParent(buttonObject.transform, false);
+        }
+        else
+        {
+            iconObject = existingIcon.gameObject;
+        }
 
         RectTransform iconRect = iconObject.GetComponent<RectTransform>();
-        iconRect.anchorMin = new Vector2(0.5f, 0.5f);
-        iconRect.anchorMax = new Vector2(0.5f, 0.5f);
-        iconRect.pivot = new Vector2(0.5f, 0.5f);
-        iconRect.sizeDelta = Vector2.one * (noseButtonSize * 0.68f);
-        iconRect.anchoredPosition = Vector2.zero;
+        if (createdIcon)
+        {
+            iconRect.anchorMin = new Vector2(0.5f, 0.5f);
+            iconRect.anchorMax = new Vector2(0.5f, 0.5f);
+            iconRect.pivot = new Vector2(0.5f, 0.5f);
+            iconRect.sizeDelta = Vector2.one * (noseButtonSize * 0.68f);
+            iconRect.anchoredPosition = Vector2.zero;
+        }
 
-        noseIconImage = iconObject.GetComponent<Image>();
+        noseIconImage = GetOrAddComponent<Image>(iconObject);
         noseIconImage.sprite = GetScentIconSprite();
         noseIconImage.preserveAspect = true;
         noseIconImage.color = Color.white;
@@ -228,41 +286,68 @@ public class ScentGUI : MonoBehaviour
 
     private void BuildModeButton(Transform parent)
     {
-        GameObject buttonObject = new GameObject(
-            "DecisionModeButton",
-            typeof(RectTransform),
-            typeof(Image),
-            typeof(Button));
-        buttonObject.transform.SetParent(parent, false);
+        Transform existingButton = parent.Find("DecisionModeButton");
+        GameObject buttonObject;
+        bool createdButton = existingButton == null;
+        if (createdButton)
+        {
+            buttonObject = new GameObject(
+                "DecisionModeButton",
+                typeof(RectTransform),
+                typeof(Image),
+                typeof(Button));
+            buttonObject.transform.SetParent(parent, false);
+        }
+        else
+        {
+            buttonObject = existingButton.gameObject;
+        }
 
         modeButtonRect = buttonObject.GetComponent<RectTransform>();
-        modeButtonRect.anchorMin = new Vector2(1f, 1f);
-        modeButtonRect.anchorMax = new Vector2(1f, 1f);
-        modeButtonRect.pivot = new Vector2(1f, 1f);
-        modeButtonRect.anchoredPosition = new Vector2(
-            -(noseButtonMargin + noseButtonSize + modeButtonSpacing),
-            -noseButtonMargin);
-        modeButtonRect.sizeDelta = new Vector2(noseButtonSize, noseButtonSize);
+        if (createdButton)
+        {
+            modeButtonRect.anchorMin = new Vector2(1f, 1f);
+            modeButtonRect.anchorMax = new Vector2(1f, 1f);
+            modeButtonRect.pivot = new Vector2(1f, 1f);
+            modeButtonRect.anchoredPosition = new Vector2(
+                -(noseButtonMargin + noseButtonSize + modeButtonSpacing),
+                -noseButtonMargin);
+            modeButtonRect.sizeDelta = new Vector2(noseButtonSize, noseButtonSize);
+        }
 
-        modeButtonImage = buttonObject.GetComponent<Image>();
+        modeButtonImage = GetOrAddComponent<Image>(buttonObject);
         modeButtonImage.color = noseButtonColor;
         modeButtonImage.raycastTarget = true;
 
-        Button button = buttonObject.GetComponent<Button>();
+        Button button = GetOrAddComponent<Button>(buttonObject);
         button.targetGraphic = modeButtonImage;
+        button.onClick.RemoveListener(ToggleModePanel);
         button.onClick.AddListener(ToggleModePanel);
 
-        GameObject iconObject = new GameObject("Icon", typeof(RectTransform), typeof(Image));
-        iconObject.transform.SetParent(buttonObject.transform, false);
+        Transform existingIcon = buttonObject.transform.Find("Icon");
+        GameObject iconObject;
+        bool createdIcon = existingIcon == null;
+        if (createdIcon)
+        {
+            iconObject = new GameObject("Icon", typeof(RectTransform), typeof(Image));
+            iconObject.transform.SetParent(buttonObject.transform, false);
+        }
+        else
+        {
+            iconObject = existingIcon.gameObject;
+        }
 
         RectTransform iconRect = iconObject.GetComponent<RectTransform>();
-        iconRect.anchorMin = new Vector2(0.5f, 0.5f);
-        iconRect.anchorMax = new Vector2(0.5f, 0.5f);
-        iconRect.pivot = new Vector2(0.5f, 0.5f);
-        iconRect.sizeDelta = Vector2.one * (noseButtonSize * 0.72f);
-        iconRect.anchoredPosition = Vector2.zero;
+        if (createdIcon)
+        {
+            iconRect.anchorMin = new Vector2(0.5f, 0.5f);
+            iconRect.anchorMax = new Vector2(0.5f, 0.5f);
+            iconRect.pivot = new Vector2(0.5f, 0.5f);
+            iconRect.sizeDelta = Vector2.one * (noseButtonSize * 0.72f);
+            iconRect.anchoredPosition = Vector2.zero;
+        }
 
-        modeIconImage = iconObject.GetComponent<Image>();
+        modeIconImage = GetOrAddComponent<Image>(iconObject);
         modeIconImage.preserveAspect = true;
         modeIconImage.color = Color.white;
         RefreshModeButtonState(force: true);
@@ -270,6 +355,13 @@ public class ScentGUI : MonoBehaviour
 
     private void BuildDropdown(Transform parent)
     {
+        Transform existingDropdown = parent.Find("ScentTargetDropdown");
+        if (existingDropdown != null)
+        {
+            BindExistingDropdown(existingDropdown.gameObject);
+            return;
+        }
+
         GameObject dropdownObject = new GameObject(
             "ScentTargetDropdown",
             typeof(RectTransform),
@@ -375,8 +467,33 @@ public class ScentGUI : MonoBehaviour
         dropdownObject.SetActive(false);
     }
 
+    private void BindExistingDropdown(GameObject dropdownObject)
+    {
+        dropdownRect = dropdownObject.GetComponent<RectTransform>();
+        if (dropdownRect == null)
+            return;
+
+        Image dropdownImage = dropdownObject.GetComponent<Image>();
+        if (dropdownImage != null)
+            dropdownImage.color = dropdownBackgroundColor;
+
+        Transform scrollTransform = dropdownObject.transform.Find("ScrollView");
+        dropdownScrollRect = scrollTransform != null ? scrollTransform.GetComponent<ScrollRect>() : null;
+        Transform contentTransform = dropdownObject.transform.Find("ScrollView/Viewport/Content");
+        dropdownContentRect = contentTransform != null ? contentTransform.GetComponent<RectTransform>() : null;
+
+        dropdownObject.SetActive(false);
+    }
+
     private void BuildModePanel(Transform parent)
     {
+        Transform existingPanel = parent.Find("DecisionModePanel");
+        if (existingPanel != null)
+        {
+            BindExistingModePanel(existingPanel.gameObject);
+            return;
+        }
+
         GameObject panelObject = new GameObject(
             "DecisionModePanel",
             typeof(RectTransform),
@@ -416,6 +533,54 @@ public class ScentGUI : MonoBehaviour
         panelObject.SetActive(false);
     }
 
+    private void BindExistingModePanel(GameObject panelObject)
+    {
+        modePanelRect = panelObject.GetComponent<RectTransform>();
+        if (modePanelRect == null)
+            return;
+
+        Image panelImage = panelObject.GetComponent<Image>();
+        if (panelImage != null)
+            panelImage.color = dropdownBackgroundColor;
+
+        modeButtonBackgrounds.Clear();
+        for (int i = 0; i < selectableDecisionModes.Length; i++)
+        {
+            AgentDecisionType decisionType = selectableDecisionModes[i];
+            Transform buttonTransform = panelObject.transform.Find($"{decisionType}ModeButton");
+            if (buttonTransform == null && i < panelObject.transform.childCount)
+                buttonTransform = panelObject.transform.GetChild(i);
+
+            if (buttonTransform == null)
+                continue;
+
+            BindExistingModePanelButton(buttonTransform.gameObject, decisionType);
+        }
+
+        panelObject.SetActive(false);
+    }
+
+    private void BindExistingModePanelButton(GameObject buttonObject, AgentDecisionType decisionType)
+    {
+        Image background = GetOrAddComponent<Image>(buttonObject);
+        background.color = dropdownRowColor;
+        modeButtonBackgrounds.Add(background);
+
+        Button button = GetOrAddComponent<Button>(buttonObject);
+        button.targetGraphic = background;
+        button.onClick.RemoveAllListeners();
+        button.onClick.AddListener(() => HandleDecisionModeSelected(decisionType));
+
+        Transform iconTransform = buttonObject.transform.Find("Icon");
+        if (iconTransform == null)
+            return;
+
+        Image iconImage = GetOrAddComponent<Image>(iconTransform.gameObject);
+        iconImage.sprite = GetDecisionModeSprite(decisionType);
+        iconImage.preserveAspect = true;
+        iconImage.color = Color.white;
+    }
+
     private void CreateModePanelButton(AgentDecisionType decisionType)
     {
         GameObject buttonObject = new GameObject(
@@ -446,6 +611,15 @@ public class ScentGUI : MonoBehaviour
         iconImage.sprite = GetDecisionModeSprite(decisionType);
         iconImage.preserveAspect = true;
         iconImage.color = Color.white;
+    }
+
+    private static T GetOrAddComponent<T>(GameObject target) where T : Component
+    {
+        T component = target.GetComponent<T>();
+        if (component != null)
+            return component;
+
+        return target.AddComponent<T>();
     }
 
     private Scrollbar CreateScrollbar(Transform parent)
@@ -604,10 +778,18 @@ public class ScentGUI : MonoBehaviour
 
     private void RefreshDropdownContents()
     {
-        for (int i = 0; i < dropdownRows.Count; i++)
+        if (dropdownContentRect != null)
         {
-            if (dropdownRows[i] != null)
-                Destroy(dropdownRows[i]);
+            for (int childIndex = dropdownContentRect.childCount - 1; childIndex >= 0; childIndex--)
+                Destroy(dropdownContentRect.GetChild(childIndex).gameObject);
+        }
+        else
+        {
+            for (int i = 0; i < dropdownRows.Count; i++)
+            {
+                if (dropdownRows[i] != null)
+                    Destroy(dropdownRows[i]);
+            }
         }
         dropdownRows.Clear();
 
@@ -921,34 +1103,76 @@ public class ScentGUI : MonoBehaviour
 
     private void LoadDecisionModeSprites()
     {
-        Sprite[] sprites = Resources.LoadAll<Sprite>(modeSpriteResourcePath);
+        string resourcePath = NormalizeResourcePath(modeSpriteResourcePath);
+        Sprite[] sprites = Resources.LoadAll<Sprite>(resourcePath);
+        if (sprites == null || sprites.Length == 0)
+        {
+            Debug.LogWarning($"ScentGUI: no decision mode sprites found at Resources/{resourcePath}. Make sure the path has no file extension and the texture is imported as Sprite Mode = Multiple.", this);
+            return;
+        }
+
         for (int i = 0; i < sprites.Length; i++)
         {
             Sprite sprite = sprites[i];
             if (sprite == null)
                 continue;
 
-            switch (sprite.name)
+            switch (GetSpriteSheetIndex(sprite.name))
             {
-                case "SpriteSheet_Modes_V2_0":
+                case 0:
+                //case 6:
                     modeSpriteLookup[AgentDecisionType.Player] = sprite;
                     break;
-                case "SpriteSheet_Modes_V2_1":
+                case 1:
+                //case 7:
                     modeSpriteLookup[AgentDecisionType.Follower] = sprite;
                     break;
-                case "SpriteSheet_Modes_V2_2":
+                case 2:
+                //case 8:
                     modeSpriteLookup[AgentDecisionType.Explorer] = sprite;
                     break;
-                case "SpriteSheet_Modes_V2_3":
+                case 3:
+                //case 9:
                     modeSpriteLookup[AgentDecisionType.Immobile] = sprite;
                     break;
-                case "SpriteSheet_Modes_V2_4":
+                case 4:
+                //case 10:
                     modeSpriteLookup[AgentDecisionType.Wanderer] = sprite;
                     break;
-                case "SpriteSheet_Modes_V2_5":
+                case 5:
+                //case 11:
                     modeSpriteLookup[AgentDecisionType.TaskFollower] = sprite;
                     break;
             }
         }
+
+        if (modeSpriteLookup.Count == 0)
+            Debug.LogWarning($"ScentGUI: loaded {sprites.Length} sprites from Resources/{resourcePath}, but none had numeric suffixes like '_0' through '_5'.", this);
+    }
+
+    private static string NormalizeResourcePath(string resourcePath)
+    {
+        if (string.IsNullOrWhiteSpace(resourcePath))
+            return "";
+
+        resourcePath = resourcePath.Trim();
+        if (resourcePath.EndsWith(".png", System.StringComparison.OrdinalIgnoreCase))
+            resourcePath = resourcePath.Substring(0, resourcePath.Length - 4);
+
+        return resourcePath;
+    }
+
+    private static int GetSpriteSheetIndex(string spriteName)
+    {
+        if (string.IsNullOrWhiteSpace(spriteName))
+            return -1;
+
+        int separatorIndex = spriteName.LastIndexOf('_');
+        if (separatorIndex < 0 || separatorIndex >= spriteName.Length - 1)
+            return -1;
+
+        return int.TryParse(spriteName.Substring(separatorIndex + 1), out int index)
+            ? index
+            : -1;
     }
 }
