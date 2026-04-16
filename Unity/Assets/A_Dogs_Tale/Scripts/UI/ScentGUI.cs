@@ -14,10 +14,10 @@ public class ScentGUI : MonoBehaviour
     [Header("Target Scent Menu")]
     [SerializeField] private string scentSpriteResourcePath = "Sprites/SensesSymbolsColor_v4";
     [SerializeField] private string modeSpriteResourcePath = "Sprites/SpriteSheet_Modes_V2";
-    [SerializeField] private float noseButtonSize = 88f;
+    [SerializeField] private float noseButtonSize = 176f;
     [SerializeField] private float noseButtonMargin = 24f;
     [SerializeField] private float modeButtonSpacing = 12f;
-    [SerializeField] private float modePanelIconSize = 64f;
+    [SerializeField] private float modePanelIconSize = 128f;
     [SerializeField] private float dropdownWidth = 320f;
     [SerializeField] private float dropdownMaxHeight = 420f;
     [SerializeField] private int uiSortOrder = 5100;
