@@ -10,20 +10,40 @@ namespace DogGame
     public sealed class GameTimeDriver : MonoBehaviour
     {
         public bool pause = false;      // Toggle this to trigger a pause/resume
+        private bool lastPauseRequest;
+
+        public void OnEnable()
+        {
+            GameTime.Reset();
+            pause = GamePause.IsPaused;
+            lastPauseRequest = pause;
+            GamePause.OnPauseChanged += HandlePauseChanged;
+        }
+
+        public void OnDisable()
+        {
+            GamePause.OnPauseChanged -= HandlePauseChanged;
+        }
 
         public void Update()
         {
             GameTime.Update();
 
-            if (GamePause.IsPaused == pause) return;
+            if (pause == lastPauseRequest)
+                return;
 
-            if (pause) GamePause.Pause();
-            else GamePause.Resume();
+            lastPauseRequest = pause;
 
+            if (pause)
+                GamePause.Pause();
+            else
+                GamePause.Resume();
         }
-        private void OnEnable()
+
+        private void HandlePauseChanged(bool isPaused)
         {
-            GameTime.Reset();
+            pause = isPaused;
+            lastPauseRequest = isPaused;
         }
     }
 }

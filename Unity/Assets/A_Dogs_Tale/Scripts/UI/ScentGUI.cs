@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using DogGame;
 using DogGame.Modules;
 using TMPro;
 using UnityEngine;
@@ -10,6 +11,7 @@ public class ScentGUI : MonoBehaviour
     private const string CanvasName = "ScentTargetCanvas";
     private const string ScentControlsContainerName = "ScentControls";
     private const string DecisionModeControlsContainerName = "DecisionModeControls";
+    private const string SimulationControlsContainerName = "SimulationControls";
 
     [Header("External object references")]
     private Dir dir;
@@ -18,6 +20,7 @@ public class ScentGUI : MonoBehaviour
     [Header("Target Scent Menu")]
     [SerializeField] private string scentSpriteResourcePath = "Sprites/SensesSymbolsColor_v4";
     [SerializeField] private string modeSpriteResourcePath = "Sprites/SpriteSheet_Modes_V2";
+    [SerializeField] private string playPauseSpriteResourcePath = "Sprites/PlayAndPause_Dual";
     [SerializeField] private float noseButtonSize = 176f;
     [SerializeField] private float noseButtonMargin = 24f;
     [SerializeField] private float modeButtonSpacing = 12f;
@@ -33,6 +36,7 @@ public class ScentGUI : MonoBehaviour
 
     private readonly Dictionary<string, Sprite> scentSpriteLookup = new Dictionary<string, Sprite>();
     private readonly Dictionary<AgentDecisionType, Sprite> modeSpriteLookup = new Dictionary<AgentDecisionType, Sprite>();
+    private readonly Dictionary<int, Sprite> playPauseSpriteLookup = new Dictionary<int, Sprite>();
     private readonly List<GameObject> dropdownRows = new List<GameObject>();
     private readonly List<Image> modeButtonBackgrounds = new List<Image>();
 
@@ -50,7 +54,11 @@ public class ScentGUI : MonoBehaviour
     private Image modeButtonImage;
     private Image modeIconImage;
     private RectTransform modePanelRect;
+    private RectTransform simulationButtonRect;
+    private Image simulationButtonImage;
+    private Image simulationIconImage;
     private AgentDecisionType displayedDecisionType = AgentDecisionType.Undefined;
+    private bool? displayedPausedState;
     private bool uiBuilt;
 
     private readonly AgentDecisionType[] selectableDecisionModes =
@@ -82,6 +90,7 @@ public class ScentGUI : MonoBehaviour
     private void Update()
     {
         RefreshModeButtonState();
+        RefreshSimulationButtonState();
 
         if (Mouse.current == null || !Mouse.current.leftButton.wasPressedThisFrame)
             return;
@@ -196,11 +205,13 @@ public class ScentGUI : MonoBehaviour
 
         Transform scentControlsTransform = EnsureSectionContainer(canvasObject.transform, ScentControlsContainerName);
         Transform decisionModeControlsTransform = EnsureSectionContainer(canvasObject.transform, DecisionModeControlsContainerName);
+        Transform simulationControlsTransform = EnsureSectionContainer(canvasObject.transform, SimulationControlsContainerName);
 
         ReparentExistingUiElement(decisionModeControlsTransform, canvasObject.transform, "DecisionModeTitle");
 
         BuildNoseButton(scentControlsTransform, canvasObject.transform);
         BuildModeButton(decisionModeControlsTransform, canvasObject.transform);
+        BuildSimulationButton(simulationControlsTransform, canvasObject.transform);
         BuildDropdown(scentControlsTransform, canvasObject.transform);
         BuildModePanel(decisionModeControlsTransform, canvasObject.transform);
     }
@@ -428,6 +439,75 @@ public class ScentGUI : MonoBehaviour
         modeIconImage.preserveAspect = true;
         modeIconImage.color = Color.white;
         RefreshModeButtonState(force: true);
+    }
+
+    private void BuildSimulationButton(Transform parent, Transform searchRoot)
+    {
+        Transform existingButton = FindExistingUiElement(parent, searchRoot, "SimulationPauseButton");
+        GameObject buttonObject;
+        bool createdButton = existingButton == null;
+        if (createdButton)
+        {
+            buttonObject = new GameObject(
+                "SimulationPauseButton",
+                typeof(RectTransform),
+                typeof(Image),
+                typeof(Button));
+            buttonObject.transform.SetParent(parent, false);
+        }
+        else
+        {
+            buttonObject = existingButton.gameObject;
+        }
+
+        simulationButtonRect = buttonObject.GetComponent<RectTransform>();
+        if (createdButton)
+        {
+            simulationButtonRect.anchorMin = new Vector2(1f, 1f);
+            simulationButtonRect.anchorMax = new Vector2(1f, 1f);
+            simulationButtonRect.pivot = new Vector2(1f, 1f);
+            simulationButtonRect.anchoredPosition = new Vector2(
+                -(noseButtonMargin + ((noseButtonSize + modeButtonSpacing) * 2f)),
+                -noseButtonMargin);
+            simulationButtonRect.sizeDelta = new Vector2(noseButtonSize, noseButtonSize);
+        }
+
+        simulationButtonImage = GetOrAddComponent<Image>(buttonObject);
+        simulationButtonImage.color = noseButtonColor;
+        simulationButtonImage.raycastTarget = true;
+
+        Button button = GetOrAddComponent<Button>(buttonObject);
+        button.targetGraphic = simulationButtonImage;
+        button.onClick.RemoveListener(ToggleSimulationPause);
+        button.onClick.AddListener(ToggleSimulationPause);
+
+        Transform existingIcon = buttonObject.transform.Find("Icon");
+        GameObject iconObject;
+        bool createdIcon = existingIcon == null;
+        if (createdIcon)
+        {
+            iconObject = new GameObject("Icon", typeof(RectTransform), typeof(Image));
+            iconObject.transform.SetParent(buttonObject.transform, false);
+        }
+        else
+        {
+            iconObject = existingIcon.gameObject;
+        }
+
+        RectTransform iconRect = iconObject.GetComponent<RectTransform>();
+        if (createdIcon)
+        {
+            iconRect.anchorMin = new Vector2(0.5f, 0.5f);
+            iconRect.anchorMax = new Vector2(0.5f, 0.5f);
+            iconRect.pivot = new Vector2(0.5f, 0.5f);
+            iconRect.sizeDelta = Vector2.one * (noseButtonSize * 0.72f);
+            iconRect.anchoredPosition = Vector2.zero;
+        }
+
+        simulationIconImage = GetOrAddComponent<Image>(iconObject);
+        simulationIconImage.preserveAspect = true;
+        simulationIconImage.color = Color.white;
+        RefreshSimulationButtonState(force: true);
     }
 
     private void BuildDropdown(Transform parent, Transform searchRoot)
@@ -1112,6 +1192,28 @@ public class ScentGUI : MonoBehaviour
         }
     }
 
+    private void ToggleSimulationPause()
+    {
+        GamePause.Toggle();
+        RefreshSimulationButtonState(force: true);
+    }
+
+    private void RefreshSimulationButtonState(bool force = false)
+    {
+        if (simulationIconImage == null || simulationButtonImage == null)
+            return;
+
+        bool isPaused = GamePause.IsPaused;
+        if (!force && displayedPausedState.HasValue && displayedPausedState.Value == isPaused)
+            return;
+
+        displayedPausedState = isPaused;
+        simulationIconImage.sprite = GetSimulationControlSprite(isPaused);
+        simulationButtonImage.color = isPaused
+            ? dropdownSelectedColor
+            : noseButtonColor;
+    }
+
     private AgentDecisionType GetCurrentDecisionType()
     {
         WorldObject controlledObject = GetCurrentControlledWorldObject();
@@ -1178,6 +1280,24 @@ public class ScentGUI : MonoBehaviour
         return null;
     }
 
+    private Sprite GetSimulationControlSprite(bool isPaused)
+    {
+        if (playPauseSpriteLookup.Count == 0)
+            LoadSimulationControlSprites();
+
+        int desiredIndex = isPaused ? 0 : 1;
+        if (playPauseSpriteLookup.TryGetValue(desiredIndex, out Sprite sprite))
+            return sprite;
+
+        if (playPauseSpriteLookup.TryGetValue(1, out Sprite pauseSprite))
+            return pauseSprite;
+
+        if (playPauseSpriteLookup.TryGetValue(0, out Sprite playSprite))
+            return playSprite;
+
+        return null;
+    }
+
     private void LoadDecisionModeSprites()
     {
         string resourcePath = NormalizeResourcePath(modeSpriteResourcePath);
@@ -1225,6 +1345,31 @@ public class ScentGUI : MonoBehaviour
 
         if (modeSpriteLookup.Count == 0)
             Debug.LogWarning($"ScentGUI: loaded {sprites.Length} sprites from Resources/{resourcePath}, but none had numeric suffixes like '_0' through '_5'.", this);
+    }
+
+    private void LoadSimulationControlSprites()
+    {
+        string resourcePath = NormalizeResourcePath(playPauseSpriteResourcePath);
+        Sprite[] sprites = Resources.LoadAll<Sprite>(resourcePath);
+        if (sprites == null || sprites.Length == 0)
+        {
+            Debug.LogWarning($"ScentGUI: no play/pause sprites found at Resources/{resourcePath}. Make sure the path has no file extension and the texture is imported as Sprite Mode = Multiple.", this);
+            return;
+        }
+
+        for (int i = 0; i < sprites.Length; i++)
+        {
+            Sprite sprite = sprites[i];
+            if (sprite == null)
+                continue;
+
+            int index = GetSpriteSheetIndex(sprite.name);
+            if (index >= 0)
+                playPauseSpriteLookup[index] = sprite;
+        }
+
+        if (playPauseSpriteLookup.Count == 0)
+            Debug.LogWarning($"ScentGUI: loaded {sprites.Length} sprites from Resources/{resourcePath}, but none had numeric suffixes like '_0' or '_1'.", this);
     }
 
     private static string NormalizeResourcePath(string resourcePath)
