@@ -7,6 +7,10 @@ using UnityEngine.UI;
 
 public class ScentGUI : MonoBehaviour
 {
+    private const string CanvasName = "ScentTargetCanvas";
+    private const string ScentControlsContainerName = "ScentControls";
+    private const string DecisionModeControlsContainerName = "DecisionModeControls";
+
     [Header("External object references")]
     private Dir dir;
     public SniffModeVisuals sniffVisuals;
@@ -190,19 +194,24 @@ public class ScentGUI : MonoBehaviour
         scaler.matchWidthOrHeight = 1f;
         GetOrAddComponent<GraphicRaycaster>(canvasObject);
 
-        BuildNoseButton(canvasObject.transform);
-        BuildModeButton(canvasObject.transform);
-        BuildDropdown(canvasObject.transform);
-        BuildModePanel(canvasObject.transform);
+        Transform scentControlsTransform = EnsureSectionContainer(canvasObject.transform, ScentControlsContainerName);
+        Transform decisionModeControlsTransform = EnsureSectionContainer(canvasObject.transform, DecisionModeControlsContainerName);
+
+        ReparentExistingUiElement(decisionModeControlsTransform, canvasObject.transform, "DecisionModeTitle");
+
+        BuildNoseButton(scentControlsTransform, canvasObject.transform);
+        BuildModeButton(decisionModeControlsTransform, canvasObject.transform);
+        BuildDropdown(scentControlsTransform, canvasObject.transform);
+        BuildModePanel(decisionModeControlsTransform, canvasObject.transform);
     }
 
     private Transform FindExistingScentTargetCanvas()
     {
-        Transform localCanvas = transform.Find("ScentTargetCanvas");
+        Transform localCanvas = FindDescendantByName(transform, CanvasName);
         if (localCanvas != null)
             return localCanvas;
 
-        GameObject sceneCanvas = GameObject.Find("ScentTargetCanvas");
+        GameObject sceneCanvas = GameObject.Find(CanvasName);
         if (sceneCanvas != null)
             return sceneCanvas.transform;
 
@@ -210,16 +219,84 @@ public class ScentGUI : MonoBehaviour
         for (int i = 0; i < rectTransforms.Length; i++)
         {
             RectTransform rectTransform = rectTransforms[i];
-            if (rectTransform != null && rectTransform.name == "ScentTargetCanvas")
+            if (rectTransform != null && rectTransform.name == CanvasName)
                 return rectTransform;
         }
 
         return null;
     }
 
-    private void BuildNoseButton(Transform parent)
+    private Transform EnsureSectionContainer(Transform canvasTransform, string containerName)
     {
-        Transform existingButton = parent.Find("ScentTargetButton");
+        Transform sectionTransform = canvasTransform.Find(containerName);
+        if (sectionTransform == null)
+        {
+            sectionTransform = FindDescendantByName(canvasTransform, containerName);
+            if (sectionTransform != null && sectionTransform.parent != canvasTransform)
+                sectionTransform.SetParent(canvasTransform, false);
+        }
+
+        if (sectionTransform == null)
+        {
+            GameObject sectionObject = new GameObject(containerName, typeof(RectTransform));
+            sectionObject.transform.SetParent(canvasTransform, false);
+            sectionTransform = sectionObject.transform;
+        }
+
+        RectTransform sectionRect = sectionTransform as RectTransform;
+        if (sectionRect == null)
+            sectionRect = GetOrAddComponent<RectTransform>(sectionTransform.gameObject);
+
+        sectionRect.anchorMin = Vector2.zero;
+        sectionRect.anchorMax = Vector2.one;
+        sectionRect.offsetMin = Vector2.zero;
+        sectionRect.offsetMax = Vector2.zero;
+        sectionRect.pivot = new Vector2(0.5f, 0.5f);
+
+        return sectionTransform;
+    }
+
+    private void ReparentExistingUiElement(Transform preferredParent, Transform searchRoot, string elementName)
+    {
+        Transform existing = FindDescendantByName(searchRoot, elementName);
+        if (existing != null && existing.parent != preferredParent)
+            existing.SetParent(preferredParent, false);
+    }
+
+    private Transform FindExistingUiElement(Transform preferredParent, Transform searchRoot, string elementName)
+    {
+        Transform existing = preferredParent.Find(elementName);
+        if (existing != null)
+            return existing;
+
+        existing = FindDescendantByName(searchRoot, elementName);
+        if (existing != null && existing.parent != preferredParent)
+            existing.SetParent(preferredParent, false);
+
+        return existing;
+    }
+
+    private Transform FindDescendantByName(Transform root, string childName)
+    {
+        if (root == null)
+            return null;
+
+        if (root.name == childName)
+            return root;
+
+        for (int i = 0; i < root.childCount; i++)
+        {
+            Transform found = FindDescendantByName(root.GetChild(i), childName);
+            if (found != null)
+                return found;
+        }
+
+        return null;
+    }
+
+    private void BuildNoseButton(Transform parent, Transform searchRoot)
+    {
+        Transform existingButton = FindExistingUiElement(parent, searchRoot, "ScentTargetButton");
         GameObject buttonObject;
         bool createdButton = existingButton == null;
         if (createdButton)
@@ -284,9 +361,9 @@ public class ScentGUI : MonoBehaviour
         noseIconImage.color = Color.white;
     }
 
-    private void BuildModeButton(Transform parent)
+    private void BuildModeButton(Transform parent, Transform searchRoot)
     {
-        Transform existingButton = parent.Find("DecisionModeButton");
+        Transform existingButton = FindExistingUiElement(parent, searchRoot, "DecisionModeButton");
         GameObject buttonObject;
         bool createdButton = existingButton == null;
         if (createdButton)
@@ -353,9 +430,9 @@ public class ScentGUI : MonoBehaviour
         RefreshModeButtonState(force: true);
     }
 
-    private void BuildDropdown(Transform parent)
+    private void BuildDropdown(Transform parent, Transform searchRoot)
     {
-        Transform existingDropdown = parent.Find("ScentTargetDropdown");
+        Transform existingDropdown = FindExistingUiElement(parent, searchRoot, "ScentTargetDropdown");
         if (existingDropdown != null)
         {
             BindExistingDropdown(existingDropdown.gameObject);
@@ -485,9 +562,9 @@ public class ScentGUI : MonoBehaviour
         dropdownObject.SetActive(false);
     }
 
-    private void BuildModePanel(Transform parent)
+    private void BuildModePanel(Transform parent, Transform searchRoot)
     {
-        Transform existingPanel = parent.Find("DecisionModePanel");
+        Transform existingPanel = FindExistingUiElement(parent, searchRoot, "DecisionModePanel");
         if (existingPanel != null)
         {
             BindExistingModePanel(existingPanel.gameObject);
