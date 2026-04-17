@@ -27,7 +27,7 @@ namespace DogGame.Modules
                 // clear state left over from last time we were active
 
                 // stop any in-progress movement
-                worldObject.agentMovementModule.ClearDesiredMove();
+                StopMovementIntent();
             }            
         }
 
@@ -37,7 +37,7 @@ namespace DogGame.Modules
             // retain state (in case requested to resume): currentDestination*
             
             // stop actions in progress: Move
-            worldObject.agentMovementModule.ClearDesiredMove();
+            StopMovementIntent();
         }
         #endregion
     }

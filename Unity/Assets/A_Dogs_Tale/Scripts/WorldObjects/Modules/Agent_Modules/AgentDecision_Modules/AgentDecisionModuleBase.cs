@@ -35,6 +35,11 @@ namespace DogGame.Modules
             Debug.Log($"AgentDecisionModuleBase {worldObject.DisplayName}: Tick {deltaTime}");
         }
 
+        protected void StopMovementIntent()
+        {
+            worldObject?.agentMovementModule?.ClearDesiredMovement();
+        }
+
         // These functions should be called when decisionModule changes.
         // Clears / resumes actions in progress.
         public abstract void BeginDecisionModule(bool resume=false);

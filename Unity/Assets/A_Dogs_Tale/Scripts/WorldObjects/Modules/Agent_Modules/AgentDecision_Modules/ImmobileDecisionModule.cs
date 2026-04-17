@@ -31,11 +31,11 @@ namespace DogGame.Modules
         
         public override void BeginDecisionModule(bool resume=false)
         {
-            
+            StopMovementIntent();
         }
         public override void EndDecisionModule()
         {
-            
+            StopMovementIntent();
         }
     }
 }

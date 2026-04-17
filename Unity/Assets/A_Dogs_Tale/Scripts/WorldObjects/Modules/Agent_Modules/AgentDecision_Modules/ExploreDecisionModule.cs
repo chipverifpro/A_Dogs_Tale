@@ -695,7 +695,7 @@ end
         {
             toExplore.Clear();
             queuedDoorKeys.Clear();
-            worldObject.agentMovementModule?.ClearDesiredTarget();
+            StopMovementIntent();
             phase = ExplorePhase.None;
             needsDoorRefresh = true;
             queuedRoomIndex = -1;

@@ -143,7 +143,7 @@ namespace DogGame.Modules
         public override void EndDecisionModule()
         {
             dwellRemainingSeconds = 0f;
-            worldObject?.agentMovementModule?.ClearDesiredMove();
+            StopMovementIntent();
         }
     }
 }

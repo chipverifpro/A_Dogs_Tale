@@ -178,9 +178,15 @@ namespace DogGame.Modules
         /// </summary>
         public void SetDecisionModule(AgentDecisionModuleBase decisionModule)
         {
-            currentDecisionModule.EndDecisionModule();  // notify the old module it is losing control.
+            if (currentDecisionModule != null)
+            {
+                currentDecisionModule.EndDecisionModule();  // notify the old module it is losing control.
+                currentDecisionModule.enabled = false;
+            }
+
             currentDecisionModule = decisionModule;
             currentDecisionModule.Initialize(this);
+            currentDecisionModule.enabled = true;
             currentDecisionModule.BeginDecisionModule();  // notify the new module it is gaining control.
         }
 

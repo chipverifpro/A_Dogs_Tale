@@ -728,7 +728,7 @@ namespace DogGame.Modules
                 currentDestinationObject = null;
                 currentManualWorldMoveDir = null;
                 // stop any in-progress movement
-                worldObject.agentMovementModule.ClearDesiredMove();
+                StopMovementIntent();
             }            
         }
 
@@ -739,7 +739,7 @@ namespace DogGame.Modules
             // retain state (in case requested to resume): currentDestination*
             
             // stop actions in progress: Move
-            worldObject.agentMovementModule.ClearDesiredMove();
+            StopMovementIntent();
         }
         #endregion
 
