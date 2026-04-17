@@ -97,7 +97,7 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: PlayAndPause_Dual_0
+      name: PlayAndPause_Dual_1
       rect:
         serializedVersion: 2
         x: 48
@@ -119,7 +119,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: PlayAndPause_Dual_1
+      name: PlayAndPause_Dual_0
       rect:
         serializedVersion: 2
         x: 518
