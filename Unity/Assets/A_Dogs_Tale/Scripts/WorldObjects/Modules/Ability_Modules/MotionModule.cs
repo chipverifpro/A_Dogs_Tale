@@ -328,21 +328,8 @@ namespace DogGame.Modules
             Vector3 proposedDelta = Vector3.ClampMagnitude(frameVelocity * deltaTime, maxDistance);
             Vector3 proposedPosition = bodyRoot.position + proposedDelta;
 
-            // --- 6. Apply leash constraint (position-level clamp)
-            Vector3 constrainedPosition = proposedPosition;
-
-            if (constrainToCellWalls)
-            {
-                constrainedPosition = ConstrainPositionToWalls(bodyRoot.position, constrainedPosition);
-            }
-
-            //var leashSystem = world?.GetSubsystem<LeashSystem>(); // or however you access subsystems
-            if (dir.leashSystem != null)
-            {
-                // If this MotionModule belongs to an agent WorldObject, pass it.
-                // Adapt the cast/type to your actual agent class.
-                constrainedPosition = dir.leashSystem.ConstrainDesiredPosition(worldObject, constrainedPosition);
-            }
+            // --- 6. Apply world-space constraints before committing the move
+            Vector3 constrainedPosition = ResolveConstrainedWorldPosition(bodyRoot.position, proposedPosition, applyLeashConstraints: true);
 
             // --- 7. Commit
             Vector3 actualDelta = constrainedPosition - bodyRoot.position;
@@ -358,6 +345,46 @@ namespace DogGame.Modules
             }
 
             //Debug.Log($"{worldObject.DisplayName}:MotionModule.ApplyMotion complete");
+        }
+
+        public Vector3 ResolveConstrainedWorldPosition(Vector3 fromWorld, Vector3 desiredWorldPosition, bool applyLeashConstraints = true)
+        {
+            Vector3 constrainedPosition = desiredWorldPosition;
+
+            if (constrainToCellWalls)
+            {
+                constrainedPosition = ConstrainPositionToWalls(fromWorld, constrainedPosition);
+            }
+
+            if (applyLeashConstraints && dir.leashSystem != null)
+            {
+                constrainedPosition = dir.leashSystem.ConstrainDesiredPosition(worldObject, constrainedPosition);
+            }
+
+            return constrainedPosition;
+        }
+
+        public Vector3 ApplyExternalWorldDisplacement(Vector3 desiredWorldDelta, float deltaTime, bool applyLeashConstraints = true)
+        {
+            if (bodyRoot == null || desiredWorldDelta.sqrMagnitude <= 0f)
+                return Vector3.zero;
+
+            Vector3 startPosition = bodyRoot.position;
+            Vector3 constrainedPosition = ResolveConstrainedWorldPosition(
+                startPosition,
+                startPosition + desiredWorldDelta,
+                applyLeashConstraints);
+
+            Vector3 actualDelta = constrainedPosition - startPosition;
+            bodyRoot.position = constrainedPosition;
+
+            if (deltaTime > 0f)
+            {
+                Vector3 actualFrameVelocity = actualDelta / deltaTime;
+                horizontalVelocity = new Vector3(actualFrameVelocity.x, 0f, actualFrameVelocity.z);
+            }
+
+            return actualDelta;
         }
 
         #endregion

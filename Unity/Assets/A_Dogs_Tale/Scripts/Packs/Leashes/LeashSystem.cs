@@ -31,14 +31,36 @@ public class LeashLink
     public float maxLength;
     public LeashVisualizer leashVisualizer;     // script attached to leashGo
     public GameObject leashGo;
+    public Vector3 currentForceOnA;
+    public Vector3 currentForceOnB;
+    public Vector3 nextForceOnA;
+    public Vector3 nextForceOnB;
 }
 
 // ============== LeashSystem ================
+[DefaultExecutionOrder(-900)]
 public class LeashSystem : MonoBehaviour // or your Subsystem base
 {
+    private struct ForceContribution
+    {
+        public LeashLink link;
+        public bool targetIsA;
+        public Vector3 forceVector;
+    }
+
     private Dir dir;
 
     public List<LeashLink> leashes = new();
+
+    [Header("Leash Pull Tuning")]
+    [SerializeField] private float forcePerExceededMeterPerMass = 1f;
+    [SerializeField] private float movementPerForce = 1f;
+    [SerializeField] private float minimumForceToMove = 0.05f;
+    [SerializeField] private float minimumMovementDistance = 0.005f;
+    [SerializeField] private float feedbackForceRatio = 1f;
+    [SerializeField] private float minimumMassResistance = 0.1f;
+    [SerializeField] private float maxPullMovementPerTick = 0.75f;
+    [SerializeField] private bool debugPullLogging = false;
 
     public void Start()
     {
@@ -48,6 +70,14 @@ public class LeashSystem : MonoBehaviour // or your Subsystem base
 
         // Assumes packs are already created.
         //CreateInitialLeashesFromEndpoints();
+    }
+
+    private void Update()
+    {
+        if (dir == null) dir = Dir.Instance;
+
+        PromoteQueuedPullForces();
+        ApplyPendingPullForces(Time.deltaTime);
     }
 
     private void CreateInitialLeashesFromEndpoints()
@@ -169,11 +199,191 @@ public class LeashSystem : MonoBehaviour // or your Subsystem base
             if (dist > link.maxLength && dist > 0.0001f)
             {
                 Vector3 dir = (result - otherPos) / dist;
-                result = otherPos + dir * link.maxLength;
+                Vector3 clampedPosition = otherPos + dir * link.maxLength;
+                float exceededDistance = Vector3.Distance(result, clampedPosition);
+
+                if (exceededDistance > 0f)
+                {
+                    float moverStrengthMass = Mathf.Max(minimumMassResistance, mover.mass);
+                    float storedForceMagnitude = exceededDistance * moverStrengthMass * forcePerExceededMeterPerMass;
+                    Vector3 storedForce = dir * storedForceMagnitude;
+
+                    if (storedForceMagnitude >= minimumForceToMove)
+                    {
+                        if (moverIsA) link.nextForceOnB += storedForce;
+                        else link.nextForceOnA += storedForce;
+
+                        if (debugPullLogging)
+                        {
+                            Debug.Log(
+                                $"[LeashSystem] {mover.DisplayName} exceeded leash to {other.DisplayName} by {exceededDistance:0.###}m, stored force {storedForce}.",
+                                this);
+                        }
+                    }
+                }
+
+                result = clampedPosition;
             }
         }
 
         return result;
+    }
+
+    private void PromoteQueuedPullForces()
+    {
+        for (int i = 0; i < leashes.Count; i++)
+        {
+            var link = leashes[i];
+            if (link == null) continue;
+
+            link.currentForceOnA = link.nextForceOnA;
+            link.currentForceOnB = link.nextForceOnB;
+            link.nextForceOnA = Vector3.zero;
+            link.nextForceOnB = Vector3.zero;
+        }
+    }
+
+    private void ApplyPendingPullForces(float deltaTime)
+    {
+        if (deltaTime <= 0f)
+            return;
+
+        List<WorldObject> receivers = new();
+
+        for (int i = 0; i < leashes.Count; i++)
+        {
+            var link = leashes[i];
+            if (link == null || link.a == null || link.b == null) continue;
+
+            if (link.currentForceOnA.sqrMagnitude > 0.000001f && !receivers.Contains(link.a))
+                receivers.Add(link.a);
+
+            if (link.currentForceOnB.sqrMagnitude > 0.000001f && !receivers.Contains(link.b))
+                receivers.Add(link.b);
+        }
+
+        for (int i = 0; i < receivers.Count; i++)
+        {
+            ApplyPendingPullForReceiver(receivers[i], deltaTime);
+        }
+    }
+
+    private void ApplyPendingPullForReceiver(WorldObject receiver, float deltaTime)
+    {
+        if (receiver == null)
+            return;
+
+        List<ForceContribution> contributions = new();
+        Vector3 totalForce = Vector3.zero;
+
+        for (int i = 0; i < leashes.Count; i++)
+        {
+            var link = leashes[i];
+            if (link == null) continue;
+
+            if (link.a == receiver && link.currentForceOnA.sqrMagnitude > 0.000001f)
+            {
+                contributions.Add(new ForceContribution { link = link, targetIsA = true, forceVector = link.currentForceOnA });
+                totalForce += link.currentForceOnA;
+            }
+
+            if (link.b == receiver && link.currentForceOnB.sqrMagnitude > 0.000001f)
+            {
+                contributions.Add(new ForceContribution { link = link, targetIsA = false, forceVector = link.currentForceOnB });
+                totalForce += link.currentForceOnB;
+            }
+        }
+
+        if (contributions.Count == 0)
+            return;
+
+        float totalForceMagnitude = totalForce.magnitude;
+        if (totalForceMagnitude < minimumForceToMove)
+        {
+            ClearCurrentForces(contributions);
+            return;
+        }
+
+        float resistanceMass = Mathf.Max(minimumMassResistance, receiver.mass);
+        Vector3 desiredMove = totalForce * (movementPerForce / resistanceMass);
+        desiredMove.y = 0f;
+
+        float desiredMoveMagnitude = desiredMove.magnitude;
+        if (desiredMoveMagnitude < minimumMovementDistance)
+        {
+            ClearCurrentForces(contributions);
+            return;
+        }
+
+        if (maxPullMovementPerTick > 0f && desiredMoveMagnitude > maxPullMovementPerTick)
+        {
+            desiredMove = desiredMove.normalized * maxPullMovementPerTick;
+            desiredMoveMagnitude = desiredMove.magnitude;
+        }
+
+        Vector3 actualMove = Vector3.zero;
+
+        if (!receiver.immovable)
+        {
+            if (receiver.motionModule != null)
+            {
+                actualMove = receiver.motionModule.ApplyExternalWorldDisplacement(desiredMove, deltaTime, applyLeashConstraints: true);
+            }
+            else
+            {
+                Vector3 startPosition = receiver.transform.position;
+                Vector3 constrainedPosition = ConstrainDesiredPosition(receiver, startPosition + desiredMove);
+                receiver.transform.position = constrainedPosition;
+                actualMove = constrainedPosition - startPosition;
+            }
+        }
+
+        float achievedDistance = 0f;
+        if (desiredMoveMagnitude > 0.0001f)
+        {
+            achievedDistance = Mathf.Max(0f, Vector3.Dot(actualMove, desiredMove.normalized));
+        }
+
+        float failureRatio = desiredMoveMagnitude > 0.0001f
+            ? Mathf.Clamp01(1f - (achievedDistance / desiredMoveMagnitude))
+            : 0f;
+
+        if (receiver.immovable)
+            failureRatio = 1f;
+
+        if (failureRatio > 0f && feedbackForceRatio > 0f)
+        {
+            for (int i = 0; i < contributions.Count; i++)
+            {
+                ForceContribution contribution = contributions[i];
+                Vector3 feedbackForce = -contribution.forceVector * (failureRatio * feedbackForceRatio);
+
+                if (feedbackForce.magnitude < minimumForceToMove)
+                    continue;
+
+                if (contribution.targetIsA) contribution.link.nextForceOnB += feedbackForce;
+                else contribution.link.nextForceOnA += feedbackForce;
+            }
+        }
+
+        if (debugPullLogging)
+        {
+            Debug.Log(
+                $"[LeashSystem] Applied pull to {receiver.DisplayName}: totalForce={totalForce}, desiredMove={desiredMove}, actualMove={actualMove}, failureRatio={failureRatio:0.###}.",
+                this);
+        }
+
+        ClearCurrentForces(contributions);
+    }
+
+    private void ClearCurrentForces(List<ForceContribution> contributions)
+    {
+        for (int i = 0; i < contributions.Count; i++)
+        {
+            ForceContribution contribution = contributions[i];
+            if (contribution.targetIsA) contribution.link.currentForceOnA = Vector3.zero;
+            else contribution.link.currentForceOnB = Vector3.zero;
+        }
     }
 
     private LeashLink FindLeash(WorldObject a, WorldObject b)

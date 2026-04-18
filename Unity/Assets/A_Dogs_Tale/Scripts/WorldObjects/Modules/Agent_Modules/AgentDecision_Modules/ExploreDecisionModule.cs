@@ -577,8 +577,8 @@ end
             activeRoomCenterMap = roomCenterMap;
             phase = ExplorePhase.MoveToRoomCenter;
             worldObject.agentMovementModule.SetDesiredTargetLocationMap(activeRoomCenterMap, exploreWalkMode, requestPathfinding: true);
-            Debug.Log(
-                $"{worldObject.DisplayName} [ExploreDecisionModule] room {roomIndex} is a dead end; visiting center at {activeRoomCenterMap} before backtracking");
+            //Debug.Log(
+            //    $"{worldObject.DisplayName} [ExploreDecisionModule] room {roomIndex} is a dead end; visiting center at {activeRoomCenterMap} before backtracking");
             return true;
         }
 

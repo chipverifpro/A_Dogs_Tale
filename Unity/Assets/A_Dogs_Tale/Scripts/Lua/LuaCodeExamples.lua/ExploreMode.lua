@@ -14,7 +14,7 @@ end
 
 local function log(message)
     if state.lastLog ~= message then
-        print("[ExploreLua] " .. message)
+        -- print("[ExploreLua] " .. message)
         state.lastLog = message
     end
 end

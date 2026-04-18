@@ -50,7 +50,7 @@ namespace DogGame.Tasks
                 if (!TryAcquireNextRequest(out var next))
                     return;
 
-                Debug.Log($"{context.AgentId} TaskExecutor.Tick: Begin Task: {next.Task.DebugName}");
+                // Debug.Log($"{context.AgentId} TaskExecutor.Tick: Begin Task: {next.Task.DebugName}");
                 BeginRequest(next);
             }
 
@@ -89,7 +89,7 @@ namespace DogGame.Tasks
             }
             if (tickResult.Status == TaskStatus.Succeeded)
             {
-                Debug.Log($"{context.AgentId} Task succeeded: {currentTask!.DebugName}");
+                //Debug.Log($"{context.AgentId} Task succeeded: {currentTask!.DebugName}");
             }
             if (tickResult.Status == TaskStatus.Failed)
             {

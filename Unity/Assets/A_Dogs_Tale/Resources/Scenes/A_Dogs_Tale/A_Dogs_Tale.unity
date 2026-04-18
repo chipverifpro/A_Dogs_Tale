@@ -1485,6 +1485,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::LeashSystem
   leashes: []
+  forcePerExceededMeterPerMass: 1
+  movementPerForce: 1
+  minimumForceToMove: 0.05
+  minimumMovementDistance: 0.005
+  feedbackForceRatio: 1
+  minimumMassResistance: 0.1
+  maxPullMovementPerTick: 0.75
+  debugPullLogging: 0
   leashPrefab: {fileID: 5830273461789261354, guid: 0a93b18a3acdf40bc9f6c3cb46997b24,
     type: 3}
   leashVisualParent: {fileID: 125976611}
@@ -16525,7 +16533,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0.000061035156, y: 0}
+  m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &1428159709
