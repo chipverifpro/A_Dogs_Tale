@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -199,6 +200,31 @@ public class WorldObjectRegistry : MonoBehaviour
     /// Try to get an ID by world object.
     /// </summary>
     public bool TryGetId(WorldObject obj, out int id) => idByObject.TryGetValue(obj, out id);
+
+    /// <summary>
+    /// Try to get a world object by DisplayName, case-insensitively.
+    /// </summary>
+    public bool TryGetByDisplayName(string displayName, out WorldObject obj)
+    {
+        obj = null;
+
+        if (string.IsNullOrWhiteSpace(displayName))
+            return false;
+
+        foreach (WorldObject candidate in objectsById.Values)
+        {
+            if (candidate == null)
+                continue;
+
+            if (string.Equals(candidate.DisplayName, displayName, StringComparison.OrdinalIgnoreCase))
+            {
+                obj = candidate;
+                return true;
+            }
+        }
+
+        return false;
+    }
 
     /// <summary>
     /// Enumerate all currently registered objects.

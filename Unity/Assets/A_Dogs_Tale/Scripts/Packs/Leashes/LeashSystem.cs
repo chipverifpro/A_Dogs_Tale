@@ -35,6 +35,13 @@ public class LeashLink
     public Vector3 currentForceOnB;
     public Vector3 nextForceOnA;
     public Vector3 nextForceOnB;
+
+    public string LeashToString()
+    {
+        string str;
+        str = $"Leash between {a.DisplayName} and {b.DisplayName} is {maxLength} long";
+        return str;
+    }
 }
 
 // ============== LeashSystem ================
@@ -68,8 +75,39 @@ public class LeashSystem : MonoBehaviour // or your Subsystem base
         // preload prefab
         if (leashPrefab==null) leashPrefab = LoadLeashPrefab();
 
-        // Assumes packs are already created.
-        //CreateInitialLeashesFromEndpoints();
+        // Create from existing instances in hierarchy
+        CreateInitialLeashesFromEndpoints();
+
+        // DEBUG TEST
+        CreateTestLeash ("germanshepherd", "cur", 3.0f);
+    }
+
+    public LeashLink CreateTestLeash (string a, string b, float length)
+    {
+        // Manually create a test leash between germanshepherd and cur
+        LeashLink leash;
+        WorldObject walkerWorldObject;
+        WorldObject dogWorldObject;
+        if ((!WorldObjectRegistry.Instance.TryGetByDisplayName(a, out walkerWorldObject))
+            || (!WorldObjectRegistry.Instance.TryGetByDisplayName(b, out dogWorldObject)))
+        {
+            Debug.LogWarning($"Failed to get {a} and {b} for leash creation");
+            return null;
+        }
+
+        bool created = Dir.Instance.leashSystem.TryCreateLeash(
+            a: walkerWorldObject,
+            roleA: LeashEndRole.Handle,
+            b: dogWorldObject,
+            roleB: LeashEndRole.Clip,
+            maxLength: 3.0f,
+            out leash);
+        if (created) 
+            Debug.Log(leash.LeashToString());
+        else
+            Debug.LogWarning($"Failed to create test leash from {a} to {b}");
+        
+        return leash;
     }
 
     private void Update()
@@ -95,13 +133,6 @@ public class LeashSystem : MonoBehaviour // or your Subsystem base
                 {
                     if (ep == null || !ep.autoCreateOnStart) continue;
                     if (ep.otherAgent == null) continue;
-
-                    // Require same pack membership:
-                    if (!pack.packAgentList.Contains(ep.otherAgent))
-                    {
-                        Debug.LogWarning($"[Pack {pack.packName}] Leash endpoint ignored: {agent.DisplayName} -> {ep.otherAgent.DisplayName} not in same pack.");
-                        continue;
-                    }
 
                     // Create leash where agent is ep.myRole, other is opposite by default
                     var otherRole = (ep.myRole == LeashEndRole.Handle) ? LeashEndRole.Clip : LeashEndRole.Handle;
@@ -141,19 +172,12 @@ public class LeashSystem : MonoBehaviour // or your Subsystem base
             return false;
         }
 
-
-        var ap = a.packMemberModule.currentPack;
-        var bp = b.packMemberModule.currentPack; 
-        if (ap == null || bp == null)
+        float currentDistance = Vector3.Distance(a.transform.position, b.transform.position);
+        if (currentDistance > maxLength)
         {
-            Debug.LogError($"Tried to create leash but an agent is not in a pack. " +
-                        $"{a.DisplayName} pack={(ap != null ? ap.packName : "NULL")} " +
-                        $"to {b.DisplayName} pack={(bp != null ? bp.packName : "NULL")}");
-            return false;
-        }
-        if (ap!=bp)
-        {
-            Debug.LogError($"Tried to create a leash between two agents not in same pack {a.DisplayName} in {ap.packName} to {b.DisplayName} in {bp.packName}");
+            Debug.LogError(
+                $"Tried to create a leash between {a.DisplayName} and {b.DisplayName}, " +
+                $"but they are {currentDistance:0.###}m apart and leash length is only {maxLength:0.###}m.");
             return false;
         }
         if (FindLeash(a, b) != null)
@@ -170,7 +194,7 @@ public class LeashSystem : MonoBehaviour // or your Subsystem base
         newLeashLink.leashGo = leashObject;
         newLeashLink.leashVisualizer = leashVisualizer;
         leashes.Add(newLeashLink);
-        Debug.Log($"Leash between {a.DisplayName} and {b.DisplayName} created in pack {ap.packName}.");
+        Debug.Log($"Leash between {a.DisplayName} and {b.DisplayName} created.");
         
         return true;
     }
