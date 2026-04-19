@@ -3,6 +3,7 @@ using DogGame;
 using DogGame.Modules;
 using TMPro;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
@@ -12,6 +13,7 @@ public class ScentGUI : MonoBehaviour
     private const string ScentControlsContainerName = "ScentControls";
     private const string DecisionModeControlsContainerName = "DecisionModeControls";
     private const string SimulationControlsContainerName = "SimulationControls";
+    private const string TooltipContainerName = "Tooltips";
 
     [Header("External object references")]
     private Dir dir;
@@ -28,11 +30,16 @@ public class ScentGUI : MonoBehaviour
     [SerializeField] private float dropdownWidth = 320f;
     [SerializeField] private float dropdownMaxHeight = 420f;
     [SerializeField] private int uiSortOrder = 5100;
+    [SerializeField] private float tooltipFontSize = 22f;
+    [SerializeField] private float tooltipMaxWidth = 340f;
+    [SerializeField] private Vector2 tooltipPadding = new Vector2(16f, 10f);
+    [SerializeField] private Vector2 tooltipScreenOffset = new Vector2(18f, -18f);
     [SerializeField] private Color noseButtonColor = new Color(0.96f, 0.95f, 0.9f, 0.96f);
     [SerializeField] private Color dropdownBackgroundColor = new Color(0.97f, 0.96f, 0.91f, 0f);
     [SerializeField] private Color dropdownRowColor = new Color(1f, 1f, 1f, 0.9f);
     [SerializeField] private Color dropdownSelectedColor = new Color(0.88f, 0.79f, 0.55f, 0.95f);
     [SerializeField] private Color dropdownTextColor = new Color(0.19f, 0.15f, 0.08f, 1f);
+    [SerializeField] private Color tooltipBackgroundColor = new Color(0.97f, 0.96f, 0.91f, 0.96f);
 
     private readonly Dictionary<string, Sprite> scentSpriteLookup = new Dictionary<string, Sprite>();
     private readonly Dictionary<AgentDecisionType, Sprite> modeSpriteLookup = new Dictionary<AgentDecisionType, Sprite>();
@@ -57,6 +64,10 @@ public class ScentGUI : MonoBehaviour
     private RectTransform simulationButtonRect;
     private Image simulationButtonImage;
     private Image simulationIconImage;
+    private RectTransform tooltipRect;
+    private TextMeshProUGUI tooltipLabel;
+    private Image tooltipBackgroundImage;
+    private ScentGuiTooltipTrigger activeTooltipTrigger;
     private AgentDecisionType displayedDecisionType = AgentDecisionType.Undefined;
     private bool? displayedPausedState;
     private bool uiBuilt;
@@ -206,6 +217,7 @@ public class ScentGUI : MonoBehaviour
         Transform scentControlsTransform = EnsureSectionContainer(canvasObject.transform, ScentControlsContainerName);
         Transform decisionModeControlsTransform = EnsureSectionContainer(canvasObject.transform, DecisionModeControlsContainerName);
         Transform simulationControlsTransform = EnsureSectionContainer(canvasObject.transform, SimulationControlsContainerName);
+        Transform tooltipTransform = EnsureSectionContainer(canvasObject.transform, TooltipContainerName);
 
         ReparentExistingUiElement(decisionModeControlsTransform, canvasObject.transform, "DecisionModeTitle");
 
@@ -214,6 +226,7 @@ public class ScentGUI : MonoBehaviour
         BuildSimulationButton(simulationControlsTransform, canvasObject.transform);
         BuildDropdown(scentControlsTransform, canvasObject.transform);
         BuildModePanel(decisionModeControlsTransform, canvasObject.transform);
+        BuildTooltip(tooltipTransform, canvasObject.transform);
     }
 
     private Transform FindExistingScentTargetCanvas()
@@ -370,6 +383,8 @@ public class ScentGUI : MonoBehaviour
         noseIconImage.sprite = GetScentIconSprite();
         noseIconImage.preserveAspect = true;
         noseIconImage.color = Color.white;
+
+        ConfigureTooltip(buttonObject, () => "Scent Selection");
     }
 
     private void BuildModeButton(Transform parent, Transform searchRoot)
@@ -439,6 +454,8 @@ public class ScentGUI : MonoBehaviour
         modeIconImage.preserveAspect = true;
         modeIconImage.color = Color.white;
         RefreshModeButtonState(force: true);
+
+        ConfigureTooltip(buttonObject, () => "Movement Mode");
     }
 
     private void BuildSimulationButton(Transform parent, Transform searchRoot)
@@ -508,6 +525,8 @@ public class ScentGUI : MonoBehaviour
         simulationIconImage.preserveAspect = true;
         simulationIconImage.color = Color.white;
         RefreshSimulationButtonState(force: true);
+
+        ConfigureTooltip(buttonObject, GetSimulationButtonTooltipText);
     }
 
     private void BuildDropdown(Transform parent, Transform searchRoot)
@@ -736,6 +755,8 @@ public class ScentGUI : MonoBehaviour
         iconImage.sprite = GetDecisionModeSprite(decisionType);
         iconImage.preserveAspect = true;
         iconImage.color = Color.white;
+
+        ConfigureTooltip(buttonObject, () => GetDecisionModeTooltipText(decisionType));
     }
 
     private void CreateModePanelButton(AgentDecisionType decisionType)
@@ -768,6 +789,67 @@ public class ScentGUI : MonoBehaviour
         iconImage.sprite = GetDecisionModeSprite(decisionType);
         iconImage.preserveAspect = true;
         iconImage.color = Color.white;
+
+        ConfigureTooltip(buttonObject, () => GetDecisionModeTooltipText(decisionType));
+    }
+
+    private void BuildTooltip(Transform parent, Transform searchRoot)
+    {
+        Transform existingTooltip = FindExistingUiElement(parent, searchRoot, "UpperRightTooltip");
+        GameObject tooltipObject;
+        bool createdTooltip = existingTooltip == null;
+        if (createdTooltip)
+        {
+            tooltipObject = new GameObject(
+                "UpperRightTooltip",
+                typeof(RectTransform),
+                typeof(Image));
+            tooltipObject.transform.SetParent(parent, false);
+        }
+        else
+        {
+            tooltipObject = existingTooltip.gameObject;
+        }
+
+        tooltipRect = GetOrAddComponent<RectTransform>(tooltipObject);
+        tooltipRect.anchorMin = new Vector2(0f, 1f);
+        tooltipRect.anchorMax = new Vector2(0f, 1f);
+        tooltipRect.pivot = new Vector2(0f, 1f);
+        tooltipRect.sizeDelta = new Vector2(160f, 52f);
+
+        tooltipBackgroundImage = GetOrAddComponent<Image>(tooltipObject);
+        tooltipBackgroundImage.color = tooltipBackgroundColor;
+        tooltipBackgroundImage.raycastTarget = false;
+
+        Transform existingLabel = tooltipObject.transform.Find("Label");
+        GameObject labelObject;
+        if (existingLabel == null)
+        {
+            labelObject = new GameObject("Label", typeof(RectTransform), typeof(TextMeshProUGUI));
+            labelObject.transform.SetParent(tooltipObject.transform, false);
+        }
+        else
+        {
+            labelObject = existingLabel.gameObject;
+        }
+
+        RectTransform labelRect = labelObject.GetComponent<RectTransform>();
+        labelRect.anchorMin = Vector2.zero;
+        labelRect.anchorMax = Vector2.one;
+        labelRect.offsetMin = new Vector2(tooltipPadding.x, tooltipPadding.y);
+        labelRect.offsetMax = new Vector2(-tooltipPadding.x, -tooltipPadding.y);
+
+        tooltipLabel = GetOrAddComponent<TextMeshProUGUI>(labelObject);
+        tooltipLabel.fontSize = tooltipFontSize;
+        tooltipLabel.color = dropdownTextColor;
+        tooltipLabel.alignment = TextAlignmentOptions.Center;
+        tooltipLabel.textWrappingMode = TextWrappingModes.NoWrap;
+        tooltipLabel.overflowMode = TextOverflowModes.Overflow;
+        tooltipLabel.raycastTarget = false;
+        if (TMP_Settings.defaultFontAsset != null)
+            tooltipLabel.font = TMP_Settings.defaultFontAsset;
+
+        tooltipObject.SetActive(false);
     }
 
     private static T GetOrAddComponent<T>(GameObject target) where T : Component
@@ -902,12 +984,16 @@ public class ScentGUI : MonoBehaviour
     {
         if (dropdownRect != null)
             dropdownRect.gameObject.SetActive(false);
+
+        HideTooltip();
     }
 
     private void CloseModePanel()
     {
         if (modePanelRect != null)
             modePanelRect.gameObject.SetActive(false);
+
+        HideTooltip();
     }
 
     private void CloseOpenPanelsIfClickedOutside(Vector2 screenPoint)
@@ -1212,6 +1298,8 @@ public class ScentGUI : MonoBehaviour
         simulationButtonImage.color = isPaused
             ? dropdownSelectedColor
             : noseButtonColor;
+
+        RefreshActiveTooltipText();
     }
 
     private AgentDecisionType GetCurrentDecisionType()
@@ -1396,5 +1484,184 @@ public class ScentGUI : MonoBehaviour
         return int.TryParse(spriteName.Substring(separatorIndex + 1), out int index)
             ? index
             : -1;
+    }
+
+    private void ConfigureTooltip(GameObject target, System.Func<string> textProvider)
+    {
+        if (target == null)
+            return;
+
+        ScentGuiTooltipTrigger trigger = GetOrAddComponent<ScentGuiTooltipTrigger>(target);
+        trigger.Initialize(this, textProvider);
+    }
+
+    private string GetSimulationButtonTooltipText()
+    {
+        return GamePause.IsPaused ? "Play" : "Pause";
+    }
+
+    private string GetDecisionModeTooltipText(AgentDecisionType decisionType)
+    {
+        switch (decisionType)
+        {
+            case AgentDecisionType.Player:
+                return "Player";
+            case AgentDecisionType.Follower:
+                return "Follow";
+            case AgentDecisionType.Explorer:
+                return "Explore";
+            case AgentDecisionType.Immobile:
+                return "Stay";
+            case AgentDecisionType.Wanderer:
+                return "Wander";
+            case AgentDecisionType.TaskFollower:
+                return "LLM Controlled";
+            default:
+                return decisionType.ToString();
+        }
+    }
+
+    private void RefreshActiveTooltipText()
+    {
+        if (activeTooltipTrigger == null || tooltipRect == null || !tooltipRect.gameObject.activeSelf)
+            return;
+
+        string text = activeTooltipTrigger.GetTooltipText();
+        if (string.IsNullOrWhiteSpace(text))
+            HideTooltip();
+        else
+            UpdateTooltipText(text);
+    }
+
+    internal void ShowTooltip(ScentGuiTooltipTrigger trigger, Vector2 screenPosition)
+    {
+        if (trigger == null || tooltipRect == null)
+            return;
+
+        string text = trigger.GetTooltipText();
+        if (string.IsNullOrWhiteSpace(text))
+            return;
+
+        activeTooltipTrigger = trigger;
+        tooltipRect.gameObject.SetActive(true);
+        UpdateTooltipText(text);
+        PositionTooltip(screenPosition);
+        tooltipRect.SetAsLastSibling();
+    }
+
+    internal void MoveTooltip(ScentGuiTooltipTrigger trigger, Vector2 screenPosition)
+    {
+        if (trigger == null || trigger != activeTooltipTrigger || tooltipRect == null || !tooltipRect.gameObject.activeSelf)
+            return;
+
+        PositionTooltip(screenPosition);
+    }
+
+    internal void HideTooltip(ScentGuiTooltipTrigger trigger)
+    {
+        if (trigger != null && trigger != activeTooltipTrigger)
+            return;
+
+        HideTooltip();
+    }
+
+    private void HideTooltip()
+    {
+        activeTooltipTrigger = null;
+        if (tooltipRect != null)
+            tooltipRect.gameObject.SetActive(false);
+    }
+
+    private void UpdateTooltipText(string text)
+    {
+        if (tooltipLabel == null || tooltipRect == null)
+            return;
+
+        tooltipLabel.text = text;
+        Vector2 preferred = tooltipLabel.GetPreferredValues(text, tooltipMaxWidth, 0f);
+        float width = Mathf.Min(tooltipMaxWidth, preferred.x) + tooltipPadding.x * 2f;
+        float height = preferred.y + tooltipPadding.y * 2f;
+        tooltipRect.sizeDelta = new Vector2(Mathf.Max(80f, width), Mathf.Max(42f, height));
+    }
+
+    private void PositionTooltip(Vector2 screenPosition)
+    {
+        if (tooltipRect == null || overlayCanvas == null)
+            return;
+
+        RectTransform canvasRect = overlayCanvas.transform as RectTransform;
+        if (canvasRect == null)
+            return;
+
+        Camera eventCamera = overlayCanvas.renderMode == RenderMode.ScreenSpaceOverlay
+            ? null
+            : overlayCanvas.worldCamera;
+
+        if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(
+                canvasRect,
+                screenPosition,
+                eventCamera,
+                out Vector2 localPoint))
+        {
+            return;
+        }
+
+        float canvasScale = overlayCanvas.scaleFactor > 0f ? overlayCanvas.scaleFactor : 1f;
+        Vector2 scaledOffset = tooltipScreenOffset / canvasScale;
+
+        Vector2 anchoredPosition = new Vector2(
+            localPoint.x + (canvasRect.rect.width * 0.5f),
+            localPoint.y - (canvasRect.rect.height * 0.5f));
+        anchoredPosition += scaledOffset;
+
+        float minX = 12f;
+        float maxX = canvasRect.rect.width - tooltipRect.sizeDelta.x - 12f;
+        float minY = -(canvasRect.rect.height - tooltipRect.sizeDelta.y - 12f);
+        float maxY = -12f;
+
+        anchoredPosition.x = Mathf.Clamp(anchoredPosition.x, minX, Mathf.Max(minX, maxX));
+        anchoredPosition.y = Mathf.Clamp(anchoredPosition.y, Mathf.Min(minY, maxY), Mathf.Max(minY, maxY));
+        tooltipRect.anchoredPosition = anchoredPosition;
+    }
+}
+
+sealed class ScentGuiTooltipTrigger : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerMoveHandler
+{
+    private ScentGUI owner;
+    private System.Func<string> tooltipTextProvider;
+
+    public void Initialize(ScentGUI owner, System.Func<string> tooltipTextProvider)
+    {
+        this.owner = owner;
+        this.tooltipTextProvider = tooltipTextProvider;
+    }
+
+    public string GetTooltipText()
+    {
+        return tooltipTextProvider != null ? tooltipTextProvider() : null;
+    }
+
+    public void OnPointerEnter(PointerEventData eventData)
+    {
+        if (owner != null)
+            owner.ShowTooltip(this, eventData.position);
+    }
+
+    public void OnPointerMove(PointerEventData eventData)
+    {
+        if (owner != null)
+            owner.MoveTooltip(this, eventData.position);
+    }
+
+    public void OnPointerExit(PointerEventData eventData)
+    {
+        if (owner != null)
+            owner.HideTooltip(this);
+    }
+
+    private void OnDisable()
+    {
+        if (owner != null)
+            owner.HideTooltip(this);
     }
 }
