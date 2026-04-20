@@ -12,6 +12,7 @@ public class ScentGUI : MonoBehaviour
     private const string CanvasName = "ScentTargetCanvas";
     private const string ScentControlsContainerName = "ScentControls";
     private const string DecisionModeControlsContainerName = "DecisionModeControls";
+    private const string SpeedControlsContainerName = "SpeedControls";
     private const string SimulationControlsContainerName = "SimulationControls";
     private const string TooltipContainerName = "Tooltips";
 
@@ -22,6 +23,7 @@ public class ScentGUI : MonoBehaviour
     [Header("Target Scent Menu")]
     [SerializeField] private string scentSpriteResourcePath = "Sprites/SensesSymbolsColor_v4";
     [SerializeField] private string modeSpriteResourcePath = "Sprites/SpriteSheet_Modes_V2";
+    [SerializeField] private string speedSpriteResourcePath = "Sprites/Speeds";
     [SerializeField] private string playPauseSpriteResourcePath = "Sprites/PlayAndPause_Dual";
     [SerializeField] private float noseButtonSize = 176f;
     [SerializeField] private float noseButtonMargin = 24f;
@@ -43,9 +45,11 @@ public class ScentGUI : MonoBehaviour
 
     private readonly Dictionary<string, Sprite> scentSpriteLookup = new Dictionary<string, Sprite>();
     private readonly Dictionary<AgentDecisionType, Sprite> modeSpriteLookup = new Dictionary<AgentDecisionType, Sprite>();
+    private readonly Dictionary<WalkMode, Sprite> speedSpriteLookup = new Dictionary<WalkMode, Sprite>();
     private readonly Dictionary<int, Sprite> playPauseSpriteLookup = new Dictionary<int, Sprite>();
     private readonly List<GameObject> dropdownRows = new List<GameObject>();
     private readonly List<Image> modeButtonBackgrounds = new List<Image>();
+    private readonly List<Image> speedButtonBackgrounds = new List<Image>();
 
     private InputAction sniffAction;
     private bool isSniffModeActive;
@@ -61,6 +65,10 @@ public class ScentGUI : MonoBehaviour
     private Image modeButtonImage;
     private Image modeIconImage;
     private RectTransform modePanelRect;
+    private RectTransform speedButtonRect;
+    private Image speedButtonImage;
+    private Image speedIconImage;
+    private RectTransform speedPanelRect;
     private RectTransform simulationButtonRect;
     private Image simulationButtonImage;
     private Image simulationIconImage;
@@ -69,6 +77,7 @@ public class ScentGUI : MonoBehaviour
     private Image tooltipBackgroundImage;
     private ScentGuiTooltipTrigger activeTooltipTrigger;
     private AgentDecisionType displayedDecisionType = AgentDecisionType.Undefined;
+    private WalkMode displayedWalkMode = WalkMode.None;
     private bool? displayedPausedState;
     private bool uiBuilt;
 
@@ -80,6 +89,13 @@ public class ScentGUI : MonoBehaviour
         AgentDecisionType.Immobile,
         AgentDecisionType.Wanderer,
         AgentDecisionType.TaskFollower
+    };
+
+    private readonly WalkMode[] selectableSpeedModes =
+    {
+        WalkMode.Sneak,
+        WalkMode.Walk,
+        WalkMode.Run
     };
 
     private void Awake()
@@ -101,6 +117,7 @@ public class ScentGUI : MonoBehaviour
     private void Update()
     {
         RefreshModeButtonState();
+        RefreshSpeedButtonState();
         RefreshSimulationButtonState();
 
         if (Mouse.current == null || !Mouse.current.leftButton.wasPressedThisFrame)
@@ -216,6 +233,7 @@ public class ScentGUI : MonoBehaviour
 
         Transform scentControlsTransform = EnsureSectionContainer(canvasObject.transform, ScentControlsContainerName);
         Transform decisionModeControlsTransform = EnsureSectionContainer(canvasObject.transform, DecisionModeControlsContainerName);
+        Transform speedControlsTransform = EnsureSectionContainer(canvasObject.transform, SpeedControlsContainerName);
         Transform simulationControlsTransform = EnsureSectionContainer(canvasObject.transform, SimulationControlsContainerName);
         Transform tooltipTransform = EnsureSectionContainer(canvasObject.transform, TooltipContainerName);
 
@@ -223,9 +241,11 @@ public class ScentGUI : MonoBehaviour
 
         BuildNoseButton(scentControlsTransform, canvasObject.transform);
         BuildModeButton(decisionModeControlsTransform, canvasObject.transform);
+        BuildSpeedButton(speedControlsTransform, canvasObject.transform);
         BuildSimulationButton(simulationControlsTransform, canvasObject.transform);
         BuildDropdown(scentControlsTransform, canvasObject.transform);
         BuildModePanel(decisionModeControlsTransform, canvasObject.transform);
+        BuildSpeedPanel(speedControlsTransform, canvasObject.transform);
         BuildTooltip(tooltipTransform, canvasObject.transform);
     }
 
@@ -484,7 +504,7 @@ public class ScentGUI : MonoBehaviour
             simulationButtonRect.anchorMax = new Vector2(1f, 1f);
             simulationButtonRect.pivot = new Vector2(1f, 1f);
             simulationButtonRect.anchoredPosition = new Vector2(
-                -(noseButtonMargin + ((noseButtonSize + modeButtonSpacing) * 2f)),
+                -(noseButtonMargin + ((noseButtonSize + modeButtonSpacing) * 3f)),
                 -noseButtonMargin);
             simulationButtonRect.sizeDelta = new Vector2(noseButtonSize, noseButtonSize);
         }
@@ -527,6 +547,74 @@ public class ScentGUI : MonoBehaviour
         RefreshSimulationButtonState(force: true);
 
         ConfigureTooltip(buttonObject, GetSimulationButtonTooltipText);
+    }
+
+    private void BuildSpeedButton(Transform parent, Transform searchRoot)
+    {
+        Transform existingButton = FindExistingUiElement(parent, searchRoot, "SpeedModeButton");
+        GameObject buttonObject;
+        bool createdButton = existingButton == null;
+        if (createdButton)
+        {
+            buttonObject = new GameObject(
+                "SpeedModeButton",
+                typeof(RectTransform),
+                typeof(Image),
+                typeof(Button));
+            buttonObject.transform.SetParent(parent, false);
+        }
+        else
+        {
+            buttonObject = existingButton.gameObject;
+        }
+
+        speedButtonRect = buttonObject.GetComponent<RectTransform>();
+        speedButtonRect.anchorMin = new Vector2(1f, 1f);
+        speedButtonRect.anchorMax = new Vector2(1f, 1f);
+        speedButtonRect.pivot = new Vector2(1f, 1f);
+        speedButtonRect.anchoredPosition = new Vector2(
+            -(noseButtonMargin + ((noseButtonSize + modeButtonSpacing) * 3f)),
+            -noseButtonMargin);
+        speedButtonRect.sizeDelta = new Vector2(noseButtonSize, noseButtonSize);
+
+        speedButtonImage = GetOrAddComponent<Image>(buttonObject);
+        speedButtonImage.color = noseButtonColor;
+        speedButtonImage.raycastTarget = true;
+
+        Button button = GetOrAddComponent<Button>(buttonObject);
+        button.targetGraphic = speedButtonImage;
+        button.onClick.RemoveListener(ToggleSpeedPanel);
+        button.onClick.AddListener(ToggleSpeedPanel);
+
+        Transform existingIcon = buttonObject.transform.Find("Icon");
+        GameObject iconObject;
+        bool createdIcon = existingIcon == null;
+        if (createdIcon)
+        {
+            iconObject = new GameObject("Icon", typeof(RectTransform), typeof(Image));
+            iconObject.transform.SetParent(buttonObject.transform, false);
+        }
+        else
+        {
+            iconObject = existingIcon.gameObject;
+        }
+
+        RectTransform iconRect = iconObject.GetComponent<RectTransform>();
+        if (createdIcon)
+        {
+            iconRect.anchorMin = new Vector2(0.5f, 0.5f);
+            iconRect.anchorMax = new Vector2(0.5f, 0.5f);
+            iconRect.pivot = new Vector2(0.5f, 0.5f);
+            iconRect.sizeDelta = Vector2.one * (noseButtonSize * 0.72f);
+            iconRect.anchoredPosition = Vector2.zero;
+        }
+
+        speedIconImage = GetOrAddComponent<Image>(iconObject);
+        speedIconImage.preserveAspect = true;
+        speedIconImage.color = Color.white;
+        RefreshSpeedButtonState(force: true);
+
+        ConfigureTooltip(buttonObject, () => "Speed Select");
     }
 
     private void BuildDropdown(Transform parent, Transform searchRoot)
@@ -709,6 +797,54 @@ public class ScentGUI : MonoBehaviour
         panelObject.SetActive(false);
     }
 
+    private void BuildSpeedPanel(Transform parent, Transform searchRoot)
+    {
+        Transform existingPanel = FindExistingUiElement(parent, searchRoot, "SpeedModePanel");
+        if (existingPanel != null)
+        {
+            BindExistingSpeedPanel(existingPanel.gameObject);
+            return;
+        }
+
+        GameObject panelObject = new GameObject(
+            "SpeedModePanel",
+            typeof(RectTransform),
+            typeof(Image),
+            typeof(GridLayoutGroup));
+        panelObject.transform.SetParent(parent, false);
+
+        speedPanelRect = panelObject.GetComponent<RectTransform>();
+        speedPanelRect.anchorMin = new Vector2(1f, 1f);
+        speedPanelRect.anchorMax = new Vector2(1f, 1f);
+        speedPanelRect.pivot = new Vector2(1f, 1f);
+        speedPanelRect.anchoredPosition = new Vector2(
+            -(noseButtonMargin + ((noseButtonSize + modeButtonSpacing) * 2f)),
+            -(noseButtonMargin + noseButtonSize + 12f));
+
+        float padding = 12f;
+        float spacing = 8f;
+        speedPanelRect.sizeDelta = new Vector2(
+            padding * 2f + modePanelIconSize * 3f + spacing * 2f,
+            padding * 2f + modePanelIconSize);
+
+        Image panelImage = panelObject.GetComponent<Image>();
+        panelImage.color = dropdownBackgroundColor;
+
+        GridLayoutGroup grid = panelObject.GetComponent<GridLayoutGroup>();
+        grid.padding = new RectOffset((int)padding, (int)padding, (int)padding, (int)padding);
+        grid.cellSize = new Vector2(modePanelIconSize, modePanelIconSize);
+        grid.spacing = new Vector2(spacing, spacing);
+        grid.startCorner = GridLayoutGroup.Corner.UpperLeft;
+        grid.startAxis = GridLayoutGroup.Axis.Horizontal;
+        grid.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
+        grid.constraintCount = 3;
+
+        for (int i = 0; i < selectableSpeedModes.Length; i++)
+            CreateSpeedPanelButton(selectableSpeedModes[i]);
+
+        panelObject.SetActive(false);
+    }
+
     private void BindExistingModePanel(GameObject panelObject)
     {
         modePanelRect = panelObject.GetComponent<RectTransform>();
@@ -731,6 +867,33 @@ public class ScentGUI : MonoBehaviour
                 continue;
 
             BindExistingModePanelButton(buttonTransform.gameObject, decisionType);
+        }
+
+        panelObject.SetActive(false);
+    }
+
+    private void BindExistingSpeedPanel(GameObject panelObject)
+    {
+        speedPanelRect = panelObject.GetComponent<RectTransform>();
+        if (speedPanelRect == null)
+            return;
+
+        Image panelImage = panelObject.GetComponent<Image>();
+        if (panelImage != null)
+            panelImage.color = dropdownBackgroundColor;
+
+        speedButtonBackgrounds.Clear();
+        for (int i = 0; i < selectableSpeedModes.Length; i++)
+        {
+            WalkMode walkMode = selectableSpeedModes[i];
+            Transform buttonTransform = panelObject.transform.Find($"{walkMode}SpeedButton");
+            if (buttonTransform == null && i < panelObject.transform.childCount)
+                buttonTransform = panelObject.transform.GetChild(i);
+
+            if (buttonTransform == null)
+                continue;
+
+            BindExistingSpeedPanelButton(buttonTransform.gameObject, walkMode);
         }
 
         panelObject.SetActive(false);
@@ -791,6 +954,63 @@ public class ScentGUI : MonoBehaviour
         iconImage.color = Color.white;
 
         ConfigureTooltip(buttonObject, () => GetDecisionModeTooltipText(decisionType));
+    }
+
+    private void BindExistingSpeedPanelButton(GameObject buttonObject, WalkMode walkMode)
+    {
+        Image background = GetOrAddComponent<Image>(buttonObject);
+        background.color = dropdownRowColor;
+        speedButtonBackgrounds.Add(background);
+
+        Button button = GetOrAddComponent<Button>(buttonObject);
+        button.targetGraphic = background;
+        button.onClick.RemoveAllListeners();
+        button.onClick.AddListener(() => HandleSpeedModeSelected(walkMode));
+
+        Transform iconTransform = buttonObject.transform.Find("Icon");
+        if (iconTransform == null)
+            return;
+
+        Image iconImage = GetOrAddComponent<Image>(iconTransform.gameObject);
+        iconImage.sprite = GetSpeedModeSprite(walkMode);
+        iconImage.preserveAspect = true;
+        iconImage.color = Color.white;
+
+        ConfigureTooltip(buttonObject, () => GetSpeedModeTooltipText(walkMode));
+    }
+
+    private void CreateSpeedPanelButton(WalkMode walkMode)
+    {
+        GameObject buttonObject = new GameObject(
+            $"{walkMode}SpeedButton",
+            typeof(RectTransform),
+            typeof(Image),
+            typeof(Button));
+        buttonObject.transform.SetParent(speedPanelRect, false);
+
+        Image background = buttonObject.GetComponent<Image>();
+        background.color = dropdownRowColor;
+        speedButtonBackgrounds.Add(background);
+
+        Button button = buttonObject.GetComponent<Button>();
+        button.targetGraphic = background;
+        button.onClick.AddListener(() => HandleSpeedModeSelected(walkMode));
+
+        GameObject iconObject = new GameObject("Icon", typeof(RectTransform), typeof(Image));
+        iconObject.transform.SetParent(buttonObject.transform, false);
+
+        RectTransform iconRect = iconObject.GetComponent<RectTransform>();
+        iconRect.anchorMin = Vector2.zero;
+        iconRect.anchorMax = Vector2.one;
+        iconRect.offsetMin = new Vector2(7f, 7f);
+        iconRect.offsetMax = new Vector2(-7f, -7f);
+
+        Image iconImage = iconObject.GetComponent<Image>();
+        iconImage.sprite = GetSpeedModeSprite(walkMode);
+        iconImage.preserveAspect = true;
+        iconImage.color = Color.white;
+
+        ConfigureTooltip(buttonObject, () => GetSpeedModeTooltipText(walkMode));
     }
 
     private void BuildTooltip(Transform parent, Transform searchRoot)
@@ -957,6 +1177,7 @@ public class ScentGUI : MonoBehaviour
         bool shouldOpen = !modePanelRect.gameObject.activeSelf;
         if (shouldOpen)
         {
+            CloseSpeedPanel();
             CloseDropdown();
             RefreshModeButtonState(force: true);
             RefreshModePanelSelection();
@@ -968,11 +1189,32 @@ public class ScentGUI : MonoBehaviour
         }
     }
 
+    private void ToggleSpeedPanel()
+    {
+        if (speedPanelRect == null)
+            return;
+
+        bool shouldOpen = !speedPanelRect.gameObject.activeSelf;
+        if (shouldOpen)
+        {
+            CloseModePanel();
+            CloseDropdown();
+            RefreshSpeedButtonState(force: true);
+            RefreshSpeedPanelSelection();
+            speedPanelRect.gameObject.SetActive(true);
+        }
+        else
+        {
+            CloseSpeedPanel();
+        }
+    }
+
     private void OpenDropdown()
     {
         if (dropdownRect == null)
             return;
 
+        CloseSpeedPanel();
         RefreshDropdownContents();
         dropdownRect.gameObject.SetActive(true);
         Canvas.ForceUpdateCanvases();
@@ -996,11 +1238,20 @@ public class ScentGUI : MonoBehaviour
         HideTooltip();
     }
 
+    private void CloseSpeedPanel()
+    {
+        if (speedPanelRect != null)
+            speedPanelRect.gameObject.SetActive(false);
+
+        HideTooltip();
+    }
+
     private void CloseOpenPanelsIfClickedOutside(Vector2 screenPoint)
     {
         bool scentDropdownOpen = dropdownRect != null && dropdownRect.gameObject.activeSelf;
         bool modePanelOpen = modePanelRect != null && modePanelRect.gameObject.activeSelf;
-        if (!scentDropdownOpen && !modePanelOpen)
+        bool speedPanelOpen = speedPanelRect != null && speedPanelRect.gameObject.activeSelf;
+        if (!scentDropdownOpen && !modePanelOpen && !speedPanelOpen)
             return;
 
         bool clickedScentDropdown = scentDropdownOpen &&
@@ -1011,12 +1262,19 @@ public class ScentGUI : MonoBehaviour
                                 RectTransformUtility.RectangleContainsScreenPoint(modePanelRect, screenPoint, null);
         bool clickedModeButton = modeButtonRect != null &&
                                  RectTransformUtility.RectangleContainsScreenPoint(modeButtonRect, screenPoint, null);
+        bool clickedSpeedPanel = speedPanelOpen &&
+                                 RectTransformUtility.RectangleContainsScreenPoint(speedPanelRect, screenPoint, null);
+        bool clickedSpeedButton = speedButtonRect != null &&
+                                  RectTransformUtility.RectangleContainsScreenPoint(speedButtonRect, screenPoint, null);
 
         if (scentDropdownOpen && !clickedScentDropdown && !clickedNoseButton)
             CloseDropdown();
 
         if (modePanelOpen && !clickedModePanel && !clickedModeButton)
             CloseModePanel();
+
+        if (speedPanelOpen && !clickedSpeedPanel && !clickedSpeedButton)
+            CloseSpeedPanel();
     }
 
     private void RefreshDropdownContents()
@@ -1224,6 +1482,32 @@ public class ScentGUI : MonoBehaviour
         CloseModePanel();
     }
 
+    private void HandleSpeedModeSelected(WalkMode walkMode)
+    {
+        WorldObject controlledObject = GetCurrentControlledWorldObject();
+        if (controlledObject == null)
+        {
+            Debug.LogWarning("ScentGUI: no controlled WorldObject available for speed selection.", this);
+            return;
+        }
+
+        if (controlledObject.agentMovementModule == null || controlledObject.motionModule == null)
+            controlledObject.CreateModulesIfNeeded(ModuleFlags.agentMovementModule | ModuleFlags.motionModule);
+
+        if (controlledObject.agentMovementModule != null)
+            controlledObject.agentMovementModule.SetWalkMode(walkMode);
+        else if (controlledObject.motionModule != null)
+            controlledObject.motionModule.SetWalkMode(walkMode);
+        else
+        {
+            Debug.LogWarning($"ScentGUI: {controlledObject.DisplayName} has no movement modules for speed selection.", controlledObject);
+            return;
+        }
+
+        RefreshSpeedButtonState(force: true);
+        CloseSpeedPanel();
+    }
+
     private void RefreshNoseButtonSelectionState()
     {
         if (noseButtonImage == null)
@@ -1278,6 +1562,41 @@ public class ScentGUI : MonoBehaviour
         }
     }
 
+    private void RefreshSpeedButtonState(bool force = false)
+    {
+        if (speedIconImage == null || speedButtonImage == null)
+            return;
+
+        WalkMode currentWalkMode = GetCurrentWalkMode();
+        if (!force && currentWalkMode == displayedWalkMode)
+            return;
+
+        displayedWalkMode = currentWalkMode;
+        speedIconImage.sprite = GetSpeedModeSprite(currentWalkMode);
+        speedButtonImage.color = currentWalkMode == WalkMode.None
+            ? noseButtonColor
+            : dropdownSelectedColor;
+
+        RefreshSpeedPanelSelection();
+        RefreshActiveTooltipText();
+    }
+
+    private void RefreshSpeedPanelSelection()
+    {
+        WalkMode currentWalkMode = GetCurrentWalkMode();
+
+        for (int i = 0; i < speedButtonBackgrounds.Count && i < selectableSpeedModes.Length; i++)
+        {
+            Image background = speedButtonBackgrounds[i];
+            if (background == null)
+                continue;
+
+            background.color = selectableSpeedModes[i] == currentWalkMode
+                ? dropdownSelectedColor
+                : dropdownRowColor;
+        }
+    }
+
     private void ToggleSimulationPause()
     {
         GamePause.Toggle();
@@ -1309,6 +1628,15 @@ public class ScentGUI : MonoBehaviour
         return agentModule != null && agentModule.currentDecisionModule != null
             ? agentModule.currentDecisionModule.DecisionType
             : AgentDecisionType.Undefined;
+    }
+
+    private WalkMode GetCurrentWalkMode()
+    {
+        WorldObject controlledObject = GetCurrentControlledWorldObject();
+        if (controlledObject != null && controlledObject.motionModule != null)
+            return controlledObject.motionModule.currentWalkMode;
+
+        return WalkMode.Walk;
     }
 
     private WorldObject GetCurrentControlledWorldObject()
@@ -1382,6 +1710,20 @@ public class ScentGUI : MonoBehaviour
 
         if (playPauseSpriteLookup.TryGetValue(0, out Sprite playSprite))
             return playSprite;
+
+        return null;
+    }
+
+    private Sprite GetSpeedModeSprite(WalkMode walkMode)
+    {
+        if (speedSpriteLookup.Count == 0)
+            LoadSpeedModeSprites();
+
+        if (speedSpriteLookup.TryGetValue(walkMode, out Sprite sprite))
+            return sprite;
+
+        if (speedSpriteLookup.TryGetValue(WalkMode.Walk, out Sprite fallback))
+            return fallback;
 
         return null;
     }
@@ -1460,6 +1802,40 @@ public class ScentGUI : MonoBehaviour
             Debug.LogWarning($"ScentGUI: loaded {sprites.Length} sprites from Resources/{resourcePath}, but none had numeric suffixes like '_0' or '_1'.", this);
     }
 
+    private void LoadSpeedModeSprites()
+    {
+        string resourcePath = NormalizeResourcePath(speedSpriteResourcePath);
+        Sprite[] sprites = Resources.LoadAll<Sprite>(resourcePath);
+        if (sprites == null || sprites.Length == 0)
+        {
+            Debug.LogWarning($"ScentGUI: no speed mode sprites found at Resources/{resourcePath}. Make sure the path has no file extension and the texture is imported as Sprite Mode = Multiple.", this);
+            return;
+        }
+
+        for (int i = 0; i < sprites.Length; i++)
+        {
+            Sprite sprite = sprites[i];
+            if (sprite == null)
+                continue;
+
+            switch (GetSpriteSheetIndex(sprite.name))
+            {
+                case 0:
+                    speedSpriteLookup[WalkMode.Sneak] = sprite;
+                    break;
+                case 1:
+                    speedSpriteLookup[WalkMode.Walk] = sprite;
+                    break;
+                case 2:
+                    speedSpriteLookup[WalkMode.Run] = sprite;
+                    break;
+            }
+        }
+
+        if (speedSpriteLookup.Count == 0)
+            Debug.LogWarning($"ScentGUI: loaded {sprites.Length} sprites from Resources/{resourcePath}, but none had numeric suffixes like '_0' through '_2'.", this);
+    }
+
     private static string NormalizeResourcePath(string resourcePath)
     {
         if (string.IsNullOrWhiteSpace(resourcePath))
@@ -1518,6 +1894,21 @@ public class ScentGUI : MonoBehaviour
                 return "LLM Controlled";
             default:
                 return decisionType.ToString();
+        }
+    }
+
+    private string GetSpeedModeTooltipText(WalkMode walkMode)
+    {
+        switch (walkMode)
+        {
+            case WalkMode.Sneak:
+                return "Sneak";
+            case WalkMode.Walk:
+                return "Walk";
+            case WalkMode.Run:
+                return "Run";
+            default:
+                return walkMode.ToString();
         }
     }
 
