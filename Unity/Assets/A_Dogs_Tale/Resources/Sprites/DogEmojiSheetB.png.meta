@@ -1,0 +1,763 @@
+fileFormatVersion: 2
+guid: f05e30f58544a492da37597d2e060271
+TextureImporter:
+  internalIDToNameTable: []
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 0
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: DogEmojiSheetB_0
+      rect:
+        serializedVersion: 2
+        x: 42
+        y: 531
+        width: 150
+        height: 137
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: ee41ecdbe9c3d4c6f9fcd71e712cb5e5
+      internalID: 870916764
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: DogEmojiSheetB_1
+      rect:
+        serializedVersion: 2
+        x: 238
+        y: 531
+        width: 150
+        height: 137
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 97fe349d4266942f2806d8a685025db3
+      internalID: 1271184795
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: DogEmojiSheetB_2
+      rect:
+        serializedVersion: 2
+        x: 434
+        y: 531
+        width: 150
+        height: 137
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: f76e488d568fc4722ac9650264d9984f
+      internalID: -402799030
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: DogEmojiSheetB_3
+      rect:
+        serializedVersion: 2
+        x: 630
+        y: 531
+        width: 150
+        height: 137
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: ac692da6689c04c299d8f5f881a917cb
+      internalID: -2134041839
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: DogEmojiSheetB_4
+      rect:
+        serializedVersion: 2
+        x: 826
+        y: 531
+        width: 150
+        height: 137
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 0d9d16474f06140ed8b0e24f87935f1c
+      internalID: 1570332477
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: DogEmojiSheetB_5
+      rect:
+        serializedVersion: 2
+        x: 1022
+        y: 531
+        width: 150
+        height: 137
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 092b64af3c583496f953725baf69c509
+      internalID: -1158441550
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: DogEmojiSheetB_6
+      rect:
+        serializedVersion: 2
+        x: 1218
+        y: 531
+        width: 150
+        height: 137
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 06cab90fcceef494c8bcf5f5cb3b82f4
+      internalID: 1191480908
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: DogEmojiSheetB_7
+      rect:
+        serializedVersion: 2
+        x: 42
+        y: 364
+        width: 150
+        height: 137
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 7aa19429463ee49f59efccc9fc9ddc75
+      internalID: -489921151
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: DogEmojiSheetB_8
+      rect:
+        serializedVersion: 2
+        x: 238
+        y: 364
+        width: 150
+        height: 137
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 13878f8da4c1c434a8e972a8a85005f5
+      internalID: -1969311417
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: DogEmojiSheetB_9
+      rect:
+        serializedVersion: 2
+        x: 434
+        y: 364
+        width: 150
+        height: 137
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: ce485a648a56a4670998bc8704b1563a
+      internalID: 804659332
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: DogEmojiSheetB_10
+      rect:
+        serializedVersion: 2
+        x: 630
+        y: 364
+        width: 150
+        height: 137
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: f4692b955bc304e53be7ecbc74bb80ee
+      internalID: -1356881298
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: DogEmojiSheetB_11
+      rect:
+        serializedVersion: 2
+        x: 826
+        y: 364
+        width: 150
+        height: 137
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 87574c9cd2c0d4491966292eb74c5d9b
+      internalID: -1996561573
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: DogEmojiSheetB_12
+      rect:
+        serializedVersion: 2
+        x: 1022
+        y: 364
+        width: 150
+        height: 137
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 0e5ceb8ec34ea413ab2e1add3fb00f34
+      internalID: -983769619
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: DogEmojiSheetB_13
+      rect:
+        serializedVersion: 2
+        x: 1218
+        y: 364
+        width: 150
+        height: 137
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: ef7bffa633cf24c6e98875d6b3858cfe
+      internalID: -974353608
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: DogEmojiSheetB_14
+      rect:
+        serializedVersion: 2
+        x: 42
+        y: 197
+        width: 150
+        height: 137
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: a6e7152c5e70f4dedb5f07a54d8a663a
+      internalID: -1056174214
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: DogEmojiSheetB_15
+      rect:
+        serializedVersion: 2
+        x: 238
+        y: 197
+        width: 150
+        height: 137
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 828451846097a411aa3bf508dd50b2dc
+      internalID: 407769009
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: DogEmojiSheetB_16
+      rect:
+        serializedVersion: 2
+        x: 434
+        y: 197
+        width: 150
+        height: 137
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: ea3194108f1e646f198bea03c04dcef4
+      internalID: -12021609
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: DogEmojiSheetB_17
+      rect:
+        serializedVersion: 2
+        x: 630
+        y: 197
+        width: 150
+        height: 137
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 2b14cf359b5644621a5f2cc3e67571ad
+      internalID: -348256048
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: DogEmojiSheetB_18
+      rect:
+        serializedVersion: 2
+        x: 826
+        y: 197
+        width: 150
+        height: 137
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 501c02d063bc048b387e4b30760b44d7
+      internalID: 30897039
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: DogEmojiSheetB_19
+      rect:
+        serializedVersion: 2
+        x: 1022
+        y: 197
+        width: 150
+        height: 137
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 324a63a60b9104b6fbdf0174275a09d1
+      internalID: -938146986
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: DogEmojiSheetB_20
+      rect:
+        serializedVersion: 2
+        x: 1218
+        y: 197
+        width: 150
+        height: 137
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 7d4a2c35ff950492a9571b08a811cdca
+      internalID: 256608012
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: DogEmojiSheetB_21
+      rect:
+        serializedVersion: 2
+        x: 42
+        y: 30
+        width: 150
+        height: 137
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: da0a6901ab18a4dcc9aa2d41eaa47533
+      internalID: 838674913
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: DogEmojiSheetB_22
+      rect:
+        serializedVersion: 2
+        x: 238
+        y: 30
+        width: 150
+        height: 137
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 9f6cc3c5f96a14ec78f34c227ca6f41a
+      internalID: 82838070
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: DogEmojiSheetB_23
+      rect:
+        serializedVersion: 2
+        x: 434
+        y: 30
+        width: 150
+        height: 137
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: c8196ab72e9ac45e481ef361103f7e73
+      internalID: -350583813
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: DogEmojiSheetB_24
+      rect:
+        serializedVersion: 2
+        x: 630
+        y: 30
+        width: 150
+        height: 137
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 2082ea644708742fcac241fb30b9392c
+      internalID: -1158909455
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: DogEmojiSheetB_25
+      rect:
+        serializedVersion: 2
+        x: 826
+        y: 30
+        width: 150
+        height: 137
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: edf2f0e560eb74e729cf113fda5912a8
+      internalID: -969463801
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: DogEmojiSheetB_26
+      rect:
+        serializedVersion: 2
+        x: 1022
+        y: 30
+        width: 150
+        height: 137
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 9c4f859c576774cb9aee877cbdb34367
+      internalID: -1447070450
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: DogEmojiSheetB_27
+      rect:
+        serializedVersion: 2
+        x: 1218
+        y: 30
+        width: 150
+        height: 137
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 8d1c9ec9f99b6431aad0c90c13555314
+      internalID: 644549484
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 546888ec2a0b14b62a4b6f47fefaba65
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries:
+      - key: SpriteEditor.SliceSettings
+        value: '{"sliceOnImport":false,"gridCellCount":{"x":7.0,"y":4.0},"gridSpriteSize":{"x":150.0,"y":137.0},"gridSpriteOffset":{"x":42.0,"y":100.0},"gridSpritePadding":{"x":46.0,"y":30.0},"pivot":{"x":0.5,"y":0.5},"pivotPixels":{"x":0.0,"y":0.0},"autoSlicingMethod":0,"spriteAlignment":0,"pivotUnitMode":0,"slicingType":1,"keepEmptyRects":false,"isAlternate":false}'
+    nameFileIdTable:
+      DogEmojiSheetB_0: 870916764
+      DogEmojiSheetB_1: 1271184795
+      DogEmojiSheetB_10: -1356881298
+      DogEmojiSheetB_11: -1996561573
+      DogEmojiSheetB_12: -983769619
+      DogEmojiSheetB_13: -974353608
+      DogEmojiSheetB_14: -1056174214
+      DogEmojiSheetB_15: 407769009
+      DogEmojiSheetB_16: -12021609
+      DogEmojiSheetB_17: -348256048
+      DogEmojiSheetB_18: 30897039
+      DogEmojiSheetB_19: -938146986
+      DogEmojiSheetB_2: -402799030
+      DogEmojiSheetB_20: 256608012
+      DogEmojiSheetB_21: 838674913
+      DogEmojiSheetB_22: 82838070
+      DogEmojiSheetB_23: -350583813
+      DogEmojiSheetB_24: -1158909455
+      DogEmojiSheetB_25: -969463801
+      DogEmojiSheetB_26: -1447070450
+      DogEmojiSheetB_27: 644549484
+      DogEmojiSheetB_3: -2134041839
+      DogEmojiSheetB_4: 1570332477
+      DogEmojiSheetB_5: -1158441550
+      DogEmojiSheetB_6: 1191480908
+      DogEmojiSheetB_7: -489921151
+      DogEmojiSheetB_8: -1969311417
+      DogEmojiSheetB_9: 804659332
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
