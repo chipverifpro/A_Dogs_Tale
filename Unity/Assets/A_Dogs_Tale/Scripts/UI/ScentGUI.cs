@@ -14,6 +14,7 @@ public class ScentGUI : MonoBehaviour
     private const string DecisionModeControlsContainerName = "DecisionModeControls";
     private const string SpeedControlsContainerName = "SpeedControls";
     private const string SimulationControlsContainerName = "SimulationControls";
+    private const string EmoteControlsContainerName = "EmoteControls";
     private const string TooltipContainerName = "Tooltips";
 
     [Header("External object references")]
@@ -25,12 +26,19 @@ public class ScentGUI : MonoBehaviour
     [SerializeField] private string modeSpriteResourcePath = "Sprites/SpriteSheet_Modes_V2";
     [SerializeField] private string speedSpriteResourcePath = "Sprites/Speeds";
     [SerializeField] private string playPauseSpriteResourcePath = "Sprites/PlayAndPause_Dual";
+    [SerializeField] private string emoteSheetAResourcePath = "Sprites/DogEmojiSheetA";
+    [SerializeField] private string emoteSheetBResourcePath = "Sprites/DogEmojiSheetB";
+    [SerializeField] private string emoteSheetCResourcePath = "Sprites/DogEmojiSheetC";
     [SerializeField] private float noseButtonSize = 176f;
     [SerializeField] private float noseButtonMargin = 24f;
     [SerializeField] private float modeButtonSpacing = 12f;
     [SerializeField] private float modePanelIconSize = 128f;
     [SerializeField] private float dropdownWidth = 320f;
     [SerializeField] private float dropdownMaxHeight = 420f;
+    [SerializeField] private float emoteDropdownWidth = 520f;
+    [SerializeField] private float emoteDropdownMaxHeight = 520f;
+    [SerializeField] private float emoteTileSize = 96f;
+    [SerializeField] private int emoteGridColumns = 4;
     [SerializeField] private int uiSortOrder = 5100;
     [SerializeField] private float tooltipFontSize = 22f;
     [SerializeField] private float tooltipMaxWidth = 340f;
@@ -47,7 +55,9 @@ public class ScentGUI : MonoBehaviour
     private readonly Dictionary<AgentDecisionType, Sprite> modeSpriteLookup = new Dictionary<AgentDecisionType, Sprite>();
     private readonly Dictionary<WalkMode, Sprite> speedSpriteLookup = new Dictionary<WalkMode, Sprite>();
     private readonly Dictionary<int, Sprite> playPauseSpriteLookup = new Dictionary<int, Sprite>();
+    private readonly Dictionary<char, Dictionary<int, Sprite>> emoteSpriteLookupBySheet = new Dictionary<char, Dictionary<int, Sprite>>();
     private readonly List<GameObject> dropdownRows = new List<GameObject>();
+    private readonly List<GameObject> emoteDropdownTiles = new List<GameObject>();
     private readonly List<Image> modeButtonBackgrounds = new List<Image>();
     private readonly List<Image> speedButtonBackgrounds = new List<Image>();
 
@@ -72,6 +82,12 @@ public class ScentGUI : MonoBehaviour
     private RectTransform simulationButtonRect;
     private Image simulationButtonImage;
     private Image simulationIconImage;
+    private RectTransform emoteButtonRect;
+    private Image emoteButtonImage;
+    private Image emoteIconImage;
+    private RectTransform emoteDropdownRect;
+    private RectTransform emoteDropdownContentRect;
+    private ScrollRect emoteDropdownScrollRect;
     private RectTransform tooltipRect;
     private TextMeshProUGUI tooltipLabel;
     private Image tooltipBackgroundImage;
@@ -79,6 +95,7 @@ public class ScentGUI : MonoBehaviour
     private AgentDecisionType displayedDecisionType = AgentDecisionType.Undefined;
     private WalkMode displayedWalkMode = WalkMode.None;
     private bool? displayedPausedState;
+    private DogEmojiEntry? selectedEmoteEntry;
     private bool uiBuilt;
 
     private readonly AgentDecisionType[] selectableDecisionModes =
@@ -119,6 +136,7 @@ public class ScentGUI : MonoBehaviour
         RefreshModeButtonState();
         RefreshSpeedButtonState();
         RefreshSimulationButtonState();
+        RefreshEmoteButtonState();
 
         if (Mouse.current == null || !Mouse.current.leftButton.wasPressedThisFrame)
             return;
@@ -235,6 +253,7 @@ public class ScentGUI : MonoBehaviour
         Transform decisionModeControlsTransform = EnsureSectionContainer(canvasObject.transform, DecisionModeControlsContainerName);
         Transform speedControlsTransform = EnsureSectionContainer(canvasObject.transform, SpeedControlsContainerName);
         Transform simulationControlsTransform = EnsureSectionContainer(canvasObject.transform, SimulationControlsContainerName);
+        Transform emoteControlsTransform = EnsureSectionContainer(canvasObject.transform, EmoteControlsContainerName);
         Transform tooltipTransform = EnsureSectionContainer(canvasObject.transform, TooltipContainerName);
 
         ReparentExistingUiElement(decisionModeControlsTransform, canvasObject.transform, "DecisionModeTitle");
@@ -243,9 +262,11 @@ public class ScentGUI : MonoBehaviour
         BuildModeButton(decisionModeControlsTransform, canvasObject.transform);
         BuildSpeedButton(speedControlsTransform, canvasObject.transform);
         BuildSimulationButton(simulationControlsTransform, canvasObject.transform);
+        BuildEmoteButton(emoteControlsTransform, canvasObject.transform);
         BuildDropdown(scentControlsTransform, canvasObject.transform);
         BuildModePanel(decisionModeControlsTransform, canvasObject.transform);
         BuildSpeedPanel(speedControlsTransform, canvasObject.transform);
+        BuildEmoteDropdown(emoteControlsTransform, canvasObject.transform);
         BuildTooltip(tooltipTransform, canvasObject.transform);
     }
 
@@ -615,6 +636,211 @@ public class ScentGUI : MonoBehaviour
         RefreshSpeedButtonState(force: true);
 
         ConfigureTooltip(buttonObject, () => "Speed Select");
+    }
+
+    private void BuildEmoteButton(Transform parent, Transform searchRoot)
+    {
+        Transform existingButton = FindExistingUiElement(parent, searchRoot, "EmoteButton");
+        GameObject buttonObject;
+        bool createdButton = existingButton == null;
+        if (createdButton)
+        {
+            buttonObject = new GameObject(
+                "EmoteButton",
+                typeof(RectTransform),
+                typeof(Image),
+                typeof(Button));
+            buttonObject.transform.SetParent(parent, false);
+        }
+        else
+        {
+            buttonObject = existingButton.gameObject;
+        }
+
+        emoteButtonRect = buttonObject.GetComponent<RectTransform>();
+        if (createdButton)
+        {
+            emoteButtonRect.anchorMin = new Vector2(1f, 1f);
+            emoteButtonRect.anchorMax = new Vector2(1f, 1f);
+            emoteButtonRect.pivot = new Vector2(1f, 1f);
+            emoteButtonRect.anchoredPosition = new Vector2(
+                -(noseButtonMargin + ((noseButtonSize + modeButtonSpacing) * 4f)),
+                -noseButtonMargin);
+            emoteButtonRect.sizeDelta = new Vector2(noseButtonSize, noseButtonSize);
+        }
+
+        emoteButtonImage = GetOrAddComponent<Image>(buttonObject);
+        emoteButtonImage.color = noseButtonColor;
+        emoteButtonImage.raycastTarget = true;
+
+        Button button = GetOrAddComponent<Button>(buttonObject);
+        button.targetGraphic = emoteButtonImage;
+        button.onClick.RemoveListener(ToggleEmoteDropdown);
+        button.onClick.AddListener(ToggleEmoteDropdown);
+
+        Transform existingIcon = buttonObject.transform.Find("Icon");
+        GameObject iconObject;
+        bool createdIcon = existingIcon == null;
+        if (createdIcon)
+        {
+            iconObject = new GameObject("Icon", typeof(RectTransform), typeof(Image));
+            iconObject.transform.SetParent(buttonObject.transform, false);
+        }
+        else
+        {
+            iconObject = existingIcon.gameObject;
+        }
+
+        RectTransform iconRect = iconObject.GetComponent<RectTransform>();
+        if (createdIcon)
+        {
+            iconRect.anchorMin = new Vector2(0.5f, 0.5f);
+            iconRect.anchorMax = new Vector2(0.5f, 0.5f);
+            iconRect.pivot = new Vector2(0.5f, 0.5f);
+            iconRect.sizeDelta = Vector2.one * (noseButtonSize * 0.72f);
+            iconRect.anchoredPosition = Vector2.zero;
+        }
+
+        emoteIconImage = GetOrAddComponent<Image>(iconObject);
+        emoteIconImage.preserveAspect = true;
+        emoteIconImage.color = Color.white;
+        RefreshEmoteButtonState(force: true);
+
+        ConfigureTooltip(buttonObject, GetEmoteButtonTooltipText);
+    }
+
+    private void BuildEmoteDropdown(Transform parent, Transform searchRoot)
+    {
+        Transform existingDropdown = FindExistingUiElement(parent, searchRoot, "EmoteDropdown");
+        if (existingDropdown != null)
+        {
+            BindExistingEmoteDropdown(existingDropdown.gameObject);
+            return;
+        }
+
+        GameObject dropdownObject = new GameObject(
+            "EmoteDropdown",
+            typeof(RectTransform),
+            typeof(Image));
+        dropdownObject.transform.SetParent(parent, false);
+
+        emoteDropdownRect = dropdownObject.GetComponent<RectTransform>();
+        emoteDropdownRect.anchorMin = new Vector2(1f, 1f);
+        emoteDropdownRect.anchorMax = new Vector2(1f, 1f);
+        emoteDropdownRect.pivot = new Vector2(1f, 1f);
+        emoteDropdownRect.anchoredPosition = new Vector2(
+            -(noseButtonMargin + ((noseButtonSize + modeButtonSpacing) * 4f)),
+            -(noseButtonMargin + noseButtonSize + 12f));
+        emoteDropdownRect.sizeDelta = new Vector2(emoteDropdownWidth, emoteDropdownMaxHeight);
+
+        Image dropdownImage = dropdownObject.GetComponent<Image>();
+        dropdownImage.color = dropdownBackgroundColor;
+
+        GameObject titleObject = CreateTMPLabel(
+            parent: dropdownObject.transform,
+            name: "Title",
+            text: "Emotes",
+            fontSize: 26f,
+            alignment: TextAlignmentOptions.Left);
+
+        RectTransform titleRect = titleObject.GetComponent<RectTransform>();
+        titleRect.anchorMin = new Vector2(0f, 1f);
+        titleRect.anchorMax = new Vector2(1f, 1f);
+        titleRect.pivot = new Vector2(0.5f, 1f);
+        titleRect.offsetMin = new Vector2(14f, -42f);
+        titleRect.offsetMax = new Vector2(-14f, -10f);
+
+        GameObject scrollObject = new GameObject(
+            "ScrollView",
+            typeof(RectTransform),
+            typeof(Image),
+            typeof(ScrollRect));
+        scrollObject.transform.SetParent(dropdownObject.transform, false);
+
+        RectTransform scrollRectTransform = scrollObject.GetComponent<RectTransform>();
+        scrollRectTransform.anchorMin = new Vector2(0f, 0f);
+        scrollRectTransform.anchorMax = new Vector2(1f, 1f);
+        scrollRectTransform.offsetMin = new Vector2(12f, 12f);
+        scrollRectTransform.offsetMax = new Vector2(-16f, -48f);
+
+        Image scrollBackground = scrollObject.GetComponent<Image>();
+        scrollBackground.color = new Color(1f, 1f, 1f, 0.08f);
+
+        emoteDropdownScrollRect = scrollObject.GetComponent<ScrollRect>();
+        emoteDropdownScrollRect.horizontal = false;
+        emoteDropdownScrollRect.movementType = ScrollRect.MovementType.Clamped;
+        emoteDropdownScrollRect.scrollSensitivity = 28f;
+
+        GameObject viewportObject = new GameObject(
+            "Viewport",
+            typeof(RectTransform),
+            typeof(Image),
+            typeof(Mask));
+        viewportObject.transform.SetParent(scrollObject.transform, false);
+
+        RectTransform viewportRect = viewportObject.GetComponent<RectTransform>();
+        viewportRect.anchorMin = Vector2.zero;
+        viewportRect.anchorMax = Vector2.one;
+        viewportRect.offsetMin = Vector2.zero;
+        viewportRect.offsetMax = new Vector2(-14f, 0f);
+
+        Image viewportImage = viewportObject.GetComponent<Image>();
+        viewportImage.color = new Color(1f, 1f, 1f, 0.02f);
+        viewportObject.GetComponent<Mask>().showMaskGraphic = false;
+
+        GameObject contentObject = new GameObject(
+            "Content",
+            typeof(RectTransform),
+            typeof(GridLayoutGroup),
+            typeof(ContentSizeFitter));
+        contentObject.transform.SetParent(viewportObject.transform, false);
+
+        emoteDropdownContentRect = contentObject.GetComponent<RectTransform>();
+        emoteDropdownContentRect.anchorMin = new Vector2(0f, 1f);
+        emoteDropdownContentRect.anchorMax = new Vector2(1f, 1f);
+        emoteDropdownContentRect.pivot = new Vector2(0.5f, 1f);
+        emoteDropdownContentRect.offsetMin = Vector2.zero;
+        emoteDropdownContentRect.offsetMax = Vector2.zero;
+
+        GridLayoutGroup grid = contentObject.GetComponent<GridLayoutGroup>();
+        grid.padding = new RectOffset(8, 8, 8, 8);
+        grid.cellSize = new Vector2(emoteTileSize, emoteTileSize);
+        grid.spacing = new Vector2(8f, 8f);
+        grid.startCorner = GridLayoutGroup.Corner.UpperLeft;
+        grid.startAxis = GridLayoutGroup.Axis.Horizontal;
+        grid.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
+        grid.constraintCount = Mathf.Max(1, emoteGridColumns);
+
+        ContentSizeFitter fitter = contentObject.GetComponent<ContentSizeFitter>();
+        fitter.horizontalFit = ContentSizeFitter.FitMode.Unconstrained;
+        fitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+
+        Scrollbar scrollbar = CreateScrollbar(scrollObject.transform);
+        emoteDropdownScrollRect.viewport = viewportRect;
+        emoteDropdownScrollRect.content = emoteDropdownContentRect;
+        emoteDropdownScrollRect.verticalScrollbar = scrollbar;
+        emoteDropdownScrollRect.verticalScrollbarVisibility = ScrollRect.ScrollbarVisibility.AutoHideAndExpandViewport;
+        emoteDropdownScrollRect.verticalScrollbarSpacing = 4f;
+
+        dropdownObject.SetActive(false);
+    }
+
+    private void BindExistingEmoteDropdown(GameObject dropdownObject)
+    {
+        emoteDropdownRect = dropdownObject.GetComponent<RectTransform>();
+        if (emoteDropdownRect == null)
+            return;
+
+        Image dropdownImage = dropdownObject.GetComponent<Image>();
+        if (dropdownImage != null)
+            dropdownImage.color = dropdownBackgroundColor;
+
+        Transform scrollTransform = dropdownObject.transform.Find("ScrollView");
+        emoteDropdownScrollRect = scrollTransform != null ? scrollTransform.GetComponent<ScrollRect>() : null;
+        Transform contentTransform = dropdownObject.transform.Find("ScrollView/Viewport/Content");
+        emoteDropdownContentRect = contentTransform != null ? contentTransform.GetComponent<RectTransform>() : null;
+
+        dropdownObject.SetActive(false);
     }
 
     private void BuildDropdown(Transform parent, Transform searchRoot)
@@ -1179,6 +1405,7 @@ public class ScentGUI : MonoBehaviour
         {
             CloseSpeedPanel();
             CloseDropdown();
+            CloseEmoteDropdown();
             RefreshModeButtonState(force: true);
             RefreshModePanelSelection();
             modePanelRect.gameObject.SetActive(true);
@@ -1199,6 +1426,7 @@ public class ScentGUI : MonoBehaviour
         {
             CloseModePanel();
             CloseDropdown();
+            CloseEmoteDropdown();
             RefreshSpeedButtonState(force: true);
             RefreshSpeedPanelSelection();
             speedPanelRect.gameObject.SetActive(true);
@@ -1215,11 +1443,41 @@ public class ScentGUI : MonoBehaviour
             return;
 
         CloseSpeedPanel();
+        CloseModePanel();
+        CloseEmoteDropdown();
         RefreshDropdownContents();
         dropdownRect.gameObject.SetActive(true);
         Canvas.ForceUpdateCanvases();
         if (dropdownScrollRect != null)
             dropdownScrollRect.verticalNormalizedPosition = 1f;
+    }
+
+    private void ToggleEmoteDropdown()
+    {
+        if (emoteDropdownRect == null)
+            return;
+
+        bool shouldOpen = !emoteDropdownRect.gameObject.activeSelf;
+        if (shouldOpen)
+            OpenEmoteDropdown();
+        else
+            CloseEmoteDropdown();
+    }
+
+    private void OpenEmoteDropdown()
+    {
+        if (emoteDropdownRect == null)
+            return;
+
+        CloseDropdown();
+        CloseModePanel();
+        CloseSpeedPanel();
+        EnsureDefaultEmoteSelection();
+        RefreshEmoteDropdownContents();
+        emoteDropdownRect.gameObject.SetActive(true);
+        Canvas.ForceUpdateCanvases();
+        if (emoteDropdownScrollRect != null)
+            emoteDropdownScrollRect.verticalNormalizedPosition = 1f;
     }
 
     private void CloseDropdown()
@@ -1246,12 +1504,21 @@ public class ScentGUI : MonoBehaviour
         HideTooltip();
     }
 
+    private void CloseEmoteDropdown()
+    {
+        if (emoteDropdownRect != null)
+            emoteDropdownRect.gameObject.SetActive(false);
+
+        HideTooltip();
+    }
+
     private void CloseOpenPanelsIfClickedOutside(Vector2 screenPoint)
     {
         bool scentDropdownOpen = dropdownRect != null && dropdownRect.gameObject.activeSelf;
         bool modePanelOpen = modePanelRect != null && modePanelRect.gameObject.activeSelf;
         bool speedPanelOpen = speedPanelRect != null && speedPanelRect.gameObject.activeSelf;
-        if (!scentDropdownOpen && !modePanelOpen && !speedPanelOpen)
+        bool emoteDropdownOpen = emoteDropdownRect != null && emoteDropdownRect.gameObject.activeSelf;
+        if (!scentDropdownOpen && !modePanelOpen && !speedPanelOpen && !emoteDropdownOpen)
             return;
 
         bool clickedScentDropdown = scentDropdownOpen &&
@@ -1266,6 +1533,10 @@ public class ScentGUI : MonoBehaviour
                                  RectTransformUtility.RectangleContainsScreenPoint(speedPanelRect, screenPoint, null);
         bool clickedSpeedButton = speedButtonRect != null &&
                                   RectTransformUtility.RectangleContainsScreenPoint(speedButtonRect, screenPoint, null);
+        bool clickedEmoteDropdown = emoteDropdownOpen &&
+                                    RectTransformUtility.RectangleContainsScreenPoint(emoteDropdownRect, screenPoint, null);
+        bool clickedEmoteButton = emoteButtonRect != null &&
+                                  RectTransformUtility.RectangleContainsScreenPoint(emoteButtonRect, screenPoint, null);
 
         if (scentDropdownOpen && !clickedScentDropdown && !clickedNoseButton)
             CloseDropdown();
@@ -1275,6 +1546,9 @@ public class ScentGUI : MonoBehaviour
 
         if (speedPanelOpen && !clickedSpeedPanel && !clickedSpeedButton)
             CloseSpeedPanel();
+
+        if (emoteDropdownOpen && !clickedEmoteDropdown && !clickedEmoteButton)
+            CloseEmoteDropdown();
     }
 
     private void RefreshDropdownContents()
@@ -1328,14 +1602,69 @@ public class ScentGUI : MonoBehaviour
         dropdownRect.sizeDelta = new Vector2(dropdownWidth, Mathf.Min(dropdownMaxHeight, desiredHeight));
     }
 
-    private GameObject CreateInfoRow(string message)
+    private void RefreshEmoteDropdownContents()
+    {
+        if (emoteDropdownContentRect != null)
+        {
+            for (int childIndex = emoteDropdownContentRect.childCount - 1; childIndex >= 0; childIndex--)
+                Destroy(emoteDropdownContentRect.GetChild(childIndex).gameObject);
+        }
+        else
+        {
+            for (int i = 0; i < emoteDropdownTiles.Count; i++)
+            {
+                if (emoteDropdownTiles[i] != null)
+                    Destroy(emoteDropdownTiles[i]);
+            }
+        }
+        emoteDropdownTiles.Clear();
+
+        if (emoteDropdownContentRect == null)
+            return;
+
+        int visibleEntryCount = 0;
+        for (int i = 0; i < DogEmojiCatalog.Entries.Length; i++)
+        {
+            DogEmojiEntry entry = DogEmojiCatalog.Entries[i];
+            if (GetEmoteSprite(entry) == null)
+                continue;
+
+            emoteDropdownTiles.Add(CreateEmoteTile(entry, entry.EntryId == GetSelectedEmoteId()));
+            visibleEntryCount++;
+        }
+
+        if (visibleEntryCount == 0)
+        {
+            emoteDropdownTiles.Add(CreateInfoRowForParent(emoteDropdownContentRect, "No emotes found in the sprite sheets."));
+            ResizeEmoteDropdown(1);
+            return;
+        }
+
+        ResizeEmoteDropdown(visibleEntryCount);
+    }
+
+    private void ResizeEmoteDropdown(int entryCount)
+    {
+        if (emoteDropdownRect == null)
+            return;
+
+        int columnCount = Mathf.Max(1, emoteGridColumns);
+        int rowCount = Mathf.Max(1, Mathf.CeilToInt(entryCount / (float)columnCount));
+        float headerHeight = 56f;
+        float chrome = 32f;
+        float spacing = 8f;
+        float desiredHeight = headerHeight + chrome + (rowCount * emoteTileSize) + (Mathf.Max(0, rowCount - 1) * spacing) + 16f;
+        emoteDropdownRect.sizeDelta = new Vector2(emoteDropdownWidth, Mathf.Min(emoteDropdownMaxHeight, desiredHeight));
+    }
+
+    private GameObject CreateInfoRowForParent(Transform parent, string message)
     {
         GameObject rowObject = new GameObject(
             "InfoRow",
             typeof(RectTransform),
             typeof(Image),
             typeof(LayoutElement));
-        rowObject.transform.SetParent(dropdownContentRect, false);
+        rowObject.transform.SetParent(parent, false);
 
         LayoutElement layout = rowObject.GetComponent<LayoutElement>();
         layout.preferredHeight = 52f;
@@ -1356,6 +1685,54 @@ public class ScentGUI : MonoBehaviour
         labelRect.offsetMax = new Vector2(-14f, -8f);
 
         return rowObject;
+    }
+
+    private GameObject CreateEmoteTile(DogEmojiEntry entry, bool isSelected)
+    {
+        GameObject tileObject = new GameObject(
+            $"Emote_{entry.EntryId}",
+            typeof(RectTransform),
+            typeof(Image),
+            typeof(Button),
+            typeof(LayoutElement));
+        tileObject.transform.SetParent(emoteDropdownContentRect, false);
+
+        LayoutElement layout = tileObject.GetComponent<LayoutElement>();
+        layout.preferredWidth = emoteTileSize;
+        layout.preferredHeight = emoteTileSize;
+
+        Image background = tileObject.GetComponent<Image>();
+        background.color = isSelected ? dropdownSelectedColor : dropdownRowColor;
+
+        Button button = tileObject.GetComponent<Button>();
+        button.targetGraphic = background;
+        button.onClick.AddListener(() => HandleEmoteSelected(entry));
+
+        GameObject iconObject = new GameObject(
+            "Icon",
+            typeof(RectTransform),
+            typeof(Image));
+        iconObject.transform.SetParent(tileObject.transform, false);
+
+        RectTransform iconRect = iconObject.GetComponent<RectTransform>();
+        iconRect.anchorMin = new Vector2(0.5f, 0.5f);
+        iconRect.anchorMax = new Vector2(0.5f, 0.5f);
+        iconRect.pivot = new Vector2(0.5f, 0.5f);
+        iconRect.sizeDelta = Vector2.one * (emoteTileSize - 20f);
+        iconRect.anchoredPosition = Vector2.zero;
+
+        Image iconImage = iconObject.GetComponent<Image>();
+        iconImage.sprite = GetEmoteSprite(entry);
+        iconImage.preserveAspect = true;
+        iconImage.color = Color.white;
+
+        ConfigureTooltip(tileObject, () => entry.Name);
+        return tileObject;
+    }
+
+    private GameObject CreateInfoRow(string message)
+    {
+        return CreateInfoRowForParent(dropdownContentRect, message);
     }
 
     private GameObject CreateScentRow(ScentSource scentSource, bool isSelected)
@@ -1457,6 +1834,13 @@ public class ScentGUI : MonoBehaviour
 
         RefreshNoseButtonSelectionState();
         CloseDropdown();
+    }
+
+    private void HandleEmoteSelected(DogEmojiEntry entry)
+    {
+        SetSelectedEmote(entry);
+        RefreshEmoteButtonState(force: true);
+        CloseEmoteDropdown();
     }
 
     private void HandleDecisionModeSelected(AgentDecisionType decisionType)
@@ -1621,6 +2005,67 @@ public class ScentGUI : MonoBehaviour
         RefreshActiveTooltipText();
     }
 
+    private void RefreshEmoteButtonState(bool force = false)
+    {
+        if (emoteIconImage == null || emoteButtonImage == null)
+            return;
+
+        EnsureDefaultEmoteSelection();
+
+        Sprite selectedSprite = selectedEmoteEntry.HasValue
+            ? GetEmoteSprite(selectedEmoteEntry.Value)
+            : null;
+
+        if (!force && emoteIconImage.sprite == selectedSprite)
+            return;
+
+        emoteIconImage.sprite = selectedSprite;
+        emoteButtonImage.color = selectedEmoteEntry.HasValue
+            ? dropdownSelectedColor
+            : noseButtonColor;
+
+        RefreshActiveTooltipText();
+    }
+
+    private void EnsureDefaultEmoteSelection()
+    {
+        if (selectedEmoteEntry.HasValue)
+            return;
+
+        for (int i = 0; i < DogEmojiCatalog.Entries.Length; i++)
+        {
+            DogEmojiEntry entry = DogEmojiCatalog.Entries[i];
+            if (entry.Name == "Happy" && GetEmoteSprite(entry) != null)
+            {
+                SetSelectedEmote(entry);
+                return;
+            }
+        }
+
+        for (int i = 0; i < DogEmojiCatalog.Entries.Length; i++)
+        {
+            DogEmojiEntry entry = DogEmojiCatalog.Entries[i];
+            if (GetEmoteSprite(entry) != null)
+            {
+                SetSelectedEmote(entry);
+                return;
+            }
+        }
+    }
+
+    private void SetSelectedEmote(DogEmojiEntry entry)
+    {
+        if (GetEmoteSprite(entry) == null)
+            return;
+
+        selectedEmoteEntry = entry;
+    }
+
+    private string GetSelectedEmoteId()
+    {
+        return selectedEmoteEntry.HasValue ? selectedEmoteEntry.Value.EntryId : string.Empty;
+    }
+
     private AgentDecisionType GetCurrentDecisionType()
     {
         WorldObject controlledObject = GetCurrentControlledWorldObject();
@@ -1726,6 +2171,61 @@ public class ScentGUI : MonoBehaviour
             return fallback;
 
         return null;
+    }
+
+    private Sprite GetEmoteSprite(DogEmojiEntry entry)
+    {
+        if (!emoteSpriteLookupBySheet.TryGetValue(entry.SheetId, out Dictionary<int, Sprite> spriteLookup))
+        {
+            spriteLookup = LoadEmoteSheetSprites(entry.SheetId);
+            emoteSpriteLookupBySheet[entry.SheetId] = spriteLookup;
+        }
+
+        return spriteLookup.TryGetValue(entry.SpriteIndex, out Sprite sprite) ? sprite : null;
+    }
+
+    private Dictionary<int, Sprite> LoadEmoteSheetSprites(char sheetId)
+    {
+        string resourcePath = NormalizeResourcePath(GetEmoteSheetResourcePath(sheetId));
+        Sprite[] sprites = Resources.LoadAll<Sprite>(resourcePath);
+        Dictionary<int, Sprite> spriteLookup = new Dictionary<int, Sprite>();
+
+        if (sprites == null || sprites.Length == 0)
+        {
+            Debug.LogWarning($"ScentGUI: no emote sprites found at Resources/{resourcePath}.", this);
+            return spriteLookup;
+        }
+
+        for (int i = 0; i < sprites.Length; i++)
+        {
+            Sprite sprite = sprites[i];
+            if (sprite == null)
+                continue;
+
+            int index = GetSpriteSheetIndex(sprite.name);
+            if (index >= 0)
+                spriteLookup[index] = sprite;
+        }
+
+        if (spriteLookup.Count == 0)
+            Debug.LogWarning($"ScentGUI: loaded {sprites.Length} emote sprites from Resources/{resourcePath}, but none had numeric suffixes like '_0'.", this);
+
+        return spriteLookup;
+    }
+
+    private string GetEmoteSheetResourcePath(char sheetId)
+    {
+        switch (sheetId)
+        {
+            case 'A':
+                return emoteSheetAResourcePath;
+            case 'B':
+                return emoteSheetBResourcePath;
+            case 'C':
+                return emoteSheetCResourcePath;
+            default:
+                return string.Empty;
+        }
     }
 
     private void LoadDecisionModeSprites()
@@ -1874,6 +2374,13 @@ public class ScentGUI : MonoBehaviour
     private string GetSimulationButtonTooltipText()
     {
         return GamePause.IsPaused ? "Play" : "Pause";
+    }
+
+    private string GetEmoteButtonTooltipText()
+    {
+        return selectedEmoteEntry.HasValue
+            ? $"Emote: {selectedEmoteEntry.Value.Name}"
+            : "Emote Catalog";
     }
 
     private string GetDecisionModeTooltipText(AgentDecisionType decisionType)
