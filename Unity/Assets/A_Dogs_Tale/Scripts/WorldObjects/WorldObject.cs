@@ -10,6 +10,8 @@ using DogGame;
 using DogGame.Noise;
 using DogGame.UI.InteractionWheel;
 using DogGame.World;
+using UnityEngine.Events;
+using UnityEngine.Serialization;
 
 
 /// <summary>
@@ -144,8 +146,12 @@ public class WorldObject : MonoBehaviour
     [Header("Map/World Alignment")]
     public Vector3 adjustMapToWorld = new(-0.5f, 0f, -0.5f);
     public float sizeRadius = 0.3f;
-    public float mass = 1f;
+    [FormerlySerializedAs("mass")]
+    [Min(0f)] public float weight = 1f;
     public bool immovable = false;
+
+    [Header("Activation")]
+    [SerializeField] private UnityEvent onActivate = new();
 
     // MotionAdapter implements IAgentMovementAdapter interface 
     //     connecting LLMAsyncPlanDriver to agentMovementModule
@@ -223,6 +229,12 @@ public class WorldObject : MonoBehaviour
     public int ObjectId => objectId;
     public WorldObjectKind Kind => kind;
     public string DisplayName => string.IsNullOrEmpty(displayName) ? name : displayName;
+    public float Weight => Mathf.Max(0f, weight);
+    public float mass
+    {
+        get => Weight;
+        set => weight = Mathf.Max(0f, value);
+    }
 
 
     // This is a copy of the most basic commands in LocationModule.
@@ -475,6 +487,11 @@ public class WorldObject : MonoBehaviour
         if (activatorModule==null)
             return new(ActivateResultKind.Failed, message: $"Target {DisplayName} has no activatorModule");
         return activatorModule.HandleActivate(context, request);
+    }
+
+    public virtual void OnActivate()
+    {
+        onActivate?.Invoke();
     }
 
     // Allows for creating a template of enables for a particular

@@ -1,12 +1,342 @@
+using System.Collections.Generic;
 using UnityEngine;
-using UnityEditor;
 using InspectorTools;
+
 namespace DogGame.Modules
 {
     [DisallowMultipleComponent]
-    [InspectorNote("Thing_Modules/Container Module", "PLACEHOLDER ONLY.  For managing inventory of objects or agents that contain or hold other objects",MessageType.Warning)]
+    [InspectorNote("Thing_Modules/Container Module", "Stores and manages held WorldObjects.")]
     public class ContainerModule : WorldModule
     {
+        [Header("Capacity")]
+        [Min(0)] public int itemCapacity = 1;
+        [Min(0f)] public float maxWeight = 10f;
 
+        [Header("Held Item Presentation")]
+        public bool heldItemsVisible = true;
+        public float heldHeight = 0f;
+
+        [Header("Access State")]
+        public bool isLocked = false;
+        public bool isClosed = false;
+
+        [Header("Held Items")]
+        [SerializeField] private List<WorldObject> heldItems = new();
+
+        public IReadOnlyList<WorldObject> HeldItems => heldItems;
+        public int HeldItemCount => heldItems.Count;
+        public bool IsFull => heldItems.Count >= itemCapacity;
+        public bool IsLocked => isLocked;
+        public bool IsClosed => isClosed;
+
+        public float CurrentWeight
+        {
+            get
+            {
+                float totalWeight = 0f;
+                for (int i = 0; i < heldItems.Count; i++)
+                {
+                    WorldObject item = heldItems[i];
+                    if (item == null)
+                        continue;
+
+                    totalWeight += item.Weight;
+                }
+
+                return totalWeight;
+            }
+        }
+
+        protected override void Awake()
+        {
+            base.Awake();
+            SanitizeHeldItems();
+            RefreshHeldItems();
+        }
+
+        private void OnValidate()
+        {
+            itemCapacity = Mathf.Max(0, itemCapacity);
+            maxWeight = Mathf.Max(0f, maxWeight);
+
+            SanitizeHeldItems();
+            if (!Application.isPlaying)
+                RefreshHeldItems();
+        }
+
+        public bool CanAccessContents(out string reason)
+        {
+            if (isLocked)
+            {
+                reason = $"{worldObject.DisplayName} is locked.";
+                return false;
+            }
+
+            if (isClosed)
+            {
+                reason = $"{worldObject.DisplayName} is closed.";
+                return false;
+            }
+
+            reason = string.Empty;
+            return true;
+        }
+
+        public bool CanReceiveItem(WorldObject item, out string reason)
+        {
+            if (!CanAccessContents(out reason))
+                return false;
+
+            if (item == null)
+            {
+                reason = "Cannot receive a null item.";
+                return false;
+            }
+
+            if (item == worldObject)
+            {
+                reason = "A container cannot hold itself.";
+                return false;
+            }
+
+            if (heldItems.Contains(item))
+            {
+                reason = $"{item.DisplayName} is already in {worldObject.DisplayName}.";
+                return false;
+            }
+
+            if (heldItems.Count >= itemCapacity)
+            {
+                reason = $"{worldObject.DisplayName} is full.";
+                return false;
+            }
+
+            if (CurrentWeight + item.Weight > maxWeight)
+            {
+                reason = $"{item.DisplayName} would exceed the max weight of {maxWeight}.";
+                return false;
+            }
+
+            reason = string.Empty;
+            return true;
+        }
+
+        public bool ReceiveItem(WorldObject item)
+        {
+            return ReceiveItem(item, out _);
+        }
+
+        public bool ReceiveItem(WorldObject item, out string reason)
+        {
+            SanitizeHeldItems();
+
+            if (!CanReceiveItem(item, out reason))
+                return false;
+
+            heldItems.Add(item);
+            ApplyHeldItemState(item);
+            return true;
+        }
+
+        public bool ReleaseItem(WorldObject item)
+        {
+            return ReleaseItem(item, out _);
+        }
+
+        public bool ReleaseItem(WorldObject item, out string reason)
+        {
+            SanitizeHeldItems();
+
+            if (!CanAccessContents(out reason))
+                return false;
+
+            if (item == null)
+            {
+                reason = "Cannot release a null item.";
+                return false;
+            }
+
+            if (!heldItems.Remove(item))
+            {
+                reason = $"{item.DisplayName} is not held by {worldObject.DisplayName}.";
+                return false;
+            }
+
+            ReleaseHeldItemState(item);
+            reason = string.Empty;
+            return true;
+        }
+
+        public WorldObject ReleaseItemAt(int index)
+        {
+            if (!CanAccessContents(out _))
+                return null;
+
+            SanitizeHeldItems();
+
+            if (index < 0 || index >= heldItems.Count)
+                return null;
+
+            WorldObject item = heldItems[index];
+            heldItems.RemoveAt(index);
+            ReleaseHeldItemState(item);
+            return item;
+        }
+
+        public bool ExchangeItem(WorldObject itemToRelease, WorldObject itemToReceive)
+        {
+            return ExchangeItem(itemToRelease, itemToReceive, out _);
+        }
+
+        public bool ExchangeItem(WorldObject itemToRelease, WorldObject itemToReceive, out string reason)
+        {
+            SanitizeHeldItems();
+
+            if (!CanAccessContents(out reason))
+                return false;
+
+            if (itemToRelease == null)
+            {
+                reason = "Cannot exchange out a null item.";
+                return false;
+            }
+
+            if (itemToReceive == null)
+            {
+                reason = "Cannot exchange in a null item.";
+                return false;
+            }
+
+            int releaseIndex = heldItems.IndexOf(itemToRelease);
+            if (releaseIndex < 0)
+            {
+                reason = $"{itemToRelease.DisplayName} is not held by {worldObject.DisplayName}.";
+                return false;
+            }
+
+            heldItems.RemoveAt(releaseIndex);
+            ReleaseHeldItemState(itemToRelease);
+
+            if (ReceiveItem(itemToReceive, out reason))
+                return true;
+
+            heldItems.Insert(Mathf.Clamp(releaseIndex, 0, heldItems.Count), itemToRelease);
+            ApplyHeldItemState(itemToRelease);
+            return false;
+        }
+
+        public bool ActivateHeldItem(int index = 0)
+        {
+            SanitizeHeldItems();
+
+            if (!CanAccessContents(out _))
+                return false;
+
+            if (index < 0 || index >= heldItems.Count)
+                return false;
+
+            WorldObject item = heldItems[index];
+            if (item == null)
+                return false;
+
+            item.OnActivate();
+            return true;
+        }
+
+        public bool ActivateHeldItem(WorldObject item)
+        {
+            SanitizeHeldItems();
+
+            if (!CanAccessContents(out _))
+                return false;
+
+            if (item == null || !heldItems.Contains(item))
+                return false;
+
+            item.OnActivate();
+            return true;
+        }
+
+        public bool ContainsItem(WorldObject item)
+        {
+            return item != null && heldItems.Contains(item);
+        }
+
+        public void SetLocked(bool locked)
+        {
+            isLocked = locked;
+        }
+
+        public void SetClosed(bool closed)
+        {
+            isClosed = closed;
+        }
+
+        public void RefreshHeldItems()
+        {
+            for (int i = 0; i < heldItems.Count; i++)
+            {
+                WorldObject item = heldItems[i];
+                if (item == null)
+                    continue;
+
+                ApplyHeldItemState(item);
+            }
+        }
+
+        private void SanitizeHeldItems()
+        {
+            heldItems.RemoveAll(item => item == null);
+
+            if (itemCapacity <= 0 && heldItems.Count > 0)
+            {
+                for (int i = 0; i < heldItems.Count; i++)
+                    ReleaseHeldItemState(heldItems[i]);
+
+                heldItems.Clear();
+            }
+
+            while (heldItems.Count > itemCapacity)
+            {
+                WorldObject overflowItem = heldItems[heldItems.Count - 1];
+                heldItems.RemoveAt(heldItems.Count - 1);
+                ReleaseHeldItemState(overflowItem);
+            }
+
+            while (heldItems.Count > 0 && CurrentWeight > maxWeight)
+            {
+                WorldObject overflowItem = heldItems[heldItems.Count - 1];
+                heldItems.RemoveAt(heldItems.Count - 1);
+                ReleaseHeldItemState(overflowItem);
+            }
+        }
+
+        private void ApplyHeldItemState(WorldObject item)
+        {
+            if (item == null)
+                return;
+
+            item.transform.SetParent(transform, false);
+            item.transform.localPosition = Vector3.up * heldHeight;
+            SetItemVisible(item, heldItemsVisible);
+        }
+
+        private void ReleaseHeldItemState(WorldObject item)
+        {
+            if (item == null)
+                return;
+
+            if (item.transform.parent == transform)
+                item.transform.SetParent(null, true);
+
+            SetItemVisible(item, true);
+        }
+
+        private static void SetItemVisible(WorldObject item, bool visible)
+        {
+            Renderer[] renderers = item.GetComponentsInChildren<Renderer>(true);
+            for (int i = 0; i < renderers.Length; i++)
+                renderers[i].enabled = visible;
+        }
     }
 }
