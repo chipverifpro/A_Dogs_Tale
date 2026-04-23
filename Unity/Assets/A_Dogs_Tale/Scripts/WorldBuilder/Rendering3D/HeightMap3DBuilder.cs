@@ -31,6 +31,12 @@ public partial class DungeonGenerator : MonoBehaviour
     [Tooltip("Enable applying wallpaper textures to generated wall tiles.")]
     [SerializeField] private bool applyWallpaperOnWallTiles = true;
 
+    public bool ApplyWallpaperOnWallTiles
+    {
+        get => applyWallpaperOnWallTiles;
+        set => applyWallpaperOnWallTiles = value;
+    }
+
     [Tooltip("Inset orthogonal wall segments slightly toward the room interior to avoid z-fighting with adjacent-room walls.")]
     [SerializeField] private float wallInsetIntoRoom = 0.01f;
 

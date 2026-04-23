@@ -51,9 +51,16 @@ public class ScentAirGround : MonoBehaviour
     public float groundToAirRate = 0.03f;
 
     [Header("Simulation Settings")]
+    [Range(0.1f, 1.0f)]
     public float simulationTimeStep = 0.1f; // seconds per step
     public bool runOnStart = true;
     public float practically_zero = 0.0001f;  // if anything is this tiny, ignore or make it go away
+
+    public float SimulationTimeStep
+    {
+        get => simulationTimeStep;
+        set => simulationTimeStep = Mathf.Clamp(value, 0.1f, 1.0f);
+    }
 
     [Header("Visualization")]
     public ElementStore elementStore;   // ScriptableObject you already use
@@ -125,6 +132,11 @@ public class ScentAirGround : MonoBehaviour
     */
 
 
+
+    private void Awake()
+    {
+        PersistentGameSettings.ApplySavedToScentAirGround(this);
+    }
 
     private void Start()
     {
@@ -273,7 +285,8 @@ public class ScentAirGround : MonoBehaviour
         ScentCellsListCreate();
         
         // define the wait time per step funtion for repeated use below. (yield return wait;)
-        WaitForSeconds wait = new WaitForSeconds(simulationTimeStep);
+        float currentWaitStep = SimulationTimeStep;
+        WaitForSeconds wait = new WaitForSeconds(currentWaitStep);
         Debug.Log("Scent physics started.");
         
         //////////////////////////////////////////////////////////
@@ -285,10 +298,17 @@ public class ScentAirGround : MonoBehaviour
         {
             while (true)
             {
+                float stepForThisLoop = SimulationTimeStep;
+                if (!Mathf.Approximately(stepForThisLoop, currentWaitStep))
+                {
+                    currentWaitStep = stepForThisLoop;
+                    wait = new WaitForSeconds(currentWaitStep);
+                }
+
                 //Debug.Log($"ScentDecayAndSpread running");
                 physicsStartTime = Time.realtimeSinceStartup;
                 original_cell_count = cellsContainingScents.Count;
-                float limitedDeltaTime = Mathf.Clamp(Time.deltaTime, 0f, simulationTimeStep * 5f); // prevent huge steps if frame rate drops too low
+                float limitedDeltaTime = Mathf.Clamp(Time.deltaTime, 0f, stepForThisLoop * 5f); // prevent huge steps if frame rate drops too low
                 ScentPhysicsStepOnce(limitedDeltaTime);
                 if (dir.activityStats.EnableStatistics)
                 {
@@ -307,9 +327,16 @@ public class ScentAirGround : MonoBehaviour
         else // Option B is to use multiple fixed time steps until we catch up.
         {
             float accumulator = 0f;
-            float step = simulationTimeStep;
+            float step = SimulationTimeStep;
             while (true)
             {
+                float requestedStep = SimulationTimeStep;
+                if (!Mathf.Approximately(step, requestedStep))
+                {
+                    step = requestedStep;
+                    accumulator = Mathf.Min(accumulator, step * 5f);
+                }
+
                 accumulator += Time.deltaTime;
                 accumulator = Mathf.Min(accumulator, step * 5f); // prevents spiral of death if frame rate drops too low, or huge lag spike if game paused.
                 //Debug.Log($"ScentAirGround: Accumulator = {accumulator} seconds.");

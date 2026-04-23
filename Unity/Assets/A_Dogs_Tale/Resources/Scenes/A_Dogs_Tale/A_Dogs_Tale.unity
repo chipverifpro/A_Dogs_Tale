@@ -3778,7 +3778,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &269541723
 RectTransform:
   m_ObjectHideFlags: 0
@@ -10000,7 +10000,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 1029869409, guid: b4184381c03534bc2a614c805cbbd3b6, type: 3}
+  m_Sprite: {fileID: 1403400190, guid: 18df3fa9e107a460ba2c618fb3ea43de, type: 3}
   m_Type: 0
   m_PreserveAspect: 1
   m_FillCenter: 1
@@ -10461,7 +10461,7 @@ MonoBehaviour:
   allowSkip: 1
   splashImage: {fileID: 1088835539}
   splashResourceFolder: Images
-  splashCount: 13
+  splashCount: 10
 --- !u!114 &836622446
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -10479,6 +10479,7 @@ MonoBehaviour:
   audioPlayer: {fileID: 215243009}
   dir: {fileID: 1920128612}
   bottomBanner: {fileID: 1713417601}
+  settingsDialog: {fileID: 0}
   buttonsParent: {fileID: 1266859478}
   btnSimulation: {fileID: 1119592449}
   btnFlyover: {fileID: 1178410576}
@@ -19613,7 +19614,7 @@ GameObject:
   - component: {fileID: 1618901367}
   - component: {fileID: 1618901366}
   - component: {fileID: 1618901370}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: PagedUIController
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -19655,6 +19656,7 @@ MonoBehaviour:
     type: 3}
   pageSettings: {fileID: 9197481963319205126, guid: f810d5c47f79c4a9387949d142ffb68b,
     type: 3}
+  popupSortingOrder: 100
 --- !u!114 &1618901365
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -69,6 +69,7 @@ public partial class DungeonGenerator : MonoBehaviour
     void Awake()
     {
         InitializeConnections();
+        PersistentGameSettings.ApplySavedToDungeonGenerator(this);
         SceneManager.sceneLoaded -= OnSceneLoaded;
         SceneManager.sceneLoaded += OnSceneLoaded;
         buildComplete = false;  // do this really really early

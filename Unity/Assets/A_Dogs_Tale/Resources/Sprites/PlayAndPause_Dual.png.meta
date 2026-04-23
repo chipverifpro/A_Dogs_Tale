@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: b4184381c03534bc2a614c805cbbd3b6
+guid: 18df3fa9e107a460ba2c618fb3ea43de
 TextureImporter:
   internalIDToNameTable: []
   externalObjects: {}
@@ -50,7 +50,7 @@ TextureImporter:
   spritePivot: {x: 0.5, y: 0.5}
   spritePixelsToUnits: 100
   spriteBorder: {x: 0, y: 0, z: 0, w: 0}
-  spriteGenerateFallbackPhysicsShape: 1
+  spriteGenerateFallbackPhysicsShape: 0
   alphaUsage: 1
   alphaIsTransparency: 1
   spriteTessellationDetail: -1
@@ -97,13 +97,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: PlayAndPause_Dual_1
+      name: PlayAndPause_blue_0
       rect:
         serializedVersion: 2
-        x: 48
-        y: 279
-        width: 465
-        height: 468
+        x: 56
+        y: 292
+        width: 441
+        height: 459
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -112,20 +112,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 5d459f8239dfd4e8eabc6c88debf7b7a
-      internalID: -1997692919
+      spriteID: 1536190335e3b463090c096b05e04250
+      internalID: 1403400190
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: PlayAndPause_Dual_0
+      name: PlayAndPause_blue_1
       rect:
         serializedVersion: 2
-        x: 518
-        y: 281
-        width: 480
-        height: 464
+        x: 529
+        y: 292
+        width: 445
+        height: 459
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -134,8 +134,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 78b6557e088d84bfd876f62db889ecbc
-      internalID: 1029869409
+      spriteID: 2a636052033154f5491d46632d1ccf5c
+      internalID: -729824308
       vertices: []
       indices: 
       edges: []
@@ -144,7 +144,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 6035ea1ad28b34916a7689c88b356cf2
+    spriteID: c84a745a6b3d6457c941b36377256334
     internalID: 0
     vertices: []
     indices: 
@@ -154,8 +154,8 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      PlayAndPause_Dual_0: -1997692919
-      PlayAndPause_Dual_1: 1029869409
+      PlayAndPause_blue_0: 1403400190
+      PlayAndPause_blue_1: -729824308
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

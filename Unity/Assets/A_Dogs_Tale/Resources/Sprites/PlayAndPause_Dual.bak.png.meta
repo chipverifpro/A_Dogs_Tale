@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: 49126508e71ae447b9e753c4a90a4e18
+guid: b4184381c03534bc2a614c805cbbd3b6
 TextureImporter:
   internalIDToNameTable: []
   externalObjects: {}
@@ -50,7 +50,7 @@ TextureImporter:
   spritePivot: {x: 0.5, y: 0.5}
   spritePixelsToUnits: 100
   spriteBorder: {x: 0, y: 0, z: 0, w: 0}
-  spriteGenerateFallbackPhysicsShape: 0
+  spriteGenerateFallbackPhysicsShape: 1
   alphaUsage: 1
   alphaIsTransparency: 1
   spriteTessellationDetail: -1
@@ -69,7 +69,7 @@ TextureImporter:
   platformSettings:
   - serializedVersion: 4
     buildTarget: DefaultTexturePlatform
-    maxTextureSize: 1024
+    maxTextureSize: 256
     resizeAlgorithm: 0
     textureFormat: -1
     textureCompression: 1
@@ -97,67 +97,45 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: Speeds_0
+      name: PlayAndPause_Dual_1
       rect:
         serializedVersion: 2
-        x: 89
-        y: 1084
-        width: 879
-        height: 364
+        x: 48
+        y: 279
+        width: 465
+        height: 468
       alignment: 0
-      pivot: {x: 0.5, y: 0.5}
+      pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 4ff3f74d18a1843df9e9f537b2dd71e0
-      internalID: 1818577805
+      spriteID: 5d459f8239dfd4e8eabc6c88debf7b7a
+      internalID: -1997692919
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Speeds_1
+      name: PlayAndPause_Dual_0
       rect:
         serializedVersion: 2
-        x: 90
-        y: 512
-        width: 878
-        height: 449
+        x: 518
+        y: 281
+        width: 480
+        height: 464
       alignment: 0
-      pivot: {x: 0.5, y: 0.5}
+      pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 81098174b27fc490db3ea74da75851d7
-      internalID: -1292306376
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Speeds_2
-      rect:
-        serializedVersion: 2
-        x: 88
-        y: 40
-        width: 880
-        height: 405
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: e1be6855d2e03493b9f2054ebd581986
-      internalID: -1379237889
+      spriteID: 78b6557e088d84bfd876f62db889ecbc
+      internalID: 1029869409
       vertices: []
       indices: 
       edges: []
@@ -166,7 +144,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: e8911ab90246345b396c92ef16701e72
+    spriteID: 6035ea1ad28b34916a7689c88b356cf2
     internalID: 0
     vertices: []
     indices: 
@@ -176,9 +154,8 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      Speeds_0: 1818577805
-      Speeds_1: -1292306376
-      Speeds_2: -1379237889
+      PlayAndPause_Dual_0: -1997692919
+      PlayAndPause_Dual_1: 1029869409
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

@@ -14,6 +14,7 @@ public class MenuManager : MonoBehaviour
 
     [Header("Bottom Banner")]
     public BottomBanner bottomBanner;  // assign your existing BottomBanner
+    public MenuSettingsDialog settingsDialog;
 
 
     void Awake()
@@ -47,6 +48,9 @@ public class MenuManager : MonoBehaviour
         // Optional: auto-find common refs
         if (!bottomBanner) bottomBanner = FindFirstObjectByType<BottomBanner>();
         if (!generator) generator = FindFirstObjectByType<DungeonGenerator>();
+        if (!settingsDialog) settingsDialog = GetComponent<MenuSettingsDialog>();
+        if (!settingsDialog) settingsDialog = gameObject.AddComponent<MenuSettingsDialog>();
+        settingsDialog.Initialize(this);
     }
 
     void Start()
@@ -102,7 +106,7 @@ public class MenuManager : MonoBehaviour
     {
         //BottomBanner.Show("🎨 Adjusting imagination...");
         BottomBanner.Show("Adjusting imagination...");
-        // TODO: open settings panel or scene
+        settingsDialog?.Open();
     }
 
     public void QuitGame()

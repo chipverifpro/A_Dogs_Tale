@@ -192,12 +192,18 @@ public class PopupController : MonoBehaviour
     public VisualTreeAsset pageInventory;
     public VisualTreeAsset pageSettings;
 
+    [Header("Presentation")]
+    [SerializeField] private int popupSortingOrder = 100;
+
     UIDocument doc;
     VisualElement root, popup, frame, tabStrip, content;
     Button tabGame, tabPack, tabInventory, tabSettings;
     string curTab = "Game";
     bool isOpen = false;
     bool initialized;
+    string pendingOpenTab;
+    bool pendingDialogMode;
+    bool dialogMode;
     private Dir dir;
     private GameInputRouter gameInputRouter;
 
@@ -212,6 +218,10 @@ public class PopupController : MonoBehaviour
             Debug.LogError("PopupController: UIDocument not found on the same GameObject.");
             return;
         }
+
+        doc.sortingOrder = popupSortingOrder;
+        if (doc.panelSettings != null)
+            doc.panelSettings.sortingOrder = popupSortingOrder;
 
         root = doc.rootVisualElement;
     }
@@ -270,10 +280,28 @@ public class PopupController : MonoBehaviour
         tabSettings.clicked  += () => SwitchTab("Settings");
 
         ApplyResponsiveLayout();
-        Close(); // start hidden
+        isOpen = false;
+        if (popup != null)
+        {
+            popup.RemoveFromClassList("visible");
+            popup.style.display = DisplayStyle.None;
+        }
 
         initialized = true;
         Debug.Log("PopupController: Initialized OK.");
+
+        if (!string.IsNullOrWhiteSpace(pendingOpenTab))
+        {
+            string tabToOpen = pendingOpenTab;
+            bool openAsDialog = pendingDialogMode;
+            pendingOpenTab = null;
+            pendingDialogMode = false;
+
+            if (openAsDialog)
+                OpenSettingsDialog();
+            else
+                OpenTab(tabToOpen);
+        }
     }
 
     void Update()
@@ -287,7 +315,11 @@ public class PopupController : MonoBehaviour
         if (inputState == null)
             return;
 
-        if (inputState.pausePressed) Toggle();
+        if (inputState.pausePressed)
+        {
+            dialogMode = false;
+            Toggle();
+        }
         if (!isOpen) return;
 
         switch (inputState.requestedPopupTabIndex)
@@ -340,6 +372,52 @@ public class PopupController : MonoBehaviour
         SwitchTab(curTab);
     }
 
+    public void OpenTab(string tab)
+    {
+        dialogMode = false;
+        curTab = string.IsNullOrWhiteSpace(tab) ? "Game" : tab;
+
+        if (!gameObject.activeInHierarchy)
+        {
+            pendingOpenTab = curTab;
+            pendingDialogMode = false;
+            gameObject.SetActive(true);
+            return;
+        }
+
+        if (!initialized || popup == null)
+        {
+            pendingOpenTab = curTab;
+            pendingDialogMode = false;
+            return;
+        }
+
+        Open();
+    }
+
+    public void OpenSettingsDialog()
+    {
+        dialogMode = true;
+        curTab = "Settings";
+
+        if (!gameObject.activeInHierarchy)
+        {
+            pendingOpenTab = curTab;
+            pendingDialogMode = true;
+            gameObject.SetActive(true);
+            return;
+        }
+
+        if (!initialized || popup == null)
+        {
+            pendingOpenTab = curTab;
+            pendingDialogMode = true;
+            return;
+        }
+
+        Open();
+    }
+
     public void Close()
     {
         if (!initialized || popup == null) return;
@@ -368,6 +446,12 @@ public class PopupController : MonoBehaviour
         if (!initialized || content == null) return;
 
         curTab = tab;
+
+        if (tabStrip != null)
+            tabStrip.style.display = dialogMode ? DisplayStyle.None : DisplayStyle.Flex;
+        SetClass(popup, "dialog-popup", dialogMode);
+        SetClass(frame, "dialog-frame", dialogMode);
+        SetClass(content, "dialog-content", dialogMode);
 
         foreach (var t in new[] { tabGame, tabPack, tabInventory, tabSettings })
             t?.RemoveFromClassList("selected");

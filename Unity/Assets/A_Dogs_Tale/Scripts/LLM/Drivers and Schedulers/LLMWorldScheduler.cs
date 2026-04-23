@@ -333,6 +333,7 @@ public class LLMWorldScheduler : MonoBehaviour
         }
         Instance = this;
 
+        PersistentGameSettings.ApplySavedToScheduler(this);
         OnValidate();   // initialize llmModelsAvailable to match llmVendorAndModel.
 
         if (router == null)

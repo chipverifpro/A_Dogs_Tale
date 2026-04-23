@@ -2,9 +2,20 @@
 <UXML xmlns="UnityEngine.UIElements">
   <VisualElement class="col">
     <Label text="Settings" class="card"/>
-    <Slider name="SfxSlider" highValue="1" lowValue="0" label="SFX Volume"/>
-    <Slider name="MusicSlider" highValue="1" lowValue="0" label="Music Volume"/>
-    <Toggle name="Fullscreen" label="Fullscreen"/>
-    <DropdownField name="Quality" label="Quality Level"/>
+    <VisualElement class="card col">
+      <Label text="AI Models"/>
+      <Toggle name="ChatGptToggle" label="ChatGPT"/>
+      <Toggle name="GeminiToggle" label="Gemini"/>
+      <Toggle name="OllamaToggle" label="Ollama"/>
+    </VisualElement>
+    <VisualElement class="card col">
+      <Label text="Scent Simulation Time Step"/>
+      <Slider name="ScentSimulationTimeStepSlider" highValue="1" lowValue="0.1"/>
+      <Label name="ScentSimulationTimeStepValue" text="0.1s"/>
+    </VisualElement>
+    <VisualElement class="card col">
+      <Toggle name="WallpaperToggle" label="Wallpaper on wall tiles"/>
+    </VisualElement>
+    <Button name="OkButton" text="OK" class="btn"/>
   </VisualElement>
 </UXML>
