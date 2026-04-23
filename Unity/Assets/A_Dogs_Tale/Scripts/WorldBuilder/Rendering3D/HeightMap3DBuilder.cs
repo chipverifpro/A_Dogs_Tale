@@ -9,6 +9,19 @@ public partial class DungeonGenerator : MonoBehaviour
     [Tooltip("0 = solid color, 1 = black & white check")]
     public float checkerFloorStrength = 0.25f; 
 
+    [Header("Surface Optimization")]
+    [Tooltip("Post-process flat floor/ceiling tiles into larger rectangular quads before manufacturing GameObjects.")]
+    [SerializeField] private bool mergeFlatSurfaceTiles = true;
+
+    [Tooltip("Minimum rectangle area in tiles before a flat floor/ceiling region is replaced by one larger tile.")]
+    [SerializeField] private int minMergedSurfaceArea = 2;
+
+    [Tooltip("Post-process uninterrupted normal wall segments into longer wall runs before manufacturing GameObjects.")]
+    [SerializeField] private bool mergeContinuousWalls = true;
+
+    [Tooltip("Minimum number of adjacent wall segments required before replacing them with one longer wall.")]
+    [SerializeField] private int minMergedWallLength = 2;
+
     [Header("Ceiling Appearance")]
 
     [Tooltip("Tiny extra z-offset in grid units if you want ceilings slightly above nominal height.")]
@@ -39,6 +52,7 @@ public partial class DungeonGenerator : MonoBehaviour
                 //Debug.Log($"Build3DFromOneRoom DONE room_number = {room_number}");
                 //if (tm.IfYield()) yield return null;
             }
+            OptimizeFlatSurfaceTiles();
             dir.manufactureGO.BuildAll();
         }
         finally { if (local_tm) tm.End(); }
