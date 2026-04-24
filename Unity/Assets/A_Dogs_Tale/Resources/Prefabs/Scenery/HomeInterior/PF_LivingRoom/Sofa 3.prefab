@@ -83,6 +83,14 @@ PrefabInstance:
         type: 3}
       insertIndex: -1
       addedObject: {fileID: 1078286556879075956}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 711acb63f4b39bd49b262c19fe396d82,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 6463401264478044630}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 711acb63f4b39bd49b262c19fe396d82,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 5605963228580933612}
   m_SourcePrefab: {fileID: 100100000, guid: 711acb63f4b39bd49b262c19fe396d82, type: 3}
 --- !u!1 &8927805892983263572 stripped
 GameObject:
@@ -174,3 +182,47 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1.6863022, y: 0.13348484, z: 0.42367268}
   m_Center: {x: 0.0069818497, y: 0.25112438, z: 0.059782982}
+--- !u!114 &6463401264478044630
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8927805892983263572}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b112db3959c164550975dd26677f8e8e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::WorldObject
+  objectId: -1
+  displayName: Sofa 3
+  kind: 3
+  autoRegister: 1
+  adjustMapToWorld: {x: -0.5, y: 0, z: -0.5}
+  sizeRadius: 0.3
+  weight: 1
+  immovable: 0
+  onActivate:
+    m_PersistentCalls:
+      m_Calls: []
+--- !u!114 &5605963228580933612
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8927805892983263572}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3f6cda250b193442c9f59a935c554f95, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.PlacementModule
+  allowedRooms: 68
+  autoSizeFromMesh: 1
+  sizeInCells: {x: 1.9097139, y: 0.7916868, z: 0.6584087}
+  cellSize: 1
+  edgeHint: 0
+  rotationRule: 1
+  minClearCellsAround: 0
+  mustTouchWall: 0
+  wallPadding: 0.05

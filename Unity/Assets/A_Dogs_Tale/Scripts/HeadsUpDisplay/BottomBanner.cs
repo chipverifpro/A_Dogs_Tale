@@ -602,6 +602,11 @@ public class BottomBanner : MonoBehaviour
         Show(BannerSense.None, BannerLevel.None, message, false);
     }
 
+    public static void SetVisible(bool visible)
+    {
+        GetOrCreateInstance()?._SetVisible(visible);
+    }
+
     public static void Show(BannerSense sense, BannerLevel level, string message, bool includeGameTime = false)
     {
         GetOrCreateInstance()?.AddMessageInternal(sense, level, message, includeGameTime, false);
@@ -615,6 +620,14 @@ public class BottomBanner : MonoBehaviour
     public static void LogRichMessage(BannerSense sense, BannerLevel level, string richMessage, bool includeGameTime = false)
     {
         GetOrCreateInstance()?.AddMessageInternal(sense, level, richMessage, includeGameTime, true);
+    }
+
+    void _SetVisible(bool visible)
+    {
+        BuildUIIfNeeded();
+
+        if (BottomBannerCanvas != null)
+            BottomBannerCanvas.enabled = visible;
     }
 
     public static void ShowFor(string message, float seconds)

@@ -89,6 +89,14 @@ PrefabInstance:
         type: 3}
       insertIndex: -1
       addedObject: {fileID: 9117137817405741472}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 12733546754b3764c8589a0980754c40,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 3705937046020121852}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 12733546754b3764c8589a0980754c40,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: -1055881255597572961}
     - targetCorrespondingSourceObject: {fileID: -3559909895095799887, guid: 12733546754b3764c8589a0980754c40,
         type: 3}
       insertIndex: -1
@@ -155,6 +163,50 @@ MonoBehaviour:
     value: {fileID: 8699201650898568421}
   - key: 1
     value: {fileID: 7140258889068215079}
+--- !u!114 &3705937046020121852
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1223211554131618654}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b112db3959c164550975dd26677f8e8e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::WorldObject
+  objectId: -1
+  displayName: Desk 10
+  kind: 0
+  autoRegister: 1
+  adjustMapToWorld: {x: -0.5, y: 0, z: -0.5}
+  sizeRadius: 0.3
+  weight: 1
+  immovable: 0
+  onActivate:
+    m_PersistentCalls:
+      m_Calls: []
+--- !u!114 &-1055881255597572961
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1223211554131618654}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3f6cda250b193442c9f59a935c554f95, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.PlacementModule
+  allowedRooms: -1
+  autoSizeFromMesh: 1
+  sizeInCells: {x: 1.5979202, y: 0.96294844, z: 0.9145584}
+  cellSize: 1
+  edgeHint: 0
+  rotationRule: 1
+  minClearCellsAround: 0
+  mustTouchWall: 0
+  wallPadding: 0.05
 --- !u!1 &5953892243743750590 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: -3559909895095799887, guid: 12733546754b3764c8589a0980754c40,

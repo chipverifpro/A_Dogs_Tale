@@ -1,5 +1,6 @@
 using System.Collections;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
 public class SceneFader : MonoBehaviour
@@ -20,6 +21,11 @@ public class SceneFader : MonoBehaviour
 
     [Header("Debug/UX")]
     public bool allowSkip = true;          // press any key / click to skip after min time
+    [SerializeField] private KeyCode returnToTitleKey = KeyCode.Delete;
+
+    bool isTitleOverlayVisible = true;
+    bool isTransitioning;
+    bool hasGameStarted;
 
 
     void Awake()
@@ -58,6 +64,15 @@ public class SceneFader : MonoBehaviour
         
         //if (!sfx) sfx = FindFirstObjectByType<AudioPlayer>();
         //if (sfx) sfx.RandomRepeatSFX("German_shepherd_bark",minVol:0.05f, maxVol:0.15f, MinTime:5f, MaxTime: 15f));
+    }
+
+    void Update()
+    {
+        if (!hasGameStarted || isTransitioning || isTitleOverlayVisible)
+            return;
+
+        if (WasReturnToTitlePressedThisFrame())
+            StartCoroutine(FadeToTitleMenu());
     }
 
     void SetupTitleSFX()
@@ -140,6 +155,8 @@ public class SceneFader : MonoBehaviour
 
     private IEnumerator CrossFade()
     {
+        SetOverlayedGameplayUiVisible(false);
+
         // Pick the splash before any visible alpha changes.
         SetRandomSplashSprite();
 
@@ -148,8 +165,8 @@ public class SceneFader : MonoBehaviour
         BottomBanner.Show("Welcome, Pup! Sniffing out treasures...");
 
         // Display just the splash screen.
-        splashCanvasGroup.alpha = 1;
-        menuCanvasGroup.alpha = 0;
+        SetCanvasGroupState(splashCanvasGroup, 1f, false);
+        SetCanvasGroupState(menuCanvasGroup, 0f, false);
 
         audioPlayer.PlayClip("Opening Title");
         audioPlayer.PlayClip("Bark_GS_repeat");
@@ -158,6 +175,7 @@ public class SceneFader : MonoBehaviour
 
         StartCoroutine(Fade(splashCanvasGroup, 1f, 0f));
         yield return StartCoroutine(Fade(menuCanvasGroup, 0f, 1f));
+        isTitleOverlayVisible = true;
     }
 
 /*
@@ -186,6 +204,11 @@ public class SceneFader : MonoBehaviour
 
     public IEnumerator FadeToGame()
     {
+        if (isTransitioning)
+            yield break;
+
+        isTransitioning = true;
+
         //BottomBanner.Show("🐾 Welcome, Pup! On the way to Adventure...");
         BottomBanner.Show("Welcome, Pup! On the way to Adventure...");
 
@@ -196,7 +219,7 @@ public class SceneFader : MonoBehaviour
 
         // Display just the menu screen.
         //splashCanvasGroup.alpha = 0;
-        menuCanvasGroup.alpha = 1;
+        SetCanvasGroupState(menuCanvasGroup, 1f, true);
 
         // display splash screen for a bit.  Press any key to skip.
         //yield return StartCoroutine(WaitAllowSkip(minSplashSeconds));
@@ -207,15 +230,21 @@ public class SceneFader : MonoBehaviour
 
         // Fade out Main Menu
         yield return StartCoroutine(Fade(menuCanvasGroup, 1f, 0f));
+        SetCanvasGroupState(splashCanvasGroup, 0f, false);
+        SetCanvasGroupState(menuCanvasGroup, 0f, false);
+        SetSplashMenuCameraEnabled(false);
+        SetOverlayedGameplayUiVisible(true);
+        isTitleOverlayVisible = false;
 
-        GameObject splashObject;
-        splashObject = GameObject.Find("Splash");
-        Debug.Log($"Disabling object Splash, enabling object GeneratorCanvas.");
-        dir.gen.EnableGeneratorCanvas(true);
-        splashObject.SetActive(false);
+        if (!hasGameStarted)
+        {
+            // Let generator know the main menu closed. It will start its music, among other things.
+            if (dir?.gen != null)
+                dir.gen.MainMenuClosed();
+            hasGameStarted = true;
+        }
 
-        // Let generator know the main menu closed.  It will start it's music, among other things.
-        dir.gen.MainMenuClosed();
+        isTransitioning = false;
     }
 
     public IEnumerator WaitAllowSkip(float minSplashSeconds)
@@ -238,6 +267,7 @@ public class SceneFader : MonoBehaviour
     {
         Debug.Log($"Fading canvas {canvasGroup.name} from {startAlpha} to {targetAlpha}");
         canvasGroup.blocksRaycasts = true; // prevent clicks during fade
+        canvasGroup.interactable = true;
 
         float fadePct = 0f;
 
@@ -250,6 +280,65 @@ public class SceneFader : MonoBehaviour
 
         canvasGroup.alpha = targetAlpha;    // done, make sure fade is complete.
         canvasGroup.blocksRaycasts = (targetAlpha != 0f);
+        canvasGroup.interactable = (targetAlpha != 0f);
         yield break;
+    }
+
+    IEnumerator FadeToTitleMenu()
+    {
+        if (isTransitioning)
+            yield break;
+
+        isTransitioning = true;
+        SetOverlayedGameplayUiVisible(false);
+        SetCanvasGroupState(splashCanvasGroup, 0f, false);
+        SetCanvasGroupState(menuCanvasGroup, 0f, false);
+
+        yield return StartCoroutine(Fade(menuCanvasGroup, 0f, 1f));
+
+        isTitleOverlayVisible = true;
+        isTransitioning = false;
+    }
+
+    void SetOverlayedGameplayUiVisible(bool visible)
+    {
+        SetSceneObjectActive("GeneratorCanvas", visible);
+        SetSceneObjectActive("ScentTargetCanvas", visible);
+        BottomBanner.SetVisible(visible);
+    }
+
+    void SetSceneObjectActive(string objectName, bool visible)
+    {
+        GameObject target = DungeonGenerator.FindInActiveScene(objectName);
+        if (target != null)
+            target.SetActive(visible);
+    }
+
+    void SetSplashMenuCameraEnabled(bool enabled)
+    {
+        GameObject splashMenuCamera = DungeonGenerator.FindInActiveScene("CameraSplashMenu");
+        if (splashMenuCamera != null)
+            splashMenuCamera.SetActive(enabled);
+    }
+
+    void SetCanvasGroupState(CanvasGroup canvasGroup, float alpha, bool interactive)
+    {
+        if (canvasGroup == null)
+            return;
+
+        canvasGroup.alpha = alpha;
+        canvasGroup.blocksRaycasts = interactive;
+        canvasGroup.interactable = interactive;
+    }
+
+    bool WasReturnToTitlePressedThisFrame()
+    {
+        if (Keyboard.current != null)
+        {
+            if (Keyboard.current.deleteKey.wasPressedThisFrame || Keyboard.current.backspaceKey.wasPressedThisFrame)
+                return true;
+        }
+
+        return Input.GetKeyDown(returnToTitleKey) || Input.GetKeyDown(KeyCode.Backspace);
     }
 }

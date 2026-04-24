@@ -126,7 +126,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3f6cda250b193442c9f59a935c554f95, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlacementModule
-  allowedRooms: 4
+  allowedRooms: 68
   autoSizeFromMesh: 1
   sizeInCells: {x: 1, y: 1, z: 1}
   cellSize: 1
@@ -149,5 +149,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::WorldObject
   objectId: -1
   displayName: Prop_Sofa_01
-  kind: 0
+  kind: 3
   autoRegister: 1
+  adjustMapToWorld: {x: -0.5, y: 0, z: -0.5}
+  sizeRadius: 0.3
+  weight: 1
+  immovable: 0
+  onActivate:
+    m_PersistentCalls:
+      m_Calls: []

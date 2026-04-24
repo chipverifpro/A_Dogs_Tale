@@ -75,6 +75,14 @@ PrefabInstance:
         type: 3}
       insertIndex: -1
       addedObject: {fileID: 5931487790871874038}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: aff6be4cd9a51b84bb03d847b14c438d,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 8371157851337963684}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: aff6be4cd9a51b84bb03d847b14c438d,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: -8688775044827564798}
   m_SourcePrefab: {fileID: 100100000, guid: aff6be4cd9a51b84bb03d847b14c438d, type: 3}
 --- !u!1 &2000059717669946435 stripped
 GameObject:
@@ -116,3 +124,47 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   hided: 1
+--- !u!114 &8371157851337963684
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2000059717669946435}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b112db3959c164550975dd26677f8e8e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::WorldObject
+  objectId: -1
+  displayName: Coffee Table 1
+  kind: 0
+  autoRegister: 1
+  adjustMapToWorld: {x: -0.5, y: 0, z: -0.5}
+  sizeRadius: 0.3
+  weight: 1
+  immovable: 0
+  onActivate:
+    m_PersistentCalls:
+      m_Calls: []
+--- !u!114 &-8688775044827564798
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2000059717669946435}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3f6cda250b193442c9f59a935c554f95, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.PlacementModule
+  allowedRooms: -1
+  autoSizeFromMesh: 1
+  sizeInCells: {x: 0.71534085, y: 0.6559803, z: 0.71534026}
+  cellSize: 1
+  edgeHint: 0
+  rotationRule: 1
+  minClearCellsAround: 0
+  mustTouchWall: 0
+  wallPadding: 0.05

@@ -114,6 +114,14 @@ PrefabInstance:
         type: 3}
       insertIndex: -1
       addedObject: {fileID: 8361311856525196370}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 14d243ece17e4204abecc719f453af71,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: -7021843302401483023}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 14d243ece17e4204abecc719f453af71,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 4986417282748655176}
     - targetCorrespondingSourceObject: {fileID: -465109682293703254, guid: 14d243ece17e4204abecc719f453af71,
         type: 3}
       insertIndex: -1
@@ -339,3 +347,47 @@ MonoBehaviour:
     value: {fileID: 9213414091237615961}
   - key: 1
     value: {fileID: 6463141621610244670}
+--- !u!114 &-7021843302401483023
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8243811998498907338}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b112db3959c164550975dd26677f8e8e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::WorldObject
+  objectId: -1
+  displayName: Bathroom Vanity
+  kind: 0
+  autoRegister: 1
+  adjustMapToWorld: {x: -0.5, y: 0, z: -0.5}
+  sizeRadius: 0.3
+  weight: 1
+  immovable: 0
+  onActivate:
+    m_PersistentCalls:
+      m_Calls: []
+--- !u!114 &4986417282748655176
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8243811998498907338}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3f6cda250b193442c9f59a935c554f95, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.PlacementModule
+  allowedRooms: -1
+  autoSizeFromMesh: 1
+  sizeInCells: {x: 2.2197316, y: 1.2032669, z: 0.89189154}
+  cellSize: 1
+  edgeHint: 0
+  rotationRule: 1
+  minClearCellsAround: 0
+  mustTouchWall: 0
+  wallPadding: 0.05

@@ -188,6 +188,14 @@ PrefabInstance:
         type: 3}
       insertIndex: -1
       addedObject: {fileID: -5630447670582651252}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: d04ca0f9bec41e34993cafe223821069,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: -4033110315350062646}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: d04ca0f9bec41e34993cafe223821069,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1741621659450444394}
     - targetCorrespondingSourceObject: {fileID: -3559909895095799887, guid: d04ca0f9bec41e34993cafe223821069,
         type: 3}
       insertIndex: -1
@@ -326,6 +334,50 @@ MeshCollider:
   m_Convex: 0
   m_CookingOptions: 30
   m_Mesh: {fileID: -5539357819512116934, guid: d04ca0f9bec41e34993cafe223821069, type: 3}
+--- !u!114 &-4033110315350062646
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2612625725839387992}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b112db3959c164550975dd26677f8e8e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::WorldObject
+  objectId: -1
+  displayName: Wardrobe 3
+  kind: 3
+  autoRegister: 1
+  adjustMapToWorld: {x: -0.5, y: 0, z: -0.5}
+  sizeRadius: 0.3
+  weight: 1
+  immovable: 0
+  onActivate:
+    m_PersistentCalls:
+      m_Calls: []
+--- !u!114 &1741621659450444394
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2612625725839387992}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3f6cda250b193442c9f59a935c554f95, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.PlacementModule
+  allowedRooms: 1
+  autoSizeFromMesh: 1
+  sizeInCells: {x: 1.6477588, y: 3.5045586, z: 1.3650322}
+  cellSize: 1
+  edgeHint: 0
+  rotationRule: 1
+  minClearCellsAround: 0
+  mustTouchWall: 0
+  wallPadding: 0.05
 --- !u!1 &5171783833771496966 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 8017917440253478415, guid: d04ca0f9bec41e34993cafe223821069,

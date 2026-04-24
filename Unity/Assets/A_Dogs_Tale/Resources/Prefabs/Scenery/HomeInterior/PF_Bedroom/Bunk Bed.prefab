@@ -91,6 +91,14 @@ PrefabInstance:
         type: 3}
       insertIndex: -1
       addedObject: {fileID: 9152911278710144679}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 18c2a2ad95a59fe48874acff3baf9cf0,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: -2520462827365299630}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 18c2a2ad95a59fe48874acff3baf9cf0,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 425555121263112124}
   m_SourcePrefab: {fileID: 100100000, guid: 18c2a2ad95a59fe48874acff3baf9cf0, type: 3}
 --- !u!1 &1890858143027182012 stripped
 GameObject:
@@ -216,3 +224,47 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 3.1643538, y: 0.6281524, z: 0.28872573}
   m_Center: {x: -0.51407886, y: 3.0192149, z: 0.8367018}
+--- !u!114 &-2520462827365299630
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1890858143027182012}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b112db3959c164550975dd26677f8e8e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::WorldObject
+  objectId: -1
+  displayName: Bunk Bed
+  kind: 0
+  autoRegister: 1
+  adjustMapToWorld: {x: -0.5, y: 0, z: -0.5}
+  sizeRadius: 0.3
+  weight: 1
+  immovable: 0
+  onActivate:
+    m_PersistentCalls:
+      m_Calls: []
+--- !u!114 &425555121263112124
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1890858143027182012}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3f6cda250b193442c9f59a935c554f95, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.PlacementModule
+  allowedRooms: -1
+  autoSizeFromMesh: 1
+  sizeInCells: {x: 4.192511, y: 3.6300662, z: 1.9621291}
+  cellSize: 1
+  edgeHint: 0
+  rotationRule: 1
+  minClearCellsAround: 0
+  mustTouchWall: 0
+  wallPadding: 0.05

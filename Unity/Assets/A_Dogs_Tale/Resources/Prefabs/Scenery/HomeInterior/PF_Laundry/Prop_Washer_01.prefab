@@ -12,6 +12,8 @@ GameObject:
   - component: {fileID: 6220567522955026953}
   - component: {fileID: 8194038377939474115}
   - component: {fileID: 7383238020157311929}
+  - component: {fileID: -8761069159569972411}
+  - component: {fileID: 7755779340262297651}
   m_Layer: 0
   m_Name: Prop_Washer_01
   m_TagString: Untagged
@@ -112,3 +114,47 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 0.8294877, y: 1.01, z: 0.764217}
   m_Center: {x: 0, y: 0.505, z: 0.03210853}
+--- !u!114 &-8761069159569972411
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7689876631039489814}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b112db3959c164550975dd26677f8e8e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::WorldObject
+  objectId: -1
+  displayName: Prop_Washer_01
+  kind: 3
+  autoRegister: 1
+  adjustMapToWorld: {x: -0.5, y: 0, z: -0.5}
+  sizeRadius: 0.3
+  weight: 1
+  immovable: 0
+  onActivate:
+    m_PersistentCalls:
+      m_Calls: []
+--- !u!114 &7755779340262297651
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7689876631039489814}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3f6cda250b193442c9f59a935c554f95, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.PlacementModule
+  allowedRooms: 98
+  autoSizeFromMesh: 1
+  sizeInCells: {x: 0.8294877, y: 1.01, z: 0.764217}
+  cellSize: 1
+  edgeHint: 0
+  rotationRule: 1
+  minClearCellsAround: 0
+  mustTouchWall: 0
+  wallPadding: 0.05

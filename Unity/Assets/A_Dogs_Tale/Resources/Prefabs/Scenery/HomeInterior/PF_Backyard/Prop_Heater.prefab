@@ -372,6 +372,8 @@ GameObject:
   - component: {fileID: 5698617713886591722}
   - component: {fileID: 7561959216490319392}
   - component: {fileID: 1395334226113753708}
+  - component: {fileID: -1986460808401196331}
+  - component: {fileID: -5007090345383557195}
   m_Layer: 0
   m_Name: Prop_Heater
   m_TagString: Untagged
@@ -478,6 +480,50 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 0.90098226, y: 1.1403136, z: 0.7835078}
   m_Center: {x: -0.00000011920929, y: 0.5634365, z: -0.008246273}
+--- !u!114 &-1986460808401196331
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8354605738710675445}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b112db3959c164550975dd26677f8e8e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::WorldObject
+  objectId: -1
+  displayName: Prop_Heater
+  kind: 3
+  autoRegister: 1
+  adjustMapToWorld: {x: -0.5, y: 0, z: -0.5}
+  sizeRadius: 0.3
+  weight: 1
+  immovable: 0
+  onActivate:
+    m_PersistentCalls:
+      m_Calls: []
+--- !u!114 &-5007090345383557195
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8354605738710675445}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3f6cda250b193442c9f59a935c554f95, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.PlacementModule
+  allowedRooms: 8448
+  autoSizeFromMesh: 1
+  sizeInCells: {x: 0.90098226, y: 1.1403136, z: 0.7835078}
+  cellSize: 1
+  edgeHint: 0
+  rotationRule: 1
+  minClearCellsAround: 0
+  mustTouchWall: 0
+  wallPadding: 0.05
 --- !u!1 &9096635047320653266
 GameObject:
   m_ObjectHideFlags: 0

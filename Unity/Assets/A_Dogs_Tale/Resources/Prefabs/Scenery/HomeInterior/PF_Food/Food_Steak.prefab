@@ -129,8 +129,15 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::WorldObject
   objectId: -1
   displayName: Food_Steak
-  kind: 0
+  kind: 3
   autoRegister: 1
+  adjustMapToWorld: {x: -0.5, y: 0, z: -0.5}
+  sizeRadius: 0.3
+  weight: 1
+  immovable: 0
+  onActivate:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!114 &1664911772585074991
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -143,7 +150,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3f6cda250b193442c9f59a935c554f95, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.PlacementModule
-  allowedRooms: 498
+  allowedRooms: 10226
   autoSizeFromMesh: 1
   sizeInCells: {x: 0.3152315, y: 0.047383945, z: 0.2020755}
   cellSize: 1
