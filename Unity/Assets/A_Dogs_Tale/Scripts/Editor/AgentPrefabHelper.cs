@@ -36,6 +36,7 @@ public static class AgentPrefabHelper
         addedCount += EnsureComponent<AgentModule>(root);
         addedCount += EnsureComponent<AgentMovementModule>(root);
         addedCount += EnsureComponent<PackMemberModule>(root);
+        addedCount += EnsureComponent<ContainerModule>(root);
         // AgentBlackboardView is likely a pure C# class, not a MonoBehaviour.
         // If you've made it a component, uncomment this:
         // addedCount += EnsureComponent<AgentBlackboardView>(root);

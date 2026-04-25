@@ -305,9 +305,9 @@ public class CameraModeSwitcher : MonoBehaviour
         float step = 0.5f;
         bool continuous = true;
 
-        // '+' is usually Shift+'='
-        bool plus = Input.GetKey(KeyCode.Equals) || Input.GetKey(KeyCode.Plus);
-        bool minus = Input.GetKey(KeyCode.Minus) || Input.GetKey(KeyCode.Underscore);
+        // '+' is usually Shift+'=' on the main keyboard.
+        bool plus = IsKeyboardKeyPressed(Key.Equals) || IsKeyboardKeyPressed(Key.NumpadPlus);
+        bool minus = IsKeyboardKeyPressed(Key.Minus) || IsKeyboardKeyPressed(Key.NumpadMinus);
 
         if (continuous)
         {
@@ -316,8 +316,8 @@ public class CameraModeSwitcher : MonoBehaviour
         }
         else
         {
-            if (Input.GetKeyDown(KeyCode.Equals) || Input.GetKeyDown(KeyCode.Plus)) delta += step;
-            if (Input.GetKeyDown(KeyCode.Minus) || Input.GetKeyDown(KeyCode.Underscore)) delta -= step;
+            if (WasKeyboardKeyPressedThisFrame(Key.Equals) || WasKeyboardKeyPressedThisFrame(Key.NumpadPlus)) delta += step;
+            if (WasKeyboardKeyPressedThisFrame(Key.Minus) || WasKeyboardKeyPressedThisFrame(Key.NumpadMinus)) delta -= step;
         }
 
         if (Mathf.Approximately(delta, 0f)) return;
@@ -558,30 +558,46 @@ public class CameraModeSwitcher : MonoBehaviour
 
     private bool WasFreeCameraTogglePressed()
     {
-        if (Keyboard.current == null)
-            return false;
-
-        return freeCameraToggleKey switch
-        {
-            KeyCode.BackQuote => Keyboard.current.backquoteKey.wasPressedThisFrame,
-            KeyCode.F1 => Keyboard.current.f1Key.wasPressedThisFrame,
-            KeyCode.F2 => Keyboard.current.f2Key.wasPressedThisFrame,
-            KeyCode.F3 => Keyboard.current.f3Key.wasPressedThisFrame,
-            KeyCode.F4 => Keyboard.current.f4Key.wasPressedThisFrame,
-            KeyCode.F5 => Keyboard.current.f5Key.wasPressedThisFrame,
-            KeyCode.F6 => Keyboard.current.f6Key.wasPressedThisFrame,
-            KeyCode.F7 => Keyboard.current.f7Key.wasPressedThisFrame,
-            KeyCode.F8 => Keyboard.current.f8Key.wasPressedThisFrame,
-            KeyCode.F9 => Keyboard.current.f9Key.wasPressedThisFrame,
-            KeyCode.F10 => Keyboard.current.f10Key.wasPressedThisFrame,
-            KeyCode.F11 => Keyboard.current.f11Key.wasPressedThisFrame,
-            KeyCode.F12 => Keyboard.current.f12Key.wasPressedThisFrame,
-            _ => Input.GetKeyDown(freeCameraToggleKey)
-        };
+        return WasKeyCodePressedThisFrame(freeCameraToggleKey);
     }
 
     private static bool WasFreeCameraExitPressed()
     {
         return Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame;
+    }
+
+    private static bool IsKeyboardKeyPressed(Key key)
+    {
+        Keyboard keyboard = Keyboard.current;
+        return keyboard != null && key != Key.None && keyboard[key].isPressed;
+    }
+
+    private static bool WasKeyboardKeyPressedThisFrame(Key key)
+    {
+        Keyboard keyboard = Keyboard.current;
+        return keyboard != null && key != Key.None && keyboard[key].wasPressedThisFrame;
+    }
+
+    private static bool WasKeyCodePressedThisFrame(KeyCode keyCode)
+    {
+        return keyCode switch
+        {
+            KeyCode.BackQuote => WasKeyboardKeyPressedThisFrame(Key.Backquote),
+            KeyCode.Tab => WasKeyboardKeyPressedThisFrame(Key.Tab),
+            KeyCode.Escape => WasKeyboardKeyPressedThisFrame(Key.Escape),
+            KeyCode.F1 => WasKeyboardKeyPressedThisFrame(Key.F1),
+            KeyCode.F2 => WasKeyboardKeyPressedThisFrame(Key.F2),
+            KeyCode.F3 => WasKeyboardKeyPressedThisFrame(Key.F3),
+            KeyCode.F4 => WasKeyboardKeyPressedThisFrame(Key.F4),
+            KeyCode.F5 => WasKeyboardKeyPressedThisFrame(Key.F5),
+            KeyCode.F6 => WasKeyboardKeyPressedThisFrame(Key.F6),
+            KeyCode.F7 => WasKeyboardKeyPressedThisFrame(Key.F7),
+            KeyCode.F8 => WasKeyboardKeyPressedThisFrame(Key.F8),
+            KeyCode.F9 => WasKeyboardKeyPressedThisFrame(Key.F9),
+            KeyCode.F10 => WasKeyboardKeyPressedThisFrame(Key.F10),
+            KeyCode.F11 => WasKeyboardKeyPressedThisFrame(Key.F11),
+            KeyCode.F12 => WasKeyboardKeyPressedThisFrame(Key.F12),
+            _ => false
+        };
     }
 }

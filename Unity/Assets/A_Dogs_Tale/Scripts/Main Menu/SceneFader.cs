@@ -333,12 +333,27 @@ public class SceneFader : MonoBehaviour
 
     bool WasReturnToTitlePressedThisFrame()
     {
-        if (Keyboard.current != null)
-        {
-            if (Keyboard.current.deleteKey.wasPressedThisFrame || Keyboard.current.backspaceKey.wasPressedThisFrame)
-                return true;
-        }
+        return WasKeyCodePressedThisFrame(returnToTitleKey)
+            || WasKeyboardKeyPressedThisFrame(Key.Backspace);
+    }
 
-        return Input.GetKeyDown(returnToTitleKey) || Input.GetKeyDown(KeyCode.Backspace);
+    static bool WasKeyCodePressedThisFrame(KeyCode keyCode)
+    {
+        return keyCode switch
+        {
+            KeyCode.Backspace => WasKeyboardKeyPressedThisFrame(Key.Backspace),
+            KeyCode.Delete => WasKeyboardKeyPressedThisFrame(Key.Delete),
+            KeyCode.Escape => WasKeyboardKeyPressedThisFrame(Key.Escape),
+            KeyCode.Return => WasKeyboardKeyPressedThisFrame(Key.Enter),
+            KeyCode.KeypadEnter => WasKeyboardKeyPressedThisFrame(Key.NumpadEnter),
+            KeyCode.Space => WasKeyboardKeyPressedThisFrame(Key.Space),
+            _ => false
+        };
+    }
+
+    static bool WasKeyboardKeyPressedThisFrame(Key key)
+    {
+        Keyboard keyboard = Keyboard.current;
+        return keyboard != null && key != Key.None && keyboard[key].wasPressedThisFrame;
     }
 }

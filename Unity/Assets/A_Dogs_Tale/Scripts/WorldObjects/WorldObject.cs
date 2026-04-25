@@ -322,6 +322,9 @@ public class WorldObject : MonoBehaviour
         agentStateModule  = GetComponent<AgentStateModule>();
         taskListModule    = GetComponent<TaskListModule>();
         containerModule   = GetComponent<ContainerModule>();
+        if (Application.isPlaying && containerModule == null && IsAgentWorldObject())
+            containerModule = gameObject.AddComponent<ContainerModule>();
+
         knowledgeModule   = GetComponent<KnowledgeModule>();
         // --- Quest ---
         fetchQuestModule  = GetComponent<FetchQuestModule>();
@@ -346,6 +349,11 @@ public class WorldObject : MonoBehaviour
             Debug.LogWarning($"[WorldObject.Awake {gameObject.name}] setting parent of {name} to FreeAgents");
             this.gameObject.transform.SetParent(dir.packManager.FreeAgentsParent.transform);
         }
+    }
+
+    private bool IsAgentWorldObject()
+    {
+        return kind == WorldObjectKind.Agent || agentModule != null;
     }
 
     private void Update()
@@ -402,7 +410,7 @@ public class WorldObject : MonoBehaviour
         //motionModule?.Tick(dt);
         //locationModule?.Tick(dt);
         //activatorModule?.Tick(dt);
-        //containerModule?.Tick(dt);
+        containerModule?.Tick(dt);
         //interactionModule?.Tick(dt);
         
         // DATA                             // No need to tick

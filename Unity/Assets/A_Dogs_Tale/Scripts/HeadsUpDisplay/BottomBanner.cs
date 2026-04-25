@@ -94,7 +94,7 @@ public class BottomBanner : MonoBehaviour
         }
         else
         {
-            screenPoint = Input.mousePosition;
+            return false;
         }
 
         return RectTransformUtility.RectangleContainsScreenPoint(panelRT, screenPoint, null);

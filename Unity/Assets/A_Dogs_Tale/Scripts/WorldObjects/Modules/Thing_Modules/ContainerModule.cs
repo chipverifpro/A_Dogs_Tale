@@ -23,6 +23,13 @@ namespace DogGame.Modules
         [Header("Held Items")]
         [SerializeField] private List<WorldObject> heldItems = new();
 
+        [Header("Agent Auto Pickup")]
+        public bool autoPickupNearbyItems = true;
+        [Min(0f)] public float pickupRadiusTiles = 1f;
+        public bool autoConfigureAgentCapacity = true;
+        [Min(0)] public int dogItemCapacity = 1;
+        [Min(0)] public int humanItemCapacity = 2;
+
         public IReadOnlyList<WorldObject> HeldItems => heldItems;
         public int HeldItemCount => heldItems.Count;
         public bool IsFull => heldItems.Count >= itemCapacity;
@@ -50,6 +57,7 @@ namespace DogGame.Modules
         protected override void Awake()
         {
             base.Awake();
+            ConfigureAgentCapacityIfNeeded();
             SanitizeHeldItems();
             RefreshHeldItems();
         }
@@ -58,10 +66,19 @@ namespace DogGame.Modules
         {
             itemCapacity = Mathf.Max(0, itemCapacity);
             maxWeight = Mathf.Max(0f, maxWeight);
+            pickupRadiusTiles = Mathf.Max(0f, pickupRadiusTiles);
+            dogItemCapacity = Mathf.Max(0, dogItemCapacity);
+            humanItemCapacity = Mathf.Max(0, humanItemCapacity);
 
             SanitizeHeldItems();
             if (!Application.isPlaying)
                 RefreshHeldItems();
+        }
+
+        public override void Tick(float deltaTime)
+        {
+            base.Tick(deltaTime);
+            TryAutoPickupNearbyItem();
         }
 
         public bool CanAccessContents(out string reason)
@@ -83,6 +100,11 @@ namespace DogGame.Modules
         }
 
         public bool CanReceiveItem(WorldObject item, out string reason)
+        {
+            return CanReceiveItem(item, true, out reason);
+        }
+
+        public bool CanReceiveItem(WorldObject item, bool enforceMaxWeight, out string reason)
         {
             if (!CanAccessContents(out reason))
                 return false;
@@ -111,7 +133,7 @@ namespace DogGame.Modules
                 return false;
             }
 
-            if (CurrentWeight + item.Weight > maxWeight)
+            if (enforceMaxWeight && CurrentWeight + item.Weight > maxWeight)
             {
                 reason = $"{item.DisplayName} would exceed the max weight of {maxWeight}.";
                 return false;
@@ -128,9 +150,14 @@ namespace DogGame.Modules
 
         public bool ReceiveItem(WorldObject item, out string reason)
         {
+            return ReceiveItem(item, true, out reason);
+        }
+
+        public bool ReceiveItem(WorldObject item, bool enforceMaxWeight, out string reason)
+        {
             SanitizeHeldItems();
 
-            if (!CanReceiveItem(item, out reason))
+            if (!CanReceiveItem(item, enforceMaxWeight, out reason))
                 return false;
 
             heldItems.Add(item);
@@ -337,6 +364,94 @@ namespace DogGame.Modules
             Renderer[] renderers = item.GetComponentsInChildren<Renderer>(true);
             for (int i = 0; i < renderers.Length; i++)
                 renderers[i].enabled = visible;
+        }
+
+        private void ConfigureAgentCapacityIfNeeded()
+        {
+            if (!autoConfigureAgentCapacity || !IsAgentContainer())
+                return;
+
+            AppearanceModule appearanceModule = GetComponent<AppearanceModule>();
+            itemCapacity = appearanceModule != null &&
+                           appearanceModule.animationVersion == AppearanceModule.AnimationVersion.human
+                ? humanItemCapacity
+                : dogItemCapacity;
+        }
+
+        private void TryAutoPickupNearbyItem()
+        {
+            if (!Application.isPlaying || !autoPickupNearbyItems)
+                return;
+
+            if (!IsAgentContainer() || IsFull)
+                return;
+
+            if (!CanAccessContents(out _))
+                return;
+
+            WorldObject nearestItem = FindNearestPickupItem();
+            if (nearestItem == null)
+                return;
+
+            if (!ReceiveItem(nearestItem, false, out _))
+                return;
+
+            BottomBanner.Show($"{worldObject.DisplayName} picked up {nearestItem.DisplayName}");
+        }
+
+        private WorldObject FindNearestPickupItem()
+        {
+            WorldObjectRegistry registry = WorldObjectRegistry.Instance;
+            if (registry == null)
+                return null;
+
+            float pickupRadiusSqr = pickupRadiusTiles * pickupRadiusTiles;
+            Vector3 agentPosition = worldObject.pos3d_map;
+            WorldObject nearestItem = null;
+            float nearestDistanceSqr = float.PositiveInfinity;
+
+            foreach (WorldObject candidate in registry.GetAllObjects())
+            {
+                if (!CanAutoPickupCandidate(candidate))
+                    continue;
+
+                Vector3 delta = candidate.pos3d_map - agentPosition;
+                delta.y = 0f;
+                float distanceSqr = delta.sqrMagnitude;
+                if (distanceSqr > pickupRadiusSqr || distanceSqr >= nearestDistanceSqr)
+                    continue;
+
+                nearestDistanceSqr = distanceSqr;
+                nearestItem = candidate;
+            }
+
+            return nearestItem;
+        }
+
+        private bool CanAutoPickupCandidate(WorldObject candidate)
+        {
+            if (candidate == null || candidate == worldObject)
+                return false;
+
+            if (candidate.Kind != WorldObjectKind.Item)
+                return false;
+
+            if (!candidate.gameObject.activeInHierarchy)
+                return false;
+
+            if (candidate.transform.parent != null &&
+                candidate.transform.parent.GetComponentInParent<WorldObject>() != null)
+            {
+                return false;
+            }
+
+            return !ContainsItem(candidate);
+        }
+
+        private bool IsAgentContainer()
+        {
+            return worldObject != null &&
+                   (worldObject.Kind == WorldObjectKind.Agent || GetComponent<AgentModule>() != null);
         }
     }
 }
