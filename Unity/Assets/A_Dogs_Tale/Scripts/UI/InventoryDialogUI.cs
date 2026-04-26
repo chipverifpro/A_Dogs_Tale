@@ -20,9 +20,12 @@ public sealed class InventoryDialogUI : MonoBehaviour
     [Header("Layout")]
     [SerializeField] private int uiSortOrder = 5300;
     [SerializeField] private Vector2 referenceResolution = new(1920f, 1080f);
-    [SerializeField] private Vector2 dialogSize = new(760f, 760f);
-    [SerializeField] private float actionButtonHeight = 82f;
+    [SerializeField] private Vector2 dialogSize = new(820f, 820f);
+    [SerializeField] private float actionButtonHeight = 112f;
     [SerializeField] private float previewSpinDegreesPerSecond = 24f;
+    [SerializeField, Range(0f, 85f)] private float previewViewAngleDegrees = 30f;
+    [SerializeField] private Vector2 tooltipPadding = new(18f, 10f);
+    [SerializeField] private Vector2 tooltipOffset = new(18f, -18f);
 
     private readonly Dictionary<int, Sprite> arrowSprites = new();
     private readonly Dictionary<int, Sprite> actionSprites = new();
@@ -33,6 +36,8 @@ public sealed class InventoryDialogUI : MonoBehaviour
     private GameObject dialogRoot;
     private RawImage previewImage;
     private TextMeshProUGUI itemNameLabel;
+    private RectTransform tooltipRect;
+    private TextMeshProUGUI tooltipLabel;
     private Button leftArrowButton;
     private Button rightArrowButton;
 
@@ -73,6 +78,7 @@ public sealed class InventoryDialogUI : MonoBehaviour
             return;
 
         RefreshInventoryView();
+        UpdateTooltipPosition();
         SpinPreview();
     }
 
@@ -109,6 +115,7 @@ public sealed class InventoryDialogUI : MonoBehaviour
         if (dialogRoot != null)
             dialogRoot.SetActive(false);
 
+        HideTooltip();
         DestroyPreviewClone();
     }
 
@@ -166,6 +173,7 @@ public sealed class InventoryDialogUI : MonoBehaviour
         BuildHeader(dialogRoot.transform);
         BuildPreviewArea(dialogRoot.transform);
         BuildActionButtons(dialogRoot.transform);
+        BuildTooltip(canvasObject.transform);
         EnsurePreviewWorld();
     }
 
@@ -190,7 +198,8 @@ public sealed class InventoryDialogUI : MonoBehaviour
             parent,
             arrowSprites.TryGetValue(5, out Sprite closeSprite) ? closeSprite : null,
             "X",
-            OnCloseClicked);
+            OnCloseClicked,
+            "Close");
 
         RectTransform closeRect = closeButton.GetComponent<RectTransform>();
         closeRect.anchorMin = new Vector2(1f, 1f);
@@ -223,6 +232,10 @@ public sealed class InventoryDialogUI : MonoBehaviour
         previewImage.raycastTarget = false;
         previewImage.color = Color.white;
 
+        AspectRatioFitter previewAspect = rawImageObject.AddComponent<AspectRatioFitter>();
+        previewAspect.aspectMode = AspectRatioFitter.AspectMode.FitInParent;
+        previewAspect.aspectRatio = 1f;
+
         GameObject labelObject = CreateUIObject("ItemName", previewPanel.transform);
         RectTransform labelRect = labelObject.GetComponent<RectTransform>();
         labelRect.anchorMin = new Vector2(0f, 0f);
@@ -241,7 +254,8 @@ public sealed class InventoryDialogUI : MonoBehaviour
             previewPanel.transform,
             arrowSprites.TryGetValue(0, out Sprite leftSprite) ? leftSprite : null,
             "<",
-            OnPreviousItemClicked);
+            OnPreviousItemClicked,
+            "Previous item");
 
         RectTransform leftRect = leftArrowButton.GetComponent<RectTransform>();
         leftRect.anchorMin = new Vector2(0f, 0.5f);
@@ -255,7 +269,8 @@ public sealed class InventoryDialogUI : MonoBehaviour
             previewPanel.transform,
             arrowSprites.TryGetValue(1, out Sprite rightSprite) ? rightSprite : null,
             ">",
-            OnNextItemClicked);
+            OnNextItemClicked,
+            "Next item");
 
         RectTransform rightRect = rightArrowButton.GetComponent<RectTransform>();
         rightRect.anchorMin = new Vector2(1f, 0.5f);
@@ -270,35 +285,57 @@ public sealed class InventoryDialogUI : MonoBehaviour
         GameObject actionPanel = CreateUIObject("ActionPanel", parent);
         RectTransform actionPanelRect = actionPanel.GetComponent<RectTransform>();
         actionPanelRect.anchorMin = new Vector2(0f, 0f);
-        actionPanelRect.anchorMax = new Vector2(1f, 0.36f);
+        actionPanelRect.anchorMax = new Vector2(1f, 0.39f);
         actionPanelRect.offsetMin = new Vector2(44f, 34f);
         actionPanelRect.offsetMax = new Vector2(-44f, -20f);
 
         Image actionBackground = actionPanel.AddComponent<Image>();
         actionBackground.color = new Color(0.02f, 0.018f, 0.014f, 0.18f);
 
-        HorizontalLayoutGroup layout = actionPanel.AddComponent<HorizontalLayoutGroup>();
+        VerticalLayoutGroup layout = actionPanel.AddComponent<VerticalLayoutGroup>();
         layout.childAlignment = TextAnchor.MiddleCenter;
-        layout.childControlWidth = false;
+        layout.childControlWidth = true;
         layout.childControlHeight = false;
-        layout.childForceExpandWidth = false;
+        layout.childForceExpandWidth = true;
         layout.childForceExpandHeight = false;
-        layout.spacing = 14f;
+        layout.spacing = 18f;
         layout.padding = new RectOffset(16, 16, 16, 16);
 
-        CreateActionButton(actionPanel.transform, InventoryAction.Use, OnUseClicked);
-        CreateActionButton(actionPanel.transform, InventoryAction.Eat, OnEatClicked);
-        CreateActionButton(actionPanel.transform, InventoryAction.Give, OnGiveClicked);
-        CreateActionButton(actionPanel.transform, InventoryAction.Trade, OnTradeClicked);
-        CreateActionButton(actionPanel.transform, InventoryAction.Drop, OnDropClicked);
-        CreateActionButton(actionPanel.transform, InventoryAction.PickUp, OnPickUpClicked);
+        Transform topRow = CreateActionButtonRow("ActionRowTop", actionPanel.transform);
+        Transform bottomRow = CreateActionButtonRow("ActionRowBottom", actionPanel.transform);
+
+        CreateActionButton(topRow, InventoryAction.Use, OnUseClicked);
+        CreateActionButton(topRow, InventoryAction.Eat, OnEatClicked);
+        CreateActionButton(topRow, InventoryAction.Give, OnGiveClicked);
+        CreateActionButton(bottomRow, InventoryAction.Trade, OnTradeClicked);
+        CreateActionButton(bottomRow, InventoryAction.Drop, OnDropClicked);
+        CreateActionButton(bottomRow, InventoryAction.PickUp, OnPickUpClicked);
+    }
+
+    private Transform CreateActionButtonRow(string rowName, Transform parent)
+    {
+        GameObject rowObject = CreateUIObject(rowName, parent);
+        HorizontalLayoutGroup rowLayout = rowObject.AddComponent<HorizontalLayoutGroup>();
+        rowLayout.childAlignment = TextAnchor.MiddleCenter;
+        rowLayout.childControlWidth = false;
+        rowLayout.childControlHeight = false;
+        rowLayout.childForceExpandWidth = false;
+        rowLayout.childForceExpandHeight = false;
+        rowLayout.spacing = 22f;
+
+        LayoutElement layoutElement = rowObject.AddComponent<LayoutElement>();
+        layoutElement.preferredHeight = actionButtonHeight;
+        layoutElement.minHeight = actionButtonHeight;
+
+        return rowObject.transform;
     }
 
     private void CreateActionButton(Transform parent, InventoryAction action, UnityEngine.Events.UnityAction clickHandler)
     {
         int index = (int)action;
         Sprite sprite = actionSprites.TryGetValue(index, out Sprite foundSprite) ? foundSprite : null;
-        Button button = CreateSpriteButton($"{action}Button", parent, sprite, GetActionFallbackText(action), clickHandler);
+        string actionText = GetActionFallbackText(action);
+        Button button = CreateSpriteButton($"{action}Button", parent, sprite, actionText, clickHandler, actionText);
 
         float width = actionButtonHeight;
         if (sprite != null && sprite.rect.height > 0f)
@@ -321,7 +358,8 @@ public sealed class InventoryDialogUI : MonoBehaviour
         Transform parent,
         Sprite sprite,
         string fallbackText,
-        UnityEngine.Events.UnityAction clickHandler)
+        UnityEngine.Events.UnityAction clickHandler,
+        string tooltipText = null)
     {
         GameObject buttonObject = CreateUIObject(objectName, parent);
         Image image = buttonObject.AddComponent<Image>();
@@ -338,7 +376,76 @@ public sealed class InventoryDialogUI : MonoBehaviour
         if (sprite == null)
             AddFallbackButtonText(buttonObject.transform, fallbackText);
 
+        if (!string.IsNullOrWhiteSpace(tooltipText))
+            AddTooltip(buttonObject, tooltipText);
+
         return button;
+    }
+
+    private void BuildTooltip(Transform parent)
+    {
+        GameObject tooltipObject = CreateUIObject("InventoryTooltip", parent);
+        tooltipRect = tooltipObject.GetComponent<RectTransform>();
+        tooltipRect.anchorMin = new Vector2(0.5f, 0.5f);
+        tooltipRect.anchorMax = new Vector2(0.5f, 0.5f);
+        tooltipRect.pivot = new Vector2(0f, 1f);
+        tooltipRect.sizeDelta = new Vector2(160f, 48f);
+
+        Image background = tooltipObject.AddComponent<Image>();
+        background.color = new Color(0.97f, 0.91f, 0.72f, 0.97f);
+
+        GameObject labelObject = CreateUIObject("Label", tooltipObject.transform);
+        RectTransform labelRect = labelObject.GetComponent<RectTransform>();
+        labelRect.anchorMin = Vector2.zero;
+        labelRect.anchorMax = Vector2.one;
+        labelRect.offsetMin = tooltipPadding;
+        labelRect.offsetMax = -tooltipPadding;
+
+        tooltipLabel = labelObject.AddComponent<TextMeshProUGUI>();
+        tooltipLabel.fontSize = 22f;
+        tooltipLabel.color = new Color(0.08f, 0.06f, 0.03f, 1f);
+        tooltipLabel.alignment = TextAlignmentOptions.Center;
+        tooltipLabel.raycastTarget = false;
+
+        tooltipObject.SetActive(false);
+    }
+
+    private void AddTooltip(GameObject target, string tooltipText)
+    {
+        InventoryDialogTooltipTrigger trigger = target.AddComponent<InventoryDialogTooltipTrigger>();
+        trigger.Initialize(this, tooltipText);
+    }
+
+    public void ShowTooltip(string tooltipText)
+    {
+        if (tooltipRect == null || tooltipLabel == null || !isOpen)
+            return;
+
+        tooltipLabel.text = tooltipText;
+        Vector2 preferredSize = tooltipLabel.GetPreferredValues(tooltipText, 360f, 0f);
+        tooltipRect.sizeDelta = preferredSize + tooltipPadding * 2f;
+        tooltipRect.gameObject.SetActive(true);
+        UpdateTooltipPosition();
+    }
+
+    public void HideTooltip()
+    {
+        if (tooltipRect != null)
+            tooltipRect.gameObject.SetActive(false);
+    }
+
+    private void UpdateTooltipPosition()
+    {
+        if (tooltipRect == null || !tooltipRect.gameObject.activeSelf || Mouse.current == null)
+            return;
+
+        RectTransform canvasRect = overlayCanvas.transform as RectTransform;
+        if (canvasRect == null)
+            return;
+
+        Vector2 screenPoint = Mouse.current.position.ReadValue() + tooltipOffset;
+        RectTransformUtility.ScreenPointToLocalPointInRectangle(canvasRect, screenPoint, null, out Vector2 localPoint);
+        tooltipRect.anchoredPosition = localPoint;
     }
 
     private void AddFallbackButtonText(Transform parent, string text)
@@ -398,12 +505,13 @@ public sealed class InventoryDialogUI : MonoBehaviour
             previewedItem = null;
             DestroyPreviewClone();
         }
+
+        ClearPreviewTexture();
     }
 
     private ContainerModule GetCurrentContainer()
     {
-        Dir dir = Dir.Instance;
-        WorldObject controlledObject = dir != null && dir.playerPack != null ? dir.playerPack.packLeader : null;
+        WorldObject controlledObject = GetCurrentControlledWorldObject();
         if (controlledObject == null)
             return null;
 
@@ -411,6 +519,21 @@ public sealed class InventoryDialogUI : MonoBehaviour
             controlledObject.CreateModulesIfNeeded(ModuleFlags.containerModule);
 
         return controlledObject.containerModule;
+    }
+
+    private WorldObject GetCurrentControlledWorldObject()
+    {
+        Dir dir = Dir.Instance;
+        return dir != null && dir.playerPack != null ? dir.playerPack.packLeader : null;
+    }
+
+    private WorldObject GetSelectedHeldItem()
+    {
+        if (displayedContainer == null || displayedContainer.HeldItemCount <= 0)
+            return null;
+
+        selectedIndex = Mathf.Clamp(selectedIndex, 0, displayedContainer.HeldItemCount - 1);
+        return displayedContainer.HeldItems[selectedIndex];
     }
 
     private void OnPreviousItemClicked()
@@ -456,6 +579,33 @@ public sealed class InventoryDialogUI : MonoBehaviour
 
     private void OnDropClicked()
     {
+        if (displayedContainer == null)
+            return;
+
+        WorldObject item = GetSelectedHeldItem();
+        WorldObject carrier = GetCurrentControlledWorldObject();
+        if (item == null || carrier == null)
+            return;
+
+        Vector3 dropDirection = carrier.transform.forward;
+        dropDirection.y = 0f;
+        if (dropDirection.sqrMagnitude < 0.001f)
+            dropDirection = Vector3.forward;
+        dropDirection.Normalize();
+
+        float dropDistance = Mathf.Max(0.65f, carrier.sizeRadius + item.sizeRadius + 0.2f);
+        Vector3 dropPosition = carrier.transform.position + dropDirection * dropDistance;
+        dropPosition.y = carrier.transform.position.y;
+
+        if (!displayedContainer.DropItemOnGround(item, dropPosition, out string reason))
+        {
+            Debug.LogWarning($"InventoryDialogUI: failed to drop {item.DisplayName}: {reason}", this);
+            return;
+        }
+
+        BottomBanner.Show($"{carrier.DisplayName} dropped {item.DisplayName}");
+        selectedIndex = Mathf.Clamp(selectedIndex, 0, displayedContainer.HeldItemCount - 1);
+        RefreshInventoryView(forcePreviewRefresh: true);
     }
 
     private void OnPickUpClicked()
@@ -590,10 +740,22 @@ public sealed class InventoryDialogUI : MonoBehaviour
             return;
 
         float distance = Mathf.Max(2f, framingRadius * 4f);
-        previewCamera.transform.position = PreviewAnchorPosition + new Vector3(0f, framingRadius * 0.25f, -distance);
-        previewCamera.transform.LookAt(PreviewAnchorPosition + new Vector3(0f, framingRadius * 0.15f, 0f));
+        float cameraHeight = Mathf.Tan(previewViewAngleDegrees * Mathf.Deg2Rad) * distance;
+        previewCamera.transform.position = PreviewAnchorPosition + new Vector3(0f, cameraHeight, -distance);
+        previewCamera.transform.LookAt(PreviewAnchorPosition + new Vector3(0f, framingRadius * 0.1f, 0f));
         previewCamera.orthographicSize = framingRadius * 1.45f;
         previewCamera.Render();
+    }
+
+    private void ClearPreviewTexture()
+    {
+        if (previewTexture == null)
+            return;
+
+        RenderTexture previousActiveTexture = RenderTexture.active;
+        RenderTexture.active = previewTexture;
+        GL.Clear(true, true, Color.clear);
+        RenderTexture.active = previousActiveTexture;
     }
 
     private static GameObject CreateVisualClone(GameObject sourceRoot)
@@ -803,5 +965,27 @@ public static class InventoryDialogBootstrap
 
         GameObject inventoryDialogObject = new("InventoryDialogUI");
         inventoryDialogObject.AddComponent<InventoryDialogUI>();
+    }
+}
+
+public sealed class InventoryDialogTooltipTrigger : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
+{
+    private InventoryDialogUI owner;
+    private string tooltipText;
+
+    public void Initialize(InventoryDialogUI owner, string tooltipText)
+    {
+        this.owner = owner;
+        this.tooltipText = tooltipText;
+    }
+
+    public void OnPointerEnter(PointerEventData eventData)
+    {
+        owner?.ShowTooltip(tooltipText);
+    }
+
+    public void OnPointerExit(PointerEventData eventData)
+    {
+        owner?.HideTooltip();
     }
 }

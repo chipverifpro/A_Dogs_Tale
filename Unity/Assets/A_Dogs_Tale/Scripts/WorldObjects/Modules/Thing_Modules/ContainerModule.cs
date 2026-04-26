@@ -30,6 +30,9 @@ namespace DogGame.Modules
         [Min(0)] public int dogItemCapacity = 1;
         [Min(0)] public int humanItemCapacity = 2;
 
+        private readonly HashSet<WorldObject> autoPickupSuppressedItems = new();
+        private readonly List<WorldObject> autoPickupSuppressionPruneBuffer = new();
+
         public IReadOnlyList<WorldObject> HeldItems => heldItems;
         public int HeldItemCount => heldItems.Count;
         public bool IsFull => heldItems.Count >= itemCapacity;
@@ -161,6 +164,7 @@ namespace DogGame.Modules
                 return false;
 
             heldItems.Add(item);
+            autoPickupSuppressedItems.Remove(item);
             ApplyHeldItemState(item);
             return true;
         }
@@ -190,6 +194,21 @@ namespace DogGame.Modules
             }
 
             ReleaseHeldItemState(item);
+            reason = string.Empty;
+            return true;
+        }
+
+        public bool DropItemOnGround(WorldObject item, Vector3 worldPosition, out string reason)
+        {
+            if (!ReleaseItem(item, out reason))
+                return false;
+
+            item.transform.position = worldPosition;
+            item.transform.SetParent(null, true);
+            SetItemVisible(item, true);
+            SetItemCollidersEnabled(item, true);
+            SuppressAutoPickupUntilSeparated(item);
+
             reason = string.Empty;
             return true;
         }
@@ -366,6 +385,13 @@ namespace DogGame.Modules
                 renderers[i].enabled = visible;
         }
 
+        private static void SetItemCollidersEnabled(WorldObject item, bool enabled)
+        {
+            Collider[] colliders = item.GetComponentsInChildren<Collider>(true);
+            for (int i = 0; i < colliders.Length; i++)
+                colliders[i].enabled = enabled;
+        }
+
         private void ConfigureAgentCapacityIfNeeded()
         {
             if (!autoConfigureAgentCapacity || !IsAgentContainer())
@@ -407,6 +433,8 @@ namespace DogGame.Modules
 
             float pickupRadiusSqr = pickupRadiusTiles * pickupRadiusTiles;
             Vector3 agentPosition = worldObject.pos3d_map;
+            PruneAutoPickupSuppression(agentPosition, pickupRadiusSqr);
+
             WorldObject nearestItem = null;
             float nearestDistanceSqr = float.PositiveInfinity;
 
@@ -439,6 +467,9 @@ namespace DogGame.Modules
             if (!candidate.gameObject.activeInHierarchy)
                 return false;
 
+            if (autoPickupSuppressedItems.Contains(candidate))
+                return false;
+
             if (candidate.transform.parent != null &&
                 candidate.transform.parent.GetComponentInParent<WorldObject>() != null)
             {
@@ -446,6 +477,38 @@ namespace DogGame.Modules
             }
 
             return !ContainsItem(candidate);
+        }
+
+        private void SuppressAutoPickupUntilSeparated(WorldObject item)
+        {
+            if (item != null)
+                autoPickupSuppressedItems.Add(item);
+        }
+
+        private void PruneAutoPickupSuppression(Vector3 agentPosition, float pickupRadiusSqr)
+        {
+            if (autoPickupSuppressedItems.Count == 0)
+                return;
+
+            autoPickupSuppressionPruneBuffer.Clear();
+            foreach (WorldObject item in autoPickupSuppressedItems)
+            {
+                if (item == null || !item.gameObject.activeInHierarchy)
+                {
+                    autoPickupSuppressionPruneBuffer.Add(item);
+                    continue;
+                }
+
+                Vector3 delta = item.pos3d_map - agentPosition;
+                delta.y = 0f;
+                if (delta.sqrMagnitude > pickupRadiusSqr)
+                    autoPickupSuppressionPruneBuffer.Add(item);
+            }
+
+            for (int i = 0; i < autoPickupSuppressionPruneBuffer.Count; i++)
+                autoPickupSuppressedItems.Remove(autoPickupSuppressionPruneBuffer[i]);
+
+            autoPickupSuppressionPruneBuffer.Clear();
         }
 
         private bool IsAgentContainer()
