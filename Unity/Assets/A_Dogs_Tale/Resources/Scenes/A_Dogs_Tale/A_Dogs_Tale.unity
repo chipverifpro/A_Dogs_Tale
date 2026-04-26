@@ -5667,10 +5667,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4e8ae2607ef234a90bf3971761052f8b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  hf_valid: 1
   dir: {fileID: 1920128612}
   cfg: {fileID: 11400000, guid: 2050485d3f2754bfcb547b81523f9099, type: 2}
   buildComplete: 0
+  hf_valid: 1
   room_rects: []
   room_rects_heights: 
   room_rects_color: []
@@ -5716,12 +5716,16 @@ MonoBehaviour:
   doorsName: Doors3D
   rngSeed: 0
   elementStore: {fileID: 11400000, guid: 12ce8f64c30bc4bbfa007792bc781b21, type: 2}
+  checkerFloorStrength: 0.1
+  mergeFlatSurfaceTiles: 1
+  minMergedSurfaceArea: 2
+  mergeContinuousWalls: 1
+  minMergedWallLength: 2
+  ceilingZOffset: 0
+  wallInsetIntoRoom: 0.05
   wallpaperResourcesPath: Sprites/Wallpaper
   wallpaperResourcesPath_mirror: Sprites/Wallpaper_Mirror
-  checkerFloorStrength: 0.1
-  ceilingZOffset: 0
   applyWallpaperOnWallTiles: 1
-  wallInsetIntoRoom: 0.05
 --- !u!1 &419386528 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 1527881004230699645, guid: 66f01a8db88f9644baed659d1f91cdca,
@@ -10459,6 +10463,7 @@ MonoBehaviour:
   minSplashSeconds: 1.5
   fadeDuration: 1
   allowSkip: 1
+  returnToTitleKey: 127
   splashImage: {fileID: 1088835539}
   splashResourceFolder: Images
   splashCount: 10
@@ -14624,7 +14629,7 @@ PrefabInstance:
     - target: {fileID: 186757882122740016, guid: bcc8732b8b44622449c23934f89e68c0,
         type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 710636224206764938, guid: bcc8732b8b44622449c23934f89e68c0,
         type: 3}
@@ -20852,6 +20857,11 @@ MonoBehaviour:
   isLocked: 0
   isClosed: 0
   heldItems: []
+  autoPickupNearbyItems: 1
+  pickupRadiusTiles: 1
+  autoConfigureAgentCapacity: 1
+  dogItemCapacity: 1
+  humanItemCapacity: 2
 --- !u!114 &1651296817
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -29021,6 +29031,11 @@ MonoBehaviour:
   isLocked: 0
   isClosed: 0
   heldItems: []
+  autoPickupNearbyItems: 1
+  pickupRadiusTiles: 1
+  autoConfigureAgentCapacity: 1
+  dogItemCapacity: 1
+  humanItemCapacity: 2
 --- !u!114 &6544990386685219179
 MonoBehaviour:
   m_ObjectHideFlags: 0
