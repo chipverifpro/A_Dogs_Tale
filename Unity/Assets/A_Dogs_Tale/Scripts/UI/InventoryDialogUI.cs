@@ -12,10 +12,12 @@ using UnityEngine.UI;
 public sealed class InventoryDialogUI : MonoBehaviour
 {
     private static readonly Vector3 PreviewAnchorPosition = new(60000f, 60000f, 60000f);
+    private static readonly Vector3 TradePartnerPreviewAnchorPosition = new(61000f, 60000f, 60000f);
 
     [Header("Resources")]
     [SerializeField] private string arrowsSpriteResourcePath = "Sprites/ArrowsSpriteSheetA";
     [SerializeField] private string inventoryActionsSpriteResourcePath = "Sprites/InventoryActionsSheetA";
+    [SerializeField] private string takeItemSpriteResourcePath = "Sprites/TakeItemSpriteSheet";
 
     [Header("Layout")]
     [SerializeField] private int uiSortOrder = 5300;
@@ -24,18 +26,22 @@ public sealed class InventoryDialogUI : MonoBehaviour
     [SerializeField] private float actionButtonHeight = 112f;
     [SerializeField] private float previewSpinDegreesPerSecond = 24f;
     [SerializeField, Range(0f, 85f)] private float previewViewAngleDegrees = 30f;
+    [SerializeField, Min(0f)] private float tradePartnerSearchRadiusTiles = 2f;
     [SerializeField] private Vector2 tooltipPadding = new(18f, 10f);
     [SerializeField] private Vector2 tooltipOffset = new(18f, -18f);
 
     private readonly Dictionary<int, Sprite> arrowSprites = new();
     private readonly Dictionary<int, Sprite> actionSprites = new();
+    private readonly Dictionary<int, Sprite> takeItemSprites = new();
     private readonly List<Button> actionButtons = new();
 
     private Canvas overlayCanvas;
     private RectTransform dialogRect;
     private GameObject dialogRoot;
     private RawImage previewImage;
+    private RawImage tradePartnerPreviewImage;
     private TextMeshProUGUI itemNameLabel;
+    private TextMeshProUGUI tradePartnerNameLabel;
     private RectTransform tooltipRect;
     private TextMeshProUGUI tooltipLabel;
     private Button leftArrowButton;
@@ -48,8 +54,16 @@ public sealed class InventoryDialogUI : MonoBehaviour
     private Light previewLight;
     private float framingRadius = 1f;
 
+    private RenderTexture tradePartnerPreviewTexture;
+    private GameObject tradePartnerPreviewWorldRoot;
+    private GameObject tradePartnerPreviewClone;
+    private Camera tradePartnerPreviewCamera;
+    private Light tradePartnerPreviewLight;
+    private float tradePartnerFramingRadius = 1f;
+
     private int selectedIndex;
     private WorldObject previewedItem;
+    private WorldObject displayedTradePartner;
     private ContainerModule displayedContainer;
     private bool isOpen;
 
@@ -80,6 +94,7 @@ public sealed class InventoryDialogUI : MonoBehaviour
         RefreshInventoryView();
         UpdateTooltipPosition();
         SpinPreview();
+        SpinTradePartnerPreview();
     }
 
     private void OnDestroy()
@@ -87,6 +102,9 @@ public sealed class InventoryDialogUI : MonoBehaviour
         DestroyPreviewClone();
         DestroyPreviewWorld();
         ReleasePreviewTexture();
+        DestroyTradePartnerPreviewClone();
+        DestroyTradePartnerPreviewWorld();
+        ReleaseTradePartnerPreviewTexture();
     }
 
     public void Toggle()
@@ -110,6 +128,7 @@ public sealed class InventoryDialogUI : MonoBehaviour
         isOpen = false;
         selectedIndex = 0;
         previewedItem = null;
+        displayedTradePartner = null;
         displayedContainer = null;
 
         if (dialogRoot != null)
@@ -117,6 +136,7 @@ public sealed class InventoryDialogUI : MonoBehaviour
 
         HideTooltip();
         DestroyPreviewClone();
+        DestroyTradePartnerPreviewClone();
     }
 
     private bool WasInventoryTogglePressedThisFrame()
@@ -175,6 +195,7 @@ public sealed class InventoryDialogUI : MonoBehaviour
         BuildActionButtons(dialogRoot.transform);
         BuildTooltip(canvasObject.transform);
         EnsurePreviewWorld();
+        EnsureTradePartnerPreviewWorld();
     }
 
     private void BuildHeader(Transform parent)
@@ -221,10 +242,14 @@ public sealed class InventoryDialogUI : MonoBehaviour
         Image previewBackground = previewPanel.AddComponent<Image>();
         previewBackground.color = new Color(0.97f, 0.91f, 0.74f, 0.12f);
 
-        GameObject rawImageObject = CreateUIObject("ItemPreview", previewPanel.transform);
+        GameObject heldItemPane = CreatePreviewPane("HeldItemPane", previewPanel.transform, new Vector2(0f, 0f), new Vector2(0.5f, 1f), new Vector2(18f, 12f), new Vector2(-10f, -12f));
+        GameObject tradePartnerPane = CreatePreviewPane("TradePartnerPane", previewPanel.transform, new Vector2(0.5f, 0f), new Vector2(1f, 1f), new Vector2(10f, 12f), new Vector2(-18f, -12f));
+        CreatePreviewDivider(previewPanel.transform);
+
+        GameObject rawImageObject = CreateUIObject("ItemPreview", heldItemPane.transform);
         RectTransform rawImageRect = rawImageObject.GetComponent<RectTransform>();
-        rawImageRect.anchorMin = new Vector2(0.18f, 0.17f);
-        rawImageRect.anchorMax = new Vector2(0.82f, 0.92f);
+        rawImageRect.anchorMin = new Vector2(0.16f, 0.22f);
+        rawImageRect.anchorMax = new Vector2(0.84f, 0.92f);
         rawImageRect.offsetMin = Vector2.zero;
         rawImageRect.offsetMax = Vector2.zero;
 
@@ -236,7 +261,22 @@ public sealed class InventoryDialogUI : MonoBehaviour
         previewAspect.aspectMode = AspectRatioFitter.AspectMode.FitInParent;
         previewAspect.aspectRatio = 1f;
 
-        GameObject labelObject = CreateUIObject("ItemName", previewPanel.transform);
+        GameObject tradePartnerRawImageObject = CreateUIObject("TradePartnerPreview", tradePartnerPane.transform);
+        RectTransform tradePartnerRawImageRect = tradePartnerRawImageObject.GetComponent<RectTransform>();
+        tradePartnerRawImageRect.anchorMin = new Vector2(0.16f, 0.22f);
+        tradePartnerRawImageRect.anchorMax = new Vector2(0.84f, 0.92f);
+        tradePartnerRawImageRect.offsetMin = Vector2.zero;
+        tradePartnerRawImageRect.offsetMax = Vector2.zero;
+
+        tradePartnerPreviewImage = tradePartnerRawImageObject.AddComponent<RawImage>();
+        tradePartnerPreviewImage.raycastTarget = false;
+        tradePartnerPreviewImage.color = Color.white;
+
+        AspectRatioFitter tradePartnerPreviewAspect = tradePartnerRawImageObject.AddComponent<AspectRatioFitter>();
+        tradePartnerPreviewAspect.aspectMode = AspectRatioFitter.AspectMode.FitInParent;
+        tradePartnerPreviewAspect.aspectRatio = 1f;
+
+        GameObject labelObject = CreateUIObject("ItemName", heldItemPane.transform);
         RectTransform labelRect = labelObject.GetComponent<RectTransform>();
         labelRect.anchorMin = new Vector2(0f, 0f);
         labelRect.anchorMax = new Vector2(1f, 0f);
@@ -249,9 +289,22 @@ public sealed class InventoryDialogUI : MonoBehaviour
         itemNameLabel.color = new Color(0.98f, 0.93f, 0.78f, 1f);
         itemNameLabel.alignment = TextAlignmentOptions.Center;
 
+        GameObject tradePartnerLabelObject = CreateUIObject("TradePartnerName", tradePartnerPane.transform);
+        RectTransform tradePartnerLabelRect = tradePartnerLabelObject.GetComponent<RectTransform>();
+        tradePartnerLabelRect.anchorMin = new Vector2(0f, 0f);
+        tradePartnerLabelRect.anchorMax = new Vector2(1f, 0f);
+        tradePartnerLabelRect.pivot = new Vector2(0.5f, 0f);
+        tradePartnerLabelRect.offsetMin = new Vector2(24f, 16f);
+        tradePartnerLabelRect.offsetMax = new Vector2(-24f, 58f);
+
+        tradePartnerNameLabel = tradePartnerLabelObject.AddComponent<TextMeshProUGUI>();
+        tradePartnerNameLabel.fontSize = 24f;
+        tradePartnerNameLabel.color = new Color(0.98f, 0.93f, 0.78f, 1f);
+        tradePartnerNameLabel.alignment = TextAlignmentOptions.Center;
+
         leftArrowButton = CreateSpriteButton(
             "PreviousItemButton",
-            previewPanel.transform,
+            heldItemPane.transform,
             arrowSprites.TryGetValue(0, out Sprite leftSprite) ? leftSprite : null,
             "<",
             OnPreviousItemClicked,
@@ -261,12 +314,12 @@ public sealed class InventoryDialogUI : MonoBehaviour
         leftRect.anchorMin = new Vector2(0f, 0.5f);
         leftRect.anchorMax = new Vector2(0f, 0.5f);
         leftRect.pivot = new Vector2(0f, 0.5f);
-        leftRect.anchoredPosition = new Vector2(22f, 18f);
+        leftRect.anchoredPosition = new Vector2(18f, 18f);
         leftRect.sizeDelta = new Vector2(82f, 82f);
 
         rightArrowButton = CreateSpriteButton(
             "NextItemButton",
-            previewPanel.transform,
+            heldItemPane.transform,
             arrowSprites.TryGetValue(1, out Sprite rightSprite) ? rightSprite : null,
             ">",
             OnNextItemClicked,
@@ -276,8 +329,43 @@ public sealed class InventoryDialogUI : MonoBehaviour
         rightRect.anchorMin = new Vector2(1f, 0.5f);
         rightRect.anchorMax = new Vector2(1f, 0.5f);
         rightRect.pivot = new Vector2(1f, 0.5f);
-        rightRect.anchoredPosition = new Vector2(-22f, 18f);
+        rightRect.anchoredPosition = new Vector2(-18f, 18f);
         rightRect.sizeDelta = new Vector2(82f, 82f);
+    }
+
+    private GameObject CreatePreviewPane(
+        string objectName,
+        Transform parent,
+        Vector2 anchorMin,
+        Vector2 anchorMax,
+        Vector2 offsetMin,
+        Vector2 offsetMax)
+    {
+        GameObject pane = CreateUIObject(objectName, parent);
+        RectTransform paneRect = pane.GetComponent<RectTransform>();
+        paneRect.anchorMin = anchorMin;
+        paneRect.anchorMax = anchorMax;
+        paneRect.offsetMin = offsetMin;
+        paneRect.offsetMax = offsetMax;
+
+        Image paneBackground = pane.AddComponent<Image>();
+        paneBackground.color = new Color(0.02f, 0.018f, 0.014f, 0.12f);
+
+        return pane;
+    }
+
+    private void CreatePreviewDivider(Transform parent)
+    {
+        GameObject divider = CreateUIObject("PreviewDivider", parent);
+        RectTransform dividerRect = divider.GetComponent<RectTransform>();
+        dividerRect.anchorMin = new Vector2(0.5f, 0.08f);
+        dividerRect.anchorMax = new Vector2(0.5f, 0.92f);
+        dividerRect.pivot = new Vector2(0.5f, 0.5f);
+        dividerRect.sizeDelta = new Vector2(2f, 0f);
+        dividerRect.anchoredPosition = Vector2.zero;
+
+        Image dividerImage = divider.AddComponent<Image>();
+        dividerImage.color = new Color(0.98f, 0.93f, 0.78f, 0.28f);
     }
 
     private void BuildActionButtons(Transform parent)
@@ -298,18 +386,65 @@ public sealed class InventoryDialogUI : MonoBehaviour
         layout.childControlHeight = false;
         layout.childForceExpandWidth = true;
         layout.childForceExpandHeight = false;
-        layout.spacing = 18f;
+        layout.spacing = 0f;
         layout.padding = new RectOffset(16, 16, 16, 16);
 
-        Transform topRow = CreateActionButtonRow("ActionRowTop", actionPanel.transform);
-        Transform bottomRow = CreateActionButtonRow("ActionRowBottom", actionPanel.transform);
+        GameObject actionHalves = CreateUIObject("ActionHalves", actionPanel.transform);
+        RectTransform actionHalvesRect = actionHalves.GetComponent<RectTransform>();
+        actionHalvesRect.anchorMin = Vector2.zero;
+        actionHalvesRect.anchorMax = Vector2.one;
+        actionHalvesRect.offsetMin = Vector2.zero;
+        actionHalvesRect.offsetMax = Vector2.zero;
 
-        CreateActionButton(topRow, InventoryAction.Use, OnUseClicked);
-        CreateActionButton(topRow, InventoryAction.Eat, OnEatClicked);
-        CreateActionButton(topRow, InventoryAction.Give, OnGiveClicked);
-        CreateActionButton(bottomRow, InventoryAction.Trade, OnTradeClicked);
-        CreateActionButton(bottomRow, InventoryAction.Drop, OnDropClicked);
-        CreateActionButton(bottomRow, InventoryAction.PickUp, OnPickUpClicked);
+        LayoutElement halvesLayoutElement = actionHalves.AddComponent<LayoutElement>();
+        halvesLayoutElement.preferredHeight = actionButtonHeight * 2f + 18f;
+        halvesLayoutElement.minHeight = actionButtonHeight * 2f + 18f;
+
+        HorizontalLayoutGroup halvesLayout = actionHalves.AddComponent<HorizontalLayoutGroup>();
+        halvesLayout.childAlignment = TextAnchor.MiddleCenter;
+        halvesLayout.childControlWidth = true;
+        halvesLayout.childControlHeight = true;
+        halvesLayout.childForceExpandWidth = true;
+        halvesLayout.childForceExpandHeight = true;
+        halvesLayout.spacing = 28f;
+
+        Transform leftActionsPane = CreateActionPane("HeldItemActions", actionHalves.transform);
+        Transform rightActionsPane = CreateActionPane("TradePartnerActions", actionHalves.transform);
+
+        Transform leftTopRow = CreateActionButtonRow("HeldItemActionRowTop", leftActionsPane);
+        Transform leftBottomRow = CreateActionButtonRow("HeldItemActionRowBottom", leftActionsPane);
+        Transform rightTopRow = CreateActionButtonRow("TradePartnerActionRowTop", rightActionsPane);
+        Transform rightBottomRow = CreateActionButtonRow("TradePartnerActionRowBottom", rightActionsPane);
+
+        CreateActionButton(leftTopRow, InventoryAction.Use, OnUseClicked);
+        CreateActionButton(leftTopRow, InventoryAction.Eat, OnEatClicked);
+        CreateActionButton(leftBottomRow, InventoryAction.Drop, OnDropClicked);
+        CreateActionButton(leftBottomRow, InventoryAction.PickUp, OnPickUpClicked);
+
+        CreateActionButton(rightTopRow, InventoryAction.Give, OnGiveClicked);
+        CreateTakeItemButton(rightTopRow);
+        CreateActionButton(rightBottomRow, InventoryAction.Trade, OnTradeClicked);
+    }
+
+    private Transform CreateActionPane(string paneName, Transform parent)
+    {
+        GameObject paneObject = CreateUIObject(paneName, parent);
+        Image paneBackground = paneObject.AddComponent<Image>();
+        paneBackground.color = new Color(0.02f, 0.018f, 0.014f, 0.12f);
+
+        VerticalLayoutGroup paneLayout = paneObject.AddComponent<VerticalLayoutGroup>();
+        paneLayout.childAlignment = TextAnchor.MiddleCenter;
+        paneLayout.childControlWidth = true;
+        paneLayout.childControlHeight = false;
+        paneLayout.childForceExpandWidth = true;
+        paneLayout.childForceExpandHeight = false;
+        paneLayout.spacing = 18f;
+        paneLayout.padding = new RectOffset(10, 10, 0, 0);
+
+        LayoutElement paneLayoutElement = paneObject.AddComponent<LayoutElement>();
+        paneLayoutElement.flexibleWidth = 1f;
+
+        return paneObject.transform;
     }
 
     private Transform CreateActionButtonRow(string rowName, Transform parent)
@@ -336,6 +471,28 @@ public sealed class InventoryDialogUI : MonoBehaviour
         Sprite sprite = actionSprites.TryGetValue(index, out Sprite foundSprite) ? foundSprite : null;
         string actionText = GetActionFallbackText(action);
         Button button = CreateSpriteButton($"{action}Button", parent, sprite, actionText, clickHandler, actionText);
+
+        float width = actionButtonHeight;
+        if (sprite != null && sprite.rect.height > 0f)
+            width = actionButtonHeight * (sprite.rect.width / sprite.rect.height);
+
+        RectTransform rect = button.GetComponent<RectTransform>();
+        rect.sizeDelta = new Vector2(width, actionButtonHeight);
+
+        LayoutElement layoutElement = button.gameObject.AddComponent<LayoutElement>();
+        layoutElement.preferredWidth = width;
+        layoutElement.preferredHeight = actionButtonHeight;
+        layoutElement.minWidth = width;
+        layoutElement.minHeight = actionButtonHeight;
+
+        actionButtons.Add(button);
+    }
+
+    private void CreateTakeItemButton(Transform parent)
+    {
+        Sprite sprite = takeItemSprites.TryGetValue(0, out Sprite foundSprite) ? foundSprite : null;
+        string actionText = "TAKE ITEM";
+        Button button = CreateSpriteButton("TakeItemButton", parent, sprite, actionText, OnTakeItemClicked, actionText);
 
         float width = actionButtonHeight;
         if (sprite != null && sprite.rect.height > 0f)
@@ -475,6 +632,8 @@ public sealed class InventoryDialogUI : MonoBehaviour
             forcePreviewRefresh = true;
         }
 
+        RefreshTradePartnerView(forcePreviewRefresh);
+
         int itemCount = container != null ? container.HeldItemCount : 0;
         if (itemCount <= 0)
         {
@@ -509,6 +668,52 @@ public sealed class InventoryDialogUI : MonoBehaviour
         ClearPreviewTexture();
     }
 
+    private void RefreshTradePartnerView(bool forcePreviewRefresh = false)
+    {
+        WorldObject tradePartner = FindNearestTradePartner();
+        if (tradePartner != displayedTradePartner)
+        {
+            displayedTradePartner = tradePartner;
+            forcePreviewRefresh = true;
+        }
+
+        if (tradePartner == null)
+        {
+            SetNoTradePartnerState();
+            return;
+        }
+
+        tradePartnerNameLabel.text = BuildTradePartnerLabel(tradePartner);
+        if (forcePreviewRefresh || tradePartnerPreviewClone == null)
+            BuildTradePartnerPreviewClone(tradePartner);
+    }
+
+    private void SetNoTradePartnerState()
+    {
+        if (tradePartnerNameLabel != null)
+            tradePartnerNameLabel.text = "No one nearby";
+
+        if (displayedTradePartner != null || tradePartnerPreviewClone != null)
+        {
+            displayedTradePartner = null;
+            DestroyTradePartnerPreviewClone();
+        }
+
+        ClearTradePartnerPreviewTexture();
+    }
+
+    private string BuildTradePartnerLabel(WorldObject tradePartner)
+    {
+        if (tradePartner == null)
+            return "No one nearby";
+
+        ContainerModule container = tradePartner.containerModule;
+        if (container != null && container.HeldItemCount > 0 && container.HeldItems[0] != null)
+            return $"{tradePartner.DisplayName}\nHolding {container.HeldItems[0].DisplayName}";
+
+        return $"{tradePartner.DisplayName}\nHolding nothing";
+    }
+
     private ContainerModule GetCurrentContainer()
     {
         WorldObject controlledObject = GetCurrentControlledWorldObject();
@@ -525,6 +730,39 @@ public sealed class InventoryDialogUI : MonoBehaviour
     {
         Dir dir = Dir.Instance;
         return dir != null && dir.playerPack != null ? dir.playerPack.packLeader : null;
+    }
+
+    private WorldObject FindNearestTradePartner()
+    {
+        WorldObject controlledObject = GetCurrentControlledWorldObject();
+        WorldObjectRegistry registry = WorldObjectRegistry.Instance;
+        if (controlledObject == null || registry == null)
+            return null;
+
+        float radiusSqr = tradePartnerSearchRadiusTiles * tradePartnerSearchRadiusTiles;
+        Vector3 controlledPosition = controlledObject.pos3d_map;
+        WorldObject nearestPartner = null;
+        float nearestDistanceSqr = float.PositiveInfinity;
+
+        foreach (WorldObject candidate in registry.GetAllObjects())
+        {
+            if (candidate == null || candidate == controlledObject || !candidate.gameObject.activeInHierarchy)
+                continue;
+
+            if (candidate.Kind != WorldObjectKind.Agent && candidate.agentModule == null)
+                continue;
+
+            Vector3 delta = candidate.pos3d_map - controlledPosition;
+            delta.y = 0f;
+            float distanceSqr = delta.sqrMagnitude;
+            if (distanceSqr > radiusSqr || distanceSqr >= nearestDistanceSqr)
+                continue;
+
+            nearestPartner = candidate;
+            nearestDistanceSqr = distanceSqr;
+        }
+
+        return nearestPartner;
     }
 
     private WorldObject GetSelectedHeldItem()
@@ -573,6 +811,10 @@ public sealed class InventoryDialogUI : MonoBehaviour
     {
     }
 
+    private void OnTakeItemClicked()
+    {
+    }
+
     private void OnTradeClicked()
     {
     }
@@ -616,6 +858,7 @@ public sealed class InventoryDialogUI : MonoBehaviour
     {
         LoadSpriteSheet(arrowsSpriteResourcePath, arrowSprites);
         LoadSpriteSheet(inventoryActionsSpriteResourcePath, actionSprites);
+        LoadSpriteSheet(takeItemSpriteResourcePath, takeItemSprites);
     }
 
     private void LoadSpriteSheet(string resourcePath, Dictionary<int, Sprite> lookup)
@@ -758,6 +1001,131 @@ public sealed class InventoryDialogUI : MonoBehaviour
         RenderTexture.active = previousActiveTexture;
     }
 
+    private void EnsureTradePartnerPreviewWorld()
+    {
+        if (tradePartnerPreviewWorldRoot != null)
+            return;
+
+        tradePartnerPreviewWorldRoot = new GameObject("InventoryDialogTradePartnerPreviewWorld");
+        tradePartnerPreviewWorldRoot.hideFlags = HideFlags.HideAndDontSave;
+        tradePartnerPreviewWorldRoot.transform.position = TradePartnerPreviewAnchorPosition;
+
+        GameObject cameraObject = new("PreviewCamera");
+        cameraObject.hideFlags = HideFlags.HideAndDontSave;
+        cameraObject.transform.SetParent(tradePartnerPreviewWorldRoot.transform, false);
+        tradePartnerPreviewCamera = cameraObject.AddComponent<Camera>();
+        tradePartnerPreviewCamera.enabled = false;
+        tradePartnerPreviewCamera.clearFlags = CameraClearFlags.SolidColor;
+        tradePartnerPreviewCamera.backgroundColor = new Color(0f, 0f, 0f, 0f);
+        tradePartnerPreviewCamera.orthographic = true;
+        tradePartnerPreviewCamera.nearClipPlane = 0.01f;
+        tradePartnerPreviewCamera.farClipPlane = 100f;
+
+        GameObject lightObject = new("PreviewLight");
+        lightObject.hideFlags = HideFlags.HideAndDontSave;
+        lightObject.transform.SetParent(tradePartnerPreviewWorldRoot.transform, false);
+        tradePartnerPreviewLight = lightObject.AddComponent<Light>();
+        tradePartnerPreviewLight.type = LightType.Directional;
+        tradePartnerPreviewLight.intensity = 1.25f;
+        tradePartnerPreviewLight.color = Color.white;
+        tradePartnerPreviewLight.shadows = LightShadows.None;
+        tradePartnerPreviewLight.transform.rotation = Quaternion.Euler(35f, 135f, 0f);
+
+        EnsureTradePartnerPreviewTexture();
+    }
+
+    private void EnsureTradePartnerPreviewTexture()
+    {
+        if (tradePartnerPreviewTexture != null)
+            return;
+
+        tradePartnerPreviewTexture = new RenderTexture(768, 768, 16, RenderTextureFormat.ARGB32);
+        tradePartnerPreviewTexture.name = "InventoryDialogTradePartnerPreviewRT";
+        tradePartnerPreviewTexture.Create();
+
+        tradePartnerPreviewImage.texture = tradePartnerPreviewTexture;
+        tradePartnerPreviewCamera.targetTexture = tradePartnerPreviewTexture;
+    }
+
+    private void BuildTradePartnerPreviewClone(WorldObject tradePartner)
+    {
+        DestroyTradePartnerPreviewClone();
+
+        if (tradePartner == null)
+            return;
+
+        EnsureTradePartnerPreviewWorld();
+        tradePartnerPreviewClone = CreateVisualClone(tradePartner.gameObject);
+        tradePartnerPreviewClone.name = $"{tradePartner.name}_InventoryTradePartnerPreview";
+        tradePartnerPreviewClone.hideFlags = HideFlags.HideAndDontSave;
+        tradePartnerPreviewClone.transform.SetParent(tradePartnerPreviewWorldRoot.transform, false);
+        tradePartnerPreviewClone.transform.position = TradePartnerPreviewAnchorPosition;
+
+        CenterTradePartnerPreviewClone(tradePartnerPreviewClone);
+        RenderTradePartnerPreview();
+    }
+
+    private void CenterTradePartnerPreviewClone(GameObject clone)
+    {
+        Renderer[] renderers = clone.GetComponentsInChildren<Renderer>(true);
+        if (renderers.Length == 0)
+        {
+            tradePartnerFramingRadius = 1f;
+            return;
+        }
+
+        Bounds bounds = renderers[0].bounds;
+        for (int i = 1; i < renderers.Length; i++)
+            bounds.Encapsulate(renderers[i].bounds);
+
+        clone.transform.position += TradePartnerPreviewAnchorPosition - bounds.center;
+
+        Bounds centeredBounds = renderers[0].bounds;
+        for (int i = 1; i < renderers.Length; i++)
+            centeredBounds.Encapsulate(renderers[i].bounds);
+
+        tradePartnerFramingRadius = Mathf.Max(centeredBounds.extents.y, Mathf.Max(centeredBounds.extents.x, centeredBounds.extents.z));
+        if (tradePartnerFramingRadius < 0.1f)
+            tradePartnerFramingRadius = 0.5f;
+    }
+
+    private void SpinTradePartnerPreview()
+    {
+        if (tradePartnerPreviewClone == null)
+            return;
+
+        tradePartnerPreviewClone.transform.RotateAround(
+            TradePartnerPreviewAnchorPosition,
+            Vector3.up,
+            previewSpinDegreesPerSecond * Time.unscaledDeltaTime);
+
+        RenderTradePartnerPreview();
+    }
+
+    private void RenderTradePartnerPreview()
+    {
+        if (tradePartnerPreviewCamera == null)
+            return;
+
+        float distance = Mathf.Max(2f, tradePartnerFramingRadius * 4f);
+        float cameraHeight = Mathf.Tan(previewViewAngleDegrees * Mathf.Deg2Rad) * distance;
+        tradePartnerPreviewCamera.transform.position = TradePartnerPreviewAnchorPosition + new Vector3(0f, cameraHeight, -distance);
+        tradePartnerPreviewCamera.transform.LookAt(TradePartnerPreviewAnchorPosition + new Vector3(0f, tradePartnerFramingRadius * 0.1f, 0f));
+        tradePartnerPreviewCamera.orthographicSize = tradePartnerFramingRadius * 1.45f;
+        tradePartnerPreviewCamera.Render();
+    }
+
+    private void ClearTradePartnerPreviewTexture()
+    {
+        if (tradePartnerPreviewTexture == null)
+            return;
+
+        RenderTexture previousActiveTexture = RenderTexture.active;
+        RenderTexture.active = tradePartnerPreviewTexture;
+        GL.Clear(true, true, Color.clear);
+        RenderTexture.active = previousActiveTexture;
+    }
+
     private static GameObject CreateVisualClone(GameObject sourceRoot)
     {
         Dictionary<Transform, Transform> transformMap = new();
@@ -893,6 +1261,54 @@ public sealed class InventoryDialogUI : MonoBehaviour
         }
 
         previewTexture = null;
+    }
+
+    private void DestroyTradePartnerPreviewClone()
+    {
+        if (tradePartnerPreviewClone == null)
+            return;
+
+        if (Application.isPlaying)
+            Destroy(tradePartnerPreviewClone);
+        else
+            DestroyImmediate(tradePartnerPreviewClone);
+
+        tradePartnerPreviewClone = null;
+    }
+
+    private void DestroyTradePartnerPreviewWorld()
+    {
+        if (tradePartnerPreviewWorldRoot == null)
+            return;
+
+        if (Application.isPlaying)
+            Destroy(tradePartnerPreviewWorldRoot);
+        else
+            DestroyImmediate(tradePartnerPreviewWorldRoot);
+
+        tradePartnerPreviewWorldRoot = null;
+        tradePartnerPreviewCamera = null;
+        tradePartnerPreviewLight = null;
+    }
+
+    private void ReleaseTradePartnerPreviewTexture()
+    {
+        if (tradePartnerPreviewCamera != null)
+            tradePartnerPreviewCamera.targetTexture = null;
+
+        if (tradePartnerPreviewImage != null)
+            tradePartnerPreviewImage.texture = null;
+
+        if (tradePartnerPreviewTexture != null)
+        {
+            tradePartnerPreviewTexture.Release();
+            if (Application.isPlaying)
+                Destroy(tradePartnerPreviewTexture);
+            else
+                DestroyImmediate(tradePartnerPreviewTexture);
+        }
+
+        tradePartnerPreviewTexture = null;
     }
 
     private static void EnsureEventSystem()
