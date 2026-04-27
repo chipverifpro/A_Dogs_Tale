@@ -17,7 +17,7 @@ public sealed class InventoryDialogUI : MonoBehaviour
     [Header("Resources")]
     [SerializeField] private string arrowsSpriteResourcePath = "Sprites/ArrowsSpriteSheetA";
     [SerializeField] private string inventoryActionsSpriteResourcePath = "Sprites/InventoryActionsSheetA";
-    [SerializeField] private string takeItemSpriteResourcePath = "Sprites/TakeItemSpriteSheet";
+    [SerializeField] private string takeItemSpriteResourcePath = "Sprites/TakeItemSpriteSheetA";
 
     [Header("Layout")]
     [SerializeField] private int uiSortOrder = 5300;
@@ -34,6 +34,7 @@ public sealed class InventoryDialogUI : MonoBehaviour
     private readonly Dictionary<int, Sprite> actionSprites = new();
     private readonly Dictionary<int, Sprite> takeItemSprites = new();
     private readonly List<Button> actionButtons = new();
+    private readonly List<TradeTargetOption> tradeTargetOptions = new();
 
     private Canvas overlayCanvas;
     private RectTransform dialogRect;
@@ -46,6 +47,8 @@ public sealed class InventoryDialogUI : MonoBehaviour
     private TextMeshProUGUI tooltipLabel;
     private Button leftArrowButton;
     private Button rightArrowButton;
+    private Button tradePartnerLeftArrowButton;
+    private Button tradePartnerRightArrowButton;
 
     private RenderTexture previewTexture;
     private GameObject previewWorldRoot;
@@ -62,10 +65,13 @@ public sealed class InventoryDialogUI : MonoBehaviour
     private float tradePartnerFramingRadius = 1f;
 
     private int selectedIndex;
+    private int selectedTradeTargetIndex;
     private WorldObject previewedItem;
     private WorldObject displayedTradePartner;
+    private WorldObject displayedTradePartnerItem;
     private ContainerModule displayedContainer;
     private bool isOpen;
+    private bool keepSelectedTradeTargetIndex;
 
     private enum InventoryAction
     {
@@ -75,6 +81,20 @@ public sealed class InventoryDialogUI : MonoBehaviour
         Trade = 3,
         Drop = 4,
         PickUp = 5
+    }
+
+    private readonly struct TradeTargetOption
+    {
+        public TradeTargetOption(WorldObject agent, WorldObject item, float distanceSqr)
+        {
+            Agent = agent;
+            Item = item;
+            DistanceSqr = distanceSqr;
+        }
+
+        public WorldObject Agent { get; }
+        public WorldObject Item { get; }
+        public float DistanceSqr { get; }
     }
 
     private void Awake()
@@ -127,8 +147,10 @@ public sealed class InventoryDialogUI : MonoBehaviour
     {
         isOpen = false;
         selectedIndex = 0;
+        selectedTradeTargetIndex = 0;
         previewedItem = null;
         displayedTradePartner = null;
+        displayedTradePartnerItem = null;
         displayedContainer = null;
 
         if (dialogRoot != null)
@@ -302,6 +324,36 @@ public sealed class InventoryDialogUI : MonoBehaviour
         tradePartnerNameLabel.color = new Color(0.98f, 0.93f, 0.78f, 1f);
         tradePartnerNameLabel.alignment = TextAlignmentOptions.Center;
 
+        tradePartnerLeftArrowButton = CreateSpriteButton(
+            "PreviousTradeTargetButton",
+            tradePartnerPane.transform,
+            arrowSprites.TryGetValue(0, out Sprite tradeLeftSprite) ? tradeLeftSprite : null,
+            "<",
+            OnPreviousTradeTargetClicked,
+            "Previous trade target");
+
+        RectTransform tradeLeftRect = tradePartnerLeftArrowButton.GetComponent<RectTransform>();
+        tradeLeftRect.anchorMin = new Vector2(0f, 0.5f);
+        tradeLeftRect.anchorMax = new Vector2(0f, 0.5f);
+        tradeLeftRect.pivot = new Vector2(0f, 0.5f);
+        tradeLeftRect.anchoredPosition = new Vector2(18f, 18f);
+        tradeLeftRect.sizeDelta = new Vector2(82f, 82f);
+
+        tradePartnerRightArrowButton = CreateSpriteButton(
+            "NextTradeTargetButton",
+            tradePartnerPane.transform,
+            arrowSprites.TryGetValue(1, out Sprite tradeRightSprite) ? tradeRightSprite : null,
+            ">",
+            OnNextTradeTargetClicked,
+            "Next trade target");
+
+        RectTransform tradeRightRect = tradePartnerRightArrowButton.GetComponent<RectTransform>();
+        tradeRightRect.anchorMin = new Vector2(1f, 0.5f);
+        tradeRightRect.anchorMax = new Vector2(1f, 0.5f);
+        tradeRightRect.pivot = new Vector2(1f, 0.5f);
+        tradeRightRect.anchoredPosition = new Vector2(-18f, 18f);
+        tradeRightRect.sizeDelta = new Vector2(82f, 82f);
+
         leftArrowButton = CreateSpriteButton(
             "PreviousItemButton",
             heldItemPane.transform,
@@ -421,9 +473,9 @@ public sealed class InventoryDialogUI : MonoBehaviour
         CreateActionButton(leftBottomRow, InventoryAction.Drop, OnDropClicked);
         CreateActionButton(leftBottomRow, InventoryAction.PickUp, OnPickUpClicked);
 
-        CreateActionButton(rightTopRow, InventoryAction.Give, OnGiveClicked);
-        CreateTakeItemButton(rightTopRow);
-        CreateActionButton(rightBottomRow, InventoryAction.Trade, OnTradeClicked);
+        CreateTradePartnerActionButton(rightTopRow, "GiveButton", 2, "GIVE", OnGiveClicked);
+        CreateTradePartnerActionButton(rightTopRow, "TakeItemButton", 1, "TAKE ITEM", OnTakeItemClicked);
+        CreateTradePartnerActionButton(rightBottomRow, "TradeButton", 0, "TRADE", OnTradeClicked);
     }
 
     private Transform CreateActionPane(string paneName, Transform parent)
@@ -488,11 +540,15 @@ public sealed class InventoryDialogUI : MonoBehaviour
         actionButtons.Add(button);
     }
 
-    private void CreateTakeItemButton(Transform parent)
+    private void CreateTradePartnerActionButton(
+        Transform parent,
+        string objectName,
+        int spriteIndex,
+        string actionText,
+        UnityEngine.Events.UnityAction clickHandler)
     {
-        Sprite sprite = takeItemSprites.TryGetValue(0, out Sprite foundSprite) ? foundSprite : null;
-        string actionText = "TAKE ITEM";
-        Button button = CreateSpriteButton("TakeItemButton", parent, sprite, actionText, OnTakeItemClicked, actionText);
+        Sprite sprite = takeItemSprites.TryGetValue(spriteIndex, out Sprite foundSprite) ? foundSprite : null;
+        Button button = CreateSpriteButton(objectName, parent, sprite, actionText, clickHandler, actionText);
 
         float width = actionButtonHeight;
         if (sprite != null && sprite.rect.height > 0f)
@@ -670,22 +726,34 @@ public sealed class InventoryDialogUI : MonoBehaviour
 
     private void RefreshTradePartnerView(bool forcePreviewRefresh = false)
     {
-        WorldObject tradePartner = FindNearestTradePartner();
-        if (tradePartner != displayedTradePartner)
-        {
-            displayedTradePartner = tradePartner;
-            forcePreviewRefresh = true;
-        }
-
-        if (tradePartner == null)
+        WorldObject previousPartner = displayedTradePartner;
+        WorldObject previousItem = displayedTradePartnerItem;
+        BuildTradeTargetOptions();
+        if (tradeTargetOptions.Count == 0)
         {
             SetNoTradePartnerState();
             return;
         }
 
-        tradePartnerNameLabel.text = BuildTradePartnerLabel(tradePartner);
-        if (forcePreviewRefresh || tradePartnerPreviewClone == null)
-            BuildTradePartnerPreviewClone(tradePartner);
+        int matchedIndex = FindTradeTargetOptionIndex(previousPartner, previousItem);
+        if (!keepSelectedTradeTargetIndex && matchedIndex >= 0)
+            selectedTradeTargetIndex = matchedIndex;
+        else
+            selectedTradeTargetIndex = Mathf.Clamp(selectedTradeTargetIndex, 0, tradeTargetOptions.Count - 1);
+        keepSelectedTradeTargetIndex = false;
+
+        TradeTargetOption selectedOption = tradeTargetOptions[selectedTradeTargetIndex];
+        bool selectedPartnerChanged = selectedOption.Agent != displayedTradePartner;
+        displayedTradePartner = selectedOption.Agent;
+        displayedTradePartnerItem = selectedOption.Item;
+
+        tradePartnerNameLabel.text = BuildTradePartnerLabel(selectedOption);
+        bool hasMultipleTradeTargets = tradeTargetOptions.Count > 1;
+        tradePartnerLeftArrowButton.gameObject.SetActive(hasMultipleTradeTargets);
+        tradePartnerRightArrowButton.gameObject.SetActive(hasMultipleTradeTargets);
+
+        if (forcePreviewRefresh || selectedPartnerChanged || tradePartnerPreviewClone == null)
+            BuildTradePartnerPreviewClone(selectedOption.Agent);
     }
 
     private void SetNoTradePartnerState()
@@ -693,25 +761,30 @@ public sealed class InventoryDialogUI : MonoBehaviour
         if (tradePartnerNameLabel != null)
             tradePartnerNameLabel.text = "No one nearby";
 
+        if (tradePartnerLeftArrowButton != null)
+            tradePartnerLeftArrowButton.gameObject.SetActive(false);
+        if (tradePartnerRightArrowButton != null)
+            tradePartnerRightArrowButton.gameObject.SetActive(false);
+
         if (displayedTradePartner != null || tradePartnerPreviewClone != null)
         {
             displayedTradePartner = null;
+            displayedTradePartnerItem = null;
             DestroyTradePartnerPreviewClone();
         }
 
         ClearTradePartnerPreviewTexture();
     }
 
-    private string BuildTradePartnerLabel(WorldObject tradePartner)
+    private string BuildTradePartnerLabel(TradeTargetOption option)
     {
-        if (tradePartner == null)
+        if (option.Agent == null)
             return "No one nearby";
 
-        ContainerModule container = tradePartner.containerModule;
-        if (container != null && container.HeldItemCount > 0 && container.HeldItems[0] != null)
-            return $"{tradePartner.DisplayName}\nHolding {container.HeldItems[0].DisplayName}";
+        if (option.Item != null)
+            return $"{option.Agent.DisplayName}\nHolding {option.Item.DisplayName}";
 
-        return $"{tradePartner.DisplayName}\nHolding nothing";
+        return $"{option.Agent.DisplayName}\nHolding nothing";
     }
 
     private ContainerModule GetCurrentContainer()
@@ -732,17 +805,17 @@ public sealed class InventoryDialogUI : MonoBehaviour
         return dir != null && dir.playerPack != null ? dir.playerPack.packLeader : null;
     }
 
-    private WorldObject FindNearestTradePartner()
+    private void BuildTradeTargetOptions()
     {
+        tradeTargetOptions.Clear();
+
         WorldObject controlledObject = GetCurrentControlledWorldObject();
         WorldObjectRegistry registry = WorldObjectRegistry.Instance;
         if (controlledObject == null || registry == null)
-            return null;
+            return;
 
         float radiusSqr = tradePartnerSearchRadiusTiles * tradePartnerSearchRadiusTiles;
         Vector3 controlledPosition = controlledObject.pos3d_map;
-        WorldObject nearestPartner = null;
-        float nearestDistanceSqr = float.PositiveInfinity;
 
         foreach (WorldObject candidate in registry.GetAllObjects())
         {
@@ -755,14 +828,57 @@ public sealed class InventoryDialogUI : MonoBehaviour
             Vector3 delta = candidate.pos3d_map - controlledPosition;
             delta.y = 0f;
             float distanceSqr = delta.sqrMagnitude;
-            if (distanceSqr > radiusSqr || distanceSqr >= nearestDistanceSqr)
+            if (distanceSqr > radiusSqr)
                 continue;
 
-            nearestPartner = candidate;
-            nearestDistanceSqr = distanceSqr;
+            ContainerModule container = candidate.containerModule;
+            if (container == null || container.HeldItemCount == 0)
+            {
+                tradeTargetOptions.Add(new TradeTargetOption(candidate, null, distanceSqr));
+                continue;
+            }
+
+            for (int i = 0; i < container.HeldItemCount; i++)
+            {
+                WorldObject item = container.HeldItems[i];
+                if (item != null)
+                    tradeTargetOptions.Add(new TradeTargetOption(candidate, item, distanceSqr));
+            }
         }
 
-        return nearestPartner;
+        tradeTargetOptions.Sort(CompareTradeTargetOptions);
+    }
+
+    private int FindTradeTargetOptionIndex(WorldObject agent, WorldObject item)
+    {
+        if (agent == null)
+            return -1;
+
+        for (int i = 0; i < tradeTargetOptions.Count; i++)
+        {
+            TradeTargetOption option = tradeTargetOptions[i];
+            if (option.Agent == agent && option.Item == item)
+                return i;
+        }
+
+        return -1;
+    }
+
+    private static int CompareTradeTargetOptions(TradeTargetOption a, TradeTargetOption b)
+    {
+        int distanceComparison = a.DistanceSqr.CompareTo(b.DistanceSqr);
+        if (distanceComparison != 0)
+            return distanceComparison;
+
+        string aName = a.Agent != null ? a.Agent.DisplayName : string.Empty;
+        string bName = b.Agent != null ? b.Agent.DisplayName : string.Empty;
+        int nameComparison = string.Compare(aName, bName, StringComparison.OrdinalIgnoreCase);
+        if (nameComparison != 0)
+            return nameComparison;
+
+        string aItemName = a.Item != null ? a.Item.DisplayName : string.Empty;
+        string bItemName = b.Item != null ? b.Item.DisplayName : string.Empty;
+        return string.Compare(aItemName, bItemName, StringComparison.OrdinalIgnoreCase);
     }
 
     private WorldObject GetSelectedHeldItem()
@@ -792,6 +908,26 @@ public sealed class InventoryDialogUI : MonoBehaviour
 
         selectedIndex = (selectedIndex + 1) % itemCount;
         RefreshInventoryView(forcePreviewRefresh: true);
+    }
+
+    private void OnPreviousTradeTargetClicked()
+    {
+        if (tradeTargetOptions.Count <= 1)
+            return;
+
+        selectedTradeTargetIndex = (selectedTradeTargetIndex - 1 + tradeTargetOptions.Count) % tradeTargetOptions.Count;
+        keepSelectedTradeTargetIndex = true;
+        RefreshTradePartnerView(forcePreviewRefresh: true);
+    }
+
+    private void OnNextTradeTargetClicked()
+    {
+        if (tradeTargetOptions.Count <= 1)
+            return;
+
+        selectedTradeTargetIndex = (selectedTradeTargetIndex + 1) % tradeTargetOptions.Count;
+        keepSelectedTradeTargetIndex = true;
+        RefreshTradePartnerView(forcePreviewRefresh: true);
     }
 
     private void OnCloseClicked()
