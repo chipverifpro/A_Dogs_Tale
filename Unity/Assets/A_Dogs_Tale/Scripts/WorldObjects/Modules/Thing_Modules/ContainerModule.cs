@@ -303,6 +303,40 @@ namespace DogGame.Modules
             return true;
         }
 
+        public bool TryPickupNearestItem(out WorldObject pickedUpItem, out string reason)
+        {
+            pickedUpItem = null;
+
+            if (!IsAgentContainer())
+            {
+                reason = $"{worldObject.DisplayName} cannot pick up items.";
+                return false;
+            }
+
+            if (IsFull)
+            {
+                reason = $"{worldObject.DisplayName} cannot carry any more items.";
+                return false;
+            }
+
+            if (!CanAccessContents(out reason))
+                return false;
+
+            WorldObject nearestItem = FindNearestPickupItem();
+            if (nearestItem == null)
+            {
+                reason = "No item close enough to pick up.";
+                return false;
+            }
+
+            if (!ReceiveItem(nearestItem, false, out reason))
+                return false;
+
+            pickedUpItem = nearestItem;
+            reason = string.Empty;
+            return true;
+        }
+
         public bool ContainsItem(WorldObject item)
         {
             return item != null && heldItems.Contains(item);
@@ -415,14 +449,10 @@ namespace DogGame.Modules
             if (!CanAccessContents(out _))
                 return;
 
-            WorldObject nearestItem = FindNearestPickupItem();
-            if (nearestItem == null)
+            if (!TryPickupNearestItem(out WorldObject pickedUpItem, out _))
                 return;
 
-            if (!ReceiveItem(nearestItem, false, out _))
-                return;
-
-            BottomBanner.Show($"{worldObject.DisplayName} picked up {nearestItem.DisplayName}");
+            BottomBanner.Show($"{worldObject.DisplayName} picked up {pickedUpItem.DisplayName}");
         }
 
         private WorldObject FindNearestPickupItem()

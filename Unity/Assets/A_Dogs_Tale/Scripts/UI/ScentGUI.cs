@@ -15,6 +15,7 @@ public class ScentGUI : MonoBehaviour
     private const string SpeedControlsContainerName = "SpeedControls";
     private const string SimulationControlsContainerName = "SimulationControls";
     private const string EmoteControlsContainerName = "EmoteControls";
+    private const string InventoryControlsContainerName = "InventoryControls";
     private const string TooltipContainerName = "Tooltips";
 
     [Header("External object references")]
@@ -29,6 +30,7 @@ public class ScentGUI : MonoBehaviour
     [SerializeField] private string emoteSheetAResourcePath = "Sprites/DogEmojiSheetA";
     [SerializeField] private string emoteSheetBResourcePath = "Sprites/DogEmojiSheetB";
     [SerializeField] private string emoteSheetCResourcePath = "Sprites/DogEmojiSheetC";
+    [SerializeField] private string inventoryActionSpriteResourcePath = "Sprites/InventoryActionsSheetA";
     [SerializeField] private float noseButtonSize = 176f;
     [SerializeField] private float noseButtonMargin = 24f;
     [SerializeField] private float modeButtonSpacing = 12f;
@@ -55,6 +57,7 @@ public class ScentGUI : MonoBehaviour
     private readonly Dictionary<AgentDecisionType, Sprite> modeSpriteLookup = new Dictionary<AgentDecisionType, Sprite>();
     private readonly Dictionary<WalkMode, Sprite> speedSpriteLookup = new Dictionary<WalkMode, Sprite>();
     private readonly Dictionary<int, Sprite> playPauseSpriteLookup = new Dictionary<int, Sprite>();
+    private readonly Dictionary<int, Sprite> inventoryActionSpriteLookup = new Dictionary<int, Sprite>();
     private readonly Dictionary<char, Dictionary<int, Sprite>> emoteSpriteLookupBySheet = new Dictionary<char, Dictionary<int, Sprite>>();
     private readonly List<GameObject> dropdownRows = new List<GameObject>();
     private readonly List<GameObject> emoteDropdownTiles = new List<GameObject>();
@@ -85,6 +88,9 @@ public class ScentGUI : MonoBehaviour
     private RectTransform emoteButtonRect;
     private Image emoteButtonImage;
     private Image emoteIconImage;
+    private RectTransform inventoryButtonRect;
+    private Image inventoryButtonImage;
+    private Image inventoryIconImage;
     private RectTransform emoteDropdownRect;
     private RectTransform emoteDropdownContentRect;
     private ScrollRect emoteDropdownScrollRect;
@@ -254,6 +260,7 @@ public class ScentGUI : MonoBehaviour
         Transform speedControlsTransform = EnsureSectionContainer(canvasObject.transform, SpeedControlsContainerName);
         Transform simulationControlsTransform = EnsureSectionContainer(canvasObject.transform, SimulationControlsContainerName);
         Transform emoteControlsTransform = EnsureSectionContainer(canvasObject.transform, EmoteControlsContainerName);
+        Transform inventoryControlsTransform = EnsureSectionContainer(canvasObject.transform, InventoryControlsContainerName);
         Transform tooltipTransform = EnsureSectionContainer(canvasObject.transform, TooltipContainerName);
 
         ReparentExistingUiElement(decisionModeControlsTransform, canvasObject.transform, "DecisionModeTitle");
@@ -263,6 +270,7 @@ public class ScentGUI : MonoBehaviour
         BuildSpeedButton(speedControlsTransform, canvasObject.transform);
         BuildSimulationButton(simulationControlsTransform, canvasObject.transform);
         BuildEmoteButton(emoteControlsTransform, canvasObject.transform);
+        BuildInventoryButton(inventoryControlsTransform, canvasObject.transform);
         BuildDropdown(scentControlsTransform, canvasObject.transform);
         BuildModePanel(decisionModeControlsTransform, canvasObject.transform);
         BuildSpeedPanel(speedControlsTransform, canvasObject.transform);
@@ -707,6 +715,77 @@ public class ScentGUI : MonoBehaviour
         RefreshEmoteButtonState(force: true);
 
         ConfigureTooltip(buttonObject, GetEmoteButtonTooltipText);
+    }
+
+    private void BuildInventoryButton(Transform parent, Transform searchRoot)
+    {
+        Transform existingButton = FindExistingUiElement(parent, searchRoot, "InventoryButton");
+        GameObject buttonObject;
+        bool createdButton = existingButton == null;
+        if (createdButton)
+        {
+            buttonObject = new GameObject(
+                "InventoryButton",
+                typeof(RectTransform),
+                typeof(Image),
+                typeof(Button));
+            buttonObject.transform.SetParent(parent, false);
+        }
+        else
+        {
+            buttonObject = existingButton.gameObject;
+        }
+
+        inventoryButtonRect = buttonObject.GetComponent<RectTransform>();
+        if (createdButton)
+        {
+            inventoryButtonRect.anchorMin = new Vector2(1f, 1f);
+            inventoryButtonRect.anchorMax = new Vector2(1f, 1f);
+            inventoryButtonRect.pivot = new Vector2(1f, 1f);
+            inventoryButtonRect.anchoredPosition = new Vector2(
+                -(noseButtonMargin + ((noseButtonSize + modeButtonSpacing) * 5f)),
+                -noseButtonMargin);
+            inventoryButtonRect.sizeDelta = new Vector2(noseButtonSize, noseButtonSize);
+        }
+
+        inventoryButtonImage = GetOrAddComponent<Image>(buttonObject);
+        inventoryButtonImage.color = noseButtonColor;
+        inventoryButtonImage.raycastTarget = true;
+
+        Button button = GetOrAddComponent<Button>(buttonObject);
+        button.targetGraphic = inventoryButtonImage;
+        button.onClick.RemoveListener(OpenInventoryDialog);
+        button.onClick.AddListener(OpenInventoryDialog);
+
+        Transform existingIcon = buttonObject.transform.Find("Icon");
+        GameObject iconObject;
+        bool createdIcon = existingIcon == null;
+        if (createdIcon)
+        {
+            iconObject = new GameObject("Icon", typeof(RectTransform), typeof(Image));
+            iconObject.transform.SetParent(buttonObject.transform, false);
+        }
+        else
+        {
+            iconObject = existingIcon.gameObject;
+        }
+
+        RectTransform iconRect = iconObject.GetComponent<RectTransform>();
+        if (createdIcon)
+        {
+            iconRect.anchorMin = new Vector2(0.5f, 0.5f);
+            iconRect.anchorMax = new Vector2(0.5f, 0.5f);
+            iconRect.pivot = new Vector2(0.5f, 0.5f);
+            iconRect.sizeDelta = Vector2.one * (noseButtonSize * 0.72f);
+            iconRect.anchoredPosition = Vector2.zero;
+        }
+
+        inventoryIconImage = GetOrAddComponent<Image>(iconObject);
+        inventoryIconImage.sprite = GetInventoryButtonSprite();
+        inventoryIconImage.preserveAspect = true;
+        inventoryIconImage.color = Color.white;
+
+        ConfigureTooltip(buttonObject, () => "Inventory");
     }
 
     private void BuildEmoteDropdown(Transform parent, Transform searchRoot)
@@ -1987,6 +2066,23 @@ public class ScentGUI : MonoBehaviour
         RefreshSimulationButtonState(force: true);
     }
 
+    private void OpenInventoryDialog()
+    {
+        CloseDropdown();
+        CloseModePanel();
+        CloseSpeedPanel();
+        CloseEmoteDropdown();
+
+        InventoryDialogUI inventoryDialog = FindFirstObjectByType<InventoryDialogUI>();
+        if (inventoryDialog == null)
+        {
+            GameObject inventoryDialogObject = new GameObject("InventoryDialogUI");
+            inventoryDialog = inventoryDialogObject.AddComponent<InventoryDialogUI>();
+        }
+
+        inventoryDialog.Show();
+    }
+
     private void RefreshSimulationButtonState(bool force = false)
     {
         if (simulationIconImage == null || simulationButtonImage == null)
@@ -2173,6 +2269,17 @@ public class ScentGUI : MonoBehaviour
         return null;
     }
 
+    private Sprite GetInventoryButtonSprite()
+    {
+        if (inventoryActionSpriteLookup.Count == 0)
+            LoadInventoryActionSprites();
+
+        if (inventoryActionSpriteLookup.TryGetValue(2, out Sprite sprite))
+            return sprite;
+
+        return null;
+    }
+
     private Sprite GetEmoteSprite(DogEmojiEntry entry)
     {
         if (!emoteSpriteLookupBySheet.TryGetValue(entry.SheetId, out Dictionary<int, Sprite> spriteLookup))
@@ -2300,6 +2407,31 @@ public class ScentGUI : MonoBehaviour
 
         if (playPauseSpriteLookup.Count == 0)
             Debug.LogWarning($"ScentGUI: loaded {sprites.Length} sprites from Resources/{resourcePath}, but none had numeric suffixes like '_0' or '_1'.", this);
+    }
+
+    private void LoadInventoryActionSprites()
+    {
+        string resourcePath = NormalizeResourcePath(inventoryActionSpriteResourcePath);
+        Sprite[] sprites = Resources.LoadAll<Sprite>(resourcePath);
+        if (sprites == null || sprites.Length == 0)
+        {
+            Debug.LogWarning($"ScentGUI: no inventory action sprites found at Resources/{resourcePath}. Make sure the path has no file extension and the texture is imported as Sprite Mode = Multiple.", this);
+            return;
+        }
+
+        for (int i = 0; i < sprites.Length; i++)
+        {
+            Sprite sprite = sprites[i];
+            if (sprite == null)
+                continue;
+
+            int index = GetSpriteSheetIndex(sprite.name);
+            if (index >= 0)
+                inventoryActionSpriteLookup[index] = sprite;
+        }
+
+        if (!inventoryActionSpriteLookup.ContainsKey(2))
+            Debug.LogWarning($"ScentGUI: loaded {sprites.Length} sprites from Resources/{resourcePath}, but InventoryActionsSheetA_2 was not found.", this);
     }
 
     private void LoadSpeedModeSprites()

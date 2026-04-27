@@ -474,7 +474,7 @@ public sealed class InventoryDialogUI : MonoBehaviour
         CreateActionButton(leftBottomRow, InventoryAction.PickUp, OnPickUpClicked);
 
         CreateTradePartnerActionButton(rightTopRow, "GiveButton", 2, "GIVE", OnGiveClicked);
-        CreateTradePartnerActionButton(rightTopRow, "TakeItemButton", 1, "TAKE ITEM", OnTakeItemClicked);
+        CreateTradePartnerActionButton(rightTopRow, "TakeItemButton", 1, "TAKE", OnTakeItemClicked);
         CreateTradePartnerActionButton(rightBottomRow, "TradeButton", 0, "TRADE", OnTradeClicked);
     }
 
@@ -941,18 +941,141 @@ public sealed class InventoryDialogUI : MonoBehaviour
 
     private void OnEatClicked()
     {
+        WorldObject eater = GetCurrentControlledWorldObject();
+        ContainerModule container = GetCurrentContainer();
+        if (eater == null || container == null)
+            return;
+
+        WorldObject item = GetSelectedHeldItem();
+        if (item == null)
+        {
+            BottomBanner.Show($"{eater.DisplayName} has no item to eat");
+            return;
+        }
+
+        string itemName = item.DisplayName;
+        if (!container.ReleaseItem(item, out string reason))
+        {
+            BottomBanner.Show(reason);
+            Debug.LogWarning($"InventoryDialogUI: failed to eat {itemName}: {reason}", this);
+            return;
+        }
+
+        Destroy(item.gameObject);
+        BottomBanner.Show($"{eater.DisplayName} ate {itemName}");
+        selectedIndex = container.HeldItemCount > 0
+            ? Mathf.Clamp(selectedIndex, 0, container.HeldItemCount - 1)
+            : 0;
+        RefreshInventoryView(forcePreviewRefresh: true);
     }
 
     private void OnGiveClicked()
     {
+        WorldObject giver = GetCurrentControlledWorldObject();
+        WorldObject item = GetSelectedHeldItem();
+        WorldObject recipient = displayedTradePartner;
+        ContainerModule giverContainer = GetCurrentContainer();
+        ContainerModule recipientContainer = GetOrCreateContainer(recipient);
+
+        if (giver == null || giverContainer == null)
+            return;
+
+        if (item == null)
+        {
+            BottomBanner.Show($"{giver.DisplayName} has no item to give");
+            return;
+        }
+
+        if (recipient == null || recipientContainer == null)
+        {
+            BottomBanner.Show("No one nearby to give an item to");
+            return;
+        }
+
+        if (TransferItem(giverContainer, recipientContainer, item, out string reason))
+        {
+            BottomBanner.Show($"{giver.DisplayName} gave {item.DisplayName} to {recipient.DisplayName}");
+            RefreshInventoryView(forcePreviewRefresh: true);
+            return;
+        }
+
+        BottomBanner.Show(reason);
+        Debug.LogWarning($"InventoryDialogUI: failed to give {item.DisplayName}: {reason}", this);
     }
 
     private void OnTakeItemClicked()
     {
+        WorldObject taker = GetCurrentControlledWorldObject();
+        WorldObject giver = displayedTradePartner;
+        WorldObject item = displayedTradePartnerItem;
+        ContainerModule takerContainer = GetCurrentContainer();
+        ContainerModule giverContainer = GetOrCreateContainer(giver);
+
+        if (taker == null || takerContainer == null)
+            return;
+
+        if (giver == null || giverContainer == null)
+        {
+            BottomBanner.Show("No one nearby to take an item from");
+            return;
+        }
+
+        if (item == null)
+        {
+            BottomBanner.Show($"{giver.DisplayName} has no selected item to take");
+            return;
+        }
+
+        if (TransferItem(giverContainer, takerContainer, item, out string reason))
+        {
+            BottomBanner.Show($"{taker.DisplayName} took {item.DisplayName} from {giver.DisplayName}");
+            RefreshInventoryView(forcePreviewRefresh: true);
+            return;
+        }
+
+        BottomBanner.Show(reason);
+        Debug.LogWarning($"InventoryDialogUI: failed to take {item.DisplayName}: {reason}", this);
     }
 
     private void OnTradeClicked()
     {
+        WorldObject trader = GetCurrentControlledWorldObject();
+        WorldObject partner = displayedTradePartner;
+        WorldObject traderItem = GetSelectedHeldItem();
+        WorldObject partnerItem = displayedTradePartnerItem;
+        ContainerModule traderContainer = GetCurrentContainer();
+        ContainerModule partnerContainer = GetOrCreateContainer(partner);
+
+        if (trader == null || traderContainer == null)
+            return;
+
+        if (partner == null || partnerContainer == null)
+        {
+            BottomBanner.Show("No one nearby to trade with");
+            return;
+        }
+
+        if (traderItem == null)
+        {
+            BottomBanner.Show($"{trader.DisplayName} has no item to trade");
+            return;
+        }
+
+        if (partnerItem == null)
+        {
+            BottomBanner.Show($"{partner.DisplayName} has no selected item to trade");
+            return;
+        }
+
+        if (SwapItems(traderContainer, partnerContainer, traderItem, partnerItem, out string reason))
+        {
+            BottomBanner.Show($"{trader.DisplayName} traded {traderItem.DisplayName} to {partner.DisplayName} for {partnerItem.DisplayName}");
+            RefreshInventoryView(forcePreviewRefresh: true);
+            return;
+        }
+
+        BottomBanner.Show(reason);
+        Debug.LogWarning($"InventoryDialogUI: failed to trade {traderItem.DisplayName} for {partnerItem.DisplayName}: {reason}", this);
     }
 
     private void OnDropClicked()
@@ -988,6 +1111,138 @@ public sealed class InventoryDialogUI : MonoBehaviour
 
     private void OnPickUpClicked()
     {
+        WorldObject carrier = GetCurrentControlledWorldObject();
+        ContainerModule container = GetCurrentContainer();
+        if (carrier == null || container == null)
+            return;
+
+        if (!container.TryPickupNearestItem(out WorldObject pickedUpItem, out string reason))
+        {
+            BottomBanner.Show(reason);
+            return;
+        }
+
+        BottomBanner.Show($"{carrier.DisplayName} picked up {pickedUpItem.DisplayName}");
+        for (int i = 0; i < container.HeldItemCount; i++)
+        {
+            if (container.HeldItems[i] == pickedUpItem)
+            {
+                selectedIndex = i;
+                break;
+            }
+        }
+
+        RefreshInventoryView(forcePreviewRefresh: true);
+    }
+
+    private static ContainerModule GetOrCreateContainer(WorldObject owner)
+    {
+        if (owner == null)
+            return null;
+
+        if (owner.containerModule == null)
+            owner.CreateModulesIfNeeded(ModuleFlags.containerModule);
+
+        return owner.containerModule;
+    }
+
+    private static bool TransferItem(ContainerModule source, ContainerModule destination, WorldObject item, out string reason)
+    {
+        if (source == null)
+        {
+            reason = "Source inventory is unavailable.";
+            return false;
+        }
+
+        if (destination == null)
+        {
+            reason = "Destination inventory is unavailable.";
+            return false;
+        }
+
+        if (source == destination)
+        {
+            reason = "Cannot transfer an item to the same inventory.";
+            return false;
+        }
+
+        if (item == null)
+        {
+            reason = "No item selected.";
+            return false;
+        }
+
+        if (!source.ReleaseItem(item, out reason))
+            return false;
+
+        if (destination.ReceiveItem(item, false, out reason))
+            return true;
+
+        string receiveFailure = reason;
+        if (!source.ReceiveItem(item, false, out string rollbackReason))
+            reason = $"{receiveFailure} {item.DisplayName} could not be returned: {rollbackReason}";
+        else
+            reason = receiveFailure;
+
+        return false;
+    }
+
+    private static bool SwapItems(ContainerModule firstContainer, ContainerModule secondContainer, WorldObject firstItem, WorldObject secondItem, out string reason)
+    {
+        if (firstContainer == null || secondContainer == null)
+        {
+            reason = "One of the inventories is unavailable.";
+            return false;
+        }
+
+        if (firstContainer == secondContainer)
+        {
+            reason = "Cannot trade within the same inventory.";
+            return false;
+        }
+
+        if (firstItem == null || secondItem == null)
+        {
+            reason = "Both sides need an item selected to trade.";
+            return false;
+        }
+
+        if (!firstContainer.ReleaseItem(firstItem, out reason))
+            return false;
+
+        if (!secondContainer.ReleaseItem(secondItem, out string secondReleaseReason))
+        {
+            RestoreItem(firstContainer, firstItem);
+            reason = secondReleaseReason;
+            return false;
+        }
+
+        bool firstReceivedSecond = firstContainer.ReceiveItem(secondItem, false, out string firstReceiveReason);
+        bool secondReceivedFirst = secondContainer.ReceiveItem(firstItem, false, out string secondReceiveReason);
+
+        if (firstReceivedSecond && secondReceivedFirst)
+        {
+            reason = string.Empty;
+            return true;
+        }
+
+        if (firstReceivedSecond)
+            firstContainer.ReleaseItem(secondItem, out _);
+
+        if (secondReceivedFirst)
+            secondContainer.ReleaseItem(firstItem, out _);
+
+        RestoreItem(firstContainer, firstItem);
+        RestoreItem(secondContainer, secondItem);
+
+        reason = !firstReceivedSecond ? firstReceiveReason : secondReceiveReason;
+        return false;
+    }
+
+    private static void RestoreItem(ContainerModule container, WorldObject item)
+    {
+        if (container != null && item != null)
+            container.ReceiveItem(item, false, out _);
     }
 
     private void LoadSprites()
