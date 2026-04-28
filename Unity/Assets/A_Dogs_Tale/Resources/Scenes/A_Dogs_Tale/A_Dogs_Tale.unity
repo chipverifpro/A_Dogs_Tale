@@ -2199,7 +2199,8 @@ Transform:
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 439255723}
   m_Father: {fileID: 1767335688}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &200283689
@@ -4169,6 +4170,12 @@ MonoBehaviour:
   cl: {fileID: 0}
   walkSpeed: 0.25
   jogSpeed: 3.25
+--- !u!4 &278848278 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 2421648922703722734, guid: 77179a6ab454e4985903d09faacee2f4,
+    type: 3}
+  m_PrefabInstance: {fileID: 342913383}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &281951419
 GameObject:
   m_ObjectHideFlags: 0
@@ -4816,6 +4823,74 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 342325750}
   m_CullTransparentMesh: 1
+--- !u!1001 &342913383
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 439255723}
+    m_Modifications:
+    - target: {fileID: 2421648922703722734, guid: 77179a6ab454e4985903d09faacee2f4,
+        type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 4
+      objectReference: {fileID: 0}
+    - target: {fileID: 2421648922703722734, guid: 77179a6ab454e4985903d09faacee2f4,
+        type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 2421648922703722734, guid: 77179a6ab454e4985903d09faacee2f4,
+        type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2421648922703722734, guid: 77179a6ab454e4985903d09faacee2f4,
+        type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2421648922703722734, guid: 77179a6ab454e4985903d09faacee2f4,
+        type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2421648922703722734, guid: 77179a6ab454e4985903d09faacee2f4,
+        type: 3}
+      propertyPath: m_LocalRotation.y
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2421648922703722734, guid: 77179a6ab454e4985903d09faacee2f4,
+        type: 3}
+      propertyPath: m_LocalRotation.z
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2421648922703722734, guid: 77179a6ab454e4985903d09faacee2f4,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2421648922703722734, guid: 77179a6ab454e4985903d09faacee2f4,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2421648922703722734, guid: 77179a6ab454e4985903d09faacee2f4,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3085172942473405012, guid: 77179a6ab454e4985903d09faacee2f4,
+        type: 3}
+      propertyPath: m_Name
+      value: Rope
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 77179a6ab454e4985903d09faacee2f4, type: 3}
 --- !u!1 &351839179
 GameObject:
   m_ObjectHideFlags: 0
@@ -6701,6 +6776,38 @@ Transform:
   - {fileID: 705631741}
   - {fileID: 302582586}
   m_Father: {fileID: 1767335688}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &439255722
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 439255723}
+  m_Layer: 0
+  m_Name: Item
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &439255723
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 439255722}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 278848278}
+  m_Father: {fileID: 196505886}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &445485058
 GameObject:
@@ -14200,6 +14307,7 @@ MonoBehaviour:
   emoteSheetAResourcePath: Sprites/DogEmojiSheetA
   emoteSheetBResourcePath: Sprites/DogEmojiSheetB
   emoteSheetCResourcePath: Sprites/DogEmojiSheetC
+  inventoryActionSpriteResourcePath: Sprites/InventoryActionsSheetA
   noseButtonSize: 176
   noseButtonMargin: 24
   modeButtonSpacing: 12
@@ -15823,6 +15931,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.PlayerDecisionModule
   navigationSource: 0
+  manualTurnDegreesPerSecond: 240
   cameraForMovement: {fileID: 1815589284}
   cameraModeSwitcher: {fileID: 1815589288}
   currentDestinationObject: {fileID: 0}
@@ -20420,6 +20529,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.PlayerDecisionModule
   navigationSource: 0
+  manualTurnDegreesPerSecond: 240
   cameraForMovement: {fileID: 1815589284}
   cameraModeSwitcher: {fileID: 1815589288}
   currentDestinationObject: {fileID: 1651296793}
@@ -20928,6 +21038,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: daa15b5c085b642dfabf4a5a26b501fd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.ActivatorModule
+  howToUse: 0
+  parameterFloat: -1
+  parameterInt: -1
+  parameterString: 
 --- !u!114 &1651296821
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -28806,6 +28920,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.PlayerDecisionModule
   navigationSource: 0
+  manualTurnDegreesPerSecond: 240
   cameraForMovement: {fileID: 1815589284}
   cameraModeSwitcher: {fileID: 1815589288}
   currentDestinationObject: {fileID: 0}
@@ -29396,6 +29511,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: daa15b5c085b642dfabf4a5a26b501fd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.ActivatorModule
+  howToUse: 0
+  parameterFloat: -1
+  parameterInt: -1
+  parameterString: 
 --- !u!114 &6544990386685219203
 MonoBehaviour:
   m_ObjectHideFlags: 0

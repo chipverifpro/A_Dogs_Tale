@@ -937,6 +937,30 @@ public sealed class InventoryDialogUI : MonoBehaviour
 
     private void OnUseClicked()
     {
+        WorldObject user = GetCurrentControlledWorldObject();
+        WorldObject item = GetSelectedHeldItem();
+        if (user == null)
+            return;
+
+        if (item == null)
+        {
+            BottomBanner.Show($"{user.DisplayName} has no item to use");
+            return;
+        }
+
+        if (item.activatorModule == null)
+        {
+            BottomBanner.Show($"{item.DisplayName} cannot be used");
+            return;
+        }
+
+        WorldObject otherAgent = displayedTradePartner;
+        bool success = item.activatorModule.TryUseItem(user, otherAgent);
+        BottomBanner.Show(success
+            ? $"{user.DisplayName} used {item.DisplayName}"
+            : $"{user.DisplayName} could not use {item.DisplayName}");
+
+        RefreshInventoryView(forcePreviewRefresh: true);
     }
 
     private void OnEatClicked()
