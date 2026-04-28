@@ -13,5 +13,9 @@
 <br>
 <img width="304" height="472" alt="Screenshot 2026-04-09 at 11 02 44 AM" src="https://github.com/user-attachments/assets/62629342-363d-41f0-9dcc-5c447f58acf0" />
 <br>
-<img width="789" height="496" alt="Screenshot 2026-04-14 at 3 06 13 AM" src="https://github.com/user-attachments/assets/42dfcbd1-9776-441d-b3ac-1eb3c8093185" />
+<img width="544" height="334" alt="Screenshot 2026-04-28 at 11 08 56 AM" src="https://github.com/user-attachments/assets/53fb3296-f6e7-4ef1-9637-9e9d44059b06" />
+<br>
+<img width="1408" height="768" alt="DogEmojiSheetC" src="https://github.com/user-attachments/assets/6708cc20-1942-410a-8e96-2f083b35490e" />
+<br>
+<img width="545" height="474" alt="Screenshot 2026-04-28 at 11 15 42 AM" src="https://github.com/user-attachments/assets/53c11d28-f9d3-4b7f-8a88-2833ed7e1596" />
 <br>
