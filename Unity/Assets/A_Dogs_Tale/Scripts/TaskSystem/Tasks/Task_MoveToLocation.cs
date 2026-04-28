@@ -12,6 +12,8 @@ namespace DogGame.Tasks
 
         private readonly float mapX;
         private readonly float mapY;
+        private readonly int cellX;
+        private readonly int cellY;
 
         private Vector3 destinationWorld;
 
@@ -19,12 +21,14 @@ namespace DogGame.Tasks
         {
             this.mapX = mapX;
             this.mapY = mapY;
+            cellX = Mathf.FloorToInt(mapX);
+            cellY = Mathf.FloorToInt(mapY);
             Debug.Log(DebugName);
         }
 
         public void Start(TaskContext context)
         {
-            destinationWorld = context.Motion.CellToWorld((int)mapX, (int)mapY);  // TODO: change these back to float, and include height
+            destinationWorld = context.Motion.CellToWorld(cellX, cellY);
         }
 
         private int debugDoubleTick = -1;
@@ -36,8 +40,17 @@ namespace DogGame.Tasks
             debugDoubleTick = Time.frameCount;
 
             //Debug.Log ($"Task_MoveToCell.Tick ({context.Agent.DisplayName}, {deltaTimeSeconds})");
-            if (context.Motion.IsAt(destinationWorld))
+            if (IsInDestinationCell(context))
+            {
+                context.Motion.StopMoving();
                 return TaskTickResult.Succeeded();
+            }
+
+            if (context.Motion.IsAt(destinationWorld))
+            {
+                context.Motion.StopMoving();
+                return TaskTickResult.Succeeded();
+            }
 
             bool couldMove = context.Motion.SetMoveTarget(destinationWorld);
             if (!couldMove)
@@ -49,6 +62,15 @@ namespace DogGame.Tasks
         public void Stop(TaskContext context)
         {
             // executor stops movement for us
+        }
+
+        private bool IsInDestinationCell(TaskContext context)
+        {
+            if (context.Agent == null || context.Agent.locationModule == null)
+                return false;
+
+            return context.Agent.locationModule.x == cellX &&
+                   context.Agent.locationModule.y == cellY;
         }
     }
 }

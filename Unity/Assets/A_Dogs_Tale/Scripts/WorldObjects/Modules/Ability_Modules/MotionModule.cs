@@ -202,11 +202,14 @@ namespace DogGame.Modules
         {
             // Stop any vertical movement (no more falling from previous position)
             verticalVelocity = Vector3.zero;
-
-            // If you later add cached horizontal velocity here, clear it too.
-            // e.g. currentHorizontalVelocity = Vector3.zero;
+            horizontalVelocity = Vector3.zero;
 
             // We do NOT change position or rotation here; Teleport already did that.
+        }
+
+        public void StopHorizontalMotion()
+        {
+            horizontalVelocity = Vector3.zero;
         }
 
         #region Teleport

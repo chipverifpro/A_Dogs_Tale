@@ -501,10 +501,13 @@ public class NewInputAdapter : MonoBehaviour
             {
                 state.hasClickTargetLocationWorld = true;
                 state.hasPendingClickTargetLocationWorld = true;
-                state.clickTargetLocationWorld    = (Vector3)worldLocation;
                 state.clickTargetLocationCell     = dir.convertScreenToWorld.ConvertWorldLocationToCell((Vector3)worldLocation);
+                state.clickTargetLocationWorld    = state.clickTargetLocationCell != null
+                    ? state.clickTargetLocationCell.pos3d_world
+                    : (Vector3)worldLocation;
+
                 if (state.clickTargetLocationCell!=null)
-                    Debug.Log($"Clicked on worldLocation {state.clickTargetLocationWorld} in cell at {state.clickTargetLocationCell.pos3d_world}");
+                    Debug.Log($"Clicked on worldLocation {worldLocation} using cell center at {state.clickTargetLocationCell.pos3d_world}");
                 else
                     Debug.Log($"Clicked on worldLocation {state.clickTargetLocationWorld} but cell is null");
             }

@@ -29,9 +29,8 @@ namespace DogGame.Modules
         private GameInputRouter gameInputRouter;
         private bool llmThinkSubscribed;
 
-        //[Header("Movement")]
-        //[SerializeField] private float moveSpeed = 3.5f;  // now in agentMovementModule
-        //[SerializeField] private float rotateSpeed = 720f; // now in agentMovementModule
+        [Header("Movement")]
+        [SerializeField] private float manualTurnDegreesPerSecond = 240f;
 
         [Header("Camera Control")]
         [SerializeField] private Camera cameraForMovement;
@@ -187,6 +186,16 @@ namespace DogGame.Modules
             //Debug.Log($"PlayerDecisionModule: ready to process inputState");
 
             HandleOneShotActions(inputState);
+
+            // New click-to-move orders should replace the current movement task immediately.
+            if (taskDrivingMovement && HasClickMoveInput(inputState))
+            {
+                taskController!.CancelAllTasks();
+                taskDrivingMovement = false;
+
+                currentDestinationPosition = null;
+                currentDestinationObject = null;
+            }
 
             // Manual movement should immediately reclaim control from click-to-move / queued movement tasks.
             if (taskDrivingMovement && HasManualMoveInput(inputState))
@@ -380,48 +389,23 @@ namespace DogGame.Modules
             //Debug.Log($"PlayerDecisionModule HandleMovement(anyKey={state.anyKeyOrButtonDown}, {deltaTime})");
 
             Vector3 desiredWorldDir = Vector3.zero;
-            
-            // --- Combine moveAxis and strafeAxis into combinedMoveAxis
-            //     WASD / stick input -> moveAxis         (x and y)
-            //     QE keboard / stick input -> strafeAxis (x only)
 
-            Vector2 combinedMoveAxis = state.moveAxis;
-
-            // combine moveAxis and strafeAxis into one
-            if (state.moveAxis.sqrMagnitude > 0.0001f || Mathf.Abs(state.strafeAxis) > 0.0001f)
-            {
-                if (state.moveAxis.x <= 0f && state.strafeAxis <= 0f)
-                {
-                    // both movements are negative, take the Min
-                    combinedMoveAxis.x = Mathf.Min(state.moveAxis.x, state.strafeAxis);
-                }
-                else if (state.moveAxis.x >= 0f && state.strafeAxis >= 0f)
-                {
-                    // both movements are positive, take the Max
-                    combinedMoveAxis.x = Mathf.Max(state.moveAxis.x, state.strafeAxis);
-                }
-                else // strafe is opposite direction to move, add both, let them cancel each other out
-                {
-                    combinedMoveAxis.x = state.moveAxis.x + state.strafeAxis;
-                }
-            }
-
-
-            // 1) WASD / stick input -> camera-relative world direction
-            bool hasManualInput = combinedMoveAxis.sqrMagnitude > 0.0001f;
+            // 1) Manual input:
+            //    A/D or stick X rotates the dog.
+            //    W/S or stick Y moves forward/back relative to the current facing.
+            //    Q/E strafes without changing facing.
+            bool hasManualInput = HasManualMoveInput(state);
             if (hasManualInput)
             {
                 // First, manual controls disable current click-to-move status
                 currentDestinationPosition = null;  // stop heading to location
                 currentDestinationObject = null;    // stop heading to object
 
-                desiredWorldDir = ConvertInputToWorldDirection(combinedMoveAxis);
+                ApplyManualTurn(state.moveAxis.x, deltaTime);
+                desiredWorldDir = ConvertInputToWorldDirection(new Vector2(state.strafeAxis, state.moveAxis.y));
                 navigationSource = NavigationSource.PlayerDirection;
                 worldObject.motionModule.motionControlMode = MotionControlMode.DirectInput;
-                if (Mathf.Abs(state.strafeAxis) > 0.0001f)  // any strafe element, set Strafe
-                    worldObject.motionModule.facingMode = FacingMode.Strafe; 
-                else
-                    UpdateFacingModeForDirectInput(desiredWorldDir);    // handles strafe/backpedalling.
+                worldObject.motionModule.facingMode = FacingMode.Manual;
                 
                 currentManualWorldMoveDir = desiredWorldDir;
                 MovementHeadToDestination();
@@ -515,6 +499,24 @@ namespace DogGame.Modules
             return state.moveAxis.sqrMagnitude > 0.0001f || Mathf.Abs(state.strafeAxis) > 0.0001f;
         }
 
+        private void ApplyManualTurn(float turnAxis, float deltaTime)
+        {
+            if (Mathf.Abs(turnAxis) < 0.0001f || deltaTime <= 0f || worldObject == null)
+                return;
+
+            Transform bodyRoot = GetManualFacingTransform();
+            if (bodyRoot != null)
+                bodyRoot.Rotate(Vector3.up, turnAxis * manualTurnDegreesPerSecond * deltaTime, Space.World);
+        }
+
+        private static bool HasClickMoveInput(PlayerInputState state)
+        {
+            if (state == null || state.interactPressed)
+                return false;
+
+            return state.hasClickTargetWorldObject || state.hasPendingClickTargetLocationWorld;
+        }
+
         private void SetDirectInputWallConstraint(bool enable)
         {
             if (worldObject?.motionModule == null)
@@ -538,9 +540,8 @@ namespace DogGame.Modules
             else if (desiredWorldDir.sqrMagnitude > 0.0001f)
             {
                 // Move to target location by 1 step.
-                // If you have a sprint flag in PlayerInputState, use it here.
-                //bool run = false; // state.sprintHeld; // <-- adjust to your actual field name
-                worldObject.agentMovementModule.SetDesiredMove(desiredWorldDir, maxDistance:1.0f, speedFactor:1.0f, changeWalkMode:WalkMode.Walk);
+                // Keep the currently selected walk mode; keyboard input should not reset speed.
+                worldObject.agentMovementModule.SetDesiredMove(desiredWorldDir, maxDistance:1.0f, speedFactor:1.0f, changeWalkMode:WalkMode.None);
             }
             else
             {
@@ -557,6 +558,10 @@ namespace DogGame.Modules
         {
             if (targetWorldObject != null)
             {
+                currentDestinationPosition = null;
+                worldObject.motionModule.motionControlMode = MotionControlMode.GoalDirected;
+                worldObject.motionModule.facingMode = FacingMode.FaceMovementDirection;
+
                 taskController.Submit(new TaskRequest(
                     task: new Task_MoveToObject(targetWorldObject),
                     priority: 100,
@@ -572,6 +577,9 @@ namespace DogGame.Modules
         public void SubmitMoveToTargetPositionTask(Vector3 targetLocation)
         {
             {
+                worldObject.motionModule.motionControlMode = MotionControlMode.GoalDirected;
+                worldObject.motionModule.facingMode = FacingMode.FaceMovementDirection;
+
                 taskController.Submit(new TaskRequest(
                     task: new Task_MoveToLocation(targetLocation.x, targetLocation.z),
                     priority: 100,
@@ -636,14 +644,15 @@ namespace DogGame.Modules
             if (moveAxis.sqrMagnitude < 0.0001f)
                 return Vector3.zero;
 
-            // 1. If overhead mode → use player-relative movement
-            if (this.transform != null)
+            // Use the same body root that manual turning rotates.
+            Transform facingTransform = GetManualFacingTransform();
+            if (facingTransform != null)
             {
-                Vector3 forward = this.transform.forward;
+                Vector3 forward = facingTransform.forward;
                 forward.y = 0f;
                 forward.Normalize();
 
-                Vector3 right = this.transform.right;
+                Vector3 right = facingTransform.right;
                 right.y = 0f;
                 right.Normalize();
 
@@ -653,6 +662,17 @@ namespace DogGame.Modules
             // 3. Fallback: world-relative XZ
             Debug.LogWarning("this.transform == null, maybe not a good thing? ",this);
             return new Vector3(moveAxis.x, 0f, moveAxis.y);     // probably not what we want, so don't fail above!
+        }
+
+        private Transform GetManualFacingTransform()
+        {
+            if (worldObject == null)
+                return transform;
+
+            if (worldObject.motionModule != null && worldObject.motionModule.bodyRoot != null)
+                return worldObject.motionModule.bodyRoot;
+
+            return worldObject.transform;
         }
         #endregion
 

@@ -701,10 +701,13 @@ namespace DogGame.Modules
             targetObject = null;
             targetLocationMap = null;
             desiredVelocity = Vector3.zero;
+            currentVelocity = Vector3.zero;
+            maxDistance = 0f;
             ClearActivePath();
             recoveringToCellCenter = false;
             consecutiveStallTicks = 0;
             MoveToDestinationInProgress = false;
+            worldObject.motionModule?.StopHorizontalMotion();
         }
 
         public void SetDesiredTargetLocationMap(Vector3 targetLocation_map, WalkMode mode = WalkMode.Walk, bool requestPathfinding = true)

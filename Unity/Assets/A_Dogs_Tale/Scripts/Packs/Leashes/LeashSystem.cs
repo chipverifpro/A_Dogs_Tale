@@ -79,7 +79,7 @@ public class LeashSystem : MonoBehaviour // or your Subsystem base
         CreateInitialLeashesFromEndpoints();
 
         // DEBUG TEST
-        CreateTestLeash ("germanshepherd", "cur", 3.0f);
+        //CreateTestLeash ("germanshepherd", "cur", 3.0f);
     }
 
     public LeashLink CreateTestLeash (string a, string b, float length)
