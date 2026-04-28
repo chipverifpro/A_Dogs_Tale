@@ -5,6 +5,7 @@ namespace DogGame.Lua
     public class ScentState
     {
         public string strongestScent    = "";
+        public WorldObject scentSource  = null;
         public bool foodTrail           = false;
         public bool dogTrail            = false;
         public bool humanTrail          = false;

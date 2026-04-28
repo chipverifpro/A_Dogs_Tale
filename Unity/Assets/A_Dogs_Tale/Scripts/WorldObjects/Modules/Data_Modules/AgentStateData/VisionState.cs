@@ -19,6 +19,7 @@ namespace DogGame.Lua
     public class VisionObjectState
     {
         public int id = -1;
+        public WorldObject visionSource = null;
         public string type = "";
         public string name = "";
         public float distance;

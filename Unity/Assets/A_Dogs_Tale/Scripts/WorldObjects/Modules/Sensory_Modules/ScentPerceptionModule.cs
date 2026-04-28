@@ -13,7 +13,7 @@ namespace DogGame.Modules
     // 2) scents to ignore
     // 3) scents observed
     // 4) follow scent
-    //.  Field ides: agentId, pointer to scentinfo struct, airOrGround, lastStrength, lastTime, lastLocationCell, novelty/interest, currently tracking, nearby strengths (8 ways)
+    //.  Field ideas: agentId, pointer to scentinfo struct, airOrGround, lastStrength, lastTime, lastLocationCell, novelty/interest, currently tracking, nearby strengths (8 ways)
     //.  Function ideas: Create, update, sniff nearby, determine novelty/interest (functions exist below)
 
     [InspectorNote("Sensory_Modules/Scent Perception Module", "Generate events for scents detected, sniff command.")]

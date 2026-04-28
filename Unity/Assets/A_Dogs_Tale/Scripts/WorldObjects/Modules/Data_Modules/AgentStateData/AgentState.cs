@@ -1,5 +1,8 @@
 using DogGame.Modules;
 
+// This file is a state class that holds all the subState classes.
+// It passes initialize, update, and tick calls to the subState classes.
+
 namespace DogGame.Lua
 {
     public class AgentState
@@ -12,8 +15,8 @@ namespace DogGame.Lua
         public EnvState Env = new();
         public RoomState Room = new();
         public TaskState Task = new();
-        public MemoryState Memory = new();
         public TimeState Time = new();
+        public MemoryState Memory = new();
 
         public WorldObject worldObject;
         public AgentState state;
@@ -31,8 +34,8 @@ namespace DogGame.Lua
             Env.InitState(worldObject, state);
             Room.InitState(worldObject, state);
             Task.InitState(worldObject, state);
-            Memory.InitState(worldObject, state);
             Time.InitState(worldObject, state);
+            Memory.InitState(worldObject, state);
         }
 
         public void UpdateState(Detail detail)
@@ -45,8 +48,8 @@ namespace DogGame.Lua
             Env.UpdateState(detail);
             Room.UpdateState(detail);
             Task.UpdateState(detail);
-            Memory.UpdateState(detail);
             Time.UpdateState(detail);
+            Memory.UpdateState(detail);
         }
 
         public void Tick(float interval)
@@ -55,12 +58,13 @@ namespace DogGame.Lua
             Vision.Tick(interval);
             Hearing.Tick(interval);
             Scent.Tick(interval);
+            //PerceptionEvent.Tick(interval);
             Pack.Tick(interval);
             Env.Tick(interval);
             Room.Tick(interval);
             Task.Tick(interval);
-            Memory.Tick(interval);
             Time.Tick(interval);
+            Memory.Tick(interval);
         }
     }
 }

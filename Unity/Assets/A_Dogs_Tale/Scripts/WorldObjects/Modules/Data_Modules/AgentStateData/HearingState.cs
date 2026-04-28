@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using DogGame.Modules;
-using Unity.AppUI.UI;
 using UnityEngine;
 
 namespace DogGame.Lua
@@ -93,10 +92,10 @@ namespace DogGame.Lua
                 switch (detail)
                 {
                     case Detail.Low:
-                        description = $"You heard a {softVolume} {softSoundType} to the {softDirection}.";
+                        description = $"Heard a {softVolume} {softSoundType} to the {softDirection}.";
                         break;
                     case Detail.Medium:
-                        description = $"You heard a {softSoundType} sound to the {softDirection} about {softDistance} away that is {softVolume}.";
+                        description = $"Heard a {softSoundType} sound to the {softDirection} about {softDistance} away that is {softVolume}.";
                         break;
                     case Detail.High:
                         description = $"{softListener} heard a {softSoundType} sound to the {softDirection} about {softDistance} away that is {softVolume}.";
@@ -112,10 +111,10 @@ namespace DogGame.Lua
                 switch (detail)
                 {
                     case Detail.Low:
-                        description = $"You heard \"{humanToDogWords}\" in a {humanToDogTone} tone from the {softDirection}.";
+                        description = $"Heard \"{humanToDogWords}\" in a {humanToDogTone} tone from the {softDirection}.";
                         break;
                     case Detail.Medium:
-                        description = $"{softHowLongAgo}, you heard {noiseMaker} say \"{humanToDogWords}\" in a {humanToDogTone} tone from the {softDirection} about {softDistance} away that is {softVolume}.";
+                        description = $"{softHowLongAgo}, heard {noiseMaker} say \"{humanToDogWords}\" in a {humanToDogTone} tone from the {softDirection} about {softDistance} away that is {softVolume}.";
                         break;
                     case Detail.High:
                         description = $"{softHowLongAgo}, {softListener} heard {noiseMaker} say \"{humanToDogWords}\" in a {humanToDogTone} tone from the {softDirection} about {softDistance} away that is {softVolume}.";
