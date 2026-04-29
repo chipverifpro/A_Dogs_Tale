@@ -62,7 +62,7 @@ namespace DogGame.Modules
                 return;
             }
 
-            WorldObject playerAgent = dir.playerPack != null ? dir.playerPack.packLeader : null;
+            WorldObject ?playerAgent = dir.playerPack != null ? dir.playerPack.packLeader : null;
             if (playerAgent == null || playerAgent.taskController == null)
             {
                 Debug.LogError("[ScentFollowInput] Missing player agent or task controller.");

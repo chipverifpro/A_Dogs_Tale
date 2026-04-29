@@ -46,22 +46,29 @@ namespace DogGame.Modules
                     break;
 
                 case HowToUse.EatFood:
-                    if (parameterString=="" || parameterInt<0)
-                    {
-                        Debug.Log($"Item {this.worldObject.DisplayName} cannot be eaten unless parameters String (adjective) and Int (calories) are set");
-                        success = false;
-                    }
-                    else
-                    {
-                        calories += parameterInt;
-                        Debug.Log($"{agent.DisplayName} ate the {parameterString} {this.worldObject.DisplayName} gaining {parameterInt} calories.");
-                        success = true;
-                    };
+                    success = UseToEat(food: this.worldObject, agent: agent);
                     break;
             }
             return success;
         }
 
+        public bool UseToEat(WorldObject food, WorldObject agent)
+        {
+            bool success = false;
+            if (parameterString=="" || parameterInt<0)
+            {
+                Debug.Log($"Item {this.worldObject.DisplayName} cannot be eaten unless parameters String (adjective) and Int (calories) are set");
+                success = false;
+            }
+            else
+            {
+                calories += parameterInt;
+                Debug.Log($"{agent.DisplayName} ate the {parameterString} {this.worldObject.DisplayName} gaining {parameterInt} calories.");
+                success = true;
+            };
+            return success;
+        }
+        
         public bool UseToOpen(WorldObject key, WorldObject box)
         {
             bool success = false;
