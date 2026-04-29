@@ -8,8 +8,9 @@ namespace DogGame.Modules
     public enum HowToUse
     {
         DoNothing = 0,      // for objects that do nothing
-        CreateLeash,        // for rope or chain objects
-        EatFood,            // for food objects
+        CreateLeash,        // for rope or chain items
+        EatFood,            // for food items
+        Open,               // for key items that open container agents
     }
 
     [DisallowMultipleComponent]
@@ -18,9 +19,11 @@ namespace DogGame.Modules
     {
         public HowToUse howToUse      = HowToUse.DoNothing;
         [Header("Optional Use Parameters")]
+        public bool   parameterDestruct = false; // true if item is destroyed when used.
         public float  parameterFloat  = -1f;    // eg: rope length
         public int    parameterInt    = -1;     // eg: calories when eaten
         public string parameterString = "";     // eg: adjective when eaten: "Yummy"
+        public string toolTip         = "";     // ToolTip for the Use Item button.
 
         private int calories = 0;   // just a dumb little accumulator of everything eaten.
 
@@ -38,6 +41,10 @@ namespace DogGame.Modules
                     success = UseToCreateLeash(rope: this.worldObject, walkerWorldObject:agent, dogWorldObject:otherAgent, maxLength: parameterFloat);
                     break;
 
+                case HowToUse.Open:
+                    success = UseToOpen(key: this.worldObject, box: otherAgent);
+                    break;
+
                 case HowToUse.EatFood:
                     if (parameterString=="" || parameterInt<0)
                     {
@@ -51,6 +58,22 @@ namespace DogGame.Modules
                         success = true;
                     };
                     break;
+            }
+            return success;
+        }
+
+        public bool UseToOpen(WorldObject key, WorldObject box)
+        {
+            bool success = false;
+            if (box.containerModule && box.containerModule.isClosed)
+            {
+                box.containerModule.isClosed = false;
+                Debug.Log($"Container {box.DisplayName} opened using {key.DisplayName}.");
+                success = true;
+            } else
+            {
+                Debug.Log($"{key.DisplayName} can only open Containers that are closed.");
+                success = false;
             }
             return success;
         }

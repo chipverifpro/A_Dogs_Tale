@@ -14,6 +14,7 @@ GameObject:
   - component: {fileID: 6624573715623464221}
   - component: {fileID: 1388190697612835471}
   - component: {fileID: 9012958213654450415}
+  - component: {fileID: -3382267086450266910}
   m_Layer: 0
   m_Name: Prop_Chest
   m_TagString: Untagged
@@ -128,7 +129,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::WorldObject
   objectId: -1
   displayName: Prop_Chest
-  kind: 3
+  kind: 2
   autoRegister: 1
   adjustMapToWorld: {x: -0.5, y: 0, z: -0.5}
   sizeRadius: 0.3
@@ -158,3 +159,27 @@ MonoBehaviour:
   minClearCellsAround: 0
   mustTouchWall: 0
   wallPadding: 0.05
+--- !u!114 &-3382267086450266910
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6282063412259024970}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fcb9092686ac74c2b91fa33260000122, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.ContainerModule
+  itemCapacity: 5
+  maxWeight: 10
+  heldItemsVisible: 1
+  heldHeight: 0
+  isLocked: 1
+  isClosed: 1
+  heldItems: []
+  autoPickupNearbyItems: 0
+  pickupRadiusTiles: 1
+  autoConfigureAgentCapacity: 0
+  dogItemCapacity: 1
+  humanItemCapacity: 2

@@ -955,10 +955,29 @@ public sealed class InventoryDialogUI : MonoBehaviour
         }
 
         WorldObject otherAgent = displayedTradePartner;
-        bool success = item.activatorModule.TryUseItem(user, otherAgent);
+        ActivatorModule activator = item.activatorModule;
+        string itemName = item.DisplayName;
+        bool success = activator.TryUseItem(user, otherAgent);
+        if (success && activator.parameterDestruct)
+        {
+            ContainerModule container = GetCurrentContainer();
+            if (container != null && !container.ReleaseItem(item, out string reason))
+            {
+                BottomBanner.Show(reason);
+                Debug.LogWarning($"InventoryDialogUI: failed to destroy used item {itemName}: {reason}", this);
+                RefreshInventoryView(forcePreviewRefresh: true);
+                return;
+            }
+
+            Destroy(item.gameObject);
+            selectedIndex = container != null && container.HeldItemCount > 0
+                ? Mathf.Clamp(selectedIndex, 0, container.HeldItemCount - 1)
+                : 0;
+        }
+
         BottomBanner.Show(success
-            ? $"{user.DisplayName} used {item.DisplayName}"
-            : $"{user.DisplayName} could not use {item.DisplayName}");
+            ? $"{user.DisplayName} used {itemName}"
+            : $"{user.DisplayName} could not use {itemName}");
 
         RefreshInventoryView(forcePreviewRefresh: true);
     }
