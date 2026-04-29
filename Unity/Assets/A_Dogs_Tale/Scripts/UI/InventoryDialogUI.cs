@@ -854,9 +854,8 @@ public sealed class InventoryDialogUI : MonoBehaviour
         if (candidate == null)
             return false;
 
-        return candidate.Kind == WorldObjectKind.Agent ||
-               candidate.agentModule != null ||
-               candidate.Kind == WorldObjectKind.Container;
+        return candidate.containerModule != null &&
+               candidate.containerModule.itemCapacity > 0;
     }
 
     private int FindTradeTargetOptionIndex(WorldObject agent, WorldObject item)
