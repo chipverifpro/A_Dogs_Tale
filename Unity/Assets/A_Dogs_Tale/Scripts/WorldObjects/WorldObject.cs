@@ -37,6 +37,7 @@ public enum WorldObjectKind
     UI      ,    // if you ever want world-linked UI, optional
     Puzzle  ,    // World monitor/controller to tell stories
     Door    ,    // can open and close
+    Container,   // holds Items
     // More...
 }
 
@@ -756,6 +757,11 @@ public class WorldObject : MonoBehaviour
         return blackboardModule.Blackboard;
     }
 
+    public void changeDisplayName(string newname)
+    {
+        displayName = newname;
+    }
+    
 #if UNITY_EDITOR
     private void OnValidate()
     {

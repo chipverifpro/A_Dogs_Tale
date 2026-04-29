@@ -822,7 +822,7 @@ public sealed class InventoryDialogUI : MonoBehaviour
             if (candidate == null || candidate == controlledObject || !candidate.gameObject.activeInHierarchy)
                 continue;
 
-            if (candidate.Kind != WorldObjectKind.Agent && candidate.agentModule == null)
+            if (!CanUseAsTradeTarget(candidate))
                 continue;
 
             Vector3 delta = candidate.pos3d_map - controlledPosition;
@@ -847,6 +847,16 @@ public sealed class InventoryDialogUI : MonoBehaviour
         }
 
         tradeTargetOptions.Sort(CompareTradeTargetOptions);
+    }
+
+    private static bool CanUseAsTradeTarget(WorldObject candidate)
+    {
+        if (candidate == null)
+            return false;
+
+        return candidate.Kind == WorldObjectKind.Agent ||
+               candidate.agentModule != null ||
+               candidate.Kind == WorldObjectKind.Container;
     }
 
     private int FindTradeTargetOptionIndex(WorldObject agent, WorldObject item)

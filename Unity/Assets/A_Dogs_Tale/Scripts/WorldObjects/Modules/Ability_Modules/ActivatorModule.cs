@@ -65,14 +65,16 @@ namespace DogGame.Modules
         public bool UseToOpen(WorldObject key, WorldObject box)
         {
             bool success = false;
-            if (box.containerModule && box.containerModule.isClosed)
+            if (box.containerModule && (box.containerModule.isClosed || box.containerModule.isLocked))
             {
+                box.containerModule.isLocked = false;
                 box.containerModule.isClosed = false;
-                Debug.Log($"Container {box.DisplayName} opened using {key.DisplayName}.");
+                Debug.Log($"Container {box.DisplayName} unlocked and opened using {key.DisplayName}.");
+                box.changeDisplayName("Unlocked chest");
                 success = true;
             } else
             {
-                Debug.Log($"{key.DisplayName} can only open Containers that are closed.");
+                Debug.Log($"{key.DisplayName} can only open Containers that are closed or locked.");
                 success = false;
             }
             return success;
