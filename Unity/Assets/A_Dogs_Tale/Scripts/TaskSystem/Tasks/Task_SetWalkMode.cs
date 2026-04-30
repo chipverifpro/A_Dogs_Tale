@@ -23,7 +23,15 @@ namespace DogGame.Tasks
             if (context.Agent == null || context.Agent.agentMovementModule == null)
                 return TaskTickResult.Failed("missing_agent_movement_module");
 
-            context.Agent.agentMovementModule.walkMode = walkMode;
+            global::Pack pack = context.Agent.packMemberModule != null
+                ? context.Agent.packMemberModule.currentPack
+                : null;
+
+            if (pack != null)
+                pack.SetWalkMode(walkMode);
+            else
+                context.Agent.agentMovementModule.SetWalkMode(walkMode);
+
             return TaskTickResult.Succeeded();
         }
 

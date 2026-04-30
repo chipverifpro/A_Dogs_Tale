@@ -143,6 +143,12 @@ public class Pack : MonoBehaviour
 
         if (!packAgentList.Contains(agent))
         {
+            WorldObject leaderBeforeJoin = packLeader;
+            bool shouldInheritLeaderWalkMode = leaderBeforeJoin != null;
+            WalkMode leaderWalkMode = shouldInheritLeaderWalkMode
+                ? GetWalkMode(leaderBeforeJoin, WalkMode.Walk)
+                : WalkMode.Walk;
+
             // either insert or append agent to pack list.
             if (setAsLeader) packAgentList.Insert(0,agent);
             else packAgentList.Add(agent);
@@ -151,6 +157,9 @@ public class Pack : MonoBehaviour
             agent.packMemberModule.currentPack = this;
             // Move agent under pack in object hierarcy.
             agent.gameObject.transform.SetParent(this.gameObject.transform,false);
+
+            if (shouldInheritLeaderWalkMode)
+                SetWalkModeForMember(agent, leaderWalkMode);
             
             Debug.Log($"Pack {packName} added member {agent.DisplayName}");
             
@@ -203,6 +212,61 @@ public class Pack : MonoBehaviour
                 member.followerDecisionModule.SetFollowTarget(packLeader, distance);
         }
         return true;
+    }
+
+    public int SetWalkMode(WalkMode walkMode)
+    {
+        if (packAgentList == null)
+            return 0;
+
+        int changedCount = 0;
+        foreach (WorldObject member in packAgentList)
+        {
+            if (member == null)
+                continue;
+
+            if (SetWalkModeForMember(member, walkMode))
+                changedCount++;
+        }
+
+        return changedCount;
+    }
+
+    private static bool SetWalkModeForMember(WorldObject member, WalkMode walkMode)
+    {
+        if (member == null)
+            return false;
+
+        if (member.agentMovementModule == null || member.motionModule == null)
+            member.CreateModulesIfNeeded(ModuleFlags.agentMovementModule | ModuleFlags.motionModule);
+
+        if (member.agentMovementModule != null)
+        {
+            member.agentMovementModule.SetWalkMode(walkMode);
+            return true;
+        }
+
+        if (member.motionModule != null)
+        {
+            member.motionModule.SetWalkMode(walkMode);
+            return true;
+        }
+
+        return false;
+    }
+
+    private static WalkMode GetWalkMode(WorldObject member, WalkMode fallback)
+    {
+        if (member == null)
+            return fallback;
+
+        if (member.motionModule != null)
+            return member.motionModule.currentWalkMode;
+
+        if (member.agentMovementModule != null)
+            return member.agentMovementModule.walkMode;
+
+        return fallback;
     }
 
     // returns true if the pack no longer contains the member (or never did)

@@ -141,7 +141,8 @@ namespace DogGame.Modules
         // this just forwards the change to motionModule where it is kept.
         public void SetWalkMode(WalkMode walkMode)
         {
-            worldObject.motionModule.SetWalkMode(walkMode);
+            this.walkMode = walkMode;
+            worldObject.motionModule?.SetWalkMode(walkMode);
         }
 
         // Backward-compatible wrapper: accepts a world-space target and converts to map-space.

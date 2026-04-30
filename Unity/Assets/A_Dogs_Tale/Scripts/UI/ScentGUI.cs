@@ -1954,21 +1954,45 @@ public class ScentGUI : MonoBehaviour
             return;
         }
 
-        if (controlledObject.agentMovementModule == null || controlledObject.motionModule == null)
-            controlledObject.CreateModulesIfNeeded(ModuleFlags.agentMovementModule | ModuleFlags.motionModule);
+        Pack targetPack = controlledObject.packMemberModule != null
+            ? controlledObject.packMemberModule.currentPack
+            : null;
 
-        if (controlledObject.agentMovementModule != null)
-            controlledObject.agentMovementModule.SetWalkMode(walkMode);
-        else if (controlledObject.motionModule != null)
-            controlledObject.motionModule.SetWalkMode(walkMode);
-        else
+        int changedCount = targetPack != null
+            ? targetPack.SetWalkMode(walkMode)
+            : SetWalkModeForWorldObject(controlledObject, walkMode);
+
+        if (changedCount <= 0)
         {
-            Debug.LogWarning($"ScentGUI: {controlledObject.DisplayName} has no movement modules for speed selection.", controlledObject);
+            Debug.LogWarning($"ScentGUI: no movement modules available for speed selection from {controlledObject.DisplayName}.", controlledObject);
             return;
         }
 
         RefreshSpeedButtonState(force: true);
         CloseSpeedPanel();
+    }
+
+    private static int SetWalkModeForWorldObject(WorldObject worldObject, WalkMode walkMode)
+    {
+        if (worldObject == null)
+            return 0;
+
+        if (worldObject.agentMovementModule == null || worldObject.motionModule == null)
+            worldObject.CreateModulesIfNeeded(ModuleFlags.agentMovementModule | ModuleFlags.motionModule);
+
+        if (worldObject.agentMovementModule != null)
+        {
+            worldObject.agentMovementModule.SetWalkMode(walkMode);
+            return 1;
+        }
+
+        if (worldObject.motionModule != null)
+        {
+            worldObject.motionModule.SetWalkMode(walkMode);
+            return 1;
+        }
+
+        return 0;
     }
 
     private void RefreshNoseButtonSelectionState()
