@@ -7,7 +7,6 @@ using DogGame.LLM;
 using DogGame.Tasks;
 using DogGame.LLM.Agent;
 using DogGame;
-using DogGame.Noise;
 using DogGame.UI.InteractionWheel;
 using DogGame.World;
 using UnityEngine.Events;
@@ -22,6 +21,7 @@ using UnityEngine.Serialization;
 ///	  default prefab archetype
 ///	  save system hint
 /// </summary>
+
 public enum WorldObjectKind
 {
     Unknown = 0,
@@ -39,6 +39,16 @@ public enum WorldObjectKind
     Door    ,    // can open and close
     Container,   // holds Items
     // More...
+}
+
+public enum Species
+{
+    NA = 0,
+    Canine,
+    Human,
+    Animal,
+    Machine,
+    Other
 }
 
 [Flags]
@@ -142,6 +152,8 @@ public class WorldObject : MonoBehaviour
     [SerializeField] private int objectId = -1;
     [SerializeField] private string displayName;
     [SerializeField] private WorldObjectKind kind = WorldObjectKind.Unknown;
+    [SerializeField] public Species species = Species.NA;
+    [SerializeField] public string breed = "";
     [SerializeField] private bool autoRegister = true;
 
     [Header("Map/World Alignment")]
@@ -761,7 +773,7 @@ public class WorldObject : MonoBehaviour
     {
         displayName = newname;
     }
-    
+
 #if UNITY_EDITOR
     private void OnValidate()
     {

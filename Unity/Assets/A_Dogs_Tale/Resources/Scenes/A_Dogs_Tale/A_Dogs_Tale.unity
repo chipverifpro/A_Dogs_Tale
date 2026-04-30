@@ -837,7 +837,7 @@ Transform:
   m_GameObject: {fileID: 81350530}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 63.41664, y: 8.5, z: 42.09074}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1354,6 +1354,8 @@ MonoBehaviour:
   objectId: -1
   displayName: Deer_001
   kind: 2
+  species: 3
+  breed: Deer
   autoRegister: 1
   adjustMapToWorld: {x: -0.5, y: 0, z: -0.5}
   sizeRadius: 0.3
@@ -2274,8 +2276,6 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 287105689}
-  - {fileID: 1767457687}
   - {fileID: 439255723}
   m_Father: {fileID: 1767335688}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -3327,6 +3327,8 @@ MonoBehaviour:
   objectId: -1
   displayName: Kitty_001
   kind: 2
+  species: 3
+  breed: Cat
   autoRegister: 1
   adjustMapToWorld: {x: -0.5, y: 0, z: -0.5}
   sizeRadius: 0.3
@@ -4493,7 +4495,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::WorldObject
   objectId: -1
   displayName: police_Female_A
-  kind: 0
+  kind: 2
+  species: 2
+  breed: 
   autoRegister: 1
   adjustMapToWorld: {x: -0.5, y: 0, z: -0.5}
   sizeRadius: 0.3
@@ -4740,12 +4744,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 283934024}
   m_CullTransparentMesh: 1
---- !u!4 &287105689 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 254571088365553087, guid: 9879dce1f66d64c80a72f91e3eea8854,
-    type: 3}
-  m_PrefabInstance: {fileID: 7544978473152105595}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1 &302582585
 GameObject:
   m_ObjectHideFlags: 0
@@ -6461,6 +6459,8 @@ MonoBehaviour:
   objectId: -1
   displayName: Pinguin_001
   kind: 2
+  species: 3
+  breed: Penguin
   autoRegister: 1
   adjustMapToWorld: {x: -0.5, y: 0, z: -0.5}
   sizeRadius: 0.3
@@ -6746,6 +6746,8 @@ MonoBehaviour:
   objectId: -1
   displayName: Tiger_001
   kind: 2
+  species: 3
+  breed: Tiger
   autoRegister: 1
   adjustMapToWorld: {x: -0.5, y: 0, z: -0.5}
   sizeRadius: 0.3
@@ -7307,7 +7309,7 @@ GameObject:
   m_Component:
   - component: {fileID: 439255723}
   m_Layer: 0
-  m_Name: Item
+  m_Name: TestItems
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -7388,7 +7390,7 @@ MonoBehaviour:
   m_Lens:
     FieldOfView: 60.000004
     OrthographicSize: 100
-    NearClipPlane: 0.01
+    NearClipPlane: 0.3
     FarClipPlane: 1000
     Dutch: 0
     ModeOverride: 0
@@ -8449,7 +8451,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::WorldObject
   objectId: -1
   displayName: casual_Male_G
-  kind: 0
+  kind: 2
+  species: 2
+  breed: 
   autoRegister: 1
   adjustMapToWorld: {x: -0.5, y: 0, z: -0.5}
   sizeRadius: 0.3
@@ -9261,6 +9265,8 @@ MonoBehaviour:
   objectId: -1
   displayName: corgi
   kind: 2
+  species: 1
+  breed: Corgi
   autoRegister: 1
   adjustMapToWorld: {x: -0.5, y: 0, z: -0.5}
   sizeRadius: 0.3
@@ -9519,6 +9525,84 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2272e4992677c4977b85dbef83406534, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.LocationModule
+--- !u!1 &669396145
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 669396146}
+  - component: {fileID: 669396148}
+  - component: {fileID: 669396147}
+  m_Layer: 0
+  m_Name: Icon
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &669396146
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 669396145}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1840636953}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 126.72, y: 121.210434}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &669396147
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 669396145}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
+  m_Material: {fileID: 0}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_RaycastTarget: 1
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_Sprite: {fileID: 1929078426, guid: 13a6bef5351a1432d9c3eaefdbaec186, type: 3}
+  m_Type: 0
+  m_PreserveAspect: 1
+  m_FillCenter: 1
+  colorRingOuter: {fileID: 0}
+  colorRingInner: {fileID: 0}
+  optionsContainer: {fileID: 0}
+  m_FillMethod: 4
+  m_FillAmount: 1
+  m_FillClockwise: 1
+  m_FillOrigin: 0
+  m_UseSpriteMesh: 0
+  m_PixelsPerUnitMultiplier: 1
+--- !u!222 &669396148
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 669396145}
+  m_CullTransparentMesh: 1
 --- !u!1 &676370303
 GameObject:
   m_ObjectHideFlags: 3
@@ -10710,6 +10794,7 @@ MonoBehaviour:
   packAgentList:
   - {fileID: 6544990386685219154}
   - {fileID: 1651296793}
+  - {fileID: 1345767169}
   formation: 3
   leadershipType: 1
   followerType: 2
@@ -12657,6 +12742,7 @@ MonoBehaviour:
   strafeActionName: Strafe
   barkActionName: Bark
   markTerritoryActionName: MarkTerritory
+  digActionName: Dig
   pauseActionName: Pause
   zoomActionName: Zoom
   changeFormationActionName: ChangeFormation
@@ -13352,74 +13438,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1020557425}
   m_CullTransparentMesh: 1
---- !u!1001 &1020778769
-PrefabInstance:
-  m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    serializedVersion: 3
-    m_TransformParent: {fileID: 1041234626}
-    m_Modifications:
-    - target: {fileID: -8679921383154817045, guid: e8d5fa15c3c9e406aa85ca80ad3553c9,
-        type: 3}
-      propertyPath: m_LocalPosition.x
-      value: 4
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: e8d5fa15c3c9e406aa85ca80ad3553c9,
-        type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 0.5
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: e8d5fa15c3c9e406aa85ca80ad3553c9,
-        type: 3}
-      propertyPath: m_LocalPosition.z
-      value: 4
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: e8d5fa15c3c9e406aa85ca80ad3553c9,
-        type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: e8d5fa15c3c9e406aa85ca80ad3553c9,
-        type: 3}
-      propertyPath: m_LocalRotation.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: e8d5fa15c3c9e406aa85ca80ad3553c9,
-        type: 3}
-      propertyPath: m_LocalRotation.y
-      value: -0
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: e8d5fa15c3c9e406aa85ca80ad3553c9,
-        type: 3}
-      propertyPath: m_LocalRotation.z
-      value: -0
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: e8d5fa15c3c9e406aa85ca80ad3553c9,
-        type: 3}
-      propertyPath: m_LocalEulerAnglesHint.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: e8d5fa15c3c9e406aa85ca80ad3553c9,
-        type: 3}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: e8d5fa15c3c9e406aa85ca80ad3553c9,
-        type: 3}
-      propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 919132149155446097, guid: e8d5fa15c3c9e406aa85ca80ad3553c9,
-        type: 3}
-      propertyPath: m_Name
-      value: PF_Floor_DogFilledHole_Merged
-      objectReference: {fileID: 0}
-    m_RemovedComponents: []
-    m_RemovedGameObjects: []
-    m_AddedGameObjects: []
-    m_AddedComponents: []
-  m_SourcePrefab: {fileID: 100100000, guid: e8d5fa15c3c9e406aa85ca80ad3553c9, type: 3}
 --- !u!1001 &1036249802
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -13750,11 +13768,10 @@ Transform:
   m_GameObject: {fileID: 1041234624}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 63.41664, y: 8.5, z: 42.09074}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children:
-  - {fileID: 1502449944}
+  m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1041234627
@@ -14282,7 +14299,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::WorldObject
   objectId: -1
   displayName: casual_Female_G
-  kind: 0
+  kind: 2
+  species: 2
+  breed: 
   autoRegister: 1
   adjustMapToWorld: {x: -0.5, y: 0, z: -0.5}
   sizeRadius: 0.3
@@ -14614,6 +14633,8 @@ MonoBehaviour:
   objectId: -1
   displayName: Chicken_001
   kind: 2
+  species: 3
+  breed: Chicken
   autoRegister: 1
   adjustMapToWorld: {x: -0.5, y: 0, z: -0.5}
   sizeRadius: 0.3
@@ -15281,6 +15302,7 @@ MonoBehaviour:
   emoteSheetBResourcePath: Sprites/DogEmojiSheetB
   emoteSheetCResourcePath: Sprites/DogEmojiSheetC
   inventoryActionSpriteResourcePath: Sprites/InventoryActionsSheetA
+  digHoleSpriteResourcePath: Sprites/DigHoleSpriteA
   noseButtonSize: 176
   noseButtonMargin: 24
   modeButtonSpacing: 12
@@ -15292,6 +15314,10 @@ MonoBehaviour:
   emoteTileSize: 96
   emoteGridColumns: 4
   uiSortOrder: 5100
+  autoHideTopControls: 1
+  topControlsRevealEdgePixels: 10
+  topControlsSlideDuration: 0.18
+  topControlsHiddenTopPadding: 8
   tooltipFontSize: 22
   tooltipMaxWidth: 340
   tooltipPadding: {x: 16, y: 10}
@@ -15700,6 +15726,11 @@ PrefabInstance:
     - target: {fileID: -5624995233342408198, guid: bcc8732b8b44622449c23934f89e68c0,
         type: 3}
       propertyPath: initialDecisionType
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: -1740260722340342959, guid: bcc8732b8b44622449c23934f89e68c0,
+        type: 3}
+      propertyPath: species
       value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 186757882122740016, guid: bcc8732b8b44622449c23934f89e68c0,
@@ -16535,6 +16566,8 @@ MonoBehaviour:
   objectId: -1
   displayName: PlayerCrate
   kind: 2
+  species: 4
+  breed: Flying Crate
   autoRegister: 1
   adjustMapToWorld: {x: -0.5, y: 0, z: -0.5}
   sizeRadius: 0.4
@@ -19900,12 +19933,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1492570964}
   m_CullTransparentMesh: 1
---- !u!4 &1502449944 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: e8d5fa15c3c9e406aa85ca80ad3553c9,
-    type: 3}
-  m_PrefabInstance: {fileID: 1020778769}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1513638906
 GameObject:
   m_ObjectHideFlags: 0
@@ -21648,6 +21675,8 @@ MonoBehaviour:
   objectId: -1
   displayName: cur
   kind: 2
+  species: 1
+  breed: Cur
   autoRegister: 1
   adjustMapToWorld: {x: -0.5, y: 0, z: -0.5}
   sizeRadius: 0.3
@@ -22232,6 +22261,7 @@ RectTransform:
   - {fileID: 1980056577}
   - {fileID: 85930110}
   - {fileID: 203968218}
+  - {fileID: 2038691997}
   m_Father: {fileID: 1135862879}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
@@ -23269,6 +23299,10 @@ MonoBehaviour:
   height: 64
   sidePadding: 16
   useSafeArea: 1
+  autoCollapseWhenMouseAway: 1
+  collapsedHeightFraction: 0.33333334
+  collapsedHeightExtraPixels: 3
+  collapseSlideDuration: 0.18
   visibleLineCount: 3
   rowMinHeight: 32
   rowSpacing: 4
@@ -23934,80 +23968,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.GameTimeDriver
   pause: 0
---- !u!1001 &1767457686
-PrefabInstance:
-  m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    serializedVersion: 3
-    m_TransformParent: {fileID: 196505886}
-    m_Modifications:
-    - target: {fileID: 2181807915303970275, guid: 046ce96679bbe4b5aa2a90f994ea8b48,
-        type: 3}
-      propertyPath: m_Name
-      value: HoleFilled_Tile
-      objectReference: {fileID: 0}
-    - target: {fileID: 7996531996634756820, guid: 046ce96679bbe4b5aa2a90f994ea8b48,
-        type: 3}
-      propertyPath: m_LocalPosition.x
-      value: 5
-      objectReference: {fileID: 0}
-    - target: {fileID: 7996531996634756820, guid: 046ce96679bbe4b5aa2a90f994ea8b48,
-        type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 0.5
-      objectReference: {fileID: 0}
-    - target: {fileID: 7996531996634756820, guid: 046ce96679bbe4b5aa2a90f994ea8b48,
-        type: 3}
-      propertyPath: m_LocalPosition.z
-      value: 5
-      objectReference: {fileID: 0}
-    - target: {fileID: 7996531996634756820, guid: 046ce96679bbe4b5aa2a90f994ea8b48,
-        type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 7996531996634756820, guid: 046ce96679bbe4b5aa2a90f994ea8b48,
-        type: 3}
-      propertyPath: m_LocalRotation.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 7996531996634756820, guid: 046ce96679bbe4b5aa2a90f994ea8b48,
-        type: 3}
-      propertyPath: m_LocalRotation.y
-      value: -0
-      objectReference: {fileID: 0}
-    - target: {fileID: 7996531996634756820, guid: 046ce96679bbe4b5aa2a90f994ea8b48,
-        type: 3}
-      propertyPath: m_LocalRotation.z
-      value: -0
-      objectReference: {fileID: 0}
-    - target: {fileID: 7996531996634756820, guid: 046ce96679bbe4b5aa2a90f994ea8b48,
-        type: 3}
-      propertyPath: m_LocalEulerAnglesHint.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 7996531996634756820, guid: 046ce96679bbe4b5aa2a90f994ea8b48,
-        type: 3}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 7996531996634756820, guid: 046ce96679bbe4b5aa2a90f994ea8b48,
-        type: 3}
-      propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    m_RemovedComponents: []
-    m_RemovedGameObjects: []
-    m_AddedGameObjects: []
-    m_AddedComponents: []
-  m_SourcePrefab: {fileID: 100100000, guid: 046ce96679bbe4b5aa2a90f994ea8b48, type: 3}
---- !u!4 &1767457687 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 7996531996634756820, guid: 046ce96679bbe4b5aa2a90f994ea8b48,
-    type: 3}
-  m_PrefabInstance: {fileID: 1767457686}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1801122501
 GameObject:
   m_ObjectHideFlags: 0
@@ -24502,6 +24462,143 @@ CanvasRenderer:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1835439494}
+  m_CullTransparentMesh: 1
+--- !u!1 &1840636952
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1840636953}
+  - component: {fileID: 1840636957}
+  - component: {fileID: 1840636956}
+  - component: {fileID: 1840636955}
+  - component: {fileID: 1840636954}
+  m_Layer: 0
+  m_Name: DigButton
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &1840636953
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1840636952}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 669396146}
+  m_Father: {fileID: 2038691997}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 1, y: 1}
+  m_AnchorMax: {x: 1, y: 1}
+  m_AnchoredPosition: {x: -1152, y: -24}
+  m_SizeDelta: {x: 176, y: 176}
+  m_Pivot: {x: 1, y: 1}
+--- !u!114 &1840636954
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1840636952}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 0}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ScentGuiTooltipTrigger
+--- !u!114 &1840636955
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1840636952}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Button
+  m_Navigation:
+    m_Mode: 3
+    m_WrapAround: 0
+    m_SelectOnUp: {fileID: 0}
+    m_SelectOnDown: {fileID: 0}
+    m_SelectOnLeft: {fileID: 0}
+    m_SelectOnRight: {fileID: 0}
+  m_Transition: 1
+  m_Colors:
+    m_NormalColor: {r: 1, g: 1, b: 1, a: 1}
+    m_HighlightedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
+    m_PressedColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 1}
+    m_SelectedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
+    m_DisabledColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 0.5019608}
+    m_ColorMultiplier: 1
+    m_FadeDuration: 0.1
+  m_SpriteState:
+    m_HighlightedSprite: {fileID: 0}
+    m_PressedSprite: {fileID: 0}
+    m_SelectedSprite: {fileID: 0}
+    m_DisabledSprite: {fileID: 0}
+  m_AnimationTriggers:
+    m_NormalTrigger: Normal
+    m_HighlightedTrigger: Highlighted
+    m_PressedTrigger: Pressed
+    m_SelectedTrigger: Selected
+    m_DisabledTrigger: Disabled
+  m_Interactable: 1
+  m_TargetGraphic: {fileID: 1840636956}
+  m_OnClick:
+    m_PersistentCalls:
+      m_Calls: []
+--- !u!114 &1840636956
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1840636952}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
+  m_Material: {fileID: 0}
+  m_Color: {r: 0.96, g: 0.95, b: 0.9, a: 0.3019608}
+  m_RaycastTarget: 1
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_Sprite: {fileID: 0}
+  m_Type: 0
+  m_PreserveAspect: 0
+  m_FillCenter: 1
+  colorRingOuter: {fileID: 0}
+  colorRingInner: {fileID: 0}
+  optionsContainer: {fileID: 0}
+  m_FillMethod: 4
+  m_FillAmount: 1
+  m_FillClockwise: 1
+  m_FillOrigin: 0
+  m_UseSpriteMesh: 0
+  m_PixelsPerUnitMultiplier: 1
+--- !u!222 &1840636957
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1840636952}
   m_CullTransparentMesh: 1
 --- !u!1 &1854405888
 GameObject:
@@ -25472,6 +25569,8 @@ MonoBehaviour:
   objectId: -1
   displayName: Dog_001
   kind: 2
+  species: 1
+  breed: 
   autoRegister: 1
   adjustMapToWorld: {x: -0.5, y: 0, z: -0.5}
   sizeRadius: 0.3
@@ -26020,7 +26119,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::WorldObject
   objectId: -1
   displayName: little_boy_B
-  kind: 0
+  kind: 2
+  species: 2
+  breed: 
   autoRegister: 1
   adjustMapToWorld: {x: -0.5, y: 0, z: -0.5}
   sizeRadius: 0.3
@@ -26473,6 +26574,8 @@ MonoBehaviour:
   objectId: -1
   displayName: Horse_001
   kind: 2
+  species: 3
+  breed: Horse
   autoRegister: 1
   adjustMapToWorld: {x: -0.5, y: 0, z: -0.5}
   sizeRadius: 0.3
@@ -26662,6 +26765,8 @@ MonoBehaviour:
   objectId: -1
   displayName: pug
   kind: 2
+  species: 1
+  breed: Pug
   autoRegister: 1
   adjustMapToWorld: {x: -0.5, y: 0, z: -0.5}
   sizeRadius: 0.25
@@ -27166,7 +27271,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::WorldObject
   objectId: -1
   displayName: Doctor_Male_B
-  kind: 0
+  kind: 2
+  species: 2
+  breed: 
   autoRegister: 1
   adjustMapToWorld: {x: -0.5, y: 0, z: -0.5}
   sizeRadius: 0.3
@@ -27868,6 +27975,42 @@ MonoBehaviour:
   tunnelsAlgorithmDropdown: {fileID: 428731491}
   regenerateButton: {fileID: 1210548553}
   generator: {fileID: 409665914}
+--- !u!1 &2038691996
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2038691997}
+  m_Layer: 0
+  m_Name: DigControls
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &2038691997
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2038691996}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 1840636953}
+  m_Father: {fileID: 1653517296}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 1, y: 1}
+  m_AnchoredPosition: {x: -0.000061035156, y: 0}
+  m_SizeDelta: {x: 0, y: 0}
+  m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &2052094304
 GameObject:
   m_ObjectHideFlags: 0
@@ -28150,7 +28293,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::WorldObject
   objectId: -1
   displayName: prostheticLeg_girl
-  kind: 0
+  kind: 2
+  species: 2
+  breed: 
   autoRegister: 1
   adjustMapToWorld: {x: -0.5, y: 0, z: -0.5}
   sizeRadius: 0.3
@@ -29083,6 +29228,8 @@ MonoBehaviour:
   objectId: -1
   displayName: chihuahua
   kind: 2
+  species: 1
+  breed: Chihuahua
   autoRegister: 1
   adjustMapToWorld: {x: -0.5, y: 0, z: -0.5}
   sizeRadius: 0.15
@@ -30309,7 +30456,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::WorldObject
   objectId: -1
   displayName: germanshepherd
-  kind: 1
+  kind: 2
+  species: 1
+  breed: German Shepherd
   autoRegister: 1
   adjustMapToWorld: {x: -0.5, y: 0, z: -0.5}
   sizeRadius: 0.35
@@ -30901,74 +31050,6 @@ MonoBehaviour:
   closedAngle: 0
   openAngle: 90
   openCloseSpeedDegreesPerSecond: 180
---- !u!1001 &7544978473152105595
-PrefabInstance:
-  m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    serializedVersion: 3
-    m_TransformParent: {fileID: 196505886}
-    m_Modifications:
-    - target: {fileID: 254571088365553087, guid: 9879dce1f66d64c80a72f91e3eea8854,
-        type: 3}
-      propertyPath: m_LocalPosition.x
-      value: 2
-      objectReference: {fileID: 0}
-    - target: {fileID: 254571088365553087, guid: 9879dce1f66d64c80a72f91e3eea8854,
-        type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 0.5
-      objectReference: {fileID: 0}
-    - target: {fileID: 254571088365553087, guid: 9879dce1f66d64c80a72f91e3eea8854,
-        type: 3}
-      propertyPath: m_LocalPosition.z
-      value: 2
-      objectReference: {fileID: 0}
-    - target: {fileID: 254571088365553087, guid: 9879dce1f66d64c80a72f91e3eea8854,
-        type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 254571088365553087, guid: 9879dce1f66d64c80a72f91e3eea8854,
-        type: 3}
-      propertyPath: m_LocalRotation.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 254571088365553087, guid: 9879dce1f66d64c80a72f91e3eea8854,
-        type: 3}
-      propertyPath: m_LocalRotation.y
-      value: -0
-      objectReference: {fileID: 0}
-    - target: {fileID: 254571088365553087, guid: 9879dce1f66d64c80a72f91e3eea8854,
-        type: 3}
-      propertyPath: m_LocalRotation.z
-      value: -0
-      objectReference: {fileID: 0}
-    - target: {fileID: 254571088365553087, guid: 9879dce1f66d64c80a72f91e3eea8854,
-        type: 3}
-      propertyPath: m_LocalEulerAnglesHint.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 254571088365553087, guid: 9879dce1f66d64c80a72f91e3eea8854,
-        type: 3}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 254571088365553087, guid: 9879dce1f66d64c80a72f91e3eea8854,
-        type: 3}
-      propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 631554680554348293, guid: 9879dce1f66d64c80a72f91e3eea8854,
-        type: 3}
-      propertyPath: m_Name
-      value: Hole_Tile
-      objectReference: {fileID: 0}
-    m_RemovedComponents: []
-    m_RemovedGameObjects: []
-    m_AddedGameObjects: []
-    m_AddedComponents: []
-  m_SourcePrefab: {fileID: 100100000, guid: 9879dce1f66d64c80a72f91e3eea8854, type: 3}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
