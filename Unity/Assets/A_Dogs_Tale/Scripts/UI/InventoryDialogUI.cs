@@ -1109,12 +1109,23 @@ public sealed class InventoryDialogUI : MonoBehaviour
 
         if (traderItem == null)
         {
+            if (partnerItem != null)
+            {
+                OnTakeItemClicked(); // fall back to Take
+                return;
+            }
             BottomBanner.Show($"{trader.DisplayName} has no item to trade");
             return;
+            
         }
 
         if (partnerItem == null)
         {
+            if (traderItem != null)
+            {
+                OnGiveClicked();    // fall back to Give
+                return;
+            }
             BottomBanner.Show($"{partner.DisplayName} has no selected item to trade");
             return;
         }
