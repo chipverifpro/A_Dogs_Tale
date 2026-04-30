@@ -16,6 +16,7 @@ public class ScentGUI : MonoBehaviour
     private const string SimulationControlsContainerName = "SimulationControls";
     private const string EmoteControlsContainerName = "EmoteControls";
     private const string InventoryControlsContainerName = "InventoryControls";
+    private const string DigControlsContainerName = "DigControls";
     private const string TooltipContainerName = "Tooltips";
 
     [Header("External object references")]
@@ -31,6 +32,7 @@ public class ScentGUI : MonoBehaviour
     [SerializeField] private string emoteSheetBResourcePath = "Sprites/DogEmojiSheetB";
     [SerializeField] private string emoteSheetCResourcePath = "Sprites/DogEmojiSheetC";
     [SerializeField] private string inventoryActionSpriteResourcePath = "Sprites/InventoryActionsSheetA";
+    [SerializeField] private string digHoleSpriteResourcePath = "Sprites/DigHoleSpriteA";
     [SerializeField] private float noseButtonSize = 176f;
     [SerializeField] private float noseButtonMargin = 24f;
     [SerializeField] private float modeButtonSpacing = 12f;
@@ -58,6 +60,7 @@ public class ScentGUI : MonoBehaviour
     private readonly Dictionary<WalkMode, Sprite> speedSpriteLookup = new Dictionary<WalkMode, Sprite>();
     private readonly Dictionary<int, Sprite> playPauseSpriteLookup = new Dictionary<int, Sprite>();
     private readonly Dictionary<int, Sprite> inventoryActionSpriteLookup = new Dictionary<int, Sprite>();
+    private readonly Dictionary<int, Sprite> digHoleSpriteLookup = new Dictionary<int, Sprite>();
     private readonly Dictionary<char, Dictionary<int, Sprite>> emoteSpriteLookupBySheet = new Dictionary<char, Dictionary<int, Sprite>>();
     private readonly List<GameObject> dropdownRows = new List<GameObject>();
     private readonly List<GameObject> emoteDropdownTiles = new List<GameObject>();
@@ -91,6 +94,9 @@ public class ScentGUI : MonoBehaviour
     private RectTransform inventoryButtonRect;
     private Image inventoryButtonImage;
     private Image inventoryIconImage;
+    private RectTransform digButtonRect;
+    private Image digButtonImage;
+    private Image digIconImage;
     private RectTransform emoteDropdownRect;
     private RectTransform emoteDropdownContentRect;
     private ScrollRect emoteDropdownScrollRect;
@@ -261,6 +267,7 @@ public class ScentGUI : MonoBehaviour
         Transform simulationControlsTransform = EnsureSectionContainer(canvasObject.transform, SimulationControlsContainerName);
         Transform emoteControlsTransform = EnsureSectionContainer(canvasObject.transform, EmoteControlsContainerName);
         Transform inventoryControlsTransform = EnsureSectionContainer(canvasObject.transform, InventoryControlsContainerName);
+        Transform digControlsTransform = EnsureSectionContainer(canvasObject.transform, DigControlsContainerName);
         Transform tooltipTransform = EnsureSectionContainer(canvasObject.transform, TooltipContainerName);
 
         ReparentExistingUiElement(decisionModeControlsTransform, canvasObject.transform, "DecisionModeTitle");
@@ -271,6 +278,7 @@ public class ScentGUI : MonoBehaviour
         BuildSimulationButton(simulationControlsTransform, canvasObject.transform);
         BuildEmoteButton(emoteControlsTransform, canvasObject.transform);
         BuildInventoryButton(inventoryControlsTransform, canvasObject.transform);
+        BuildDigButton(digControlsTransform, canvasObject.transform);
         BuildDropdown(scentControlsTransform, canvasObject.transform);
         BuildModePanel(decisionModeControlsTransform, canvasObject.transform);
         BuildSpeedPanel(speedControlsTransform, canvasObject.transform);
@@ -786,6 +794,84 @@ public class ScentGUI : MonoBehaviour
         inventoryIconImage.color = Color.white;
 
         ConfigureTooltip(buttonObject, () => "Inventory");
+    }
+
+    private void BuildDigButton(Transform parent, Transform searchRoot)
+    {
+        Transform existingButton = FindExistingUiElement(parent, searchRoot, "DigButton");
+        GameObject buttonObject;
+        bool createdButton = existingButton == null;
+        if (createdButton)
+        {
+            buttonObject = new GameObject(
+                "DigButton",
+                typeof(RectTransform),
+                typeof(Image),
+                typeof(Button));
+            buttonObject.transform.SetParent(parent, false);
+        }
+        else
+        {
+            buttonObject = existingButton.gameObject;
+        }
+
+        digButtonRect = buttonObject.GetComponent<RectTransform>();
+        digButtonRect.anchorMin = new Vector2(1f, 1f);
+        digButtonRect.anchorMax = new Vector2(1f, 1f);
+        digButtonRect.pivot = new Vector2(1f, 1f);
+        digButtonRect.anchoredPosition = new Vector2(
+            -(noseButtonMargin + ((noseButtonSize + modeButtonSpacing) * 6f)),
+            -noseButtonMargin);
+        digButtonRect.sizeDelta = new Vector2(noseButtonSize, noseButtonSize);
+
+        digButtonImage = GetOrAddComponent<Image>(buttonObject);
+        digButtonImage.color = noseButtonColor;
+        digButtonImage.raycastTarget = true;
+
+        Button button = GetOrAddComponent<Button>(buttonObject);
+        button.targetGraphic = digButtonImage;
+        button.onClick.RemoveListener(HandleDigButtonPressed);
+        button.onClick.AddListener(HandleDigButtonPressed);
+
+        Transform existingIcon = buttonObject.transform.Find("Icon");
+        GameObject iconObject;
+        bool createdIcon = existingIcon == null;
+        if (createdIcon)
+        {
+            iconObject = new GameObject("Icon", typeof(RectTransform), typeof(Image));
+            iconObject.transform.SetParent(buttonObject.transform, false);
+        }
+        else
+        {
+            iconObject = existingIcon.gameObject;
+        }
+
+        RectTransform iconRect = iconObject.GetComponent<RectTransform>();
+        iconRect.anchorMin = new Vector2(0.5f, 0.5f);
+        iconRect.anchorMax = new Vector2(0.5f, 0.5f);
+        iconRect.pivot = new Vector2(0.5f, 0.5f);
+        iconRect.anchoredPosition = Vector2.zero;
+
+        digIconImage = GetOrAddComponent<Image>(iconObject);
+        digIconImage.sprite = GetDigHoleButtonSprite();
+        digIconImage.preserveAspect = true;
+        digIconImage.color = Color.white;
+        SetDigIconSize(iconRect, digIconImage.sprite);
+
+        ConfigureTooltip(buttonObject, () => "Dig");
+    }
+
+    private void SetDigIconSize(RectTransform iconRect, Sprite sprite)
+    {
+        if (iconRect == null)
+            return;
+
+        float iconWidth = noseButtonSize * 0.72f;
+        float aspectRatio = sprite != null && sprite.rect.width > 0f
+            ? sprite.rect.height / sprite.rect.width
+            : 1f;
+        float iconHeight = Mathf.Min(iconWidth * aspectRatio, noseButtonSize * 0.9f);
+        iconRect.sizeDelta = new Vector2(iconWidth, iconHeight);
     }
 
     private void BuildEmoteDropdown(Transform parent, Transform searchRoot)
@@ -1972,6 +2058,24 @@ public class ScentGUI : MonoBehaviour
         CloseSpeedPanel();
     }
 
+    private void HandleDigButtonPressed()
+    {
+        CloseDropdown();
+        CloseModePanel();
+        CloseSpeedPanel();
+        CloseEmoteDropdown();
+
+        WorldObject controlledObject = GetCurrentControlledWorldObject();
+        if (controlledObject == null)
+        {
+            Debug.LogWarning("ScentGUI: no controlled WorldObject available for digging.", this);
+            BottomBanner.Show("No dog is selected to dig.");
+            return;
+        }
+
+        TerrainDigService.TryDigAt(controlledObject);
+    }
+
     private static int SetWalkModeForWorldObject(WorldObject worldObject, WalkMode walkMode)
     {
         if (worldObject == null)
@@ -2304,6 +2408,20 @@ public class ScentGUI : MonoBehaviour
         return null;
     }
 
+    private Sprite GetDigHoleButtonSprite()
+    {
+        if (digHoleSpriteLookup.Count == 0)
+            LoadDigHoleSprites();
+
+        if (digHoleSpriteLookup.TryGetValue(0, out Sprite sprite))
+            return sprite;
+
+        foreach (KeyValuePair<int, Sprite> entry in digHoleSpriteLookup)
+            return entry.Value;
+
+        return null;
+    }
+
     private Sprite GetEmoteSprite(DogEmojiEntry entry)
     {
         if (!emoteSpriteLookupBySheet.TryGetValue(entry.SheetId, out Dictionary<int, Sprite> spriteLookup))
@@ -2456,6 +2574,35 @@ public class ScentGUI : MonoBehaviour
 
         if (!inventoryActionSpriteLookup.ContainsKey(2))
             Debug.LogWarning($"ScentGUI: loaded {sprites.Length} sprites from Resources/{resourcePath}, but InventoryActionsSheetA_2 was not found.", this);
+    }
+
+    private void LoadDigHoleSprites()
+    {
+        string resourcePath = NormalizeResourcePath(digHoleSpriteResourcePath);
+        Sprite[] sprites = Resources.LoadAll<Sprite>(resourcePath);
+        if (sprites == null || sprites.Length == 0)
+        {
+            Debug.LogWarning($"ScentGUI: no dig hole sprites found at Resources/{resourcePath}. Make sure the path has no file extension and the texture is imported as Sprite.", this);
+            return;
+        }
+
+        Sprite firstSprite = null;
+        for (int i = 0; i < sprites.Length; i++)
+        {
+            Sprite sprite = sprites[i];
+            if (sprite == null)
+                continue;
+
+            if (firstSprite == null)
+                firstSprite = sprite;
+
+            int index = GetSpriteSheetIndex(sprite.name);
+            if (index >= 0)
+                digHoleSpriteLookup[index] = sprite;
+        }
+
+        if (!digHoleSpriteLookup.ContainsKey(0) && firstSprite != null)
+            digHoleSpriteLookup[0] = firstSprite;
     }
 
     private void LoadSpeedModeSprites()
