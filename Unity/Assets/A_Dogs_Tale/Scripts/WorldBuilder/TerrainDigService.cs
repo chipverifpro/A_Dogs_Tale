@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 public static class TerrainDigService
@@ -6,6 +7,8 @@ public static class TerrainDigService
     private const string HoleArchetypeId = "PF_Floor_Hole";
     private const string MoundArchetypeId = "PF_Floor_Mound";
     private const float DigTileYOffset = 0.43f;
+
+    private static readonly Dictionary<BuriedObjectKey, WorldObject> buriedObjectsByCell = new();
 
     public static bool TryDigAt(WorldObject actor)
     {
@@ -61,8 +64,95 @@ public static class TerrainDigService
             SplitMergedFloorAroundCell(floorLayer, index, floorInst, width, height, cell, nextArchetype, dir);
         }
 
+        if (string.Equals(nextArchetype, MoundArchetypeId))
+            TryBuryGroundObject(actor, cell);
+        else if (string.Equals(nextArchetype, HoleArchetypeId))
+            TryRevealBuriedObject(cell);
+
         dir.manufactureGO.BuildAll();
         return true;
+    }
+
+    private static bool TryBuryGroundObject(WorldObject actor, Cell cell)
+    {
+        BuriedObjectKey key = BuriedObjectKey.FromCell(cell);
+        if (buriedObjectsByCell.TryGetValue(key, out WorldObject existing) && existing != null)
+            return false;
+
+        if (!TryFindGroundObjectToBury(actor, cell, out WorldObject target))
+            return false;
+
+        buriedObjectsByCell[key] = target;
+        target.gameObject.SetActive(false);
+        BottomBanner.Show($"{target.DisplayName} was buried.");
+        return true;
+    }
+
+    private static bool TryRevealBuriedObject(Cell cell)
+    {
+        BuriedObjectKey key = BuriedObjectKey.FromCell(cell);
+        if (!buriedObjectsByCell.TryGetValue(key, out WorldObject target))
+            return false;
+
+        buriedObjectsByCell.Remove(key);
+        if (target == null)
+            return false;
+
+        target.gameObject.SetActive(true);
+        BottomBanner.Show($"{target.DisplayName} was found.");
+        return true;
+    }
+
+    private static bool TryFindGroundObjectToBury(WorldObject actor, Cell cell, out WorldObject target)
+    {
+        target = null;
+
+        WorldObjectRegistry registry = WorldObjectRegistry.Instance;
+        if (registry == null)
+            return false;
+
+        float nearestDistanceSqr = float.PositiveInfinity;
+        Vector3 cellCenter = cell.center3d_f;
+
+        foreach (WorldObject candidate in registry.GetAllObjects())
+        {
+            if (!CanBuryCandidate(actor, candidate, cell))
+                continue;
+
+            Vector3 delta = candidate.pos3d_map - cellCenter;
+            delta.y = 0f;
+            float distanceSqr = delta.sqrMagnitude;
+            if (distanceSqr >= nearestDistanceSqr)
+                continue;
+
+            nearestDistanceSqr = distanceSqr;
+            target = candidate;
+        }
+
+        return target != null;
+    }
+
+    private static bool CanBuryCandidate(WorldObject actor, WorldObject candidate, Cell cell)
+    {
+        if (candidate == null || candidate == actor)
+            return false;
+
+        if (candidate.Kind != WorldObjectKind.Item && candidate.Kind != WorldObjectKind.Container)
+            return false;
+
+        if (!candidate.gameObject.activeInHierarchy)
+            return false;
+
+        if (candidate.transform.parent != null &&
+            candidate.transform.parent.GetComponentInParent<WorldObject>() != null)
+        {
+            return false;
+        }
+
+        Vector3 candidatePos = candidate.pos3d_map;
+        int x = Mathf.FloorToInt(candidatePos.x);
+        int y = Mathf.FloorToInt(candidatePos.z);
+        return x == cell.x && y == cell.y;
     }
 
     private static void EnsureDigArchetype(ElementStore store, string id, string resourcesPath)
@@ -229,5 +319,24 @@ public static class TerrainDigService
     private static Vector3 DigTilePosition(Dir dir, Vector2Int coord, int heightSteps)
     {
         return TilePosition(dir, coord, heightSteps) + new Vector3(0f, DigTileYOffset, 0f);
+    }
+
+    private readonly struct BuriedObjectKey
+    {
+        private readonly int x;
+        private readonly int y;
+        private readonly int height;
+
+        private BuriedObjectKey(int x, int y, int height)
+        {
+            this.x = x;
+            this.y = y;
+            this.height = height;
+        }
+
+        public static BuriedObjectKey FromCell(Cell cell)
+        {
+            return new BuriedObjectKey(cell.x, cell.y, cell.height);
+        }
     }
 }
