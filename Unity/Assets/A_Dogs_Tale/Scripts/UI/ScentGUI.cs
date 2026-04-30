@@ -44,6 +44,10 @@ public class ScentGUI : MonoBehaviour
     [SerializeField] private float emoteTileSize = 96f;
     [SerializeField] private int emoteGridColumns = 4;
     [SerializeField] private int uiSortOrder = 5100;
+    [SerializeField] private bool autoHideTopControls = true;
+    [SerializeField] private float topControlsRevealEdgePixels = 10f;
+    [SerializeField] private float topControlsSlideDuration = 0.18f;
+    [SerializeField] private float topControlsHiddenTopPadding = 8f;
     [SerializeField] private float tooltipFontSize = 22f;
     [SerializeField] private float tooltipMaxWidth = 340f;
     [SerializeField] private Vector2 tooltipPadding = new Vector2(16f, 10f);
@@ -108,6 +112,8 @@ public class ScentGUI : MonoBehaviour
     private WalkMode displayedWalkMode = WalkMode.None;
     private bool? displayedPausedState;
     private DogEmojiEntry? selectedEmoteEntry;
+    private float topControlsVisibility;
+    private float topControlsSlideVelocity;
     private bool uiBuilt;
 
     private readonly AgentDecisionType[] selectableDecisionModes =
@@ -149,6 +155,7 @@ public class ScentGUI : MonoBehaviour
         RefreshSpeedButtonState();
         RefreshSimulationButtonState();
         RefreshEmoteButtonState();
+        UpdateTopControlsAutoHide();
 
         if (Mouse.current == null || !Mouse.current.leftButton.wasPressedThisFrame)
             return;
@@ -284,6 +291,9 @@ public class ScentGUI : MonoBehaviour
         BuildSpeedPanel(speedControlsTransform, canvasObject.transform);
         BuildEmoteDropdown(emoteControlsTransform, canvasObject.transform);
         BuildTooltip(tooltipTransform, canvasObject.transform);
+        if (!autoHideTopControls)
+            topControlsVisibility = 1f;
+        ApplyTopControlsSlidePosition();
     }
 
     private Transform FindExistingScentTargetCanvas()
@@ -872,6 +882,96 @@ public class ScentGUI : MonoBehaviour
             : 1f;
         float iconHeight = Mathf.Min(iconWidth * aspectRatio, noseButtonSize * 0.9f);
         iconRect.sizeDelta = new Vector2(iconWidth, iconHeight);
+    }
+
+    private void UpdateTopControlsAutoHide()
+    {
+        if (!uiBuilt)
+            return;
+
+        float targetVisibility = autoHideTopControls && !ShouldShowTopControls()
+            ? 0f
+            : 1f;
+
+        if (!autoHideTopControls)
+        {
+            topControlsVisibility = targetVisibility;
+            topControlsSlideVelocity = 0f;
+        }
+        else
+        {
+            topControlsVisibility = Mathf.SmoothDamp(
+                topControlsVisibility,
+                targetVisibility,
+                ref topControlsSlideVelocity,
+                Mathf.Max(0.01f, topControlsSlideDuration),
+                Mathf.Infinity,
+                Time.unscaledDeltaTime);
+
+            if (Mathf.Abs(topControlsVisibility - targetVisibility) < 0.001f)
+            {
+                topControlsVisibility = targetVisibility;
+                topControlsSlideVelocity = 0f;
+            }
+        }
+
+        ApplyTopControlsSlidePosition();
+
+        if (targetVisibility <= 0f && topControlsVisibility < 0.05f)
+            HideTooltip();
+    }
+
+    private bool ShouldShowTopControls()
+    {
+        if (IsAnyTopPanelOpen())
+            return true;
+
+        if (Mouse.current == null)
+            return false;
+
+        Vector2 mousePosition = Mouse.current.position.ReadValue();
+        if (mousePosition.y >= Screen.height - topControlsRevealEdgePixels)
+            return true;
+
+        if (topControlsVisibility <= 0.01f)
+            return false;
+
+        float canvasScale = Screen.height > 0 ? Screen.height / 1080f : 1f;
+        float visibleButtonsBottomY = Screen.height - ((noseButtonMargin + noseButtonSize) * canvasScale);
+        return mousePosition.y >= visibleButtonsBottomY;
+    }
+
+    private bool IsAnyTopPanelOpen()
+    {
+        return (dropdownRect != null && dropdownRect.gameObject.activeSelf) ||
+               (modePanelRect != null && modePanelRect.gameObject.activeSelf) ||
+               (speedPanelRect != null && speedPanelRect.gameObject.activeSelf) ||
+               (emoteDropdownRect != null && emoteDropdownRect.gameObject.activeSelf);
+    }
+
+    private void ApplyTopControlsSlidePosition()
+    {
+        float shownY = -noseButtonMargin;
+        float hiddenY = noseButtonSize + topControlsHiddenTopPadding;
+        float y = Mathf.Lerp(hiddenY, shownY, topControlsVisibility);
+
+        ApplyTopControlY(noseButtonRect, y);
+        ApplyTopControlY(modeButtonRect, y);
+        ApplyTopControlY(speedButtonRect, y);
+        ApplyTopControlY(simulationButtonRect, y);
+        ApplyTopControlY(emoteButtonRect, y);
+        ApplyTopControlY(inventoryButtonRect, y);
+        ApplyTopControlY(digButtonRect, y);
+    }
+
+    private static void ApplyTopControlY(RectTransform rectTransform, float y)
+    {
+        if (rectTransform == null)
+            return;
+
+        Vector2 anchoredPosition = rectTransform.anchoredPosition;
+        anchoredPosition.y = y;
+        rectTransform.anchoredPosition = anchoredPosition;
     }
 
     private void BuildEmoteDropdown(Transform parent, Transform searchRoot)
