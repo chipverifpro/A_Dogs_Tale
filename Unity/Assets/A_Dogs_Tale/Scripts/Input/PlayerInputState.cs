@@ -7,6 +7,7 @@ public class PlayerInputState
     // one-shot commands
     public bool barkPressed;
     public bool markTerritoryPressed;
+    public bool digPressed;
     public bool pausePressed;
 
     // camera commands

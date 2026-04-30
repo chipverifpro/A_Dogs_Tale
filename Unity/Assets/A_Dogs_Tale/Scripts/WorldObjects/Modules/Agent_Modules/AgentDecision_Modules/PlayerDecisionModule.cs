@@ -370,6 +370,11 @@ namespace DogGame.Modules
                 worldObject.scentEmitterModule.EmitOnDemandScent(1.0f); // spread over 1 second
             }
 
+            if (state.digPressed)
+            {
+                global::TerrainDigService.TryDigAt(worldObject);
+            }
+
             // You can also use state.anyKeyOrButtonPressed to skip cutscenes,
             // advance dialogue, etc. Hook that into your game state manager.
         }

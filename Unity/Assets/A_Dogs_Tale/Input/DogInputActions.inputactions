@@ -97,6 +97,15 @@
                     "initialStateCheck": false
                 },
                 {
+                    "name": "Dig",
+                    "type": "Button",
+                    "id": "a3b43dd5-016e-424e-8588-cd9f22cad9d0",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
                     "name": "Zoom",
                     "type": "Value",
                     "id": "ee060b79-4d1a-4075-b0d6-01dccc1afc20",
@@ -473,6 +482,17 @@
                     "processors": "",
                     "groups": "",
                     "action": "MarkTerritory",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "a9eb2a84-88d4-4e57-87e3-67ab0d8c64c6",
+                    "path": "<Keyboard>/v",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Dig",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },

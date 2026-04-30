@@ -183,6 +183,15 @@ public partial class @DogInputActions: IInputActionCollection2, IDisposable
                     ""initialStateCheck"": false
                 },
                 {
+                    ""name"": ""Dig"",
+                    ""type"": ""Button"",
+                    ""id"": ""a3b43dd5-016e-424e-8588-cd9f22cad9d0"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
                     ""name"": ""Zoom"",
                     ""type"": ""Value"",
                     ""id"": ""ee060b79-4d1a-4075-b0d6-01dccc1afc20"",
@@ -559,6 +568,17 @@ public partial class @DogInputActions: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""groups"": """",
                     ""action"": ""MarkTerritory"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""a9eb2a84-88d4-4e57-87e3-67ab0d8c64c6"",
+                    ""path"": ""<Keyboard>/v"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Dig"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 },
@@ -1183,6 +1203,7 @@ public partial class @DogInputActions: IInputActionCollection2, IDisposable
         m_Player_Pause = m_Player.FindAction("Pause", throwIfNotFound: true);
         m_Player_CameraView = m_Player.FindAction("CameraView", throwIfNotFound: true);
         m_Player_MarkTerritory = m_Player.FindAction("MarkTerritory", throwIfNotFound: true);
+        m_Player_Dig = m_Player.FindAction("Dig", throwIfNotFound: true);
         m_Player_Zoom = m_Player.FindAction("Zoom", throwIfNotFound: true);
         m_Player_ChangeFormation = m_Player.FindAction("ChangeFormation", throwIfNotFound: true);
         m_Player_SelectObject = m_Player.FindAction("SelectObject", throwIfNotFound: true);
@@ -1295,6 +1316,7 @@ public partial class @DogInputActions: IInputActionCollection2, IDisposable
     private readonly InputAction m_Player_Pause;
     private readonly InputAction m_Player_CameraView;
     private readonly InputAction m_Player_MarkTerritory;
+    private readonly InputAction m_Player_Dig;
     private readonly InputAction m_Player_Zoom;
     private readonly InputAction m_Player_ChangeFormation;
     private readonly InputAction m_Player_SelectObject;
@@ -1355,6 +1377,10 @@ public partial class @DogInputActions: IInputActionCollection2, IDisposable
         /// Provides access to the underlying input action "Player/MarkTerritory".
         /// </summary>
         public InputAction @MarkTerritory => m_Wrapper.m_Player_MarkTerritory;
+        /// <summary>
+        /// Provides access to the underlying input action "Player/Dig".
+        /// </summary>
+        public InputAction @Dig => m_Wrapper.m_Player_Dig;
         /// <summary>
         /// Provides access to the underlying input action "Player/Zoom".
         /// </summary>
@@ -1447,6 +1473,9 @@ public partial class @DogInputActions: IInputActionCollection2, IDisposable
             @MarkTerritory.started += instance.OnMarkTerritory;
             @MarkTerritory.performed += instance.OnMarkTerritory;
             @MarkTerritory.canceled += instance.OnMarkTerritory;
+            @Dig.started += instance.OnDig;
+            @Dig.performed += instance.OnDig;
+            @Dig.canceled += instance.OnDig;
             @Zoom.started += instance.OnZoom;
             @Zoom.performed += instance.OnZoom;
             @Zoom.canceled += instance.OnZoom;
@@ -1515,6 +1544,9 @@ public partial class @DogInputActions: IInputActionCollection2, IDisposable
             @MarkTerritory.started -= instance.OnMarkTerritory;
             @MarkTerritory.performed -= instance.OnMarkTerritory;
             @MarkTerritory.canceled -= instance.OnMarkTerritory;
+            @Dig.started -= instance.OnDig;
+            @Dig.performed -= instance.OnDig;
+            @Dig.canceled -= instance.OnDig;
             @Zoom.started -= instance.OnZoom;
             @Zoom.performed -= instance.OnZoom;
             @Zoom.canceled -= instance.OnZoom;
@@ -1847,6 +1879,13 @@ public partial class @DogInputActions: IInputActionCollection2, IDisposable
         /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
         /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
         void OnMarkTerritory(InputAction.CallbackContext context);
+        /// <summary>
+        /// Method invoked when associated input action "Dig" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnDig(InputAction.CallbackContext context);
         /// <summary>
         /// Method invoked when associated input action "Zoom" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
         /// </summary>

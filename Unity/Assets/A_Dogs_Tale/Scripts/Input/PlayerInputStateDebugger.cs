@@ -53,6 +53,8 @@ public class PlayerInputStateDebugger : MonoBehaviour
             Debug.Log($"Bark");
         if (gameInputRouter.InputState.markTerritoryPressed)
             Debug.Log($"MarkTerritory");
+        if (gameInputRouter.InputState.digPressed)
+            Debug.Log($"Dig");
         if (gameInputRouter.InputState.changeFormationPressed)
             Debug.Log($"Formation Change");
         if (gameInputRouter.InputState.interactPressed)

@@ -57,6 +57,7 @@ public static class DogInputActionsGenerator
         var pauseAction = AddButton(player, "Pause");
         var cameraViewAction = AddButton(player, "CameraView");
         var markTerritoryAction = AddButton(player, "MarkTerritory");
+        var digAction = AddButton(player, "Dig");
         var zoomAction = AddValue(player, "Zoom", "Axis");
         var changeFormationAction = AddButton(player, "ChangeFormation");
         var selectObjectAction = AddButton(player, "SelectObject");
@@ -104,6 +105,7 @@ public static class DogInputActionsGenerator
         cameraViewAction.AddBinding("<Gamepad>/buttonNorth");
         markTerritoryAction.AddBinding("<Keyboard>/r");
         markTerritoryAction.AddBinding("<Gamepad>/rightTrigger");
+        digAction.AddBinding("<Keyboard>/v");
         zoomAction.AddBinding("<Mouse>/scroll/y");
 
         var zoomKeyboardAxis = zoomAction.AddCompositeBinding("1DAxis");

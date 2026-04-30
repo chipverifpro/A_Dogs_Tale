@@ -36,6 +36,7 @@ public class NewInputAdapter : MonoBehaviour
     [SerializeField] private string strafeActionName          = "Strafe";
     [SerializeField] private string barkActionName            = "Bark";
     [SerializeField] private string markTerritoryActionName   = "MarkTerritory";
+    [SerializeField] private string digActionName             = "Dig";
     [SerializeField] private string pauseActionName           = "Pause";
     [SerializeField] private string zoomActionName            = "Zoom";
     [SerializeField] private string changeFormationActionName = "ChangeFormation";
@@ -63,6 +64,7 @@ public class NewInputAdapter : MonoBehaviour
     private InputAction strafeAction;
     private InputAction barkAction;
     private InputAction markTerritoryAction;
+    private InputAction digAction;
     private InputAction pauseAction;
     private InputAction zoomAction;
     private InputAction changeFormationAction;
@@ -164,6 +166,7 @@ public class NewInputAdapter : MonoBehaviour
         strafeAction          = FindAction(map, strafeActionName);
         barkAction            = FindAction(map, barkActionName);
         markTerritoryAction   = FindAction(map, markTerritoryActionName);
+        digAction             = FindAction(map, digActionName);
         pauseAction           = FindAction(map, pauseActionName);
         zoomAction            = FindAction(map, zoomActionName);
         changeFormationAction = FindAction(map, changeFormationActionName);
@@ -368,6 +371,8 @@ public class NewInputAdapter : MonoBehaviour
         // --- One-shot commands (per-frame triggers) ---
         state.barkPressed = barkAction != null && barkAction.triggered;
         state.markTerritoryPressed = markTerritoryAction != null && markTerritoryAction.triggered;
+        state.digPressed = (digAction != null && digAction.triggered) ||
+                           (digAction == null && Keyboard.current != null && Keyboard.current.vKey.wasPressedThisFrame);
         state.pausePressed = pauseAction != null && pauseAction.triggered;
         state.requestedPopupTabIndex = 0;
         if (popupTab1Action != null && popupTab1Action.triggered) state.requestedPopupTabIndex = 1;

@@ -10,6 +10,7 @@ using UnityEngine.Rendering;
 /// </summary>
 public class ManufactureGO : MonoBehaviour
 {
+    private const string SurfaceTintMaterialName = "Green_Mat";
     
     [Header("Input data (logical elements)")]
     public Dir dir;
@@ -416,20 +417,20 @@ public class ManufactureGO : MonoBehaviour
 
         var mpb = new MaterialPropertyBlock();
 
+        bool tintOnlySurfaceMaterial = ShouldTintOnlySurfaceMaterial(inst);
+
         foreach (var r in renderers)
         {
-            mpb.Clear();
-            mpb.SetColor("_Color",     finalColor);
-            mpb.SetColor("_BaseColor", finalColor); // URP/HDRP compatibility
-
-            Texture textureOverride = inst.textureOverride;
-            if (textureOverride != null)
+            if (tintOnlySurfaceMaterial)
             {
-                mpb.SetTexture("_BaseMap", textureOverride);
-                mpb.SetTexture("_MainTex", textureOverride);
+                ApplyColorToNamedMaterialSlots(r, mpb, finalColor, inst.textureOverride, SurfaceTintMaterialName);
             }
-
-            r.SetPropertyBlock(mpb);
+            else
+            {
+                mpb.Clear();
+                AddColorProperties(mpb, finalColor, inst.textureOverride);
+                r.SetPropertyBlock(mpb);
+            }
 
             // Optional: shadow flags from archetype
             var flags = archetype.renderFlags;
@@ -437,6 +438,58 @@ public class ManufactureGO : MonoBehaviour
             bool receives = (flags & ElementRenderFlags.ReceivesShadows) != 0;
             r.shadowCastingMode = casts ? ShadowCastingMode.On : ShadowCastingMode.Off;
             r.receiveShadows    = receives;
+        }
+    }
+
+    private static bool ShouldTintOnlySurfaceMaterial(ElementInstanceData inst)
+    {
+        if (inst == null)
+            return false;
+
+        return inst.layerKind == ElementLayerKind.Floor ||
+               inst.layerKind == ElementLayerKind.TriangleFloor ||
+               inst.layerKind == ElementLayerKind.Ceiling;
+    }
+
+    private static void ApplyColorToNamedMaterialSlots(
+        Renderer renderer,
+        MaterialPropertyBlock mpb,
+        Color color,
+        Texture textureOverride,
+        string materialName)
+    {
+        if (renderer == null)
+            return;
+
+        renderer.SetPropertyBlock(null);
+
+        Material[] materials = renderer.sharedMaterials;
+        if (materials == null || materials.Length == 0)
+            return;
+
+        for (int i = 0; i < materials.Length; i++)
+        {
+            renderer.SetPropertyBlock(null, i);
+
+            Material material = materials[i];
+            if (material == null || !string.Equals(material.name, materialName, System.StringComparison.Ordinal))
+                continue;
+
+            mpb.Clear();
+            AddColorProperties(mpb, color, textureOverride);
+            renderer.SetPropertyBlock(mpb, i);
+        }
+    }
+
+    private static void AddColorProperties(MaterialPropertyBlock mpb, Color color, Texture textureOverride)
+    {
+        mpb.SetColor("_Color",     color);
+        mpb.SetColor("_BaseColor", color); // URP/HDRP compatibility
+
+        if (textureOverride != null)
+        {
+            mpb.SetTexture("_BaseMap", textureOverride);
+            mpb.SetTexture("_MainTex", textureOverride);
         }
     }
 
