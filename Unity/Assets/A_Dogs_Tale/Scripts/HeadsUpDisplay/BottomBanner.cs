@@ -52,6 +52,10 @@ public class BottomBanner : MonoBehaviour
     [SerializeField] float height = 172f;
     [SerializeField] float sidePadding = 16f;
     [SerializeField] bool useSafeArea = true;
+    [SerializeField] bool autoCollapseWhenMouseAway = true;
+    [SerializeField] float collapsedHeightFraction = 0.33333334f;
+    [SerializeField] float collapsedHeightExtraPixels = 3f;
+    [SerializeField] float collapseSlideDuration = 0.18f;
 
     [Header("Message Log")]
     [SerializeField] int visibleLineCount = 3;
@@ -69,6 +73,7 @@ public class BottomBanner : MonoBehaviour
     readonly List<BannerMessageEntry> messageHistory = new List<BannerMessageEntry>();
     readonly Dictionary<string, Sprite> senseSpriteLookup = new Dictionary<string, Sprite>(StringComparer.Ordinal);
     readonly List<GameObject> rowObjects = new List<GameObject>();
+    readonly List<TextMeshProUGUI> rowTextObjects = new List<TextMeshProUGUI>();
 
     GameObject panel;
     RectTransform panelRT;
@@ -78,6 +83,8 @@ public class BottomBanner : MonoBehaviour
     Scrollbar verticalScrollbar;
     Coroutine hideRoutine;
     float elapsedGameTimeSeconds;
+    float currentPanelHeight;
+    float panelHeightVelocity;
     bool legacyStyleMigrated;
 
     public IReadOnlyList<BannerMessageEntry> MessageHistory => messageHistory;
@@ -125,6 +132,7 @@ public class BottomBanner : MonoBehaviour
     void Update()
     {
         elapsedGameTimeSeconds += GameTime.DeltaTime;
+        UpdateAutoCollapse();
     }
 
     bool TryRegisterSingletonInstance()
@@ -179,7 +187,9 @@ public class BottomBanner : MonoBehaviour
         panelRT.anchorMax = new Vector2(1f, 0f);
         panelRT.pivot = new Vector2(0.5f, 0f);
         panelRT.anchoredPosition = Vector2.zero;
-        panelRT.sizeDelta = new Vector2(0f, Mathf.Max(height, GetMinimumPanelHeight()));
+        if (currentPanelHeight <= 0f)
+            currentPanelHeight = GetTargetPanelHeight();
+        panelRT.sizeDelta = new Vector2(0f, currentPanelHeight);
 
         if (scrollRect == null)
         {
@@ -281,6 +291,114 @@ public class BottomBanner : MonoBehaviour
 
         float bottomInset = useSafeArea ? Mathf.Max(0f, safeArea.y) : 0f;
         panelRT.anchoredPosition = new Vector2(0f, bottomInset);
+    }
+
+    void UpdateAutoCollapse()
+    {
+        if (panelRT == null || panel == null || !panel.activeInHierarchy)
+            return;
+
+        float targetHeight = GetTargetPanelHeight();
+        bool isAutoCollapsed = autoCollapseWhenMouseAway && targetHeight < GetExpandedPanelHeight() - 0.01f;
+
+        if (!autoCollapseWhenMouseAway)
+        {
+            currentPanelHeight = targetHeight;
+            panelHeightVelocity = 0f;
+        }
+        else
+        {
+            currentPanelHeight = Mathf.SmoothDamp(
+                currentPanelHeight,
+                targetHeight,
+                ref panelHeightVelocity,
+                Mathf.Max(0.01f, collapseSlideDuration),
+                Mathf.Infinity,
+                Time.unscaledDeltaTime);
+
+            if (Mathf.Abs(currentPanelHeight - targetHeight) < 0.01f)
+            {
+                currentPanelHeight = targetHeight;
+                panelHeightVelocity = 0f;
+            }
+        }
+
+        panelRT.sizeDelta = new Vector2(panelRT.sizeDelta.x, currentPanelHeight);
+        ApplyCollapsedTextLineLimit(isAutoCollapsed);
+
+        if (isAutoCollapsed && currentPanelHeight > targetHeight + 0.01f && scrollRect != null)
+        {
+            Canvas.ForceUpdateCanvases();
+            scrollRect.verticalNormalizedPosition = 0f;
+        }
+    }
+
+    void ApplyCollapsedTextLineLimit(bool isCollapsed)
+    {
+        int maxVisibleLines = isCollapsed ? 1 : Mathf.Max(1, maxMessageLines);
+        for (int i = 0; i < rowTextObjects.Count; i++)
+        {
+            TextMeshProUGUI text = rowTextObjects[i];
+            if (text != null)
+                text.maxVisibleLines = maxVisibleLines;
+        }
+    }
+
+    float GetTargetPanelHeight()
+    {
+        float expandedHeight = GetExpandedPanelHeight();
+        if (!autoCollapseWhenMouseAway || IsMouseInExpandedBannerZone())
+            return expandedHeight;
+
+        return GetCollapsedPanelHeight(expandedHeight);
+    }
+
+    float GetExpandedPanelHeight()
+    {
+        return Mathf.Max(height, GetMinimumPanelHeight());
+    }
+
+    float GetCollapsedPanelHeight(float expandedHeight)
+    {
+        float fraction = Mathf.Clamp01(collapsedHeightFraction);
+        if (fraction <= 0f)
+            fraction = 0.33333334f;
+
+        return Mathf.Max(GetMinimumCollapsedPanelHeight(), expandedHeight * fraction) + collapsedHeightExtraPixels;
+    }
+
+    float GetMinimumCollapsedPanelHeight()
+    {
+        return 20f + Mathf.Max(rowMinHeight, iconSize + 4f);
+    }
+
+    bool IsMouseInExpandedBannerZone()
+    {
+        if (Mouse.current == null)
+            return false;
+
+        Vector2 screenPoint = Mouse.current.position.ReadValue();
+        float expandedHeightScreen = GetExpandedPanelHeight() * GetCanvasScaleFactor();
+        float bottomInset = Mathf.Max(0f, panelRT != null ? panelRT.anchoredPosition.y : 0f) * GetCanvasScaleFactor();
+        return screenPoint.y <= bottomInset + expandedHeightScreen;
+    }
+
+    float GetCanvasScaleFactor()
+    {
+        if (BottomBannerCanvas == null)
+            return Screen.height > 0 ? Screen.height / 1080f : 1f;
+
+        CanvasScaler scaler = BottomBannerCanvas.GetComponent<CanvasScaler>();
+        if (scaler == null || scaler.uiScaleMode != CanvasScaler.ScaleMode.ScaleWithScreenSize)
+            return BottomBannerCanvas.scaleFactor > 0f ? BottomBannerCanvas.scaleFactor : 1f;
+
+        Vector2 reference = scaler.referenceResolution;
+        if (reference.x <= 0f || reference.y <= 0f)
+            return BottomBannerCanvas.scaleFactor > 0f ? BottomBannerCanvas.scaleFactor : 1f;
+
+        float widthScale = Screen.width / reference.x;
+        float heightScale = Screen.height / reference.y;
+        return Mathf.Lerp(widthScale, heightScale, scaler.matchWidthOrHeight);
     }
 
     float GetMinimumPanelHeight()
@@ -496,6 +614,7 @@ public class BottomBanner : MonoBehaviour
         text.overflowMode = TextOverflowModes.Ellipsis;
         text.alignment = TextAlignmentOptions.TopLeft;
         text.margin = Vector4.zero;
+        rowTextObjects.Add(text);
 
         return row;
     }
@@ -534,6 +653,8 @@ public class BottomBanner : MonoBehaviour
                 messageHistory.RemoveAt(0);
                 GameObject oldestRow = rowObjects[0];
                 rowObjects.RemoveAt(0);
+                if (rowTextObjects.Count > 0)
+                    rowTextObjects.RemoveAt(0);
                 Destroy(oldestRow);
             }
         }
@@ -661,6 +782,7 @@ public class BottomBanner : MonoBehaviour
         }
 
         Instance.rowObjects.Clear();
+        Instance.rowTextObjects.Clear();
         Instance._Clear();
     }
 
