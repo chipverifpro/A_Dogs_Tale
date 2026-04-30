@@ -137,6 +137,7 @@ namespace DogGame.Modules
 
         public override void BeginDecisionModule(bool resume=false)
         {
+            UseAutonomousFaceMovement();
             state = WanderState.PickTarget;
             dwellRemainingSeconds = 0f;
         }

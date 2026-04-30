@@ -40,6 +40,18 @@ namespace DogGame.Modules
             worldObject?.agentMovementModule?.ClearDesiredMovement();
         }
 
+        protected void UseAutonomousFaceMovement()
+        {
+            MotionModule motion = worldObject?.motionModule;
+            if (motion == null)
+                return;
+
+            motion.motionControlMode = MotionControlMode.Autopilot;
+            motion.facingMode = FacingMode.FaceMovementDirection;
+            motion.facingTarget = null;
+            motion.isBackpedaling = false;
+        }
+
         // These functions should be called when decisionModule changes.
         // Clears / resumes actions in progress.
         public abstract void BeginDecisionModule(bool resume=false);

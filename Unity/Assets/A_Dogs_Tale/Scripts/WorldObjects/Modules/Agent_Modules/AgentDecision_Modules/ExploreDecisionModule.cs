@@ -683,6 +683,7 @@ end
 
         public override void BeginDecisionModule(bool resume=false)
         {
+            UseAutonomousFaceMovement();
             toExplore.Clear();
             queuedDoorKeys.Clear();
             exploredDoorKeys.Clear();
