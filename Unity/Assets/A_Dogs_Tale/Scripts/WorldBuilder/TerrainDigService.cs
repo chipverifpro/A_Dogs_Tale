@@ -5,7 +5,7 @@ public static class TerrainDigService
     private const string FloorArchetypeId = "Floor";
     private const string HoleArchetypeId = "PF_Floor_Hole";
     private const string MoundArchetypeId = "PF_Floor_Mound";
-    private const float DigTileYOffset = 0.5f;
+    private const float DigTileYOffset = 0.43f;
 
     public static bool TryDigAt(WorldObject actor)
     {
