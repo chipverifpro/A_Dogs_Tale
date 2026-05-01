@@ -25,7 +25,7 @@ public class ScentGUI : MonoBehaviour
 
     [Header("Target Scent Menu")]
     [SerializeField] private string scentSpriteResourcePath = "Sprites/SensesSymbolsColor_v4";
-    [SerializeField] private string modeSpriteResourcePath = "Sprites/SpriteSheet_Modes_V2";
+    [SerializeField] private string modeSpriteResourcePath = "Sprites/SpriteSheet_Modes_V3";
     [SerializeField] private string speedSpriteResourcePath = "Sprites/Speeds";
     [SerializeField] private string playPauseSpriteResourcePath = "Sprites/PlayAndPause_Dual";
     [SerializeField] private string emoteSheetAResourcePath = "Sprites/DogEmojiSheetA";

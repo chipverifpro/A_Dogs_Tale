@@ -1,0 +1,17 @@
+Seagull bird in flight OBJ notes
+
+Purpose:
+- Lightweight, game-ready, stylized seagull in a gliding/flying pose.
+- Built with separated named mesh groups for easy selection, cleanup, and rigging.
+
+Rigging suggestions:
+- OBJ does not store bones, armatures, constraints, or animation clips. Import into Blender, add an Armature, then export FBX for Unity animation.
+- Suggested bones: body_root, chest, neck, head, beak, tail_1, left_wing_root, left_wing_mid, left_wing_tip, right_wing_root, right_wing_mid, right_wing_tip.
+- Use the RigGuide_* marker groups as approximate bone-placement references. Delete them before final export if desired.
+- For a simple flap animation, rotate wings at the root and add smaller rotations at the mid-wing/elbow and wing tip.
+- For a glide/idle animation, add subtle body bob, head stabilization, and tail yaw/pitch corrections.
+
+Unity import suggestions:
+- Import scale can be adjusted; model is roughly 4.5 units wingtip-to-wingtip in OBJ coordinates.
+- Materials are simple diffuse colors; replace with Unity materials as needed.
+- Use mesh groups as separate objects if your importer preserves groups; this helps with procedural animation or separate wing rotations.

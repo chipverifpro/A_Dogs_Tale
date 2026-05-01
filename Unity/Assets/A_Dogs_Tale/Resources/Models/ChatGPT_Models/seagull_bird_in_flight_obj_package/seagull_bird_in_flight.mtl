@@ -1,0 +1,25 @@
+newmtl white
+Kd 0.95 0.95 0.92
+Ka 0.9 0.9 0.88
+Ks 0.2 0.2 0.2
+Ns 32
+newmtl wingWhite
+Kd 0.98 0.98 0.96
+Ka 0.9 0.9 0.88
+Ks 0.15 0.15 0.15
+Ns 24
+newmtl lightGrey
+Kd 0.70 0.72 0.72
+Ka 0.55 0.55 0.55
+newmtl wingTip
+Kd 0.04 0.04 0.045
+Ka 0.02 0.02 0.02
+newmtl orange
+Kd 1.0 0.55 0.10
+Ka 0.8 0.4 0.05
+newmtl black
+Kd 0.01 0.01 0.01
+Ka 0 0 0
+newmtl guideBlue
+Kd 0.1 0.35 1.0
+Ka 0.05 0.15 0.6

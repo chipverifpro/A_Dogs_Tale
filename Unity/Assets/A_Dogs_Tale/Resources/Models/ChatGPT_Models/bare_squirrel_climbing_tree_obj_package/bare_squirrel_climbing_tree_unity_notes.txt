@@ -1,0 +1,55 @@
+Bare Squirrel Climbing Tree OBJ - Unity Notes
+
+Files:
+- bare_squirrel_climbing_tree.obj
+- bare_squirrel_climbing_tree.mtl
+
+Design:
+- Bare deciduous-style tree with a broad trunk and wide-reaching climbable branches.
+- Intended for squirrels to run, jump, hide, perch, or throw acorns from.
+- No leaves, so it stays visually readable for gameplay and pathfinding.
+- Branches are named individually for easy selection in Blender/Unity.
+
+Important named groups:
+- Trunk_main_broad_slightly_twisted
+- Root_*
+- Branch_A_left_low_wide_climbable
+- Branch_B_right_low_wide_climbable
+- Branch_C_back_sweeping_runway
+- Branch_D_front_sweeping_runway
+- Branch_E_upper_left_reaching
+- Branch_F_upper_right_reaching
+- Fork_*
+- Knot_*
+- Bark_vertical_trunk_ridge_*
+- PathGuide_* markers
+
+Unity use:
+1. Import OBJ and MTL into something like:
+   Assets/A_Dogs_Tale/Resources/Prefabs/Terrain/Trees/
+2. Create a prefab from the imported model.
+3. Delete or hide the PathGuide_* marker cubes before final visual use, or keep them on an editor-only/helper layer.
+4. Add colliders manually:
+   - CapsuleCollider along the trunk.
+   - CapsuleCollider or custom primitive colliders along major branches.
+   - Avoid MeshCollider unless you need exact collisions; primitive colliders are cheaper and better for AI movement.
+5. For squirrel navigation:
+   - Treat branches as graph edges.
+   - Use PathGuide_* markers as suggested node positions.
+   - Add additional empty GameObjects along branches for finer squirrel path points.
+6. For dog gameplay:
+   - Make the lower trunk sniffable.
+   - Put squirrel interaction/perch points on Branch_A and Branch_B.
+   - Give dogs a bark-at-tree or investigate-tree interaction.
+7. For acorn throwing:
+   - Good throw/perch points are the ends of Branch_A, Branch_B, Branch_C, and Branch_D.
+   - Emit a Noise event when the acorn hits the ground or a Roomba/dog prop.
+
+Suggested scale:
+- If 1 Unity unit equals roughly 1 meter, this imports as about 5.1 units tall.
+- For an indoor toy/tree prop, scale down.
+- For an outdoor yard tree, keep as-is or scale to 1.2-1.6.
+
+OBJ limitations:
+- OBJ stores geometry and materials only.
+- It does not store Unity colliders, path graphs, animations, or prefabs.

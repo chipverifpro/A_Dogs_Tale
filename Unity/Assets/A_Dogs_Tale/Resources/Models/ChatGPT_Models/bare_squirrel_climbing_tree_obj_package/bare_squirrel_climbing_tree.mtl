@@ -1,0 +1,30 @@
+# Materials for bare_squirrel_climbing_tree.obj
+newmtl bark_main
+Kd 0.34 0.18 0.08
+Ka 0.08 0.04 0.02
+Ks 0.08 0.06 0.04
+Ns 18
+
+newmtl bark_secondary
+Kd 0.29 0.14 0.06
+Ka 0.07 0.035 0.015
+Ks 0.06 0.045 0.03
+Ns 14
+
+newmtl bark_ridge
+Kd 0.20 0.095 0.035
+Ka 0.05 0.02 0.008
+Ks 0.04 0.025 0.015
+Ns 10
+
+newmtl bark_dark_knot
+Kd 0.13 0.065 0.025
+Ka 0.03 0.015 0.006
+Ks 0.03 0.02 0.01
+Ns 8
+
+newmtl guide_blue
+Kd 0.10 0.35 1.00
+Ka 0.02 0.08 0.22
+Ks 0.20 0.20 0.25
+Ns 25

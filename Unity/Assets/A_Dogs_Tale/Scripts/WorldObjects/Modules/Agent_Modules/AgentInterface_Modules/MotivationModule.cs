@@ -44,6 +44,7 @@ namespace DogGame.AI
         {
             base.Initialize(wo);
 
+            selfHandle = new WorldObjectAgentHandle(wo);
             packLoyaltyMotivation = new PackLoyaltyMotivation(packLoyaltyTuning, packProvider);
         }
 
@@ -64,6 +65,31 @@ namespace DogGame.AI
             {
                 Debug.Log($"[{selfHandle.AgentName}] PackLoyalty urge={latestPackLoyalty.urge01:F2} " +
                           $"dir={latestPackLoyalty.directive} reason={latestPackLoyalty.debugReason}");
+            }
+        }
+
+        private sealed class WorldObjectAgentHandle : IAgentHandle
+        {
+            private readonly WorldObject worldObject;
+
+            public WorldObjectAgentHandle(WorldObject worldObject)
+            {
+                this.worldObject = worldObject;
+            }
+
+            public Transform Transform => worldObject != null ? worldObject.transform : null;
+
+            public string AgentName
+            {
+                get
+                {
+                    if (worldObject == null)
+                        return string.Empty;
+
+                    return worldObject.agentModule != null && !string.IsNullOrEmpty(worldObject.agentModule.agentName)
+                        ? worldObject.agentModule.agentName
+                        : worldObject.DisplayName;
+                }
             }
         }
     }

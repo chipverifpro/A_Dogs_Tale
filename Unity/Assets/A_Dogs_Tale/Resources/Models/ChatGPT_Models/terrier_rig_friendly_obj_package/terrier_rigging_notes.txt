@@ -1,0 +1,1 @@
+Rigging notes: OBJ has named groups for body, chest, neck, head, ears, tail, upper/lower legs, and paws. OBJ does not contain bones. In Blender, add an armature with pelvis->spine->chest->neck->head, four leg chains, tail chain, and optional ear flap bones. RigGuide_* markers indicate rough joint placement and may be deleted before export to Unity.

@@ -1,0 +1,40 @@
+Cute Walking Robot Toy OBJ - Rigging / Unity Notes
+
+Contents:
+- cute_walking_robot_toy.obj
+- cute_walking_robot_toy.mtl
+
+Design:
+- Original cute toy robot, not based on an existing branded character.
+- Low-poly game-friendly construction.
+- Y-up coordinate system. Front is negative Z.
+- Import scale suggestion for Unity: 0.25 to 0.35 if you want it to feel like a small toy beside dogs.
+
+Named groups for easier selection / rigging:
+- Head_large_friendly_rounded_shape
+- Torso_rounded_square_body_shell
+- Belly panel, face plate, eyes, mouth, antenna
+- Left/Right shoulder, upper arm, elbow, forearm, hand
+- Left/Right hip, upper leg, knee, lower leg, foot
+- Back battery pack and wind-up key
+- RigGuide_* marker groups for suggested bone pivots
+
+OBJ limitation:
+- OBJ does not store armatures, bones, skin weights, IK, or animations.
+- Add rigging in Blender, Maya, or Unity after import.
+
+Suggested simple animation setup:
+1. Use RigGuide_* marker meshes as bone placement references, then delete or hide them.
+2. Add a root bone at RigGuide_Root.
+3. Add torso and head bones, with the head rotating at RigGuide_Head.
+4. Add simple 2-bone legs: hip -> knee -> ankle.
+5. Add simple 2-bone arms: shoulder -> elbow -> hand.
+6. Feet can be rigid parented to ankle bones for toy-like walking.
+7. Wind-up key can be a separate transform rotating around local Z.
+8. Antenna can use a small spring/wiggle bone or be kept rigid.
+
+Gameplay animation ideas:
+- Idle: antenna bob + eye blink.
+- Patrol: short waddling steps, feet lifting only a little.
+- Curious: tilt head and blink eyes.
+- Flee from dog: faster shuffle with wind-up key spinning.

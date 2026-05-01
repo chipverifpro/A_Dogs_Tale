@@ -1,0 +1,41 @@
+Throwable Acorn OBJ - Unity Notes
+
+Files:
+- throwable_acorn.obj
+- throwable_acorn.mtl
+
+Design:
+- Small stylized acorn projectile prop for the squirrel.
+- Separate named mesh groups:
+  - Acorn_nut_smooth_teardrop_body
+  - Acorn_lower_pointed_tip
+  - Acorn_cap_rough_dome
+  - Acorn_cap_lower_rim_band
+  - Acorn_cap_raised_scale_tiles
+  - Acorn_short_curved_stem
+  - Acorn_body_subtle_vertical_ridge_*
+  - Guide_center_of_mass_marker_delete_before_final
+
+Unity setup suggestion:
+1. Import OBJ and MTL into a folder such as:
+   Assets/A_Dogs_Tale/Resources/Prefabs/Props/Acorns/
+2. Create a prefab from the imported model.
+3. Delete or hide Guide_center_of_mass_marker_delete_before_final.
+4. Add:
+   - Rigidbody
+   - SphereCollider or CapsuleCollider
+   - Optional TrailRenderer
+   - Optional impact particle prefab
+5. For a small projectile, use a SphereCollider radius around the visible body.
+6. Suggested scale depends on your dog/world scale; try 0.15 to 0.30 Unity units tall for a squirrel-thrown acorn.
+
+Gameplay suggestions:
+- Use as a thrown distraction object.
+- Add bounce and rolling sound.
+- On collision with dog/robot/object, emit a Noise event.
+- It can be a low-damage comic projectile, not a lethal weapon.
+- Add a short spinning animation by rotating around local X/Z while airborne.
+
+OBJ limitation:
+- OBJ stores mesh and materials only.
+- It does not store Unity colliders, Rigidbody, particle systems, or animation clips.

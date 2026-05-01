@@ -53,7 +53,7 @@ public partial class DungeonGenerator
         }
         else if (sharedKeys.Count != cachedWallpaperTexturesByKey.Count || sharedKeys.Count != cachedWallpaperTexturesMirrorByKey.Count)
         {
-            Debug.LogWarning($"Wallpaper pairing found {sharedKeys.Count} filename matches between Resources/{wallpaperResourcesPath} and Resources/{wallpaperResourcesPath_mirror}. Unmatched files will be skipped so mirrored wallpapers stay paired correctly.");
+            Debug.Log($"Wallpaper pairing found {sharedKeys.Count} filename matches between Resources/{wallpaperResourcesPath} and Resources/{wallpaperResourcesPath_mirror}. Unmatched files will be skipped so mirrored wallpapers stay paired correctly.");
         }
 
         cachedWallpaperSelectionKeys = selectionKeys.ToArray();

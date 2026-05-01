@@ -41,9 +41,9 @@ namespace Seagull.Interior_I1.SceneProps {
         private float3x2 previousRandomizeRotationRangeXYZ;
 
         public AxisOption randomizePositionAxis;
-        private AxisOption previousRandomizePositionAxis;
+        private AxisOption previousRandomizePositionAxis = new();
         public float3x2 randomizePositionRangeXYZ = new(0, 0, 0, 0, 0, 0);
-        private float3x2 previousRandomizePositionRangeXYZ;
+        private float3x2 previousRandomizePositionRangeXYZ = new();
         
         [Header("Prefab and Root")]
         public Transform root;

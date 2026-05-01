@@ -313,9 +313,9 @@ public class NewInputAdapter : MonoBehaviour
         {
             var result = results[i];
             string path = result.gameObject != null ? GetTransformPath(result.gameObject.transform) : "null";
-            Debug.Log(
-                $"[NewInputAdapter] UI raycast hit[{i}] go='{result.gameObject?.name}' path='{path}' " +
-                $"module='{result.module?.GetType().Name}' sortOrder={result.sortingOrder} depth={result.depth} distance={result.distance}");
+//            Debug.Log(
+//                $"[NewInputAdapter] UI raycast hit[{i}] go='{result.gameObject?.name}' path='{path}' " +
+//                $"module='{result.module?.GetType().Name}' sortOrder={result.sortingOrder} depth={result.depth} distance={result.distance}");
         }
     }
 
@@ -645,7 +645,7 @@ public class NewInputAdapter : MonoBehaviour
             if (IsPointerOverUI(-1))
             {
                 Vector2 mousePos = Mouse.current.position.ReadValue();
-                Debug.Log($"[NewInputAdapter] Ignoring mouse press over UI. pos={mousePos}");
+                //Debug.Log($"[NewInputAdapter] Ignoring mouse press over UI. pos={mousePos}");
                 LogUiRaycastHits(mousePos);
                 ClearTapTracking();
                 return false;

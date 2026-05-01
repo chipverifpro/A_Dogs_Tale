@@ -1,0 +1,25 @@
+Roomba-style Robot Vacuum OBJ Notes
+===================================
+
+This is a generic, game-ready robot vacuum inspired by common round household robot vacuums.
+It intentionally avoids exact brand logos or proprietary markings.
+
+OBJ contents:
+- Separate named groups for top/body/bumper/wheels/brushes/buttons/sensors.
+- Small RigGuide_* cubes mark useful animation pivots. Delete them after rig setup if desired.
+
+Suggested Unity scale:
+- Import at scale 1.0, then adjust to match your tile/world scale. The mesh is about 2.5 units wide.
+- For a Unity floor tile of 1x1, you may want import scale around 0.25 to 0.35.
+
+Suggested rig/animation pivots:
+- Root: center of disk.
+- Drive wheels: rotate Left_drive_wheel_visible_rubber and Right_drive_wheel_visible_rubber around local X or Y depending on Blender orientation after import.
+- Side brush: rotate Side_spinning_brush_* around RigGuide_side_brush_pivot.
+- Bumper: make Front_soft_collision_bumper_arc a child of a bumper bone; animate a tiny backward bump on contact.
+
+Dog-opponent behavior ideas:
+- Patrol in slow arcs.
+- Emit low motor hum.
+- Trigger dog curiosity/fear/bark reactions when it moves, bumps, or spins its brush.
+- Add a collider capsule/cylinder and a separate front trigger collider for bumper contact.

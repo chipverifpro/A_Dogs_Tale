@@ -1,0 +1,60 @@
+# Materials for stylized_squirrel.obj
+newmtl fur_russet
+Kd 0.62 0.29 0.10
+Ka 0.18 0.08 0.03
+Ks 0.12 0.10 0.08
+Ns 20
+
+newmtl belly_cream
+Kd 0.92 0.78 0.52
+Ka 0.25 0.20 0.12
+Ks 0.10 0.08 0.05
+Ns 15
+
+newmtl eye_black
+Kd 0.01 0.01 0.012
+Ka 0.00 0.00 0.00
+Ks 0.7 0.7 0.7
+Ns 80
+
+newmtl eye_highlight
+Kd 1.0 1.0 1.0
+Ka 0.5 0.5 0.5
+Ks 1.0 1.0 1.0
+Ns 100
+
+newmtl nose_black
+Kd 0.025 0.018 0.014
+Ka 0.005 0.005 0.005
+Ks 0.35 0.30 0.25
+Ns 60
+
+newmtl claw_dark
+Kd 0.055 0.038 0.024
+Ka 0.01 0.008 0.006
+Ks 0.10 0.09 0.08
+Ns 20
+
+newmtl whisker_dark
+Kd 0.08 0.055 0.035
+Ka 0.01 0.008 0.006
+Ks 0.05 0.05 0.05
+Ns 10
+
+newmtl acorn_brown
+Kd 0.38 0.17 0.06
+Ka 0.10 0.04 0.02
+Ks 0.07 0.05 0.03
+Ns 15
+
+newmtl acorn_cap
+Kd 0.22 0.11 0.04
+Ka 0.07 0.03 0.01
+Ks 0.04 0.03 0.02
+Ns 10
+
+newmtl rig_marker_blue
+Kd 0.1 0.35 1.0
+Ka 0.02 0.08 0.22
+Ks 0.25 0.25 0.30
+Ns 30

@@ -1,0 +1,44 @@
+Natural Quadruped Squirrel OBJ - Rigging / Unity Notes
+
+Contents:
+- squirrel_natural_quadruped_pose.obj
+- squirrel_natural_quadruped_pose.mtl
+
+Changes from the upright stylized squirrel:
+- Body is now horizontal and longer.
+- Head is forward and slightly lowered.
+- All four paws are placed on the ground plane at y=0.
+- Hind legs are crouched under the hips.
+- Front legs are under the shoulders.
+- Tail is arched over the back rather than standing straight upright.
+- Removed the acorn prop to keep this version focused on a natural walking/standing pose.
+
+Coordinate notes:
+- The squirrel faces negative Z.
+- Ground plane is approximately y=0.
+- Pivot/import origin is near the body center.
+
+Suggested armature:
+Root/Hips
+  SpineMid
+    Chest
+      Neck
+        Head
+          LeftEar
+          RightEar
+      LeftFrontShoulder -> LeftFrontElbow -> LeftFrontPaw
+      RightFrontShoulder -> RightFrontElbow -> RightFrontPaw
+  LeftHip -> LeftKnee -> LeftHindPaw
+  RightHip -> RightKnee -> RightHindPaw
+  TailBase -> TailMid01 -> TailMid02 -> TailTip
+
+Animation ideas:
+- Natural quadruped walk/hop cycle
+- Alert pause with tail twitch
+- Sniffing the ground
+- Quick skitter/run loop
+- Sitting-up transition from this pose to the previous upright pose
+
+OBJ limitation:
+- OBJ stores mesh groups and materials, not bones or animation clips.
+- Add armature and weights in Blender, then export FBX for Unity animation.

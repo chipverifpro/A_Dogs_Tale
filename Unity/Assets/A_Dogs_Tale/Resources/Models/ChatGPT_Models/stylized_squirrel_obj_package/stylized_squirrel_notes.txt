@@ -1,0 +1,37 @@
+Stylized Squirrel OBJ - Rigging / Unity Notes
+
+Contents:
+- stylized_squirrel.obj
+- stylized_squirrel.mtl
+
+Design:
+- Low-poly / stylized squirrel suitable for a Unity game prop or NPC.
+- The body is built from separated named mesh groups for easier selection in Blender.
+- Includes a large curled/bushy tail made from grouped segments.
+- Includes a tiny acorn prop in the front paws.
+- Includes RigGuide_* marker cubes to help place bones. Delete or hide them before export after rigging.
+
+Suggested armature:
+Root/Hips
+  Spine
+    Chest
+      Neck
+        Head
+          LeftEar
+          RightEar
+      LeftFrontShoulder -> LeftFrontElbow -> LeftFrontPaw
+      RightFrontShoulder -> RightFrontElbow -> RightFrontPaw
+  LeftHip -> LeftKnee -> LeftHindFoot
+  RightHip -> RightKnee -> RightHindFoot
+  TailBase -> TailMid01 -> TailMid02 -> TailTip
+
+Animation ideas:
+- Tail twitch / curl sway
+- Head look / sniff
+- Tiny hop cycle
+- Front paws nibbling the acorn
+- Alert pose with ears and tail raised
+
+OBJ limitations:
+- OBJ stores geometry and material assignments, not bones, skin weights, constraints, or animation clips.
+- Add an armature and weights in Blender, then export as FBX for Unity animation.

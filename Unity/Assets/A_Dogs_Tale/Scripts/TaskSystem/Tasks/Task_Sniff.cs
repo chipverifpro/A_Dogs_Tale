@@ -98,9 +98,6 @@ namespace DogGame.Tasks
             AirScents.Sort((a, b) => b.strength01.CompareTo(a.strength01));
             GroundScents.Sort((a, b) => b.strength01.CompareTo(a.strength01));
 
-            string airScentKey;
-            string groundScentKey;
-            DirFlags direction_strongest;
             if (AirScents.Count == 0 && GroundScents.Count == 0)
             {
                 Debug.Log("No unmasked scents detected.");
@@ -108,13 +105,31 @@ namespace DogGame.Tasks
             }
             if (AirScents.Count > 0)
             {
-                airScentKey = AirScents[0].scentKey;
-                direction_strongest = SniffNearbyCurrentCell(airScentKey, cell.pos, cell.height, scentModule, sniffGround:true);
+                DetectedScent strongestAir = AirScents[0];
+                DirFlags strongestAirDir = SniffNearbyCurrentCell(strongestAir.scentKey, cell.pos, cell.height, scentModule, sniffGround:false);
+                bestAir = new SniffNearbyResult
+                {
+                    ok = true,
+                    scentKey = strongestAir.scentKey,
+                    medium = strongestAir.medium,
+                    dir = strongestAirDir,
+                    intensity = strongestAir.strength01,
+                    cell = strongestAir.cell
+                };
             }
             if (GroundScents.Count > 0)
             {
-                groundScentKey = GroundScents[0].scentKey;
-                direction_strongest = SniffNearbyCurrentCell(groundScentKey, cell.pos, cell.height, scentModule, sniffGround:false);
+                DetectedScent strongestGround = GroundScents[0];
+                DirFlags strongestGroundDir = SniffNearbyCurrentCell(strongestGround.scentKey, cell.pos, cell.height, scentModule, sniffGround:true);
+                bestGround = new SniffNearbyResult
+                {
+                    ok = true,
+                    scentKey = strongestGround.scentKey,
+                    medium = strongestGround.medium,
+                    dir = strongestGroundDir,
+                    intensity = strongestGround.strength01,
+                    cell = strongestGround.cell
+                };
             }
         }
 
