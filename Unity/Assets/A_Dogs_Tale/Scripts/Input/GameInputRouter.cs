@@ -181,9 +181,77 @@ public class GameInputRouter : MonoBehaviour
             else
                 hitpoint = InputState.clickTargetLocationWorld;
 
+            if (IsControlSelectClick())
+            {
+                TrySelectControlledAgent(target);
+                return;
+            }
+
             //Debug.Log($"GameInputRouter.TryClickActivate(userIsInstigator={userIsInstigator}, instigator={instigator}, target={target}, hitpoint={hitpoint})");
             TryClickActivate(userIsInstigator, instigator, target, hitpoint);
         }
+    }
+
+    private bool IsControlSelectClick()
+    {
+        return InputState != null && (InputState.inputModifiers & InputModifiers.Ctrl) != 0;
+    }
+
+    public bool TrySelectControlledAgent(WorldObject target)
+    {
+        if (!EnsureRuntimeReferences() || target == null || dir.playerPack == null)
+            return false;
+
+        if (target.agentModule == null)
+        {
+            if (target.Kind != WorldObjectKind.Agent)
+            {
+                Debug.LogWarning($"[GameInputRouter] CTRL-click target {target.DisplayName} is not an agent.", target);
+                return false;
+            }
+
+            target.CreateModulesIfNeeded(ModuleFlagsTemplates.FullAgent);
+        }
+
+        if (target.agentModule == null)
+        {
+            Debug.LogWarning($"[GameInputRouter] Could not select {target.DisplayName}; target has no AgentModule.", target);
+            return false;
+        }
+
+        if (target.packMemberModule == null)
+            target.CreateModulesIfNeeded(ModuleFlags.packMemberModule);
+
+        if (target.packMemberModule == null)
+        {
+            Debug.LogWarning($"[GameInputRouter] Could not select {target.DisplayName}; target has no PackMemberModule.", target);
+            return false;
+        }
+
+        Pack currentPack = target.packMemberModule.currentPack;
+        Pack playerPack = dir.playerPack;
+
+        if (currentPack != null && currentPack != playerPack && !target.packMemberModule.LeaveCurrentPack())
+        {
+            Debug.LogWarning($"[GameInputRouter] Could not move {target.DisplayName} from {currentPack.packName} to {playerPack.packName}.", target);
+            return false;
+        }
+
+        bool changed = playerPack.AddMember(target, setAsLeader: true);
+        if (!changed && playerPack.packLeader == target)
+            playerPack.SetPackFollowChain();
+
+        bool selected = playerPack.packLeader == target;
+        if (selected)
+        {
+            BottomBanner.Show($"{target.DisplayName} is now the controlled agent.");
+        }
+        else
+        {
+            Debug.LogWarning($"[GameInputRouter] {target.DisplayName} was not made the player pack leader.", target);
+        }
+
+        return selected;
     }
 
     public void TryClickActivate(bool userIsInstigator, WorldObject instigator, WorldObject target, Vector3 hitPoint)

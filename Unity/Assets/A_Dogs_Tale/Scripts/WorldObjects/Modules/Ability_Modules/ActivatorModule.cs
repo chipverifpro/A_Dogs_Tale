@@ -1,6 +1,5 @@
 using UnityEngine;
 using InspectorTools;
-using UnityEngine.UIElements;
 
 namespace DogGame.Modules
 {
@@ -68,7 +67,7 @@ namespace DogGame.Modules
             };
             return success;
         }
-        
+
         public bool UseToOpen(WorldObject key, WorldObject box)
         {
             bool success = false;
