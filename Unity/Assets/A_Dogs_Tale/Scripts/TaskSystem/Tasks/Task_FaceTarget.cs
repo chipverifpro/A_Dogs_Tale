@@ -43,16 +43,17 @@ namespace DogGame.Tasks
             if (dir.sqrMagnitude < 0.0001f)
                 return TaskTickResult.Succeeded();
 
-            // Compute desired yaw rotation.
-            Quaternion desired = Quaternion.LookRotation(dir.normalized, Vector3.up);
-            float angle = Quaternion.Angle(context.AgentTransform.rotation, desired);
+            Vector3 currentEuler = context.AgentTransform.rotation.eulerAngles;
+            float targetYaw = Quaternion.LookRotation(dir.normalized, Vector3.up).eulerAngles.y;
+            float angle = Mathf.Abs(Mathf.DeltaAngle(currentEuler.y, targetYaw));
 
             // Rotate quickly; you can later move this into MotionModule if desired.
             float rotateSpeedDegPerSec = 720f;
-            context.AgentTransform.rotation = Quaternion.RotateTowards(
-                context.AgentTransform.rotation,
-                desired,
+            float nextYaw = Mathf.MoveTowardsAngle(
+                currentEuler.y,
+                targetYaw,
                 rotateSpeedDegPerSec * dt);
+            context.AgentTransform.rotation = Quaternion.Euler(currentEuler.x, nextYaw, currentEuler.z);
 
             if (angle <= toleranceDeg)
                 return TaskTickResult.Succeeded();

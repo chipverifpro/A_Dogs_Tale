@@ -510,8 +510,14 @@ namespace DogGame.Modules
                 return;
 
             Transform bodyRoot = GetManualFacingTransform();
-            if (bodyRoot != null)
-                bodyRoot.Rotate(Vector3.up, turnAxis * manualTurnDegreesPerSecond * deltaTime, Space.World);
+            if (bodyRoot == null)
+                return;
+
+            Vector3 currentEuler = bodyRoot.rotation.eulerAngles;
+            bodyRoot.rotation = Quaternion.Euler(
+                currentEuler.x,
+                currentEuler.y + turnAxis * manualTurnDegreesPerSecond * deltaTime,
+                currentEuler.z);
         }
 
         private static bool HasClickMoveInput(PlayerInputState state)

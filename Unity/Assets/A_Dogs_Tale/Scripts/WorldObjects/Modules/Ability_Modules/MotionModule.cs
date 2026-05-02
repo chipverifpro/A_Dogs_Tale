@@ -773,11 +773,7 @@ namespace DogGame.Modules
 
                 if (!isBackpedaling && !isStrafing)   // only rotate when mostly moving forward-ish
                 {
-                    Quaternion targetRotation = Quaternion.LookRotation(moveDir, Vector3.up);
-                    bodyRoot.rotation = Quaternion.RotateTowards(
-                        bodyRoot.rotation,
-                        targetRotation,
-                        rotationSpeedDegreesPerSecond * deltaTime);
+                    RotateYawTowardsDirection(moveDir, rotationSpeedDegreesPerSecond, deltaTime);
                 }
                 // else: we are backpedaling or strafing → don't auto-rotate
             }
@@ -787,15 +783,26 @@ namespace DogGame.Modules
                 toTarget.y = 0f;
                 if (toTarget.sqrMagnitude > 0.0001f)
                 {
-                    Quaternion targetRotation = Quaternion.LookRotation(toTarget.normalized, Vector3.up);
-                    bodyRoot.rotation = Quaternion.RotateTowards(
-                        bodyRoot.rotation,
-                        targetRotation,
-                        rotationSpeedDegreesPerSecond * deltaTime);
+                    RotateYawTowardsDirection(toTarget.normalized, rotationSpeedDegreesPerSecond, deltaTime);
                 }
             }
             // FacingMode.Strafe → no rotation here
             // FacingMode.Manual → no rotation here
+        }
+
+        private void RotateYawTowardsDirection(Vector3 direction, float degreesPerSecond, float deltaTime)
+        {
+            if (bodyRoot == null || direction.sqrMagnitude < 0.0001f || deltaTime <= 0f)
+                return;
+
+            Vector3 currentEuler = bodyRoot.rotation.eulerAngles;
+            float targetYaw = Quaternion.LookRotation(direction.normalized, Vector3.up).eulerAngles.y;
+            float nextYaw = Mathf.MoveTowardsAngle(
+                currentEuler.y,
+                targetYaw,
+                degreesPerSecond * deltaTime);
+
+            bodyRoot.rotation = Quaternion.Euler(currentEuler.x, nextYaw, currentEuler.z);
         }
 
         private void IntegrateVerticalVelocity(float deltaTime)
