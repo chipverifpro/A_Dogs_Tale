@@ -1,0 +1,55 @@
+Open-Interior Peaked-Roof Doghouse OBJ - Unity Notes
+
+Files:
+- open_interior_peaked_roof_doghouse.obj
+- open_interior_peaked_roof_doghouse.mtl
+
+What changed from the first doghouse:
+- This version is hollow.
+- The large arched doorway is actually open.
+- The inside has a walkable floor, interior side wall faces, interior back wall, and roof underfaces.
+- Collider guide pieces are split around the doorway so they do not block the dog.
+- Guide_Interior_Walkable_Volume_clear_space shows the empty volume intended for the dog character.
+
+Important named groups:
+- Exterior_left_side_wall_thick
+- Exterior_right_side_wall_thick
+- Back_wall_lower_rect
+- Back_wall_peaked_gable_triangle
+- Front_wall_left_piece_open_door
+- Front_wall_right_piece_open_door
+- Front_wall_header_above_arched_opening
+- Door_trim_*_opening_edge
+- Interior_walkable_floor_board
+- Interior_left_wall_face
+- Interior_right_wall_face
+- Interior_back_wall_shadow_panel
+- Interior_*_roof_underface
+- Guide_Collider_*_delete_or_hide
+- Guide_Interior_Walkable_Volume_clear_space
+- Guide_Door_Entry_Point
+- Guide_Dog_Rest_Point_Inside
+
+Unity collider setup:
+1. Delete or hide all Guide_* objects before final visual use, or keep them on an EditorOnly/helper layer.
+2. Add colliders manually rather than one solid BoxCollider:
+   - Left wall BoxCollider
+   - Right wall BoxCollider
+   - Back wall BoxCollider
+   - Front-left wall BoxCollider
+   - Front-right wall BoxCollider
+   - Front header BoxCollider above door
+   - Optional roof colliders
+3. Do NOT add a single solid collider around the whole doghouse, or it will block the entry.
+4. Add a trigger at Guide_Door_Entry_Point for “enter doghouse”.
+5. Add a target/rest transform at Guide_Dog_Rest_Point_Inside.
+
+Suggested gameplay:
+- Doorway trigger can switch the dog to an EnterDoghouse task.
+- Inside rest point can be a sit/lie-down/idle target.
+- Doghouse can provide shelter, hiding, sleep, or safe-zone behavior.
+- Roof can optionally be walkable/perchable if you add roof colliders.
+
+OBJ limitation:
+- OBJ stores mesh/materials only.
+- It does not store colliders, triggers, scripts, transforms, prefabs, or animations.
