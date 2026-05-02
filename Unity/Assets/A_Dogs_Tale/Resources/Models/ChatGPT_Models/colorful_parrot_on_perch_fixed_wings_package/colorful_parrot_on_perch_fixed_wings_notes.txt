@@ -1,0 +1,18 @@
+Fixed Colorful Parrot on Perch Stand
+
+Likely original issue:
+- The original wing feathers were probably very thin single-sided polygons.
+- Unity normally uses backface culling.
+- If one mirrored wing has reversed winding order, one side renders from the front and the other renders from the back.
+- That looks exactly like a normals/winding problem.
+
+Fix in this version:
+- Wings and tail feathers have actual thin prism thickness.
+- Each feather panel has a front face, back face, and side faces.
+- This should render correctly with normal Unity materials without needing a double-sided shader.
+
+Unity tips:
+- Import OBJ and MTL together.
+- If any shading still looks odd, open in Blender and use Mesh > Normals > Recalculate Outside, then export again.
+- A double-sided shader can also hide the symptom, but thick geometry is usually better for props like feathers.
+- Delete or hide RigGuide_* groups before final use if you do not want visible rig markers.

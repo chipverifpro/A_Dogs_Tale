@@ -1,0 +1,114 @@
+# Fixed parrot materials
+newmtl body_green
+Kd 0.10 0.62 0.23
+Ka 0.02 0.13 0.05
+Ks 0.18 0.18 0.12
+Ns 24
+
+newmtl belly_yellow
+Kd 0.95 0.78 0.12
+Ka 0.18 0.14 0.02
+Ks 0.18 0.16 0.08
+Ns 20
+
+newmtl head_red
+Kd 0.84 0.08 0.06
+Ka 0.17 0.02 0.01
+Ks 0.18 0.12 0.10
+Ns 22
+
+newmtl blue_feathers
+Kd 0.05 0.24 0.86
+Ka 0.01 0.05 0.18
+Ks 0.20 0.20 0.25
+Ns 28
+
+newmtl wing_blue
+Kd 0.04 0.22 0.76
+Ka 0.01 0.05 0.16
+Ks 0.18 0.18 0.24
+Ns 24
+
+newmtl wing_teal
+Kd 0.02 0.55 0.62
+Ka 0.00 0.12 0.13
+Ks 0.14 0.18 0.20
+Ns 22
+
+newmtl wing_green
+Kd 0.07 0.55 0.20
+Ka 0.01 0.11 0.04
+Ks 0.14 0.16 0.10
+Ns 20
+
+newmtl wing_yellow
+Kd 0.90 0.70 0.10
+Ka 0.18 0.13 0.02
+Ks 0.14 0.12 0.06
+Ns 18
+
+newmtl tail_blue
+Kd 0.03 0.18 0.70
+Ka 0.01 0.04 0.14
+Ks 0.15 0.15 0.20
+Ns 22
+
+newmtl tail_red
+Kd 0.75 0.06 0.05
+Ka 0.15 0.01 0.01
+Ks 0.12 0.09 0.07
+Ns 18
+
+newmtl tail_yellow
+Kd 0.94 0.74 0.08
+Ka 0.18 0.13 0.02
+Ks 0.12 0.10 0.05
+Ns 18
+
+newmtl beak_orange
+Kd 0.95 0.45 0.05
+Ka 0.20 0.09 0.01
+Ks 0.20 0.14 0.06
+Ns 25
+
+newmtl beak_dark
+Kd 0.18 0.09 0.035
+Ka 0.04 0.02 0.01
+Ks 0.08 0.06 0.04
+Ns 15
+
+newmtl eye_black
+Kd 0.01 0.01 0.012
+Ka 0.0 0.0 0.0
+Ks 0.7 0.7 0.7
+Ns 80
+
+newmtl eye_highlight
+Kd 1.0 1.0 1.0
+Ka 0.5 0.5 0.5
+Ks 1.0 1.0 1.0
+Ns 100
+
+newmtl foot_grey
+Kd 0.45 0.43 0.40
+Ka 0.08 0.08 0.08
+Ks 0.12 0.12 0.12
+Ns 20
+
+newmtl perch_wood
+Kd 0.45 0.23 0.09
+Ka 0.10 0.05 0.02
+Ks 0.08 0.05 0.03
+Ns 15
+
+newmtl stand_metal
+Kd 0.40 0.40 0.42
+Ka 0.08 0.08 0.09
+Ks 0.45 0.45 0.48
+Ns 55
+
+newmtl guide_blue
+Kd 0.10 0.35 1.00
+Ka 0.02 0.08 0.22
+Ks 0.20 0.20 0.25
+Ns 25
