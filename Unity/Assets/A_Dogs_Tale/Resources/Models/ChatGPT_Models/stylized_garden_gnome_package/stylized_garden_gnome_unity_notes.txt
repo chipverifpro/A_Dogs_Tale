@@ -1,0 +1,50 @@
+Stylized Garden Gnome OBJ - Unity Notes
+
+Files:
+- stylized_garden_gnome.obj
+- stylized_garden_gnome.mtl
+
+Design:
+- Cartoon garden gnome prop.
+- Red pointed hat, blue tunic, white beard, large round nose, black boots.
+- Includes small shovel, stone base, moss spots, and dirt smudge.
+- Good as a suspicious dog-world object: bark-at target, scent clue, obstacle, or yard decoration.
+
+Important named groups:
+- Round_grass_stone_base
+- Blue_tunic_body
+- Black_belt_band
+- Gold_square_belt_buckle
+- Peach_round_face
+- Large_round_gnome_nose
+- White_beard_main_fluffy_triangle
+- White_beard_lump_*
+- Red_hat_brim
+- Tall_red_pointed_hat
+- Left_blue_sleeve_arm / Right_blue_sleeve_arm
+- Tiny_gnome_shovel_*
+- Tiny_moss_spot_*
+- Guide_Collider_Gnome_Box_delete_or_hide
+- Guide_Interaction_Point_BarkAtGnome
+- Guide_Scent_Source_MysteriousGardenSmell
+
+Unity setup:
+1. Import OBJ and MTL together.
+2. Create a prefab under something like:
+   Assets/A_Dogs_Tale/Resources/Prefabs/Props/Garden/
+3. Delete or hide Guide_* groups before final use, or keep them on an editor/helper layer.
+4. Suggested colliders:
+   - BoxCollider or CapsuleCollider around the whole gnome.
+   - Optional small trigger near Guide_Interaction_Point_BarkAtGnome.
+   - Optional scent trigger near Guide_Scent_Source_MysteriousGardenSmell.
+
+Gameplay ideas:
+- Dogs may bark at it because it looks like a tiny suspicious person.
+- It can hold a clue scent: squirrel, mud, food, garden chemical, or unknown visitor.
+- Squirrels can perch on it or use it as cover.
+- Roomba can bump it and knock it over.
+- Could be part of a puzzle: move gnome, reveal hidden key/bone, or mark buried object.
+
+OBJ limitation:
+- OBJ stores mesh/materials only.
+- It does not store Unity colliders, triggers, scripts, scent emitters, breakable behavior, or animations.

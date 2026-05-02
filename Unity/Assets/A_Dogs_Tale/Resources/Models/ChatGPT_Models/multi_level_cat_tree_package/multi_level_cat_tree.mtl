@@ -1,0 +1,96 @@
+# Materials for multi_level_cat_tree.obj
+newmtl carpet_beige
+Kd 0.64 0.52 0.38
+Ka 0.13 0.10 0.07
+Ks 0.05 0.04 0.03
+Ns 6
+
+newmtl carpet_blue
+Kd 0.18 0.32 0.62
+Ka 0.04 0.07 0.13
+Ks 0.06 0.06 0.08
+Ns 8
+
+newmtl carpet_inner_tan
+Kd 0.76 0.64 0.48
+Ka 0.15 0.12 0.09
+Ks 0.05 0.04 0.03
+Ns 6
+
+newmtl carpet_trim_dark
+Kd 0.24 0.20 0.16
+Ka 0.05 0.04 0.03
+Ks 0.04 0.03 0.02
+Ns 5
+
+newmtl sisal_rope
+Kd 0.69 0.54 0.32
+Ka 0.14 0.10 0.06
+Ks 0.06 0.045 0.025
+Ns 8
+
+newmtl sisal_rope_dark
+Kd 0.43 0.32 0.18
+Ka 0.08 0.06 0.035
+Ks 0.04 0.03 0.02
+Ns 6
+
+newmtl interior_dark
+Kd 0.055 0.045 0.035
+Ka 0.008 0.006 0.005
+Ks 0.01 0.01 0.008
+Ns 4
+
+newmtl fabric_hammock_red
+Kd 0.65 0.10 0.08
+Ka 0.13 0.02 0.015
+Ks 0.07 0.04 0.035
+Ns 8
+
+newmtl rope_tan
+Kd 0.70 0.56 0.35
+Ka 0.14 0.11 0.07
+Ks 0.05 0.04 0.025
+Ns 7
+
+newmtl toy_mouse_grey
+Kd 0.50 0.50 0.48
+Ka 0.10 0.10 0.09
+Ks 0.08 0.08 0.07
+Ns 10
+
+newmtl toy_mouse_tail
+Kd 0.78 0.45 0.45
+Ka 0.15 0.08 0.08
+Ks 0.08 0.05 0.05
+Ns 8
+
+newmtl scratch_shadow
+Kd 0.20 0.16 0.11
+Ka 0.04 0.03 0.02
+Ks 0.02 0.015 0.01
+Ns 4
+
+newmtl wood_hidden
+Kd 0.32 0.20 0.11
+Ka 0.06 0.04 0.02
+Ks 0.05 0.035 0.02
+Ns 8
+
+newmtl shadow_soft
+Kd 0.05 0.045 0.04
+Ka 0.01 0.01 0.008
+Ks 0.00 0.00 0.00
+Ns 2
+
+newmtl guide_blue
+Kd 0.10 0.35 1.00
+Ka 0.02 0.08 0.22
+Ks 0.20 0.20 0.25
+Ns 25
+
+newmtl guide_green
+Kd 0.10 0.85 0.20
+Ka 0.02 0.18 0.04
+Ks 0.20 0.25 0.20
+Ns 25

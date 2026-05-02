@@ -1,0 +1,29 @@
+Corrected Tipped-Over Trash Can with Spill - Unity Notes
+
+Fix:
+- The previous version could read as if trash was spilling from the closed bottom.
+- This version explicitly places:
+  - Guide_Open_Mouth_Center at the open rim facing the spill.
+  - Guide_Closed_Bottom_Center at the sealed bottom on the opposite end.
+- Trash, garbage bag, papers, food scraps, stink wisps, and scent guide now originate from the open mouth side.
+
+Files:
+- tipped_over_trash_can_spill_corrected_open_end.obj
+- tipped_over_trash_can_spill_corrected_open_end.mtl
+
+Important named groups:
+- Tipped_open_trash_can_body_hollow_OPEN_END_FACES_SPILL
+- Visible_dark_hollow_inside_open_mouth
+- Guide_Open_Mouth_Center
+- Guide_Closed_Bottom_Center
+- Black_garbage_bag_plug_visible_at_open_mouth
+- Black_garbage_bag_spilled_lump_from_open_end
+- Crumpled_paper_scrap_spilling_from_open_end_*
+- Food_wrapper_spill_*
+- Guide_Scent_Source_Spill_Area
+- Guide_Interaction_Point_Sniff_Trash
+
+Unity setup:
+- Use this corrected version instead of the earlier tipped trash can.
+- Hide or delete Guide_* groups before final visual use, or keep them on an editor/helper layer.
+- Add a collider to the can body, one collider/trigger over the spill area, and optional individual colliders only for pickup-worthy items like the bone.

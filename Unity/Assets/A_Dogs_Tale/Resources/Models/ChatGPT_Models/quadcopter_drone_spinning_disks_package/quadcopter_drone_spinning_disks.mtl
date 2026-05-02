@@ -1,0 +1,92 @@
+# Materials for quadcopter_drone_spinning_disks.obj
+newmtl body_dark
+Kd 0.055 0.060 0.070
+Ka 0.010 0.012 0.014
+Ks 0.45 0.45 0.48
+Ns 70
+
+newmtl battery_grey
+Kd 0.22 0.24 0.26
+Ka 0.04 0.045 0.05
+Ks 0.35 0.35 0.35
+Ns 50
+
+newmtl arm_dark
+Kd 0.025 0.027 0.030
+Ka 0.006 0.006 0.007
+Ks 0.30 0.30 0.32
+Ns 55
+
+newmtl motor_grey
+Kd 0.34 0.35 0.36
+Ka 0.06 0.06 0.065
+Ks 0.45 0.45 0.46
+Ns 65
+
+newmtl motor_dark
+Kd 0.08 0.08 0.085
+Ka 0.015 0.015 0.016
+Ks 0.30 0.30 0.32
+Ns 50
+
+newmtl propeller_blur_disk
+Kd 0.70 0.78 0.84
+Ka 0.14 0.16 0.17
+Ks 0.22 0.24 0.25
+Ns 20
+d 0.38
+Tr 0.62
+
+newmtl prop_guard_dark
+Kd 0.035 0.038 0.042
+Ka 0.008 0.008 0.009
+Ks 0.25 0.25 0.27
+Ns 45
+
+newmtl skid_dark
+Kd 0.035 0.035 0.038
+Ka 0.008 0.008 0.009
+Ks 0.22 0.22 0.24
+Ns 40
+
+newmtl sensor_glass
+Kd 0.05 0.10 0.13
+Ka 0.01 0.02 0.03
+Ks 0.70 0.80 0.85
+Ns 95
+
+newmtl camera_black
+Kd 0.015 0.015 0.018
+Ka 0.003 0.003 0.004
+Ks 0.50 0.50 0.55
+Ns 80
+
+newmtl lens_blue
+Kd 0.05 0.20 0.65
+Ka 0.01 0.04 0.16
+Ks 0.90 0.95 1.00
+Ns 100
+
+newmtl antenna_dark
+Kd 0.025 0.025 0.026
+Ka 0.005 0.005 0.005
+Ks 0.20 0.20 0.22
+Ns 35
+
+newmtl led_red
+Kd 1.00 0.05 0.03
+Ka 0.60 0.02 0.01
+Ks 0.40 0.20 0.18
+Ns 50
+
+newmtl led_green
+Kd 0.05 1.00 0.18
+Ka 0.02 0.55 0.06
+Ks 0.22 0.45 0.25
+Ns 50
+
+newmtl guide_blue
+Kd 0.10 0.35 1.00
+Ka 0.02 0.08 0.22
+Ks 0.20 0.20 0.25
+Ns 25

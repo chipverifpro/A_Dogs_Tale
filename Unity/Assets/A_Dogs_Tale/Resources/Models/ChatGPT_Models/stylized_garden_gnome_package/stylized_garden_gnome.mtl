@@ -1,0 +1,108 @@
+# Materials for stylized_garden_gnome.obj
+newmtl hat_red
+Kd 0.78 0.04 0.035
+Ka 0.16 0.01 0.008
+Ks 0.18 0.08 0.06
+Ns 22
+
+newmtl hat_red_dark
+Kd 0.50 0.02 0.018
+Ka 0.10 0.004 0.003
+Ks 0.10 0.045 0.035
+Ns 16
+
+newmtl hat_highlight
+Kd 0.95 0.20 0.16
+Ka 0.20 0.04 0.03
+Ks 0.16 0.10 0.08
+Ns 18
+
+newmtl tunic_blue
+Kd 0.05 0.23 0.78
+Ka 0.01 0.05 0.16
+Ks 0.16 0.16 0.22
+Ns 24
+
+newmtl skin_peach
+Kd 0.88 0.56 0.39
+Ka 0.18 0.11 0.08
+Ks 0.16 0.10 0.08
+Ns 22
+
+newmtl skin_shadow
+Kd 0.58 0.32 0.22
+Ka 0.10 0.05 0.035
+Ks 0.06 0.04 0.03
+Ns 10
+
+newmtl beard_white
+Kd 0.91 0.88 0.78
+Ka 0.20 0.19 0.16
+Ks 0.12 0.11 0.09
+Ns 18
+
+newmtl eye_black
+Kd 0.01 0.01 0.012
+Ka 0.00 0.00 0.00
+Ks 0.45 0.45 0.45
+Ns 70
+
+newmtl belt_black
+Kd 0.015 0.012 0.010
+Ka 0.002 0.002 0.002
+Ks 0.25 0.22 0.18
+Ns 45
+
+newmtl buckle_gold
+Kd 0.95 0.65 0.12
+Ka 0.20 0.13 0.02
+Ks 0.55 0.42 0.18
+Ns 60
+
+newmtl boot_black
+Kd 0.025 0.020 0.017
+Ka 0.004 0.003 0.003
+Ks 0.30 0.25 0.20
+Ns 50
+
+newmtl base_stone
+Kd 0.45 0.43 0.38
+Ka 0.09 0.085 0.075
+Ks 0.10 0.10 0.09
+Ns 18
+
+newmtl moss_green
+Kd 0.10 0.36 0.10
+Ka 0.02 0.08 0.02
+Ks 0.04 0.05 0.03
+Ns 8
+
+newmtl mud_brown
+Kd 0.25 0.13 0.055
+Ka 0.05 0.025 0.010
+Ks 0.04 0.025 0.015
+Ns 8
+
+newmtl wood_brown
+Kd 0.39 0.19 0.075
+Ka 0.08 0.04 0.015
+Ks 0.06 0.04 0.025
+Ns 12
+
+newmtl metal_grey
+Kd 0.45 0.46 0.45
+Ka 0.09 0.09 0.09
+Ks 0.35 0.35 0.34
+Ns 45
+
+newmtl guide_blue
+Kd 0.10 0.35 1.00
+Ka 0.02 0.08 0.22
+Ks 0.20 0.20 0.25
+Ns 25
+
+newmtl guide_green
+Kd 0.10 0.85 0.20
+Ka 0.02 0.18 0.04
+Ks 0.20 0.25 0.20
+Ns 25

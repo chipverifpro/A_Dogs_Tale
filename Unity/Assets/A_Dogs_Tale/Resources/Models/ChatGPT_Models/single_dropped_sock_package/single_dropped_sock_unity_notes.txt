@@ -1,0 +1,46 @@
+Single Dropped Sock OBJ - Unity Notes
+
+Files:
+- single_dropped_sock.obj
+- single_dropped_sock.mtl
+
+Design:
+- A single soft, crumpled dropped sock.
+- White/off-white fabric with grey cuff, heel patch, toe seam, and wrinkles.
+- Open dark cuff end and closed rounded toe.
+- Optional green scent wisps included as separate named groups.
+- Guide objects included for collider and scent source placement.
+
+Important named groups:
+- Sock_soft_body_tube_with_closed_toe
+- Sock_dark_hollow_opening_inside_cuff
+- Sock_cuff_flattened_top_band
+- Sock_cuff_flattened_bottom_band
+- Sock_cuff_rib_line_*
+- Sock_soft_fold_wrinkle_*
+- Sock_toe_curved_seam
+- Sock_subtle_heel_patch_light_grey
+- Optional_sock_scent_wisp_*
+- Guide_Collider_Sock_Box_delete_or_hide
+- Guide_Scent_Source_Area_delete_or_hide
+
+Unity setup:
+1. Import OBJ and MTL together.
+2. Create a prefab under something like:
+   Assets/A_Dogs_Tale/Resources/Prefabs/Props/Clothing/
+3. Delete or hide Guide_* groups before final visual use, or keep them on an editor/helper layer.
+4. Suggested collider:
+   - Small BoxCollider or CapsuleCollider around the sock.
+   - Trigger collider over Guide_Scent_Source_Area_delete_or_hide for scent detection.
+5. If using the scent wisps as real visuals, keep Optional_sock_scent_wisp_*.
+   Otherwise delete/hide them and let your scent system visualize scent separately.
+
+Gameplay ideas:
+- Strong owner scent clue.
+- Dog can sniff, carry, bury, retrieve, or present it proudly.
+- Could identify a room/person or act as a trail start object.
+- Excellent target for ReactToScentSourceFound.
+
+OBJ limitation:
+- OBJ stores mesh/materials only.
+- It does not store Unity colliders, triggers, scripts, scent emitter components, or pickup behavior.

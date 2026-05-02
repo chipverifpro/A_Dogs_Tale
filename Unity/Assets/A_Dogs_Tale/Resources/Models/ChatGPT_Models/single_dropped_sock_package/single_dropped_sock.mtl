@@ -1,0 +1,44 @@
+# Materials for single_dropped_sock.obj
+newmtl sock_white_fabric
+Kd 0.86 0.84 0.78
+Ka 0.18 0.17 0.15
+Ks 0.08 0.07 0.06
+Ns 10
+
+newmtl sock_cuff_light_grey
+Kd 0.66 0.66 0.62
+Ka 0.13 0.13 0.12
+Ks 0.06 0.06 0.05
+Ns 8
+
+newmtl sock_shadow_grey
+Kd 0.43 0.43 0.40
+Ka 0.08 0.08 0.075
+Ks 0.04 0.04 0.035
+Ns 6
+
+newmtl sock_inside_shadow
+Kd 0.08 0.075 0.065
+Ka 0.01 0.01 0.008
+Ks 0.02 0.02 0.015
+Ns 4
+
+newmtl scent_green
+Kd 0.20 0.85 0.22
+Ka 0.04 0.20 0.05
+Ks 0.08 0.16 0.08
+Ns 20
+
+newmtl guide_blue
+Kd 0.10 0.35 1.00
+Ka 0.02 0.08 0.22
+Ks 0.20 0.20 0.25
+Ns 25
+
+newmtl guide_green
+Kd 0.10 0.85 0.20
+Ka 0.02 0.18 0.04
+Ks 0.20 0.25 0.20
+Ns 25
+d 0.35
+Tr 0.65

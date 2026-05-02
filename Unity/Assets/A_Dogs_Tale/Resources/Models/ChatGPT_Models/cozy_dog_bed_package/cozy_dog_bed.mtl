@@ -1,0 +1,64 @@
+# Materials for cozy_dog_bed.obj
+newmtl fabric_outer_blue
+Kd 0.10 0.28 0.68
+Ka 0.02 0.06 0.15
+Ks 0.10 0.10 0.12
+Ns 14
+
+newmtl fabric_inner_tan
+Kd 0.73 0.58 0.42
+Ka 0.15 0.12 0.08
+Ks 0.08 0.06 0.04
+Ns 10
+
+newmtl fabric_seam_dark
+Kd 0.04 0.10 0.26
+Ka 0.01 0.02 0.06
+Ks 0.05 0.05 0.07
+Ns 8
+
+newmtl fabric_wrinkle_shadow
+Kd 0.44 0.35 0.25
+Ka 0.08 0.06 0.04
+Ks 0.03 0.025 0.02
+Ns 5
+
+newmtl tag_yellow
+Kd 0.93 0.72 0.18
+Ka 0.18 0.13 0.03
+Ks 0.12 0.09 0.04
+Ns 12
+
+newmtl tag_dark_mark
+Kd 0.16 0.10 0.04
+Ka 0.03 0.02 0.01
+Ks 0.03 0.02 0.01
+Ns 6
+
+newmtl paw_embroidery
+Kd 0.23 0.16 0.10
+Ka 0.04 0.03 0.02
+Ks 0.03 0.02 0.015
+Ns 5
+
+newmtl shadow_soft
+Kd 0.05 0.045 0.04
+Ka 0.01 0.01 0.008
+Ks 0.00 0.00 0.00
+Ns 2
+d 0.35
+Tr 0.65
+
+newmtl guide_blue
+Kd 0.10 0.35 1.00
+Ka 0.02 0.08 0.22
+Ks 0.20 0.20 0.25
+Ns 25
+
+newmtl guide_green
+Kd 0.10 0.85 0.20
+Ka 0.02 0.18 0.04
+Ks 0.20 0.25 0.20
+Ns 25
+d 0.35
+Tr 0.65

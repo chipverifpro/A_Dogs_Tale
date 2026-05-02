@@ -1,0 +1,59 @@
+Multi-Level Cat Tree OBJ - Unity Notes
+
+Files:
+- multi_level_cat_tree.obj
+- multi_level_cat_tree.mtl
+
+Design:
+- Multi-level cat tree / cat tower.
+- Carpeted base, platforms, cubby, ramp, hammock, top perch, and hanging mouse toy.
+- Sisal scratching posts have raised rope bands for visual texture.
+- Works as cat territory, squirrel shortcut, dog investigation object, or vertical navigation prop.
+
+Important named groups:
+- Large_rectangular_weighted_base_carpeted
+- Post_*_sisal_scratching_post_core
+- Post_*_sisal_rope_band_*
+- Lower_platform_front_carpeted
+- Middle_platform_left_carpeted
+- Middle_platform_right_carpeted
+- Top_perch_platform_round_support_slab
+- Top_round_nest_perch_bowl_outer
+- Cat_condo_cubby_with_open_front_*
+- Angled_scratching_ramp_board
+- Ramp_carpet_grip_slat_*
+- Soft_hanging_hammock_sling
+- Dangling_mouse_toy_*
+- Visible_claw_scratch_mark_*
+- Guide_Perch_*_delete_or_hide
+- Guide_Cubby_Entry_delete_or_hide
+- Guide_Dog_Sniff_Base_delete_or_hide
+- Guide_HangingToy_Target_delete_or_hide
+- Guide_Collider_Overall_Box_delete_or_hide
+
+Unity setup:
+1. Import OBJ and MTL together.
+2. Create a prefab under something like:
+   Assets/A_Dogs_Tale/Resources/Prefabs/Props/Cat/
+3. Delete or hide Guide_* objects before final visual use, or keep them on an editor/helper layer.
+4. Suggested colliders:
+   - BoxCollider for base and each platform.
+   - CapsuleCollider for posts.
+   - BoxCollider/trigger for cubby entry.
+   - Small trigger/collider for hanging toy.
+5. For navigation:
+   - Use Guide_Perch_* points as cat/squirrel perch nodes.
+   - Use ramp and platforms as graph edges.
+   - Dogs may not be able to reach the higher perches, making it useful for chase/tease behavior.
+
+Gameplay ideas for A Dog's Tale:
+- Cat/squirrel escape tower.
+- Dog can sniff base, bark up at cat, paw at dangling toy, or inspect cubby.
+- Strong scent zones: scratching posts, cubby, hammock.
+- Roomba can bump the base or tangle with the dangling toy.
+- Cats can taunt dogs from the top perch.
+- Squirrels can use it as indoor vertical pathing.
+
+OBJ limitation:
+- OBJ stores mesh/materials only.
+- It does not store Unity colliders, triggers, scripts, nav graph nodes, animations, cloth, or physics constraints.

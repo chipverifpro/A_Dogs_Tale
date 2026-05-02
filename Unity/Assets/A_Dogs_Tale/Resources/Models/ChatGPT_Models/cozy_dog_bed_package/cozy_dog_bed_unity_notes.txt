@@ -1,0 +1,51 @@
+Cozy Dog Bed OBJ - Unity Notes
+
+Files:
+- cozy_dog_bed.obj
+- cozy_dog_bed.mtl
+
+Design:
+- Soft oval dog bed.
+- Raised outer bolster/rim.
+- Lower front entry lip so the dog can plausibly step in.
+- Depressed center cushion for a curled-up resting pose.
+- Fabric wrinkles, seam piping, small sewn tag, and paw embroidery.
+- Guide objects included for colliders/rest/scent placement.
+
+Important named groups:
+- Soft_floor_contact_shadow
+- Depressed_soft_center_cushion
+- Raised_oval_outer_bolster_pillow_rim
+- Lower_front_entry_lip_soft_pad
+- Inner_cushion_seam_piping_*
+- Outer_bolster_lower_seam_piping_*
+- Subtle_fabric_wrinkle_center_*
+- Small_fabric_tag_on_front
+- Embroidered_paw_print_on_cushion_*
+- Guide_Collider_Bed_Box_delete_or_hide
+- Guide_Rest_Target_Dog_Curl_Up_delete_or_hide
+- Guide_Comfort_Scent_Area_delete_or_hide
+
+Unity setup:
+1. Import OBJ and MTL together.
+2. Create a prefab under something like:
+   Assets/A_Dogs_Tale/Resources/Prefabs/Props/Dog/
+3. Delete or hide Guide_* objects before final visual use, or keep them on an editor/helper layer.
+4. Suggested colliders:
+   - One BoxCollider or low CapsuleCollider for the bed base.
+   - Optional trigger over Guide_Rest_Target_Dog_Curl_Up_delete_or_hide.
+   - Optional scent/comfort trigger over Guide_Comfort_Scent_Area_delete_or_hide.
+5. The shadow and guide materials include transparency in the MTL, but Unity may import them as opaque.
+   If so, set them to Transparent or delete/hide them.
+
+Gameplay ideas:
+- Rest/sleep/idle target.
+- Comfort scent source for the dog.
+- Pack gathering point.
+- Safe zone or healing/stamina recovery object.
+- Dogs can carry toys/socks/bones back to the bed.
+- Good target for Stay, Rest, CurlUp, Guard, or Dream behaviors.
+
+OBJ limitation:
+- OBJ stores mesh/materials only.
+- It does not store Unity colliders, triggers, scripts, animations, prefabs, or behavior logic.

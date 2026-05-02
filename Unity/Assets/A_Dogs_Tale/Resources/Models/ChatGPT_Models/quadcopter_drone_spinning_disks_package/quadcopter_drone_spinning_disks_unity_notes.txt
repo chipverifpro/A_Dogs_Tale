@@ -1,0 +1,68 @@
+Quadcopter Drone with Solid Propeller Disks - Unity Notes
+
+Files:
+- quadcopter_drone_spinning_disks.obj
+- quadcopter_drone_spinning_disks.mtl
+
+Design:
+- Small quadcopter drone suitable as a moving hazard, scout, toy, or dog opponent.
+- Solid propeller blur disks are used instead of separate propeller blades.
+- This lets the drone look like the props are spinning even when the mesh is static.
+- Includes prop guard rings, landing skids, camera gimbal, body shell, antenna, and navigation LEDs.
+
+Important named groups:
+- Central_body_rounded_black_shell
+- Top_battery_pack_panel
+- Body_front_sensor_bar
+- Front_camera_gimbal_ball
+- Camera_lens_blue_glass
+- FrontLeft_carbon_arm_to_motor
+- FrontRight_carbon_arm_to_motor
+- BackLeft_carbon_arm_to_motor
+- BackRight_carbon_arm_to_motor
+- *_motor_housing_round
+- *_solid_blur_propeller_disk
+- *_thin_prop_guard_ring
+- *_navigation_LED
+- Left_landing_skid_rail
+- Right_landing_skid_rail
+- Rear_short_antenna
+- RigGuide_* markers
+
+Unity import tips:
+1. Import OBJ and MTL together.
+2. Create a prefab under something like:
+   Assets/A_Dogs_Tale/Resources/Prefabs/Props/Drones/
+3. Delete or hide RigGuide_* objects for final visual use.
+4. The propeller_blur_disk material includes MTL transparency fields:
+   d 0.38 / Tr 0.62
+   Unity may not automatically make the material transparent. If needed:
+   - Set the material Surface Type to Transparent.
+   - Reduce alpha to around 0.35-0.45.
+   - Use alpha blending, not cutout.
+5. Add a Rigidbody only if physics-driven. Otherwise move it with your AI/controller.
+
+Suggested colliders:
+- SphereCollider or BoxCollider around central body.
+- Optional small trigger sphere around propeller disk area for “danger/noise zone.”
+- Avoid MeshCollider for the prop disks unless needed.
+
+Gameplay ideas for A Dog's Tale:
+- Emits a high-pitched Noise event while flying.
+- Dogs can bark at it, chase it, flee from it, or hide under furniture.
+- Squirrels can throw acorns at it.
+- The camera gimbal can act as a Vision sensor.
+- It can patrol rooms, scan scent trails, or act as a comic airborne rival.
+
+Animation ideas:
+- You do not need spinning prop animation because of the solid blur disks.
+- Good simple animations:
+  - Body bobbing up/down.
+  - Slight roll/pitch while turning.
+  - Camera gimbal looking around.
+  - LED blinking.
+  - Gentle prop disk rotation if desired, but optional.
+
+OBJ limitation:
+- OBJ stores mesh and materials only.
+- It does not store Unity scripts, colliders, transparency shader settings, Rigidbody, animation clips, lights, or particle effects.

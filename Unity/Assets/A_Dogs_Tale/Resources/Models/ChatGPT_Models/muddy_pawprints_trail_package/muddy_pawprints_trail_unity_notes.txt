@@ -1,0 +1,48 @@
+Muddy Pawprints Trail OBJ - Unity Notes
+
+Files:
+- muddy_pawprints_trail.obj
+- muddy_pawprints_trail.mtl
+
+Design:
+- A short alternating left/right trail of muddy dog pawprints.
+- Each print includes:
+  - Main pad
+  - Four toe pads
+  - Small claw marks
+  - Mud smears
+  - Random splatter dots
+- The geometry is very thin and sits close to the floor like a decal mesh.
+- Includes start/end/area guide markers for scent tracking gameplay.
+
+Important named groups:
+- Pawprint_01_left_main_pad_center
+- Pawprint_01_left_toe_pad_*
+- Pawprint_01_left_small_claw_mark_*
+- Pawprint_01_left_mud_smear_heel_drag
+- Pawprint_*_mud_splatter_*
+- Partial_muddy_step_start_*
+- Guide_Track_Start_delete_or_hide
+- Guide_Track_End_delete_or_hide
+- Guide_Scent_Trail_Area_delete_or_hide
+
+Unity setup:
+1. Import OBJ and MTL together.
+2. Create a prefab under something like:
+   Assets/A_Dogs_Tale/Resources/Prefabs/Clues/Tracks/
+3. Place slightly above the floor to avoid z-fighting.
+   Suggested y offset: 0.005 to 0.015 above the floor.
+4. Delete or hide Guide_* groups before final use, or keep them on an editor/helper layer.
+5. If the translucent mud smear imports opaque, set the material Surface Type to Transparent and alpha around 0.5-0.7.
+
+Gameplay ideas:
+- Use as a visible clue plus scent trail.
+- Guide_Track_Start can mark where the scent is strongest/oldest.
+- Guide_Track_End can point toward the next clue.
+- Dogs can sniff the trail and follow it.
+- Rain, Roomba, or foot traffic could weaken or smear the trail.
+- ReactToScent or ReactToScentSourceFound can trigger when the dog reaches a print.
+
+OBJ limitation:
+- OBJ stores mesh/materials only.
+- It does not store Unity decals, colliders, scent emitters, trigger zones, scripts, or particle effects.
