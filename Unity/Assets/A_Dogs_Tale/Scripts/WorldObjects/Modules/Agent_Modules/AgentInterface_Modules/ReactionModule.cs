@@ -10,6 +10,7 @@ using DogGame.Lua;
 using InspectorTools;
 
 [InspectorNote("AgentInterface_Modules/Reaction Module", "Gathers Events and launches Lua Reactions.")]
+[DisallowMultipleComponent]
 public sealed class ReactionModule : WorldModule
 {
     public TaskController taskController = null!;

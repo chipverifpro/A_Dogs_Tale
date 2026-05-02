@@ -11,6 +11,7 @@ using Unity.Tutorials.Core.Editor;
 namespace DogGame.LLM
 {
     [DefaultExecutionOrder(-10)]
+    [DisallowMultipleComponent]
     public sealed class TaskController : WorldModule
     {
         [SerializeField] private string agentId = "player";

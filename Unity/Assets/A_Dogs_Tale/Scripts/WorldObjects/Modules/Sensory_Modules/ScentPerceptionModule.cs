@@ -17,6 +17,7 @@ namespace DogGame.Modules
     //.  Function ideas: Create, update, sniff nearby, determine novelty/interest (functions exist below)
 
     [InspectorNote("Sensory_Modules/Scent Perception Module", "Generate events for scents detected, sniff command.")]
+    [DisallowMultipleComponent]
     public sealed class ScentPerceptionModule : WorldModule
     {
         [Header("Inputs")]

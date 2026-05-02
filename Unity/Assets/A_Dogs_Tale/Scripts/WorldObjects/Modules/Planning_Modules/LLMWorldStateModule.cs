@@ -29,6 +29,7 @@ namespace DogGame.LLM.Agent
     /// from game systems (player, combat, perception, etc.).
     /// </summary>
     [InspectorNote("Planning_Modules/LLM World State Module", "Dynamic self-updating context for LLM.  It should populate itself (dynamic context).")]
+    [DisallowMultipleComponent]
     public sealed class LLMWorldStateModule : WorldModule
     {
         public string positionContext = "";

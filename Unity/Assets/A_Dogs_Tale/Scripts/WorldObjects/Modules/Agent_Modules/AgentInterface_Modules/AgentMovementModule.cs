@@ -36,6 +36,7 @@ namespace DogGame.Modules
     /// or SetDesiredVelocity() based on their logic.
     /// </summary>
     [InspectorNote("AgentInterface_Modules/Agent Movement Module", "High level motion module that converts movement intent into per-tick velocity vector passed to MotionModule to move the agent.")]
+    [DisallowMultipleComponent]
     public class AgentMovementModule : WorldModule
     {
         [Header("For following and routing")]
@@ -99,11 +100,7 @@ namespace DogGame.Modules
         // Desired velocity requested by decision modules (map-space, horizontal only here)
         private Vector3 desiredVelocity = Vector3.zero;
 
-        [Header("Max Speed")]
-        // Used to choose between walk/run speeds when using SetDesiredMove()
-        //private bool desireRun = false;
-        public WalkMode walkMode;
-        public float maxWalkModeSpeed;      // result of lookup WalkMode to Max Speed
+        [Header("Speed")]
         private float speedFactor01 = 1.0f; // 0..1 scaling of walk/run speed
 
         /// <summary>
@@ -138,10 +135,9 @@ namespace DogGame.Modules
             ClampStopDistance();
         }
 
-        // this just forwards the change to motionModule where it is kept.
+        // Walk mode is owned by MotionModule; this wrapper preserves existing callers.
         public void SetWalkMode(WalkMode walkMode)
         {
-            this.walkMode = walkMode;
             worldObject.motionModule?.SetWalkMode(walkMode);
         }
 
@@ -517,7 +513,7 @@ namespace DogGame.Modules
 
             // If requested, change the walk mode
             if (changeWalkMode != WalkMode.None)
-                worldObject.motionModule.SetWalkMode(changeWalkMode);
+                SetWalkMode(changeWalkMode);
 
             // get the agent's current maximum movement speed based on WalkMode.
             // TODO: determine if we are backpedaling or strafing???
@@ -568,7 +564,7 @@ namespace DogGame.Modules
             {
                 Debug.Log($"[{worldObject.DisplayName}] MoveTick: targetObj={(targetObject? targetObject.DisplayName : "null")} " +
                         $"targetPosMap={(targetLocationMap.HasValue ? targetLocationMap.Value.ToString() : "null")} " +
-                        $"desiredVel={desiredVelocity} currentVel={currentVelocity} walkMode={walkMode}", this);
+                        $"desiredVel={desiredVelocity} currentVel={currentVelocity} walkMode={(worldObject.motionModule != null ? worldObject.motionModule.currentWalkMode : WalkMode.None)}", this);
             }
 
             if (worldObject.motionModule == null)
@@ -720,7 +716,8 @@ namespace DogGame.Modules
         {
             targetObject = null;
             targetLocationMap = targetLocation_map;
-            walkMode = mode;
+            if (mode != WalkMode.None)
+                SetWalkMode(mode);
             allowPathThroughDoors = allowDoors;
             recoveringToCellCenter = false;
             consecutiveStallTicks = 0;
@@ -736,7 +733,8 @@ namespace DogGame.Modules
         {
             targetObject = null;
             targetLocationMap = null;
-            walkMode = mode;
+            if (mode != WalkMode.None)
+                SetWalkMode(mode);
 
             // Optionally clamp here by mode max speed
             desiredVelocity = mapVelocity;

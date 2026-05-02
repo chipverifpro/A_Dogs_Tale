@@ -5,6 +5,7 @@ using InspectorTools;
 namespace DogGame.Modules
 {
     [InspectorNote("AgentDecision_Modules/Immobile Decision Module", "Agent stands still.")]
+    [DisallowMultipleComponent]
     public class ImmobileDecisionModule : AgentDecisionModuleBase
     {
         public override AgentDecisionType DecisionType => AgentDecisionType.Immobile;

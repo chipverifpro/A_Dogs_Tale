@@ -24,6 +24,7 @@ LocationModule can answer questions MotionModule cannot, such as:
 namespace DogGame.Modules
 {
     [InspectorNote("Sensory_Modules/Location Module", "Gets information about position, orientation, cell, tilt.  Some features also available directly in WorldModule.")]
+    [DisallowMultipleComponent]
     public class LocationModule : WorldModule
     {
         public Vector3 pos3d_world => this.transform.position;

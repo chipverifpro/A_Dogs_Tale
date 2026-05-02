@@ -6,6 +6,7 @@ namespace DogGame.Modules
 {
     [InspectorNote("Output_Modules/Noise Maker Module", "Generate events for footsteps and barks.")]
 
+    [DisallowMultipleComponent]
     public class NoiseMakerModule : WorldModule
     {
         private int debugDoubleTick = -1;

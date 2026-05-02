@@ -16,6 +16,7 @@ namespace DogGame.Modules
     [RequireComponent(typeof(TaskController))]
     [RequireComponent(typeof(LLMAgentFacade))]
     [InspectorNote("AgentDecision_Modules/Player Decision Module", "Manual control of this Agent.")]
+    [DisallowMultipleComponent]
     public class PlayerDecisionModule : AgentDecisionModuleBase
     {
         //    [Header("Input Source")]

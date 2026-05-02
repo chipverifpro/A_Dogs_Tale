@@ -66,6 +66,7 @@ namespace DogGame.Modules
     }
 
     [InspectorNote("Ability_Modules/Motion Module", "Convert desired velocity vector to motion, dealing with blockages, acceleration, speed.")]
+    [DisallowMultipleComponent]
     public class MotionModule : WorldModule
     {
         [Header("Body Setup")]

@@ -18,6 +18,7 @@ namespace DogGame.Modules
     /// Maintains and looks up friends and doggy dictionary words
     /// </summary>
     [InspectorNote("Sensory_Modules/Knowledge Module", "Keep track of friends list, doggy dictionary, and commands and tricks known (future).")]
+    [DisallowMultipleComponent]
     public class KnowledgeModule : WorldModule
     {
         [Header("Information Known by this Agent")]

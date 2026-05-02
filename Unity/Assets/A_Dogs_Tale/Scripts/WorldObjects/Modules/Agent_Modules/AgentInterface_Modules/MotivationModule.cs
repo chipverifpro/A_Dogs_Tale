@@ -20,6 +20,7 @@ using InspectorTools;
 namespace DogGame.AI
 {
     [InspectorNote("AgentInterface_Modules/Motivation Module", "PLACEHOLDER ONLY.",UnityEditor.MessageType.Warning)]
+    [DisallowMultipleComponent]
     public class MotivationModule : WorldModule
     {
         [Header("Tuning")]

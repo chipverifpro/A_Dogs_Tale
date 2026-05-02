@@ -16,6 +16,7 @@ namespace DogGame.UI.InteractionWheel
     /// Lives on the TARGET WorldObject as: target.interactionModule (may be null).
     /// </summary>
     [InspectorNote("Ability_Modules/Interaction Module", "Custom buttons for Interaction Wheel Menu.")]
+    [DisallowMultipleComponent]
     public sealed class InteractionModule : WorldModule, IWheelOptionProvider
     {
         [Serializable]

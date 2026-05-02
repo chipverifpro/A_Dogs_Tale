@@ -16,6 +16,7 @@ using InspectorTools;
 namespace DogGame.Modules
 {
     [InspectorNote("Sensory_Modules/Vision Perception Module", "Generate events for what is seen.")]
+    [DisallowMultipleComponent]
     public sealed class VisionPerceptionModule : WorldModule
     {
         [Header("Vision")]

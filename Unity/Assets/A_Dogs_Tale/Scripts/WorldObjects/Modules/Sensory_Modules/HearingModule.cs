@@ -10,6 +10,7 @@ namespace DogGame.Modules
     /// First pass: distance + room penalties + basic voice targeting. LOS/occlusion comes next.
     /// </summary>
     [InspectorNote("Sensory_Modules/Hearing Module", "Generate events for sounds heard.")]
+    [DisallowMultipleComponent]
     public class HearingModule : WorldModule
     {
         [Header("Update rate")]

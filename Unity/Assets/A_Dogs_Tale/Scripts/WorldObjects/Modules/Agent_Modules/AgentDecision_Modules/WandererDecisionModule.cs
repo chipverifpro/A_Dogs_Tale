@@ -5,6 +5,7 @@ using InspectorTools;
 namespace DogGame.Modules
 {
     [InspectorNote("AgentDecision_Modules/Wander Decision Module", "Agent wanders around the current room only.")]
+    [DisallowMultipleComponent]
     public class WandererDecisionModule : AgentDecisionModuleBase
     {
         public override AgentDecisionType DecisionType => AgentDecisionType.Wanderer;

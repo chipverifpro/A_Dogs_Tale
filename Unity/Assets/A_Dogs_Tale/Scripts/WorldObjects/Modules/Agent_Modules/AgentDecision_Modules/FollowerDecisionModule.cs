@@ -4,6 +4,7 @@ using InspectorTools;
 namespace DogGame.Modules
 {
     [InspectorNote("AgentDecision_Modules/Follower Decision Module", "Follows another Agent.")]
+    [DisallowMultipleComponent]
     public class FollowerDecisionModule : AgentDecisionModuleBase
     {
         public override AgentDecisionType DecisionType => AgentDecisionType.Follower;

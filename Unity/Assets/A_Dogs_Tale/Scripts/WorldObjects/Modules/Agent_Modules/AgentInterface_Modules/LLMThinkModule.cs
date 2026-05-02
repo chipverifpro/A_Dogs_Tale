@@ -16,6 +16,7 @@ namespace DogGame.LLM
     [RequireComponent(typeof(LLMConfigModule))]
     [RequireComponent(typeof(LLMWorldStateModule))]
     [InspectorNote("AgentInterface_Modules/LLM Think Module", "Per-agent module that can request LLM plans.  Builds/enqueues and routes responses back.")]
+    [DisallowMultipleComponent]
     public sealed class LLMThinkModule : WorldModule
     {
         [Header("Defaults")]

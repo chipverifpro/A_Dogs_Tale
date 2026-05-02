@@ -6,6 +6,7 @@ using InspectorTools;
 namespace DogGame.Modules
 {
     [InspectorNote("AgentInterface_Modules/Pack Member Module", "Handles joining/leaving/order/formation for pack.")]
+    [DisallowMultipleComponent]
     public class PackMemberModule : WorldModule
     {
         public Pack currentPack;

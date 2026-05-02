@@ -11,6 +11,7 @@ namespace DogGame.Modules
 {
     #region LuaScript
     [InspectorNote("AgentDecision_Modules/Explore Decision Module", "Explores the entire map by going through every door.")]
+    [DisallowMultipleComponent]
     public class ExploreDecisionModule : AgentDecisionModuleBase
     {
 private const string DefaultLuaExploreScript = @"state = {

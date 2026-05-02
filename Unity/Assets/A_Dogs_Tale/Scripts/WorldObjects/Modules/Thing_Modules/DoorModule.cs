@@ -7,6 +7,7 @@ using InspectorTools;
 namespace DogGame.World
 {
     [InspectorNote("Thing_Modules/Door Module", "Attributes for opening/closing of a door, chest, or hole.")]
+    [DisallowMultipleComponent]
     public class DoorModule : WorldModule
     {
         [Header("References")]

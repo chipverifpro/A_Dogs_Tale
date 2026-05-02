@@ -263,9 +263,6 @@ public class Pack : MonoBehaviour
         if (member.motionModule != null)
             return member.motionModule.currentWalkMode;
 
-        if (member.agentMovementModule != null)
-            return member.agentMovementModule.walkMode;
-
         return fallback;
     }
 

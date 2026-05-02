@@ -13,6 +13,7 @@ namespace DogGame.Modules
     [RequireComponent(typeof(BlackboardModule))]
     [RequireComponent(typeof(MotivationModule))]
     [InspectorNote("AgentModules/Agent Module", "Switches AgentDecision_Modules, and forwards Tick appropriately.")]
+    [DisallowMultipleComponent]
     public class AgentModule : WorldModule
     {
         [Header("Debug / Identity")]

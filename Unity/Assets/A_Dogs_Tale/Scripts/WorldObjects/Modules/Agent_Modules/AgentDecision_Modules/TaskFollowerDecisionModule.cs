@@ -12,6 +12,7 @@ using InspectorTools;
 namespace DogGame.Modules
 {
     [InspectorNote("AgentDecision_Modules/Task Follower Decision Module", "PLACEHOLDER. Agent responding to Tasks.",UnityEditor.MessageType.Warning)]
+    [DisallowMultipleComponent]
     public class TaskFollowerDecisionModule : AgentDecisionModuleBase
     {
         public override AgentDecisionType DecisionType => AgentDecisionType.TaskFollower;
