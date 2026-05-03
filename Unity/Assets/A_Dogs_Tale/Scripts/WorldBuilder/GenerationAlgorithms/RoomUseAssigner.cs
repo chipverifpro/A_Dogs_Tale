@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections.Generic;
 
 public static partial class RoomUseAssigner
 {
@@ -10,7 +11,12 @@ public static partial class RoomUseAssigner
         {
             AssignRandomRoomUse(room, cfg);
             ApplyRoomEnvironment(room, cfg);
-            ApplyRoomPresentation(room, cfg);
+        }
+
+        Dictionary<string, int> roomNameCounts = new();
+        foreach (Room room in rooms)
+        {
+            ApplyRoomPresentation(room, cfg, roomNameCounts);
         }
     }
 
@@ -41,6 +47,7 @@ public static partial class RoomUseAssigner
         {
             PlacementRoomTypeFlags.Bedroom,
             PlacementRoomTypeFlags.Kitchen,
+            PlacementRoomTypeFlags.Library,
             PlacementRoomTypeFlags.Living,
             PlacementRoomTypeFlags.Bathroom,
             PlacementRoomTypeFlags.Hallway,

@@ -53,6 +53,10 @@ namespace DogGame.Modules
         [Range(0.1f, 3f)]
         [SerializeField] private float sensitivity = 1.0f; // global multiplier
 
+        [Header("Movement trend")]
+        [SerializeField] private float movementTrendMemorySeconds = 0.5f;
+        [SerializeField] private float movementTrendDistanceThresholdMeters = 0.05f;
+
         // Persistent query cursor
         private ulong lastSeenNoiseId = 0;
 
@@ -63,6 +67,7 @@ namespace DogGame.Modules
         private readonly List<NoiseEvent> scratchEvents = new(64);
         private readonly List<HeardNoise> currentHeard = new(32);
         private readonly List<HeardNoise> summarizedForLLM = new(16);
+        private readonly Dictionary<string, MovementTrendSample> movementTrendBySource = new(64);
 
         // Public outputs
         public IReadOnlyList<HeardNoise> CurrentHeardNoises => currentHeard;
@@ -216,18 +221,24 @@ namespace DogGame.Modules
 
             // 2) Summarize + cap for LLM
             NoiseSummarizer.SummarizeForLLM(currentHeard, maxLLMItems, summarizedForLLM);
+            ApplyMovementTrendMemory(summarizedForLLM);
             CurrentLLMSummary = BuildLLMSummary(summarizedForLLM, listenerRoomId, hearingWindowSeconds);
             BuildPerceptionEvents(summarizedForLLM, listenerPos);
             
             foreach (var h in summarizedForLLM)
             {
+                string direction = DirectionTokenFromVector(h.directionToSource);
+                string movement = GetMovementDescription(h.subtype);
+                string sourceRoomName = ResolveRoomName(h.sourceRoomId);
                 string hearingEventString = 
                     $"[{worldObject.DisplayName}] heard " +
                     $"{h.category}/{h.subtype} " +
                     $"from {GetSourceNameForDebug(h)} " +
+                    $"dir={direction} " +
+                    $"{(string.IsNullOrEmpty(movement) ? "" : $"movement={movement} ")}" +
                     $"loud={h.perceivedLoudness01:0.00} " +
                     $"dist={h.distanceMeters:0.0}m " +
-                    $"room={h.roomRelation} " +
+                    $"room={sourceRoomName} " +
                     $"{(string.IsNullOrEmpty(h.notesShort) ? "" : $"notes={h.notesShort}")}";
                 
                 Debug.Log(hearingEventString);
@@ -398,6 +409,7 @@ namespace DogGame.Modules
         private static string AppendNote(string existing, string note)
         {
             if (string.IsNullOrWhiteSpace(existing)) return note;
+            if (existing.Contains(note)) return existing;
             return $"{existing}; {note}";
         }
 
@@ -430,13 +442,7 @@ namespace DogGame.Modules
                     DistanceBand.Mid => "mid",
                     _ => "far"
                 };
-                string roomToken = h.roomRelation switch
-                {
-                    RoomRelation.SameRoom => "same",
-                    RoomRelation.Adjacent => "adjacent",
-                    RoomRelation.Different => "different",
-                    _ => "unknown"
-                };
+                string roomToken = ResolveRoomName(h.sourceRoomId);
 
                 string sourceToken = "unknown";
                 if (h.attributedEmitterRef != null)
@@ -475,13 +481,16 @@ namespace DogGame.Modules
             };
         }
 
-        private static string DirectionTokenFromVector(Vector3 dir)
+        private string DirectionTokenFromVector(Vector3 dir)
         {
             if (dir == Vector3.zero) return "here";
 
-            // Convert to a simple 8-way token relative to world axes.
-            // (Later you can make it relative to listener forward.)
-            float angle = Mathf.Atan2(dir.x, dir.z) * Mathf.Rad2Deg; // yaw degrees, 0=forward(z+)
+            Transform listenerTransform = worldObject != null ? worldObject.transform : transform;
+            Vector3 localDir = listenerTransform != null ? listenerTransform.InverseTransformDirection(dir) : dir;
+            localDir.y = 0f;
+            if (localDir.sqrMagnitude < 0.0001f) return "here";
+
+            float angle = Mathf.Atan2(localDir.x, localDir.z) * Mathf.Rad2Deg; // yaw degrees, 0=listener forward
             if (angle < 0f) angle += 360f;
 
             if (angle < 22.5f || angle >= 337.5f) return "front";
@@ -492,6 +501,79 @@ namespace DogGame.Modules
             if (angle < 247.5f) return "back-left";
             if (angle < 292.5f) return "left";
             return "front-left";
+        }
+
+        private string ResolveRoomName(int roomId)
+        {
+            if (roomId < 0)
+                return "unknown";
+
+            List<Room> rooms = null;
+            if (worldObject != null && worldObject.dir != null && worldObject.dir.gen != null)
+                rooms = worldObject.dir.gen.rooms;
+            else if (Dir.Instance != null && Dir.Instance.gen != null)
+                rooms = Dir.Instance.gen.rooms;
+
+            if (rooms == null || roomId >= rooms.Count || rooms[roomId] == null)
+                return $"Room {roomId}";
+
+            Room room = rooms[roomId];
+            if (!string.IsNullOrWhiteSpace(room.name) && !IsRawGeneratedRoomName(room.name, roomId))
+                return room.name.Trim();
+
+            return ResolveSemanticRoomName(rooms, roomId);
+        }
+
+        private string ResolveSemanticRoomName(List<Room> rooms, int roomId)
+        {
+            if (rooms == null || roomId < 0 || roomId >= rooms.Count || rooms[roomId] == null)
+                return $"Room {roomId}";
+
+            DungeonSettings settings = null;
+            if (worldObject != null && worldObject.dir != null)
+                settings = worldObject.dir.cfg != null ? worldObject.dir.cfg : worldObject.dir.gen != null ? worldObject.dir.gen.cfg : null;
+            else if (Dir.Instance != null)
+                settings = Dir.Instance.cfg != null ? Dir.Instance.cfg : Dir.Instance.gen != null ? Dir.Instance.gen.cfg : null;
+
+            string label = RoomUseAssigner.GetRoomLabel(rooms[roomId], settings);
+            int count = 0;
+            for (int i = 0; i <= roomId && i < rooms.Count; i++)
+            {
+                Room candidate = rooms[i];
+                if (candidate == null)
+                    continue;
+
+                if (RoomUseAssigner.GetRoomLabel(candidate, settings) == label)
+                    count++;
+            }
+
+            return $"{label} {Mathf.Max(1, count)}";
+        }
+
+        private static bool IsRawGeneratedRoomName(string roomName, int roomId)
+        {
+            if (string.IsNullOrWhiteSpace(roomName))
+                return true;
+
+            string trimmed = roomName.Trim();
+            return trimmed == $"Room {roomId}" || trimmed == $"Room {roomId + 1}";
+        }
+
+        private static string GetMovementDescription(NoiseSubtype subtype)
+        {
+            switch (subtype)
+            {
+                case NoiseSubtype.FootstepWalk:
+                    return "walking";
+                case NoiseSubtype.FootstepRun:
+                    return "running";
+                case NoiseSubtype.SneakStep:
+                    return "sneaking";
+                case NoiseSubtype.Scurry:
+                    return "scurrying";
+                default:
+                    return string.Empty;
+            }
         }
 
         private bool ShouldIgnoreNoiseEvent(in NoiseEvent evt, int listenerId)
@@ -550,6 +632,68 @@ namespace DogGame.Modules
                 return $"id:{heard.attributedEmitterId}";
 
             return "unknown";
+        }
+
+        private void ApplyMovementTrendMemory(List<HeardNoise> heardList)
+        {
+            if (heardList == null || heardList.Count == 0)
+                return;
+
+            float now = Time.time;
+            float threshold = Mathf.Max(0.01f, movementTrendDistanceThresholdMeters);
+
+            for (int i = 0; i < heardList.Count; i++)
+            {
+                HeardNoise heard = heardList[i];
+                if (!IsFootstepSubtype(heard.subtype) || heard.attributedEmitterId <= 0)
+                    continue;
+
+                string key = GetMovementTrendKey(heard);
+                if (movementTrendBySource.TryGetValue(key, out MovementTrendSample previous) &&
+                    now - previous.timeSeconds <= movementTrendMemorySeconds)
+                {
+                    float distanceDelta = heard.distanceMeters - previous.distanceMeters;
+                    if (distanceDelta < -threshold)
+                    {
+                        heard.notesShort = AppendNote(heard.notesShort, "footsteps approaching");
+                    }
+                    else if (distanceDelta > threshold)
+                    {
+                        heard.notesShort = AppendNote(heard.notesShort, "footsteps receding");
+                    }
+                    else
+                    {
+                        heard.notesShort = AppendNote(heard.notesShort, "footsteps nearby");
+                    }
+
+                    heardList[i] = heard;
+                }
+
+                movementTrendBySource[key] = new MovementTrendSample
+                {
+                    distanceMeters = heard.distanceMeters,
+                    timeSeconds = now
+                };
+            }
+        }
+
+        private static bool IsFootstepSubtype(NoiseSubtype subtype)
+        {
+            return subtype == NoiseSubtype.FootstepWalk
+                || subtype == NoiseSubtype.FootstepRun
+                || subtype == NoiseSubtype.SneakStep
+                || subtype == NoiseSubtype.Scurry;
+        }
+
+        private static string GetMovementTrendKey(in HeardNoise heard)
+        {
+            return $"{heard.attributedEmitterId}:{heard.subtype}";
+        }
+
+        private struct MovementTrendSample
+        {
+            public float distanceMeters;
+            public float timeSeconds;
         }
     }
 }

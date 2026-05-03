@@ -48,10 +48,15 @@ namespace DogGame.Noise
                 GroupKey key = BuildGroupKey(h);
 
                 if (!groups.TryGetValue(key, out GroupAccumulator acc))
+                {
                     acc = new GroupAccumulator(h);
-
-                acc.Add(h);
-                groups[key] = acc;
+                    groups[key] = acc;
+                }
+                else
+                {
+                    acc.Add(h);
+                    groups[key] = acc;
+                }
             }
 
             if (groups.Count == 0)
@@ -206,7 +211,7 @@ namespace DogGame.Noise
                 maxAudibilityScore = 0f;
 
                 newestTimeAgo = float.MaxValue;
-                oldestTimeAgo = 0f;
+                oldestTimeAgo = float.MinValue;
 
                 newestDistance = 0f;
                 oldestDistance = 0f;
@@ -235,7 +240,7 @@ namespace DogGame.Noise
                 }
 
                 // newest = smallest timeAgo
-                if (h.timeAgoSeconds < newestTimeAgo)
+                if (h.timeAgoSeconds <= newestTimeAgo)
                 {
                     newestTimeAgo = h.timeAgoSeconds;
                     newestDistance = h.distanceMeters;
@@ -277,19 +282,16 @@ namespace DogGame.Noise
                     // If we have multiple impulses, summarize as continuing movement
                     if (count >= 2)
                     {
-                        if (oldestDistance > newestDistance)
+                        float distanceDelta = newestDistance - oldestDistance;
+                        if (distanceDelta < -0.1f)
                         {
-                            rep.notesShort = Append(rep.notesShort, $"footsteps receeding");
+                            rep.notesShort = Append(rep.notesShort, "footsteps approaching");
                         }
-                        else
+                        else if (distanceDelta > 0.1f)
                         {
-                            rep.notesShort = Append(rep.notesShort, $"footsteps approaching");
+                            rep.notesShort = Append(rep.notesShort, "footsteps receding");
                         }
                         //rep.notesShort = Append(rep.notesShort, $"footsteps x{count}");
-
-                        string trend = ComputeDistanceTrend(oldestDistance, newestDistance, count);
-                        if (!string.IsNullOrEmpty(trend))
-                            rep.notesShort = Append(rep.notesShort, trend);
 
                         // Make footsteps a little more relevant when repeated
                         rep.audibilityScore *= Mathf.Lerp(1.0f, 1.18f, Mathf.Clamp01((count - 1) / 6f));
@@ -341,19 +343,6 @@ namespace DogGame.Noise
                     || subtype == NoiseSubtype.FootstepRun
                     || subtype == NoiseSubtype.SneakStep
                     || subtype == NoiseSubtype.Scurry;
-            }
-
-            private static string ComputeDistanceTrend(float oldestDist, float newestDist, int sampleCount)
-            {
-                if (sampleCount < 3) return string.Empty;
-
-                float delta = newestDist - oldestDist;
-
-                // Only call it a trend if the change is meaningful
-                if (Mathf.Abs(delta) < 1.0f) return string.Empty;
-
-                if (delta < 0f) return "approaching";
-                return "moving away";
             }
 
             private static string Append(string existing, string add)

@@ -24,6 +24,7 @@ public enum PlacementRoomTypeFlags
     SportsField = 1 << 11,
     Wooded = 1 << 12,
     PicnicStructure = 1 << 13,
+    Library = 1 << 14,
     Any = ~0
 }
 

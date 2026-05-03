@@ -70,6 +70,7 @@ public partial class DungeonSettings
         new RoomTypeWeight { type = PlacementRoomTypeFlags.Bedroom,  weight = 3 },
         new RoomTypeWeight { type = PlacementRoomTypeFlags.Living,   weight = 3 },
         new RoomTypeWeight { type = PlacementRoomTypeFlags.Kitchen,  weight = 2 },
+        new RoomTypeWeight { type = PlacementRoomTypeFlags.Library,  weight = 1 },
         new RoomTypeWeight { type = PlacementRoomTypeFlags.Bathroom, weight = 2 },
         new RoomTypeWeight { type = PlacementRoomTypeFlags.Utility,  weight = 1 },
         new RoomTypeWeight { type = PlacementRoomTypeFlags.Hallway,  weight = 1 },
