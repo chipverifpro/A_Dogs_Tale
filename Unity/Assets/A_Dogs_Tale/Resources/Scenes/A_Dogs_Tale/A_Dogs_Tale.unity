@@ -106248,13 +106248,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ScentGUI
   sniffVisuals: {fileID: 0}
-  scentSpriteResourcePath: Sprites/SensesSymbolsColor_v4
   modeSpriteResourcePath: Sprites/SpriteSheet_Modes_V3
   speedSpriteResourcePath: Sprites/Speeds
   playPauseSpriteResourcePath: Sprites/PlayAndPause_Dual
-  emoteSheetAResourcePath: Sprites/DogEmojiSheetA
-  emoteSheetBResourcePath: Sprites/DogEmojiSheetB
-  emoteSheetCResourcePath: Sprites/DogEmojiSheetC
   inventoryActionSpriteResourcePath: Sprites/InventoryActionsSheetA
   digHoleSpriteResourcePath: Sprites/DigHoleSpriteA
   noseButtonSize: 176
@@ -166680,14 +166676,8 @@ MonoBehaviour:
   rowSpacing: 4
   iconSize: 90
   maxMessageLines: 2
-  spriteSheetResourcePath: Sprites/SensesSymbolsColor_v4
-  emoteSheetAResourcePath: Sprites/DogEmojiSheetA
-  emoteSheetBResourcePath: Sprites/DogEmojiSheetB
-  emoteSheetCResourcePath: Sprites/DogEmojiSheetC
-  inventoryActionSpriteResourcePath: Sprites/InventoryActionsSheetA
-  mapSpriteResourcePath: Sprites/MapsSpriteSheet
   defaultDisplayUsesRichText: 1
-  autoScrollToNewest: 0
+  autoScrollToNewest: 1
   maxHistoryEntries: 0
   BottomBannerCanvas: {fileID: 1713417604}
 --- !u!114 &1713417602

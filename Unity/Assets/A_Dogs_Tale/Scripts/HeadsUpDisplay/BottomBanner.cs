@@ -346,10 +346,11 @@ public class BottomBanner : MonoBehaviour
     float GetTargetPanelHeight()
     {
         float expandedHeight = GetExpandedPanelHeight();
-        if (!autoCollapseWhenMouseAway || IsMouseInExpandedBannerZone())
+        float collapsedHeight = GetCollapsedPanelHeight(expandedHeight);
+        if (!autoCollapseWhenMouseAway || IsMouseInBannerHoverZone(expandedHeight, collapsedHeight))
             return expandedHeight;
 
-        return GetCollapsedPanelHeight(expandedHeight);
+        return collapsedHeight;
     }
 
     float GetExpandedPanelHeight()
@@ -371,15 +372,17 @@ public class BottomBanner : MonoBehaviour
         return 20f + Mathf.Max(rowMinHeight, iconSize + 4f);
     }
 
-    bool IsMouseInExpandedBannerZone()
+    bool IsMouseInBannerHoverZone(float expandedHeight, float collapsedHeight)
     {
         if (Mouse.current == null)
             return false;
 
         Vector2 screenPoint = Mouse.current.position.ReadValue();
-        float expandedHeightScreen = GetExpandedPanelHeight() * GetCanvasScaleFactor();
+        bool isCurrentlyExpanded = currentPanelHeight > collapsedHeight + 0.01f;
+        float hoverHeight = isCurrentlyExpanded ? expandedHeight : collapsedHeight;
+        float hoverHeightScreen = hoverHeight * GetCanvasScaleFactor();
         float bottomInset = Mathf.Max(0f, panelRT != null ? panelRT.anchoredPosition.y : 0f) * GetCanvasScaleFactor();
-        return screenPoint.y <= bottomInset + expandedHeightScreen;
+        return screenPoint.y <= bottomInset + hoverHeightScreen;
     }
 
     float GetCanvasScaleFactor()
@@ -671,6 +674,9 @@ public class BottomBanner : MonoBehaviour
 
         BuildUIIfNeeded();
 
+        bool scrollToNewest = ShouldScrollToNewestForNewMessage();
+        float previousContentY = contentRT != null ? contentRT.anchoredPosition.y : 0f;
+
         string renderedText = FormatMessageText(message, includeGameTime, isRichText);
         Sprite sprite = iconOverride != null ? iconOverride : GetSpriteFor(sense, level);
 
@@ -708,7 +714,48 @@ public class BottomBanner : MonoBehaviour
             return;
 
         Canvas.ForceUpdateCanvases();
-        scrollRect.verticalNormalizedPosition = 0f;
+        if (scrollToNewest)
+        {
+            scrollRect.verticalNormalizedPosition = 0f;
+        }
+        else if (contentRT != null)
+        {
+            scrollRect.StopMovement();
+            Vector2 anchoredPosition = contentRT.anchoredPosition;
+            anchoredPosition.y = previousContentY;
+            contentRT.anchoredPosition = anchoredPosition;
+        }
+    }
+
+    bool ShouldScrollToNewestForNewMessage()
+    {
+        if (!autoScrollToNewest || scrollRect == null)
+            return false;
+
+        if (IsCollapsedToSingleLine())
+            return true;
+
+        return IsScrolledToBottom();
+    }
+
+    bool IsCollapsedToSingleLine()
+    {
+        return autoCollapseWhenMouseAway &&
+               GetTargetPanelHeight() < GetExpandedPanelHeight() - 0.01f;
+    }
+
+    bool IsScrolledToBottom()
+    {
+        if (scrollRect == null)
+            return true;
+
+        if (contentRT == null || viewportRT == null)
+            return true;
+
+        if (contentRT.rect.height <= viewportRT.rect.height + 0.5f)
+            return true;
+
+        return scrollRect.verticalNormalizedPosition <= 0.001f;
     }
 
     void _Clear()
