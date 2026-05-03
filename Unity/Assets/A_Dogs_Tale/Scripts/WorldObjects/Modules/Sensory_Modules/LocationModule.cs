@@ -258,6 +258,25 @@ namespace DogGame.Modules
             return selfPack != null && candidatePack == selfPack;
         }
 
+        private bool IsPackmateObjectId(int objectId)
+        {
+            if (objectId <= 0 || worldObject == null || worldObject.packMemberModule == null)
+                return false;
+
+            Pack selfPack = worldObject.packMemberModule.currentPack;
+            if (selfPack == null || selfPack.packAgentList == null)
+                return false;
+
+            for (int i = 0; i < selfPack.packAgentList.Count; i++)
+            {
+                WorldObject packMember = selfPack.packAgentList[i];
+                if (packMember != null && packMember != worldObject && packMember.ObjectId == objectId)
+                    return true;
+            }
+
+            return false;
+        }
+
         private static bool IsContainer(WorldObject obj)
         {
             return obj != null && !IsAgent(obj) &&
@@ -352,6 +371,9 @@ namespace DogGame.Modules
             foreach (KeyValuePair<int, string> entry in knownAgents)
             {
                 if (worldObject != null && entry.Key == worldObject.ObjectId)
+                    continue;
+
+                if (IsPackmateObjectId(entry.Key))
                     continue;
 
                 WorldObjectRegistry registry = WorldObjectRegistry.Instance;

@@ -39,7 +39,7 @@ public sealed class TimeTask
     /// </summary>
     public bool IfYield()
     {
-        // return false; // DEBUG
+        return false; // DEBUG
         float now = _mgr.Now;
         float chunk = 0f;
         // Measure the chunk we just finished (time since last decision)
