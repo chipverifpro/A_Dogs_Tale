@@ -421,7 +421,7 @@ public class WorldObject : MonoBehaviour
 
         // ABILITY
         //motionModule?.Tick(dt);
-        //locationModule?.Tick(dt);
+        locationModule?.Tick(dt);
         //activatorModule?.Tick(dt);
         containerModule?.Tick(dt);
         //interactionModule?.Tick(dt);

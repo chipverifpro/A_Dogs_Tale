@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+using System.Text;
 using UnityEngine;
 using Unity.Mathematics;
 using InspectorTools;
@@ -27,6 +29,12 @@ namespace DogGame.Modules
     [DisallowMultipleComponent]
     public class LocationModule : WorldModule
     {
+        private const string HoleArchetypeId = "PF_Floor_Hole";
+        private const string MoundArchetypeId = "PF_Floor_Mound";
+        private static readonly Dictionary<int, Dictionary<int, string>> knownAgentDescriptionsByRoom = new();
+
+        private int lastLoggedRoomId = int.MinValue;
+
         public Vector3 pos3d_world => this.transform.position;
         public Vector3 pos3d_map => worldObject != null ? worldObject.WorldToMapPosition(pos3d_world) : pos3d_world;
 
@@ -106,6 +114,326 @@ namespace DogGame.Modules
                 Quaternion yawRot = Quaternion.Euler(0f, yaw, 0f);
                 Quaternion tiltOnly = transform.rotation * Quaternion.Inverse(yawRot);
                 return (quaternion)tiltOnly;
+            }
+        }
+
+        public override void Tick(float deltaTime)
+        {
+            base.Tick(deltaTime);
+
+            if (!ShouldLogRoomTransitions())
+                return;
+
+            Cell currentCell = cell;
+            int currentRoomId = currentCell != null ? currentCell.room_number : -1;
+            if (currentRoomId == lastLoggedRoomId)
+                return;
+
+            if (lastLoggedRoomId == int.MinValue)
+            {
+                lastLoggedRoomId = currentRoomId;
+                if (currentRoomId >= 0)
+                    LogRoomSnapshot("Entered", currentRoomId);
+                return;
+            }
+
+            if (lastLoggedRoomId >= 0)
+                LogRoomSnapshot("Left", lastLoggedRoomId);
+
+            lastLoggedRoomId = currentRoomId;
+
+            if (currentRoomId >= 0)
+                LogRoomSnapshot("Entered", currentRoomId);
+        }
+
+        private bool ShouldLogRoomTransitions()
+        {
+            if (!Application.isPlaying || worldObject == null || dir == null || dir.gen == null || !dir.gen.buildComplete)
+                return false;
+
+            return worldObject.Kind == WorldObjectKind.Agent || worldObject.agentModule != null;
+        }
+
+        private void LogRoomSnapshot(string action, int roomId)
+        {
+            string agentName = worldObject != null ? worldObject.DisplayName : name;
+            string roomName = ResolveRoomName(roomId);
+            RoomSnapshot snapshot = BuildRoomSnapshot(roomId);
+            BottomBanner.LogMessage(
+                BannerSense.Vision,
+                BannerLevel.Low,
+                $"[{agentName}] {action} {roomName}. {snapshot.ToLogText()}",
+                true);
+        }
+
+        private RoomSnapshot BuildRoomSnapshot(int roomId)
+        {
+            RoomSnapshot snapshot = new RoomSnapshot();
+            HashSet<int> currentAgentIds = new HashSet<int>();
+
+            WorldObjectRegistry registry = WorldObjectRegistry.Instance;
+            if (registry != null)
+            {
+                foreach (WorldObject candidate in registry.GetAllObjects())
+                {
+                    if (!IsVisibleRoomObject(candidate, roomId))
+                        continue;
+
+                    if (IsAgent(candidate))
+                    {
+                        if (candidate == worldObject)
+                            continue;
+
+                        snapshot.agents.Add(DescribeAgent(candidate));
+                        if (candidate.ObjectId > 0)
+                            currentAgentIds.Add(candidate.ObjectId);
+                        continue;
+                    }
+
+                    if (IsHeldByAnotherWorldObject(candidate))
+                        continue;
+
+                    if (IsContainer(candidate))
+                    {
+                        snapshot.containers.Add(DescribeContainer(candidate));
+                    }
+                    else if (candidate.Kind == WorldObjectKind.Item)
+                    {
+                        snapshot.items.Add(candidate.DisplayName);
+                    }
+                }
+            }
+
+            AddHoleDescriptions(roomId, snapshot.holes);
+            AddPreviouslyContainedAgents(roomId, currentAgentIds, snapshot.previouslyContainedAgents);
+            RememberCurrentAgents(roomId, currentAgentIds);
+
+            snapshot.Sort();
+            return snapshot;
+        }
+
+        private bool IsVisibleRoomObject(WorldObject candidate, int roomId)
+        {
+            if (candidate == null || !candidate.gameObject.activeInHierarchy || candidate.locationModule == null)
+                return false;
+
+            Cell candidateCell = candidate.locationModule.cell;
+            return candidateCell != null && candidateCell.room_number == roomId;
+        }
+
+        private static bool IsAgent(WorldObject obj)
+        {
+            return obj != null && (obj.Kind == WorldObjectKind.Agent || obj.agentModule != null);
+        }
+
+        private static bool IsContainer(WorldObject obj)
+        {
+            return obj != null && !IsAgent(obj) &&
+                   (obj.Kind == WorldObjectKind.Container || obj.containerModule != null);
+        }
+
+        private static bool IsHeldByAnotherWorldObject(WorldObject obj)
+        {
+            if (obj == null || obj.transform.parent == null)
+                return false;
+
+            WorldObject parentWorldObject = obj.transform.parent.GetComponentInParent<WorldObject>();
+            return parentWorldObject != null && parentWorldObject != obj;
+        }
+
+        private string DescribeAgent(WorldObject agent)
+        {
+            string carrying = DescribeHeldItems(agent);
+            return string.IsNullOrEmpty(carrying)
+                ? agent.DisplayName
+                : $"{agent.DisplayName} (carrying {carrying})";
+        }
+
+        private string DescribeContainer(WorldObject container)
+        {
+            ContainerModule containerModule = container.containerModule;
+            if (containerModule == null)
+                return container.DisplayName;
+
+            if (!containerModule.CanAccessContents(out _))
+                return $"{container.DisplayName} (contents unknown)";
+
+            string contents = DescribeHeldItems(container);
+            return string.IsNullOrEmpty(contents)
+                ? $"{container.DisplayName} (empty)"
+                : $"{container.DisplayName} (contains {contents})";
+        }
+
+        private static string DescribeHeldItems(WorldObject owner)
+        {
+            if (owner == null || owner.containerModule == null || owner.containerModule.HeldItemCount <= 0)
+                return string.Empty;
+
+            List<string> names = new List<string>();
+            IReadOnlyList<WorldObject> heldItems = owner.containerModule.HeldItems;
+            for (int i = 0; i < heldItems.Count; i++)
+            {
+                WorldObject item = heldItems[i];
+                if (item != null)
+                    names.Add(item.DisplayName);
+            }
+
+            names.Sort();
+            return string.Join(", ", names);
+        }
+
+        private void AddHoleDescriptions(int roomId, List<string> holes)
+        {
+            if (dir == null || dir.elementStore == null)
+                return;
+
+            ElementLayer floorLayer = dir.elementStore.GetLayer(ElementLayerKind.Floor);
+            if (floorLayer == null || floorLayer.instances == null)
+                return;
+
+            int openHoleCount = 0;
+            int filledHoleCount = 0;
+            for (int i = 0; i < floorLayer.instances.Count; i++)
+            {
+                ElementInstanceData instance = floorLayer.instances[i];
+                if (instance == null || instance.roomIndex != roomId)
+                    continue;
+
+                if (instance.archetypeId == HoleArchetypeId)
+                {
+                    openHoleCount++;
+                    holes.Add($"Hole{openHoleCount}");
+                }
+                else if (instance.archetypeId == MoundArchetypeId)
+                {
+                    filledHoleCount++;
+                    holes.Add($"FilledHole{filledHoleCount}");
+                }
+            }
+        }
+
+        private void AddPreviouslyContainedAgents(int roomId, HashSet<int> currentAgentIds, List<string> previousAgents)
+        {
+            if (!knownAgentDescriptionsByRoom.TryGetValue(roomId, out Dictionary<int, string> knownAgents))
+                return;
+
+            foreach (KeyValuePair<int, string> entry in knownAgents)
+            {
+                if (worldObject != null && entry.Key == worldObject.ObjectId)
+                    continue;
+
+                if (!currentAgentIds.Contains(entry.Key))
+                    previousAgents.Add(entry.Value);
+            }
+        }
+
+        private void RememberCurrentAgents(int roomId, HashSet<int> currentAgentIds)
+        {
+            if (!knownAgentDescriptionsByRoom.TryGetValue(roomId, out Dictionary<int, string> knownAgents))
+            {
+                knownAgents = new Dictionary<int, string>();
+                knownAgentDescriptionsByRoom[roomId] = knownAgents;
+            }
+
+            WorldObjectRegistry registry = WorldObjectRegistry.Instance;
+            if (registry == null)
+                return;
+
+            foreach (int agentId in currentAgentIds)
+            {
+                if (registry.TryGet(agentId, out WorldObject agent) && agent != null)
+                    knownAgents[agentId] = DescribeAgent(agent);
+            }
+        }
+
+        private string ResolveRoomName(int roomId)
+        {
+            if (roomId < 0 || dir == null || dir.gen == null || dir.gen.rooms == null || roomId >= dir.gen.rooms.Count)
+                return $"Room {roomId}";
+
+            Room room = dir.gen.rooms[roomId];
+            if (room == null)
+                return $"Room {roomId}";
+
+            if (!string.IsNullOrWhiteSpace(room.name) && !IsRawGeneratedRoomName(room.name, roomId))
+                return room.name.Trim();
+
+            return ResolveSemanticRoomName(dir.gen.rooms, roomId);
+        }
+
+        private string ResolveSemanticRoomName(List<Room> rooms, int roomId)
+        {
+            if (rooms == null || roomId < 0 || roomId >= rooms.Count || rooms[roomId] == null)
+                return $"Room {roomId}";
+
+            DungeonSettings settings = dir != null
+                ? dir.cfg != null ? dir.cfg : dir.gen != null ? dir.gen.cfg : null
+                : null;
+
+            string label = RoomUseAssigner.GetRoomLabel(rooms[roomId], settings);
+            int count = 0;
+            for (int i = 0; i <= roomId && i < rooms.Count; i++)
+            {
+                Room candidate = rooms[i];
+                if (candidate == null)
+                    continue;
+
+                if (RoomUseAssigner.GetRoomLabel(candidate, settings) == label)
+                    count++;
+            }
+
+            return $"{label} {Mathf.Max(1, count)}";
+        }
+
+        private static bool IsRawGeneratedRoomName(string roomName, int roomId)
+        {
+            if (string.IsNullOrWhiteSpace(roomName))
+                return true;
+
+            string trimmed = roomName.Trim();
+            return trimmed == $"Room {roomId}" || trimmed == $"Room {roomId + 1}";
+        }
+
+        private sealed class RoomSnapshot
+        {
+            public readonly List<string> agents = new List<string>();
+            public readonly List<string> items = new List<string>();
+            public readonly List<string> containers = new List<string>();
+            public readonly List<string> holes = new List<string>();
+            public readonly List<string> previouslyContainedAgents = new List<string>();
+
+            public void Sort()
+            {
+                agents.Sort();
+                items.Sort();
+                containers.Sort();
+                holes.Sort();
+                previouslyContainedAgents.Sort();
+            }
+
+            public string ToLogText()
+            {
+                StringBuilder builder = new StringBuilder();
+                AppendList(builder, "agents", agents);
+                AppendList(builder, "items", items);
+                AppendList(builder, "containers", containers);
+                AppendList(builder, "holes", holes);
+                AppendList(builder, "previously contained", previouslyContainedAgents);
+                return builder.Length > 0 ? builder.ToString() : "room appears empty.";
+            }
+
+            private static void AppendList(StringBuilder builder, string label, List<string> values)
+            {
+                if (values == null || values.Count == 0)
+                    return;
+
+                if (builder.Length > 0)
+                    builder.Append(' ');
+
+                builder.Append(label);
+                builder.Append(" = ");
+                builder.Append(string.Join(", ", values));
+                builder.Append('.');
             }
         }
     }
