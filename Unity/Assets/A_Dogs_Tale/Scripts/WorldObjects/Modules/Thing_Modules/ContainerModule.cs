@@ -62,7 +62,8 @@ namespace DogGame.Modules
             base.Awake();
             ConfigureAgentCapacityIfNeeded();
             SanitizeHeldItems();
-            RefreshHeldItems();
+            //if (CanModifyHeldItemTransforms())
+            //    RefreshHeldItems();
         }
 
         private void OnValidate()
@@ -74,8 +75,8 @@ namespace DogGame.Modules
             humanItemCapacity = Mathf.Max(0, humanItemCapacity);
 
             SanitizeHeldItems();
-            if (!Application.isPlaying)
-                RefreshHeldItems();
+            //if (!Application.isPlaying)
+            //    RefreshHeldItems();       // will be done in Awake()
         }
 
         public override void Tick(float deltaTime)
@@ -354,6 +355,9 @@ namespace DogGame.Modules
 
         public void RefreshHeldItems()
         {
+            if (!CanModifyHeldItemTransforms())
+                return;
+
             for (int i = 0; i < heldItems.Count; i++)
             {
                 WorldObject item = heldItems[i];
@@ -393,7 +397,7 @@ namespace DogGame.Modules
 
         private void ApplyHeldItemState(WorldObject item)
         {
-            if (item == null)
+            if (item == null || !CanModifyHeldItemTransforms())
                 return;
 
             item.transform.SetParent(transform, false);
@@ -403,7 +407,7 @@ namespace DogGame.Modules
 
         private void ReleaseHeldItemState(WorldObject item)
         {
-            if (item == null)
+            if (item == null || !CanModifyHeldItemTransforms())
                 return;
 
             if (item.transform.parent == transform)
@@ -424,6 +428,11 @@ namespace DogGame.Modules
             Collider[] colliders = item.GetComponentsInChildren<Collider>(true);
             for (int i = 0; i < colliders.Length; i++)
                 colliders[i].enabled = enabled;
+        }
+
+        private bool CanModifyHeldItemTransforms()
+        {
+            return gameObject.scene.IsValid() && gameObject.scene.isLoaded;
         }
 
         private void ConfigureAgentCapacityIfNeeded()
