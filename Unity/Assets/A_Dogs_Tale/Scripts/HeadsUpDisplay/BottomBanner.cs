@@ -29,6 +29,7 @@ public sealed class BannerMessageEntry
 {
     public BannerSense sense;
     public BannerLevel level;
+    public Sprite iconSprite;
     public string message;
     public string renderedText;
     public bool includesGameTime;
@@ -64,6 +65,9 @@ public class BottomBanner : MonoBehaviour
     [SerializeField] float iconSize = 28f;
     [SerializeField] int maxMessageLines = 2;
     [SerializeField] string spriteSheetResourcePath = "Sprites/SensesSymbolsColor_v4";
+    [SerializeField] string emoteSheetAResourcePath = "Sprites/DogEmojiSheetA";
+    [SerializeField] string emoteSheetBResourcePath = "Sprites/DogEmojiSheetB";
+    [SerializeField] string emoteSheetCResourcePath = "Sprites/DogEmojiSheetC";
     [SerializeField] bool defaultDisplayUsesRichText = true;
     [SerializeField] bool autoScrollToNewest = true;
     [SerializeField] int maxHistoryEntries;
@@ -72,6 +76,7 @@ public class BottomBanner : MonoBehaviour
 
     readonly List<BannerMessageEntry> messageHistory = new List<BannerMessageEntry>();
     readonly Dictionary<string, Sprite> senseSpriteLookup = new Dictionary<string, Sprite>(StringComparer.Ordinal);
+    readonly Dictionary<char, Dictionary<int, Sprite>> emoteSpriteLookupBySheet = new Dictionary<char, Dictionary<int, Sprite>>();
     readonly List<GameObject> rowObjects = new List<GameObject>();
     readonly List<TextMeshProUGUI> rowTextObjects = new List<TextMeshProUGUI>();
 
@@ -562,6 +567,159 @@ public class BottomBanner : MonoBehaviour
         return null;
     }
 
+    Sprite GetEmoteSprite(string emote, out string displayName)
+    {
+        displayName = FormatEmoteDisplayName(emote);
+        if (!TryResolveEmoteEntry(emote, out DogEmojiEntry entry))
+            return null;
+
+        displayName = entry.Name;
+        if (!emoteSpriteLookupBySheet.TryGetValue(entry.SheetId, out Dictionary<int, Sprite> spriteLookup))
+        {
+            spriteLookup = LoadEmoteSheetSprites(entry.SheetId);
+            emoteSpriteLookupBySheet[entry.SheetId] = spriteLookup;
+        }
+
+        return spriteLookup.TryGetValue(entry.SpriteIndex, out Sprite sprite) ? sprite : null;
+    }
+
+    bool TryResolveEmoteEntry(string emote, out DogEmojiEntry entry)
+    {
+        string normalized = NormalizeEmoteKey(emote);
+        string aliased = ResolveEmoteAlias(normalized);
+
+        for (int i = 0; i < DogEmojiCatalog.Entries.Length; i++)
+        {
+            DogEmojiEntry candidate = DogEmojiCatalog.Entries[i];
+            if (string.Equals(candidate.EntryId, emote, StringComparison.OrdinalIgnoreCase) ||
+                NormalizeEmoteKey(candidate.Name) == aliased)
+            {
+                entry = candidate;
+                return true;
+            }
+        }
+
+        entry = default;
+        return false;
+    }
+
+    string ResolveEmoteAlias(string normalized)
+    {
+        switch (normalized)
+        {
+            case "friendly":
+                return "happy";
+            case "fearful":
+                return "afraid";
+            case "tilthead":
+                return "curious";
+            case "dig":
+                return "determined";
+            case "stay":
+                return "alert";
+            case "setuptrap":
+                return "sneaky";
+            case "scratch":
+                return "annoyed";
+            default:
+                return normalized;
+        }
+    }
+
+    Dictionary<int, Sprite> LoadEmoteSheetSprites(char sheetId)
+    {
+        string resourcePath = NormalizeResourcePath(GetEmoteSheetResourcePath(sheetId));
+        Sprite[] sprites = Resources.LoadAll<Sprite>(resourcePath);
+        Dictionary<int, Sprite> spriteLookup = new Dictionary<int, Sprite>();
+
+        for (int i = 0; i < sprites.Length; i++)
+        {
+            Sprite sprite = sprites[i];
+            if (sprite == null)
+                continue;
+
+            int index = GetSpriteSheetIndex(sprite.name);
+            if (index >= 0)
+                spriteLookup[index] = sprite;
+        }
+
+        return spriteLookup;
+    }
+
+    string GetEmoteSheetResourcePath(char sheetId)
+    {
+        switch (sheetId)
+        {
+            case 'A':
+                return emoteSheetAResourcePath;
+            case 'B':
+                return emoteSheetBResourcePath;
+            case 'C':
+                return emoteSheetCResourcePath;
+            default:
+                return string.Empty;
+        }
+    }
+
+    static string NormalizeResourcePath(string resourcePath)
+    {
+        if (string.IsNullOrWhiteSpace(resourcePath))
+            return string.Empty;
+
+        resourcePath = resourcePath.Trim();
+        return resourcePath.EndsWith(".png", StringComparison.OrdinalIgnoreCase)
+            ? resourcePath.Substring(0, resourcePath.Length - 4)
+            : resourcePath;
+    }
+
+    static int GetSpriteSheetIndex(string spriteName)
+    {
+        if (string.IsNullOrWhiteSpace(spriteName))
+            return -1;
+
+        int separatorIndex = spriteName.LastIndexOf('_');
+        if (separatorIndex < 0 || separatorIndex >= spriteName.Length - 1)
+            return -1;
+
+        return int.TryParse(spriteName.Substring(separatorIndex + 1), out int index)
+            ? index
+            : -1;
+    }
+
+    static string NormalizeEmoteKey(string emote)
+    {
+        if (string.IsNullOrWhiteSpace(emote))
+            return string.Empty;
+
+        string trimmed = emote.Trim().ToLowerInvariant();
+        return trimmed
+            .Replace(" ", string.Empty)
+            .Replace("_", string.Empty)
+            .Replace("-", string.Empty);
+    }
+
+    static string FormatEmoteDisplayName(string emote)
+    {
+        if (string.IsNullOrWhiteSpace(emote))
+            return "Emote";
+
+        string spaced = emote.Trim().Replace("_", " ").Replace("-", " ");
+        return char.ToUpperInvariant(spaced[0]) + (spaced.Length > 1 ? spaced.Substring(1) : string.Empty);
+    }
+
+    void AddEmoteInternal(WorldObject agent, string emote, bool includeGameTime)
+    {
+        string actorName = agent != null ? agent.DisplayName : "Unknown agent";
+        Sprite sprite = GetEmoteSprite(emote, out string emoteName);
+        AddMessageInternal(
+            BannerSense.None,
+            BannerLevel.None,
+            $"{actorName} did the {emoteName} emote.",
+            includeGameTime,
+            false,
+            sprite);
+    }
+
     GameObject CreateMessageRow(Sprite sprite, string renderedText)
     {
         GameObject row = new GameObject("MessageRow", typeof(RectTransform), typeof(HorizontalLayoutGroup), typeof(ContentSizeFitter), typeof(LayoutElement));
@@ -621,6 +779,11 @@ public class BottomBanner : MonoBehaviour
 
     void AddMessageInternal(BannerSense sense, BannerLevel level, string message, bool includeGameTime, bool isRichText)
     {
+        AddMessageInternal(sense, level, message, includeGameTime, isRichText, null);
+    }
+
+    void AddMessageInternal(BannerSense sense, BannerLevel level, string message, bool includeGameTime, bool isRichText, Sprite iconOverride)
+    {
         if (hideRoutine != null)
         {
             StopCoroutine(hideRoutine);
@@ -630,12 +793,13 @@ public class BottomBanner : MonoBehaviour
         BuildUIIfNeeded();
 
         string renderedText = FormatMessageText(message, includeGameTime, isRichText);
-        Sprite sprite = GetSpriteFor(sense, level);
+        Sprite sprite = iconOverride != null ? iconOverride : GetSpriteFor(sense, level);
 
         BannerMessageEntry entry = new BannerMessageEntry
         {
             sense = sense,
             level = level,
+            iconSprite = sprite,
             message = message ?? string.Empty,
             renderedText = renderedText,
             includesGameTime = includeGameTime,
@@ -741,6 +905,11 @@ public class BottomBanner : MonoBehaviour
     public static void LogRichMessage(BannerSense sense, BannerLevel level, string richMessage, bool includeGameTime = false)
     {
         GetOrCreateInstance()?.AddMessageInternal(sense, level, richMessage, includeGameTime, true);
+    }
+
+    public static void LogEmote(WorldObject agent, string emote, bool includeGameTime = false)
+    {
+        GetOrCreateInstance()?.AddEmoteInternal(agent, emote, includeGameTime);
     }
 
     void _SetVisible(bool visible)

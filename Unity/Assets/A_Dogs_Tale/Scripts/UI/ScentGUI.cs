@@ -2105,6 +2105,7 @@ public class ScentGUI : MonoBehaviour
     {
         SetSelectedEmote(entry);
         RefreshEmoteButtonState(force: true);
+        BottomBanner.LogEmote(GetCurrentControlledWorldObject(), entry.EntryId);
         CloseEmoteDropdown();
     }
 

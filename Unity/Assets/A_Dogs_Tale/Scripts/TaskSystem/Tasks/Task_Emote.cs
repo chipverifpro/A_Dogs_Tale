@@ -18,6 +18,7 @@ namespace DogGame.Tasks
         public void Start(TaskContext context)
         {
             Debug.Log($"[{context.AgentId}] EMOTE: {emote}");
+            global::BottomBanner.LogEmote(context.Agent, emote);
         }
 
         public TaskTickResult Tick(TaskContext context, float deltaTimeSeconds)
