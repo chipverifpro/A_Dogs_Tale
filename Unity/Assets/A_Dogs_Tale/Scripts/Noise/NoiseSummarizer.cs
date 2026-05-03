@@ -277,23 +277,24 @@ namespace DogGame.Noise
                 HeardNoise rep = strongest;
 
                 // Add rollup notes for certain categories/subtypes
-                if (IsFootstepSubtype(rep.subtype))
+                if (IsMovementTrackedSubtype(rep.subtype))
                 {
                     // If we have multiple impulses, summarize as continuing movement
                     if (count >= 2)
                     {
+                        string trendLabel = GetMovementTrendLabel(rep.subtype);
                         float distanceDelta = newestDistance - oldestDistance;
                         if (distanceDelta < -0.1f)
                         {
-                            rep.notesShort = Append(rep.notesShort, "footsteps approaching");
+                            rep.notesShort = Append(rep.notesShort, $"{trendLabel} approaching");
                         }
                         else if (distanceDelta > 0.1f)
                         {
-                            rep.notesShort = Append(rep.notesShort, "footsteps receding");
+                            rep.notesShort = Append(rep.notesShort, $"{trendLabel} receding");
                         }
                         //rep.notesShort = Append(rep.notesShort, $"footsteps x{count}");
 
-                        // Make footsteps a little more relevant when repeated
+                        // Make repeated movement a little more relevant.
                         rep.audibilityScore *= Mathf.Lerp(1.0f, 1.18f, Mathf.Clamp01((count - 1) / 6f));
                     }
                 }
@@ -337,12 +338,36 @@ namespace DogGame.Noise
                 return rep;
             }
 
-            private static bool IsFootstepSubtype(NoiseSubtype subtype)
+            private static bool IsMovementTrackedSubtype(NoiseSubtype subtype)
             {
                 return subtype == NoiseSubtype.FootstepWalk
                     || subtype == NoiseSubtype.FootstepRun
                     || subtype == NoiseSubtype.SneakStep
-                    || subtype == NoiseSubtype.Scurry;
+                    || subtype == NoiseSubtype.Scurry
+                    || subtype == NoiseSubtype.WheelRoll
+                    || subtype == NoiseSubtype.RotorWhirr
+                    || subtype == NoiseSubtype.WingFlap
+                    || subtype == NoiseSubtype.Hover
+                    || subtype == NoiseSubtype.MechanicalWhirr;
+            }
+
+            private static string GetMovementTrendLabel(NoiseSubtype subtype)
+            {
+                switch (subtype)
+                {
+                    case NoiseSubtype.WheelRoll:
+                        return "rolling";
+                    case NoiseSubtype.RotorWhirr:
+                        return "rotor whirr";
+                    case NoiseSubtype.WingFlap:
+                        return "wing flaps";
+                    case NoiseSubtype.Hover:
+                        return "hovering";
+                    case NoiseSubtype.MechanicalWhirr:
+                        return "mechanical whirr";
+                    default:
+                        return "footsteps";
+                }
             }
 
             private static string Append(string existing, string add)

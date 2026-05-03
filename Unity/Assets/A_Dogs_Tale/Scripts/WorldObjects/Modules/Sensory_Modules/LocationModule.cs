@@ -181,7 +181,7 @@ namespace DogGame.Modules
 
                     if (IsAgent(candidate))
                     {
-                        if (candidate == worldObject)
+                        if (candidate == worldObject || IsPackmate(candidate))
                             continue;
 
                         snapshot.agents.Add(DescribeAgent(candidate));
@@ -214,16 +214,48 @@ namespace DogGame.Modules
 
         private bool IsVisibleRoomObject(WorldObject candidate, int roomId)
         {
-            if (candidate == null || !candidate.gameObject.activeInHierarchy || candidate.locationModule == null)
+            if (candidate == null || !candidate.gameObject.activeInHierarchy)
                 return false;
 
-            Cell candidateCell = candidate.locationModule.cell;
-            return candidateCell != null && candidateCell.room_number == roomId;
+            int candidateRoomId = ResolveObjectRoomId(candidate);
+            return candidateRoomId == roomId;
+        }
+
+        private int ResolveObjectRoomId(WorldObject candidate)
+        {
+            if (candidate == null)
+                return -1;
+
+            if (candidate.locationModule != null)
+            {
+                Cell candidateCell = candidate.locationModule.cell;
+                return candidateCell != null ? candidateCell.room_number : -1;
+            }
+
+            if (dir == null || dir.gen == null || !dir.gen.buildComplete || dir.gen.hf == null)
+                return -1;
+
+            Vector3 mapPos = candidate.pos3d_map;
+            int mapX = Mathf.FloorToInt(mapPos.x);
+            int mapY = Mathf.FloorToInt(mapPos.z);
+            int mapZ = Mathf.FloorToInt(mapPos.y);
+            Cell cellAtObject = dir.gen.GetCellFromHf(mapX, mapY, mapZ, 50);
+            return cellAtObject != null ? cellAtObject.room_number : -1;
         }
 
         private static bool IsAgent(WorldObject obj)
         {
             return obj != null && (obj.Kind == WorldObjectKind.Agent || obj.agentModule != null);
+        }
+
+        private bool IsPackmate(WorldObject candidate)
+        {
+            if (worldObject == null || candidate == null || candidate == worldObject)
+                return false;
+
+            Pack selfPack = worldObject.packMemberModule != null ? worldObject.packMemberModule.currentPack : null;
+            Pack candidatePack = candidate.packMemberModule != null ? candidate.packMemberModule.currentPack : null;
+            return selfPack != null && candidatePack == selfPack;
         }
 
         private static bool IsContainer(WorldObject obj)
@@ -320,6 +352,10 @@ namespace DogGame.Modules
             foreach (KeyValuePair<int, string> entry in knownAgents)
             {
                 if (worldObject != null && entry.Key == worldObject.ObjectId)
+                    continue;
+
+                WorldObjectRegistry registry = WorldObjectRegistry.Instance;
+                if (registry != null && registry.TryGet(entry.Key, out WorldObject agent) && IsPackmate(agent))
                     continue;
 
                 if (!currentAgentIds.Contains(entry.Key))

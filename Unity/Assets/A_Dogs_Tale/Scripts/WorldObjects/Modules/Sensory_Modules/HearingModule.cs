@@ -30,13 +30,13 @@ namespace DogGame.Modules
         [Tooltip("Allow self-generated noises with priority >= this (e.g., door slam, glass shatter).")]
         [SerializeField] private int allowSelfPriorityAtOrAbove = 7;
 
-        [Tooltip("Always suppress self footsteps (prevents spam).")]
+        [Tooltip("Always suppress self movement noises (prevents spam).")]
         [SerializeField] private bool alwaysSuppressSelfFootsteps = true;
         
         [Header("Pack noise filtering")]
         [SerializeField] private bool suppressPackFootsteps = true;
 
-        [Tooltip("Only applies to Movement category (footsteps/scurry). Other pack noises still come through.")]
+        [Tooltip("Only applies to movement noises. Other pack noises still come through.")]
         [SerializeField] private bool suppressOnlyMovementFromPack = true;
 
         [Header("Room penalties")]
@@ -571,6 +571,16 @@ namespace DogGame.Modules
                     return "sneaking";
                 case NoiseSubtype.Scurry:
                     return "scurrying";
+                case NoiseSubtype.WheelRoll:
+                    return "rolling";
+                case NoiseSubtype.RotorWhirr:
+                    return "whirring";
+                case NoiseSubtype.WingFlap:
+                    return "flapping";
+                case NoiseSubtype.Hover:
+                    return "hovering";
+                case NoiseSubtype.MechanicalWhirr:
+                    return "mechanical whirring";
                 default:
                     return string.Empty;
             }
@@ -587,8 +597,8 @@ namespace DogGame.Modules
 
                 if (isSelf)
                 {
-                    // Always suppress self footsteps
-                    if (alwaysSuppressSelfFootsteps && evt.category == NoiseCategory.Movement)
+                    // Always suppress self movement noise.
+                    if (alwaysSuppressSelfFootsteps && IsMovementNoise(evt.category, evt.subtype))
                         return true;
 
                     // Allow self distress sounds
@@ -606,7 +616,7 @@ namespace DogGame.Modules
             // --- pack filtering (new) ---
             if (suppressPackFootsteps && evt.emitterRef != null)
             {
-                // If it's a pack-mate, suppress movement noises (footsteps/scurry)
+                // If it's a pack-mate, suppress movement noises.
                 if(worldObject.packMemberModule!=null && evt.emitterRef.packMemberModule!=null)
                 {
                     if (worldObject.packMemberModule.currentPack == evt.emitterRef.packMemberModule.currentPack)
@@ -614,7 +624,7 @@ namespace DogGame.Modules
                         if (!suppressOnlyMovementFromPack)
                             return true;
 
-                        if (evt.category == NoiseCategory.Movement)
+                        if (IsMovementNoise(evt.category, evt.subtype))
                             return true;
                     }
                 }
@@ -645,25 +655,26 @@ namespace DogGame.Modules
             for (int i = 0; i < heardList.Count; i++)
             {
                 HeardNoise heard = heardList[i];
-                if (!IsFootstepSubtype(heard.subtype) || heard.attributedEmitterId <= 0)
+                if (!IsMovementTrackedSubtype(heard.subtype) || heard.attributedEmitterId <= 0)
                     continue;
 
                 string key = GetMovementTrendKey(heard);
+                string trendLabel = GetMovementTrendLabel(heard.subtype);
                 if (movementTrendBySource.TryGetValue(key, out MovementTrendSample previous) &&
                     now - previous.timeSeconds <= movementTrendMemorySeconds)
                 {
                     float distanceDelta = heard.distanceMeters - previous.distanceMeters;
                     if (distanceDelta < -threshold)
                     {
-                        heard.notesShort = AppendNote(heard.notesShort, "footsteps approaching");
+                        heard.notesShort = AppendNote(heard.notesShort, $"{trendLabel} approaching");
                     }
                     else if (distanceDelta > threshold)
                     {
-                        heard.notesShort = AppendNote(heard.notesShort, "footsteps receding");
+                        heard.notesShort = AppendNote(heard.notesShort, $"{trendLabel} receding");
                     }
                     else
                     {
-                        heard.notesShort = AppendNote(heard.notesShort, "footsteps nearby");
+                        heard.notesShort = AppendNote(heard.notesShort, $"{trendLabel} nearby");
                     }
 
                     heardList[i] = heard;
@@ -677,12 +688,41 @@ namespace DogGame.Modules
             }
         }
 
-        private static bool IsFootstepSubtype(NoiseSubtype subtype)
+        private static bool IsMovementTrackedSubtype(NoiseSubtype subtype)
         {
             return subtype == NoiseSubtype.FootstepWalk
                 || subtype == NoiseSubtype.FootstepRun
                 || subtype == NoiseSubtype.SneakStep
-                || subtype == NoiseSubtype.Scurry;
+                || subtype == NoiseSubtype.Scurry
+                || subtype == NoiseSubtype.WheelRoll
+                || subtype == NoiseSubtype.RotorWhirr
+                || subtype == NoiseSubtype.WingFlap
+                || subtype == NoiseSubtype.Hover
+                || subtype == NoiseSubtype.MechanicalWhirr;
+        }
+
+        private static bool IsMovementNoise(NoiseCategory category, NoiseSubtype subtype)
+        {
+            return category == NoiseCategory.Movement || IsMovementTrackedSubtype(subtype);
+        }
+
+        private static string GetMovementTrendLabel(NoiseSubtype subtype)
+        {
+            switch (subtype)
+            {
+                case NoiseSubtype.WheelRoll:
+                    return "rolling";
+                case NoiseSubtype.RotorWhirr:
+                    return "rotor whirr";
+                case NoiseSubtype.WingFlap:
+                    return "wing flaps";
+                case NoiseSubtype.Hover:
+                    return "hovering";
+                case NoiseSubtype.MechanicalWhirr:
+                    return "mechanical whirr";
+                default:
+                    return "footsteps";
+            }
         }
 
         private static string GetMovementTrendKey(in HeardNoise heard)

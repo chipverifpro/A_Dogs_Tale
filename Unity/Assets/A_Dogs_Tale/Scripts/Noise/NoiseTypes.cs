@@ -47,6 +47,11 @@ namespace DogGame.Noise
         DoorClose,
         DoorSlam,
         LockClick,
+        WheelRoll,
+        WingFlap,
+        RotorWhirr,
+        Hover,
+        MechanicalWhirr,
 
         // Ambient
         WindGust,

@@ -11,11 +11,26 @@ namespace DogGame.Modules
     {
         private int debugDoubleTick = -1;
 
-        [Header("Footstep Noise (auto emit)")]
+        [Header("Movement Noise (auto emit)")]
         [SerializeField] private bool emitFootsteps = true;
 
-        [Tooltip("Ignore tiny jitter. Movement below this speed emits no footsteps.")]
+        [Tooltip("Ignore tiny jitter. Movement below this speed emits no movement noise.")]
         [SerializeField] private float minSpeedMetersPerSecond = 0.10f;
+
+        [Header("Movement Noise Classification")]
+        [Tooltip("Category emitted by automatic movement noise. Dogs usually use Movement; robots may use Mechanism.")]
+        [SerializeField] private NoiseCategory movementNoiseCategory = NoiseCategory.Movement;
+        [SerializeField] private NoiseSemanticTags movementSemanticTags = NoiseSemanticTags.None;
+        [SerializeField] private string movementProfileIdPrefix = "Auto.Movement";
+
+        [Header("Movement Noise Subtype by WalkMode")]
+        [SerializeField] private NoiseSubtype movementSubtypeWalk = NoiseSubtype.FootstepWalk;
+        [SerializeField] private NoiseSubtype movementSubtypeRun = NoiseSubtype.FootstepRun;
+        [SerializeField] private NoiseSubtype movementSubtypeSneak = NoiseSubtype.SneakStep;
+        [SerializeField] private NoiseSubtype movementSubtypeCautious = NoiseSubtype.SneakStep;
+        [SerializeField] private NoiseSubtype movementSubtypeCrawl = NoiseSubtype.SneakStep;
+        [SerializeField] private NoiseSubtype movementSubtypeStrafe = NoiseSubtype.FootstepWalk;
+        [SerializeField] private NoiseSubtype movementSubtypeBackpedal = NoiseSubtype.FootstepWalk;
 
         [Header("Step distance by WalkMode (meters per step)")]
         [SerializeField] private float stepDistanceWalk = 0.85f;
@@ -128,10 +143,10 @@ namespace DogGame.Modules
 
                 NoiseProfile profile = new NoiseProfile
                 {
-                    profileId = $"Auto.Footstep.{mode}",
-                    category = NoiseCategory.Movement,
+                    profileId = BuildMovementProfileId(mode, subtype),
+                    category = movementNoiseCategory,
                     subtype = subtype,
-                    semanticTags = NoiseSemanticTags.None,
+                    semanticTags = movementSemanticTags,
 
                     sourceLoudnessAtOneMeter = loudness,
                     effectiveRangeHintMeters = rangeHint,
@@ -143,6 +158,15 @@ namespace DogGame.Modules
             }
         }
 
+        private string BuildMovementProfileId(WalkMode mode, NoiseSubtype subtype)
+        {
+            string prefix = string.IsNullOrWhiteSpace(movementProfileIdPrefix)
+                ? "Auto.Movement"
+                : movementProfileIdPrefix.Trim();
+
+            return $"{prefix}.{mode}.{subtype}";
+        }
+
         private void GetFootstepParamsForMode(
             WalkMode mode,
             out NoiseSubtype subtype,
@@ -151,7 +175,7 @@ namespace DogGame.Modules
             out float rangeHint)
         {
             // Default values
-            subtype = NoiseSubtype.FootstepWalk;
+            subtype = movementSubtypeWalk;
             stepDistance = stepDistanceWalk;
             loudness = loudnessWalk;
             rangeHint = rangeWalk;
@@ -159,42 +183,42 @@ namespace DogGame.Modules
             switch (mode)
             {
                 case WalkMode.Run:
-                    subtype = NoiseSubtype.FootstepRun;
+                    subtype = movementSubtypeRun;
                     stepDistance = stepDistanceRun;
                     loudness = loudnessRun;
                     rangeHint = rangeRun;
                     break;
 
                 case WalkMode.Sneak:
-                    subtype = NoiseSubtype.SneakStep;
+                    subtype = movementSubtypeSneak;
                     stepDistance = stepDistanceSneak;
                     loudness = loudnessSneak;
                     rangeHint = rangeSneak;
                     break;
 
                 case WalkMode.Cautious:
-                    subtype = NoiseSubtype.SneakStep;
+                    subtype = movementSubtypeCautious;
                     stepDistance = stepDistanceCautious;
                     loudness = loudnessCautious;
                     rangeHint = rangeCautious;
                     break;
 
                 case WalkMode.Crawl:
-                    subtype = NoiseSubtype.SneakStep;
+                    subtype = movementSubtypeCrawl;
                     stepDistance = stepDistanceCrawl;
                     loudness = loudnessCrawl;
                     rangeHint = rangeCrawl;
                     break;
 
                 case WalkMode.Strafe:
-                    subtype = NoiseSubtype.FootstepWalk;
+                    subtype = movementSubtypeStrafe;
                     stepDistance = stepDistanceStrafe;
                     loudness = loudnessStrafe;
                     rangeHint = rangeStrafe;
                     break;
 
                 case WalkMode.Backpedal:
-                    subtype = NoiseSubtype.FootstepWalk;
+                    subtype = movementSubtypeBackpedal;
                     stepDistance = stepDistanceBackpedal;
                     loudness = loudnessBackpedal;
                     rangeHint = rangeBackpedal;
