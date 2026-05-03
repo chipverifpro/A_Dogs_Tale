@@ -7,7 +7,7 @@ public partial class DungeonGenerator
     // ======================= Corridors: WanderingMST =======================
     IEnumerator Corridors_WanderingMST()
     {
-        BottomBanner.Show("Corridors: WanderingMST");
+        BottomBanner.LogBuildProgress("Corridors: WanderingMST");
         int W = cfg.mapWidth - 1, H = cfg.mapHeight - 1;
 
         // clamp params to reasonable ranges

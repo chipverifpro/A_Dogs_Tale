@@ -17,13 +17,13 @@ public partial class DungeonGenerator
         }
         if (cfg.useCellularAutomata) // Cellular Automata generation
         {
-            BottomBanner.Show("Cellular Automata cavern generation iterating...");
+            BottomBanner.LogBuildProgress("Cellular Automata cavern generation iterating...");
             yield return StartCoroutine(RunCellularAutomation(tm: null));
             DrawWalls();
         }
         if (cfg.useScatterRooms)
         {
-            BottomBanner.Show("Scattering rooms...");
+            BottomBanner.LogBuildProgress("Scattering rooms...");
             yield return StartCoroutine(ScatterRooms(tm: null));
             Debug.Log("ScatterRooms done, room_rects.Count = " + room_rects.Count);
             //DrawMapByRects(room_rects, room_rects_color);
@@ -33,22 +33,22 @@ public partial class DungeonGenerator
 
     private IEnumerator LocateAndMergeGeneratedRooms(TimeTask tm)
     {
-        BottomBanner.Show("Locate Discrete rooms...");
+        BottomBanner.LogBuildProgress("Locate Discrete rooms...");
         if (cfg.useCellularAutomata) // locate rooms from cellular automata
         {
-            BottomBanner.Show("Remove tiny rocks...");
+            BottomBanner.LogBuildProgress("Remove tiny rocks...");
             yield return StartCoroutine(RemoveTinyRocksCoroutine(tm: null));
 
             // For Cellular Automata, find rooms from the map
-            BottomBanner.Show("Locate Discrete rooms...");
+            BottomBanner.LogBuildProgress("Locate Discrete rooms...");
             yield return StartCoroutine(FindClustersCoroutine(map, FLOOR, rooms, tm: null));
 
-            BottomBanner.Show("Remove tiny rooms...");
+            BottomBanner.LogBuildProgress("Remove tiny rooms...");
             yield return StartCoroutine(RemoveTinyRoomsCoroutine(tm: null));
         }
         if (cfg.useScatterRooms)
         {
-            BottomBanner.Show("Convert all Rects to Rooms...");
+            BottomBanner.LogBuildProgress("Convert all Rects to Rooms...");
             rooms = ConvertAllRectToRooms(room_rects, room_rects_color, SetTile: true);
             DrawMapByRooms(rooms);
             DrawWalls();
@@ -56,7 +56,7 @@ public partial class DungeonGenerator
 
             yield return tm.YieldOrDelay(cfg.stepDelay);
             // Step 4: Merge overlapping rooms
-            BottomBanner.Show("Merging Overlapping Rooms...");
+            BottomBanner.LogBuildProgress("Merging Overlapping Rooms...");
             if (cfg.MergeScatteredRooms)
                 rooms = MergeOverlappingRooms(rooms, considerAdjacency: true, eightWay: false);
             DrawMapByRooms(rooms);
@@ -80,7 +80,7 @@ public partial class DungeonGenerator
         DrawWalls();
 
         // Step 5: Connect rooms with corridors
-        BottomBanner.Show("Connecting Rooms with Corridors...");
+        BottomBanner.LogBuildProgress("Connecting Rooms with Corridors...");
         yield return StartCoroutine(ConnectRoomsByCorridors(tm: null));
 
         DrawMapByRooms(rooms);

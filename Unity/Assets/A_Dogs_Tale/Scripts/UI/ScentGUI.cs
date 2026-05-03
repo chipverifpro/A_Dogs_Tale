@@ -24,13 +24,9 @@ public class ScentGUI : MonoBehaviour
     public SniffModeVisuals sniffVisuals;
 
     [Header("Target Scent Menu")]
-    [SerializeField] private string scentSpriteResourcePath = "Sprites/SensesSymbolsColor_v4";
     [SerializeField] private string modeSpriteResourcePath = "Sprites/SpriteSheet_Modes_V3";
     [SerializeField] private string speedSpriteResourcePath = "Sprites/Speeds";
     [SerializeField] private string playPauseSpriteResourcePath = "Sprites/PlayAndPause_Dual";
-    [SerializeField] private string emoteSheetAResourcePath = "Sprites/DogEmojiSheetA";
-    [SerializeField] private string emoteSheetBResourcePath = "Sprites/DogEmojiSheetB";
-    [SerializeField] private string emoteSheetCResourcePath = "Sprites/DogEmojiSheetC";
     [SerializeField] private string inventoryActionSpriteResourcePath = "Sprites/InventoryActionsSheetA";
     [SerializeField] private string digHoleSpriteResourcePath = "Sprites/DigHoleSpriteA";
     [SerializeField] private float noseButtonSize = 176f;
@@ -59,13 +55,6 @@ public class ScentGUI : MonoBehaviour
     [SerializeField] private Color dropdownTextColor = new Color(0.19f, 0.15f, 0.08f, 1f);
     [SerializeField] private Color tooltipBackgroundColor = new Color(0.97f, 0.96f, 0.91f, 0.96f);
 
-    private readonly Dictionary<string, Sprite> scentSpriteLookup = new Dictionary<string, Sprite>();
-    private readonly Dictionary<AgentDecisionType, Sprite> modeSpriteLookup = new Dictionary<AgentDecisionType, Sprite>();
-    private readonly Dictionary<WalkMode, Sprite> speedSpriteLookup = new Dictionary<WalkMode, Sprite>();
-    private readonly Dictionary<int, Sprite> playPauseSpriteLookup = new Dictionary<int, Sprite>();
-    private readonly Dictionary<int, Sprite> inventoryActionSpriteLookup = new Dictionary<int, Sprite>();
-    private readonly Dictionary<int, Sprite> digHoleSpriteLookup = new Dictionary<int, Sprite>();
-    private readonly Dictionary<char, Dictionary<int, Sprite>> emoteSpriteLookupBySheet = new Dictionary<char, Dictionary<int, Sprite>>();
     private readonly List<GameObject> dropdownRows = new List<GameObject>();
     private readonly List<GameObject> emoteDropdownTiles = new List<GameObject>();
     private readonly List<Image> modeButtonBackgrounds = new List<Image>();
@@ -2423,347 +2412,80 @@ public class ScentGUI : MonoBehaviour
 
     private Sprite GetScentIconSprite()
     {
-        if (scentSpriteLookup.Count == 0)
-        {
-            Sprite[] sprites = Resources.LoadAll<Sprite>(scentSpriteResourcePath);
-            for (int i = 0; i < sprites.Length; i++)
-            {
-                Sprite sprite = sprites[i];
-                if (sprite == null || string.IsNullOrEmpty(sprite.name))
-                    continue;
-
-                scentSpriteLookup[sprite.name] = sprite;
-            }
-        }
-
-        string[] preferredNames =
-        {
-            "Sense_Smell_None",
-            "Sense_Smell_Low",
-            "Sense_Alert_None"
-        };
-
-        for (int i = 0; i < preferredNames.Length; i++)
-        {
-            if (scentSpriteLookup.TryGetValue(preferredNames[i], out Sprite sprite))
-                return sprite;
-        }
-
-        return null;
+        return SpriteServer.SpriteLookup("Sense_Smell_None")
+            ?? SpriteServer.SpriteLookup("Sense_Smell_Low")
+            ?? SpriteServer.SpriteLookup("Sense_Alert_None");
     }
 
     private Sprite GetDecisionModeSprite(AgentDecisionType decisionType)
     {
-        if (modeSpriteLookup.Count == 0)
-            LoadDecisionModeSprites();
-
-        if (modeSpriteLookup.TryGetValue(decisionType, out Sprite sprite))
-            return sprite;
-
-        if (modeSpriteLookup.TryGetValue(AgentDecisionType.Player, out Sprite fallback))
-            return fallback;
-
-        return null;
+        return SpriteServer.SpriteSheetLookup(modeSpriteResourcePath, GetDecisionModeSpriteIndex(decisionType))
+            ?? SpriteServer.SpriteSheetLookup(modeSpriteResourcePath, GetDecisionModeSpriteIndex(AgentDecisionType.Player));
     }
 
     private Sprite GetSimulationControlSprite(bool isPaused)
     {
-        if (playPauseSpriteLookup.Count == 0)
-            LoadSimulationControlSprites();
-
         int desiredIndex = isPaused ? 0 : 1;
-        if (playPauseSpriteLookup.TryGetValue(desiredIndex, out Sprite sprite))
-            return sprite;
-
-        if (playPauseSpriteLookup.TryGetValue(1, out Sprite pauseSprite))
-            return pauseSprite;
-
-        if (playPauseSpriteLookup.TryGetValue(0, out Sprite playSprite))
-            return playSprite;
-
-        return null;
+        return SpriteServer.SpriteSheetLookup(playPauseSpriteResourcePath, desiredIndex)
+            ?? SpriteServer.SpriteSheetLookup(playPauseSpriteResourcePath, 1)
+            ?? SpriteServer.SpriteSheetLookup(playPauseSpriteResourcePath, 0);
     }
 
     private Sprite GetSpeedModeSprite(WalkMode walkMode)
     {
-        if (speedSpriteLookup.Count == 0)
-            LoadSpeedModeSprites();
-
-        if (speedSpriteLookup.TryGetValue(walkMode, out Sprite sprite))
-            return sprite;
-
-        if (speedSpriteLookup.TryGetValue(WalkMode.Walk, out Sprite fallback))
-            return fallback;
-
-        return null;
+        return SpriteServer.SpriteSheetLookup(speedSpriteResourcePath, GetSpeedModeSpriteIndex(walkMode))
+            ?? SpriteServer.SpriteSheetLookup(speedSpriteResourcePath, GetSpeedModeSpriteIndex(WalkMode.Walk));
     }
 
     private Sprite GetInventoryButtonSprite()
     {
-        if (inventoryActionSpriteLookup.Count == 0)
-            LoadInventoryActionSprites();
-
-        if (inventoryActionSpriteLookup.TryGetValue(2, out Sprite sprite))
-            return sprite;
-
-        return null;
+        return SpriteServer.SpriteSheetLookup(inventoryActionSpriteResourcePath, 2);
     }
 
     private Sprite GetDigHoleButtonSprite()
     {
-        if (digHoleSpriteLookup.Count == 0)
-            LoadDigHoleSprites();
-
-        if (digHoleSpriteLookup.TryGetValue(0, out Sprite sprite))
-            return sprite;
-
-        foreach (KeyValuePair<int, Sprite> entry in digHoleSpriteLookup)
-            return entry.Value;
-
-        return null;
+        return SpriteServer.SpriteSheetLookup(digHoleSpriteResourcePath, 0);
     }
 
     private Sprite GetEmoteSprite(DogEmojiEntry entry)
     {
-        if (!emoteSpriteLookupBySheet.TryGetValue(entry.SheetId, out Dictionary<int, Sprite> spriteLookup))
-        {
-            spriteLookup = LoadEmoteSheetSprites(entry.SheetId);
-            emoteSpriteLookupBySheet[entry.SheetId] = spriteLookup;
-        }
-
-        return spriteLookup.TryGetValue(entry.SpriteIndex, out Sprite sprite) ? sprite : null;
+        return SpriteServer.SpriteSheetLookup($"DogEmojiSheet{entry.SheetId}", entry.SpriteIndex);
     }
 
-    private Dictionary<int, Sprite> LoadEmoteSheetSprites(char sheetId)
+    private int GetDecisionModeSpriteIndex(AgentDecisionType decisionType)
     {
-        string resourcePath = NormalizeResourcePath(GetEmoteSheetResourcePath(sheetId));
-        Sprite[] sprites = Resources.LoadAll<Sprite>(resourcePath);
-        Dictionary<int, Sprite> spriteLookup = new Dictionary<int, Sprite>();
-
-        if (sprites == null || sprites.Length == 0)
+        switch (decisionType)
         {
-            Debug.LogWarning($"ScentGUI: no emote sprites found at Resources/{resourcePath}.", this);
-            return spriteLookup;
-        }
-
-        for (int i = 0; i < sprites.Length; i++)
-        {
-            Sprite sprite = sprites[i];
-            if (sprite == null)
-                continue;
-
-            int index = GetSpriteSheetIndex(sprite.name);
-            if (index >= 0)
-                spriteLookup[index] = sprite;
-        }
-
-        if (spriteLookup.Count == 0)
-            Debug.LogWarning($"ScentGUI: loaded {sprites.Length} emote sprites from Resources/{resourcePath}, but none had numeric suffixes like '_0'.", this);
-
-        return spriteLookup;
-    }
-
-    private string GetEmoteSheetResourcePath(char sheetId)
-    {
-        switch (sheetId)
-        {
-            case 'A':
-                return emoteSheetAResourcePath;
-            case 'B':
-                return emoteSheetBResourcePath;
-            case 'C':
-                return emoteSheetCResourcePath;
+            case AgentDecisionType.Player:
+                return 0;
+            case AgentDecisionType.Follower:
+                return 1;
+            case AgentDecisionType.Explorer:
+                return 2;
+            case AgentDecisionType.Immobile:
+                return 3;
+            case AgentDecisionType.Wanderer:
+                return 4;
+            case AgentDecisionType.TaskFollower:
+                return 5;
             default:
-                return string.Empty;
+                return 0;
         }
     }
 
-    private void LoadDecisionModeSprites()
+    private int GetSpeedModeSpriteIndex(WalkMode walkMode)
     {
-        string resourcePath = NormalizeResourcePath(modeSpriteResourcePath);
-        Sprite[] sprites = Resources.LoadAll<Sprite>(resourcePath);
-        if (sprites == null || sprites.Length == 0)
+        switch (walkMode)
         {
-            Debug.LogWarning($"ScentGUI: no decision mode sprites found at Resources/{resourcePath}. Make sure the path has no file extension and the texture is imported as Sprite Mode = Multiple.", this);
-            return;
+            case WalkMode.Sneak:
+                return 0;
+            case WalkMode.Walk:
+                return 1;
+            case WalkMode.Run:
+                return 2;
+            default:
+                return 1;
         }
-
-        for (int i = 0; i < sprites.Length; i++)
-        {
-            Sprite sprite = sprites[i];
-            if (sprite == null)
-                continue;
-
-            switch (GetSpriteSheetIndex(sprite.name))
-            {
-                case 0:
-                //case 6:
-                    modeSpriteLookup[AgentDecisionType.Player] = sprite;
-                    break;
-                case 1:
-                //case 7:
-                    modeSpriteLookup[AgentDecisionType.Follower] = sprite;
-                    break;
-                case 2:
-                //case 8:
-                    modeSpriteLookup[AgentDecisionType.Explorer] = sprite;
-                    break;
-                case 3:
-                //case 9:
-                    modeSpriteLookup[AgentDecisionType.Immobile] = sprite;
-                    break;
-                case 4:
-                //case 10:
-                    modeSpriteLookup[AgentDecisionType.Wanderer] = sprite;
-                    break;
-                case 5:
-                //case 11:
-                    modeSpriteLookup[AgentDecisionType.TaskFollower] = sprite;
-                    break;
-            }
-        }
-
-        if (modeSpriteLookup.Count == 0)
-            Debug.LogWarning($"ScentGUI: loaded {sprites.Length} sprites from Resources/{resourcePath}, but none had numeric suffixes like '_0' through '_5'.", this);
-    }
-
-    private void LoadSimulationControlSprites()
-    {
-        string resourcePath = NormalizeResourcePath(playPauseSpriteResourcePath);
-        Sprite[] sprites = Resources.LoadAll<Sprite>(resourcePath);
-        if (sprites == null || sprites.Length == 0)
-        {
-            Debug.LogWarning($"ScentGUI: no play/pause sprites found at Resources/{resourcePath}. Make sure the path has no file extension and the texture is imported as Sprite Mode = Multiple.", this);
-            return;
-        }
-
-        for (int i = 0; i < sprites.Length; i++)
-        {
-            Sprite sprite = sprites[i];
-            if (sprite == null)
-                continue;
-
-            int index = GetSpriteSheetIndex(sprite.name);
-            if (index >= 0)
-                playPauseSpriteLookup[index] = sprite;
-        }
-
-        if (playPauseSpriteLookup.Count == 0)
-            Debug.LogWarning($"ScentGUI: loaded {sprites.Length} sprites from Resources/{resourcePath}, but none had numeric suffixes like '_0' or '_1'.", this);
-    }
-
-    private void LoadInventoryActionSprites()
-    {
-        string resourcePath = NormalizeResourcePath(inventoryActionSpriteResourcePath);
-        Sprite[] sprites = Resources.LoadAll<Sprite>(resourcePath);
-        if (sprites == null || sprites.Length == 0)
-        {
-            Debug.LogWarning($"ScentGUI: no inventory action sprites found at Resources/{resourcePath}. Make sure the path has no file extension and the texture is imported as Sprite Mode = Multiple.", this);
-            return;
-        }
-
-        for (int i = 0; i < sprites.Length; i++)
-        {
-            Sprite sprite = sprites[i];
-            if (sprite == null)
-                continue;
-
-            int index = GetSpriteSheetIndex(sprite.name);
-            if (index >= 0)
-                inventoryActionSpriteLookup[index] = sprite;
-        }
-
-        if (!inventoryActionSpriteLookup.ContainsKey(2))
-            Debug.LogWarning($"ScentGUI: loaded {sprites.Length} sprites from Resources/{resourcePath}, but InventoryActionsSheetA_2 was not found.", this);
-    }
-
-    private void LoadDigHoleSprites()
-    {
-        string resourcePath = NormalizeResourcePath(digHoleSpriteResourcePath);
-        Sprite[] sprites = Resources.LoadAll<Sprite>(resourcePath);
-        if (sprites == null || sprites.Length == 0)
-        {
-            Debug.LogWarning($"ScentGUI: no dig hole sprites found at Resources/{resourcePath}. Make sure the path has no file extension and the texture is imported as Sprite.", this);
-            return;
-        }
-
-        Sprite firstSprite = null;
-        for (int i = 0; i < sprites.Length; i++)
-        {
-            Sprite sprite = sprites[i];
-            if (sprite == null)
-                continue;
-
-            if (firstSprite == null)
-                firstSprite = sprite;
-
-            int index = GetSpriteSheetIndex(sprite.name);
-            if (index >= 0)
-                digHoleSpriteLookup[index] = sprite;
-        }
-
-        if (!digHoleSpriteLookup.ContainsKey(0) && firstSprite != null)
-            digHoleSpriteLookup[0] = firstSprite;
-    }
-
-    private void LoadSpeedModeSprites()
-    {
-        string resourcePath = NormalizeResourcePath(speedSpriteResourcePath);
-        Sprite[] sprites = Resources.LoadAll<Sprite>(resourcePath);
-        if (sprites == null || sprites.Length == 0)
-        {
-            Debug.LogWarning($"ScentGUI: no speed mode sprites found at Resources/{resourcePath}. Make sure the path has no file extension and the texture is imported as Sprite Mode = Multiple.", this);
-            return;
-        }
-
-        for (int i = 0; i < sprites.Length; i++)
-        {
-            Sprite sprite = sprites[i];
-            if (sprite == null)
-                continue;
-
-            switch (GetSpriteSheetIndex(sprite.name))
-            {
-                case 0:
-                    speedSpriteLookup[WalkMode.Sneak] = sprite;
-                    break;
-                case 1:
-                    speedSpriteLookup[WalkMode.Walk] = sprite;
-                    break;
-                case 2:
-                    speedSpriteLookup[WalkMode.Run] = sprite;
-                    break;
-            }
-        }
-
-        if (speedSpriteLookup.Count == 0)
-            Debug.LogWarning($"ScentGUI: loaded {sprites.Length} sprites from Resources/{resourcePath}, but none had numeric suffixes like '_0' through '_2'.", this);
-    }
-
-    private static string NormalizeResourcePath(string resourcePath)
-    {
-        if (string.IsNullOrWhiteSpace(resourcePath))
-            return "";
-
-        resourcePath = resourcePath.Trim();
-        if (resourcePath.EndsWith(".png", System.StringComparison.OrdinalIgnoreCase))
-            resourcePath = resourcePath.Substring(0, resourcePath.Length - 4);
-
-        return resourcePath;
-    }
-
-    private static int GetSpriteSheetIndex(string spriteName)
-    {
-        if (string.IsNullOrWhiteSpace(spriteName))
-            return -1;
-
-        int separatorIndex = spriteName.LastIndexOf('_');
-        if (separatorIndex < 0 || separatorIndex >= spriteName.Length - 1)
-            return -1;
-
-        return int.TryParse(spriteName.Substring(separatorIndex + 1), out int index)
-            ? index
-            : -1;
     }
 
     private void ConfigureTooltip(GameObject target, System.Func<string> textProvider)

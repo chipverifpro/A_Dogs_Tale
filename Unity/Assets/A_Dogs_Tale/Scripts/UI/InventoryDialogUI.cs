@@ -953,13 +953,13 @@ public sealed class InventoryDialogUI : MonoBehaviour
 
         if (item == null)
         {
-            BottomBanner.Show($"{user.DisplayName} has no item to use");
+            ShowInventoryMessage($"{user.DisplayName} has no item to use");
             return;
         }
 
         if (item.activatorModule == null)
         {
-            BottomBanner.Show($"{item.DisplayName} cannot be used");
+            ShowInventoryMessage($"{item.DisplayName} cannot be used");
             return;
         }
 
@@ -972,7 +972,7 @@ public sealed class InventoryDialogUI : MonoBehaviour
             ContainerModule container = GetCurrentContainer();
             if (container != null && !container.ReleaseItem(item, out string reason))
             {
-                BottomBanner.Show(reason);
+                ShowInventoryMessage(reason);
                 Debug.LogWarning($"InventoryDialogUI: failed to destroy used item {itemName}: {reason}", this);
                 RefreshInventoryView(forcePreviewRefresh: true);
                 return;
@@ -984,7 +984,7 @@ public sealed class InventoryDialogUI : MonoBehaviour
                 : 0;
         }
 
-        BottomBanner.Show(success
+        ShowInventoryMessage(success
             ? $"{user.DisplayName} used {itemName}"
             : $"{user.DisplayName} could not use {itemName}");
 
@@ -1001,20 +1001,20 @@ public sealed class InventoryDialogUI : MonoBehaviour
         WorldObject item = GetSelectedHeldItem();
         if (item == null)
         {
-            BottomBanner.Show($"{eater.DisplayName} has no item to eat");
+            ShowInventoryMessage($"{eater.DisplayName} has no item to eat");
             return;
         }
 
         string itemName = item.DisplayName;
         if (!container.ReleaseItem(item, out string reason))
         {
-            BottomBanner.Show(reason);
+            ShowInventoryMessage(reason);
             Debug.LogWarning($"InventoryDialogUI: failed to eat {itemName}: {reason}", this);
             return;
         }
 
         Destroy(item.gameObject);
-        BottomBanner.Show($"{eater.DisplayName} ate {itemName}");
+        ShowInventoryMessage($"{eater.DisplayName} ate {itemName}");
         selectedIndex = container.HeldItemCount > 0
             ? Mathf.Clamp(selectedIndex, 0, container.HeldItemCount - 1)
             : 0;
@@ -1034,24 +1034,24 @@ public sealed class InventoryDialogUI : MonoBehaviour
 
         if (item == null)
         {
-            BottomBanner.Show($"{giver.DisplayName} has no item to give");
+            ShowInventoryMessage($"{giver.DisplayName} has no item to give");
             return;
         }
 
         if (recipient == null || recipientContainer == null)
         {
-            BottomBanner.Show("No one nearby to give an item to");
+            ShowInventoryMessage("No one nearby to give an item to");
             return;
         }
 
         if (TransferItem(giverContainer, recipientContainer, item, out string reason))
         {
-            BottomBanner.Show($"{giver.DisplayName} gave {item.DisplayName} to {recipient.DisplayName}");
+            ShowInventoryMessage($"{giver.DisplayName} gave {item.DisplayName} to {recipient.DisplayName}");
             RefreshInventoryView(forcePreviewRefresh: true);
             return;
         }
 
-        BottomBanner.Show(reason);
+        ShowInventoryMessage(reason);
         Debug.LogWarning($"InventoryDialogUI: failed to give {item.DisplayName}: {reason}", this);
     }
 
@@ -1068,24 +1068,24 @@ public sealed class InventoryDialogUI : MonoBehaviour
 
         if (giver == null || giverContainer == null)
         {
-            BottomBanner.Show("No one nearby to take an item from");
+            ShowInventoryMessage("No one nearby to take an item from");
             return;
         }
 
         if (item == null)
         {
-            BottomBanner.Show($"{giver.DisplayName} has no selected item to take");
+            ShowInventoryMessage($"{giver.DisplayName} has no selected item to take");
             return;
         }
 
         if (TransferItem(giverContainer, takerContainer, item, out string reason))
         {
-            BottomBanner.Show($"{taker.DisplayName} took {item.DisplayName} from {giver.DisplayName}");
+            ShowInventoryMessage($"{taker.DisplayName} took {item.DisplayName} from {giver.DisplayName}");
             RefreshInventoryView(forcePreviewRefresh: true);
             return;
         }
 
-        BottomBanner.Show(reason);
+        ShowInventoryMessage(reason);
         Debug.LogWarning($"InventoryDialogUI: failed to take {item.DisplayName}: {reason}", this);
     }
 
@@ -1103,7 +1103,7 @@ public sealed class InventoryDialogUI : MonoBehaviour
 
         if (partner == null || partnerContainer == null)
         {
-            BottomBanner.Show("No one nearby to trade with");
+            ShowInventoryMessage("No one nearby to trade with");
             return;
         }
 
@@ -1114,7 +1114,7 @@ public sealed class InventoryDialogUI : MonoBehaviour
                 OnTakeItemClicked(); // fall back to Take
                 return;
             }
-            BottomBanner.Show($"{trader.DisplayName} has no item to trade");
+            ShowInventoryMessage($"{trader.DisplayName} has no item to trade");
             return;
             
         }
@@ -1126,18 +1126,18 @@ public sealed class InventoryDialogUI : MonoBehaviour
                 OnGiveClicked();    // fall back to Give
                 return;
             }
-            BottomBanner.Show($"{partner.DisplayName} has no selected item to trade");
+            ShowInventoryMessage($"{partner.DisplayName} has no selected item to trade");
             return;
         }
 
         if (SwapItems(traderContainer, partnerContainer, traderItem, partnerItem, out string reason))
         {
-            BottomBanner.Show($"{trader.DisplayName} traded {traderItem.DisplayName} to {partner.DisplayName} for {partnerItem.DisplayName}");
+            ShowInventoryMessage($"{trader.DisplayName} traded {traderItem.DisplayName} to {partner.DisplayName} for {partnerItem.DisplayName}");
             RefreshInventoryView(forcePreviewRefresh: true);
             return;
         }
 
-        BottomBanner.Show(reason);
+        ShowInventoryMessage(reason);
         Debug.LogWarning($"InventoryDialogUI: failed to trade {traderItem.DisplayName} for {partnerItem.DisplayName}: {reason}", this);
     }
 
@@ -1167,7 +1167,7 @@ public sealed class InventoryDialogUI : MonoBehaviour
             return;
         }
 
-        BottomBanner.Show($"{carrier.DisplayName} dropped {item.DisplayName}");
+        ShowInventoryMessage($"{carrier.DisplayName} dropped {item.DisplayName}");
         selectedIndex = Mathf.Clamp(selectedIndex, 0, displayedContainer.HeldItemCount - 1);
         RefreshInventoryView(forcePreviewRefresh: true);
     }
@@ -1181,11 +1181,11 @@ public sealed class InventoryDialogUI : MonoBehaviour
 
         if (!container.TryPickupNearestItem(out WorldObject pickedUpItem, out string reason))
         {
-            BottomBanner.Show(reason);
+            ShowInventoryMessage(reason);
             return;
         }
 
-        BottomBanner.Show($"{carrier.DisplayName} picked up {pickedUpItem.DisplayName}");
+        ShowInventoryMessage($"{carrier.DisplayName} picked up {pickedUpItem.DisplayName}");
         for (int i = 0; i < container.HeldItemCount; i++)
         {
             if (container.HeldItems[i] == pickedUpItem)
@@ -1207,6 +1207,11 @@ public sealed class InventoryDialogUI : MonoBehaviour
             owner.CreateModulesIfNeeded(ModuleFlags.containerModule);
 
         return owner.containerModule;
+    }
+
+    private static void ShowInventoryMessage(string message)
+    {
+        BottomBanner.LogInventoryMessage(message);
     }
 
     private static bool TransferItem(ContainerModule source, ContainerModule destination, WorldObject item, out string reason)
@@ -1319,14 +1324,8 @@ public sealed class InventoryDialogUI : MonoBehaviour
     {
         lookup.Clear();
 
-        Sprite[] sprites = Resources.LoadAll<Sprite>(NormalizeResourcePath(resourcePath));
-        for (int i = 0; i < sprites.Length; i++)
-        {
-            Sprite sprite = sprites[i];
-            int index = GetSpriteSheetIndex(sprite.name);
-            if (index >= 0)
-                lookup[index] = sprite;
-        }
+        foreach (KeyValuePair<int, Sprite> entry in SpriteServer.GetSpriteSheet(resourcePath))
+            lookup[entry.Key] = entry.Value;
     }
 
     private void EnsurePreviewWorld()
@@ -1794,35 +1793,6 @@ public sealed class InventoryDialogUI : MonoBehaviour
         };
     }
 
-    private static string NormalizeResourcePath(string resourcePath)
-    {
-        if (string.IsNullOrWhiteSpace(resourcePath))
-            return string.Empty;
-
-        resourcePath = resourcePath.Replace("\\", "/");
-        int extensionIndex = resourcePath.LastIndexOf(".", StringComparison.Ordinal);
-        if (extensionIndex >= 0)
-            resourcePath = resourcePath[..extensionIndex];
-
-        const string resourcesToken = "/Resources/";
-        int resourcesIndex = resourcePath.IndexOf(resourcesToken, StringComparison.OrdinalIgnoreCase);
-        if (resourcesIndex >= 0)
-            resourcePath = resourcePath[(resourcesIndex + resourcesToken.Length)..];
-
-        return resourcePath.Trim('/');
-    }
-
-    private static int GetSpriteSheetIndex(string spriteName)
-    {
-        if (string.IsNullOrEmpty(spriteName))
-            return -1;
-
-        int underscoreIndex = spriteName.LastIndexOf('_');
-        if (underscoreIndex < 0 || underscoreIndex >= spriteName.Length - 1)
-            return -1;
-
-        return int.TryParse(spriteName[(underscoreIndex + 1)..], out int index) ? index : -1;
-    }
 }
 
 public static class InventoryDialogBootstrap

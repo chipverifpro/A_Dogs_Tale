@@ -15,23 +15,23 @@ public partial class DungeonGenerator
         switch (cfg.TunnelsAlgorithm)
         {
             case DungeonSettings.TunnelsAlgorithm_e.TunnelsOrthogonal:
-                BottomBanner.Show("Drawing orthogonal ..");
+                BottomBanner.LogBuildProgress("Drawing orthogonal ..");
                 path = OrthogonalLine(start, end);
                 break;
             case DungeonSettings.TunnelsAlgorithm_e.TunnelsStraight:
-                BottomBanner.Show("Drawing straight ..");
+                BottomBanner.LogBuildProgress("Drawing straight ..");
                 path = BresenhamLine(start, end);
                 break;
             case DungeonSettings.TunnelsAlgorithm_e.TunnelsOrganic:
-                BottomBanner.Show("Drawing organic ..");
+                BottomBanner.LogBuildProgress("Drawing organic ..");
                 path = OrganicLine(start, end);
                 break;
             case DungeonSettings.TunnelsAlgorithm_e.TunnelsCurved:
-                BottomBanner.Show("Drawing curved ..");
+                BottomBanner.LogBuildProgress("Drawing curved ..");
                 path = BezierLine(start, end);
                 break;
             default:
-                BottomBanner.Show("Drawing Noisy Bresenham ..");
+                BottomBanner.LogBuildProgress("Drawing Noisy Bresenham ..");
                 path = NoisyBresenhamLine(start, end);
                 break;
         }

@@ -26,7 +26,7 @@ public partial class DungeonGenerator : MonoBehaviour
             //bool rooms_overlap = false;
             int minimum_corridor_length = 0;
 
-            BottomBanner.Show($"Connecting {rooms.Count} rooms by ..");
+            BottomBanner.LogBuildProgress($"Connecting {rooms.Count} rooms by ..");
 
             // initialize unconnected rooms to include all room indexes
             for (int room_no = 0; room_no < rooms.Count; room_no++)

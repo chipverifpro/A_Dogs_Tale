@@ -37,7 +37,7 @@ public partial class DungeonGenerator : MonoBehaviour
             room_rects_heights.Clear(); // Clear heights
             RectInt newRoom = new();
             //rooms.Clear();
-            BottomBanner.Show($"Scattering {cfg.roomsMax} Rooms...");
+            BottomBanner.LogBuildProgress($"Scattering {cfg.roomsMax} Rooms...");
             for (int i = 0; room_rects.Count < cfg.roomsMax && i < cfg.roomAttempts; i++)
             {
                 bool fits = false;

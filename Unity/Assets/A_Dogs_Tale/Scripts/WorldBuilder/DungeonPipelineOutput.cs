@@ -5,7 +5,7 @@ public partial class DungeonGenerator
 {
     private IEnumerator RebuildWallLists()
     {
-        BottomBanner.Show("Building Wall Lists...");
+        BottomBanner.LogBuildProgress("Building Wall Lists...");
         yield return null;
         DrawMapByRooms(rooms);  // update the 2D map before finishing.
         DrawWalls();
@@ -21,7 +21,7 @@ public partial class DungeonGenerator
         if (!cfg.enableTiltedTiles || cfg.tiltFloorTilesMaxAngle == 0)
             yield break;
 
-        BottomBanner.Show("Calculating Floor Tilts...");
+        BottomBanner.LogBuildProgress("Calculating Floor Tilts...");
         yield return new WaitForSeconds(.2f);
         // Build the heightfield hf if it doesn't exist yet
         //if (hf == null) PrepareHeightfield();
@@ -31,10 +31,10 @@ public partial class DungeonGenerator
     private IEnumerator BuildFinalDungeonOutput()
     {
         // Scatter scenery props on floor tiles
-        BottomBanner.Show("Scattering Scenery...");
+        BottomBanner.LogBuildProgress("Scattering Scenery...");
         ScatterSceneryOnFloors();
 
-        BottomBanner.Show("Height Map Build...");
+        BottomBanner.LogBuildProgress("Height Map Build...");
         yield return null;
         DrawMapByRooms(rooms);  // update the 2D map before finishing.
         DrawWalls();

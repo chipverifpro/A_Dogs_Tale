@@ -1,0 +1,316 @@
+using System;
+using System.Collections.Generic;
+using UnityEngine;
+
+public static class SpriteServer
+{
+    struct SpriteReference
+    {
+        public SpriteReference(string spriteSheet, int index)
+        {
+            SpriteSheet = spriteSheet;
+            Index = index;
+        }
+
+        public string SpriteSheet { get; }
+        public int Index { get; }
+    }
+
+    static readonly Dictionary<string, string> spriteSheetResourcePaths = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+    {
+        { "Senses", "Sprites/SensesSymbolsColor_v4" },
+        { "SensesSymbolsColor_v4", "Sprites/SensesSymbolsColor_v4" },
+        { "DogEmojiSheetA", "Sprites/DogEmojiSheetA" },
+        { "DogEmojiSheetB", "Sprites/DogEmojiSheetB" },
+        { "DogEmojiSheetC", "Sprites/DogEmojiSheetC" },
+        { "InventoryActionsSheetA", "Sprites/InventoryActionsSheetA" },
+        { "MapsSpriteSheet", "Sprites/MapsSpriteSheet" },
+        { "ArrowsSpriteSheetA", "Sprites/ArrowsSpriteSheetA" },
+        { "TakeItemSpriteSheetA", "Sprites/TakeItemSpriteSheetA" },
+        { "SpriteSheet_Modes_V3", "Sprites/SpriteSheet_Modes_V3" },
+        { "Speeds", "Sprites/Speeds" },
+        { "PlayAndPause_Dual", "Sprites/PlayAndPause_Dual" },
+        { "DigHoleSpriteA", "Sprites/DigHoleSpriteA" }
+    };
+
+    static readonly Dictionary<string, SpriteReference> knownSprites = new Dictionary<string, SpriteReference>(StringComparer.OrdinalIgnoreCase)
+    {
+        { NormalizeLookupKey("Inventory"), new SpriteReference("InventoryActionsSheetA", 2) },
+        { NormalizeLookupKey("InventoryButton"), new SpriteReference("InventoryActionsSheetA", 2) },
+        { NormalizeLookupKey("InventoryActionsSheetA_2"), new SpriteReference("InventoryActionsSheetA", 2) },
+        { NormalizeLookupKey("BuildProgress"), new SpriteReference("MapsSpriteSheet", 1) },
+        { NormalizeLookupKey("MapBuildProgress"), new SpriteReference("MapsSpriteSheet", 1) },
+        { NormalizeLookupKey("MapsSpriteSheet_1"), new SpriteReference("MapsSpriteSheet", 1) },
+        { NormalizeLookupKey("Scent"), new SpriteReference("Senses", -1) },
+        { NormalizeLookupKey("Smell"), new SpriteReference("Senses", -1) },
+        { NormalizeLookupKey("Play"), new SpriteReference("PlayAndPause_Dual", 0) },
+        { NormalizeLookupKey("Pause"), new SpriteReference("PlayAndPause_Dual", 1) },
+        { NormalizeLookupKey("Sneak"), new SpriteReference("Speeds", 0) },
+        { NormalizeLookupKey("Walk"), new SpriteReference("Speeds", 1) },
+        { NormalizeLookupKey("Run"), new SpriteReference("Speeds", 2) },
+        { NormalizeLookupKey("DigHole"), new SpriteReference("DigHoleSpriteA", 0) },
+        { NormalizeLookupKey("DigButton"), new SpriteReference("DigHoleSpriteA", 0) }
+    };
+
+    static readonly Dictionary<string, Dictionary<int, Sprite>> spritesBySheet = new Dictionary<string, Dictionary<int, Sprite>>(StringComparer.OrdinalIgnoreCase);
+    static readonly Dictionary<string, Dictionary<string, Sprite>> spritesByNameBySheet = new Dictionary<string, Dictionary<string, Sprite>>(StringComparer.OrdinalIgnoreCase);
+
+    public static Sprite SpriteLookup(string spriteName)
+    {
+        if (string.IsNullOrWhiteSpace(spriteName))
+            return null;
+
+        string trimmedName = spriteName.Trim();
+        string lookupKey = NormalizeLookupKey(trimmedName);
+
+        if (knownSprites.TryGetValue(lookupKey, out SpriteReference knownReference))
+        {
+            if (knownReference.Index >= 0)
+                return SpriteSheetLookup(knownReference.SpriteSheet, knownReference.Index);
+
+            if (lookupKey == NormalizeLookupKey("Scent") || lookupKey == NormalizeLookupKey("Smell"))
+                return SpriteLookup("Sense_Smell_None") ?? SpriteLookup("Sense_Smell_Low") ?? SpriteLookup("Sense_Alert_None");
+        }
+
+        if (TryGetEmojiSprite(trimmedName, out Sprite emojiSprite, out _))
+            return emojiSprite;
+
+        if (trimmedName.StartsWith("Sense_", StringComparison.OrdinalIgnoreCase))
+            return SpriteSheetLookupByName("Senses", trimmedName);
+
+        return SpriteSheetLookup(trimmedName);
+    }
+
+    public static Sprite SpriteSheetLookup(string spriteSheet, int index = -1)
+    {
+        if (string.IsNullOrWhiteSpace(spriteSheet))
+            return null;
+
+        string sheetName = spriteSheet.Trim();
+        if (index < 0 && TrySplitSpriteSheetIndex(sheetName, out string parsedSheetName, out int parsedIndex))
+        {
+            sheetName = parsedSheetName;
+            index = parsedIndex;
+        }
+
+        if (index < 0)
+            return SpriteSheetLookupByName(sheetName, spriteSheet.Trim());
+
+        Dictionary<int, Sprite> lookup = GetSpritesByIndex(sheetName);
+        return lookup.TryGetValue(index, out Sprite sprite) ? sprite : null;
+    }
+
+    public static bool TryGetEmojiSprite(string emote, out Sprite sprite, out string displayName)
+    {
+        sprite = null;
+        displayName = FormatSpriteDisplayName(emote);
+
+        if (!TryResolveEmojiEntry(emote, out DogEmojiEntry entry))
+            return false;
+
+        displayName = entry.Name;
+        sprite = SpriteSheetLookup($"DogEmojiSheet{entry.SheetId}", entry.SpriteIndex);
+        return sprite != null;
+    }
+
+    public static Dictionary<int, Sprite> GetSpriteSheet(string spriteSheet)
+    {
+        return new Dictionary<int, Sprite>(GetSpritesByIndex(spriteSheet));
+    }
+
+    public static int GetSpriteSheetIndex(string spriteName)
+    {
+        if (string.IsNullOrWhiteSpace(spriteName))
+            return -1;
+
+        int separatorIndex = spriteName.LastIndexOf('_');
+        if (separatorIndex < 0 || separatorIndex >= spriteName.Length - 1)
+            return -1;
+
+        return int.TryParse(spriteName.Substring(separatorIndex + 1), out int index)
+            ? index
+            : -1;
+    }
+
+    public static string NormalizeResourcePath(string resourcePath)
+    {
+        if (string.IsNullOrWhiteSpace(resourcePath))
+            return string.Empty;
+
+        resourcePath = resourcePath.Trim().Replace("\\", "/");
+
+        int extensionIndex = resourcePath.LastIndexOf(".", StringComparison.Ordinal);
+        if (extensionIndex >= 0)
+            resourcePath = resourcePath.Substring(0, extensionIndex);
+
+        const string resourcesToken = "/Resources/";
+        int resourcesIndex = resourcePath.IndexOf(resourcesToken, StringComparison.OrdinalIgnoreCase);
+        if (resourcesIndex >= 0)
+            resourcePath = resourcePath.Substring(resourcesIndex + resourcesToken.Length);
+
+        return resourcePath.Trim('/');
+    }
+
+    static Sprite SpriteSheetLookupByName(string spriteSheet, string spriteName)
+    {
+        Dictionary<string, Sprite> lookup = GetSpritesByName(spriteSheet);
+        return lookup.TryGetValue(spriteName, out Sprite sprite) ? sprite : null;
+    }
+
+    static Dictionary<int, Sprite> GetSpritesByIndex(string spriteSheet)
+    {
+        string resourcePath = ResolveSpriteSheetResourcePath(spriteSheet);
+        if (spritesBySheet.TryGetValue(resourcePath, out Dictionary<int, Sprite> lookup))
+            return lookup;
+
+        LoadSpriteSheet(resourcePath);
+        return spritesBySheet.TryGetValue(resourcePath, out lookup)
+            ? lookup
+            : new Dictionary<int, Sprite>();
+    }
+
+    static Dictionary<string, Sprite> GetSpritesByName(string spriteSheet)
+    {
+        string resourcePath = ResolveSpriteSheetResourcePath(spriteSheet);
+        if (spritesByNameBySheet.TryGetValue(resourcePath, out Dictionary<string, Sprite> lookup))
+            return lookup;
+
+        LoadSpriteSheet(resourcePath);
+        return spritesByNameBySheet.TryGetValue(resourcePath, out lookup)
+            ? lookup
+            : new Dictionary<string, Sprite>(StringComparer.OrdinalIgnoreCase);
+    }
+
+    static void LoadSpriteSheet(string resourcePath)
+    {
+        string normalizedPath = NormalizeResourcePath(resourcePath);
+        Dictionary<int, Sprite> spritesByIndex = new Dictionary<int, Sprite>();
+        Dictionary<string, Sprite> spritesByName = new Dictionary<string, Sprite>(StringComparer.OrdinalIgnoreCase);
+        Sprite[] sprites = Resources.LoadAll<Sprite>(normalizedPath);
+        Sprite firstSprite = null;
+
+        for (int i = 0; i < sprites.Length; i++)
+        {
+            Sprite sprite = sprites[i];
+            if (sprite == null)
+                continue;
+
+            if (firstSprite == null)
+                firstSprite = sprite;
+
+            spritesByName[sprite.name] = sprite;
+
+            int index = GetSpriteSheetIndex(sprite.name);
+            if (index >= 0)
+                spritesByIndex[index] = sprite;
+        }
+
+        if (!spritesByIndex.ContainsKey(0) && firstSprite != null)
+            spritesByIndex[0] = firstSprite;
+
+        spritesBySheet[normalizedPath] = spritesByIndex;
+        spritesByNameBySheet[normalizedPath] = spritesByName;
+    }
+
+    static string ResolveSpriteSheetResourcePath(string spriteSheet)
+    {
+        if (string.IsNullOrWhiteSpace(spriteSheet))
+            return string.Empty;
+
+        string normalized = NormalizeResourcePath(spriteSheet);
+        if (spriteSheetResourcePaths.TryGetValue(normalized, out string resourcePath))
+            return resourcePath;
+
+        string fileName = normalized;
+        int slashIndex = fileName.LastIndexOf('/');
+        if (slashIndex >= 0 && slashIndex < fileName.Length - 1)
+            fileName = fileName.Substring(slashIndex + 1);
+
+        if (spriteSheetResourcePaths.TryGetValue(fileName, out resourcePath))
+            return resourcePath;
+
+        return normalized.Contains("/")
+            ? normalized
+            : $"Sprites/{normalized}";
+    }
+
+    static bool TrySplitSpriteSheetIndex(string spriteName, out string spriteSheet, out int index)
+    {
+        spriteSheet = spriteName;
+        index = -1;
+
+        int separatorIndex = spriteName.LastIndexOf('_');
+        if (separatorIndex < 0 || separatorIndex >= spriteName.Length - 1)
+            return false;
+
+        if (!int.TryParse(spriteName.Substring(separatorIndex + 1), out index))
+            return false;
+
+        spriteSheet = spriteName.Substring(0, separatorIndex);
+        return true;
+    }
+
+    static bool TryResolveEmojiEntry(string emote, out DogEmojiEntry entry)
+    {
+        string normalized = NormalizeLookupKey(emote);
+        string aliased = ResolveEmojiAlias(normalized);
+
+        for (int i = 0; i < DogEmojiCatalog.Entries.Length; i++)
+        {
+            DogEmojiEntry candidate = DogEmojiCatalog.Entries[i];
+            if (NormalizeLookupKey(candidate.EntryId) == normalized ||
+                NormalizeLookupKey(candidate.Name) == aliased)
+            {
+                entry = candidate;
+                return true;
+            }
+        }
+
+        entry = default;
+        return false;
+    }
+
+    static string ResolveEmojiAlias(string normalized)
+    {
+        switch (normalized)
+        {
+            case "friendly":
+                return "happy";
+            case "fearful":
+                return "afraid";
+            case "tilthead":
+                return "curious";
+            case "dig":
+                return "determined";
+            case "stay":
+                return "alert";
+            case "setuptrap":
+                return "sneaky";
+            case "scratch":
+                return "annoyed";
+            default:
+                return normalized;
+        }
+    }
+
+    static string NormalizeLookupKey(string value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+            return string.Empty;
+
+        return value.Trim()
+            .ToLowerInvariant()
+            .Replace(" ", string.Empty)
+            .Replace("_", string.Empty)
+            .Replace("-", string.Empty);
+    }
+
+    static string FormatSpriteDisplayName(string spriteName)
+    {
+        if (string.IsNullOrWhiteSpace(spriteName))
+            return "Sprite";
+
+        string spaced = spriteName.Trim().Replace("_", " ").Replace("-", " ");
+        return char.ToUpperInvariant(spaced[0]) + (spaced.Length > 1 ? spaced.Substring(1) : string.Empty);
+    }
+}

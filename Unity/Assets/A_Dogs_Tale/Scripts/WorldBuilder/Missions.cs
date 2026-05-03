@@ -62,7 +62,7 @@ public class MissionManager : MonoBehaviour
         {
             mission = missions[mission_num];
             // todo: load and start mission
-            BottomBanner.Show("Mission {mission_num}: {mission.missionName}");
+            BottomBanner.LogBuildProgress($"Mission {mission_num}: {mission.missionName}");
             return true;
         }
         else

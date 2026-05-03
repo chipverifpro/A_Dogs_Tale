@@ -32,7 +32,7 @@ public partial class DungeonGenerator : MonoBehaviour
         // Setup
         int seed = cfg.randomizeSeed ? UnityEngine.Random.Range(int.MinValue, int.MaxValue) : (seedOverride ?? cfg.seed);
         rng = new Random(seed);
-        //BottomBanner.Show = cfg.showBuildProcess ? (Action<string>)BottomBanner.Show : (_)=>{};
+        //BottomBanner.LogBuildProgress = cfg.showBuildProcess ? (Action<string>)BottomBanner.LogBuildProgress : (_)=>{};
         //packMap = new PackMap(cfg.mapWidth, cfg.mapHeight);
         //List<Room> rooms_temp = new(); // temporary Room list for compatibility with DrawMapByRooms
         rooms = new(); // reset this list also
@@ -108,7 +108,7 @@ public partial class DungeonGenerator : MonoBehaviour
 
         CheckRoomsToGridConsistancy();
         
-        BottomBanner.Show($"Done seed={seed} in {(Time.realtimeSinceStartup - t0):F2}s");
+        BottomBanner.LogBuildProgress($"Done seed={seed} in {(Time.realtimeSinceStartup - t0):F2}s");
     }
 
 }

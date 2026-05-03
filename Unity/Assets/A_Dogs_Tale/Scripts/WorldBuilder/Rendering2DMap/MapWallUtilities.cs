@@ -9,7 +9,7 @@ public partial class DungeonGenerator
     {
         return; // DEBUG: This isn't working quite right, remove for now...
 /*        BoundsInt bounds = tilemap.cellBounds;
-        //BottomBanner.Show("Drawing walls...");
+        //BottomBanner.LogBuildProgress("Drawing walls...");
         for (int x = bounds.xMin - 1; x <= bounds.xMax + 1; x++)
         {
             for (int y = bounds.yMin - 1; y <= bounds.yMax + 1; y++)

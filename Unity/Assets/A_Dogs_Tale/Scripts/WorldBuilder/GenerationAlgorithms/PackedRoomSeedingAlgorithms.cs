@@ -7,7 +7,7 @@ public partial class DungeonGenerator
     // ======================= Seeding: AlongCorridors =======================
     IEnumerator Seed_AlongCorridors()
     {
-        BottomBanner.Show("Seeding: AlongCorridors");
+        BottomBanner.LogBuildProgress("Seeding: AlongCorridors");
 
         // sanity range check the parameters...
         int moat = cfg.GetEffectiveGrowWallMoat();
@@ -66,7 +66,7 @@ public partial class DungeonGenerator
 
         if (anchors.Count == 0)
         {
-            BottomBanner.Show("  (No valid corridor anchors; seeding skipped)");
+            BottomBanner.LogBuildProgress("  (No valid corridor anchors; seeding skipped)");
             yield break;
         }
 
@@ -131,7 +131,7 @@ public partial class DungeonGenerator
             } // end try_side
         } // end foreach anchor
 
-        BottomBanner.Show($"  Seeded {created} room(s) from {anchors.Count} corridor anchors.");
+        BottomBanner.LogBuildProgress($"  Seeded {created} room(s) from {anchors.Count} corridor anchors.");
         if (cfg.showBuildProcess)
         {
             DrawMapByRooms(rooms, clearscreen: true);

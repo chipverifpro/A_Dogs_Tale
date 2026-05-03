@@ -98,12 +98,12 @@ public partial class DungeonGenerator : MonoBehaviour
             ResetGenerationState();
             if (tm.IfYield()) yield return null;     // cooperative yield decision
 
-            BottomBanner.Show("Generating dungeon...");
+            BottomBanner.LogBuildProgress("Generating dungeon...");
 
             // Step 0: Select settings
             DungeonGenerationModeApplier.ApplyRoomAlgorithmFlags(cfg);
 
-            BottomBanner.Show("Initialize dungeon...");
+            BottomBanner.LogBuildProgress("Initialize dungeon...");
 
 
             // ===== Step 1. Initialize the dungeon
@@ -123,7 +123,7 @@ public partial class DungeonGenerator : MonoBehaviour
             yield return StartCoroutine(ApplyOptionalFloorTileTilt());
             yield return StartCoroutine(BuildFinalDungeonOutput());
 
-            BottomBanner.ShowFor("Dungeon generation complete!", 5f);
+            BottomBanner.LogBuildProgress("Dungeon generation complete!");
             Debug.Log("buildComplete");
             buildComplete = true;
             regenerateCoroutine = null;

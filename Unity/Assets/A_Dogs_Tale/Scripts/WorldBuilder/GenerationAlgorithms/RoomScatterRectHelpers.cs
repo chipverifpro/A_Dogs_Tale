@@ -123,7 +123,7 @@ public partial class DungeonGenerator
     // As a side effect, it can also set the corresponding tiles in the tilemap.
     List<Vector2Int> ConvertRectToRoomPoints(RectInt room_rect, Color room_rect_color, bool SetTile)
     {
-        //BottomBanner.Show($"Measuring rooms...");
+        //BottomBanner.LogBuildProgress($"Measuring rooms...");
         List<Vector2Int> roomPoints = new List<Vector2Int>();
         for (int x = room_rect.xMin; x < room_rect.xMax; x++)
         {

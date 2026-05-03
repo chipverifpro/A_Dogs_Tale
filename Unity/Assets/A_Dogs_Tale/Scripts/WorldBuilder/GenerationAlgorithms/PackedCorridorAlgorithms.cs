@@ -17,7 +17,7 @@ public partial class DungeonGenerator
         bool allCorridorsAreOneRoom = true // makes overlapping corridors merged.
     )
     {
-        BottomBanner.Show("Corridors: Drunkard's Walk");
+        BottomBanner.LogBuildProgress("Corridors: Drunkard's Walk");
         int W = cfg.mapWidth, H = cfg.mapHeight;
         //corridorWidth = Mathf.Clamp(corridorWidth <= 0 ? cfg.corridor.corridorWidth : corridorWidth, 1, 5);
 
@@ -118,7 +118,7 @@ public partial class DungeonGenerator
         DrawMapByRooms(rooms, clearscreen: true);
         yield return null; // new WaitForSeconds(0.1f);
 
-        BottomBanner.Show($"Corridors: Drunkard's Walk done. Carved ~{carved} cells.");
+        BottomBanner.LogBuildProgress($"Corridors: Drunkard's Walk done. Carved ~{carved} cells.");
         yield return new WaitForSeconds(.1f);
     }
 }

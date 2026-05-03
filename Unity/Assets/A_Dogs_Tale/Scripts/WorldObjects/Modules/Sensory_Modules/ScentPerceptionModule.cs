@@ -38,7 +38,14 @@ namespace DogGame.Modules
         public float strengthWeight = 0.65f;
         public float noveltyWeight = 0.35f;
 
+        [Header("Strong scent logging")]
+        [SerializeField] private bool logStrongScentsToBottomBanner = true;
+        [SerializeField] private float strongScentLogThreshold01 = 0.35f;
+        [SerializeField] private float strongScentRelogSeconds = 20f;
+        [SerializeField] private float strongScentLogStrengthJumpThreshold01 = 0.20f;
+
         private readonly ScentMemory scentMemory = new();
+        private readonly Dictionary<string, StrongScentLogState> strongScentLogMemory = new();
             
         protected override void Awake()
         {
@@ -94,6 +101,7 @@ namespace DogGame.Modules
                     continue;
 
                 var type = !seenBefore ? PerceptionEventType.NewSmell : PerceptionEventType.SmellStrengthChanged;
+                string scentDisplayName = ResolveScentDisplayName(det.scentSource, seenBefore, familiarity, learnedName);
 
                 events.Add(PerceptionEvent.MakeScent(
                     observer: worldObject,
@@ -101,10 +109,12 @@ namespace DogGame.Modules
                     worldPos: worldObject.transform.position,
                     scentKey: scentKey,
                     category: det.scentSource.category,
-                    scentName: ResolveScentDisplayName(det.scentSource, seenBefore, familiarity, learnedName),
+                    scentName: scentDisplayName,
                     strength01: strength01,
                     novelty01: novelty01,
                     interest01: interest01));
+
+                LogStrongScentIfNeeded(det, scentKey, scentDisplayName, type, strength01, interest01, timeNow);
 
                 scentMemory.Update(scentKey, strength01, timeNow);
             }
@@ -162,6 +172,113 @@ namespace DogGame.Modules
             };
 
             return Mathf.Clamp01(baseInterest * categoryBias * familiarityBias);
+        }
+
+        private void LogStrongScentIfNeeded(
+            ScentDetection detection,
+            string scentKey,
+            string scentDisplayName,
+            PerceptionEventType eventType,
+            float strength01,
+            float interest01,
+            float timeNow)
+        {
+            if (!logStrongScentsToBottomBanner || worldObject == null || detection.scentSource == null)
+                return;
+
+            if (strength01 < strongScentLogThreshold01)
+                return;
+
+            if (strongScentLogMemory.TryGetValue(scentKey, out StrongScentLogState lastLog))
+            {
+                bool cooldownExpired = timeNow - lastLog.timeSeconds >= Mathf.Max(0f, strongScentRelogSeconds);
+                bool strengthJumped = strength01 - lastLog.strength01 >= Mathf.Max(0f, strongScentLogStrengthJumpThreshold01);
+                if (!cooldownExpired && !strengthJumped)
+                    return;
+            }
+
+            string changeLabel = eventType == PerceptionEventType.NewSmell ? "new" : "stronger";
+            string category = detection.scentSource.category.ToString();
+            string room = GetCurrentRoomLabel();
+            string message =
+                $"[{worldObject.DisplayName}] smelled strong {changeLabel} {category} scent " +
+                $"{QuoteIfNeeded(scentDisplayName)} " +
+                $"strength={strength01:0.00} air={detection.airStrength:0.00} ground={detection.groundStrength:0.00} " +
+                $"interest={interest01:0.00} room={room}";
+
+            Debug.Log(message, worldObject);
+            BottomBanner.LogMessage(BannerSense.Smell, BannerLevel.High, message, true);
+
+            strongScentLogMemory[scentKey] = new StrongScentLogState
+            {
+                strength01 = strength01,
+                timeSeconds = timeNow
+            };
+        }
+
+        private string GetCurrentRoomLabel()
+        {
+            if (worldObject == null || worldObject.locationModule == null)
+                return "unknown";
+
+            Cell currentCell = worldObject.locationModule.cell;
+            if (currentCell == null)
+                return "unknown";
+
+            return ResolveRoomName(currentCell.room_number);
+        }
+
+        private string ResolveRoomName(int roomId)
+        {
+            if (roomId < 0 || dir == null || dir.gen == null || dir.gen.rooms == null || roomId >= dir.gen.rooms.Count)
+                return $"Room {roomId}";
+
+            Room room = dir.gen.rooms[roomId];
+            if (room == null)
+                return $"Room {roomId}";
+
+            if (!string.IsNullOrWhiteSpace(room.name) && !IsRawGeneratedRoomName(room.name, roomId))
+                return room.name.Trim();
+
+            return ResolveSemanticRoomName(dir.gen.rooms, roomId);
+        }
+
+        private string ResolveSemanticRoomName(List<Room> rooms, int roomId)
+        {
+            if (rooms == null || roomId < 0 || roomId >= rooms.Count || rooms[roomId] == null)
+                return $"Room {roomId}";
+
+            DungeonSettings settings = null!;
+            if (dir != null)
+                settings = dir.cfg != null ? dir.cfg : dir.gen != null ? dir.gen.cfg : null!;
+
+            string label = RoomUseAssigner.GetRoomLabel(rooms[roomId], settings);
+            int count = 0;
+            for (int i = 0; i <= roomId && i < rooms.Count; i++)
+            {
+                Room candidate = rooms[i];
+                if (candidate == null)
+                    continue;
+
+                if (RoomUseAssigner.GetRoomLabel(candidate, settings) == label)
+                    count++;
+            }
+
+            return $"{label} {Mathf.Max(1, count)}";
+        }
+
+        private static bool IsRawGeneratedRoomName(string roomName, int roomId)
+        {
+            if (string.IsNullOrWhiteSpace(roomName))
+                return true;
+
+            string trimmed = roomName.Trim();
+            return trimmed == $"Room {roomId}" || trimmed == $"Room {roomId + 1}";
+        }
+
+        private static string QuoteIfNeeded(string value)
+        {
+            return string.IsNullOrWhiteSpace(value) ? "\"Unknown\"" : $"\"{value.Trim()}\"";
         }
 
         /// <summary>
@@ -450,6 +567,12 @@ namespace DogGame.Modules
                 displayName = "Unknown";
 
             scentMemory.Identify(scentKey, displayName, agentId);
+        }
+
+        private struct StrongScentLogState
+        {
+            public float strength01;
+            public float timeSeconds;
         }
 
     }

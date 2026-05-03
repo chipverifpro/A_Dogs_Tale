@@ -64,10 +64,6 @@ public class BottomBanner : MonoBehaviour
     [SerializeField] float rowSpacing = 4f;
     [SerializeField] float iconSize = 28f;
     [SerializeField] int maxMessageLines = 2;
-    [SerializeField] string spriteSheetResourcePath = "Sprites/SensesSymbolsColor_v4";
-    [SerializeField] string emoteSheetAResourcePath = "Sprites/DogEmojiSheetA";
-    [SerializeField] string emoteSheetBResourcePath = "Sprites/DogEmojiSheetB";
-    [SerializeField] string emoteSheetCResourcePath = "Sprites/DogEmojiSheetC";
     [SerializeField] bool defaultDisplayUsesRichText = true;
     [SerializeField] bool autoScrollToNewest = true;
     [SerializeField] int maxHistoryEntries;
@@ -75,8 +71,6 @@ public class BottomBanner : MonoBehaviour
     public Canvas BottomBannerCanvas;
 
     readonly List<BannerMessageEntry> messageHistory = new List<BannerMessageEntry>();
-    readonly Dictionary<string, Sprite> senseSpriteLookup = new Dictionary<string, Sprite>(StringComparer.Ordinal);
-    readonly Dictionary<char, Dictionary<int, Sprite>> emoteSpriteLookupBySheet = new Dictionary<char, Dictionary<int, Sprite>>();
     readonly List<GameObject> rowObjects = new List<GameObject>();
     readonly List<TextMeshProUGUI> rowTextObjects = new List<TextMeshProUGUI>();
 
@@ -496,22 +490,6 @@ public class BottomBanner : MonoBehaviour
         return scrollbar;
     }
 
-    void LoadSenseSpritesIfNeeded()
-    {
-        if (senseSpriteLookup.Count > 0)
-            return;
-
-        Sprite[] sprites = Resources.LoadAll<Sprite>(spriteSheetResourcePath);
-        for (int i = 0; i < sprites.Length; i++)
-        {
-            Sprite sprite = sprites[i];
-            if (sprite == null || string.IsNullOrEmpty(sprite.name))
-                continue;
-
-            senseSpriteLookup[sprite.name] = sprite;
-        }
-    }
-
     static string EscapeTMP(string input)
     {
         if (string.IsNullOrEmpty(input))
@@ -555,156 +533,23 @@ public class BottomBanner : MonoBehaviour
 
     Sprite GetSpriteFor(BannerSense sense, BannerLevel level)
     {
-        LoadSenseSpritesIfNeeded();
-
         string spriteName = GetSpriteName(sense, level);
-        if (senseSpriteLookup.TryGetValue(spriteName, out Sprite sprite))
-            return sprite;
-
-        if (senseSpriteLookup.TryGetValue("Sense_Alert_None", out sprite))
-            return sprite;
-
-        return null;
+        return SpriteServer.SpriteLookup(spriteName) ?? SpriteServer.SpriteLookup("Sense_Alert_None");
     }
 
     Sprite GetEmoteSprite(string emote, out string displayName)
     {
-        displayName = FormatEmoteDisplayName(emote);
-        if (!TryResolveEmoteEntry(emote, out DogEmojiEntry entry))
-            return null;
-
-        displayName = entry.Name;
-        if (!emoteSpriteLookupBySheet.TryGetValue(entry.SheetId, out Dictionary<int, Sprite> spriteLookup))
-        {
-            spriteLookup = LoadEmoteSheetSprites(entry.SheetId);
-            emoteSpriteLookupBySheet[entry.SheetId] = spriteLookup;
-        }
-
-        return spriteLookup.TryGetValue(entry.SpriteIndex, out Sprite sprite) ? sprite : null;
+        return SpriteServer.TryGetEmojiSprite(emote, out Sprite sprite, out displayName) ? sprite : null;
     }
 
-    bool TryResolveEmoteEntry(string emote, out DogEmojiEntry entry)
+    Sprite GetInventoryMessageSprite()
     {
-        string normalized = NormalizeEmoteKey(emote);
-        string aliased = ResolveEmoteAlias(normalized);
-
-        for (int i = 0; i < DogEmojiCatalog.Entries.Length; i++)
-        {
-            DogEmojiEntry candidate = DogEmojiCatalog.Entries[i];
-            if (string.Equals(candidate.EntryId, emote, StringComparison.OrdinalIgnoreCase) ||
-                NormalizeEmoteKey(candidate.Name) == aliased)
-            {
-                entry = candidate;
-                return true;
-            }
-        }
-
-        entry = default;
-        return false;
+        return SpriteServer.SpriteLookup("Inventory");
     }
 
-    string ResolveEmoteAlias(string normalized)
+    Sprite GetBuildProgressSprite()
     {
-        switch (normalized)
-        {
-            case "friendly":
-                return "happy";
-            case "fearful":
-                return "afraid";
-            case "tilthead":
-                return "curious";
-            case "dig":
-                return "determined";
-            case "stay":
-                return "alert";
-            case "setuptrap":
-                return "sneaky";
-            case "scratch":
-                return "annoyed";
-            default:
-                return normalized;
-        }
-    }
-
-    Dictionary<int, Sprite> LoadEmoteSheetSprites(char sheetId)
-    {
-        string resourcePath = NormalizeResourcePath(GetEmoteSheetResourcePath(sheetId));
-        Sprite[] sprites = Resources.LoadAll<Sprite>(resourcePath);
-        Dictionary<int, Sprite> spriteLookup = new Dictionary<int, Sprite>();
-
-        for (int i = 0; i < sprites.Length; i++)
-        {
-            Sprite sprite = sprites[i];
-            if (sprite == null)
-                continue;
-
-            int index = GetSpriteSheetIndex(sprite.name);
-            if (index >= 0)
-                spriteLookup[index] = sprite;
-        }
-
-        return spriteLookup;
-    }
-
-    string GetEmoteSheetResourcePath(char sheetId)
-    {
-        switch (sheetId)
-        {
-            case 'A':
-                return emoteSheetAResourcePath;
-            case 'B':
-                return emoteSheetBResourcePath;
-            case 'C':
-                return emoteSheetCResourcePath;
-            default:
-                return string.Empty;
-        }
-    }
-
-    static string NormalizeResourcePath(string resourcePath)
-    {
-        if (string.IsNullOrWhiteSpace(resourcePath))
-            return string.Empty;
-
-        resourcePath = resourcePath.Trim();
-        return resourcePath.EndsWith(".png", StringComparison.OrdinalIgnoreCase)
-            ? resourcePath.Substring(0, resourcePath.Length - 4)
-            : resourcePath;
-    }
-
-    static int GetSpriteSheetIndex(string spriteName)
-    {
-        if (string.IsNullOrWhiteSpace(spriteName))
-            return -1;
-
-        int separatorIndex = spriteName.LastIndexOf('_');
-        if (separatorIndex < 0 || separatorIndex >= spriteName.Length - 1)
-            return -1;
-
-        return int.TryParse(spriteName.Substring(separatorIndex + 1), out int index)
-            ? index
-            : -1;
-    }
-
-    static string NormalizeEmoteKey(string emote)
-    {
-        if (string.IsNullOrWhiteSpace(emote))
-            return string.Empty;
-
-        string trimmed = emote.Trim().ToLowerInvariant();
-        return trimmed
-            .Replace(" ", string.Empty)
-            .Replace("_", string.Empty)
-            .Replace("-", string.Empty);
-    }
-
-    static string FormatEmoteDisplayName(string emote)
-    {
-        if (string.IsNullOrWhiteSpace(emote))
-            return "Emote";
-
-        string spaced = emote.Trim().Replace("_", " ").Replace("-", " ");
-        return char.ToUpperInvariant(spaced[0]) + (spaced.Length > 1 ? spaced.Substring(1) : string.Empty);
+        return SpriteServer.SpriteLookup("BuildProgress");
     }
 
     void AddEmoteInternal(WorldObject agent, string emote, bool includeGameTime)
@@ -718,6 +563,40 @@ public class BottomBanner : MonoBehaviour
             includeGameTime,
             false,
             sprite);
+    }
+
+    void AddInventoryInternal(string message, bool includeGameTime)
+    {
+        AddMessageInternal(
+            BannerSense.None,
+            BannerLevel.None,
+            message,
+            includeGameTime,
+            false,
+            GetInventoryMessageSprite());
+    }
+
+    void AddBuildProgressInternal(string message, bool includeGameTime)
+    {
+        AddMessageInternal(
+            BannerSense.None,
+            BannerLevel.None,
+            message,
+            includeGameTime,
+            false,
+            GetBuildProgressSprite());
+    }
+
+    void ShowBuildProgressForInternal(string message, float seconds, bool includeGameTime)
+    {
+        _ShowFor(
+            BannerSense.None,
+            BannerLevel.None,
+            message,
+            seconds,
+            includeGameTime,
+            false,
+            GetBuildProgressSprite());
     }
 
     GameObject CreateMessageRow(Sprite sprite, string renderedText)
@@ -846,7 +725,12 @@ public class BottomBanner : MonoBehaviour
 
     void _ShowFor(BannerSense sense, BannerLevel level, string message, float seconds, bool includeGameTime, bool isRichText)
     {
-        AddMessageInternal(sense, level, message, includeGameTime, isRichText);
+        _ShowFor(sense, level, message, seconds, includeGameTime, isRichText, null);
+    }
+
+    void _ShowFor(BannerSense sense, BannerLevel level, string message, float seconds, bool includeGameTime, bool isRichText, Sprite iconOverride)
+    {
+        AddMessageInternal(sense, level, message, includeGameTime, isRichText, iconOverride);
         if (hideRoutine != null)
             StopCoroutine(hideRoutine);
 
@@ -912,6 +796,16 @@ public class BottomBanner : MonoBehaviour
         GetOrCreateInstance()?.AddEmoteInternal(agent, emote, includeGameTime);
     }
 
+    public static void LogInventoryMessage(string message, bool includeGameTime = false)
+    {
+        GetOrCreateInstance()?.AddInventoryInternal(message, includeGameTime);
+    }
+
+    public static void LogBuildProgress(string message, bool includeGameTime = false)
+    {
+        GetOrCreateInstance()?.AddBuildProgressInternal(message, includeGameTime);
+    }
+
     void _SetVisible(bool visible)
     {
         BuildUIIfNeeded();
@@ -928,6 +822,11 @@ public class BottomBanner : MonoBehaviour
     public static void ShowFor(BannerSense sense, BannerLevel level, string message, float seconds, bool includeGameTime = false)
     {
         GetOrCreateInstance()?._ShowFor(sense, level, message, seconds, includeGameTime, false);
+    }
+
+    public static void ShowBuildProgressFor(string message, float seconds, bool includeGameTime = false)
+    {
+        GetOrCreateInstance()?.ShowBuildProgressForInternal(message, seconds, includeGameTime);
     }
 
     public static void Clear()

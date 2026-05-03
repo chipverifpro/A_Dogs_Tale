@@ -461,7 +461,7 @@ namespace DogGame.Modules
             if (!TryPickupNearestItem(out WorldObject pickedUpItem, out _))
                 return;
 
-            BottomBanner.Show($"{worldObject.DisplayName} picked up {pickedUpItem.DisplayName}");
+            BottomBanner.LogInventoryMessage($"{worldObject.DisplayName} picked up {pickedUpItem.DisplayName}");
         }
 
         private WorldObject FindNearestPickupItem()

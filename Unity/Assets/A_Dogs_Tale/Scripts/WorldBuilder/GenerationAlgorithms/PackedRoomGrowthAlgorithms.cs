@@ -14,7 +14,7 @@ public partial class DungeonGenerator
     //   allowedRoomIds is unused in first pass of growth.  Used in repeated passes of growth to only grow new seeds.
     IEnumerator Grow_CreditWavefrontStrips(List<int> allowedRoomIds = null)
     {
-        BottomBanner.Show("Growth: CreditWavefrontStrips");
+        BottomBanner.LogBuildProgress("Growth: CreditWavefrontStrips");
         // PRECONDITIONS:
         // - rooms is a global variable that contains all Room objects
         // - Each Room has at least one seed Cell in cellGrid[,] with cell.roomId = room.id
@@ -76,7 +76,7 @@ public partial class DungeonGenerator
 
         if (stripRounds > 0)
         {
-            BottomBanner.Show($"Growth: Strip rounds (x{stripRounds})");
+            BottomBanner.LogBuildProgress($"Growth: Strip rounds (x{stripRounds})");
             //Debug.Log($"stripRounds #{stripRounds} begins with {rooms.Count} rooms.");
             for (round = 0; round < stripRounds * (100 / percentSkipGrowth); round++) // increase the rounds because we randomly skip rooms
             {
