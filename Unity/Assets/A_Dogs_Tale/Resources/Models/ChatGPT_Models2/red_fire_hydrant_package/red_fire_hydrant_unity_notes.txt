@@ -1,0 +1,55 @@
+Red Fire Hydrant OBJ - Unity Notes
+
+Files:
+- red_fire_hydrant.obj
+- red_fire_hydrant.mtl
+
+Design:
+- Bright red fire hydrant prop.
+- Wide base flange, main barrel, upper bonnet, domed top, top nut.
+- Two side nozzles and one large front pumper nozzle.
+- Bolts, dark gasket rings, chipped paint, small rust/water stain, and optional scent wisps.
+- Guide markers included for collider, sniff interaction, and scent-mark point.
+
+Important named groups:
+- Wide_round_base_flange_red
+- Base_black_gasket_ring
+- Lower_tapered_hydrant_body
+- Main_cylindrical_hydrant_barrel
+- Upper_body_band_ring
+- Rounded_domelike_top_bonnet
+- Top_hex_nut_like_block_*
+- Left_side_nozzle_*
+- Right_side_nozzle_*
+- Front_large_pumper_nozzle_*
+- Base_flange_bolt_*
+- Bonnet_bolt_*
+- Small_paint_chip_*
+- Rusty_water_stain_near_base
+- Optional_scent_wisp_*
+- Guide_Collider_Hydrant_Capsule_Box_delete_or_hide
+- Guide_Interaction_Point_SniffHydrant
+- Guide_Scent_Mark_Point
+- Guide_Scent_Source_Area_delete_or_hide
+
+Unity setup:
+1. Import OBJ and MTL together.
+2. Create a prefab under something like:
+   Assets/A_Dogs_Tale/Resources/Prefabs/Props/Street/
+3. Delete or hide Guide_* groups before final visual use, or keep them on an editor/helper layer.
+4. Suggested colliders:
+   - CapsuleCollider around main body.
+   - Optional BoxCollider or SphereCollider for side nozzles if dogs bump into them.
+   - Trigger near Guide_Interaction_Point_SniffHydrant.
+5. Optional_scent_wisp_* can be hidden if your scent visualization system handles scent separately.
+
+Gameplay ideas:
+- Classic dog sniff / scent-mark object.
+- Strong scent landmark for navigation.
+- Can act as a neighborhood waypoint.
+- Dogs can investigate, mark, follow previous scent, or react to another dog's scent.
+- Could be a puzzle clue: hydrant scent points toward route, gate, or lost dog.
+
+OBJ limitation:
+- OBJ stores mesh/materials only.
+- It does not store Unity colliders, triggers, scripts, scent emitters, particle effects, or interaction logic.

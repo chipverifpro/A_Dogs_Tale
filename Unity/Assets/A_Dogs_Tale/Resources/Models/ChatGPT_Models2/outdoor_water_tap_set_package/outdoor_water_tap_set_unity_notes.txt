@@ -1,0 +1,82 @@
+Outdoor Water Tap Set - Unity Notes
+
+Files:
+- outdoor_water_tap_with_pouring_water.obj
+- outdoor_water_tap_no_water.obj
+- outdoor_water_tap_set.mtl
+
+Design:
+- Two matching outdoor tap / faucet state models:
+  1. Tap with water pouring out.
+  2. Same tap without water for off/idle state.
+- Includes:
+  - Wall mounting plate
+  - Vertical supply pipe
+  - Brass faucet body
+  - Red turn handle
+  - Downturned outlet nozzle
+  - Threaded hose connection
+  - Side hose connection stub with short attached hose end
+  - Patina/rust/wear details
+  - Guide markers for interaction, hose connection, water emission, and puddle area
+
+Shared important groups:
+- Flat_wall_mounting_plate
+- Vertical_supply_pipe
+- Lower_pipe_flange
+- Upper_pipe_collar
+- Rounded_tap_valve_body
+- Short_forward_spout_neck
+- Downturned_spout_curve_approx
+- Downward_outlet_nozzle
+- Threaded_hose_connection_outer
+- Hose_connection_thread_ring_*
+- Top_valve_stem
+- Round_turn_handle_wheel
+- Handle_crossbar_horizontal
+- Handle_crossbar_vertical
+- Side_hose_connection_stub
+- Short_attached_hose_end
+- Hose_coupler_rib_*
+- Guide_Collider_Tap_Assembly_delete_or_hide
+- Guide_Interaction_Point_TurnHandle
+- Guide_Hose_Connection_Point
+- Guide_Water_Emission_Point
+
+Water-version specific groups:
+- Pouring_water_stream_segment_*
+- Splash_water_droplet_*
+- Transparent_water_puddle_under_tap
+- Guide_Wet_Puddle_Area_delete_or_hide
+
+Unity setup:
+1. Import both OBJ files and outdoor_water_tap_set.mtl together.
+2. Create prefabs under something like:
+   Assets/A_Dogs_Tale/Resources/Prefabs/Props/Garden/
+3. Delete or hide Guide_* groups before final visual use, or keep them on an editor/helper layer.
+4. Use outdoor_water_tap_no_water.obj for Off.
+5. Use outdoor_water_tap_with_pouring_water.obj for On, or put both under one prefab and toggle visibility.
+6. Unity may import water as opaque. If so:
+   - Set water materials to Transparent.
+   - Use alpha around 0.35-0.55.
+   - Increase Smoothness/Specular.
+7. For animation:
+   - Rotate Round_turn_handle_wheel / crossbars when toggled.
+   - Spawn particles from Guide_Water_Emission_Point.
+   - Use the OBJ water stream as a cheap placeholder visual.
+
+Suggested colliders:
+- BoxCollider around tap assembly.
+- Small trigger at Guide_Interaction_Point_TurnHandle.
+- Optional trigger at Guide_Hose_Connection_Point.
+- Wet hazard/scent-dilution trigger over Guide_Wet_Puddle_Area_delete_or_hide when on.
+
+Gameplay ideas for A Dog's Tale:
+- Dog can sniff, drink from, paw/nose the handle, or react to water noise.
+- Tap can fill a bowl, create puddles, wet pawprints, or dilute scent trails.
+- Hose connection can feed the sprinkler model.
+- Puzzle use: turn tap on to start sprinkler, reveal wet tracks, distract Roomba, or make frogs/birds appear.
+
+OBJ limitation:
+- OBJ stores mesh/materials only.
+- It does not store Unity colliders, triggers, scripts, particles, water shaders, handle animation, sound, hose simulation, or water gameplay logic.

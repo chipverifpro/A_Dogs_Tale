@@ -27,7 +27,7 @@ namespace DogGame.Tasks
         private Vector3 throughMap;
         private string? startFailure;
 
-        public Task_GoThroughDoor(int doorId, WalkMode walkMode = WalkMode.Walk)
+        public Task_GoThroughDoor(int doorId, WalkMode walkMode = WalkMode.None)
         {
             this.doorId = doorId;
             this.walkMode = walkMode;

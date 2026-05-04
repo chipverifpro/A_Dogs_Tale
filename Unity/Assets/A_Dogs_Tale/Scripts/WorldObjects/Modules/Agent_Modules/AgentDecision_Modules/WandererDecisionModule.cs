@@ -11,7 +11,6 @@ namespace DogGame.Modules
         public override AgentDecisionType DecisionType => AgentDecisionType.Wanderer;
 
         [SerializeField] private float dwellSecondsAtDestination = 2f;
-        [SerializeField] private WalkMode wanderWalkMode = WalkMode.Walk;
 
         private Vector3 currentWanderTargetMap;
         private float dwellRemainingSeconds;
@@ -117,7 +116,7 @@ namespace DogGame.Modules
             state = WanderState.MoveToTarget;
             worldObject.agentMovementModule.SetDesiredTargetLocationMap(
                 currentWanderTargetMap,
-                wanderWalkMode,
+                WalkMode.None,
                 requestPathfinding: true,
                 allowDoors: false);
             return true;

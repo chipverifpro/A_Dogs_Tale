@@ -1,0 +1,69 @@
+Modular Picket Fence Panel with Closed Gate - Unity Notes
+
+Files:
+- modular_picket_fence_panel_closed_gate.obj
+- modular_picket_fence_panel_closed_gate.mtl
+
+Design:
+- Matching low-wall picket fence segment with a closed center gate.
+- Same white painted picket style as the plain fence panel.
+- Two fixed side panels and a central closed gate leaf.
+- Includes hinge post, latch post, visible hinges, latch bar, latch knob, diagonal brace, and guide markers.
+
+Approximate dimensions:
+- Length: 3.0 Unity units
+- Height: about 1.1 to 1.25 Unity units including post caps
+- Gate width: about 1.1 Unity units
+- Intended to match modular_picket_fence_panel_low_wall.obj
+
+Important named groups:
+- Left_end_square_fence_post
+- Right_end_square_fence_post
+- Gate_left_hinge_post
+- Gate_right_latch_post
+- Left_fixed_side_panel_*
+- Right_fixed_side_panel_*
+- Closed_gate_upper_horizontal_rail
+- Closed_gate_lower_horizontal_rail
+- Closed_gate_diagonal_brace_lower_left_to_upper_right
+- Closed_gate_Picket_*
+- Upper_gate_hinge_closed_*
+- Lower_gate_hinge_closed_*
+- Closed_gate_latch_*
+- Guide_Snap_Left_End_delete_or_hide
+- Guide_Snap_Right_End_delete_or_hide
+- Guide_Gate_Hinge_Pivot_delete_or_hide
+- Guide_Gate_Latch_Point_delete_or_hide
+- Guide_Collider_GateClosed_delete_or_hide
+- Guide_Interaction_Point_OpenGate
+
+Unity setup:
+1. Import OBJ and MTL together.
+2. Create a prefab under something like:
+   Assets/A_Dogs_Tale/Resources/Prefabs/Terrain/Fences/
+3. Delete or hide Guide_* groups before final visual use, or keep them on an editor/helper layer.
+4. Suggested colliders:
+   - One BoxCollider for the left fixed side panel.
+   - One BoxCollider for the right fixed side panel.
+   - One BoxCollider for the closed gate.
+   - Disable or move the gate collider when the gate opens.
+5. Snap this panel to regular fence panels using:
+   - Guide_Snap_Left_End_delete_or_hide
+   - Guide_Snap_Right_End_delete_or_hide
+
+Gate behavior suggestion:
+- Put the central gate meshes under a child object named GateLeaf.
+- Set GateLeaf pivot at Guide_Gate_Hinge_Pivot_delete_or_hide.
+- Rotate GateLeaf around Y to open.
+- Use Guide_Gate_Latch_Point_delete_or_hide for an interaction target.
+- Use Guide_Interaction_Point_OpenGate for dog/player interaction placement.
+
+Gameplay ideas:
+- Closed gate blocks dogs until opened.
+- Cats/squirrels may jump over it.
+- Dogs can sniff the latch, bark through the gate, or wait for a human.
+- Gate can be locked, squeaky, scent-marked, or part of a yard puzzle.
+
+OBJ limitation:
+- OBJ stores mesh/materials only.
+- It does not store Unity hierarchy, pivots, colliders, triggers, gate animation, latch state, or scripts.

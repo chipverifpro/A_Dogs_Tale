@@ -1,0 +1,60 @@
+Modular Picket Fence Panel Low Wall - Unity Notes
+
+Files:
+- modular_picket_fence_panel_low_wall.obj
+- modular_picket_fence_panel_low_wall.mtl
+
+Design:
+- A reusable low wall / picket fence panel.
+- Traditional white painted wood style.
+- Two square end posts, horizontal rear rails, nine pointed pickets.
+- Slight variation in picket heights and subtle paint chips/wood grain.
+- Designed as one modular segment that can be repeated to form a fence line.
+
+Approximate dimensions:
+- Length: 3.0 Unity units
+- Height: about 1.1 to 1.25 Unity units including post caps
+- Depth/thickness: about 0.12 Unity units visually
+
+Important named groups:
+- Left_square_fence_post
+- Right_square_fence_post
+- Left_post_rounded_cap
+- Right_post_rounded_cap
+- Back_upper_horizontal_support_rail
+- Back_lower_horizontal_support_rail
+- Back_bottom_ground_kick_board
+- Picket_*_pointed_board_rect_board
+- Picket_*_pointed_board_pointed_cap
+- Picket_*_subtle_vertical_woodgrain
+- Small_paint_chip_*
+- Small_dark_nail_head_*
+- Guide_Snap_Left_End_delete_or_hide
+- Guide_Snap_Right_End_delete_or_hide
+- Guide_Collider_LowWall_Box_delete_or_hide
+- Guide_Dog_Blocking_Volume_delete_or_hide
+- Guide_Interaction_Point_SniffFence
+
+Unity setup:
+1. Import OBJ and MTL together.
+2. Create a prefab under something like:
+   Assets/A_Dogs_Tale/Resources/Prefabs/Terrain/Fences/
+3. Delete or hide Guide_* groups before final visual use, or keep them on an editor/helper layer.
+4. Suggested colliders:
+   - One BoxCollider using Guide_Collider_LowWall_Box_delete_or_hide dimensions.
+   - If dogs can peek through or small animals pass through, use separate post/rail colliders instead.
+5. Snap panels using:
+   - Guide_Snap_Left_End_delete_or_hide
+   - Guide_Snap_Right_End_delete_or_hide
+   These are placed at x = -1.5 and x = +1.5.
+
+Gameplay ideas:
+- Low wall that blocks dogs but lets cats/squirrels jump over.
+- Dogs can sniff along it, bark through it, or follow scent trails to a gate.
+- Could separate yard zones without feeling like a dungeon wall.
+- Useful as a visibility/line-of-sight partial blocker.
+- Can be paired with a matching gate prefab later.
+
+OBJ limitation:
+- OBJ stores mesh/materials only.
+- It does not store Unity colliders, snap sockets, scripts, prefab variants, nav blockers, or gate behavior.

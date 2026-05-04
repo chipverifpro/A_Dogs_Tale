@@ -1,0 +1,61 @@
+Bird Nest with Eggs OBJ - Unity Notes
+
+Files:
+- bird_nest_with_eggs.obj
+- bird_nest_with_eggs.mtl
+
+Design:
+- Small woven bird nest prop.
+- Layered twig rings, loose cross twigs, dry grass lining, and a dark inner cup shadow.
+- Three pale blue speckled eggs.
+- Loose feathers, moss/leaf bits, and guide markers.
+- Good for garden/tree/birdbath scenes.
+
+Important named groups:
+- Soft_shadow_under_nest
+- Soft_dry_grass_inner_lining
+- Concave_inner_nest_dark_cup_shadow
+- Woven_outer_twig_ring_*_segment_*
+- Loose_cross_twig_*
+- Dry_grass_lining_strand_*
+- Egg_front_left
+- Egg_front_right
+- Egg_back_center
+- Egg_*_tiny_speckle_*
+- Loose_white_feather_on_left_rim
+- Loose_grey_feather_near_front
+- Small_down_feather_inside_cup
+- Small_leaf_or_moss_patch_*
+- Guide_Collider_Nest_Box_delete_or_hide
+- Guide_Bird_Landing_Point
+- Guide_Egg_Interest_Point
+- Guide_Dog_Sniff_Point
+- Guide_Scent_Source_Nest_Area_delete_or_hide
+
+Unity setup:
+1. Import OBJ and MTL together.
+2. Create a prefab under something like:
+   Assets/A_Dogs_Tale/Resources/Prefabs/Props/Nature/
+3. Delete or hide Guide_* groups before final visual use, or keep them on an editor/helper layer.
+4. Suggested colliders:
+   - Small BoxCollider or SphereCollider around the nest.
+   - Optional trigger around Guide_Scent_Source_Nest_Area_delete_or_hide.
+   - Optional small trigger at Guide_Bird_Landing_Point for bird AI.
+5. If this will sit in a tree, make it a child of a branch/perch transform.
+
+Gameplay ideas for A Dog's Tale:
+- Bird landing/perch/rest target.
+- Dog can sniff it, but perhaps should not disturb it.
+- Squirrels/cats may be interested in eggs.
+- Birds can react defensively if a dog gets too close.
+- Can be a scent/vision clue in garden exploration.
+- Good behaviors:
+  - ReactToBirdNest
+  - SniffNest
+  - GuardNest
+  - BirdReturnToNest
+  - BirdAlarmCall
+
+OBJ limitation:
+- OBJ stores mesh/materials only.
+- It does not store Unity colliders, triggers, scripts, bird AI, egg pickup logic, nest parenting, or animation.

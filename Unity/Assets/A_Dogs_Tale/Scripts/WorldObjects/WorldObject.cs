@@ -724,8 +724,7 @@ public class WorldObject : MonoBehaviour
         // packMemberModule.role = PackRole.Follower;
         //wo.packMemberModule.currentPack = dir.playerPack;
 
-        // Mark debug agents clearly
-        agentModule.agentName = $"{agentModule.agentName} (Follower Defaults)";
+        // WorldObject owns display identity.
     }
 
     private T EnsureComponent<T>() where T : Component

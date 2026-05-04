@@ -1,0 +1,92 @@
+# Materials for garden_hose_between_tap_and_sprinkler.obj
+newmtl hose_green
+Kd 0.03 0.34 0.08
+Ka 0.006 0.07 0.016
+Ks 0.14 0.18 0.10
+Ns 25
+
+newmtl hose_scuff_light
+Kd 0.13 0.50 0.16
+Ka 0.025 0.10 0.03
+Ks 0.08 0.10 0.05
+Ns 10
+
+newmtl rubber_black
+Kd 0.014 0.014 0.013
+Ka 0.002 0.002 0.002
+Ks 0.11 0.11 0.10
+Ns 22
+
+newmtl hose_connector_brass
+Kd 0.86 0.58 0.16
+Ka 0.18 0.11 0.03
+Ks 0.72 0.62 0.32
+Ns 80
+
+newmtl hose_thread_highlight
+Kd 1.00 0.77 0.25
+Ka 0.20 0.15 0.04
+Ks 0.85 0.75 0.38
+Ns 90
+
+newmtl hose_dark_hole
+Kd 0.010 0.009 0.007
+Ka 0.001 0.001 0.001
+Ks 0.06 0.05 0.04
+Ns 12
+
+newmtl water_stream_blue
+Kd 0.32 0.72 1.00
+Ka 0.05 0.14 0.22
+Ks 0.85 0.95 1.00
+Ns 95
+d 0.50
+Tr 0.50
+
+newmtl water_droplet_blue
+Kd 0.28 0.68 1.00
+Ka 0.04 0.12 0.20
+Ks 0.90 0.95 1.00
+Ns 100
+d 0.55
+Tr 0.45
+
+newmtl water_puddle_transparent
+Kd 0.16 0.50 0.88
+Ka 0.02 0.08 0.15
+Ks 0.70 0.82 0.95
+Ns 90
+d 0.35
+Tr 0.65
+
+newmtl shadow_soft
+Kd 0.045 0.040 0.035
+Ka 0.008 0.008 0.006
+Ks 0.0 0.0 0.0
+Ns 2
+d 0.35
+Tr 0.65
+
+newmtl guide_blue
+Kd 0.10 0.35 1.00
+Ka 0.02 0.08 0.22
+Ks 0.20 0.20 0.25
+Ns 25
+d 0.35
+Tr 0.65
+
+newmtl guide_green
+Kd 0.10 0.85 0.20
+Ka 0.02 0.18 0.04
+Ks 0.20 0.25 0.20
+Ns 25
+d 0.35
+Tr 0.65
+
+newmtl guide_yellow
+Kd 1.00 0.85 0.10
+Ka 0.22 0.18 0.02
+Ks 0.25 0.22 0.10
+Ns 25
+d 0.45
+Tr 0.55

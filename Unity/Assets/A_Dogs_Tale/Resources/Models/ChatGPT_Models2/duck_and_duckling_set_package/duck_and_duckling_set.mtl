@@ -1,0 +1,158 @@
+# Materials for adult duck and duckling set
+newmtl adult_body_brown
+Kd 0.42 0.27 0.13
+Ka 0.08 0.05 0.025
+Ks 0.09 0.07 0.04
+Ns 12
+
+newmtl adult_belly_tan
+Kd 0.72 0.58 0.36
+Ka 0.14 0.11 0.07
+Ks 0.08 0.06 0.035
+Ns 10
+
+newmtl adult_head_green
+Kd 0.02 0.42 0.24
+Ka 0.004 0.09 0.05
+Ks 0.38 0.55 0.36
+Ns 70
+
+newmtl adult_neck_white
+Kd 0.90 0.88 0.78
+Ka 0.18 0.17 0.15
+Ks 0.20 0.20 0.16
+Ns 25
+
+newmtl adult_chest_chestnut
+Kd 0.46 0.17 0.075
+Ka 0.09 0.03 0.014
+Ks 0.12 0.06 0.035
+Ns 14
+
+newmtl adult_wing_grey
+Kd 0.38 0.39 0.36
+Ka 0.07 0.07 0.065
+Ks 0.10 0.10 0.09
+Ns 14
+
+newmtl adult_tail_dark
+Kd 0.08 0.075 0.065
+Ka 0.012 0.012 0.010
+Ks 0.08 0.08 0.07
+Ns 14
+
+newmtl speculum_blue
+Kd 0.03 0.18 0.78
+Ka 0.006 0.035 0.16
+Ks 0.28 0.32 0.55
+Ns 55
+
+newmtl duckling_yellow
+Kd 0.95 0.78 0.16
+Ka 0.20 0.15 0.03
+Ks 0.13 0.10 0.04
+Ns 14
+
+newmtl duckling_yellow_dark
+Kd 0.78 0.58 0.08
+Ka 0.16 0.11 0.02
+Ks 0.08 0.06 0.025
+Ns 10
+
+newmtl duckling_belly_pale
+Kd 0.98 0.88 0.38
+Ka 0.20 0.17 0.08
+Ks 0.12 0.10 0.05
+Ns 12
+
+newmtl feather_line
+Kd 0.18 0.16 0.12
+Ka 0.03 0.025 0.018
+Ks 0.03 0.025 0.018
+Ns 6
+
+newmtl bill_yellow
+Kd 0.94 0.74 0.14
+Ka 0.19 0.14 0.025
+Ks 0.30 0.22 0.08
+Ns 34
+
+newmtl bill_yellow_dark
+Kd 0.72 0.50 0.08
+Ka 0.14 0.09 0.015
+Ks 0.18 0.12 0.04
+Ns 22
+
+newmtl bill_orange
+Kd 0.95 0.45 0.08
+Ka 0.20 0.08 0.015
+Ks 0.28 0.16 0.06
+Ns 30
+
+newmtl bill_orange_dark
+Kd 0.72 0.28 0.05
+Ka 0.14 0.05 0.01
+Ks 0.18 0.10 0.04
+Ns 20
+
+newmtl bill_nostril_dark
+Kd 0.020 0.014 0.008
+Ka 0.003 0.002 0.001
+Ks 0.06 0.05 0.03
+Ns 12
+
+newmtl orange_feet
+Kd 0.92 0.38 0.07
+Ka 0.18 0.07 0.012
+Ks 0.18 0.10 0.04
+Ns 22
+
+newmtl orange_webbing
+Kd 0.82 0.30 0.05
+Ka 0.16 0.06 0.010
+Ks 0.12 0.07 0.03
+Ns 16
+
+newmtl eye_black
+Kd 0.005 0.005 0.006
+Ka 0.0 0.0 0.0
+Ks 0.60 0.60 0.65
+Ns 90
+
+newmtl eye_highlight
+Kd 1.0 1.0 1.0
+Ka 0.5 0.5 0.5
+Ks 1.0 1.0 1.0
+Ns 100
+
+newmtl shadow_soft
+Kd 0.045 0.040 0.035
+Ka 0.008 0.008 0.006
+Ks 0.0 0.0 0.0
+Ns 2
+d 0.35
+Tr 0.65
+
+newmtl guide_blue
+Kd 0.10 0.35 1.00
+Ka 0.02 0.08 0.22
+Ks 0.20 0.20 0.25
+Ns 25
+d 0.35
+Tr 0.65
+
+newmtl guide_green
+Kd 0.10 0.85 0.20
+Ka 0.02 0.18 0.04
+Ks 0.20 0.25 0.20
+Ns 25
+d 0.35
+Tr 0.65
+
+newmtl guide_yellow
+Kd 1.00 0.85 0.10
+Ka 0.22 0.18 0.02
+Ks 0.25 0.22 0.10
+Ns 25
+d 0.45
+Tr 0.55

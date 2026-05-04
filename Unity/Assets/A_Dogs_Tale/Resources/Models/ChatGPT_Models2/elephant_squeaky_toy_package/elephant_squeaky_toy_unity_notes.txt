@@ -1,0 +1,66 @@
+Elephant Squeaky Toy OBJ - Unity Notes
+
+Files:
+- elephant_squeaky_toy.obj
+- elephant_squeaky_toy.mtl
+
+Design:
+- Small cute elephant-shaped rubber squeaky toy.
+- Rounded squishy blue body and head.
+- Large floppy ears with pink inner patches.
+- Curled trunk, button eyes, stubby legs, little tail.
+- Belly squeaker press patch with tiny holes.
+- Small chew dents and optional yellow squeak visual arcs.
+- Guide markers included for collider, chewing, pickup, and squeak noise source.
+
+Important named groups:
+- Rounded_squishy_elephant_body
+- Large_round_elephant_head
+- Left_large_floppy_ear
+- Right_large_floppy_ear
+- Left_inner_ear_pink_patch
+- Right_inner_ear_pink_patch
+- Curled_squishy_elephant_trunk_segment_*
+- Rounded_trunk_tip
+- Left_shiny_black_button_eye / Right_shiny_black_button_eye
+- *_stubby_squishy_leg
+- *_rounded_foot_pad
+- Tiny_tail_string_like_rubber_tail
+- Round_belly_squeaker_press_patch
+- Squeaker_tiny_hole_*
+- Molded_seam_ring_around_body
+- Small_soft_chew_dent_*
+- Optional_squeak_sound_arc_*
+- Guide_Collider_Toy_Box_delete_or_hide
+- Guide_Interaction_Point_ChewToy
+- Guide_Squeak_Noise_Source
+- Guide_Pickup_Mouth_Target
+
+Unity setup:
+1. Import OBJ and MTL together.
+2. Create a prefab under something like:
+   Assets/A_Dogs_Tale/Resources/Prefabs/Props/DogToys/
+3. Delete or hide Guide_* groups before final visual use, or keep them on an editor/helper layer.
+4. Suggested colliders:
+   - SphereCollider or CapsuleCollider around the main toy.
+   - Optional trigger around Guide_Interaction_Point_ChewToy.
+   - Optional pickup target near Guide_Pickup_Mouth_Target.
+5. If using Optional_squeak_sound_arc_* as a visual effect, enable it briefly when squeaked.
+   Otherwise hide/delete it and use particles/UI instead.
+
+Gameplay ideas for A Dog's Tale:
+- Dog can pick up, chew, shake, drop, fetch, or squeak it.
+- Squeak emits a small Noise event that can attract dogs, cats, squirrels, or humans.
+- Can be a comfort toy, reward item, fetch target, or distraction object.
+- Roomba can bump it and accidentally squeak it.
+- Useful tasks/actions:
+  - PickUpToy
+  - ChewToy
+  - SqueakToy
+  - CarryToy
+  - DropToy
+  - ReactToSound
+
+OBJ limitation:
+- OBJ stores mesh/materials only.
+- It does not store Unity colliders, Rigidbody, scripts, sound effects, squeak animation, pickup state, or toy physics behavior.

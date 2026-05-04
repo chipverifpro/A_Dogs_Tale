@@ -1,7 +1,6 @@
 using UnityEngine;
 using System.Linq;
 using DogGame.AI;
-using Unity.Tutorials.Core.Editor;
 using InspectorTools;
 
 // ----- Not a BASE CLASS -----
@@ -16,9 +15,6 @@ namespace DogGame.Modules
     [DisallowMultipleComponent]
     public class AgentModule : WorldModule
     {
-        [Header("Debug / Identity")]
-        public string agentName = "Unnamed Agent";
-
         //[Header("Agent Specific Modules")]
         // Agent Specific modules (most build on other modules):
         //public AgentMovementModule agentMovementModule { get; protected set; }
@@ -39,7 +35,6 @@ namespace DogGame.Modules
         protected override void Awake()
         {
             base.Awake();
-            if (agentName.IsNullOrEmpty()) agentName=gameObject.name;
 
             //if (dir==null) dir=FindFirstObjectByType<Dir>();
 
@@ -52,7 +47,7 @@ namespace DogGame.Modules
                     module.enabled = true;
                 else
                     module.enabled = false;
-                //Debug.Log($"[AgentModule {agentName}] initialized decision module: {module.GetType().Name} ({module.DecisionType})", this);
+                //Debug.Log($"[AgentModule {worldObject.DisplayName}] initialized decision module: {module.GetType().Name} ({module.DecisionType})", this);
             }
 
             // Pick the initial module
@@ -62,7 +57,7 @@ namespace DogGame.Modules
         protected override void Update()
         {
             base.Update();
-            //Debug.Log($"AgentModule.Update {agentName}: currentDecisionModule={currentDecisionModule}");
+            //Debug.Log($"AgentModule.Update {worldObject.DisplayName}: currentDecisionModule={currentDecisionModule}");
         }
 
         private int debugDoubleTick = -1;
@@ -85,7 +80,7 @@ namespace DogGame.Modules
         /// </summary>
         public void SwitchDecisionModule(AgentDecisionType decisionType)
         {
-            Debug.Log($"AgentModule.SwitchDecisionModule {agentName}: decisionType = {decisionType}", this);
+            Debug.Log($"AgentModule.SwitchDecisionModule {worldObject.DisplayName}: decisionType = {decisionType}", this);
             AgentDecisionModuleBase previousModule = currentDecisionModule;
 
             // Disable the current one if any
@@ -108,7 +103,7 @@ namespace DogGame.Modules
 
             if (nextModule == null)
             {
-                Debug.LogWarning($"[AgentModule {agentName}] No decision module found for {decisionType}.", this);
+                Debug.LogWarning($"[AgentModule {worldObject.DisplayName}] No decision module found for {decisionType}.", this);
                 currentDecisionModule = previousModule;
                 if (currentDecisionModule != null)
                 {
@@ -125,7 +120,7 @@ namespace DogGame.Modules
             {
                 currentDecisionModule.enabled = true;
                 currentDecisionModule.BeginDecisionModule();  // notify the new module it is gaining control.
-                //Debug.Log($"[AgentModule {agentName}] Switched to module {currentDecisionModule.GetType().Name}", this);
+                //Debug.Log($"[AgentModule {worldObject.DisplayName}] Switched to module {currentDecisionModule.GetType().Name}", this);
                 if(currentDecisionModule.DecisionType == AgentDecisionType.Follower)
                 {
                     // cast the decision module
@@ -170,7 +165,7 @@ namespace DogGame.Modules
             }
             else
             {
-                Debug.LogWarning($"[AgentModule {agentName}] No decision module found to switch to!", this);
+                Debug.LogWarning($"[AgentModule {worldObject.DisplayName}] No decision module found to switch to!", this);
             }
         }
 

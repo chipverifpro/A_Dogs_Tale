@@ -1,0 +1,48 @@
+Empty Dog Bowl OBJ - Unity Notes
+
+Files:
+- empty_dog_bowl.obj
+- empty_dog_bowl.mtl
+
+Design:
+- Same red plastic dog bowl style as the kibble and water versions.
+- Empty interior with darker red inner wall and visible empty bottom.
+- Subtle bottom highlights/scratches and two tiny dry crumbs so it reads as empty rather than unfinished.
+- Bone-shaped label on the front.
+- Guide markers for collider and empty-bowl interaction placement.
+
+Important named groups:
+- Empty_dog_bowl_outer_red_plastic_shell
+- Empty_dog_bowl_inner_dark_red_wall
+- Empty_dog_bowl_thick_rounded_top_rim
+- Empty_dog_bowl_visible_empty_bottom
+- Empty_dog_bowl_bottom_foot_ring
+- Empty_bowl_subtle_inner_shadow_disc
+- Empty_bowl_bottom_highlight_ring_*
+- Tiny_leftover_crumb_inside_empty_bowl_*
+- Small_scratch_mark_inside_empty_bowl_*
+- Bowl_front_label_*
+- Guide_Collider_Bowl_CylinderApprox_delete_or_hide
+- Guide_Empty_Bowl_State_delete_or_hide
+- Guide_Interaction_Point_CheckEmptyBowl
+
+Unity setup:
+1. Import OBJ and MTL together.
+2. Create a prefab under something like:
+   Assets/A_Dogs_Tale/Resources/Prefabs/Props/Dog/
+3. Delete or hide Guide_* groups before final visual use, or keep them on an editor/helper layer.
+4. Suggested colliders:
+   - Cylinder-like collider or short CapsuleCollider for the bowl.
+   - Optional trigger at Guide_Interaction_Point_CheckEmptyBowl.
+5. This model intentionally contains no water/kibble fill mesh.
+
+Gameplay ideas:
+- Dog can check/sniff the empty bowl.
+- Empty bowl can trigger hunger, request food, bark/whine, or search-for-food behavior.
+- It can be a state variant of the same bowl prefab: Empty, Water, Food.
+- Roomba can bump it and make a clattering Noise event.
+- A human/quest interaction could refill it.
+
+OBJ limitation:
+- OBJ stores mesh/materials only.
+- It does not store Unity colliders, triggers, scripts, prefab variants, bowl state, or refill behavior.

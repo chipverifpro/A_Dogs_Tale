@@ -1,0 +1,54 @@
+Desk Service Bell / Bellhop Tap Bell - Unity Notes
+
+Files:
+- desk_service_bell.obj
+- desk_service_bell.mtl
+
+Design:
+- Small hotel/service desk bell.
+- Round black rubber foot/base shadow.
+- Brass/gold plinth and shiny dome.
+- Push/tap button on top.
+- Visible internal clapper ball and arm.
+- Small screw heads, reflection streaks, and optional yellow ringing arcs.
+- Guide markers included for interaction, collider, button press, and noise source.
+
+Important named groups:
+- Round_black_rubber_foot_shadow
+- Round_bell_base_plinth
+- Thin_bright_base_rim
+- Main_shiny_service_bell_dome
+- Bell_dome_rolled_lower_lip
+- Bell_dome_dark_open_under_shadow
+- Central_button_stem
+- Round_tap_button_on_top
+- Rounded_top_button_cap
+- Visible_internal_clapper_ball
+- Visible_internal_clapper_arm
+- Optional_ring_sound_arc_*
+- Guide_Collider_Bell_Box_delete_or_hide
+- Guide_Button_Press_Point
+- Guide_Interaction_Point_RingBell
+- Guide_Noise_Source_Ring_Event_delete_or_hide
+
+Unity setup:
+1. Import OBJ and MTL together.
+2. Create a prefab under something like:
+   Assets/A_Dogs_Tale/Resources/Prefabs/Props/Interactables/
+3. Delete or hide Guide_* groups before final visual use, or keep them on an editor/helper layer.
+4. Suggested colliders:
+   - Small BoxCollider or CapsuleCollider around bell body.
+   - Small trigger/collider at Guide_Button_Press_Point.
+5. If you keep Optional_ring_sound_arc_* as a visual, enable it briefly when the bell rings.
+   Otherwise hide/delete those groups.
+
+Gameplay ideas:
+- Dog can tap it with paw or nose.
+- Emits a sharp Noise event when rung.
+- Could summon a human/bellhop/servant/NPC.
+- Can be used as a puzzle object: ring bell to open door, call help, attract attention, or distract a Roomba/cat.
+- Good command/action target: RingBell, PressButton, MakeNoise, Summon.
+
+OBJ limitation:
+- OBJ stores mesh/materials only.
+- It does not store Unity colliders, triggers, scripts, sound effects, button animation, ringing particles, or summon behavior.

@@ -1,0 +1,83 @@
+Adult Duck + Duckling OBJ Set - Unity Notes
+
+Files:
+- adult_duck.obj
+- duckling.obj
+- duck_and_duckling_set.mtl
+
+Design:
+- Two separate matching bird props:
+  1. Adult duck, mallard-inspired, standing with folded wings.
+  2. Small duckling, round yellow fluffy body.
+- Both have:
+  - Webbed orange feet
+  - Wide bill
+  - Eye highlights
+  - Stand/perch point guides
+  - Dog sniff point guides
+  - Look target guides
+  - Follow target guides
+
+Adult duck important named groups:
+- Adult_duck_rounded_body_brown
+- Adult_duck_pale_belly_patch
+- Adult_duck_green_head
+- Adult_duck_white_neck_ring
+- Adult_duck_brown_chest
+- Adult_duck_wide_yellow_bill_upper
+- Adult_duck_lower_bill
+- Left_adult_folded_wing
+- Right_adult_folded_wing
+- Adult_left_blue_wing_speculum
+- Adult_right_blue_wing_speculum
+- Adult_short_tail_feathers
+- Adult_curly_tail_feather_*
+- Adult_left_orange_webbed_foot
+- Adult_right_orange_webbed_foot
+- Guide_Collider_Adult_Body_delete_or_hide
+- Guide_Adult_Follow_Target
+
+Duckling important named groups:
+- Duckling_fluffy_round_body_yellow
+- Duckling_pale_belly_patch
+- Duckling_big_round_head
+- Duckling_small_orange_bill_upper
+- Duckling_lower_bill
+- Left_duckling_fluffy_wing_nub
+- Right_duckling_fluffy_wing_nub
+- Duckling_tiny_tail_fluff
+- Duckling_head_fluff_tuft_*
+- Duckling_left_tiny_orange_webbed_foot
+- Duckling_right_tiny_orange_webbed_foot
+- Guide_Collider_Duckling_Body_delete_or_hide
+- Guide_Duckling_Follow_Target
+
+Unity setup:
+1. Import both OBJ files and duck_and_duckling_set.mtl together.
+2. Create prefabs under something like:
+   Assets/A_Dogs_Tale/Resources/Prefabs/Animals/Birds/
+3. Delete or hide Guide_* groups before final visual use, or keep them on an editor/helper layer.
+4. Suggested colliders:
+   - Adult duck: CapsuleCollider or SphereCollider around body/head.
+   - Duckling: small SphereCollider or CapsuleCollider.
+   - Optional trigger around Guide_Dog_Sniff_*_Point for dog interactions.
+5. Use Guide_*_Follow_Target as a convenient reference point for parent/follow behavior.
+6. Use Guide_*_Look_Target for head-look or attention direction if you add animation later.
+
+Gameplay ideas for A Dog's Tale:
+- Duckling follows adult duck.
+- Dog approaches; adult duck quacks and leads duckling away.
+- Ducks can use pond, birdbath, sprinkler puddles, or garden hose water.
+- Dogs can sniff, watch, herd, chase, or protect ducklings.
+- Roomba or squeaky toys can startle them.
+- Useful behaviors:
+  - DuckFollowParent
+  - DuckFleeFromDog
+  - DuckQuackAlarm
+  - DucklingWaddleFollow
+  - ReactToDogApproach
+  - ReactToWaterSource
+
+OBJ limitation:
+- OBJ stores mesh/materials only.
+- It does not store Unity colliders, triggers, scripts, rigging, animations, quack sounds, flock/follow logic, or behavior states.

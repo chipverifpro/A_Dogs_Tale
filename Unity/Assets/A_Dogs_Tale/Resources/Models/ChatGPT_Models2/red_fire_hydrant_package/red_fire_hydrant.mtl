@@ -1,0 +1,74 @@
+# Materials for red_fire_hydrant.obj
+newmtl hydrant_red
+Kd 0.88 0.025 0.018
+Ka 0.18 0.004 0.003
+Ks 0.45 0.20 0.16
+Ns 55
+
+newmtl hydrant_dark_red
+Kd 0.48 0.010 0.008
+Ka 0.10 0.002 0.002
+Ks 0.30 0.12 0.10
+Ns 35
+
+newmtl hydrant_red_highlight
+Kd 1.00 0.12 0.08
+Ka 0.22 0.025 0.015
+Ks 0.55 0.25 0.18
+Ns 60
+
+newmtl black_rubber
+Kd 0.018 0.016 0.014
+Ka 0.003 0.003 0.002
+Ks 0.12 0.10 0.08
+Ns 20
+
+newmtl bolt_dark_metal
+Kd 0.045 0.043 0.040
+Ka 0.008 0.008 0.007
+Ks 0.40 0.38 0.34
+Ns 55
+
+newmtl paint_chip_exposed_metal
+Kd 0.62 0.60 0.54
+Ka 0.12 0.12 0.10
+Ks 0.30 0.28 0.24
+Ns 38
+
+newmtl rust_orange
+Kd 0.55 0.21 0.055
+Ka 0.11 0.04 0.01
+Ks 0.06 0.035 0.02
+Ns 8
+
+newmtl scent_green
+Kd 0.20 0.85 0.22
+Ka 0.04 0.20 0.05
+Ks 0.08 0.16 0.08
+Ns 20
+d 0.55
+Tr 0.45
+
+newmtl shadow_soft
+Kd 0.04 0.035 0.032
+Ka 0.008 0.007 0.006
+Ks 0.0 0.0 0.0
+Ns 2
+d 0.35
+Tr 0.65
+
+newmtl guide_blue
+Kd 0.10 0.35 1.00
+Ka 0.02 0.08 0.22
+Ks 0.20 0.20 0.25
+Ns 25
+d 0.35
+Tr 0.65
+
+newmtl guide_green
+Kd 0.10 0.85 0.20
+Ka 0.02 0.18 0.04
+Ks 0.20 0.25 0.20
+Ns 25
+d 0.35
+Tr 0.65

@@ -144,8 +144,7 @@ using DogGame.AI;
             // packMemberModule.role = PackRole.Follower;
             //wo.packMemberModule.currentPack = dir.playerPack;
 
-            // Mark debug agents clearly
-            wo.agentModule.agentName = $"{wo.agentModule.agentName} (DEBUG Follower)";
+            // WorldObject owns display identity.
         }
 
         private static bool TryJoinPackAsFollower(DogGame.Modules.AgentModule agentModule)
@@ -160,7 +159,7 @@ using DogGame.AI;
                 return false;
             }
 
-            Debug.Log($"Joining pack as follower: {agentModule.agentName}");
+            Debug.Log($"Joining pack as follower: {agentModule.worldObject.DisplayName}");
             Debug.Log($"Joining to pack {dir}");
             Debug.Log($"Pack = {dir.packManager.playerPack}");
             Debug.Log($"PackLeader = {dir.packManager.playerPack.packLeader.DisplayName}");
@@ -253,12 +252,10 @@ using DogGame.AI;
             motivationModule.trainingProfile.obedience = 0.35f;
             motivationModule.trainingProfile.focus = 0.35f;
 
-            // Name tag: don't assume agentModule.agentName is initialized
+            // WorldObject owns display identity.
             if (!string.IsNullOrEmpty(targetObject.name) && agentModule != null)
             {
-                // If you have agentModule.agentName, set it; otherwise skip.
-                // Example guarded set:
-                // agentModule.agentName = $"{targetObject.name} (DEBUG Follower)";
+                // DisplayName changes should go through WorldObject.
             }
         }
         */

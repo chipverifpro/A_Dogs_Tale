@@ -1,0 +1,54 @@
+Dog Food Bowl Full of Kibble with Spilled Pieces - Unity Notes
+
+Files:
+- dog_food_bowl_full_with_spilled_kibble.obj
+- dog_food_bowl_full_with_spilled_kibble.mtl
+
+Design:
+- Red plastic dog food bowl.
+- Open bowl shell with darker inner wall.
+- Mounded kibble surface inside.
+- Individual kibble pieces inside the bowl.
+- Larger spilled kibble pieces and tiny crumbs in front of the bowl.
+- Small bone-shaped label on the front.
+- Guide markers for collider, scent, interaction, and spilled-food target placement.
+
+Important named groups:
+- Dog_food_bowl_outer_red_plastic_shell
+- Dog_food_bowl_inner_dark_red_wall
+- Dog_food_bowl_thick_rounded_top_rim
+- Dog_food_bowl_inner_bottom_disk
+- Dog_food_bowl_bottom_foot_ring
+- Mounded_visible_kibble_surface
+- Kibble_inside_bowl_piece_*
+- Spilled_kibble_piece_*
+- Tiny_kibble_crumb_*
+- Bowl_front_label_*
+- Guide_Collider_Bowl_CylinderApprox_delete_or_hide
+- Guide_Scent_Source_Food_delete_or_hide
+- Guide_Interaction_Point_EatOrSniff
+- Guide_Spilled_Kibble_Target
+
+Unity setup:
+1. Import OBJ and MTL together.
+2. Create a prefab under something like:
+   Assets/A_Dogs_Tale/Resources/Prefabs/Props/Dog/
+3. Delete or hide Guide_* groups before final visual use, or keep them on an editor/helper layer.
+4. Suggested colliders:
+   - Cylinder-like collider or short CapsuleCollider for the bowl.
+   - Optional trigger over Guide_Scent_Source_Food_delete_or_hide.
+   - Optional individual colliders only for large spilled kibble if dogs can pick/eat them.
+5. The guide and shadow materials include MTL transparency, but Unity may import them as opaque.
+   If so, either hide/delete those meshes or set material Surface Type to Transparent.
+
+Gameplay ideas:
+- Strong food scent source.
+- Dog can sniff, eat, guard, spill more food, or follow a kibble trail.
+- Roomba can scatter the spilled pieces.
+- Squirrels/birds can steal kibble.
+- Useful for hunger, reward, training, or forbidden-food behavior.
+- ReactToScent and ReactToScentSourceFound can trigger near the bowl.
+
+OBJ limitation:
+- OBJ stores mesh/materials only.
+- It does not store Unity colliders, triggers, scripts, scent emitters, pickup/eating behavior, or particle effects.

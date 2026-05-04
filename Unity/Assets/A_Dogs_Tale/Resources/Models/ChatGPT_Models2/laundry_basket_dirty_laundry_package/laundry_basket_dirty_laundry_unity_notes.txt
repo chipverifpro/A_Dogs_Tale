@@ -1,0 +1,58 @@
+Laundry Basket Full of Dirty Laundry - Unity Notes
+
+Files:
+- laundry_basket_dirty_laundry.obj
+- laundry_basket_dirty_laundry.mtl
+
+Design:
+- Slotted plastic laundry basket with a blue rim and white side bars.
+- Piled dirty laundry visible above the basket.
+- Includes shirts, towels, socks, washcloth, dropped floor laundry, and optional scent wisps.
+- Good scent-heavy prop for dog investigation gameplay.
+
+Important named groups:
+- Large basket structure:
+  - Basket_top_*_rounded_rim
+  - Basket_bottom_*_rail
+  - Basket_*_vertical_slotted_bar_*
+  - Basket_*_horizontal_slot_rail_*
+  - Basket_bottom_grid_*_rail_*
+- Laundry:
+  - Bulging_dirty_laundry_pile_base
+  - Laundry_pile_*_lump_*
+  - Sock_draped_*
+  - Rolled_dirty_towel_on_top
+  - Rolled_grey_towel_partly_buried
+  - Wrinkled_red_shirt_over_basket
+  - Wrinkled_blue_shirt_back_corner
+  - Dropped_dirty_towel_on_floor_front
+  - Dropped_sock_on_floor_left
+  - Small_dropped_washcloth_right
+- Gameplay guides:
+  - Guide_Collider_Basket_Box_delete_or_hide
+  - Guide_Scent_Source_DirtyLaundry_delete_or_hide
+  - Guide_Interaction_Point_SniffLaundry
+  - Guide_Pickup_Target_DroppedSock
+
+Unity setup:
+1. Import OBJ and MTL together.
+2. Create a prefab under something like:
+   Assets/A_Dogs_Tale/Resources/Prefabs/Props/Laundry/
+3. Delete or hide Guide_* groups before final visual use, or keep them on an editor/helper layer.
+4. Suggested colliders:
+   - BoxCollider for the basket body.
+   - Optional trigger over Guide_Scent_Source_DirtyLaundry_delete_or_hide.
+   - Optional pickup collider for Dropped_sock_on_floor_left.
+5. The basket is visually slotted, but not physically hollow unless you build custom colliders.
+   For gameplay, use simple colliders unless dogs need to climb inside.
+
+Gameplay ideas:
+- Strong human/household scent source.
+- Dogs can sniff, dig through, steal a sock, carry laundry, or track owner scent.
+- Roomba can bump the dropped laundry.
+- A hidden clue/toy/treat can be placed inside the laundry pile.
+- Good target for ReactToScent and ReactToScentSourceFound.
+
+OBJ limitation:
+- OBJ stores mesh/materials only.
+- It does not store Unity colliders, triggers, scripts, scent emitters, cloth physics, or pickup behavior.

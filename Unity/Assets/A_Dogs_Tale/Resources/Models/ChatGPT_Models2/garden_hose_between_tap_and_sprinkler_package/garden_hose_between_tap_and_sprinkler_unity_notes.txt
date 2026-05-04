@@ -1,0 +1,60 @@
+Garden Hose Between Water Tap and Sprinkler - Unity Notes
+
+Files:
+- garden_hose_between_tap_and_sprinkler.obj
+- garden_hose_between_tap_and_sprinkler.mtl
+
+Design:
+- Flexible green garden hose laid on the ground.
+- Intended to visually connect the outdoor water tap to the rotating sprinkler.
+- Brass connector/coupler on both ends.
+- Ribbed connector rings, black strain-relief collars, subtle scuffs, and a tiny leak/drop near the tap end.
+- Guide markers included for tap attachment, sprinkler attachment, hose collider, trip hazard trigger, and interaction point.
+
+Important named groups:
+- Flexible_green_garden_hose_curved_body
+- Tap_end_female_connector_brass_coupler_body
+- Tap_end_female_connector_thread_rib_*
+- Tap_end_black_rubber_strain_relief
+- Sprinkler_end_male_connector_brass_coupler_body
+- Sprinkler_end_male_connector_thread_rib_*
+- Sprinkler_end_black_rubber_strain_relief
+- Tiny_leak_droplet_at_tap_connector
+- Optional_tiny_leak_drip_stream
+- Small_wet_spot_under_tap_connector
+- Soft_ground_contact_shadow_under_hose_*
+- Guide_Tap_Attach_Point
+- Guide_Sprinkler_Attach_Point
+- Guide_Collider_Hose_Path_Approx_delete_or_hide
+- Guide_Trip_Hazard_Trigger_delete_or_hide
+- Guide_Interaction_Point_CarryOrDragHose
+
+Approximate placement:
+- Tap end starts around x = -0.22, y = 0.12, z = 0.02.
+- Sprinkler end finishes around x = 3.24, y = 0.105, z = -0.37.
+- Designed as a simple curved connector segment. You can scale/rotate it to fit your specific tap and sprinkler positions.
+
+Unity setup:
+1. Import OBJ and MTL together.
+2. Create a prefab under something like:
+   Assets/A_Dogs_Tale/Resources/Prefabs/Props/Garden/
+3. Delete or hide Guide_* groups before final visual use, or keep them on an editor/helper layer.
+4. Suggested colliders:
+   - Use a few CapsuleColliders or thin BoxColliders along the hose path.
+   - Use Guide_Trip_Hazard_Trigger_delete_or_hide as a trigger for dogs tripping, noticing, or stepping over.
+   - Use Guide_Tap_Attach_Point and Guide_Sprinkler_Attach_Point as snap/reference points.
+5. If the water/leak imports opaque:
+   - Set water materials to Transparent.
+   - Use alpha around 0.35-0.55.
+
+Gameplay ideas for A Dog's Tale:
+- Hose connects tap state to sprinkler state.
+- Dog can sniff, drag, chew, trip over, or follow the hose.
+- Roomba can bump into it or get tangled.
+- If hose is disconnected, sprinkler should not work.
+- Hose could create a scent/visual trail between tap and sprinkler.
+- Tiny leak can create wet pawprints or dilute scent locally.
+
+OBJ limitation:
+- OBJ stores mesh/materials only.
+- It does not store Unity colliders, snap sockets, scripts, hose physics, water simulation, connection state, or sprinkler/tap logic.

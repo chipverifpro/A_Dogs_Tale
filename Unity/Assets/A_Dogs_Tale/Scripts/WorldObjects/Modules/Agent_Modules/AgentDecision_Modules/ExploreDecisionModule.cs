@@ -166,7 +166,6 @@ end
             public string reverseKey;
         }
 
-        [SerializeField] private WalkMode exploreWalkMode = WalkMode.Walk;
         [Tooltip("When enabled, a dead-end room is explored by moving to its center before the dog backtracks.")]
         [SerializeField] private bool visitRoomCenterBeforeBacktracking = true;
         [Header("Lua Explore")]
@@ -258,7 +257,7 @@ end
             if (phase == ExplorePhase.MoveToDoor && !worldObject.agentMovementModule.MoveToDestinationInProgress)
             {
                 phase = ExplorePhase.MoveThroughDoor;
-                worldObject.agentMovementModule.SetDesiredTargetLocationMap(activeDoor.throughMap, exploreWalkMode, requestPathfinding: true);
+                worldObject.agentMovementModule.SetDesiredTargetLocationMap(activeDoor.throughMap, WalkMode.None, requestPathfinding: true);
                 //Debug.Log(
                 //    $"{worldObject.DisplayName} [ExploreDecisionModule] reached door {activeDoor.key}; moving through to [{activeDoor.throughCell.x},{activeDoor.throughCell.y}]");
                 return;
@@ -512,7 +511,7 @@ end
 
                 activeDoor = goal;
                 phase = ExplorePhase.MoveToDoor;
-                worldObject.agentMovementModule.SetDesiredTargetLocationMap(goal.doorMap, exploreWalkMode, requestPathfinding: true);
+                worldObject.agentMovementModule.SetDesiredTargetLocationMap(goal.doorMap, WalkMode.None, requestPathfinding: true);
                 //Debug.Log(
                 //    $"{worldObject.DisplayName} [ExploreDecisionModule] heading to door {goal.key} from room {goal.roomIndex} toward room {goal.neighborRoomIndex}");
                 return true;
@@ -577,7 +576,7 @@ end
 
             activeRoomCenterMap = roomCenterMap;
             phase = ExplorePhase.MoveToRoomCenter;
-            worldObject.agentMovementModule.SetDesiredTargetLocationMap(activeRoomCenterMap, exploreWalkMode, requestPathfinding: true);
+            worldObject.agentMovementModule.SetDesiredTargetLocationMap(activeRoomCenterMap, WalkMode.None, requestPathfinding: true);
             //Debug.Log(
             //    $"{worldObject.DisplayName} [ExploreDecisionModule] room {roomIndex} is a dead end; visiting center at {activeRoomCenterMap} before backtracking");
             return true;

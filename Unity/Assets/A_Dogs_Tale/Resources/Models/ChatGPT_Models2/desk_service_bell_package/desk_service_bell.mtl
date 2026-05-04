@@ -1,0 +1,80 @@
+# Materials for desk_service_bell.obj
+newmtl brass_gold
+Kd 0.86 0.58 0.16
+Ka 0.18 0.11 0.03
+Ks 0.85 0.72 0.38
+Ns 95
+
+newmtl brass_dark_gold
+Kd 0.48 0.30 0.08
+Ka 0.10 0.06 0.015
+Ks 0.55 0.42 0.20
+Ns 70
+
+newmtl brass_highlight
+Kd 1.00 0.78 0.26
+Ka 0.22 0.16 0.04
+Ks 0.95 0.88 0.50
+Ns 100
+
+newmtl brass_reflection
+Kd 1.00 0.92 0.62
+Ka 0.22 0.20 0.12
+Ks 1.00 1.00 0.75
+Ns 100
+
+newmtl dark_under_bell
+Kd 0.045 0.030 0.012
+Ka 0.006 0.004 0.002
+Ks 0.10 0.08 0.04
+Ns 18
+
+newmtl black_rubber
+Kd 0.015 0.014 0.012
+Ka 0.002 0.002 0.002
+Ks 0.12 0.11 0.10
+Ns 25
+
+newmtl screw_dark_metal
+Kd 0.050 0.048 0.045
+Ka 0.008 0.008 0.007
+Ks 0.45 0.42 0.38
+Ns 65
+
+newmtl screw_slot_dark
+Kd 0.006 0.006 0.006
+Ka 0.0 0.0 0.0
+Ks 0.10 0.10 0.10
+Ns 20
+
+newmtl sound_arc_yellow
+Kd 1.00 0.86 0.12
+Ka 0.28 0.20 0.02
+Ks 0.25 0.22 0.08
+Ns 25
+d 0.55
+Tr 0.45
+
+newmtl guide_blue
+Kd 0.10 0.35 1.00
+Ka 0.02 0.08 0.22
+Ks 0.20 0.20 0.25
+Ns 25
+d 0.35
+Tr 0.65
+
+newmtl guide_green
+Kd 0.10 0.85 0.20
+Ka 0.02 0.18 0.04
+Ks 0.20 0.25 0.20
+Ns 25
+d 0.35
+Tr 0.65
+
+newmtl guide_yellow
+Kd 1.00 0.85 0.10
+Ka 0.22 0.18 0.02
+Ks 0.25 0.22 0.10
+Ns 25
+d 0.45
+Tr 0.55

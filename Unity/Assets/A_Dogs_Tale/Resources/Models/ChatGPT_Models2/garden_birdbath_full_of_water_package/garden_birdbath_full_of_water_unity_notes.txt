@@ -1,0 +1,56 @@
+Garden Birdbath Full of Water - Unity Notes
+
+Files:
+- garden_birdbath_full_of_water.obj
+- garden_birdbath_full_of_water.mtl
+
+Design:
+- Weathered stone garden birdbath.
+- Round base, flared pedestal foot, carved center column, shallow stone bowl.
+- Filled with a transparent rippled water surface.
+- Includes ripple rings, rim droplets, wet stone spots, and moss patches.
+- Guide markers included for bird landing, water trigger, dog sniff/drink interaction, and colliders.
+
+Important named groups:
+- Round_ground_base_stone
+- Lower_flared_pedestal_foot
+- Tall_carved_center_pedestal_column
+- Upper_flared_pedestal_support
+- Pedestal_lower_ring_band
+- Pedestal_upper_ring_band
+- Birdbath_bowl_outer_shallow_stone_basin
+- Birdbath_bowl_inner_wet_stone_basin
+- Birdbath_bowl_thick_rounded_outer_rim
+- Transparent_rippled_water_surface_full_birdbath
+- Water_ripple_ring_*
+- Water_droplet_on_stone_rim_*
+- Moss_patch_on_birdbath_*
+- Guide_Bird_Landing_Rim_Point
+- Guide_Dog_DrinkOrSniff_Point
+- Guide_Water_Source_Trigger_delete_or_hide
+- Guide_Collider_*_delete_or_hide
+
+Unity setup:
+1. Import OBJ and MTL together.
+2. Create a prefab under something like:
+   Assets/A_Dogs_Tale/Resources/Prefabs/Props/Garden/
+3. Delete or hide Guide_* groups before final visual use, or keep them on an editor/helper layer.
+4. Suggested colliders:
+   - CapsuleCollider or cylinder-like collider for pedestal.
+   - Shallow BoxCollider or MeshCollider for basin/rim if characters can touch it.
+   - Trigger over Guide_Water_Source_Trigger_delete_or_hide.
+5. Unity may import water materials as opaque. If so:
+   - Set water materials to Transparent.
+   - Use alpha around 0.35-0.55.
+   - Increase Smoothness/Specular.
+
+Gameplay ideas:
+- Bird landing point / attractor.
+- Dog can sniff or drink from it if tall enough.
+- Squirrels/birds can perch on rim.
+- Roomba can bump pedestal but probably cannot reach water.
+- Can generate water scent, wet pawprints, splash noise, or bird activity.
+
+OBJ limitation:
+- OBJ stores mesh/materials only.
+- It does not store Unity colliders, triggers, scripts, water shader settings, bird AI, or splash effects.

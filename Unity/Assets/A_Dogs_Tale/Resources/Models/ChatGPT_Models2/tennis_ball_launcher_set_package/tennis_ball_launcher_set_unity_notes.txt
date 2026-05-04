@@ -1,0 +1,76 @@
+Tennis Ball Launcher Machine + Separate Tennis Ball - Unity Notes
+
+Files:
+- tennis_ball_launcher_machine.obj
+- tennis_ball.obj
+- tennis_ball_launcher_set.mtl
+
+Design:
+- Tennis ball launcher machine with:
+  - Blue machine body
+  - Orange open hopper/bin full of visible tennis balls
+  - Angled front launch barrel
+  - Launch muzzle ring
+  - Control panel with screen/buttons
+  - Large transport wheels
+  - Rear handle
+  - Guide markers for loading, turning on, launch point, and motor noise
+- Separate tennis_ball.obj:
+  - Single tennis ball with bright felt material
+  - Raised curved seam bands
+
+Important launcher named groups:
+- Main_launcher_body_rounded_rect_approx
+- Black_lower_motor_housing
+- Front_launch_face_panel
+- Front_launch_port_black_socket
+- Angled_launch_barrel_tube
+- Bright_launch_barrel_muzzle_ring
+- Open_ball_hopper_bin_*
+- Visible_tennis_ball_in_hopper_*
+- Rear_control_panel_slanted_face
+- Control_panel_display_screen
+- Control_panel_round_button_*
+- Left_large_transport_wheel_tire / Right_large_transport_wheel_tire
+- Rear_handle_grip_bar
+- Tennis_ball_at_launch_mouth
+- Optional_launch_direction_guide_delete_or_hide
+- Guide_Collider_Launcher_Body_delete_or_hide
+- Guide_Hopper_BallBin_Volume_delete_or_hide
+- Guide_Interaction_Point_LoadBalls
+- Guide_Interaction_Point_TurnOnLauncher
+- Guide_Launch_Muzzle_Point
+- Guide_Noise_Source_Motor_delete_or_hide
+
+Important tennis ball named groups:
+- Tennis_ball_felt_body
+- Curved_white_tennis_ball_seam_A_*
+- Curved_white_tennis_ball_seam_B_*
+
+Unity setup:
+1. Import both OBJ files and the shared MTL together.
+2. Create prefabs under something like:
+   Assets/A_Dogs_Tale/Resources/Prefabs/Props/DogToys/
+3. Delete or hide Guide_* groups before final visual use, or keep them on an editor/helper layer.
+4. Suggested colliders:
+   - Launcher: BoxCollider around body, optional trigger over hopper, small collider at control panel.
+   - Tennis ball: SphereCollider with radius matching the mesh.
+5. Use Guide_Launch_Muzzle_Point as the spawn/launch origin for tennis_ball prefab instances.
+6. Optional_launch_direction_guide_delete_or_hide shows the approximate launch direction and should be hidden in normal gameplay.
+
+Gameplay ideas for A Dog's Tale:
+- Machine periodically launches tennis balls for fetch gameplay.
+- Dogs can react to motor noise, chase launched balls, retrieve balls, or load balls into hopper.
+- Roomba can bump into the machine and accidentally trigger it.
+- Squirrels can steal balls from the hopper.
+- Use control panel as an interaction target for player or dog paw/nose press.
+- Strong behavior hooks:
+  - TurnOnLauncher
+  - LoadBall
+  - FetchBall
+  - ChaseLaunchedBall
+  - ReactToSound
+
+OBJ limitation:
+- OBJ stores mesh/materials only.
+- It does not store Unity colliders, Rigidbody, scripts, projectile launch logic, sounds, particles, animations, or prefab hierarchy.

@@ -1,0 +1,56 @@
+Dog Water Bowl Full with Spilled Droplets - Unity Notes
+
+Files:
+- dog_water_bowl_full_with_droplets.obj
+- dog_water_bowl_full_with_droplets.mtl
+
+Design:
+- Same red plastic dog bowl style as the kibble version.
+- Filled with a slightly rippled transparent water surface.
+- Water highlight/ripple rings on the bowl surface.
+- Small spilled puddle and individual droplets in front of the bowl.
+- Small bone-shaped label on the front.
+- Guide markers for collider, water source, drinking interaction, and spill target placement.
+
+Important named groups:
+- Dog_water_bowl_outer_red_plastic_shell
+- Dog_water_bowl_inner_dark_red_wall
+- Dog_water_bowl_thick_rounded_top_rim
+- Dog_water_bowl_inner_bottom_disk
+- Dog_water_bowl_bottom_foot_ring
+- Transparent_water_surface_slightly_rippled
+- Water_surface_ripple_ring_center
+- Water_surface_ripple_ring_wide
+- Water_surface_small_drink_disturbance
+- Small_spilled_water_puddle_front
+- Spilled_water_droplet_*
+- Bowl_front_label_*
+- Guide_Collider_Bowl_CylinderApprox_delete_or_hide
+- Guide_Water_Source_delete_or_hide
+- Guide_Interaction_Point_DrinkOrSniff
+- Guide_Spilled_Water_Target
+
+Unity setup:
+1. Import OBJ and MTL together.
+2. Create a prefab under something like:
+   Assets/A_Dogs_Tale/Resources/Prefabs/Props/Dog/
+3. Delete or hide Guide_* groups before final visual use, or keep them on an editor/helper layer.
+4. The water materials include MTL transparency, but Unity may import them as opaque.
+   If so:
+   - Set water materials to Transparent.
+   - Use alpha around 0.35-0.55.
+   - Increase Smoothness/Specular for a wet look.
+5. Suggested colliders:
+   - Cylinder-like collider or short CapsuleCollider for the bowl.
+   - Optional trigger over Guide_Water_Source_delete_or_hide.
+   - Optional trigger over Guide_Water_Splash_Area_delete_or_hide.
+
+Gameplay ideas:
+- Dog can drink, sniff, splash, knock over, or track wet pawprints after stepping in it.
+- Roomba can drag water into a short wet trail.
+- Can act as a hydration/rest behavior target.
+- Dogs could react differently if the bowl is full, empty, dirty, or spilled.
+
+OBJ limitation:
+- OBJ stores mesh/materials only.
+- It does not store Unity colliders, triggers, scripts, water shaders, particle effects, or drink behavior.

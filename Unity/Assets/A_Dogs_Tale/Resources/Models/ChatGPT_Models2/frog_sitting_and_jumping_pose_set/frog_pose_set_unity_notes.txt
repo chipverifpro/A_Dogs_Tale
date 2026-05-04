@@ -1,0 +1,67 @@
+Frog Pose Set - Unity Notes
+
+Files:
+- frog_sitting_still.obj
+- frog_mid_jump.obj
+- frog_pose_set.mtl
+
+Design:
+- Two matching stylized frog models:
+  1. Sitting still / squat pose
+  2. Mid-jump pose, stretched forward and airborne
+- Same color palette and proportions so they read as the same frog.
+- Useful as static pose swaps, animation references, or placeholder states before rigging.
+
+Sitting frog named groups:
+- Body_squat_round_green
+- Belly_pale_round_patch
+- Head_wide_alert_green
+- Left_folded_thigh / Right_folded_thigh
+- *_front_arm_bent
+- *_rear_lower_leg_folded
+- *_webbed_toes
+- Guide_Perch_Point_delete_or_hide
+
+Mid-jump frog named groups:
+- Body_stretched_airborne_green
+- Belly_pale_stretched_patch
+- Head_forward_midjump_green
+- *_front_arm_reaching
+- *_rear_thigh_extended
+- *_rear_lower_leg_extended
+- *_webbed_toes_kicked_back
+- Guide_Jump_Direction_Arc_delete_or_hide
+- Guide_Airborne_Center_delete_or_hide
+
+Shared groups:
+- Eye_bulge_*
+- Eye_black_pupil_*
+- Eye_white_highlight_*
+- Subtle_smile_mouth_line
+- Left_nostril_dark / Right_nostril_dark
+- Dark_green_skin_spot_*
+
+Unity setup:
+1. Import both OBJ files and frog_pose_set.mtl together.
+2. Create prefabs under something like:
+   Assets/A_Dogs_Tale/Resources/Prefabs/Animals/Frogs/
+3. Delete or hide Guide_* groups before final visual use, or keep them on an editor/helper layer.
+4. Use the sitting frog as idle/perch/rest state.
+5. Use the mid-jump frog as a pose-swap during a jump, hop, or flee behavior.
+6. For a more animated frog later, use these as modeling references and rig a single skinned mesh.
+
+Suggested colliders:
+- Sitting frog: small CapsuleCollider or SphereCollider around body.
+- Mid-jump frog: collider around body/head only; avoid colliding long legs unless needed.
+- Optional trigger at Guide_Perch_Point_delete_or_hide for pond/birdbath/lily-pad placement.
+
+Gameplay ideas for A Dog's Tale:
+- Frog sits still until dog gets close, then jumps away.
+- Emits a small splash/noise event near water.
+- Dogs can sniff, watch, chase, or startle it.
+- Birds may hunt it, squirrels ignore it, dogs may be confused by the jump.
+- Could be used near birdbath, pond, garden hose, wet pawprints, or muddy areas.
+
+OBJ limitation:
+- OBJ stores mesh/materials only.
+- It does not store Unity colliders, triggers, scripts, prefab variants, rigs, animation clips, or state transitions.

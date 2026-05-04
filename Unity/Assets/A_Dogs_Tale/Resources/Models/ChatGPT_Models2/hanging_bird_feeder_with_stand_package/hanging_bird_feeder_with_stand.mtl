@@ -1,0 +1,108 @@
+# Materials for hanging_bird_feeder_with_stand.obj
+newmtl stand_black_metal
+Kd 0.018 0.018 0.020
+Ka 0.003 0.003 0.004
+Ks 0.35 0.35 0.38
+Ns 55
+
+newmtl chain_dark_metal
+Kd 0.055 0.055 0.060
+Ka 0.010 0.010 0.012
+Ks 0.45 0.45 0.48
+Ns 65
+
+newmtl feeder_green
+Kd 0.08 0.48 0.16
+Ka 0.015 0.10 0.03
+Ks 0.30 0.38 0.24
+Ns 45
+
+newmtl feeder_dark_green
+Kd 0.025 0.22 0.08
+Ka 0.005 0.045 0.015
+Ks 0.20 0.26 0.18
+Ns 35
+
+newmtl clear_plastic
+Kd 0.72 0.90 0.96
+Ka 0.12 0.18 0.20
+Ks 0.75 0.90 1.00
+Ns 90
+d 0.38
+Tr 0.62
+
+newmtl clear_plastic_highlight
+Kd 0.95 1.00 1.00
+Ka 0.25 0.28 0.30
+Ks 1.00 1.00 1.00
+Ns 100
+d 0.55
+Tr 0.45
+
+newmtl mixed_bird_seed
+Kd 0.55 0.39 0.18
+Ka 0.11 0.075 0.035
+Ks 0.05 0.035 0.020
+Ns 8
+
+newmtl seed_tan
+Kd 0.72 0.53 0.24
+Ka 0.14 0.10 0.045
+Ks 0.04 0.03 0.018
+Ns 6
+
+newmtl seed_dark
+Kd 0.18 0.11 0.045
+Ka 0.035 0.020 0.008
+Ks 0.025 0.015 0.010
+Ns 5
+
+newmtl seed_yellow
+Kd 0.82 0.68 0.20
+Ka 0.16 0.13 0.04
+Ks 0.04 0.03 0.018
+Ns 6
+
+newmtl seed_port_dark
+Kd 0.035 0.030 0.020
+Ka 0.006 0.005 0.004
+Ks 0.08 0.07 0.05
+Ns 12
+
+newmtl perch_wood
+Kd 0.34 0.19 0.08
+Ka 0.07 0.035 0.015
+Ks 0.05 0.035 0.02
+Ns 10
+
+newmtl shadow_soft
+Kd 0.045 0.040 0.035
+Ka 0.008 0.008 0.006
+Ks 0.0 0.0 0.0
+Ns 2
+d 0.35
+Tr 0.65
+
+newmtl guide_blue
+Kd 0.10 0.35 1.00
+Ka 0.02 0.08 0.22
+Ks 0.20 0.20 0.25
+Ns 25
+d 0.35
+Tr 0.65
+
+newmtl guide_green
+Kd 0.10 0.85 0.20
+Ka 0.02 0.18 0.04
+Ks 0.20 0.25 0.20
+Ns 25
+d 0.35
+Tr 0.65
+
+newmtl guide_yellow
+Kd 1.00 0.85 0.10
+Ka 0.22 0.18 0.02
+Ks 0.25 0.22 0.10
+Ns 25
+d 0.45
+Tr 0.55

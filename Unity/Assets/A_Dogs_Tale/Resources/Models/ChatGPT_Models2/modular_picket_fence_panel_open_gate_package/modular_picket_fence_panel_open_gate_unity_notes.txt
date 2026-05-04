@@ -1,0 +1,67 @@
+Modular Picket Fence Panel with Open Gate - Unity Notes
+
+Files:
+- modular_picket_fence_panel_open_gate.obj
+- modular_picket_fence_panel_open_gate.mtl
+
+Design:
+- Matching low-wall picket fence segment with the center gate swung open.
+- Same dimensions and style as:
+  - modular_picket_fence_panel_low_wall.obj
+  - modular_picket_fence_panel_closed_gate.obj
+- Gate is rotated open around the left hinge post.
+- The walkthrough opening is clear.
+
+Approximate dimensions:
+- Length: 3.0 Unity units
+- Height: about 1.1 to 1.25 Unity units including post caps
+- Gate opening: about 1.1 Unity units
+- Gate open angle: about 82 degrees toward the front side
+
+Important named groups:
+- Left_end_square_fence_post
+- Right_end_square_fence_post
+- Gate_left_hinge_post
+- Gate_right_latch_post
+- Left_fixed_side_panel_*
+- Right_fixed_side_panel_*
+- Open_gate_upper_horizontal_rail
+- Open_gate_lower_horizontal_rail
+- Open_gate_diagonal_brace_lower_left_to_upper_right
+- Open_gate_Picket_*
+- Upper_gate_hinge_open_*
+- Lower_gate_hinge_open_*
+- Open_gate_latch_*
+- Guide_Snap_Left_End_delete_or_hide
+- Guide_Snap_Right_End_delete_or_hide
+- Guide_Gate_Hinge_Pivot_delete_or_hide
+- Guide_Gate_Open_End_delete_or_hide
+- Guide_Clear_Walkthrough_Opening_delete_or_hide
+- Guide_Collider_OpenGateLeaf_delete_or_hide
+- Guide_Interaction_Point_CloseGate
+
+Unity setup:
+1. Import OBJ and MTL together.
+2. Create a prefab under something like:
+   Assets/A_Dogs_Tale/Resources/Prefabs/Terrain/Fences/
+3. Delete or hide Guide_* groups before final visual use, or keep them on an editor/helper layer.
+4. Suggested colliders:
+   - Left fixed panel BoxCollider.
+   - Right fixed panel BoxCollider.
+   - Open gate leaf BoxCollider aligned with Guide_Collider_OpenGateLeaf_delete_or_hide.
+   - Do not place a collider in Guide_Clear_Walkthrough_Opening_delete_or_hide.
+5. If you build a single animated gate prefab:
+   - Use the closed gate model as the closed pose reference.
+   - Use this model as the open pose reference.
+   - Put gate leaf meshes under a child object with pivot at Guide_Gate_Hinge_Pivot_delete_or_hide.
+   - Rotate around Y by about -82 degrees for the open state.
+
+Gameplay ideas:
+- Dogs can pass through the open gate.
+- Closed/open state can be part of yard navigation.
+- Use Guide_Interaction_Point_CloseGate for player/dog interaction placement.
+- Cats/squirrels can ignore the gate by jumping over, while dogs use the opening.
+
+OBJ limitation:
+- OBJ stores mesh/materials only.
+- It does not store Unity hierarchy, pivots, colliders, triggers, gate animation, latch state, or scripts.

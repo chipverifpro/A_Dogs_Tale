@@ -1,0 +1,63 @@
+Perched Seagull Bird OBJ - Unity Notes
+
+Files:
+- seagull_bird_perched.obj
+- seagull_bird_perched.mtl
+
+Design:
+- Static perched seagull with folded wings.
+- White body/head, grey wings, black wingtips, yellow beak with red spot.
+- Webbed pink feet gripping a simple perch/rail.
+- Includes subtle plumage marks, tail feathers, eye highlights, and optional squawk arcs.
+- Guide markers included for perch placement, dog approach, look target, collider, and flee trigger.
+
+Important named groups:
+- Simple_round_perch_branch_or_rail
+- White_oval_seagull_body
+- White_chest_belly_round
+- Short_white_neck
+- Round_white_seagull_head
+- Left_folded_grey_wing
+- Right_folded_grey_wing
+- *_black_wingtip_patch
+- Short_fanned_tail_feathers
+- Long_yellow_seagull_beak_upper
+- Lower_yellow_beak_small
+- Red_spot_on_lower_beak
+- Left_black_seagull_eye / Right_black_seagull_eye
+- Left_webbed_foot_gripping_perch
+- Right_webbed_foot_gripping_perch
+- Optional_squawk_sound_arc_*
+- Guide_Collider_Seagull_Body_delete_or_hide
+- Guide_Bird_Perch_Point
+- Guide_Bird_Look_Target
+- Guide_Dog_Sniff_Approach_Point
+- Guide_Alert_Flee_Trigger_delete_or_hide
+
+Unity setup:
+1. Import OBJ and MTL together.
+2. Create a prefab under something like:
+   Assets/A_Dogs_Tale/Resources/Prefabs/Animals/Birds/
+3. Delete or hide Guide_* groups before final visual use, or keep them on an editor/helper layer.
+4. Suggested colliders:
+   - Small CapsuleCollider around body/head.
+   - Optional trigger around Guide_Alert_Flee_Trigger_delete_or_hide.
+   - Optional small trigger at Guide_Bird_Perch_Point for perch assignment.
+5. If placing on an existing fence/tree/birdbath, hide or delete Simple_round_perch_branch_or_rail.
+
+Gameplay ideas for A Dog's Tale:
+- Bird perches on fence, birdbath, roof, branch, or trash can.
+- Dog approaches; seagull squawks and flies away.
+- Seagull can steal food/kibble or guard a nest.
+- Can react to dog bark, squeaky toy, sprinkler water, or Roomba noise.
+- Useful behaviors:
+  - BirdPerch
+  - BirdLookAtDog
+  - BirdAlarmCall
+  - BirdFlee
+  - ReactToSound
+  - ReactToDogApproach
+
+OBJ limitation:
+- OBJ stores mesh/materials only.
+- It does not store Unity colliders, triggers, scripts, bird AI, rigging, animations, flight paths, or state transitions.

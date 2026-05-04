@@ -151,7 +151,7 @@ namespace DogGame.Modules
         }
 
         // Backward-compatible overload for existing named-argument callers.
-        public void SetDesiredTargetLocation(UnityEngine.Vector3 targetLocation_world, WalkMode mode = WalkMode.Walk, bool requestPathfinding = true)
+        public void SetDesiredTargetLocation(UnityEngine.Vector3 targetLocation_world, WalkMode mode = WalkMode.None, bool requestPathfinding = true)
         {
             Vector3 targetLocation_map = worldObject != null
                 ? worldObject.WorldToMapPosition(targetLocation_world)
@@ -707,7 +707,7 @@ namespace DogGame.Modules
             worldObject.motionModule?.StopHorizontalMotion();
         }
 
-        public void SetDesiredTargetLocationMap(Vector3 targetLocation_map, WalkMode mode = WalkMode.Walk, bool requestPathfinding = true)
+        public void SetDesiredTargetLocationMap(Vector3 targetLocation_map, WalkMode mode = WalkMode.None, bool requestPathfinding = true)
         {
             SetDesiredTargetLocationMap(targetLocation_map, mode, requestPathfinding, allowDoors: true);
         }
@@ -729,7 +729,7 @@ namespace DogGame.Modules
         }
 
         // function name is redundant to above function, but this one includes WalkMode.  Which is preferable to use?
-        public void SetDesiredVelocity(Vector3 mapVelocity, WalkMode mode = WalkMode.Walk)
+        public void SetDesiredVelocity(Vector3 mapVelocity, WalkMode mode = WalkMode.None)
         {
             targetObject = null;
             targetLocationMap = null;

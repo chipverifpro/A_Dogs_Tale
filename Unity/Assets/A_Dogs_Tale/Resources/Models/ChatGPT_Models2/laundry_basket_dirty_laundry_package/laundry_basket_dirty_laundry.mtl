@@ -1,0 +1,82 @@
+# Materials for laundry_basket_dirty_laundry.obj
+newmtl basket_white_plastic
+Kd 0.86 0.86 0.80
+Ka 0.18 0.18 0.16
+Ks 0.35 0.35 0.30
+Ns 45
+
+newmtl basket_blue_rim
+Kd 0.12 0.36 0.86
+Ka 0.025 0.08 0.18
+Ks 0.35 0.35 0.42
+Ns 50
+
+newmtl cloth_mixed_shadow
+Kd 0.30 0.28 0.25
+Ka 0.06 0.055 0.05
+Ks 0.03 0.025 0.02
+Ns 5
+
+newmtl cloth_white_dirty
+Kd 0.74 0.70 0.62
+Ka 0.15 0.14 0.12
+Ks 0.05 0.045 0.035
+Ns 7
+
+newmtl cloth_grey
+Kd 0.45 0.45 0.43
+Ka 0.09 0.09 0.08
+Ks 0.04 0.04 0.035
+Ns 6
+
+newmtl cloth_blue
+Kd 0.08 0.22 0.70
+Ka 0.015 0.045 0.14
+Ks 0.07 0.07 0.10
+Ns 9
+
+newmtl cloth_red
+Kd 0.62 0.07 0.055
+Ka 0.12 0.014 0.010
+Ks 0.07 0.04 0.035
+Ns 8
+
+newmtl cloth_green
+Kd 0.12 0.42 0.20
+Ka 0.025 0.09 0.04
+Ks 0.05 0.05 0.035
+Ns 7
+
+newmtl cloth_dark
+Kd 0.05 0.045 0.04
+Ka 0.01 0.008 0.006
+Ks 0.02 0.018 0.015
+Ns 5
+
+newmtl scent_green
+Kd 0.20 0.85 0.22
+Ka 0.04 0.20 0.05
+Ks 0.08 0.16 0.08
+Ns 20
+
+newmtl shadow_soft
+Kd 0.05 0.045 0.04
+Ka 0.01 0.01 0.008
+Ks 0.00 0.00 0.00
+Ns 2
+d 0.35
+Tr 0.65
+
+newmtl guide_blue
+Kd 0.10 0.35 1.00
+Ka 0.02 0.08 0.22
+Ks 0.20 0.20 0.25
+Ns 25
+
+newmtl guide_green
+Kd 0.10 0.85 0.20
+Ka 0.02 0.18 0.04
+Ks 0.20 0.25 0.20
+Ns 25
+d 0.35
+Tr 0.65

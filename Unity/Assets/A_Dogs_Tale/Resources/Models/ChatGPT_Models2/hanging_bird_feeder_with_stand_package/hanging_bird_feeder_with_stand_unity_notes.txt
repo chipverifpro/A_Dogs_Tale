@@ -1,0 +1,73 @@
+Hanging Bird Feeder with Stand - Unity Notes
+
+Files:
+- hanging_bird_feeder_with_stand.obj
+- hanging_bird_feeder_with_stand.mtl
+
+Design:
+- Freestanding garden shepherd-hook stand.
+- Curved metal hook with hanging chain.
+- Hanging bird feeder with green roof, clear seed tube, seed column, seed tray, feeding ports, and perch rods.
+- Includes loose seed in tray and spilled seed on the ground.
+- Guide markers for bird landing, feeding, scent/seed area, hanging pivot, colliders, and dog sniff point.
+
+Important named groups:
+- Round_weighted_ground_base
+- Vertical_shepherd_hook_stand_pole
+- Ground_stabilizer_foot_*
+- Curved_shepherd_hook_top_segment_*
+- Hanging_chain_link_*
+- Green_conical_feeder_roof_cap
+- Top_small_hanging_loop
+- Clear_seed_reservoir_tube
+- Visible_seed_column_inside
+- Green_bottom_seed_tray
+- Raised_tray_outer_lip
+- Round_seed_port_*
+- Small_bird_perch_rod_*
+- Seed_piece_in_tray_*
+- Spilled_seed_on_ground_*
+- Clear_plastic_vertical_highlight_*
+- Guide_Collider_Stand_Pole_delete_or_hide
+- Guide_Collider_Feeder_delete_or_hide
+- Guide_Bird_Landing_Perch_Point
+- Guide_Bird_Feeding_Point
+- Guide_Dog_Sniff_SpilledSeed_Point
+- Guide_Scent_Source_Seed_Area_delete_or_hide
+- Guide_Hanging_Pivot_Point
+
+Unity setup:
+1. Import OBJ and MTL together.
+2. Create a prefab under something like:
+   Assets/A_Dogs_Tale/Resources/Prefabs/Props/Garden/
+3. Delete or hide Guide_* groups before final visual use, or keep them on an editor/helper layer.
+4. Unity may import clear plastic as opaque. If so:
+   - Set clear_plastic and clear_plastic_highlight materials to Transparent.
+   - Use alpha around 0.30-0.55.
+   - Increase Smoothness/Specular.
+5. Suggested colliders:
+   - Thin CapsuleCollider for stand pole.
+   - Small BoxCollider/SphereCollider around feeder body.
+   - Trigger near Guide_Bird_Landing_Perch_Point and Guide_Bird_Feeding_Point.
+   - Trigger around Guide_Scent_Source_Seed_Area_delete_or_hide for dog sniff/spilled seed interactions.
+6. If you want the feeder to sway:
+   - Parent the feeder and chain under a child object pivoting near Guide_Hanging_Pivot_Point.
+   - Add a simple pendulum/spring animation in Unity.
+
+Gameplay ideas for A Dog's Tale:
+- Birds land, feed, then flee when dog approaches.
+- Dogs sniff spilled seed, chase birds, or knock the stand.
+- Squirrels can climb/raid it.
+- Roomba can bump the stand and spill seed.
+- Can pair with seagull, duck, squirrel, bird nest, birdbath, and sprinkler props.
+- Useful behaviors:
+  - BirdLandAtFeeder
+  - BirdFeed
+  - BirdFleeFromDog
+  - DogSniffSeed
+  - SquirrelRaidFeeder
+  - ReactToBirdMovement
+
+OBJ limitation:
+- OBJ stores mesh/materials only.
+- It does not store Unity colliders, triggers, scripts, bird AI, feeder swing physics, seed particle effects, or behavior state.

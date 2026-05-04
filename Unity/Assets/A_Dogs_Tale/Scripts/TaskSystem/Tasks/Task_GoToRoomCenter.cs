@@ -14,7 +14,7 @@ namespace DogGame.Tasks
         private Vector3 roomCenterMap;
         private string? startFailure;
 
-        public Task_GoToRoomCenter(WalkMode walkMode = WalkMode.Walk)
+        public Task_GoToRoomCenter(WalkMode walkMode = WalkMode.None)
         {
             this.walkMode = walkMode;
         }

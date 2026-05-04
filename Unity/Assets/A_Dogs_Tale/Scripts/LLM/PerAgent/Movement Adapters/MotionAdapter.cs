@@ -28,7 +28,7 @@ namespace DogGame.Tasks
         {
             worldObject.agentMovementModule.SetDesiredTargetLocation(
                 worldPosition,
-                mode: WalkMode.Walk,
+                mode: WalkMode.None,
                 requestPathfinding: true);
             return true;
         }

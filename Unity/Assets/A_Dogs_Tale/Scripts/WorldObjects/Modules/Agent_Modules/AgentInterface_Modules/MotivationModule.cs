@@ -87,9 +87,7 @@ namespace DogGame.AI
                     if (worldObject == null)
                         return string.Empty;
 
-                    return worldObject.agentModule != null && !string.IsNullOrEmpty(worldObject.agentModule.agentName)
-                        ? worldObject.agentModule.agentName
-                        : worldObject.DisplayName;
+                    return worldObject.DisplayName;
                 }
             }
         }

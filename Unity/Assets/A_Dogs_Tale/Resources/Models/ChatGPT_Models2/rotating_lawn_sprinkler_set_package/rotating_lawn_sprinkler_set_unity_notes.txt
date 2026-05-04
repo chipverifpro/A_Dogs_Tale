@@ -1,0 +1,76 @@
+Rotating Lawn Sprinkler Set - Unity Notes
+
+Files:
+- rotating_lawn_sprinkler_with_water_arc.obj
+- rotating_lawn_sprinkler_no_water.obj
+- rotating_lawn_sprinkler_set.mtl
+
+Design:
+- Two matching sprinkler state models:
+  1. Rotating lawn sprinkler with visible arcing water spray.
+  2. Same sprinkler without water for idle/off state.
+- Green sled-style sprinkler base.
+- Rear hose connector and hose stub.
+- Central rotating riser/head.
+- Front spray nozzle, impact flapper, arc adjustment pins.
+- Water version includes multiple arcing streams, droplets, ground splash, and wet hazard guide area.
+
+Shared important groups:
+- Green_rectangular_sled_base
+- Black_rubber_front_foot
+- Black_rubber_rear_foot
+- Left_metal_sled_runner
+- Right_metal_sled_runner
+- Rear_hose_connector_nozzle
+- Short_black_hose_stub
+- Central_rotating_riser_pipe
+- Round_rotation_joint_disc
+- Rotating_sprinkler_head_bar
+- Central_rotating_head_hub
+- Front_spray_nozzle_tip
+- Nozzle_dark_hole
+- Tiny_impact_flapper_*
+- Arc_adjustment_pin_*
+- Guide_Collider_Sprinkler_Base_delete_or_hide
+- Guide_Interaction_Point_TurnSprinklerOnOff
+- Guide_Rotation_Pivot_Point
+- Guide_Water_Emission_Point
+
+Water-version specific groups:
+- Sprinkler_water_arc_*_stream_segment_*
+- Sprinkler_water_arc_*_droplet_*
+- Transparent_wet_splash_area_on_ground
+- Ground_splash_droplet_*
+- Guide_Wet_Hazard_Arc_Area_delete_or_hide
+
+Unity setup:
+1. Import both OBJ files and the shared MTL together.
+2. Create prefabs under something like:
+   Assets/A_Dogs_Tale/Resources/Prefabs/Props/Garden/
+3. Delete or hide Guide_* groups before final visual use, or keep them on an editor/helper layer.
+4. Use the dry model for Off/Idle.
+5. Use the water model for On/Active, or keep both as children and toggle visibility.
+6. Unity may import water materials as opaque. If so:
+   - Set water materials to Transparent.
+   - Use alpha around 0.35-0.55.
+   - Increase Smoothness/Specular.
+7. If animating later:
+   - Rotate the sprinkler head around Guide_Rotation_Pivot_Point.
+   - Spawn water particles from Guide_Water_Emission_Point.
+   - Use the OBJ water arc as a cheap static visual placeholder.
+
+Suggested colliders:
+- Small BoxCollider for base.
+- Trigger over Guide_Wet_Hazard_Arc_Area_delete_or_hide while active.
+- Optional trigger at Guide_Interaction_Point_TurnSprinklerOnOff.
+
+Gameplay ideas for A Dog's Tale:
+- Dogs may avoid, chase, drink from, or play in the sprinkler.
+- Creates splash/noise events.
+- Can make wet pawprints or dilute scent trails.
+- Can scare cats/squirrels or flush frogs/birds from hiding.
+- Puzzle use: turn sprinkler on to block a path, clean mud, reveal wet tracks, or distract a Roomba.
+
+OBJ limitation:
+- OBJ stores mesh/materials only.
+- It does not store Unity colliders, triggers, particles, water shaders, scripts, rotation animation, sound, or wet/scent behavior.
