@@ -8561,7 +8561,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ba2cf7359fae44b0a9386ea1703def7b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.AgentModule
-  agentName: Unnamed Agent
   initialDecisionType: 3
   currentDecisionModule: {fileID: 0}
 --- !u!114 &84025912
@@ -10825,8 +10824,8 @@ MonoBehaviour:
   idleClip: 0
   walkClip: 1
   jogClip: 2
-  currentAnimation: 0
-  cl: {fileID: 0}
+  animationCategory: 0
+  animationClip: {fileID: 0}
   walkSpeed: 0.25
   jogSpeed: 3.25
 --- !u!114 &117067023
@@ -10905,7 +10904,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ba2cf7359fae44b0a9386ea1703def7b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.AgentModule
-  agentName: Unnamed Agent
   initialDecisionType: 3
   currentDecisionModule: {fileID: 0}
 --- !u!114 &117067026
@@ -22237,8 +22235,8 @@ MonoBehaviour:
   idleClip: 0
   walkClip: 1
   jogClip: 2
-  currentAnimation: 0
-  cl: {fileID: 0}
+  animationCategory: 0
+  animationClip: {fileID: 0}
   walkSpeed: 0.25
   jogSpeed: 3.25
 --- !u!114 &234244608
@@ -22317,7 +22315,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ba2cf7359fae44b0a9386ea1703def7b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.AgentModule
-  agentName: Unnamed Agent
   initialDecisionType: 3
   currentDecisionModule: {fileID: 0}
 --- !u!114 &234244611
@@ -23940,7 +23937,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ba2cf7359fae44b0a9386ea1703def7b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.AgentModule
-  agentName: Seagull
   initialDecisionType: 3
   currentDecisionModule: {fileID: 0}
 --- !u!114 &259236347
@@ -24042,7 +24038,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.WandererDecisionModule
   navigationSource: 0
   dwellSecondsAtDestination: 2
-  wanderWalkMode: 1
 --- !u!114 &259236352
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -25613,7 +25608,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ba2cf7359fae44b0a9386ea1703def7b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.AgentModule
-  agentName: Unnamed Agent
   initialDecisionType: 3
   currentDecisionModule: {fileID: 0}
 --- !u!114 &276449238
@@ -25806,8 +25800,8 @@ MonoBehaviour:
   idleClip: 0
   walkClip: 1
   jogClip: 3
-  currentAnimation: 0
-  cl: {fileID: 0}
+  animationCategory: 0
+  animationClip: {fileID: 0}
   walkSpeed: 0.25
   jogSpeed: 3.25
 --- !u!43 &277495152
@@ -35314,7 +35308,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ba2cf7359fae44b0a9386ea1703def7b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.AgentModule
-  agentName: Squirrel Upright
   initialDecisionType: 3
   currentDecisionModule: {fileID: 0}
 --- !u!114 &400091584
@@ -35416,7 +35409,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.WandererDecisionModule
   navigationSource: 0
   dwellSecondsAtDestination: 2
-  wanderWalkMode: 1
 --- !u!114 &400091589
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -36549,8 +36541,8 @@ MonoBehaviour:
   idleClip: 0
   walkClip: 1
   jogClip: 2
-  currentAnimation: 0
-  cl: {fileID: 0}
+  animationCategory: 0
+  animationClip: {fileID: 0}
   walkSpeed: 0.25
   jogSpeed: 3.25
 --- !u!114 &419386534
@@ -36629,7 +36621,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ba2cf7359fae44b0a9386ea1703def7b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.AgentModule
-  agentName: Unnamed Agent
   initialDecisionType: 3
   currentDecisionModule: {fileID: 0}
 --- !u!114 &419386537
@@ -37546,8 +37537,8 @@ MonoBehaviour:
   idleClip: 0
   walkClip: 1
   jogClip: 2
-  currentAnimation: 0
-  cl: {fileID: 0}
+  animationCategory: 0
+  animationClip: {fileID: 0}
   walkSpeed: 0.25
   jogSpeed: 3.25
 --- !u!114 &422766146
@@ -37626,7 +37617,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ba2cf7359fae44b0a9386ea1703def7b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.AgentModule
-  agentName: Unnamed Agent
   initialDecisionType: 3
   currentDecisionModule: {fileID: 0}
 --- !u!114 &422766149
@@ -49730,7 +49720,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ba2cf7359fae44b0a9386ea1703def7b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.AgentModule
-  agentName: Unnamed Agent
   initialDecisionType: 3
   currentDecisionModule: {fileID: 0}
 --- !u!114 &560307292
@@ -49923,8 +49912,8 @@ MonoBehaviour:
   idleClip: 0
   walkClip: 2
   jogClip: 3
-  currentAnimation: 0
-  cl: {fileID: 0}
+  animationCategory: 0
+  animationClip: {fileID: 0}
   walkSpeed: 0.25
   jogSpeed: 3.25
 --- !u!43 &562344813
@@ -52211,6 +52200,26 @@ PrefabInstance:
       propertyPath: m_Name
       value: PF_duckling (0)
       objectReference: {fileID: 0}
+    - target: {fileID: 2424051575705977689, guid: 72580a8414a664e53846fc90aa8283a6,
+        type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2424051575705977689, guid: 72580a8414a664e53846fc90aa8283a6,
+        type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2424051575705977689, guid: 72580a8414a664e53846fc90aa8283a6,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 180
+      objectReference: {fileID: 0}
+    - target: {fileID: 7583054104857252313, guid: 72580a8414a664e53846fc90aa8283a6,
+        type: 3}
+      propertyPath: followTarget
+      value: 
+      objectReference: {fileID: 1988421401}
     - target: {fileID: 9202322396196141823, guid: 72580a8414a664e53846fc90aa8283a6,
         type: 3}
       propertyPath: m_LocalPosition.x
@@ -62487,8 +62496,8 @@ MonoBehaviour:
   idleClip: 1
   walkClip: 2
   jogClip: 2
-  currentAnimation: 0
-  cl: {fileID: 0}
+  animationCategory: 0
+  animationClip: {fileID: 0}
   walkSpeed: 0.25
   jogSpeed: 3.25
 --- !u!114 &665028400
@@ -62567,7 +62576,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ba2cf7359fae44b0a9386ea1703def7b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.AgentModule
-  agentName: Corgi
   initialDecisionType: 3
   currentDecisionModule: {fileID: 0}
 --- !u!114 &665028403
@@ -90348,7 +90356,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ba2cf7359fae44b0a9386ea1703def7b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.AgentModule
-  agentName: Roomba
   initialDecisionType: 3
   currentDecisionModule: {fileID: 0}
 --- !u!114 &938581797
@@ -90450,7 +90457,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.WandererDecisionModule
   navigationSource: 0
   dwellSecondsAtDestination: 2
-  wanderWalkMode: 1
 --- !u!114 &938581802
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -100808,7 +100814,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ba2cf7359fae44b0a9386ea1703def7b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.AgentModule
-  agentName: Unnamed Agent
   initialDecisionType: 3
   currentDecisionModule: {fileID: 0}
 --- !u!114 &1062105381
@@ -101001,8 +101006,8 @@ MonoBehaviour:
   idleClip: 0
   walkClip: 1
   jogClip: 3
-  currentAnimation: 0
-  cl: {fileID: 0}
+  animationCategory: 0
+  animationClip: {fileID: 0}
   walkSpeed: 0.25
   jogSpeed: 3.25
 --- !u!43 &1062238221
@@ -102169,8 +102174,8 @@ MonoBehaviour:
   idleClip: 0
   walkClip: 1
   jogClip: 2
-  currentAnimation: 0
-  cl: {fileID: 0}
+  animationCategory: 0
+  animationClip: {fileID: 0}
   walkSpeed: 0.25
   jogSpeed: 3.25
 --- !u!114 &1077302839
@@ -102274,7 +102279,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ba2cf7359fae44b0a9386ea1703def7b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.AgentModule
-  agentName: Chicken
   initialDecisionType: 3
   currentDecisionModule: {fileID: 0}
 --- !u!114 &1077302843
@@ -110292,6 +110296,46 @@ PrefabInstance:
       propertyPath: m_Name
       value: PF_duckling (2)
       objectReference: {fileID: 0}
+    - target: {fileID: 2424051575705977689, guid: 72580a8414a664e53846fc90aa8283a6,
+        type: 3}
+      propertyPath: m_LocalScale.x
+      value: 0.25
+      objectReference: {fileID: 0}
+    - target: {fileID: 2424051575705977689, guid: 72580a8414a664e53846fc90aa8283a6,
+        type: 3}
+      propertyPath: m_LocalScale.y
+      value: 0.25
+      objectReference: {fileID: 0}
+    - target: {fileID: 2424051575705977689, guid: 72580a8414a664e53846fc90aa8283a6,
+        type: 3}
+      propertyPath: m_LocalScale.z
+      value: 0.25
+      objectReference: {fileID: 0}
+    - target: {fileID: 2424051575705977689, guid: 72580a8414a664e53846fc90aa8283a6,
+        type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2424051575705977689, guid: 72580a8414a664e53846fc90aa8283a6,
+        type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2424051575705977689, guid: 72580a8414a664e53846fc90aa8283a6,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 180
+      objectReference: {fileID: 0}
+    - target: {fileID: 2424051575705977689, guid: 72580a8414a664e53846fc90aa8283a6,
+        type: 3}
+      propertyPath: m_ConstrainProportionsScale
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7583054104857252313, guid: 72580a8414a664e53846fc90aa8283a6,
+        type: 3}
+      propertyPath: followTarget
+      value: 
+      objectReference: {fileID: 1988421401}
     - target: {fileID: 9202322396196141823, guid: 72580a8414a664e53846fc90aa8283a6,
         type: 3}
       propertyPath: m_LocalPosition.x
@@ -114249,7 +114293,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ba2cf7359fae44b0a9386ea1703def7b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.AgentModule
-  agentName: Quadcopter
   initialDecisionType: 3
   currentDecisionModule: {fileID: 0}
 --- !u!114 &1203641632
@@ -114351,7 +114394,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.WandererDecisionModule
   navigationSource: 0
   dwellSecondsAtDestination: 2
-  wanderWalkMode: 2
 --- !u!114 &1203641637
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -117554,6 +117596,12 @@ Mesh:
       - serializedVersion: 1
         m_IndexStart: 0
         m_IndexCount: 0
+--- !u!1 &1242070028 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 4806928933890981470, guid: 04c5ea4f4815441fba800a01154b58de,
+    type: 3}
+  m_PrefabInstance: {fileID: 1988421400}
+  m_PrefabAsset: {fileID: 0}
 --- !u!43 &1245003273
 Mesh:
   m_ObjectHideFlags: 0
@@ -118556,7 +118604,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ba2cf7359fae44b0a9386ea1703def7b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.AgentModule
-  agentName: Flying Crate
   initialDecisionType: 7
   currentDecisionModule: {fileID: 1253610046}
 --- !u!114 &1253610040
@@ -118692,7 +118739,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.WandererDecisionModule
   navigationSource: 0
   dwellSecondsAtDestination: 2
-  wanderWalkMode: 1
 --- !u!114 &1253610051
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -118961,8 +119007,8 @@ MonoBehaviour:
   idleClip: 0
   walkClip: 1
   jogClip: 2
-  currentAnimation: 0
-  cl: {fileID: 0}
+  animationCategory: 0
+  animationClip: {fileID: 0}
   walkSpeed: 0.25
   jogSpeed: 3.25
 --- !u!43 &1254647893
@@ -129030,6 +129076,46 @@ PrefabInstance:
       propertyPath: m_Name
       value: PF_duckling (1)
       objectReference: {fileID: 0}
+    - target: {fileID: 2424051575705977689, guid: 72580a8414a664e53846fc90aa8283a6,
+        type: 3}
+      propertyPath: m_LocalScale.x
+      value: 0.25
+      objectReference: {fileID: 0}
+    - target: {fileID: 2424051575705977689, guid: 72580a8414a664e53846fc90aa8283a6,
+        type: 3}
+      propertyPath: m_LocalScale.y
+      value: 0.25
+      objectReference: {fileID: 0}
+    - target: {fileID: 2424051575705977689, guid: 72580a8414a664e53846fc90aa8283a6,
+        type: 3}
+      propertyPath: m_LocalScale.z
+      value: 0.25
+      objectReference: {fileID: 0}
+    - target: {fileID: 2424051575705977689, guid: 72580a8414a664e53846fc90aa8283a6,
+        type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2424051575705977689, guid: 72580a8414a664e53846fc90aa8283a6,
+        type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2424051575705977689, guid: 72580a8414a664e53846fc90aa8283a6,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 180
+      objectReference: {fileID: 0}
+    - target: {fileID: 2424051575705977689, guid: 72580a8414a664e53846fc90aa8283a6,
+        type: 3}
+      propertyPath: m_ConstrainProportionsScale
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7583054104857252313, guid: 72580a8414a664e53846fc90aa8283a6,
+        type: 3}
+      propertyPath: followTarget
+      value: 
+      objectReference: {fileID: 1988421401}
     - target: {fileID: 9202322396196141823, guid: 72580a8414a664e53846fc90aa8283a6,
         type: 3}
       propertyPath: m_LocalPosition.x
@@ -158077,7 +158163,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ba2cf7359fae44b0a9386ea1703def7b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.AgentModule
-  agentName: Robot Toy
   initialDecisionType: 3
   currentDecisionModule: {fileID: 0}
 --- !u!114 &1649255264
@@ -158179,7 +158264,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.WandererDecisionModule
   navigationSource: 0
   dwellSecondsAtDestination: 2
-  wanderWalkMode: 1
 --- !u!114 &1649255269
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -158923,7 +159007,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ba2cf7359fae44b0a9386ea1703def7b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.AgentModule
-  agentName: Agent Cur
   initialDecisionType: 2
   currentDecisionModule: {fileID: 0}
 --- !u!114 &1651296781
@@ -159076,7 +159159,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.WandererDecisionModule
   navigationSource: 0
   dwellSecondsAtDestination: 2
-  wanderWalkMode: 1
 --- !u!114 &1651296789
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -159597,8 +159679,8 @@ MonoBehaviour:
   idleClip: 1
   walkClip: 2
   jogClip: 2
-  currentAnimation: 0
-  cl: {fileID: 0}
+  animationCategory: 0
+  animationClip: {fileID: 0}
   walkSpeed: 0.25
   jogSpeed: 3.25
 --- !u!114 &1651296820
@@ -159702,7 +159784,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.ExploreDecisionModule
   navigationSource: 0
-  exploreWalkMode: 1
   visitRoomCenterBeforeBacktracking: 1
   useLuaExploreScript: 0
   debugLuaExplore: 1
@@ -181326,8 +181407,8 @@ MonoBehaviour:
   idleClip: 0
   walkClip: 1
   jogClip: 2
-  currentAnimation: 0
-  cl: {fileID: 0}
+  animationCategory: 0
+  animationClip: {fileID: 0}
   walkSpeed: 0.25
   jogSpeed: 3.25
 --- !u!114 &1887304285
@@ -181406,7 +181487,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ba2cf7359fae44b0a9386ea1703def7b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.AgentModule
-  agentName: Unnamed Agent
   initialDecisionType: 3
   currentDecisionModule: {fileID: 0}
 --- !u!114 &1887304288
@@ -183904,7 +183984,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ba2cf7359fae44b0a9386ea1703def7b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.AgentModule
-  agentName: Unnamed Agent
   initialDecisionType: 3
   currentDecisionModule: {fileID: 0}
 --- !u!114 &1921263740
@@ -184097,8 +184176,8 @@ MonoBehaviour:
   idleClip: 0
   walkClip: 2
   jogClip: 3
-  currentAnimation: 0
-  cl: {fileID: 0}
+  animationCategory: 0
+  animationClip: {fileID: 0}
   walkSpeed: 0.25
   jogSpeed: 3.25
 --- !u!1 &1921388083
@@ -184454,8 +184533,8 @@ MonoBehaviour:
   idleClip: 0
   walkClip: 1
   jogClip: 2
-  currentAnimation: 0
-  cl: {fileID: 0}
+  animationCategory: 0
+  animationClip: {fileID: 0}
   walkSpeed: 0.25
   jogSpeed: 3.25
 --- !u!114 &1923018962
@@ -184534,7 +184613,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ba2cf7359fae44b0a9386ea1703def7b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.AgentModule
-  agentName: Unnamed Agent
   initialDecisionType: 3
   currentDecisionModule: {fileID: 0}
 --- !u!114 &1923018965
@@ -188414,8 +188492,8 @@ MonoBehaviour:
   idleClip: 1
   walkClip: 2
   jogClip: 2
-  currentAnimation: 0
-  cl: {fileID: 0}
+  animationCategory: 0
+  animationClip: {fileID: 0}
   walkSpeed: 0.25
   jogSpeed: 3.25
 --- !u!114 &1940263625
@@ -188494,7 +188572,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ba2cf7359fae44b0a9386ea1703def7b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.AgentModule
-  agentName: Unnamed Agent
   initialDecisionType: 3
   currentDecisionModule: {fileID: 0}
 --- !u!114 &1940263628
@@ -188880,7 +188957,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ba2cf7359fae44b0a9386ea1703def7b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.AgentModule
-  agentName: Squirrel Quadruped
   initialDecisionType: 3
   currentDecisionModule: {fileID: 0}
 --- !u!114 &1941934828
@@ -188982,7 +189058,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.WandererDecisionModule
   navigationSource: 0
   dwellSecondsAtDestination: 2
-  wanderWalkMode: 1
 --- !u!114 &1941934833
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -190951,7 +191026,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ba2cf7359fae44b0a9386ea1703def7b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.AgentModule
-  agentName: Unnamed Agent
   initialDecisionType: 3
   currentDecisionModule: {fileID: 0}
 --- !u!114 &1960865795
@@ -191144,8 +191218,8 @@ MonoBehaviour:
   idleClip: 0
   walkClip: 2
   jogClip: 3
-  currentAnimation: 0
-  cl: {fileID: 0}
+  animationCategory: 0
+  animationClip: {fileID: 0}
   walkSpeed: 0.25
   jogSpeed: 3.25
 --- !u!43 &1961581714
@@ -193148,15 +193222,51 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 6512538064217326798, guid: 04c5ea4f4815441fba800a01154b58de,
+        type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6512538064217326798, guid: 04c5ea4f4815441fba800a01154b58de,
+        type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6512538064217326798, guid: 04c5ea4f4815441fba800a01154b58de,
+        type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6512538064217326798, guid: 04c5ea4f4815441fba800a01154b58de,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 180
+      objectReference: {fileID: 0}
     - target: {fileID: 6790310037382611879, guid: 04c5ea4f4815441fba800a01154b58de,
         type: 3}
       propertyPath: initialDecisionType
-      value: 7
+      value: 3
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 4806928933890981470, guid: 04c5ea4f4815441fba800a01154b58de,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1988421419}
+    - targetCorrespondingSourceObject: {fileID: 4806928933890981470, guid: 04c5ea4f4815441fba800a01154b58de,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1988421418}
+    - targetCorrespondingSourceObject: {fileID: 4806928933890981470, guid: 04c5ea4f4815441fba800a01154b58de,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1988421417}
+    - targetCorrespondingSourceObject: {fileID: 4806928933890981470, guid: 04c5ea4f4815441fba800a01154b58de,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1988421416}
   m_SourcePrefab: {fileID: 100100000, guid: 04c5ea4f4815441fba800a01154b58de, type: 3}
 --- !u!114 &1988421401 stripped
 MonoBehaviour:
@@ -193164,7 +193274,7 @@ MonoBehaviour:
     type: 3}
   m_PrefabInstance: {fileID: 1988421400}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
+  m_GameObject: {fileID: 1242070028}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b112db3959c164550975dd26677f8e8e, type: 3}
@@ -193176,6 +193286,74 @@ Transform:
     type: 3}
   m_PrefabInstance: {fileID: 1988421400}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &1988421416
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1242070028}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0477df26e09ec48cfa0792a308d4ce4a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.FollowerDecisionModule
+  navigationSource: 0
+  followTarget: {fileID: 0}
+  followDistanceMeters: 0.5
+  autoFollowPackLeaderOnStart: 1
+  enableDebugLogging: 0
+--- !u!114 &1988421417
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1242070028}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 40e29a7f84b4b443a858e5012f88be27, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.PlayerDecisionModule
+  navigationSource: 0
+  manualTurnDegreesPerSecond: 240
+  cameraForMovement: {fileID: 0}
+  cameraModeSwitcher: {fileID: 0}
+  currentDestinationObject: {fileID: 0}
+  taskController: {fileID: 0}
+  llmConfig: {fileID: 0}
+  llmWorldState: {fileID: 0}
+  llmFacade: {fileID: 0}
+  taskRunnerComponent: {fileID: 0}
+--- !u!114 &1988421418
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1242070028}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6e55b4afbe2cd45a0925b2aeb372034c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DogGame.LLM.Agent.LLMAgentFacade
+  config: {fileID: 0}
+  worldState: {fileID: 0}
+  llmServiceBehaviour: {fileID: 0}
+--- !u!114 &1988421419
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1242070028}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 125bcf5342852454cb41e5e24582147a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DogGame.LLM.TaskController
+  agentId: player
+  clearQueueOnNewPlan: 1
 --- !u!43 &1989621547
 Mesh:
   m_ObjectHideFlags: 0
@@ -200433,7 +200611,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ba2cf7359fae44b0a9386ea1703def7b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.AgentModule
-  agentName: Unnamed Agent
   initialDecisionType: 3
   currentDecisionModule: {fileID: 0}
 --- !u!114 &2054762432
@@ -200626,8 +200803,8 @@ MonoBehaviour:
   idleClip: 1
   walkClip: 0
   jogClip: 0
-  currentAnimation: 0
-  cl: {fileID: 0}
+  animationCategory: 0
+  animationClip: {fileID: 0}
   walkSpeed: 0.25
   jogSpeed: 3.25
 --- !u!43 &2055071352
@@ -201443,6 +201620,46 @@ PrefabInstance:
       propertyPath: m_Name
       value: PF_duckling (3)
       objectReference: {fileID: 0}
+    - target: {fileID: 2424051575705977689, guid: 72580a8414a664e53846fc90aa8283a6,
+        type: 3}
+      propertyPath: m_LocalScale.x
+      value: 0.25
+      objectReference: {fileID: 0}
+    - target: {fileID: 2424051575705977689, guid: 72580a8414a664e53846fc90aa8283a6,
+        type: 3}
+      propertyPath: m_LocalScale.y
+      value: 0.25
+      objectReference: {fileID: 0}
+    - target: {fileID: 2424051575705977689, guid: 72580a8414a664e53846fc90aa8283a6,
+        type: 3}
+      propertyPath: m_LocalScale.z
+      value: 0.25
+      objectReference: {fileID: 0}
+    - target: {fileID: 2424051575705977689, guid: 72580a8414a664e53846fc90aa8283a6,
+        type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2424051575705977689, guid: 72580a8414a664e53846fc90aa8283a6,
+        type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2424051575705977689, guid: 72580a8414a664e53846fc90aa8283a6,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 180
+      objectReference: {fileID: 0}
+    - target: {fileID: 2424051575705977689, guid: 72580a8414a664e53846fc90aa8283a6,
+        type: 3}
+      propertyPath: m_ConstrainProportionsScale
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7583054104857252313, guid: 72580a8414a664e53846fc90aa8283a6,
+        type: 3}
+      propertyPath: followTarget
+      value: 
+      objectReference: {fileID: 1988421401}
     - target: {fileID: 9202322396196141823, guid: 72580a8414a664e53846fc90aa8283a6,
         type: 3}
       propertyPath: m_LocalPosition.x
@@ -205594,7 +205811,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ba2cf7359fae44b0a9386ea1703def7b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.AgentModule
-  agentName: Chihuahua
   initialDecisionType: 3
   currentDecisionModule: {fileID: 2108676846}
 --- !u!114 &2108676842
@@ -205696,7 +205912,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.WandererDecisionModule
   navigationSource: 0
   dwellSecondsAtDestination: 2
-  wanderWalkMode: 1
 --- !u!114 &2108676847
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -205984,8 +206199,8 @@ MonoBehaviour:
   idleClip: 1
   walkClip: 2
   jogClip: 2
-  currentAnimation: 0
-  cl: {fileID: 0}
+  animationCategory: 0
+  animationClip: {fileID: 0}
   walkSpeed: 0.25
   jogSpeed: 3.25
 --- !u!1 &2109093001
@@ -214052,7 +214267,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ba2cf7359fae44b0a9386ea1703def7b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.AgentModule
-  agentName: German Shepherd
   initialDecisionType: 1
   currentDecisionModule: {fileID: 6544990386685219152}
 --- !u!114 &6544990386685219144
@@ -214205,7 +214419,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.WandererDecisionModule
   navigationSource: 0
   dwellSecondsAtDestination: 2
-  wanderWalkMode: 1
 --- !u!114 &6544990386685219152
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -214311,8 +214524,8 @@ MonoBehaviour:
   idleClip: 1
   walkClip: 2
   jogClip: 2
-  currentAnimation: 0
-  cl: {fileID: 0}
+  animationCategory: 0
+  animationClip: {fileID: 0}
   walkSpeed: 0.25
   jogSpeed: 3.25
 --- !u!65 &6544990386685219161
@@ -214529,7 +214742,7 @@ MonoBehaviour:
   normalScentSource:
     agentId: -1
     agent: {fileID: 0}
-    category: 1
+    category: 2
     scentName: GermanShepherd
     categoryColor: {r: 0, g: 0, b: 0, a: 0}
     sourceAirColor: {r: 0, g: 0, b: 0, a: 0}
@@ -214797,7 +215010,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.ExploreDecisionModule
   navigationSource: 0
-  exploreWalkMode: 1
   visitRoomCenterBeforeBacktracking: 1
   useLuaExploreScript: 1
   debugLuaExplore: 1

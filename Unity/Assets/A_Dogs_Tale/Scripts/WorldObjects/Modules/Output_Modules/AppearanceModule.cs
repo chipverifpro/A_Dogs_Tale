@@ -286,8 +286,10 @@ namespace DogGame.Modules
         public int jogClip = 2;
 
         [Header("Current clip")]
-        public AnimationCategory currentAnimation = AnimationCategory.idle;
-        public AnimationClip cl;
+        [Tooltip("Animation Category")]
+        public AnimationCategory animationCategory = AnimationCategory.idle;
+        [Tooltip("clip[current clip index]")]
+        public AnimationClip animationClip;
         //public float currentSpeed;
 
         [Header("Thresholds for walk/run detection")]
@@ -381,15 +383,15 @@ namespace DogGame.Modules
             //Debug.Log((transform.position - prev_pos3_world).sqrMagnitude);
             if (moveSqr > jogSqr)
             {
-                if (currentAnimation != AnimationCategory.run)
+                if (animationCategory != AnimationCategory.run)
                 {
-                    currentAnimation = AnimationCategory.run;
-                    cl = myClips[jogClip];  // running
+                    animationCategory = AnimationCategory.run;
+                    animationClip = myClips[jogClip];  // running
                     //Debug.Log($"{name} Jog:");
                     if (animationVersion == AnimationVersion.dog)
                         animator.SetInteger("AnimationID",jogClip);
                     else if (animationVersion == AnimationVersion.human)
-                        animator.CrossFadeInFixedTime(cl.name, 0.25f, 0, Random.value * cl.length);
+                        animator.CrossFadeInFixedTime(animationClip.name, 0.25f, 0, Random.value * animationClip.length);
                     else if (animationVersion == AnimationVersion.animal)
                     {
                         animator.SetFloat("Vert", 1f);
@@ -400,15 +402,15 @@ namespace DogGame.Modules
             }
             else if (moveSqr > walkSqr)
             {
-                if (currentAnimation != AnimationCategory.walk)
+                if (animationCategory != AnimationCategory.walk)
                 {
-                    currentAnimation = AnimationCategory.walk;
-                    cl = myClips[walkClip];  // walking
+                    animationCategory = AnimationCategory.walk;
+                    animationClip = myClips[walkClip];  // walking
                     //Debug.Log($"{name} Walk:");
                     if (animationVersion == AnimationVersion.dog)
                         animator.SetInteger("AnimationID",walkClip);
                     else if (animationVersion == AnimationVersion.human)
-                        animator.CrossFadeInFixedTime(cl.name, 0.25f, 0, Random.value * cl.length);
+                        animator.CrossFadeInFixedTime(animationClip.name, 0.25f, 0, Random.value * animationClip.length);
                     else if (animationVersion == AnimationVersion.animal)
                     {
                         animator.SetFloat("Vert", 1f);
@@ -418,15 +420,15 @@ namespace DogGame.Modules
             }
             else
             {
-                if (currentAnimation != AnimationCategory.idle)
+                if (animationCategory != AnimationCategory.idle)
                 {
-                    currentAnimation = AnimationCategory.idle;
-                    cl = myClips[idleClip];  // standing still
+                    animationCategory = AnimationCategory.idle;
+                    animationClip = myClips[idleClip];  // standing still
                     //Debug.Log($"{name} Idle:");
                     if (animationVersion == AnimationVersion.dog)
                         animator.SetInteger("AnimationID",idleClip);
                     else if (animationVersion == AnimationVersion.human)
-                        animator.CrossFadeInFixedTime(cl.name, 1.0f, 0, Random.value * cl.length);
+                        animator.CrossFadeInFixedTime(animationClip.name, 1.0f, 0, Random.value * animationClip.length);
                     else if (animationVersion == AnimationVersion.animal)
                     {
                         animator.SetFloat("Vert", 0f);

@@ -235,14 +235,14 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 564815639322350334}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: 0, y: 0.99691737, z: -0, w: -0.07845902}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
+  m_LocalScale: {x: 0.5, y: 0.5, z: 0.5}
+  m_ConstrainProportionsScale: 1
   m_Children:
   - {fileID: 5893103873766291459}
   m_Father: {fileID: 5731272456089347896}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 189, z: 0}
 --- !u!1 &657742321174809653
 GameObject:
   m_ObjectHideFlags: 0
@@ -1761,7 +1761,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ba2cf7359fae44b0a9386ea1703def7b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.AgentModule
-  agentName: Unnamed Agent
   initialDecisionType: 3
   currentDecisionModule: {fileID: 0}
 --- !u!114 &2635012307536942698
@@ -1865,7 +1864,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.ExploreDecisionModule
   navigationSource: 0
-  exploreWalkMode: 1
   visitRoomCenterBeforeBacktracking: 1
   useLuaExploreScript: 0
   debugLuaExplore: 1
@@ -1886,7 +1884,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.WandererDecisionModule
   navigationSource: 0
   dwellSecondsAtDestination: 2
-  wanderWalkMode: 1
 --- !u!114 &-2964106179888843911
 MonoBehaviour:
   m_ObjectHideFlags: 0
