@@ -40,7 +40,7 @@ public sealed class TimeTask
     public bool IfYield()
     {
         return false; // DEBUG
-        float now = _mgr.Now;
+/*      float now = _mgr.Now;
         float chunk = 0f;
         // Measure the chunk we just finished (time since last decision)
         if (_hasStamp)
@@ -76,6 +76,7 @@ public sealed class TimeTask
         _mgr.CountIfYield(Name, yielded: !allowContinue);
         //if (chunk / _mgr.budgetPercent > 1f) Debug.Log(Name + ": chunk/softCap " + chunk/softCap);  //DEBUG
         return !allowContinue;
+*/
     }
 
     /// <summary>

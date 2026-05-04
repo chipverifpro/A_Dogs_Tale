@@ -1,5 +1,7 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
+using DogGame.Modules;
 using UnityEngine;
 
 /// <summary>
@@ -13,7 +15,29 @@ public class WorldObjectRegistry : MonoBehaviour
     [Tooltip("Optional explicit root for all WorldObjects. If null, one named 'WorldObjects' will be created.")]
     [SerializeField] private Transform worldObjectsRoot;
 
+    [Header("Initial Agent Placement")]
+    [Tooltip("When enabled, agents are moved to random generated floor cells after they are initially registered.")]
+    [SerializeField] private bool randomizeInitialAgentPlacement = false;
+
+    [Tooltip("If false, agents can be placed in corridor cells as well as rooms.")]
+    [SerializeField] private bool excludeCorridorCells = true;
+
+    [Tooltip("Randomize yaw after moving an agent to its initial cell.")]
+    [SerializeField] private bool randomizeInitialAgentYaw = true;
+
+    [Tooltip("Additional vertical offset above the chosen floor cell height.")]
+    [SerializeField] private float initialAgentPlacementYOffset = 0.5f;
+
+    [Tooltip("Maximum random cell picks per agent before falling back to the first available cell.")]
+    [SerializeField] private int maxRandomPlacementAttemptsPerAgent = 128;
+
+    [Tooltip("Write a log entry for every agent moved by initial placement randomization.")]
+    [SerializeField] private bool logInitialAgentPlacement = false;
+
     private readonly Dictionary<WorldObjectKind, Transform> _kindParents = new();
+    private readonly HashSet<WorldObject> pendingInitialAgentPlacement = new();
+    private readonly HashSet<WorldObject> randomizedInitialAgents = new();
+    private Coroutine initialAgentPlacementCoroutine;
 
     private static WorldObjectRegistry _instance;
     private static bool _shuttingDown;
@@ -159,6 +183,7 @@ public class WorldObjectRegistry : MonoBehaviour
             if (requestedId >= nextId)
                 nextId = requestedId + 1;
             AssignParentForWorldObject(obj);
+            QueueInitialAgentPlacementIfNeeded(obj);
             return requestedId;
         }
 
@@ -169,6 +194,7 @@ public class WorldObjectRegistry : MonoBehaviour
         obj.SetObjectId(newId);
 
         AssignParentForWorldObject(obj);
+        QueueInitialAgentPlacementIfNeeded(obj);
         return newId;
     }
 
@@ -184,6 +210,8 @@ public class WorldObjectRegistry : MonoBehaviour
         if (idByObject.TryGetValue(obj, out int id))
         {
             idByObject.Remove(obj);
+            pendingInitialAgentPlacement.Remove(obj);
+            randomizedInitialAgents.Remove(obj);
             if (objectsById.TryGetValue(id, out WorldObject stored) && stored == obj)
             {
                 objectsById.Remove(id);
@@ -280,6 +308,182 @@ public class WorldObjectRegistry : MonoBehaviour
 
         wo.transform.SetParent(parent, true); // keep world position
     }
+
+    private void QueueInitialAgentPlacementIfNeeded(WorldObject obj)
+    {
+        if (!randomizeInitialAgentPlacement || !Application.isPlaying || obj == null || !IsAgent(obj))
+            return;
+
+        if (randomizedInitialAgents.Contains(obj))
+            return;
+
+        pendingInitialAgentPlacement.Add(obj);
+
+        if (initialAgentPlacementCoroutine == null)
+            initialAgentPlacementCoroutine = StartCoroutine(RandomizeInitialAgentPlacementWhenReady());
+    }
+
+    private IEnumerator RandomizeInitialAgentPlacementWhenReady()
+    {
+        while (!CanRandomizeInitialAgentPlacement())
+            yield return null;
+
+        RandomizePendingInitialAgentPlacements();
+        initialAgentPlacementCoroutine = null;
+    }
+
+    private bool CanRandomizeInitialAgentPlacement()
+    {
+        if (pendingInitialAgentPlacement.Count == 0)
+            return true;
+
+        Dir dir = Dir.Instance;
+        DungeonGenerator generator = dir != null ? dir.gen : null;
+        return generator != null
+            && generator.buildComplete
+            && generator.rooms != null
+            && generator.rooms.Count > 0;
+    }
+
+    private void RandomizePendingInitialAgentPlacements()
+    {
+        if (pendingInitialAgentPlacement.Count == 0)
+            return;
+
+        List<Cell> candidateCells = CollectInitialAgentPlacementCells();
+        if (candidateCells.Count == 0)
+        {
+            Debug.LogWarning("WorldObjectRegistry: Initial agent placement randomization found no eligible generated cells.", this);
+            pendingInitialAgentPlacement.Clear();
+            return;
+        }
+
+        List<WorldObject> agents = new(pendingInitialAgentPlacement);
+        pendingInitialAgentPlacement.Clear();
+
+        HashSet<Vector3Int> occupiedCells = new();
+        foreach (WorldObject agent in agents)
+        {
+            if (agent == null || randomizedInitialAgents.Contains(agent))
+                continue;
+
+            if (!TryPickRandomCell(candidateCells, occupiedCells, out Cell cell))
+                continue;
+
+            ApplyInitialAgentPlacement(agent, cell);
+            occupiedCells.Add(cell.pos3d);
+            randomizedInitialAgents.Add(agent);
+        }
+    }
+
+    private List<Cell> CollectInitialAgentPlacementCells()
+    {
+        List<Cell> cells = new();
+        Dir dir = Dir.Instance;
+        DungeonGenerator generator = dir != null ? dir.gen : null;
+        if (generator == null || generator.rooms == null)
+            return cells;
+
+        for (int roomIndex = 0; roomIndex < generator.rooms.Count; roomIndex++)
+        {
+            Room room = generator.rooms[roomIndex];
+            if (room == null || room.cells == null)
+                continue;
+
+            if (excludeCorridorCells && room.isCorridor)
+                continue;
+
+            for (int cellIndex = 0; cellIndex < room.cells.Count; cellIndex++)
+            {
+                Cell cell = room.cells[cellIndex];
+                if (cell == null)
+                    continue;
+
+                if (excludeCorridorCells && cell.isCorridor)
+                    continue;
+
+                cells.Add(cell);
+            }
+        }
+
+        return cells;
+    }
+
+    private bool TryPickRandomCell(List<Cell> cells, HashSet<Vector3Int> occupiedCells, out Cell chosenCell)
+    {
+        chosenCell = null;
+        if (cells == null || cells.Count == 0)
+            return false;
+
+        int attempts = Mathf.Max(1, maxRandomPlacementAttemptsPerAgent);
+        for (int attempt = 0; attempt < attempts; attempt++)
+        {
+            Cell candidate = cells[UnityEngine.Random.Range(0, cells.Count)];
+            if (candidate == null || occupiedCells.Contains(candidate.pos3d))
+                continue;
+
+            chosenCell = candidate;
+            return true;
+        }
+
+        for (int i = 0; i < cells.Count; i++)
+        {
+            Cell candidate = cells[i];
+            if (candidate == null || occupiedCells.Contains(candidate.pos3d))
+                continue;
+
+            chosenCell = candidate;
+            return true;
+        }
+
+        chosenCell = cells[UnityEngine.Random.Range(0, cells.Count)];
+        return chosenCell != null;
+    }
+
+    private void ApplyInitialAgentPlacement(WorldObject agent, Cell cell)
+    {
+        Vector3 worldPosition = cell.center3d_f;
+        worldPosition.y += initialAgentPlacementYOffset;
+        agent.transform.position = worldPosition;
+
+        if (randomizeInitialAgentYaw)
+            agent.transform.rotation = Quaternion.Euler(0f, UnityEngine.Random.Range(0f, 360f), 0f);
+
+        agent.agentMovementModule?.ClearDesiredMovement();
+
+        if (logInitialAgentPlacement)
+            Debug.Log($"WorldObjectRegistry: Randomized initial placement for {agent.DisplayName} to cell {cell.pos}.", agent);
+    }
+
+    private static bool IsAgent(WorldObject obj)
+    {
+        return obj.Kind == WorldObjectKind.Agent || obj.agentModule != null || obj.GetComponent<AgentModule>() != null;
+    }
+
+#if UNITY_EDITOR
+    [ContextMenu("Randomize Registered Agent Placement Now")]
+    private void RandomizeRegisteredAgentPlacementNow()
+    {
+        if (!Application.isPlaying)
+        {
+            Debug.LogWarning("WorldObjectRegistry: Randomize Registered Agent Placement Now only runs in Play Mode.", this);
+            return;
+        }
+
+        foreach (WorldObject obj in objectsById.Values)
+        {
+            if (obj != null && IsAgent(obj))
+                pendingInitialAgentPlacement.Add(obj);
+        }
+
+        randomizedInitialAgents.Clear();
+
+        if (CanRandomizeInitialAgentPlacement())
+            RandomizePendingInitialAgentPlacements();
+        else if (initialAgentPlacementCoroutine == null)
+            initialAgentPlacementCoroutine = StartCoroutine(RandomizeInitialAgentPlacementWhenReady());
+    }
+#endif
 
 #if UNITY_EDITOR
     [ContextMenu("Log Registered Objects")]

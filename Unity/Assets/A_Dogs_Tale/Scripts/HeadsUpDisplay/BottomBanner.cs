@@ -323,7 +323,7 @@ public class BottomBanner : MonoBehaviour
         }
 
         panelRT.sizeDelta = new Vector2(panelRT.sizeDelta.x, currentPanelHeight);
-        ApplyCollapsedTextLineLimit(isAutoCollapsed);
+        ApplyTextLineLimit();
 
         if (isAutoCollapsed && currentPanelHeight > targetHeight + 0.01f && scrollRect != null)
         {
@@ -332,9 +332,9 @@ public class BottomBanner : MonoBehaviour
         }
     }
 
-    void ApplyCollapsedTextLineLimit(bool isCollapsed)
+    void ApplyTextLineLimit()
     {
-        int maxVisibleLines = isCollapsed ? 1 : Mathf.Max(1, maxMessageLines);
+        int maxVisibleLines = Mathf.Max(1, maxMessageLines);
         for (int i = 0; i < rowTextObjects.Count; i++)
         {
             TextMeshProUGUI text = rowTextObjects[i];
@@ -369,7 +369,7 @@ public class BottomBanner : MonoBehaviour
 
     float GetMinimumCollapsedPanelHeight()
     {
-        return 20f + Mathf.Max(rowMinHeight, iconSize + 4f);
+        return 20f + GetRowHeight();
     }
 
     bool IsMouseInBannerHoverZone(float expandedHeight, float collapsedHeight)
@@ -831,6 +831,12 @@ public class BottomBanner : MonoBehaviour
     public static void LogMessage(BannerSense sense, BannerLevel level, string message, bool includeGameTime = false)
     {
         Show(sense, level, message, includeGameTime);
+    }
+
+    public static void LogMessageWithIcon(BannerSense sense, BannerLevel level, string message, string iconSpriteName, bool includeGameTime = false)
+    {
+        Sprite icon = SpriteServer.SpriteLookup(iconSpriteName);
+        GetOrCreateInstance()?.AddMessageInternal(sense, level, message, includeGameTime, false, icon);
     }
 
     public static void LogRichMessage(BannerSense sense, BannerLevel level, string richMessage, bool includeGameTime = false)

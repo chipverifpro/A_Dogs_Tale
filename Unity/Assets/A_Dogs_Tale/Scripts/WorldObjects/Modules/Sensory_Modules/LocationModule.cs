@@ -159,10 +159,11 @@ namespace DogGame.Modules
             string agentName = worldObject != null ? worldObject.DisplayName : name;
             string roomName = ResolveRoomName(roomId);
             RoomSnapshot snapshot = BuildRoomSnapshot(roomId);
-            BottomBanner.LogMessage(
+            BottomBanner.LogMessageWithIcon(
                 BannerSense.Vision,
                 BannerLevel.Low,
                 $"[{agentName}] {action} {roomName}. {snapshot.ToLogText()}",
+                "MapsSpriteSheet_2",
                 true);
         }
 

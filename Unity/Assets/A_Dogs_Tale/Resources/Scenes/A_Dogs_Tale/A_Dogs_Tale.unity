@@ -158654,11 +158654,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.AgentPackMemberModule
   currentPack: {fileID: 766807147}
-  leashEndpoints:
-  - otherAgent: {fileID: 6544990386685219154}
-    myRole: 1
-    maxLength: 3
-    autoCreateOnStart: 1
+  leashEndpoints: []
 --- !u!114 &1651296786
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -166672,10 +166668,10 @@ MonoBehaviour:
   collapsedHeightExtraPixels: 3
   collapseSlideDuration: 0.18
   visibleLineCount: 3
-  rowMinHeight: 32
+  rowMinHeight: 56
   rowSpacing: 4
-  iconSize: 90
-  maxMessageLines: 2
+  iconSize: 105
+  maxMessageLines: 3
   defaultDisplayUsesRichText: 1
   autoScrollToNewest: 1
   maxHistoryEntries: 0
@@ -183461,6 +183457,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::WorldObjectRegistry
   worldObjectsRoot: {fileID: 0}
+  randomizeInitialAgentPlacement: 1
+  excludeCorridorCells: 1
+  randomizeInitialAgentYaw: 1
+  initialAgentPlacementYOffset: 0.5
+  maxRandomPlacementAttemptsPerAgent: 128
+  logInitialAgentPlacement: 1
   startingId: 1
   nextId: 0
 --- !u!1 &1921263733 stripped
@@ -196695,7 +196697,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!114 &2032406096
 MonoBehaviour:
   m_ObjectHideFlags: 0
