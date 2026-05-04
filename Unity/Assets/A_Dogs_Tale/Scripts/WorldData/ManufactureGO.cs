@@ -418,17 +418,18 @@ public class ManufactureGO : MonoBehaviour
         var mpb = new MaterialPropertyBlock();
 
         bool tintOnlySurfaceMaterial = ShouldTintOnlySurfaceMaterial(inst);
+        bool flipTextureVertically = ShouldFlipTextureVertically(inst);
 
         foreach (var r in renderers)
         {
             if (tintOnlySurfaceMaterial)
             {
-                ApplyColorToNamedMaterialSlots(r, mpb, finalColor, inst.textureOverride, SurfaceTintMaterialName);
+                ApplyColorToNamedMaterialSlots(r, mpb, finalColor, inst.textureOverride, SurfaceTintMaterialName, flipTextureVertically);
             }
             else
             {
                 mpb.Clear();
-                AddColorProperties(mpb, finalColor, inst.textureOverride);
+                AddColorProperties(mpb, finalColor, inst.textureOverride, flipTextureVertically);
                 r.SetPropertyBlock(mpb);
             }
 
@@ -451,12 +452,21 @@ public class ManufactureGO : MonoBehaviour
                inst.layerKind == ElementLayerKind.Ceiling;
     }
 
+    private static bool ShouldFlipTextureVertically(ElementInstanceData inst)
+    {
+        if (inst == null || inst.textureOverride == null)
+            return false;
+
+        return inst.layerKind == ElementLayerKind.Wall;
+    }
+
     private static void ApplyColorToNamedMaterialSlots(
         Renderer renderer,
         MaterialPropertyBlock mpb,
         Color color,
         Texture textureOverride,
-        string materialName)
+        string materialName,
+        bool flipTextureVertically)
     {
         if (renderer == null)
             return;
@@ -476,12 +486,12 @@ public class ManufactureGO : MonoBehaviour
                 continue;
 
             mpb.Clear();
-            AddColorProperties(mpb, color, textureOverride);
+            AddColorProperties(mpb, color, textureOverride, flipTextureVertically);
             renderer.SetPropertyBlock(mpb, i);
         }
     }
 
-    private static void AddColorProperties(MaterialPropertyBlock mpb, Color color, Texture textureOverride)
+    private static void AddColorProperties(MaterialPropertyBlock mpb, Color color, Texture textureOverride, bool flipTextureVertically = false)
     {
         mpb.SetColor("_Color",     color);
         mpb.SetColor("_BaseColor", color); // URP/HDRP compatibility
@@ -490,6 +500,13 @@ public class ManufactureGO : MonoBehaviour
         {
             mpb.SetTexture("_BaseMap", textureOverride);
             mpb.SetTexture("_MainTex", textureOverride);
+
+            if (flipTextureVertically)
+            {
+                Vector4 flippedScaleAndOffset = new Vector4(1f, -1f, 0f, 1f);
+                mpb.SetVector("_BaseMap_ST", flippedScaleAndOffset);
+                mpb.SetVector("_MainTex_ST", flippedScaleAndOffset);
+            }
         }
     }
 
