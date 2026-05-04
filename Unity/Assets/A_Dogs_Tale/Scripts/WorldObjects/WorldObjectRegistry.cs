@@ -362,18 +362,45 @@ public class WorldObjectRegistry : MonoBehaviour
         pendingInitialAgentPlacement.Clear();
 
         HashSet<Vector3Int> occupiedCells = new();
+        HashSet<WorldObject> pendingAgents = new(agents);
         foreach (WorldObject agent in agents)
         {
-            if (agent == null || randomizedInitialAgents.Contains(agent))
-                continue;
-
-            if (!TryPickRandomCell(candidateCells, occupiedCells, out Cell cell))
-                continue;
-
-            ApplyInitialAgentPlacement(agent, cell);
-            occupiedCells.Add(cell.pos3d);
-            randomizedInitialAgents.Add(agent);
+            RandomizeInitialAgentPlacementForAgent(agent, candidateCells, occupiedCells, pendingAgents);
         }
+    }
+
+    private bool RandomizeInitialAgentPlacementForAgent(
+        WorldObject agent,
+        List<Cell> candidateCells,
+        HashSet<Vector3Int> occupiedCells,
+        HashSet<WorldObject> pendingAgents)
+    {
+        if (agent == null)
+            return false;
+
+        if (randomizedInitialAgents.Contains(agent))
+            return true;
+
+        WorldObject leader = GetPackLeaderForFollower(agent);
+        if (leader != null)
+        {
+            if (!randomizedInitialAgents.Contains(leader) && pendingAgents.Contains(leader))
+            {
+                RandomizeInitialAgentPlacementForAgent(leader, candidateCells, occupiedCells, pendingAgents);
+            }
+
+            ApplyInitialAgentPlacementFromLeader(agent, leader);
+            randomizedInitialAgents.Add(agent);
+            return true;
+        }
+
+        if (!TryPickRandomCell(candidateCells, occupiedCells, out Cell cell))
+            return false;
+
+        ApplyInitialAgentPlacement(agent, cell);
+        occupiedCells.Add(cell.pos3d);
+        randomizedInitialAgents.Add(agent);
+        return true;
     }
 
     private List<Cell> CollectInitialAgentPlacementCells()
@@ -453,6 +480,26 @@ public class WorldObjectRegistry : MonoBehaviour
 
         if (logInitialAgentPlacement)
             Debug.Log($"WorldObjectRegistry: Randomized initial placement for {agent.DisplayName} to cell {cell.pos}.", agent);
+    }
+
+    private void ApplyInitialAgentPlacementFromLeader(WorldObject follower, WorldObject leader)
+    {
+        follower.transform.SetPositionAndRotation(leader.transform.position, leader.transform.rotation);
+        follower.agentMovementModule?.ClearDesiredMovement();
+
+        if (logInitialAgentPlacement)
+        {
+            Debug.Log(
+                $"WorldObjectRegistry: Moved pack follower {follower.DisplayName} to leader {leader.DisplayName}'s initial placement.",
+                follower);
+        }
+    }
+
+    private static WorldObject GetPackLeaderForFollower(WorldObject agent)
+    {
+        Pack pack = agent != null ? agent.packMemberModule?.currentPack : null;
+        WorldObject leader = pack != null ? pack.packLeader : null;
+        return leader != null && leader != agent ? leader : null;
     }
 
     private static bool IsAgent(WorldObject obj)
