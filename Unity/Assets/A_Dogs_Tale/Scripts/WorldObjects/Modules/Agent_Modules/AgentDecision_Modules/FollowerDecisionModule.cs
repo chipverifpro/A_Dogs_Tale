@@ -137,9 +137,9 @@ namespace DogGame.Modules
 
             if (enableDebugLogging)
             {
-                Debug.Log(
-                    $"[FollowerDecisionModule {worldObject.DisplayName}] Tick {deltaTime}",
-                    this);
+                //Debug.Log(
+                //   $"[FollowerDecisionModule {worldObject.DisplayName}] Tick {deltaTime}",
+                //   this);
             }
 
             // If we lost our follow target (destroyed, disabled, etc.), try to fall back to pack leader
@@ -167,6 +167,13 @@ namespace DogGame.Modules
             float desiredDistance = followDistanceMeters;
             float sqrDesiredDistance = desiredDistance * desiredDistance;
 
+            if (enableDebugLogging && Time.frameCount % 30 == 0)
+            {
+                Debug.Log(
+                    $"[FollowerDecisionModule {worldObject.DisplayName}] " +
+                    $"Following {followTarget.name}, dist={Mathf.Sqrt(sqrDistanceToTarget):F2},desired={desiredDistance}",
+                    this);
+            }
             if (sqrDistanceToTarget > sqrDesiredDistance)
             {
                 // Too far: move toward the follow target

@@ -128,7 +128,7 @@ namespace DogGame.Modules
                     // find the leader
                     WorldObject leader = worldObject.packMemberModule.currentPack.packLeader;
                     // distance is set by number of pack members ahead of me.
-                    float distance = worldObject.packMemberModule.currentPack.packAgentList.Count * 1.5f;
+                    float distance = worldObject.packMemberModule.GetPositionInPack() * 1.5f;
                     // set who to follow and how far.
                     followerDecisionModule.SetFollowTarget(leader, distance);
                 }

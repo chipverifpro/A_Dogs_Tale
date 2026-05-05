@@ -373,7 +373,7 @@ namespace DogGame.Modules
         {
             base.Update();
 
-            if (myClips.Count()==0) return; // this has no defined animations.
+            if (myClips?.Count()==0) return; // this has no defined animations.
 
             float delta = Time.deltaTime;
             float moveSqr = ((transform.position - prev_pos3_world)/delta).sqrMagnitude;
