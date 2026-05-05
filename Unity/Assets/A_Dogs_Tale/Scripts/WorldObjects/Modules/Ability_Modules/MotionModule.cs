@@ -609,15 +609,31 @@ namespace DogGame.Modules
 
         private static void CleanupFloat(ref float value, bool stayInSameCell = true)
         {
-            float rounded = Mathf.Round(value * 100f) / 100f;
+            const float boundaryEpsilon = 0.00001f;
 
             if (stayInSameCell)
             {
                 float cell = Mathf.Floor(value);
-                rounded = Mathf.Clamp(rounded, cell, cell + 0.99f);
-            }
+                float local = value - cell;
 
-            value = rounded;
+                if (local < boundaryEpsilon)
+                {
+                    value = cell;
+                    return;
+                }
+
+                if (local > 1f - boundaryEpsilon)
+                {
+                    value = cell + 1f - boundaryEpsilon;
+                    return;
+                }
+            }
+            else
+            {
+                float nearestInteger = Mathf.Round(value);
+                if (Mathf.Abs(value - nearestInteger) < boundaryEpsilon)
+                    value = nearestInteger;
+            }
         }
 
         private static void Cleanup(ref Vector2 value, bool stayInSameCell = true)
