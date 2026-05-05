@@ -40,6 +40,34 @@ local function clearPendingAction()
     state.pendingDoorId = nil
 end
 
+local function doorExistsInCurrentRoom(doorId)
+    if doorId == nil or Room == nil or not Room.IsValid then
+        return false
+    end
+
+    for i = 1, Room.DoorCount do
+        if Room.GetDoorId(i) == doorId then
+            return true
+        end
+    end
+
+    return false
+end
+
+local function resetPathToCurrentRoom(message)
+    state.roomPath = { Room.Id }
+    state.enteredByDoor = {}
+    log(message)
+    clearPendingAction()
+end
+
+local function validateCurrentEntryDoor()
+    local entryDoorId = state.enteredByDoor[#state.enteredByDoor]
+    if entryDoorId ~= nil and not doorExistsInCurrentRoom(entryDoorId) then
+        resetPathToCurrentRoom('Remembered entry door ' .. tostring(entryDoorId) .. ' is not in current room ' .. tostring(Room.Id) .. '; resetting explore path but keeping used-door memory')
+    end
+end
+
 local function syncCurrentRoom()
     if Room == nil or not Room.IsValid then
         log('Room invalid; waiting for room state')
@@ -58,6 +86,7 @@ local function syncCurrentRoom()
     end
 
     if topRoom == currentRoomId then
+        validateCurrentEntryDoor()
         clearPendingAction()
         return true
     end
@@ -65,6 +94,9 @@ local function syncCurrentRoom()
     if state.pendingAction == 'forward' then
         state.roomPath[#state.roomPath + 1] = currentRoomId
         state.enteredByDoor[#state.enteredByDoor + 1] = state.pendingDoorId
+        if state.pendingDoorId ~= nil then
+            state.usedDoors[state.pendingDoorId] = true
+        end
         log('Entered room ' .. tostring(currentRoomId) .. ' through door ' .. tostring(state.pendingDoorId))
     elseif state.pendingAction == 'backtrack' then
         if #state.roomPath > 1 then
@@ -77,13 +109,16 @@ local function syncCurrentRoom()
             state.enteredByDoor[#state.enteredByDoor + 1] = state.pendingDoorId
         end
 
+        if state.pendingDoorId ~= nil then
+            state.usedDoors[state.pendingDoorId] = true
+        end
         log('Backtracked into room ' .. tostring(currentRoomId) .. ' through door ' .. tostring(state.pendingDoorId))
     else
-        state.roomPath = { currentRoomId }
-        state.enteredByDoor = { nil }
-        log('Room changed without pending action; resetting path in room ' .. tostring(currentRoomId))
+        resetPathToCurrentRoom('Room changed without pending action; resetting path in room ' .. tostring(currentRoomId))
+        return true
     end
 
+    validateCurrentEntryDoor()
     clearPendingAction()
     return true
 end
@@ -112,7 +147,6 @@ function tick()
 
     local nextDoorId = chooseNearestUnusedDoor()
     if nextDoorId ~= nil then
-        state.usedDoors[nextDoorId] = true
         state.pendingAction = 'forward'
         state.pendingDoorId = nextDoorId
         log('Issuing GoThroughDoor(' .. tostring(nextDoorId) .. ')')
@@ -130,6 +164,11 @@ function tick()
 
     local entryDoorId = state.enteredByDoor[#state.enteredByDoor]
     if entryDoorId ~= nil then
+        if not doorExistsInCurrentRoom(entryDoorId) then
+            resetPathToCurrentRoom('Cannot backtrack through stale entry door ' .. tostring(entryDoorId) .. ' from room ' .. tostring(Room.Id) .. '; idle here')
+            return
+        end
+
         state.pendingAction = 'backtrack'
         state.pendingDoorId = entryDoorId
         log('Backtracking through door ' .. tostring(entryDoorId))
@@ -198,6 +237,7 @@ end
         private int lastLuaRoomId = int.MinValue;
         private int lastLuaDoorCount = -1;
         private bool lastLuaRoomValid;
+        private string loadedLuaExploreFriendlyName = "";
 
         public override void Initialize(AgentModule agentController)
         {
@@ -215,6 +255,13 @@ end
             debugDoubleTick = Time.frameCount;
 
             if (dir.gen.buildComplete == false) return;
+
+            if (ShouldReturnToManualControl())
+            {
+                CancelExploreTasks();
+                worldObject.agentModule.SwitchDecisionModule(AgentDecisionType.Player);
+                return;
+            }
 
             if (useLuaExploreScript)
             {
@@ -267,6 +314,7 @@ end
             {
                 //Debug.Log(
                 //    $"{worldObject.DisplayName} [ExploreDecisionModule] completed door traversal {activeDoor.key} -> room {activeDoor.neighborRoomIndex}");
+                MarkDoorExplored(activeDoor);
                 phase = ExplorePhase.None;
                 RefreshDoorsForRoom(activeDoor.neighborRoomIndex);
                 queuedRoomIndex = activeDoor.neighborRoomIndex;
@@ -300,29 +348,32 @@ end
                 return;
             }
 
-            string scriptFile = string.IsNullOrWhiteSpace(luaExploreFileName)
-                ? "ExploreMode.lua"
-                : luaExploreFileName.Trim();
+            if (!EnsureLuaExploreReady())
+                return;
 
-            LogLuaExplore($"Queueing Task_RunLua for '{scriptFile}'.");
-            luaTaskController.EnqueueTask(
-                task: new Task_RunLua(
-                    fileNameLua: scriptFile,
-                    entryFunction: "tick",
-                    maxSeconds: 600f,
-                    visitRoomCenterBeforeBacktracking: visitRoomCenterBeforeBacktracking),
-                priority: 35,
-                source: TaskSource.AI,
-                canInterrupt: false,
-                resumePrevious: false,
-                clearStackOnStart: false,
-                tag: $"LuaExplore:{scriptFile}",
-                front: false);
+            UpdateLuaExploreState();
+            luaRuntime!.SetState(luaAgentState);
+            luaRuntime.SetGlobal("VisitRoomCenterBeforeBacktracking", visitRoomCenterBeforeBacktracking);
+            LogLuaRoomState();
 
-            luaTaskController.Tick(deltaTime);
+            if (!luaRuntime.CallFunction("tick"))
+                LogLuaExplore($"Lua explore tick failed for '{loadedLuaExploreFriendlyName}'.");
         }
 
         # endregion
+
+        private bool ShouldReturnToManualControl()
+        {
+            GameInputRouter router = dir != null && dir.gameInputRouter != null
+                ? dir.gameInputRouter
+                : GameInputRouter.Instance;
+
+            if (router == null || router.InputState == null || !router.IsControlled(worldObject))
+                return false;
+
+            PlayerInputState state = router.InputState;
+            return state.moveAxis.sqrMagnitude > 0.0001f || Mathf.Abs(state.strafeAxis) > 0.0001f;
+        }
         
         private bool EnsureLuaExploreReady()
         {
@@ -353,9 +404,7 @@ end
                 LogLuaExplore("Registered DogLuaBindings and initialized AgentState.");
             }
 
-            string scriptSource = string.IsNullOrWhiteSpace(luaExploreScript)
-                ? DefaultLuaExploreScript
-                : luaExploreScript;
+            string scriptSource = ResolveLuaExploreScriptSource(out string friendlyName);
 
             if (luaScriptLoaded &&
                 string.Equals(loadedLuaExploreScript, scriptSource, StringComparison.Ordinal))
@@ -377,11 +426,12 @@ end
                 luaAgentState.Time);
             luaRuntime.SetGlobal("VisitRoomCenterBeforeBacktracking", visitRoomCenterBeforeBacktracking);
 
-            LogLuaExplore($"Loading Lua explore script. chars={scriptSource.Length}");
-            luaScriptLoaded = luaRuntime.LoadScript(scriptSource);
+            LogLuaExplore($"Loading Lua explore script '{friendlyName}'. chars={scriptSource.Length}");
+            luaScriptLoaded = luaRuntime.LoadScript(scriptSource, friendlyName);
             if (luaScriptLoaded)
             {
                 loadedLuaExploreScript = scriptSource;
+                loadedLuaExploreFriendlyName = friendlyName;
                 LogLuaExplore("Lua explore script loaded successfully.");
             }
             else
@@ -390,6 +440,26 @@ end
             }
 
             return luaScriptLoaded;
+        }
+
+        private string ResolveLuaExploreScriptSource(out string friendlyName)
+        {
+            if (!string.IsNullOrWhiteSpace(luaExploreScript))
+            {
+                friendlyName = "ExploreDecisionModule.luaExploreScript";
+                return luaExploreScript;
+            }
+
+            string scriptFile = string.IsNullOrWhiteSpace(luaExploreFileName)
+                ? "ExploreMode.lua"
+                : luaExploreFileName.Trim();
+
+            if (LuaScriptLoader.TryLoad(scriptFile, out string source, out friendlyName, out string? error))
+                return source;
+
+            friendlyName = $"default:{scriptFile}";
+            LogLuaExplore($"Could not load '{scriptFile}' ({error}); using built-in default explore script.");
+            return DefaultLuaExploreScript;
         }
 
         private void UpdateLuaExploreState()
@@ -405,11 +475,18 @@ end
             luaTaskController = null;
             luaScriptLoaded = false;
             loadedLuaExploreScript = "";
+            loadedLuaExploreFriendlyName = "";
             lastLuaTaskControllerDriving = false;
             lastLuaTaskName = "";
             lastLuaRoomId = int.MinValue;
             lastLuaDoorCount = -1;
             lastLuaRoomValid = false;
+        }
+
+        private void CancelExploreTasks()
+        {
+            luaTaskController ??= GetComponent<TaskController>();
+            luaTaskController?.CancelAllTasks();
         }
 
         private void LogLuaExplore(string message)
@@ -506,9 +583,6 @@ end
                 if (exploredDoorKeys.Contains(goal.key))
                     continue;
 
-                exploredDoorKeys.Add(goal.key);
-                exploredDoorKeys.Add(goal.reverseKey);
-
                 activeDoor = goal;
                 phase = ExplorePhase.MoveToDoor;
                 worldObject.agentMovementModule.SetDesiredTargetLocationMap(goal.doorMap, WalkMode.None, requestPathfinding: true);
@@ -518,6 +592,12 @@ end
             }
 
             return false;
+        }
+
+        private void MarkDoorExplored(DoorGoal goal)
+        {
+            exploredDoorKeys.Add(goal.key);
+            exploredDoorKeys.Add(goal.reverseKey);
         }
 
         private int FindBestQueuedDoorIndex(Cell currentCell)
@@ -686,21 +766,19 @@ end
             UseAutonomousFaceMovement();
             toExplore.Clear();
             queuedDoorKeys.Clear();
-            exploredDoorKeys.Clear();
             phase = ExplorePhase.None;
             needsDoorRefresh = true;
             queuedRoomIndex = -1;
-            ResetLuaExploreRuntime();
         }
         public override void EndDecisionModule()
         {
+            CancelExploreTasks();
             toExplore.Clear();
             queuedDoorKeys.Clear();
             StopMovementIntent();
             phase = ExplorePhase.None;
             needsDoorRefresh = true;
             queuedRoomIndex = -1;
-            ResetLuaExploreRuntime();
         }
     }
 }
