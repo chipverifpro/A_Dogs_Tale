@@ -22,8 +22,7 @@ namespace DogGame.Modules
 
         public abstract AgentDecisionType DecisionType { get; }
         protected AgentModule agentModule;
-        public NavigationSource navigationSource = NavigationSource.None;
-
+ 
         // Initialize called from WorldObject.Awake phase
         public virtual void Initialize(AgentModule agentModuleOwner)
         {

@@ -46,8 +46,10 @@ public enum Species
     NA = 0,
     Canine,
     Human,
-    Animal,
-    Machine,
+    Bird,           // flight (seagull, quadcopter drone)
+    Machine,        // (Roomba vacuum)
+    SmallAnimal,    // prey size animal (mouse)
+    BigAnimal,      // dog size or larger (cat)
     Other
 }
 
@@ -257,6 +259,10 @@ public class WorldObject : MonoBehaviour
     public Vector3 pos3d_world => this.transform.position;
     public Vector3 pos3d_map => WorldToMapPosition(pos3d_world);
     public Vector3 pos3d_f => pos3d_map;
+
+    // Who is controlling the decision module right now?
+    //[Tooltip("Leave as None. Current status during run.")]
+    //public NavigationSource navigationSource = NavigationSource.None;
 
     public Vector3 MapToWorldPosition(Vector3 mapPosition)
     {

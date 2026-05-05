@@ -409,7 +409,7 @@ namespace DogGame.Modules
 
                 ApplyManualTurn(state.moveAxis.x, deltaTime);
                 desiredWorldDir = ConvertInputToWorldDirection(new Vector2(state.strafeAxis, state.moveAxis.y));
-                navigationSource = NavigationSource.PlayerDirection;
+                //worldObject.navigationSource = NavigationSource.PlayerDirection;
                 worldObject.motionModule.motionControlMode = MotionControlMode.DirectInput;
                 worldObject.motionModule.facingMode = FacingMode.Manual;
                 

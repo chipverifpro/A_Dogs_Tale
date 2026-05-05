@@ -170,7 +170,7 @@ end
         [SerializeField] private bool visitRoomCenterBeforeBacktracking = true;
         [Header("Lua Explore")]
         [Tooltip("Runs the explore behavior through the Lua runtime instead of the built-in C# door queue.")]
-        [SerializeField] private bool useLuaExploreScript = false;
+        [SerializeField] private bool useLuaExploreScript = true;
         [SerializeField] private bool debugLuaExplore = true;
         [SerializeField] private string luaExploreFileName = "ExploreMode.lua";
         [TextArea(8, 30)]
