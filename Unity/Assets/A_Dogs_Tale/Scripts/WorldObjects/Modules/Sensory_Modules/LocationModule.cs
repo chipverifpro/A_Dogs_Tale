@@ -29,6 +29,7 @@ namespace DogGame.Modules
     [DisallowMultipleComponent]
     public class LocationModule : WorldModule
     {
+        #region Parameters
         private const string HoleArchetypeId = "PF_Floor_Hole";
         private const string MoundArchetypeId = "PF_Floor_Mound";
         private static readonly Dictionary<int, Dictionary<int, string>> knownAgentDescriptionsByRoom = new();
@@ -55,6 +56,8 @@ namespace DogGame.Modules
         public Vector2 pos2_f => new(x_f, y_f);
         public Vector2Int pos2 => new(x, y);
 
+        #endregion
+        #region Cell
         public Cell cell
         {
             get
@@ -66,6 +69,8 @@ namespace DogGame.Modules
             }
         }
 
+        #endregion
+        #region Tilt & Yaw
         /// <summary>
         /// Full world rotation (includes yaw + pitch/roll tilt).
         /// If you only want "tilt without yaw", see TiltNoYaw below.
@@ -116,7 +121,8 @@ namespace DogGame.Modules
                 return (quaternion)tiltOnly;
             }
         }
-
+        #endregion
+        #region LogRooms
         public override void Tick(float deltaTime)
         {
             base.Tick(deltaTime);
@@ -167,10 +173,14 @@ namespace DogGame.Modules
                 true);
         }
 
+        #endregion
+        #region BuildSnap
+
         private RoomSnapshot BuildRoomSnapshot(int roomId)
         {
             RoomSnapshot snapshot = new RoomSnapshot();
             HashSet<int> currentAgentIds = new HashSet<int>();
+            WorldMemoryModule memory = worldObject != null ? worldObject.worldMemoryModule : null;
 
             WorldObjectRegistry registry = WorldObjectRegistry.Instance;
             if (registry != null)
@@ -185,6 +195,8 @@ namespace DogGame.Modules
                         if (candidate == worldObject || IsPackmate(candidate))
                             continue;
 
+                        memory?.RecordSeenObject(candidate);
+                        memory?.RecordContainerContents(candidate);
                         snapshot.agents.Add(DescribeAgent(candidate));
                         if (candidate.ObjectId > 0)
                             currentAgentIds.Add(candidate.ObjectId);
@@ -196,10 +208,13 @@ namespace DogGame.Modules
 
                     if (IsContainer(candidate))
                     {
+                        memory?.RecordSeenObject(candidate);
+                        memory?.RecordContainerContents(candidate);
                         snapshot.containers.Add(DescribeContainer(candidate));
                     }
                     else if (candidate.Kind == WorldObjectKind.Item)
                     {
+                        memory?.RecordSeenObject(candidate);
                         snapshot.items.Add(candidate.DisplayName);
                     }
                 }
@@ -292,6 +307,9 @@ namespace DogGame.Modules
             WorldObject parentWorldObject = obj.transform.parent.GetComponentInParent<WorldObject>();
             return parentWorldObject != null && parentWorldObject != obj;
         }
+
+        #endregion
+        #region Describe
 
         private string DescribeAgent(WorldObject agent)
         {
@@ -386,6 +404,9 @@ namespace DogGame.Modules
             }
         }
 
+        #endregion
+        #region Remember
+        
         private void RememberCurrentAgents(int roomId, HashSet<int> currentAgentIds)
         {
             if (!knownAgentDescriptionsByRoom.TryGetValue(roomId, out Dictionary<int, string> knownAgents))
@@ -453,6 +474,9 @@ namespace DogGame.Modules
             return trimmed == $"Room {roomId}" || trimmed == $"Room {roomId + 1}";
         }
 
+        #endregion
+        #region RoomSnapshot
+
         private sealed class RoomSnapshot
         {
             public readonly List<string> agents = new List<string>();
@@ -495,5 +519,7 @@ namespace DogGame.Modules
                 builder.Append('.');
             }
         }
+
+        #endregion
     }
 }

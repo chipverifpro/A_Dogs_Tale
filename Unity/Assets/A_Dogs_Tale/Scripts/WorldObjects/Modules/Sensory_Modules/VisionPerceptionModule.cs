@@ -180,6 +180,8 @@ namespace DogGame.Modules
                 float score = ComputeScore(dist, angleDeg, speed, sizeScore, kind, relation);
 
                 //Debug.Log($"[{worldObject.DisplayName} Vision] Detected {target.DisplayName}");
+                worldObject.worldMemoryModule?.RecordSeenObject(target);
+                worldObject.worldMemoryModule?.RecordContainerContents(target);
 
                 detections.Add(new VisionDetection
                 {

@@ -50291,7 +50291,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &563512873
 Transform:
   m_ObjectHideFlags: 0
@@ -52288,7 +52288,7 @@ PrefabInstance:
     - target: {fileID: 7583054104857252313, guid: 72580a8414a664e53846fc90aa8283a6,
         type: 3}
       propertyPath: enableDebugLogging
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 9202322396196141823, guid: 72580a8414a664e53846fc90aa8283a6,
         type: 3}
@@ -67760,7 +67760,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &733348322
 Transform:
   m_ObjectHideFlags: 0
@@ -112617,7 +112617,7 @@ PrefabInstance:
         type: 3}
       propertyPath: targetObject
       value: 
-      objectReference: {fileID: 6544990386685219154}
+      objectReference: {fileID: 0}
     - target: {fileID: -7755314165013992688, guid: bcc8732b8b44622449c23934f89e68c0,
         type: 3}
       propertyPath: enableStallRecovery
@@ -112627,6 +112627,11 @@ PrefabInstance:
         type: 3}
       propertyPath: stallTicksBeforeRecover
       value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: -6220627419518593229, guid: bcc8732b8b44622449c23934f89e68c0,
+        type: 3}
+      propertyPath: followDistanceMeters
+      value: 3
       objectReference: {fileID: 0}
     - target: {fileID: -5831966186440639580, guid: bcc8732b8b44622449c23934f89e68c0,
         type: 3}
@@ -134637,7 +134642,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &1418426032
 Transform:
   m_ObjectHideFlags: 0
@@ -159670,7 +159675,7 @@ MonoBehaviour:
     height: 0
     yawDeg: 0
     whichFollowersArrived: 
-  targetObject: {fileID: 6544990386685219154}
+  targetObject: {fileID: 0}
   keepFollowingTargetObject: 0
   stopDistance: 0.15
   useGridPathfinding: 1
@@ -159697,7 +159702,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0477df26e09ec48cfa0792a308d4ce4a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.FollowerDecisionModule
-  followTarget: {fileID: 6191479115019793372}
+  followTarget: {fileID: 0}
   followDistanceMeters: 1.5
   autoFollowPackLeaderOnStart: 1
   enableDebugLogging: 0
@@ -161347,7 +161352,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &1657477365
 Transform:
   m_ObjectHideFlags: 0
@@ -193723,6 +193728,11 @@ PrefabInstance:
       propertyPath: currentPack
       value: 
       objectReference: {fileID: 733348323}
+    - target: {fileID: 2422045090836954210, guid: 04c5ea4f4815441fba800a01154b58de,
+        type: 3}
+      propertyPath: debugLuaExplore
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 2422045090836954210, guid: 04c5ea4f4815441fba800a01154b58de,
         type: 3}
       propertyPath: useLuaExploreScript

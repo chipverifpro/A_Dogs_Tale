@@ -64,6 +64,7 @@ public enum ModuleFlags : ulong
     scentPerceptionModule   = 1UL << 3,
     visionPerceptionModule  = 1UL << 4,
     tasteModule             = 1UL << 5,
+    worldMemoryModule       = 1UL << 6,
 
     // --- Agent Decision Modules
     playerDecisionModule        = 1UL << 11,
@@ -212,6 +213,7 @@ public class WorldObject : MonoBehaviour
     public HearingModule hearingModule { get; private set; }
     public ScentPerceptionModule scentPerceptionModule { get; private set; }
     public VisionPerceptionModule visionPerceptionModule { get; private set; }
+    public WorldMemoryModule worldMemoryModule { get; private set; }
 
     // Output:
     public AppearanceModule appearanceModule { get; private set; }
@@ -304,6 +306,7 @@ public class WorldObject : MonoBehaviour
         scentPerceptionModule  = GetComponent<ScentPerceptionModule>();
         visionPerceptionModule           = GetComponent<VisionPerceptionModule>();
         TasteModule              = GetComponent<TasteModule>();
+        worldMemoryModule        = GetComponent<WorldMemoryModule>();
 
         // --- Agent Decision Modules
         playerDecisionModule   = GetComponent<PlayerDecisionModule>();
@@ -553,6 +556,12 @@ public class WorldObject : MonoBehaviour
         {
             TasteModule = EnsureComponent<TasteModule>();
             if (TasteModule == null) Debug.LogWarning($"TasteModule = null");
+        }
+
+        if (enables.HasFlag(ModuleFlags.worldMemoryModule))
+        {
+            worldMemoryModule = EnsureComponent<WorldMemoryModule>();
+            if (worldMemoryModule == null) Debug.LogWarning($"worldMemoryModule = null");
         }
 
 

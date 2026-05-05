@@ -102,6 +102,13 @@ namespace DogGame.Modules
 
                 var type = !seenBefore ? PerceptionEventType.NewSmell : PerceptionEventType.SmellStrengthChanged;
                 string scentDisplayName = ResolveScentDisplayName(det.scentSource, seenBefore, familiarity, learnedName);
+                int currentRoomId = cell != null ? cell.room_number : -1;
+                worldObject.worldMemoryModule?.RecordScentDetection(
+                    det.scentSource.agentId,
+                    scentDisplayName,
+                    det.scentSource.category,
+                    currentRoomId,
+                    strength01);
 
                 events.Add(PerceptionEvent.MakeScent(
                     observer: worldObject,
@@ -322,6 +329,14 @@ namespace DogGame.Modules
                 bool ignored = ignoreKeys != null && ignoreKeys.Contains(key);
                 if (ignored)
                     continue;
+
+                int currentRoomId = cell != null ? cell.room_number : -1;
+                worldObject.worldMemoryModule?.RecordScentDetection(
+                    det.scentSource.agentId,
+                    det.scentSource.scentName ?? "unknown",
+                    det.scentSource.category,
+                    currentRoomId,
+                    combined01);
 
                 // If your ScentDetection has separated channels, use them.
                 // If it does NOT, this still works: we treat "combined" as both unknown.

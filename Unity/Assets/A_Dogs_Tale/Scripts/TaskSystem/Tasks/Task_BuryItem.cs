@@ -59,6 +59,7 @@ namespace DogGame.Tasks
             context.Blackboard.SetInt("item.carriedId", 0);
             context.Blackboard.SetBool("item.buried", true);
             context.Blackboard.SetInt("item.lastBuriedId", item.ObjectId);
+            context.Agent.worldMemoryModule?.RecordBuriedBySelf(item);
 
             return TaskTickResult.Succeeded();
         }

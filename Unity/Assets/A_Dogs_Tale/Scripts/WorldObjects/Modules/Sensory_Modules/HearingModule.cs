@@ -227,6 +227,8 @@ namespace DogGame.Modules
             
             foreach (var h in summarizedForLLM)
             {
+                worldObject.worldMemoryModule?.RecordHeardNoise(h);
+
                 string direction = DirectionTokenFromVector(h.directionToSource);
                 string movement = GetMovementDescription(h.subtype);
                 string sourceRoomName = ResolveRoomName(h.sourceRoomId);
