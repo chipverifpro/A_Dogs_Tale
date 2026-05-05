@@ -19,6 +19,9 @@ namespace DogGame.Modules
         [Tooltip("Desired following distance in meters.")]
         [SerializeField] private float followDistanceMeters = 0.5f;
 
+        [Tooltip("How close a follower must be to a breadcrumb before moving to the next one.")]
+        [SerializeField] private float breadcrumbArrivalDistanceMeters = 0.35f;
+
         [Tooltip("If true, will automatically follow pack leader at startup when in a pack.")]
         [SerializeField] private bool autoFollowPackLeaderOnStart = true;
 
@@ -148,6 +151,12 @@ namespace DogGame.Modules
                 TrySetDefaultPackLeaderFollowTarget();
             }
 
+            if (worldObject.agentMovementModule == null)
+            {
+                Debug.LogWarning($"[FollowerDecisionModule {worldObject.DisplayName}] No AgentMovementModule found.", this);
+                return;
+            }
+
             if (followTarget == null)
             {
                 // No target to follow; decelerate to a stop
@@ -155,23 +164,36 @@ namespace DogGame.Modules
                 return;
             }
 
-            // Compute direction to follow target
-            Vector3 currentPos = worldObject.transform.position;    // TODO, get from LocationModule
-            Vector3 targetPos = followTarget.transform.position;    // TODO, get from LocationModule
+            Vector3 targetPos = default;
+            bool followingPackLeader = TryGetCurrentPackLeaderFollow(out Pack currentPack);
+            if (followingPackLeader && !TryGetNextBreadcrumbMapPosition(currentPack, out targetPos))
+            {
+                worldObject.agentMovementModule.ClearDesiredMove();
+                return;
+            }
+
+            if (!followingPackLeader)
+            {
+                targetPos = followTarget.pos3d_map;
+            }
+
+            // Compute direction to current breadcrumb or non-pack follow target.
+            Vector3 currentPos = worldObject.pos3d_map;
 
             Vector3 toTarget = targetPos - currentPos;
             toTarget.y = 0f;
 
             float sqrDistanceToTarget = toTarget.sqrMagnitude;
             
-            float desiredDistance = followDistanceMeters;
+            float desiredDistance = followingPackLeader ? breadcrumbArrivalDistanceMeters : followDistanceMeters;
             float sqrDesiredDistance = desiredDistance * desiredDistance;
 
             if (enableDebugLogging && Time.frameCount % 30 == 0)
             {
+                string targetLabel = followingPackLeader ? "breadcrumb" : followTarget.name;
                 Debug.Log(
                     $"[FollowerDecisionModule {worldObject.DisplayName}] " +
-                    $"Following {followTarget.name}, dist={Mathf.Sqrt(sqrDistanceToTarget):F2},desired={desiredDistance}",
+                    $"Following {targetLabel}, dist={Mathf.Sqrt(sqrDistanceToTarget):F2},desired={desiredDistance}",
                     this);
             }
             if (sqrDistanceToTarget > sqrDesiredDistance)
@@ -191,9 +213,10 @@ namespace DogGame.Modules
                 
                 if (enableDebugLogging && Time.frameCount % 30 == 0)
                 {
+                    string targetLabel = followingPackLeader ? "breadcrumb" : followTarget.name;
                     Debug.Log(
                         $"[FollowerDecisionModule {worldObject.DisplayName}] " +
-                        $"Following {followTarget.name}, dist={Mathf.Sqrt(sqrDistanceToTarget):F2}",
+                        $"Following {targetLabel}, dist={Mathf.Sqrt(sqrDistanceToTarget):F2}",
                         this);
                 }
             }
@@ -205,6 +228,34 @@ namespace DogGame.Modules
         }
 
         #endregion
+
+        private bool TryGetCurrentPackLeaderFollow(out Pack currentPack)
+        {
+            currentPack = worldObject.packMemberModule != null
+                ? worldObject.packMemberModule.currentPack
+                : null;
+
+            return currentPack != null &&
+                   currentPack.packLeader != null &&
+                   followTarget == currentPack.packLeader;
+        }
+
+        private bool TryGetNextBreadcrumbMapPosition(Pack currentPack, out Vector3 targetMapPosition)
+        {
+            targetMapPosition = default;
+
+            BreadcrumbTrail trail = currentPack != null ? currentPack.trail : null;
+            if (trail == null)
+                return false;
+
+            trail.RecordIfNeeded();
+            Crumb crumb = trail.GetNextCrumb(worldObject, breadcrumbArrivalDistanceMeters);
+            if (crumb == null || !crumb.valid)
+                return false;
+
+            targetMapPosition = new Vector3(crumb.pos2.x, crumb.height, crumb.pos2.y);
+            return true;
+        }
         
         public override void BeginDecisionModule(bool resume=false)
         {

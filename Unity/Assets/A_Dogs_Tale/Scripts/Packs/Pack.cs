@@ -84,9 +84,9 @@ public class Pack : MonoBehaviour
             {
                 // attach a Breadcrumb trail MonoBehavior
                 trail = gameObject.AddComponent<BreadcrumbTrail>();
-                trail.pack = this;
             }
         }
+        SyncBreadcrumbTrail();
 
         //Move all initial pack members to under this pack in Unity Hierarchy
         // and any other initialization.
@@ -99,6 +99,8 @@ public class Pack : MonoBehaviour
 
     public void TeleportToLeader()
     {
+        SyncBreadcrumbTrail();
+
         if (packLeader == null)
         {
             Debug.LogWarning("packLeader is null; cannot teleport pack members.");
@@ -187,6 +189,8 @@ public class Pack : MonoBehaviour
     public bool SetPackFollowChain()
     {
         if (packAgentList.Count == 0) return false;
+
+        SyncBreadcrumbTrail();
 
         packLeader.agentModule.SwitchDecisionModule(leadershipType);
         // make sure cameras are following playerPack.packLeader
@@ -286,6 +290,7 @@ public class Pack : MonoBehaviour
             
             packAgentList.Remove(agent);
             agent.packMemberModule.currentPack = null;
+            SyncBreadcrumbTrail();
             Debug.Log($"Pack removed member {agent.DisplayName}. Remaining {this.ToString()}");
             
             SetPackFollowChain();   // do this after any change to packAgentList
@@ -329,6 +334,49 @@ public class Pack : MonoBehaviour
             if (packAgentList[pos] == agent) return pos;
         }
         return -1;
+    }
+
+    private void SyncBreadcrumbTrail()
+    {
+        if (trail == null)
+        {
+            trail = GetComponent<BreadcrumbTrail>();
+            if (trail == null)
+                trail = gameObject.AddComponent<BreadcrumbTrail>();
+        }
+
+        if (trail.followers == null)
+            trail.followers = new();
+
+        int expectedFollowerCount = packAgentList != null ? Mathf.Max(0, packAgentList.Count - 1) : 0;
+        bool leaderChanged = trail.leader != null && trail.leader != packLeader;
+        bool followersChanged = trail.followers.Count != expectedFollowerCount;
+        if (!followersChanged && packAgentList != null)
+        {
+            for (int idx = 1; idx < packAgentList.Count; idx++)
+            {
+                if (trail.followers[idx - 1] != packAgentList[idx])
+                {
+                    followersChanged = true;
+                    break;
+                }
+            }
+        }
+
+        if (leaderChanged || followersChanged)
+            trail.ClearCrumbs();
+
+        trail.pack = this;
+        trail.leader = packLeader;
+        trail.followers.Clear();
+        if (packAgentList == null)
+            return;
+
+        for (int idx = 1; idx < packAgentList.Count; idx++)
+        {
+            if (packAgentList[idx] != null)
+                trail.followers.Add(packAgentList[idx]);
+        }
     }
 
     // returns true unless agent not found.

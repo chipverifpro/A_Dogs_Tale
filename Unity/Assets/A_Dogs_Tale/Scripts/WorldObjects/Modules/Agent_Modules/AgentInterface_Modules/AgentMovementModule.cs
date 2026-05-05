@@ -41,8 +41,8 @@ namespace DogGame.Modules
     {
         [Header("For following and routing")]
         // next crumb in trail we are following
-        public Crumb next_actualCrumb;
-        public Crumb next_formationCrumb;
+        public Crumb next_actualCrumb = new();
+        public Crumb next_formationCrumb = new();
 
         [Header("Current Destination")]
         // Object or Location we are going towards.
