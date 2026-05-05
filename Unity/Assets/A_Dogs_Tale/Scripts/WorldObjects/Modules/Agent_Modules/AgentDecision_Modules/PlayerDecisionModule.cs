@@ -32,6 +32,7 @@ namespace DogGame.Modules
 
         [Header("Movement")]
         [SerializeField] private float manualTurnDegreesPerSecond = 240f;
+        [SerializeField] private float directInputConstraintStopSpeed = 0.01f;
 
         [Header("Camera Control")]
         [SerializeField] private Camera cameraForMovement;
@@ -166,7 +167,7 @@ namespace DogGame.Modules
                 return;
             }
 
-            SetDirectInputWallConstraint(HasManualMoveInput(inputState));
+            SetDirectInputWallConstraint(ShouldConstrainDirectInputMovement(inputState));
 
             bool taskDrivingMovement = taskController != null && taskController.IsDrivingMovement;
             if (taskDrivingMovement)
@@ -535,6 +536,18 @@ namespace DogGame.Modules
                 return;
 
             worldObject.motionModule.ConstrainToCellWalls = enable;
+        }
+
+        private bool ShouldConstrainDirectInputMovement(PlayerInputState state)
+        {
+            if (HasManualMoveInput(state))
+                return true;
+
+            if (worldObject?.motionModule == null)
+                return false;
+
+            return worldObject.motionModule.motionControlMode == MotionControlMode.DirectInput &&
+                   worldObject.motionModule.HorizontalSpeed > directInputConstraintStopSpeed;
         }
 
         public void MovementHeadToDestination()

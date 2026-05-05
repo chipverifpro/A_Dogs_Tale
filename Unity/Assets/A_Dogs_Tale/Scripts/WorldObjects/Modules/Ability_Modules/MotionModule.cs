@@ -333,10 +333,12 @@ namespace DogGame.Modules
             Vector3 proposedPosition = bodyRoot.position + proposedDelta;
 
             // --- 6. Apply world-space constraints before committing the move
-            Vector3 constrainedPosition = ResolveConstrainedWorldPosition(bodyRoot.position, proposedPosition, applyLeashConstraints: true);
+            Vector3 startPosition = bodyRoot.position;
+            Vector3 constrainedPosition = ResolveConstrainedWorldPosition(startPosition, proposedPosition, applyLeashConstraints: true);
+            constrainedPosition = PreventConstraintRebound(startPosition, proposedPosition, constrainedPosition);
 
             // --- 7. Commit
-            Vector3 actualDelta = constrainedPosition - bodyRoot.position;
+            Vector3 actualDelta = constrainedPosition - startPosition;
             bodyRoot.position = constrainedPosition;
 
             // --- 8. Optional: make horizontalVelocity reflect the actual move (reduces later jitter)
@@ -378,6 +380,7 @@ namespace DogGame.Modules
                 startPosition,
                 startPosition + desiredWorldDelta,
                 applyLeashConstraints);
+            constrainedPosition = PreventConstraintRebound(startPosition, startPosition + desiredWorldDelta, constrainedPosition);
 
             Vector3 actualDelta = constrainedPosition - startPosition;
             bodyRoot.position = constrainedPosition;
@@ -389,6 +392,40 @@ namespace DogGame.Modules
             }
 
             return actualDelta;
+        }
+
+        private static Vector3 PreventConstraintRebound(Vector3 fromWorld, Vector3 proposedWorld, Vector3 constrainedWorld)
+        {
+            Vector3 desiredDelta = proposedWorld - fromWorld;
+            desiredDelta.y = 0f;
+
+            Vector3 actualDelta = constrainedWorld - fromWorld;
+            float constrainedY = constrainedWorld.y;
+            actualDelta.y = 0f;
+
+            if (desiredDelta.sqrMagnitude < 1e-10f || actualDelta.sqrMagnitude < 1e-10f)
+                return constrainedWorld;
+
+            float desiredDistance = desiredDelta.magnitude;
+            float actualDistance = actualDelta.magnitude;
+
+            if (Vector3.Dot(actualDelta, desiredDelta) <= 0f)
+            {
+                constrainedWorld.x = fromWorld.x;
+                constrainedWorld.z = fromWorld.z;
+                constrainedWorld.y = constrainedY;
+                return constrainedWorld;
+            }
+
+            if (actualDistance > desiredDistance)
+            {
+                Vector3 cappedDelta = actualDelta.normalized * desiredDistance;
+                constrainedWorld.x = fromWorld.x + cappedDelta.x;
+                constrainedWorld.z = fromWorld.z + cappedDelta.z;
+                constrainedWorld.y = constrainedY;
+            }
+
+            return constrainedWorld;
         }
 
         #endregion
