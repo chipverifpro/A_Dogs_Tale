@@ -24,6 +24,12 @@ local function clearPendingAction()
     state.pendingDoorId = nil
 end
 
+local function consumeExploreActionCancelled()
+    local wasCancelled = ExploreActionCancelled == true
+    ExploreActionCancelled = false
+    return wasCancelled
+end
+
 local function doorExistsInCurrentRoom(doorId)
     if doorId == nil or Room == nil or not Room.IsValid then
         return false
@@ -60,6 +66,7 @@ local function syncCurrentRoom()
 
     local currentRoomId = Room.Id
     local topRoom = topRoomId()
+    local actionCancelled = consumeExploreActionCancelled()
 
     if topRoom == nil then
         state.roomPath[1] = currentRoomId
@@ -71,6 +78,14 @@ local function syncCurrentRoom()
 
     if topRoom == currentRoomId then
         validateCurrentEntryDoor()
+        if state.pendingAction == "center" then
+            if actionCancelled then
+                log("Interrupted before reaching room center for room " .. tostring(currentRoomId) .. "; will retry later")
+            else
+                state.centeredRooms[currentRoomId] = true
+                log("Reached room center for room " .. tostring(currentRoomId))
+            end
+        end
         clearPendingAction()
         return true
     end
@@ -128,20 +143,19 @@ function tick()
 
     log("tick room=" .. tostring(Room.Id) .. " doorCount=" .. tostring(Room.DoorCount) .. " pending=" .. tostring(state.pendingAction))
 
+    if VisitRoomCenterBeforeBacktracking and not state.centeredRooms[Room.Id] then
+        state.pendingAction = "center"
+        log("First visit to room " .. tostring(Room.Id) .. "; issuing GoToRoomCenter()")
+        GoToRoomCenter()
+        return
+    end
+
     local nextDoorId = chooseNearestUnusedDoor()
     if nextDoorId ~= nil then
         state.pendingAction = "forward"
         state.pendingDoorId = nextDoorId
         log("Issuing GoThroughDoor(" .. tostring(nextDoorId) .. ")")
         GoThroughDoor(nextDoorId)
-        return
-    end
-
-    if VisitRoomCenterBeforeBacktracking and not state.centeredRooms[Room.Id] then
-        state.centeredRooms[Room.Id] = true
-        state.pendingAction = "center"
-        log("No unused doors in room " .. tostring(Room.Id) .. "; issuing GoToRoomCenter()")
-        GoToRoomCenter()
         return
     end
 

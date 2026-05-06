@@ -125,7 +125,7 @@ public class SceneFader : MonoBehaviour
     [Header("Splash Image")]
     [SerializeField] private Image splashImage;              // drag the Image component from SplashCanvas here
     [SerializeField] private string splashResourceFolder = "Images";
-    [SerializeField] private int splashCount = 13;
+    [SerializeField] private int splashCount = 19;
 
     // Call this right before you display the splash.
     private void SetRandomSplashSprite()

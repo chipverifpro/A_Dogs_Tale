@@ -79707,7 +79707,7 @@ MonoBehaviour:
   returnToTitleKey: 127
   splashImage: {fileID: 1088835539}
   splashResourceFolder: Images
-  splashCount: 10
+  splashCount: 19
 --- !u!114 &836622446
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -83049,6 +83049,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.PlayerDecisionModule
   manualTurnDegreesPerSecond: 240
+  directInputConstraintStopSpeed: 0.01
   cameraForMovement: {fileID: 1815589284}
   cameraModeSwitcher: {fileID: 1815589288}
   currentDestinationObject: {fileID: 0}
@@ -119507,6 +119508,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.PlayerDecisionModule
   manualTurnDegreesPerSecond: 240
+  directInputConstraintStopSpeed: 0.01
   cameraForMovement: {fileID: 1815589284}
   cameraModeSwitcher: {fileID: 1815589288}
   currentDestinationObject: {fileID: 0}
@@ -159704,6 +159706,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.FollowerDecisionModule
   followTarget: {fileID: 0}
   followDistanceMeters: 1.5
+  breadcrumbArrivalDistanceMeters: 0.35
   autoFollowPackLeaderOnStart: 1
   enableDebugLogging: 0
 --- !u!114 &1651296788
@@ -159732,6 +159735,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.PlayerDecisionModule
   manualTurnDegreesPerSecond: 240
+  directInputConstraintStopSpeed: 0.01
   cameraForMovement: {fileID: 1815589284}
   cameraModeSwitcher: {fileID: 1815589288}
   currentDestinationObject: {fileID: 1651296793}
@@ -193927,6 +193931,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.FollowerDecisionModule
   followTarget: {fileID: 0}
   followDistanceMeters: 0.5
+  breadcrumbArrivalDistanceMeters: 0.35
   autoFollowPackLeaderOnStart: 1
   enableDebugLogging: 0
 --- !u!114 &1988421417
@@ -193942,6 +193947,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.PlayerDecisionModule
   manualTurnDegreesPerSecond: 240
+  directInputConstraintStopSpeed: 0.01
   cameraForMovement: {fileID: 0}
   cameraModeSwitcher: {fileID: 0}
   currentDestinationObject: {fileID: 0}
@@ -215342,6 +215348,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.FollowerDecisionModule
   followTarget: {fileID: 0}
   followDistanceMeters: 1.5
+  breadcrumbArrivalDistanceMeters: 0.35
   autoFollowPackLeaderOnStart: 1
   enableDebugLogging: 0
 --- !u!114 &6544990386685219151
@@ -215370,6 +215377,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.PlayerDecisionModule
   manualTurnDegreesPerSecond: 240
+  directInputConstraintStopSpeed: 0.01
   cameraForMovement: {fileID: 1815589284}
   cameraModeSwitcher: {fileID: 1815589288}
   currentDestinationObject: {fileID: 0}

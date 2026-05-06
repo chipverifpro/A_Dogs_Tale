@@ -40,6 +40,12 @@ local function clearPendingAction()
     state.pendingDoorId = nil
 end
 
+local function consumeExploreActionCancelled()
+    local wasCancelled = ExploreActionCancelled == true
+    ExploreActionCancelled = false
+    return wasCancelled
+end
+
 local function doorExistsInCurrentRoom(doorId)
     if doorId == nil or Room == nil or not Room.IsValid then
         return false
@@ -76,6 +82,7 @@ local function syncCurrentRoom()
 
     local currentRoomId = Room.Id
     local topRoom = topRoomId()
+    local actionCancelled = consumeExploreActionCancelled()
 
     if topRoom == nil then
         state.roomPath[1] = currentRoomId
@@ -87,6 +94,14 @@ local function syncCurrentRoom()
 
     if topRoom == currentRoomId then
         validateCurrentEntryDoor()
+        if state.pendingAction == 'center' then
+            if actionCancelled then
+                log('Interrupted before reaching room center for room ' .. tostring(currentRoomId) .. '; will retry later')
+            else
+                state.centeredRooms[currentRoomId] = true
+                log('Reached room center for room ' .. tostring(currentRoomId))
+            end
+        end
         clearPendingAction()
         return true
     end
@@ -145,20 +160,19 @@ function tick()
 
     log('tick room=' .. tostring(Room.Id) .. ' doorCount=' .. tostring(Room.DoorCount) .. ' pending=' .. tostring(state.pendingAction))
 
+    if VisitRoomCenterBeforeBacktracking and not state.centeredRooms[Room.Id] then
+        state.pendingAction = 'center'
+        log('First visit to room ' .. tostring(Room.Id) .. '; issuing GoToRoomCenter()')
+        GoToRoomCenter()
+        return
+    end
+
     local nextDoorId = chooseNearestUnusedDoor()
     if nextDoorId ~= nil then
         state.pendingAction = 'forward'
         state.pendingDoorId = nextDoorId
         log('Issuing GoThroughDoor(' .. tostring(nextDoorId) .. ')')
         GoThroughDoor(nextDoorId)
-        return
-    end
-
-    if VisitRoomCenterBeforeBacktracking and not state.centeredRooms[Room.Id] then
-        state.centeredRooms[Room.Id] = true
-        state.pendingAction = 'center'
-        log('No unused doors in room ' .. tostring(Room.Id) .. '; issuing GoToRoomCenter()')
-        GoToRoomCenter()
         return
     end
 
@@ -205,7 +219,7 @@ end
             public string reverseKey;
         }
 
-        [Tooltip("When enabled, a dead-end room is explored by moving to its center before the dog backtracks.")]
+        [Tooltip("When enabled, each newly visited room is explored by moving to its center before trying doors.")]
         [SerializeField] private bool visitRoomCenterBeforeBacktracking = true;
         [Header("Lua Explore")]
         [Tooltip("Runs the explore behavior through the Lua runtime instead of the built-in C# door queue.")]
@@ -220,9 +234,11 @@ end
         private readonly List<DoorGoal> toExplore = new();
         private readonly HashSet<string> queuedDoorKeys = new();
         private readonly HashSet<string> exploredDoorKeys = new();
+        private readonly HashSet<int> centeredRoomIds = new();
 
         private DoorGoal activeDoor;
         private Vector3 activeRoomCenterMap;
+        private int activeRoomCenterRoomIndex = -1;
         private ExplorePhase phase;
         private bool needsDoorRefresh = true;
         private int queuedRoomIndex = -1;
@@ -293,6 +309,9 @@ end
 
             if (phase == ExplorePhase.None)
             {
+                if (TryStartRoomCenterVisit(currentCell.room_number))
+                    return;
+
                 if (!TryActivateNextDoor(currentCell))
                 {
                     worldObject.agentMovementModule.ClearDesiredTarget();
@@ -320,7 +339,7 @@ end
                 queuedRoomIndex = activeDoor.neighborRoomIndex;
                 needsDoorRefresh = false;
 
-                if (TryStartDeadEndRoomCenterVisit(activeDoor.neighborRoomIndex))
+                if (TryStartRoomCenterVisit(activeDoor.neighborRoomIndex))
                     return;
             }
 
@@ -328,6 +347,9 @@ end
             {
                 //Debug.Log(
                 //    $"{worldObject.DisplayName} [ExploreDecisionModule] reached room center at {activeRoomCenterMap}; resuming door search");
+                if (activeRoomCenterRoomIndex >= 0)
+                    centeredRoomIds.Add(activeRoomCenterRoomIndex);
+                activeRoomCenterRoomIndex = -1;
                 phase = ExplorePhase.None;
             }
         }
@@ -485,6 +507,7 @@ end
 
         private void CancelExploreTasks()
         {
+            luaRuntime?.SetGlobal("ExploreActionCancelled", true);
             luaTaskController ??= GetComponent<TaskController>();
             luaTaskController?.CancelAllTasks();
         }
@@ -638,12 +661,12 @@ end
             return bestCurrentRoomIndex >= 0 ? bestCurrentRoomIndex : bestFallbackIndex;
         }
 
-        private bool TryStartDeadEndRoomCenterVisit(int roomIndex)
+        private bool TryStartRoomCenterVisit(int roomIndex)
         {
             if (!visitRoomCenterBeforeBacktracking)
                 return false;
 
-            if (HasQueuedDoorForRoom(roomIndex))
+            if (centeredRoomIds.Contains(roomIndex))
                 return false;
 
             if (!TryGetRoomCenterMap(roomIndex, out Vector3 roomCenterMap))
@@ -652,25 +675,18 @@ end
             float stopDistance = worldObject.agentMovementModule.StopDistance;
             Vector3 delta = roomCenterMap - worldObject.pos3d_map;
             if (delta.sqrMagnitude <= stopDistance * stopDistance)
+            {
+                centeredRoomIds.Add(roomIndex);
                 return false;
+            }
 
             activeRoomCenterMap = roomCenterMap;
+            activeRoomCenterRoomIndex = roomIndex;
             phase = ExplorePhase.MoveToRoomCenter;
             worldObject.agentMovementModule.SetDesiredTargetLocationMap(activeRoomCenterMap, WalkMode.None, requestPathfinding: true);
             //Debug.Log(
-            //    $"{worldObject.DisplayName} [ExploreDecisionModule] room {roomIndex} is a dead end; visiting center at {activeRoomCenterMap} before backtracking");
+            //    $"{worldObject.DisplayName} [ExploreDecisionModule] visiting center of room {roomIndex} at {activeRoomCenterMap}");
             return true;
-        }
-
-        private bool HasQueuedDoorForRoom(int roomIndex)
-        {
-            for (int i = 0; i < toExplore.Count; i++)
-            {
-                if (toExplore[i].roomIndex == roomIndex)
-                    return true;
-            }
-
-            return false;
         }
 
         private bool TryGetRoomCenterMap(int roomIndex, out Vector3 roomCenterMap)
