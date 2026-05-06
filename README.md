@@ -1,4 +1,7 @@
 <h1>A Dog's Tale</h1>
+<img width="1122" height="1402" alt="GPT_infographic1" src="https://github.com/user-attachments/assets/5b77b8b3-6153-4e24-b9bc-095df5924bfb" />
+<P></P>
+<hr>
 <a href="https://github.com/chipverifpro/A_Dogs_Tale/wiki">Wiki</a> - check here for development notes and ideas.
 <br>
 <img width="575" height="322" alt="Screenshot 2025-10-21 at 11 50 03 AM" src="https://github.com/user-attachments/assets/dde4222a-d3d1-4cd4-a9c7-8fd08151b956" />
