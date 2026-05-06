@@ -69,6 +69,7 @@ public sealed class InventoryDialogUI : MonoBehaviour
     private WorldObject previewedItem;
     private WorldObject displayedTradePartner;
     private WorldObject displayedTradePartnerItem;
+    private WorldObject displayedTradePartnerPreviewObject;
     private ContainerModule displayedContainer;
     private bool isOpen;
     private bool keepSelectedTradeTargetIndex;
@@ -83,18 +84,43 @@ public sealed class InventoryDialogUI : MonoBehaviour
         PickUp = 5
     }
 
+    private enum TradeTargetKind
+    {
+        WorldObject,
+        Ground
+    }
+
     private readonly struct TradeTargetOption
     {
-        public TradeTargetOption(WorldObject agent, WorldObject item, float distanceSqr)
+        public TradeTargetOption(TradeTargetKind kind, WorldObject agent, WorldObject item, float distanceSqr)
         {
+            Kind = kind;
             Agent = agent;
             Item = item;
             DistanceSqr = distanceSqr;
         }
 
+        public TradeTargetKind Kind { get; }
         public WorldObject Agent { get; }
         public WorldObject Item { get; }
         public float DistanceSqr { get; }
+        public bool IsGround => Kind == TradeTargetKind.Ground;
+        public WorldObject PreviewObject => IsGround ? Item : Agent;
+
+        public static TradeTargetOption ForWorldObject(WorldObject agent, WorldObject item, float distanceSqr)
+        {
+            return new TradeTargetOption(TradeTargetKind.WorldObject, agent, item, distanceSqr);
+        }
+
+        public static TradeTargetOption ForGroundItem(WorldObject item, float distanceSqr)
+        {
+            return new TradeTargetOption(TradeTargetKind.Ground, null, item, distanceSqr);
+        }
+
+        public static TradeTargetOption ForGround(float distanceSqr)
+        {
+            return new TradeTargetOption(TradeTargetKind.Ground, null, null, distanceSqr);
+        }
     }
 
     private void Awake()
@@ -151,6 +177,7 @@ public sealed class InventoryDialogUI : MonoBehaviour
         previewedItem = null;
         displayedTradePartner = null;
         displayedTradePartnerItem = null;
+        displayedTradePartnerPreviewObject = null;
         displayedContainer = null;
 
         if (dialogRoot != null)
@@ -743,17 +770,19 @@ public sealed class InventoryDialogUI : MonoBehaviour
         keepSelectedTradeTargetIndex = false;
 
         TradeTargetOption selectedOption = tradeTargetOptions[selectedTradeTargetIndex];
-        bool selectedPartnerChanged = selectedOption.Agent != displayedTradePartner;
+        WorldObject selectedPreviewObject = selectedOption.PreviewObject;
+        bool selectedPreviewChanged = selectedPreviewObject != displayedTradePartnerPreviewObject;
         displayedTradePartner = selectedOption.Agent;
         displayedTradePartnerItem = selectedOption.Item;
+        displayedTradePartnerPreviewObject = selectedPreviewObject;
 
         tradePartnerNameLabel.text = BuildTradePartnerLabel(selectedOption);
         bool hasMultipleTradeTargets = tradeTargetOptions.Count > 1;
         tradePartnerLeftArrowButton.gameObject.SetActive(hasMultipleTradeTargets);
         tradePartnerRightArrowButton.gameObject.SetActive(hasMultipleTradeTargets);
 
-        if (forcePreviewRefresh || selectedPartnerChanged || tradePartnerPreviewClone == null)
-            BuildTradePartnerPreviewClone(selectedOption.Agent);
+        if (forcePreviewRefresh || selectedPreviewChanged || (selectedPreviewObject != null && tradePartnerPreviewClone == null))
+            BuildTradePartnerPreviewClone(selectedPreviewObject);
     }
 
     private void SetNoTradePartnerState()
@@ -766,18 +795,24 @@ public sealed class InventoryDialogUI : MonoBehaviour
         if (tradePartnerRightArrowButton != null)
             tradePartnerRightArrowButton.gameObject.SetActive(false);
 
-        if (displayedTradePartner != null || tradePartnerPreviewClone != null)
-        {
-            displayedTradePartner = null;
-            displayedTradePartnerItem = null;
-            DestroyTradePartnerPreviewClone();
-        }
+        displayedTradePartner = null;
+        displayedTradePartnerItem = null;
+        displayedTradePartnerPreviewObject = null;
+        DestroyTradePartnerPreviewClone();
 
         ClearTradePartnerPreviewTexture();
     }
 
     private string BuildTradePartnerLabel(TradeTargetOption option)
     {
+        if (option.IsGround)
+        {
+            if (option.Item != null)
+                return $"Ground\nHolding {option.Item.DisplayName}";
+
+            return "Ground\nHolding nothing";
+        }
+
         if (option.Agent == null)
             return "No one nearby";
 
@@ -811,18 +846,23 @@ public sealed class InventoryDialogUI : MonoBehaviour
 
         WorldObject controlledObject = GetCurrentControlledWorldObject();
         WorldObjectRegistry registry = WorldObjectRegistry.Instance;
-        if (controlledObject == null || registry == null)
+        if (controlledObject == null)
             return;
 
         float radiusSqr = tradePartnerSearchRadiusTiles * tradePartnerSearchRadiusTiles;
         Vector3 controlledPosition = controlledObject.pos3d_map;
 
+        if (registry == null)
+        {
+            tradeTargetOptions.Add(TradeTargetOption.ForGround(0f));
+            return;
+        }
+
+        bool foundGroundItem = false;
+
         foreach (WorldObject candidate in registry.GetAllObjects())
         {
             if (candidate == null || candidate == controlledObject || !candidate.gameObject.activeInHierarchy)
-                continue;
-
-            if (!CanUseAsTradeTarget(candidate))
                 continue;
 
             Vector3 delta = candidate.pos3d_map - controlledPosition;
@@ -831,10 +871,20 @@ public sealed class InventoryDialogUI : MonoBehaviour
             if (distanceSqr > radiusSqr)
                 continue;
 
+            if (CanUseAsGroundItem(candidate))
+            {
+                foundGroundItem = true;
+                tradeTargetOptions.Add(TradeTargetOption.ForGroundItem(candidate, distanceSqr));
+                continue;
+            }
+
+            if (!CanUseAsTradeTarget(candidate))
+                continue;
+
             ContainerModule container = candidate.containerModule;
             if (container == null || container.HeldItemCount == 0)
             {
-                tradeTargetOptions.Add(new TradeTargetOption(candidate, null, distanceSqr));
+                tradeTargetOptions.Add(TradeTargetOption.ForWorldObject(candidate, null, distanceSqr));
                 continue;
             }
 
@@ -842,9 +892,12 @@ public sealed class InventoryDialogUI : MonoBehaviour
             {
                 WorldObject item = container.HeldItems[i];
                 if (item != null)
-                    tradeTargetOptions.Add(new TradeTargetOption(candidate, item, distanceSqr));
+                    tradeTargetOptions.Add(TradeTargetOption.ForWorldObject(candidate, item, distanceSqr));
             }
         }
+
+        if (!foundGroundItem)
+            tradeTargetOptions.Add(TradeTargetOption.ForGround(0f));
 
         tradeTargetOptions.Sort(CompareTradeTargetOptions);
     }
@@ -858,9 +911,24 @@ public sealed class InventoryDialogUI : MonoBehaviour
                candidate.containerModule.itemCapacity > 0;
     }
 
+    private static bool CanUseAsGroundItem(WorldObject candidate)
+    {
+        if (candidate == null || candidate.Kind != WorldObjectKind.Item)
+            return false;
+
+        if (!candidate.gameObject.activeInHierarchy)
+            return false;
+
+        if (candidate.transform.parent == null)
+            return true;
+
+        WorldObject parentWorldObject = candidate.transform.parent.GetComponentInParent<WorldObject>();
+        return parentWorldObject == null || parentWorldObject == candidate;
+    }
+
     private int FindTradeTargetOptionIndex(WorldObject agent, WorldObject item)
     {
-        if (agent == null)
+        if (agent == null && item == null)
             return -1;
 
         for (int i = 0; i < tradeTargetOptions.Count; i++)
@@ -879,8 +947,8 @@ public sealed class InventoryDialogUI : MonoBehaviour
         if (distanceComparison != 0)
             return distanceComparison;
 
-        string aName = a.Agent != null ? a.Agent.DisplayName : string.Empty;
-        string bName = b.Agent != null ? b.Agent.DisplayName : string.Empty;
+        string aName = a.IsGround ? "Ground" : a.Agent != null ? a.Agent.DisplayName : string.Empty;
+        string bName = b.IsGround ? "Ground" : b.Agent != null ? b.Agent.DisplayName : string.Empty;
         int nameComparison = string.Compare(aName, bName, StringComparison.OrdinalIgnoreCase);
         if (nameComparison != 0)
             return nameComparison;
@@ -888,6 +956,19 @@ public sealed class InventoryDialogUI : MonoBehaviour
         string aItemName = a.Item != null ? a.Item.DisplayName : string.Empty;
         string bItemName = b.Item != null ? b.Item.DisplayName : string.Empty;
         return string.Compare(aItemName, bItemName, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private bool TryGetSelectedTradeTargetOption(out TradeTargetOption option)
+    {
+        if (tradeTargetOptions.Count <= 0)
+        {
+            option = default;
+            return false;
+        }
+
+        selectedTradeTargetIndex = Mathf.Clamp(selectedTradeTargetIndex, 0, tradeTargetOptions.Count - 1);
+        option = tradeTargetOptions[selectedTradeTargetIndex];
+        return true;
     }
 
     private WorldObject GetSelectedHeldItem()
@@ -1038,6 +1119,21 @@ public sealed class InventoryDialogUI : MonoBehaviour
             return;
         }
 
+        if (TryGetSelectedTradeTargetOption(out TradeTargetOption selectedOption) && selectedOption.IsGround)
+        {
+            if (TryDropItemNearCarrier(giverContainer, giver, item, out string dropReason))
+            {
+                ShowInventoryMessage($"{giver.DisplayName} dropped {item.DisplayName} on the ground");
+                selectedIndex = Mathf.Clamp(selectedIndex, 0, giverContainer.HeldItemCount - 1);
+                RefreshInventoryView(forcePreviewRefresh: true);
+                return;
+            }
+
+            ShowInventoryMessage(dropReason);
+            Debug.LogWarning($"InventoryDialogUI: failed to drop {item.DisplayName}: {dropReason}", this);
+            return;
+        }
+
         if (recipient == null || recipientContainer == null)
         {
             ShowInventoryMessage("No one nearby to give an item to");
@@ -1065,6 +1161,29 @@ public sealed class InventoryDialogUI : MonoBehaviour
 
         if (taker == null || takerContainer == null)
             return;
+
+        if (TryGetSelectedTradeTargetOption(out TradeTargetOption selectedOption) && selectedOption.IsGround)
+        {
+            item = selectedOption.Item;
+            if (item == null)
+            {
+                ShowInventoryMessage("No ground item selected to take");
+                return;
+            }
+
+            string itemName = item.DisplayName;
+            if (TryTakeGroundItem(takerContainer, item, out string pickupReason))
+            {
+                ShowInventoryMessage($"{taker.DisplayName} picked up {itemName} from the ground");
+                SelectHeldItem(item);
+                RefreshInventoryView(forcePreviewRefresh: true);
+                return;
+            }
+
+            ShowInventoryMessage(pickupReason);
+            Debug.LogWarning($"InventoryDialogUI: failed to pick up {itemName}: {pickupReason}", this);
+            return;
+        }
 
         if (giver == null || giverContainer == null)
         {
@@ -1100,6 +1219,51 @@ public sealed class InventoryDialogUI : MonoBehaviour
 
         if (trader == null || traderContainer == null)
             return;
+
+        if (TryGetSelectedTradeTargetOption(out TradeTargetOption selectedOption) && selectedOption.IsGround)
+        {
+            partnerItem = selectedOption.Item;
+            if (traderItem == null)
+            {
+                if (partnerItem != null)
+                {
+                    OnTakeItemClicked();
+                    return;
+                }
+
+                ShowInventoryMessage($"{trader.DisplayName} has no item to trade");
+                return;
+            }
+
+            if (partnerItem == null)
+            {
+                if (TryDropItemNearCarrier(traderContainer, trader, traderItem, out string dropReason))
+                {
+                    ShowInventoryMessage($"{trader.DisplayName} dropped {traderItem.DisplayName} on the ground");
+                    selectedIndex = Mathf.Clamp(selectedIndex, 0, traderContainer.HeldItemCount - 1);
+                    RefreshInventoryView(forcePreviewRefresh: true);
+                    return;
+                }
+
+                ShowInventoryMessage(dropReason);
+                Debug.LogWarning($"InventoryDialogUI: failed to drop {traderItem.DisplayName}: {dropReason}", this);
+                return;
+            }
+
+            string traderItemName = traderItem.DisplayName;
+            string partnerItemName = partnerItem.DisplayName;
+            if (SwapHeldItemWithGroundItem(traderContainer, trader, traderItem, partnerItem, out string swapReason))
+            {
+                ShowInventoryMessage($"{trader.DisplayName} swapped {traderItemName} for {partnerItemName} on the ground");
+                SelectHeldItem(partnerItem);
+                RefreshInventoryView(forcePreviewRefresh: true);
+                return;
+            }
+
+            ShowInventoryMessage(swapReason);
+            Debug.LogWarning($"InventoryDialogUI: failed to swap {traderItemName} for ground item {partnerItemName}: {swapReason}", this);
+            return;
+        }
 
         if (partner == null || partnerContainer == null)
         {
@@ -1151,17 +1315,7 @@ public sealed class InventoryDialogUI : MonoBehaviour
         if (item == null || carrier == null)
             return;
 
-        Vector3 dropDirection = carrier.transform.forward;
-        dropDirection.y = 0f;
-        if (dropDirection.sqrMagnitude < 0.001f)
-            dropDirection = Vector3.forward;
-        dropDirection.Normalize();
-
-        float dropDistance = Mathf.Max(0.65f, carrier.sizeRadius + item.sizeRadius + 0.2f);
-        Vector3 dropPosition = carrier.transform.position + dropDirection * dropDistance;
-        dropPosition.y = carrier.transform.position.y;
-
-        if (!displayedContainer.DropItemOnGround(item, dropPosition, out string reason))
+        if (!TryDropItemNearCarrier(displayedContainer, carrier, item, out string reason))
         {
             Debug.LogWarning($"InventoryDialogUI: failed to drop {item.DisplayName}: {reason}", this);
             return;
@@ -1198,6 +1352,21 @@ public sealed class InventoryDialogUI : MonoBehaviour
         RefreshInventoryView(forcePreviewRefresh: true);
     }
 
+    private void SelectHeldItem(WorldObject item)
+    {
+        if (item == null || displayedContainer == null)
+            return;
+
+        for (int i = 0; i < displayedContainer.HeldItemCount; i++)
+        {
+            if (displayedContainer.HeldItems[i] == item)
+            {
+                selectedIndex = i;
+                return;
+            }
+        }
+    }
+
     private static ContainerModule GetOrCreateContainer(WorldObject owner)
     {
         if (owner == null)
@@ -1212,6 +1381,102 @@ public sealed class InventoryDialogUI : MonoBehaviour
     private static void ShowInventoryMessage(string message)
     {
         BottomBanner.LogInventoryMessage(message);
+    }
+
+    private static bool TryTakeGroundItem(ContainerModule destination, WorldObject item, out string reason)
+    {
+        if (destination == null)
+        {
+            reason = "Destination inventory is unavailable.";
+            return false;
+        }
+
+        if (item == null)
+        {
+            reason = "No ground item selected.";
+            return false;
+        }
+
+        if (!CanUseAsGroundItem(item))
+        {
+            reason = $"{item.DisplayName} is no longer on the ground.";
+            return false;
+        }
+
+        return destination.ReceiveItem(item, false, out reason);
+    }
+
+    private static bool TryDropItemNearCarrier(ContainerModule source, WorldObject carrier, WorldObject item, out string reason)
+    {
+        if (source == null)
+        {
+            reason = "Source inventory is unavailable.";
+            return false;
+        }
+
+        if (carrier == null)
+        {
+            reason = "No carrier selected.";
+            return false;
+        }
+
+        if (item == null)
+        {
+            reason = "No item selected.";
+            return false;
+        }
+
+        return source.DropItemOnGround(item, GetDropPositionNearCarrier(carrier, item), out reason);
+    }
+
+    private static Vector3 GetDropPositionNearCarrier(WorldObject carrier, WorldObject item)
+    {
+        Vector3 dropDirection = carrier.transform.forward;
+        dropDirection.y = 0f;
+        if (dropDirection.sqrMagnitude < 0.001f)
+            dropDirection = Vector3.forward;
+        dropDirection.Normalize();
+
+        float itemRadius = item != null ? item.sizeRadius : 0f;
+        float dropDistance = Mathf.Max(0.65f, carrier.sizeRadius + itemRadius + 0.2f);
+        Vector3 dropPosition = carrier.transform.position + dropDirection * dropDistance;
+        dropPosition.y = carrier.transform.position.y;
+        return dropPosition;
+    }
+
+    private static bool SwapHeldItemWithGroundItem(ContainerModule heldContainer, WorldObject carrier, WorldObject heldItem, WorldObject groundItem, out string reason)
+    {
+        if (heldContainer == null)
+        {
+            reason = "Inventory is unavailable.";
+            return false;
+        }
+
+        if (heldItem == null || groundItem == null)
+        {
+            reason = "Both sides need an item selected to trade.";
+            return false;
+        }
+
+        if (!CanUseAsGroundItem(groundItem))
+        {
+            reason = $"{groundItem.DisplayName} is no longer on the ground.";
+            return false;
+        }
+
+        if (!TryDropItemNearCarrier(heldContainer, carrier, heldItem, out reason))
+            return false;
+
+        if (heldContainer.ReceiveItem(groundItem, false, out reason))
+            return true;
+
+        string receiveFailure = reason;
+        if (!heldContainer.ReceiveItem(heldItem, false, out string rollbackReason))
+            reason = $"{receiveFailure} {heldItem.DisplayName} could not be returned: {rollbackReason}";
+        else
+            reason = receiveFailure;
+
+        return false;
     }
 
     private static bool TransferItem(ContainerModule source, ContainerModule destination, WorldObject item, out string reason)
@@ -1505,7 +1770,10 @@ public sealed class InventoryDialogUI : MonoBehaviour
         DestroyTradePartnerPreviewClone();
 
         if (tradePartner == null)
+        {
+            ClearTradePartnerPreviewTexture();
             return;
+        }
 
         EnsureTradePartnerPreviewWorld();
         tradePartnerPreviewClone = CreateVisualClone(tradePartner.gameObject);
