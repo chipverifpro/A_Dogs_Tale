@@ -128,7 +128,7 @@ public class MenuManager : MonoBehaviour
 
     public void OpenDocs()
     {
-        Application.OpenURL("https://github.com/chipverifpro/A_Dogs_Tale");
+        Application.OpenURL("https://github.com/chipverifpro/A_Dogs_Tale/wiki/How-to-play");
     }
 
     private IEnumerator SwitchScenes(string sceneName)

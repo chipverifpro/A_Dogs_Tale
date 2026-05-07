@@ -18,38 +18,60 @@ public static class SpriteServer
 
     static readonly Dictionary<string, string> spriteSheetResourcePaths = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
     {
-        { "Senses", "Sprites/SensesSymbolsColor_v4" },
+        { "Senses",                "Sprites/SensesSymbolsColor_v4" },
         { "SensesSymbolsColor_v4", "Sprites/SensesSymbolsColor_v4" },
-        { "DogEmojiSheetA", "Sprites/DogEmojiSheetA" },
-        { "DogEmojiSheetB", "Sprites/DogEmojiSheetB" },
-        { "DogEmojiSheetC", "Sprites/DogEmojiSheetC" },
-        { "InventoryActionsSheetA", "Sprites/InventoryActionsSheetA" },
-        { "MapsSpriteSheet", "Sprites/MapsSpriteSheet" },
-        { "ArrowsSpriteSheetA", "Sprites/ArrowsSpriteSheetA" },
-        { "TakeItemSpriteSheetA", "Sprites/TakeItemSpriteSheetA" },
-        { "SpriteSheet_Modes_V3", "Sprites/SpriteSheet_Modes_V3" },
-        { "Speeds", "Sprites/Speeds" },
-        { "PlayAndPause_Dual", "Sprites/PlayAndPause_Dual" },
-        { "DigHoleSpriteA", "Sprites/DigHoleSpriteA" }
+        { "DogEmojiSheetA",        "Sprites/DogEmojiSheetA" },
+        { "DogEmojiSheetB",        "Sprites/DogEmojiSheetB" },
+        { "DogEmojiSheetC",        "Sprites/DogEmojiSheetC" },
+        { "InventoryActionsSheetA","Sprites/InventoryActionsSheetA" },
+        { "MapsSpriteSheet",       "Sprites/MapsSpriteSheet" },
+        { "ArrowsSpriteSheetA",    "Sprites/ArrowsSpriteSheetA" },
+        { "TakeItemSpriteSheetA",  "Sprites/TakeItemSpriteSheetA" },
+        { "SpriteSheet_Modes_V3",  "Sprites/SpriteSheet_Modes_V3" },
+        { "Speeds",                "Sprites/Speeds" },
+        { "PlayAndPause_Dual",     "Sprites/PlayAndPause_Dual" },
+        { "DigHoleSpriteA",        "Sprites/DigHoleSpriteA" },
+        { "TricksSpritesheet_B",   "Sprites/TricksSpritesheet_B" }
     };
 
     static readonly Dictionary<string, SpriteReference> knownSprites = new Dictionary<string, SpriteReference>(StringComparer.OrdinalIgnoreCase)
     {
-        { NormalizeLookupKey("Inventory"), new SpriteReference("InventoryActionsSheetA", 2) },
-        { NormalizeLookupKey("InventoryButton"), new SpriteReference("InventoryActionsSheetA", 2) },
+        { NormalizeLookupKey("Inventory"),                new SpriteReference("InventoryActionsSheetA", 2) },
+        { NormalizeLookupKey("InventoryButton"),          new SpriteReference("InventoryActionsSheetA", 2) },
         { NormalizeLookupKey("InventoryActionsSheetA_2"), new SpriteReference("InventoryActionsSheetA", 2) },
-        { NormalizeLookupKey("BuildProgress"), new SpriteReference("MapsSpriteSheet", 1) },
-        { NormalizeLookupKey("MapBuildProgress"), new SpriteReference("MapsSpriteSheet", 1) },
+        
+        { NormalizeLookupKey("BuildProgress"),     new SpriteReference("MapsSpriteSheet", 1) },
+        { NormalizeLookupKey("MapBuildProgress"),  new SpriteReference("MapsSpriteSheet", 1) },
         { NormalizeLookupKey("MapsSpriteSheet_1"), new SpriteReference("MapsSpriteSheet", 1) },
+        
         { NormalizeLookupKey("Scent"), new SpriteReference("Senses", -1) },
         { NormalizeLookupKey("Smell"), new SpriteReference("Senses", -1) },
-        { NormalizeLookupKey("Play"), new SpriteReference("PlayAndPause_Dual", 0) },
-        { NormalizeLookupKey("Pause"), new SpriteReference("PlayAndPause_Dual", 1) },
+        
+        { NormalizeLookupKey("Play"),   new SpriteReference("PlayAndPause_Dual", 0) },
+        
+        { NormalizeLookupKey("Pause"),  new SpriteReference("PlayAndPause_Dual", 1) },
         { NormalizeLookupKey("Sneak"), new SpriteReference("Speeds", 0) },
-        { NormalizeLookupKey("Walk"), new SpriteReference("Speeds", 1) },
-        { NormalizeLookupKey("Run"), new SpriteReference("Speeds", 2) },
-        { NormalizeLookupKey("DigHole"), new SpriteReference("DigHoleSpriteA", 0) },
-        { NormalizeLookupKey("DigButton"), new SpriteReference("DigHoleSpriteA", 0) }
+        { NormalizeLookupKey("Walk"),  new SpriteReference("Speeds", 1) },
+        { NormalizeLookupKey("Run"),   new SpriteReference("Speeds", 2) },
+        
+        { NormalizeLookupKey("DigHole"),   new SpriteReference("DigHoleSpriteA", 0) },
+        { NormalizeLookupKey("DigButton"), new SpriteReference("DigHoleSpriteA", 0) },
+
+        { NormalizeLookupKey("Fetch"),     new SpriteReference("TricksSpritesheet_B", 0) },
+        { NormalizeLookupKey("Stay"),      new SpriteReference("TricksSpritesheet_B", 1) },
+        { NormalizeLookupKey("Come"),      new SpriteReference("TricksSpritesheet_B", 2) },
+        { NormalizeLookupKey("DropIt"),    new SpriteReference("TricksSpritesheet_B", 3) },
+        { NormalizeLookupKey("LeaveIt"),   new SpriteReference("TricksSpritesheet_B", 4) },
+        { NormalizeLookupKey("Heel"),      new SpriteReference("TricksSpritesheet_B", 5) },
+        { NormalizeLookupKey("Quiet"),     new SpriteReference("TricksSpritesheet_B", 6) },
+        { NormalizeLookupKey("Bark"),      new SpriteReference("TricksSpritesheet_B", 7) },
+        { NormalizeLookupKey("GoodDog"),   new SpriteReference("TricksSpritesheet_B", 8) },
+        { NormalizeLookupKey("BadDog"),    new SpriteReference("TricksSpritesheet_B", 9) },
+        { NormalizeLookupKey("FindIt"),    new SpriteReference("TricksSpritesheet_B", 10) },
+        { NormalizeLookupKey("RollOver"),  new SpriteReference("TricksSpritesheet_B", 11) },
+        { NormalizeLookupKey("Sit"),       new SpriteReference("TricksSpritesheet_B", 12) },
+        { NormalizeLookupKey("Down"),      new SpriteReference("TricksSpritesheet_B", 13) },
+        { NormalizeLookupKey("Release"),   new SpriteReference("TricksSpritesheet_B", 14) }
     };
 
     static readonly Dictionary<string, Dictionary<int, Sprite>> spritesBySheet = new Dictionary<string, Dictionary<int, Sprite>>(StringComparer.OrdinalIgnoreCase);
