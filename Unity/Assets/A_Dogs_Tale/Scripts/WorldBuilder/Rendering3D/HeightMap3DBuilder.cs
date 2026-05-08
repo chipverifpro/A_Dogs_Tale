@@ -67,7 +67,7 @@ public partial class DungeonGenerator : MonoBehaviour
         }
 
         bool local_tm = false;
-        if (tm == null) { tm = TimeManager.Instance.BeginTask("Build3DFromOneRoom"); local_tm = true; }
+        //if (tm == null) { tm = TimeManager.Instance.BeginTask("Build3DFromOneRoom"); local_tm = true; }
 
         try
         {
@@ -84,8 +84,8 @@ public partial class DungeonGenerator : MonoBehaviour
 
             for (int cell_number = 0; cell_number < num_cells; cell_number++)
             {
-                if ((cell_number % 500) == 0)
-                    if (tm.IfYield()) yield return null;
+//                if ((cell_number % 500) == 0)
+//                    if (tm.IfYield()) yield return null;
 
                 Cell cell = rooms[room_number].cells[cell_number];
                 Vector2Int pos = cell.pos;

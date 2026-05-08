@@ -75,7 +75,7 @@ public partial class DungeonGenerator
                     cell_num++;
                 }
                 room_number++;
-                if (tm.IfYield()) yield return null;
+                //if (tm.IfYield()) yield return null;
             }
         }
         finally { if (local_tm) tm.End(); }
