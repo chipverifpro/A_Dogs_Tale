@@ -248,13 +248,113 @@ namespace DogGame.Modules
             if (trail == null)
                 return false;
 
+            bool useFormation = TryGetFormationContext(
+                currentPack,
+                out PackFormations formations,
+                out int positionInPack,
+                out int numberInPack);
+
             trail.RecordIfNeeded();
-            Crumb crumb = trail.GetNextCrumb(worldObject, breadcrumbArrivalDistanceMeters);
+
+            if (useFormation)
+                MarkCurrentFormationCrumbArrivedIfNeeded(trail);
+
+            Crumb crumb = trail.GetNextCrumb(
+                worldObject,
+                breadcrumbArrivalDistanceMeters,
+                markArrivals: !useFormation);
+
             if (crumb == null || !crumb.valid)
+            {
+                if (worldObject.agentMovementModule != null && worldObject.agentMovementModule.next_formationCrumb != null)
+                    worldObject.agentMovementModule.next_formationCrumb.valid = false;
                 return false;
+            }
+
+            if (useFormation)
+            {
+                targetMapPosition = BuildFormationTargetMapPosition(
+                    crumb,
+                    formations,
+                    currentPack.formation,
+                    positionInPack,
+                    numberInPack,
+                    currentPack.formationSpacing);
+                return true;
+            }
 
             targetMapPosition = new Vector3(crumb.pos2.x, crumb.height, crumb.pos2.y);
             return true;
+        }
+
+        private bool TryGetFormationContext(
+            Pack currentPack,
+            out PackFormations formations,
+            out int positionInPack,
+            out int numberInPack)
+        {
+            formations = null;
+            positionInPack = -1;
+            numberInPack = 0;
+
+            if (currentPack == null || currentPack.packAgentList == null)
+                return false;
+
+            positionInPack = currentPack.GetPositionInPack(worldObject);
+            if (positionInPack <= 0)
+                return false;
+
+            numberInPack = currentPack.packAgentList.Count;
+            if (positionInPack >= numberInPack)
+                return false;
+
+            Dir dir = Dir.Instance;
+            formations = dir != null ? dir.packFormations : null;
+            return formations != null;
+        }
+
+        private void MarkCurrentFormationCrumbArrivedIfNeeded(BreadcrumbTrail trail)
+        {
+            if (trail == null || worldObject.agentMovementModule == null)
+                return;
+
+            Crumb formationCrumb = worldObject.agentMovementModule.next_formationCrumb;
+            if (formationCrumb == null || !formationCrumb.valid)
+                return;
+
+            Vector2 currentPos = worldObject.locationModule != null
+                ? worldObject.locationModule.pos2_f
+                : new Vector2(worldObject.pos3d_map.x, worldObject.pos3d_map.z);
+
+            if ((currentPos - formationCrumb.pos2).sqrMagnitude <= breadcrumbArrivalDistanceMeters * breadcrumbArrivalDistanceMeters)
+                trail.MarkCurrentCrumbArrived(worldObject);
+        }
+
+        private Vector3 BuildFormationTargetMapPosition(
+            Crumb crumb,
+            PackFormations formations,
+            FormationsEnum formation,
+            int positionInPack,
+            int numberInPack,
+            float formationSpacing)
+        {
+            Vector2 offset = formations.GetOffsetForFormation(formation, positionInPack, numberInPack);
+            Vector2 rotatedOffset = formations.RotateAndScaleOffset(offset, crumb.yawDeg, formationSpacing);
+            Vector2 targetPos2 = crumb.pos2 + rotatedOffset;
+
+            Crumb formationCrumb = worldObject.agentMovementModule.next_formationCrumb;
+            if (formationCrumb == null)
+            {
+                formationCrumb = new Crumb();
+                worldObject.agentMovementModule.next_formationCrumb = formationCrumb;
+            }
+
+            formationCrumb.pos2 = targetPos2;
+            formationCrumb.height = crumb.height;
+            formationCrumb.yawDeg = crumb.yawDeg;
+            formationCrumb.valid = true;
+
+            return new Vector3(targetPos2.x, crumb.height, targetPos2.y);
         }
         
         public override void BeginDecisionModule(bool resume=false)

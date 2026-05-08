@@ -157,7 +157,7 @@ public class BreadcrumbTrail : MonoBehaviour
         return eater_index;
     }
 
-    public Crumb GetNextCrumb(WorldObject agent, float arrivalDistance = 0.35f)
+    public Crumb GetNextCrumb(WorldObject agent, float arrivalDistance = 0.35f, bool markArrivals = true)
     {
         int eater_index;
         int crumb_index;
@@ -190,7 +190,7 @@ public class BreadcrumbTrail : MonoBehaviour
                 if (currentCrumb.whichFollowersArrived == null)
                     currentCrumb.whichFollowersArrived = new();
 
-                if (!IsAgentAtCrumb(agent, currentCrumb, arrivalDistance))
+                if (!markArrivals || !IsAgentAtCrumb(agent, currentCrumb, arrivalDistance))
                     return currentCrumb;
 
                 MarkFollowerArrivedAtCrumb(currentCrumbIndex, eater_index);
@@ -210,7 +210,7 @@ public class BreadcrumbTrail : MonoBehaviour
 
             if (!crumbs[crumb_index].whichFollowersArrived.Contains(eater_index))
             {
-                if (IsAgentAtCrumb(agent, crumbs[crumb_index], arrivalDistance))
+                if (markArrivals && IsAgentAtCrumb(agent, crumbs[crumb_index], arrivalDistance))
                 {
                     MarkFollowerArrivedAtCrumb(crumb_index, eater_index);
                     crumb_index--;
@@ -222,6 +222,28 @@ public class BreadcrumbTrail : MonoBehaviour
             }
         }
         return invalid_crumb;   // did not find an uneaten crumb.
+    }
+
+    public void MarkCurrentCrumbArrived(WorldObject agent)
+    {
+        if (agent == null || agent.agentMovementModule == null)
+            return;
+
+        Crumb currentTarget = agent.agentMovementModule.next_actualCrumb;
+        if (currentTarget == null || !currentTarget.valid)
+            return;
+
+        int followerIndex = FindFollowerIndex(agent, addIfNotFollowing: false);
+        if (followerIndex < 0)
+            return;
+
+        int currentCrumbIndex = FindMatchingCrumbIndex(currentTarget);
+        if (currentCrumbIndex < 0)
+            return;
+
+        MarkFollowerArrivedAtCrumb(currentCrumbIndex, followerIndex);
+        agent.agentMovementModule.next_actualCrumb = new Crumb();
+        agent.agentMovementModule.next_formationCrumb = new Crumb();
     }
 
     private int FindMatchingCrumbIndex(Crumb target)

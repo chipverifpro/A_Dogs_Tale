@@ -77,20 +77,39 @@ public class PackFormations : MonoBehaviour
         // Assumes position_in_pack is 0 for leader, 1..n for followers.
         // Assumes leader facing north.  Rotation to be applied later.
         // some formations depend on number in pack.
+        if (position_in_pack <= 0)
+            return Vector2.zero;
+
+        int safeNumberInPack = Mathf.Max(1, number_in_pack);
         switch (formation)
         {
             case FormationsEnum.LineAbreast:
-                return LineAbreastPos[position_in_pack];
+                if (position_in_pack < LineAbreastPos.Count)
+                    return LineAbreastPos[position_in_pack];
+                return new Vector2(position_in_pack % 2 == 0 ? position_in_pack / 2f : -((position_in_pack + 1) / 2f), 0f);
             case FormationsEnum.SingleFile:
-                return SingleFilePos[position_in_pack];
+                if (position_in_pack < SingleFilePos.Count)
+                    return SingleFilePos[position_in_pack];
+                return new Vector2(0f, -position_in_pack);
             case FormationsEnum.TwoColums:
-                if (number_in_pack == 4) return TwoColumnsPos4[position_in_pack];
-                else return TwoColumnsPos5[position_in_pack];
+                if (safeNumberInPack == 4 && position_in_pack < TwoColumnsPos4.Count)
+                    return TwoColumnsPos4[position_in_pack];
+                if (position_in_pack < TwoColumnsPos5.Count)
+                    return TwoColumnsPos5[position_in_pack];
+                return new Vector2(position_in_pack % 2 == 0 ? 0.5f : -0.5f, -((position_in_pack + 1) / 2f));
             case FormationsEnum.Wedge:
-                return WedgePos[position_in_pack];
+                if (position_in_pack < WedgePos.Count)
+                    return WedgePos[position_in_pack];
+                float wedgeRow = (position_in_pack + 1) / 2f;
+                float wedgeSide = position_in_pack % 2 == 0 ? 1f : -1f;
+                return new Vector2(wedgeSide * 0.5f * wedgeRow, -wedgeRow);
             case FormationsEnum.Circle:
-                if (number_in_pack == 4) return CirclePos4[position_in_pack].normalized;
-                else return CirclePos5[position_in_pack].normalized;
+                if (safeNumberInPack == 4 && position_in_pack < CirclePos4.Count)
+                    return CirclePos4[position_in_pack].normalized;
+                if (position_in_pack < CirclePos5.Count)
+                    return CirclePos5[position_in_pack].normalized;
+                float angleRad = ((position_in_pack - 1) / Mathf.Max(1f, safeNumberInPack - 1f)) * Mathf.PI * 2f;
+                return new Vector2(Mathf.Cos(angleRad), Mathf.Sin(angleRad));
             default:
                 return new Vector2(0, 0);
         }
@@ -98,9 +117,8 @@ public class PackFormations : MonoBehaviour
 
     public Vector2 RotateAndScaleOffset(Vector2 offset, float yawDeg, float scale)
     {
-        float yawCorrection = 90f;  // TODO: should not hardcode thi here.
-        // rotate the offset vector by yawDeg degrees clockwise.
-        float yawRad = -(yawDeg + yawCorrection) * Mathf.Deg2Rad;
+        // yawDeg is already 0 = +mapY/+worldZ and positive clockwise.
+        float yawRad = -yawDeg * Mathf.Deg2Rad;
         float cosYaw = Mathf.Cos(yawRad);
         float sinYaw = Mathf.Sin(yawRad);
         float x = offset.x * cosYaw - offset.y * sinYaw;
