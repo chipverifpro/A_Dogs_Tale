@@ -22,6 +22,9 @@ namespace DogGame.Modules
         [Tooltip("How close a follower must be to a breadcrumb before moving to the next one.")]
         [SerializeField] private float breadcrumbArrivalDistanceMeters = 0.35f;
 
+        [Tooltip("Speed multiplier used while following pack breadcrumbs with a formation offset.")]
+        [SerializeField, Min(0f)] private float formationFollowSpeedMultiplier = 1.2f;
+
         [Tooltip("If true, will automatically follow pack leader at startup when in a pack.")]
         [SerializeField] private bool autoFollowPackLeaderOnStart = true;
 
@@ -165,8 +168,9 @@ namespace DogGame.Modules
             }
 
             Vector3 targetPos = default;
+            bool formationFollowActive = false;
             bool followingPackLeader = TryGetCurrentPackLeaderFollow(out Pack currentPack);
-            if (followingPackLeader && !TryGetNextBreadcrumbMapPosition(currentPack, out targetPos))
+            if (followingPackLeader && !TryGetNextBreadcrumbMapPosition(currentPack, out targetPos, out formationFollowActive))
             {
                 worldObject.agentMovementModule.ClearDesiredMove();
                 return;
@@ -201,7 +205,7 @@ namespace DogGame.Modules
                 // Too far: move toward the follow target
                 Vector3 worldDirection = toTarget.normalized;
 
-                float speedFactor = 1.0f;   // Use full walk speed from AgentMovementModule
+                float speedFactor = formationFollowActive ? formationFollowSpeedMultiplier : 1.0f;
 
                 // only need to do the square root if we are close (<1)
                 float magDistanceToTarget = (sqrDistanceToTarget>1f) ? 1f : Mathf.Sqrt(sqrDistanceToTarget);
@@ -240,9 +244,10 @@ namespace DogGame.Modules
                    followTarget == currentPack.packLeader;
         }
 
-        private bool TryGetNextBreadcrumbMapPosition(Pack currentPack, out Vector3 targetMapPosition)
+        private bool TryGetNextBreadcrumbMapPosition(Pack currentPack, out Vector3 targetMapPosition, out bool usedFormation)
         {
             targetMapPosition = default;
+            usedFormation = false;
 
             BreadcrumbTrail trail = currentPack != null ? currentPack.trail : null;
             if (trail == null)
@@ -280,6 +285,7 @@ namespace DogGame.Modules
                     positionInPack,
                     numberInPack,
                     currentPack.formationSpacing);
+                usedFormation = true;
                 return true;
             }
 

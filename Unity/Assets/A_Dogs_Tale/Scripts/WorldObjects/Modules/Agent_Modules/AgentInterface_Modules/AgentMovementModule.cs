@@ -101,7 +101,7 @@ namespace DogGame.Modules
         private Vector3 desiredVelocity = Vector3.zero;
 
         [Header("Speed")]
-        private float speedFactor01 = 1.0f; // 0..1 scaling of walk/run speed
+        private float speedFactor01 = 1.0f; // scaling of walk/run speed
 
         /// <summary>
         /// Usually travel distance = desiredVelocity * deltaTime.  Limit that.
@@ -683,7 +683,7 @@ namespace DogGame.Modules
             }
 
             // Delegate to MotionModule for actual movement + rotation, clamp at maxDistance.
-            worldObject.motionModule.ApplyMotionMap(currentVelocity, deltaTime, maxDistance);
+            worldObject.motionModule.ApplyMotionMap(currentVelocity, deltaTime, maxDistance, speedFactor01);
 
             UpdateStallRecoveryState();
 

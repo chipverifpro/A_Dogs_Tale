@@ -269,11 +269,11 @@ namespace DogGame.Modules
         #region ApplyMotion
 
         private int debugDoubleTick = -1;
-        public void ApplyMotionMap(Vector3 desiredMapVelocity, float deltaTime, float maxDistanceMap)
+        public void ApplyMotionMap(Vector3 desiredMapVelocity, float deltaTime, float maxDistanceMap, float maxSpeedMultiplier = 1.0f)
         {
             if (worldObject == null || deltaTime <= 0f)
             {
-                ApplyMotion(desiredMapVelocity, deltaTime, maxDistanceMap);
+                ApplyMotion(desiredMapVelocity, deltaTime, maxDistanceMap, maxSpeedMultiplier);
                 return;
             }
 
@@ -284,10 +284,10 @@ namespace DogGame.Modules
             Vector3 desiredWorldVelocity = (targetWorldPosition - currentWorldPosition) / deltaTime;
 
             // The current map<->world transform is translational, so the scalar stop radius carries over directly.
-            ApplyMotion(desiredWorldVelocity, deltaTime, maxDistanceMap);
+            ApplyMotion(desiredWorldVelocity, deltaTime, maxDistanceMap, maxSpeedMultiplier);
         }
 
-        public void ApplyMotion(Vector3 desiredHorizontalVelocity, float deltaTime, float maxDistance)
+        public void ApplyMotion(Vector3 desiredHorizontalVelocity, float deltaTime, float maxDistance, float maxSpeedMultiplier = 1.0f)
         {
             //Debug.Log($"{worldObject.DisplayName}:MotionModule.ApplyMotion({desiredHorizontalVelocity}, {deltaTime}, {maxDistance})");
             
@@ -303,7 +303,7 @@ namespace DogGame.Modules
             desiredHorizontalVelocity.y = 0f;
 
             // Clamp desired speed if you like
-            float maxHorizontalSpeed = GetMaxSpeedByCurrentWalkMode();
+            float maxHorizontalSpeed = GetMaxSpeedByCurrentWalkMode() * Mathf.Max(0f, maxSpeedMultiplier);
             if (maxHorizontalSpeed > 0f)
             {
                 float desiredSpeed = desiredHorizontalVelocity.magnitude;

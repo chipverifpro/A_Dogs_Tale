@@ -159707,6 +159707,7 @@ MonoBehaviour:
   followTarget: {fileID: 0}
   followDistanceMeters: 1.5
   breadcrumbArrivalDistanceMeters: 0.35
+  formationFollowSpeedMultiplier: 1.2
   autoFollowPackLeaderOnStart: 1
   enableDebugLogging: 0
 --- !u!114 &1651296788
@@ -160546,7 +160547,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1653517296
 RectTransform:
   m_ObjectHideFlags: 0
@@ -193932,6 +193933,7 @@ MonoBehaviour:
   followTarget: {fileID: 0}
   followDistanceMeters: 0.5
   breadcrumbArrivalDistanceMeters: 0.35
+  formationFollowSpeedMultiplier: 1.2
   autoFollowPackLeaderOnStart: 1
   enableDebugLogging: 0
 --- !u!114 &1988421417
@@ -215349,6 +215351,7 @@ MonoBehaviour:
   followTarget: {fileID: 0}
   followDistanceMeters: 1.5
   breadcrumbArrivalDistanceMeters: 0.35
+  formationFollowSpeedMultiplier: 1.2
   autoFollowPackLeaderOnStart: 1
   enableDebugLogging: 0
 --- !u!114 &6544990386685219151
