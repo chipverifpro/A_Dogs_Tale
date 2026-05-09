@@ -84,7 +84,7 @@ namespace DogGame.Modules
         public void ClearFollowTarget()
         {
             followTarget = null;
-            worldObject.agentMovementModule?.ClearDesiredMove();
+            worldObject.agentMovementModule?.ClearDesiredMovement();
 
             if (enableDebugLogging)
             {
@@ -163,23 +163,26 @@ namespace DogGame.Modules
             if (followTarget == null)
             {
                 // No target to follow; decelerate to a stop
-                worldObject.agentMovementModule.ClearDesiredMove();
+                worldObject.agentMovementModule.ClearDesiredMovement();
                 return;
             }
 
             Vector3 targetPos = default;
             bool formationFollowActive = false;
             bool followingPackLeader = TryGetCurrentPackLeaderFollow(out Pack currentPack);
-            if (followingPackLeader && !TryGetNextBreadcrumbMapPosition(currentPack, out targetPos, out formationFollowActive))
+            if (followingPackLeader)
             {
-                worldObject.agentMovementModule.ClearDesiredMove();
+                if (!TryGetNextBreadcrumbMapPosition(currentPack, out targetPos, out formationFollowActive))
+                {
+                    worldObject.agentMovementModule.ClearDesiredMovement();
+                    return;
+                }
+
+                FollowBreadcrumbPathTarget(targetPos, formationFollowActive);
                 return;
             }
 
-            if (!followingPackLeader)
-            {
-                targetPos = followTarget.pos3d_map;
-            }
+            targetPos = followTarget.pos3d_map;
 
             // Compute direction to current breadcrumb or non-pack follow target.
             Vector3 currentPos = worldObject.pos3d_map;
@@ -242,6 +245,33 @@ namespace DogGame.Modules
             return currentPack != null &&
                    currentPack.packLeader != null &&
                    followTarget == currentPack.packLeader;
+        }
+
+        private void FollowBreadcrumbPathTarget(Vector3 targetMapPosition, bool formationFollowActive)
+        {
+            AgentMovementModule movement = worldObject.agentMovementModule;
+            if (movement == null)
+                return;
+
+            float speedFactor = formationFollowActive ? formationFollowSpeedMultiplier : 1.0f;
+            movement.SetPathSpeedFactor(speedFactor);
+
+            if (!movement.targetLocationMap.HasValue || !IsSameMapTarget(movement.targetLocationMap.Value, targetMapPosition))
+            {
+                movement.SetDesiredTargetLocationMap(
+                    targetMapPosition,
+                    WalkMode.None,
+                    requestPathfinding: true,
+                    speedFactor: speedFactor,
+                    requirePathOrLineOfSight: true);
+            }
+        }
+
+        private static bool IsSameMapTarget(Vector3 a, Vector3 b)
+        {
+            Vector3 delta = a - b;
+            delta.y = 0f;
+            return delta.sqrMagnitude <= 0.0001f && Mathf.Abs(a.y - b.y) <= 0.01f;
         }
 
         private bool TryGetNextBreadcrumbMapPosition(Pack currentPack, out Vector3 targetMapPosition, out bool usedFormation)

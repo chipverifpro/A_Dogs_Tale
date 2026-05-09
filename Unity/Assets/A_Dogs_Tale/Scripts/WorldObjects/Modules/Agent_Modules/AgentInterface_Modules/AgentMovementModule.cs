@@ -71,6 +71,7 @@ namespace DogGame.Modules
         private Vector2Int lastKnownTargetObjectCell;
         private bool hasLastKnownTargetObjectCell = false;
         private bool allowPathThroughDoors = true;
+        private bool requirePathOrLineOfSight = false;
         private Pathfinding pathfinding;
 
         [Header("Stall Recovery")]
@@ -102,6 +103,7 @@ namespace DogGame.Modules
 
         [Header("Speed")]
         private float speedFactor01 = 1.0f; // scaling of walk/run speed
+        private float pathSpeedFactor = 1.0f;
 
         /// <summary>
         /// Usually travel distance = desiredVelocity * deltaTime.  Limit that.
@@ -171,6 +173,8 @@ namespace DogGame.Modules
             this.keepFollowingTargetObject = keepFollowing;
             this.targetLocationMap = target != null ? target.pos3d_map : null;
             this.allowPathThroughDoors = true;
+            this.requirePathOrLineOfSight = false;
+            pathSpeedFactor = 1.0f;
             MoveToDestinationInProgress = target != null;
             CacheTargetObjectCell();
             RebuildPathToCurrentTarget(forceRebuild: true);
@@ -188,11 +192,14 @@ namespace DogGame.Modules
             keepFollowingTargetObject = false;
             hasLastKnownTargetObjectCell = false;
             movingTargetRepathCooldownSeconds = 0f;
+            requirePathOrLineOfSight = false;
         }
 
         public void ClearDesiredTargetLocation()
         {
             targetLocationMap = null;
+            pathSpeedFactor = 1.0f;
+            requirePathOrLineOfSight = false;
             ClearActivePath();
             hasLastKnownTargetObjectCell = false;
             recoveringToCellCenter = false;
@@ -456,6 +463,34 @@ namespace DogGame.Modules
             stopDistance = Mathf.Clamp(stopDistance, 0.10f, 0.50f);
         }
 
+        private bool HasDirectLineOfSightToMapTarget(Vector3 targetLocation_map)
+        {
+            if (!TryGetGridCellFromMap(worldObject.pos3d_map, out Vector2Int currentCellPos) ||
+                !TryGetGridCellFromMap(targetLocation_map, out Vector2Int targetCellPos))
+            {
+                return false;
+            }
+
+            if (currentCellPos == targetCellPos)
+                return true;
+
+            if (!TryGetGridCellData(currentCellPos, out Cell currentCell) ||
+                !TryGetGridCellData(targetCellPos, out Cell targetCell))
+            {
+                return false;
+            }
+
+            int roomIndex = currentCell.room_number;
+            if (roomIndex != targetCell.room_number)
+                return false;
+
+            if (dir == null || dir.gen == null || dir.gen.rooms == null || roomIndex < 0 || roomIndex >= dir.gen.rooms.Count)
+                return false;
+
+            Room room = dir.gen.rooms[roomIndex];
+            return room != null && RoomLOS.HasLineOfSight(room, currentCellPos, targetCellPos);
+        }
+
         private bool PointTowardMapLocation(Vector3 targetLocation_map)
         {
             float arrivalDistance = StopDistance;
@@ -475,7 +510,7 @@ namespace DogGame.Modules
 
             float remainingDistance = Mathf.Max(0f, distanceToTarget - arrivalDistance);
             maxDistance = Mathf.Clamp(Mathf.Min(remainingDistance, arrivalDistance), 0f, arrivalDistance);
-            SetDesiredMove(desired_move, maxDistance: maxDistance);
+            SetDesiredMove(desired_move, maxDistance: maxDistance, speedFactor: pathSpeedFactor);
             return false;
         }
 
@@ -627,7 +662,18 @@ namespace DogGame.Modules
 
                     if (!FollowActivePath())
                     {
-                        MoveToDestinationInProgress = !PointTowardTargetObjectLocation();
+                        if (requirePathOrLineOfSight &&
+                            targetLocationMap.HasValue &&
+                            !HasDirectLineOfSightToMapTarget(targetLocationMap.Value))
+                        {
+                            desiredVelocity = Vector3.zero;
+                            maxDistance = 0f;
+                            MoveToDestinationInProgress = true;
+                        }
+                        else
+                        {
+                            MoveToDestinationInProgress = !PointTowardTargetObjectLocation();
+                        }
                     } else
                     {
                         Vector3 targetLocationMap_noheight = (Vector3)targetLocationMap;
@@ -697,6 +743,8 @@ namespace DogGame.Modules
         {
             targetObject = null;
             targetLocationMap = null;
+            pathSpeedFactor = 1.0f;
+            requirePathOrLineOfSight = false;
             desiredVelocity = Vector3.zero;
             currentVelocity = Vector3.zero;
             maxDistance = 0f;
@@ -707,15 +755,22 @@ namespace DogGame.Modules
             worldObject.motionModule?.StopHorizontalMotion();
         }
 
-        public void SetDesiredTargetLocationMap(Vector3 targetLocation_map, WalkMode mode = WalkMode.None, bool requestPathfinding = true)
+        public void SetPathSpeedFactor(float speedFactor)
         {
-            SetDesiredTargetLocationMap(targetLocation_map, mode, requestPathfinding, allowDoors: true);
+            pathSpeedFactor = Mathf.Max(0f, speedFactor);
         }
 
-        public void SetDesiredTargetLocationMap(Vector3 targetLocation_map, WalkMode mode, bool requestPathfinding, bool allowDoors)
+        public void SetDesiredTargetLocationMap(Vector3 targetLocation_map, WalkMode mode = WalkMode.None, bool requestPathfinding = true, float speedFactor = 1.0f, bool requirePathOrLineOfSight = false)
+        {
+            SetDesiredTargetLocationMap(targetLocation_map, mode, requestPathfinding, allowDoors: true, speedFactor: speedFactor, requirePathOrLineOfSight: requirePathOrLineOfSight);
+        }
+
+        public void SetDesiredTargetLocationMap(Vector3 targetLocation_map, WalkMode mode, bool requestPathfinding, bool allowDoors, float speedFactor = 1.0f, bool requirePathOrLineOfSight = false)
         {
             targetObject = null;
             targetLocationMap = targetLocation_map;
+            SetPathSpeedFactor(speedFactor);
+            this.requirePathOrLineOfSight = requirePathOrLineOfSight;
             if (mode != WalkMode.None)
                 SetWalkMode(mode);
             allowPathThroughDoors = allowDoors;
@@ -733,6 +788,8 @@ namespace DogGame.Modules
         {
             targetObject = null;
             targetLocationMap = null;
+            pathSpeedFactor = 1.0f;
+            requirePathOrLineOfSight = false;
             if (mode != WalkMode.None)
                 SetWalkMode(mode);
 
