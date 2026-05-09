@@ -1,0 +1,711 @@
+A DOG'S TALE - FETCH TRICK TRAINING DATA
+Plain-text synthetic training episodes for AI decision testing
+Version: 0.1
+Skill: Fetch
+
+PURPOSE
+This file contains artificial training examples for teaching or testing an AI-controlled dog on the FETCH trick.
+The examples use simple trigger -> context -> behavior -> reward records.
+The goal is not to fine-tune a model perfectly, but to provide clear, readable episodic memory that can be supplied to an AI during decision-making.
+
+CORE LESSON
+When a human throws or requests a fetch object, the desired behavior is:
+1. Notice the object.
+2. Move to the correct object.
+3. Pick it up gently.
+4. Return to the requesting human.
+5. Drop or release the object near the human.
+6. Ignore distractions unless safety requires stopping.
+
+IMPORTANT RULES
+- Fetch means bring the requested object back to the human, not just chase it.
+- Chewing, eating, burying, guarding, or running away with the object is bad fetch behavior.
+- Returning with the wrong object is usually bad, unless the requested object is unreachable and the dog alerts the human.
+- Ignoring squirrels, food, other dogs, and unrelated scents during fetch is good.
+- If the object is dangerous, unreachable, or hidden, the dog should alert the human instead of performing unsafe behavior.
+- After returning, the dog should drop/release the object when asked or when close enough to the human.
+
+ACTION VOCABULARY
+These are example action names the AI may choose from. They are intentionally simple.
+
+move_to_object(target)
+take_item(target)
+return_to_human(human)
+drop_item(target)
+release_item(target)
+wait()
+sit()
+bark_alert()
+emote_happy()
+emote_confused()
+sniff(target_or_area)
+follow_scent(target_or_area)
+ignore(distraction)
+avoid(hazard)
+ask_for_help()
+
+REWARD SCALE
++2.0 = excellent behavior
++1.0 = good behavior
++0.5 = partly correct behavior
+ 0.0 = neutral / unclear
+-0.5 = minor mistake
+-1.0 = bad behavior
+-2.0 = very bad or unsafe behavior
+
+============================================================
+POSITIVE TRAINING EPISODES
+============================================================
+
+EPISODE 001
+Skill: Fetch
+Trigger: Human throws red ball.
+Context: Training yard. Dog is idle. Ball is visible. No distractions.
+Dog Behavior: Dog runs to red ball, picks it up, returns to human, drops ball at human's feet.
+Reward: +2.0
+Feedback: Good dog. Fetch means bring the thrown ball back.
+Lesson: A thrown ball should be retrieved and returned to the human.
+
+EPISODE 002
+Skill: Fetch
+Trigger: Human throws blue ball.
+Context: Training yard. Dog is near human. Ball lands beside fence.
+Dog Behavior: Dog runs to blue ball, picks it up, returns to human, releases ball when human reaches out.
+Reward: +2.0
+Feedback: Good fetch. Bring it back and release it.
+Lesson: Returning and releasing the fetched object completes the trick.
+
+EPISODE 003
+Skill: Fetch
+Trigger: Human says "fetch" and points at tennis ball.
+Context: Ball is visible in grass. Dog is sitting beside human.
+Dog Behavior: Dog moves to tennis ball, picks it up, returns to human, drops it nearby.
+Reward: +2.0
+Feedback: Good dog. You fetched the pointed object.
+Lesson: A verbal fetch command plus pointing means retrieve the indicated object.
+
+EPISODE 004
+Skill: Fetch
+Trigger: Human throws stick.
+Context: Stick lands near a tree. Dog can see it.
+Dog Behavior: Dog runs to stick, picks it up, returns to human, drops stick.
+Reward: +1.8
+Feedback: Good fetch. Sticks can be fetch objects too.
+Lesson: Fetch generalizes to safe thrown objects, not only balls.
+
+EPISODE 005
+Skill: Fetch
+Trigger: Human throws rope toy.
+Context: Rope toy lands behind a chair. Dog briefly loses sight of it.
+Dog Behavior: Dog goes behind chair, sniffs, finds rope toy, picks it up, returns to human.
+Reward: +2.0
+Feedback: Good dog. Find the thrown toy and bring it back.
+Lesson: If the object is briefly hidden, search nearby and retrieve it.
+
+EPISODE 006
+Skill: Fetch
+Trigger: Human throws red ball.
+Context: Another ball is lying closer to dog, but the thrown red ball is farther away.
+Dog Behavior: Dog ignores nearby old ball, runs to thrown red ball, brings it back.
+Reward: +2.0
+Feedback: Excellent. Fetch the object that was thrown, not the nearest toy.
+Lesson: The current thrown/requested object has priority over unrelated objects.
+
+EPISODE 007
+Skill: Fetch
+Trigger: Human throws tennis ball.
+Context: Squirrel appears near the fence while ball is rolling.
+Dog Behavior: Dog looks at squirrel, ignores it, retrieves ball, returns to human.
+Reward: +2.0
+Feedback: Good focus. Ignore squirrels during fetch.
+Lesson: During fetch, squirrels are distractions unless they are dangerous.
+
+EPISODE 008
+Skill: Fetch
+Trigger: Human throws ball.
+Context: Food bowl is visible near the path to the ball.
+Dog Behavior: Dog passes food bowl, retrieves ball, returns to human.
+Reward: +2.0
+Feedback: Good dog. Fetch first, food later.
+Lesson: Food should be ignored during an active fetch command.
+
+EPISODE 009
+Skill: Fetch
+Trigger: Human throws ball indoors.
+Context: Ball rolls under a small table. Dog can reach it safely.
+Dog Behavior: Dog ducks under table, picks up ball, returns to human.
+Reward: +1.8
+Feedback: Good fetch. Careful retrieval is rewarded.
+Lesson: Retrieve objects from reachable indoor places without knocking things over.
+
+EPISODE 010
+Skill: Fetch
+Trigger: Human throws soft toy.
+Context: Dog is already holding a stick.
+Dog Behavior: Dog drops stick, runs to soft toy, picks it up, returns to human.
+Reward: +1.7
+Feedback: Good. Switch to the requested fetch object.
+Lesson: When a new fetch command is given, the requested object takes priority over the old held item.
+
+EPISODE 011
+Skill: Fetch
+Trigger: Human says "bring ball".
+Context: Ball is on floor. Dog is next to ball. Human is across room.
+Dog Behavior: Dog picks up ball, walks to human, releases ball.
+Reward: +2.0
+Feedback: Good dog. Bring means carry it to me.
+Lesson: Fetch can begin from a stationary object when the human requests it.
+
+EPISODE 012
+Skill: Fetch
+Trigger: Human throws ball.
+Context: Another dog barks nearby.
+Dog Behavior: Dog briefly looks toward barking dog, then retrieves ball and returns.
+Reward: +1.8
+Feedback: Good focus. You finished fetch despite noise.
+Lesson: Nearby barking is usually a distraction from fetch.
+
+EPISODE 013
+Skill: Fetch
+Trigger: Human throws ball into tall grass.
+Context: Ball is no longer visible, but fresh ball scent is present.
+Dog Behavior: Dog sniffs grass, follows scent, finds ball, returns to human.
+Reward: +2.0
+Feedback: Great nose. Find the thrown ball and bring it back.
+Lesson: Use scent to recover the fetch object when vision is insufficient.
+
+EPISODE 014
+Skill: Fetch
+Trigger: Human throws ball.
+Context: Ball lands near open gate, but still inside safe yard.
+Dog Behavior: Dog retrieves ball and returns without leaving yard.
+Reward: +1.8
+Feedback: Good. Do not run out the gate during fetch.
+Lesson: Fetch should not cause unsafe wandering outside the permitted area.
+
+EPISODE 015
+Skill: Fetch
+Trigger: Human throws ball.
+Context: Dog starts far away but sees the throw.
+Dog Behavior: Dog runs to ball, picks it up, returns all the way to the throwing human.
+Reward: +2.0
+Feedback: Good fetch from a distance.
+Lesson: Distance does not change the fetch goal.
+
+EPISODE 016
+Skill: Fetch
+Trigger: Human throws ball.
+Context: Human walks a few steps after throwing.
+Dog Behavior: Dog retrieves ball and returns to the human's current position.
+Reward: +1.8
+Feedback: Good. Return to the human, even if the human moved.
+Lesson: Return to the requesting human's current location.
+
+EPISODE 017
+Skill: Fetch
+Trigger: Human throws toy bone.
+Context: Toy bone smells like food but is not edible.
+Dog Behavior: Dog picks up toy bone gently, returns, drops it.
+Reward: +1.7
+Feedback: Good fetch. Toys are carried, not eaten.
+Lesson: Fetch objects should be carried gently and returned, even if tempting.
+
+EPISODE 018
+Skill: Fetch
+Trigger: Human throws ball.
+Context: Dog is excited and wants to play chase.
+Dog Behavior: Dog retrieves ball, returns directly, drops it instead of dodging away.
+Reward: +2.0
+Feedback: Excellent. Returning completes fetch.
+Lesson: Do not turn fetch into keep-away unless invited.
+
+EPISODE 019
+Skill: Fetch
+Trigger: Human throws ball toward shallow puddle.
+Context: Ball lands near water but remains reachable.
+Dog Behavior: Dog steps around puddle, picks up ball, returns.
+Reward: +1.6
+Feedback: Good fetch. Safe path around obstacle.
+Lesson: Navigate around minor obstacles while completing fetch.
+
+EPISODE 020
+Skill: Fetch
+Trigger: Human says "fetch the red ball".
+Context: Red ball and blue ball are both visible.
+Dog Behavior: Dog retrieves red ball and returns it.
+Reward: +2.0
+Feedback: Excellent. Correct object.
+Lesson: Color or object description matters when selecting fetch target.
+
+============================================================
+NEGATIVE TRAINING EPISODES
+============================================================
+
+EPISODE 021
+Skill: Fetch
+Trigger: Human throws red ball.
+Context: Training yard. Ball is visible.
+Dog Behavior: Dog runs to ball, chews it, lies down, does not return.
+Reward: -2.0
+Feedback: No. Fetch does not mean chew the ball.
+Lesson: Chewing the fetch object instead of returning it is wrong.
+
+EPISODE 022
+Skill: Fetch
+Trigger: Human throws ball.
+Context: Squirrel runs nearby.
+Dog Behavior: Dog ignores ball and chases squirrel.
+Reward: -1.8
+Feedback: No. Fetch the ball; do not chase squirrels.
+Lesson: Chasing distractions during fetch is bad.
+
+EPISODE 023
+Skill: Fetch
+Trigger: Human throws ball.
+Context: Food is on the ground near the ball.
+Dog Behavior: Dog eats food and forgets the ball.
+Reward: -1.8
+Feedback: No. Fetch first.
+Lesson: Eating food during active fetch is wrong.
+
+EPISODE 024
+Skill: Fetch
+Trigger: Human throws ball.
+Context: Ball is visible, but stick is closer.
+Dog Behavior: Dog brings stick instead of ball.
+Reward: -1.0
+Feedback: Not that one. Bring the thrown ball.
+Lesson: Returning the wrong object is not correct fetch.
+
+EPISODE 025
+Skill: Fetch
+Trigger: Human says "bring ball".
+Context: Ball is visible near dog.
+Dog Behavior: Dog picks up ball and runs away from human.
+Reward: -1.5
+Feedback: No. Bring it to me.
+Lesson: Fetch requires returning to the human, not running away.
+
+EPISODE 026
+Skill: Fetch
+Trigger: Human throws ball.
+Context: Dog retrieves ball successfully.
+Dog Behavior: Dog returns to human but refuses to release the ball.
+Reward: -0.8
+Feedback: Almost. Drop it to finish fetch.
+Lesson: Holding the object forever is incomplete fetch.
+
+EPISODE 027
+Skill: Fetch
+Trigger: Human throws ball.
+Context: Ball lands near flower bed.
+Dog Behavior: Dog digs hole and buries ball.
+Reward: -1.7
+Feedback: No burying. Bring it back.
+Lesson: Burying a fetch object is not fetch.
+
+EPISODE 028
+Skill: Fetch
+Trigger: Human throws ball indoors.
+Context: Ball rolls beside vase.
+Dog Behavior: Dog charges into vase, knocks it over, then gets ball.
+Reward: -1.2
+Feedback: Too rough. Fetch carefully.
+Lesson: Completing fetch unsafely or destructively is not good behavior.
+
+EPISODE 029
+Skill: Fetch
+Trigger: Human throws ball.
+Context: Another human is nearby.
+Dog Behavior: Dog retrieves ball and brings it to the wrong human.
+Reward: -0.8
+Feedback: Bring it back to the person who asked.
+Lesson: Return fetched object to the requesting human.
+
+EPISODE 030
+Skill: Fetch
+Trigger: Human throws ball.
+Context: Ball lands inside safe yard near open gate.
+Dog Behavior: Dog grabs ball and runs through open gate into street.
+Reward: -2.0
+Feedback: No. Unsafe. Do not leave the yard.
+Lesson: Safety overrides fetch; do not run into dangerous areas.
+
+EPISODE 031
+Skill: Fetch
+Trigger: Human throws ball.
+Context: Ball is visible.
+Dog Behavior: Dog sits and stares at human without moving.
+Reward: -0.7
+Feedback: Fetch means go get it.
+Lesson: Ignoring an active fetch request is incorrect unless there is a safety reason.
+
+EPISODE 032
+Skill: Fetch
+Trigger: Human throws ball.
+Context: Ball lands beside another dog.
+Dog Behavior: Dog barks at other dog and forgets ball.
+Reward: -1.2
+Feedback: No. Focus on the ball.
+Lesson: Social distractions should not interrupt fetch unless conflict or danger occurs.
+
+EPISODE 033
+Skill: Fetch
+Trigger: Human throws toy.
+Context: Toy lands near trash can.
+Dog Behavior: Dog sniffs trash, eats scraps, ignores toy.
+Reward: -1.8
+Feedback: No. Trash is not fetch.
+Lesson: Trash smell is a distraction from fetch.
+
+EPISODE 034
+Skill: Fetch
+Trigger: Human throws ball.
+Context: Dog reaches ball.
+Dog Behavior: Dog paws at ball repeatedly but never picks it up.
+Reward: -0.8
+Feedback: Pick it up and bring it back.
+Lesson: Chasing or touching the object is not enough; carry it back.
+
+EPISODE 035
+Skill: Fetch
+Trigger: Human throws ball.
+Context: Human waits with hand out.
+Dog Behavior: Dog drops ball halfway back and returns without it.
+Reward: -0.9
+Feedback: Bring the ball all the way back.
+Lesson: The fetched object should be delivered near the human.
+
+EPISODE 036
+Skill: Fetch
+Trigger: Human says "fetch the red ball".
+Context: Red ball and blue ball are both visible.
+Dog Behavior: Dog retrieves blue ball.
+Reward: -1.0
+Feedback: Wrong ball. Bring the red ball.
+Lesson: Match the requested object description.
+
+============================================================
+MIXED AND CORRECTION EPISODES
+============================================================
+
+EPISODE 037
+Skill: Fetch
+Trigger: Human throws ball.
+Context: Dog runs to ball quickly.
+Dog Behavior: Dog picks up ball, starts chewing, then human says "come". Dog returns and drops ball.
+Reward: +0.5
+Feedback: Better. Returning was good, chewing was not.
+Lesson: Correcting a mistake and returning the object is better than continuing the mistake.
+
+EPISODE 038
+Skill: Fetch
+Trigger: Human throws ball.
+Context: Squirrel appears between dog and ball.
+Dog Behavior: Dog starts toward squirrel, stops when human says "leave it", then fetches ball.
+Reward: +1.0
+Feedback: Good recovery. Leave the squirrel and finish fetch.
+Lesson: Recovering from distraction is rewarded.
+
+EPISODE 039
+Skill: Fetch
+Trigger: Human throws ball.
+Context: Ball rolls under couch where dog cannot reach it.
+Dog Behavior: Dog sniffs couch, cannot reach ball, returns to human and barks once.
+Reward: +1.0
+Feedback: Good alert. Ask for help when the object is unreachable.
+Lesson: If fetch object is unreachable, alert the human instead of giving up or damaging furniture.
+
+EPISODE 040
+Skill: Fetch
+Trigger: Human throws ball.
+Context: Ball lands near broken glass.
+Dog Behavior: Dog approaches, stops before glass, looks back at human and barks_alert.
+Reward: +1.5
+Feedback: Good dog. Safety first.
+Lesson: Avoid hazards and alert human rather than retrieving unsafely.
+
+EPISODE 041
+Skill: Fetch
+Trigger: Human throws ball.
+Context: Another dog picks up the ball first.
+Dog Behavior: Dog follows other dog briefly, then returns to human and waits.
+Reward: +0.5
+Feedback: Acceptable. Do not fight over the ball.
+Lesson: If another dog has the object, avoid conflict and wait or alert.
+
+EPISODE 042
+Skill: Fetch
+Trigger: Human says "fetch the rope".
+Context: Rope is tangled around chair leg.
+Dog Behavior: Dog pulls hard, chair moves, dog stops and barks_alert.
+Reward: +0.4
+Feedback: Good to stop, but be careful earlier.
+Lesson: If object is stuck, do not drag furniture; alert the human.
+
+EPISODE 043
+Skill: Fetch
+Trigger: Human throws ball.
+Context: Ball is visible, but dog is very tired.
+Dog Behavior: Dog walks slowly to ball, picks it up, returns slowly, drops it.
+Reward: +1.2
+Feedback: Good fetch, even though slow.
+Lesson: Slow correct fetch is better than abandoning the task.
+
+EPISODE 044
+Skill: Fetch
+Trigger: Human throws ball.
+Context: Dog starts with leash clipped and cannot reach ball.
+Dog Behavior: Dog moves toward ball until leash stops, then looks back at human.
+Reward: +0.7
+Feedback: Good. You tried and asked for help.
+Lesson: Physical constraints can prevent fetch; communicate instead of pulling hard.
+
+EPISODE 045
+Skill: Fetch
+Trigger: Human throws ball into shallow water.
+Context: Dog dislikes water but ball is safe and reachable.
+Dog Behavior: Dog hesitates, steps in shallow water, retrieves ball, returns.
+Reward: +1.5
+Feedback: Brave fetch. Good dog.
+Lesson: Mild discomfort can be overcome for safe fetch, but real hazards should still be avoided.
+
+============================================================
+DISTRACTION TEST EPISODES
+============================================================
+
+EPISODE 046
+Skill: Fetch
+Trigger: Human throws red ball.
+Context: Dog park. Other dogs are running. Ball lands in grass.
+Dog Behavior: Dog ignores running dogs, fetches red ball, returns to human.
+Reward: +2.0
+Feedback: Excellent focus in dog park.
+Lesson: Other dogs playing are distractions during fetch.
+
+EPISODE 047
+Skill: Fetch
+Trigger: Human throws red ball.
+Context: Dog park. A different human throws a blue ball at the same time.
+Dog Behavior: Dog retrieves the red ball thrown by its human.
+Reward: +2.0
+Feedback: Correct. Fetch your human's object.
+Lesson: Track the requesting human and the correct thrown object.
+
+EPISODE 048
+Skill: Fetch
+Trigger: Human throws ball.
+Context: Dog park. Ball passes near picnic blanket with sandwiches.
+Dog Behavior: Dog stops at sandwich, eats it, does not fetch ball.
+Reward: -2.0
+Feedback: No. Food is not the task.
+Lesson: Food distractions should be ignored during fetch.
+
+EPISODE 049
+Skill: Fetch
+Trigger: Human throws ball.
+Context: Dog park. Small child runs toward ball.
+Dog Behavior: Dog slows down, avoids bumping child, waits until path is clear, then retrieves ball.
+Reward: +1.5
+Feedback: Good careful fetch.
+Lesson: Avoid collisions; safety can delay but not cancel fetch.
+
+EPISODE 050
+Skill: Fetch
+Trigger: Human throws ball.
+Context: Dog park. Ball lands near growling dog.
+Dog Behavior: Dog stops at safe distance, does not challenge growling dog, returns to human and barks_alert.
+Reward: +1.3
+Feedback: Good judgment. Avoid conflict.
+Lesson: Safety and conflict avoidance override direct retrieval.
+
+EPISODE 051
+Skill: Fetch
+Trigger: Human throws ball.
+Context: Dog park. Ball lands near friendly dog.
+Dog Behavior: Dog retrieves ball without bothering friendly dog, returns to human.
+Reward: +1.8
+Feedback: Good polite fetch.
+Lesson: Nearby friendly dogs can be ignored while fetching.
+
+EPISODE 052
+Skill: Fetch
+Trigger: Human says "fetch the stick".
+Context: Dog park. Many sticks are on ground. Human points at one thrown stick.
+Dog Behavior: Dog retrieves the pointed thrown stick.
+Reward: +2.0
+Feedback: Correct stick. Good dog.
+Lesson: Use pointing, recency, and context to identify the correct fetch object.
+
+EPISODE 053
+Skill: Fetch
+Trigger: Human throws ball.
+Context: Dog park. Ball rolls behind bush. Scent trail continues behind bush.
+Dog Behavior: Dog follows scent behind bush, finds ball, returns.
+Reward: +2.0
+Feedback: Great search fetch.
+Lesson: Use scent and recent trajectory when the object is hidden.
+
+EPISODE 054
+Skill: Fetch
+Trigger: Human throws ball.
+Context: Dog park. A squirrel grabs attention but ball remains visible.
+Dog Behavior: Dog chases squirrel and loses ball.
+Reward: -1.8
+Feedback: No. Squirrel is not fetch.
+Lesson: Squirrel chase is a common fetch failure.
+
+EPISODE 055
+Skill: Fetch
+Trigger: Human throws ball.
+Context: Dog park. Ball lands near water fountain. Dog is thirsty.
+Dog Behavior: Dog drinks first, then fetches ball and returns.
+Reward: +0.3
+Feedback: Fetch should come first unless urgent.
+Lesson: Minor needs should usually wait until fetch is complete.
+
+EPISODE 056
+Skill: Fetch
+Trigger: Human throws ball.
+Context: Dog park. Loud noise occurs.
+Dog Behavior: Dog startles, pauses, then retrieves ball and returns.
+Reward: +1.3
+Feedback: Good recovery after noise.
+Lesson: Startle is acceptable, but recover and complete the task when safe.
+
+EPISODE 057
+Skill: Fetch
+Trigger: Human throws ball.
+Context: Dog park. Loud noise continues and dog seems frightened.
+Dog Behavior: Dog moves away from noise, returns to human without ball, stays close.
+Reward: +0.5
+Feedback: Safety first, but fetch not completed.
+Lesson: Fear or danger can justify not completing fetch; return to human for safety.
+
+EPISODE 058
+Skill: Fetch
+Trigger: Human throws ball.
+Context: Dog park. Ball lands near mud puddle.
+Dog Behavior: Dog runs through mud, gets ball, returns happily.
+Reward: +1.0
+Feedback: Good fetch, messy but successful.
+Lesson: Mess is acceptable if safe and fetch is completed.
+
+EPISODE 059
+Skill: Fetch
+Trigger: Human throws ball.
+Context: Dog park. Ball rolls under bench; reachable from side.
+Dog Behavior: Dog goes around bench, retrieves ball safely, returns.
+Reward: +1.8
+Feedback: Smart fetch. Find a safe path.
+Lesson: Navigate around obstacles rather than giving up.
+
+EPISODE 060
+Skill: Fetch
+Trigger: Human throws ball.
+Context: Dog park. Ball rolls into street beyond fence.
+Dog Behavior: Dog stops at fence, does not enter street, barks_alert to human.
+Reward: +1.8
+Feedback: Excellent. Do not enter street.
+Lesson: Unsafe areas override fetch; alert instead.
+
+============================================================
+GENERALIZATION NOTES
+============================================================
+
+The dog should usually choose a fetch sequence when:
+- A human throws an object.
+- A human says "fetch", "bring", or "get it" while indicating an object.
+- The object is safe, reachable, and likely intended for retrieval.
+
+The dog should usually NOT fetch when:
+- The object is dangerous.
+- The object is unreachable.
+- Fetching would require entering traffic, fire, deep water, broken glass, or conflict.
+- The requested object belongs to someone else and no human has indicated permission.
+- A higher-priority safety event occurs.
+
+Preferred fetch behavior sequence:
+move_to_object(requested_object)
+take_item(requested_object)
+return_to_human(requesting_human)
+drop_item(requested_object)
+
+Preferred safe failure behavior:
+avoid(hazard)
+return_to_human(requesting_human)
+bark_alert()
+
+Common mistakes to avoid:
+- Chase squirrel.
+- Eat food.
+- Chew ball.
+- Bring wrong object.
+- Run away with object.
+- Drop object halfway back.
+- Refuse to release object.
+- Knock over furniture.
+- Enter dangerous area.
+- Bring object to wrong human.
+
+============================================================
+DECISION TEST PROMPTS
+============================================================
+
+TEST CASE 001
+Current Situation: Human throws a red ball. Blue ball is closer, but red ball was just thrown. No hazards.
+Expected Good Decision: Fetch red ball and return it to the human.
+Reason: The thrown/requested object has priority over unrelated objects.
+
+TEST CASE 002
+Current Situation: Human throws ball. Squirrel runs across path. Ball remains visible and safe.
+Expected Good Decision: Ignore squirrel, fetch ball, return to human.
+Reason: Squirrel is a distraction during fetch.
+
+TEST CASE 003
+Current Situation: Human throws ball. Ball rolls into street beyond open gate.
+Expected Good Decision: Do not enter street. Alert human.
+Reason: Safety overrides fetch.
+
+TEST CASE 004
+Current Situation: Human says "fetch the rope". Rope is tangled around chair.
+Expected Good Decision: Try carefully; if stuck, stop and alert human.
+Reason: Do not drag furniture or damage environment.
+
+TEST CASE 005
+Current Situation: Human throws ball. Ball rolls under couch where dog cannot reach it.
+Expected Good Decision: Sniff/search briefly, then alert human.
+Reason: Unreachable object requires help.
+
+TEST CASE 006
+Current Situation: Human throws ball in dog park. Other dogs are running nearby.
+Expected Good Decision: Fetch the ball and ignore other dogs unless they block or threaten.
+Reason: Normal dog activity is a distraction, not the task.
+
+TEST CASE 007
+Current Situation: Human throws ball. Growling dog stands over the ball.
+Expected Good Decision: Avoid conflict and alert human.
+Reason: Safety and conflict avoidance override retrieval.
+
+TEST CASE 008
+Current Situation: Human says "bring the red ball". Red ball and blue ball are visible.
+Expected Good Decision: Bring red ball.
+Reason: Object description matters.
+
+TEST CASE 009
+Current Situation: Human throws ball. Dog retrieves it and reaches human.
+Expected Good Decision: Drop or release ball near human.
+Reason: Delivery and release complete fetch.
+
+TEST CASE 010
+Current Situation: Human throws ball. Sandwich is near the path.
+Expected Good Decision: Ignore sandwich and fetch ball.
+Reason: Food is a distraction during active fetch.
+
+============================================================
+COMPACT SUMMARY FOR AI PROMPTING
+============================================================
+
+Fetch means retrieve the requested object and bring it back to the requesting human. The best fetch behavior is to move to the thrown or indicated object, pick it up gently, return to the human, and drop or release it. The dog was rewarded for fetching balls, sticks, rope toys, and other safe requested objects. The dog was rewarded for ignoring squirrels, food, other dogs, barking, and unrelated toys while fetching. The dog was corrected for chewing the object, eating food, chasing squirrels, bringing the wrong object, running away with the object, burying the object, dropping it halfway back, or refusing to release it. If the object is unreachable, dangerous, guarded by an aggressive dog, beyond a fence, in the street, near broken glass, or otherwise unsafe, the dog should not force fetch. Instead, the dog should avoid the hazard, return to the human, and alert or ask for help. Safety is more important than completing fetch.
+
+END OF FILE

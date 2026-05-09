@@ -8439,13 +8439,11 @@ MonoBehaviour:
     pos2: {x: 0, y: 0}
     height: 0
     yawDeg: 0
-    whichFollowersArrived: 
   next_formationCrumb:
     valid: 0
     pos2: {x: 0, y: 0}
     height: 0
     yawDeg: 0
-    whichFollowersArrived: 
   targetObject: {fileID: 0}
   keepFollowingTargetObject: 0
   stopDistance: 0.2
@@ -10957,13 +10955,11 @@ MonoBehaviour:
     pos2: {x: 0, y: 0}
     height: 0
     yawDeg: 0
-    whichFollowersArrived: 
   next_formationCrumb:
     valid: 0
     pos2: {x: 0, y: 0}
     height: 0
     yawDeg: 0
-    whichFollowersArrived: 
   targetObject: {fileID: 0}
   keepFollowingTargetObject: 0
   stopDistance: 0.2
@@ -22368,13 +22364,11 @@ MonoBehaviour:
     pos2: {x: 0, y: 0}
     height: 0
     yawDeg: 0
-    whichFollowersArrived: 
   next_formationCrumb:
     valid: 0
     pos2: {x: 0, y: 0}
     height: 0
     yawDeg: 0
-    whichFollowersArrived: 
   targetObject: {fileID: 0}
   keepFollowingTargetObject: 0
   stopDistance: 0.2
@@ -24002,13 +23996,11 @@ MonoBehaviour:
     pos2: {x: 0, y: 0}
     height: 0
     yawDeg: 0
-    whichFollowersArrived: 
   next_formationCrumb:
     valid: 0
     pos2: {x: 0, y: 0}
     height: 0
     yawDeg: 0
-    whichFollowersArrived: 
   targetObject: {fileID: 0}
   keepFollowingTargetObject: 0
   stopDistance: 0.2
@@ -25660,13 +25652,11 @@ MonoBehaviour:
     pos2: {x: 0, y: 0}
     height: 0
     yawDeg: 0
-    whichFollowersArrived: 
   next_formationCrumb:
     valid: 0
     pos2: {x: 0, y: 0}
     height: 0
     yawDeg: 0
-    whichFollowersArrived: 
   targetObject: {fileID: 0}
   keepFollowingTargetObject: 0
   stopDistance: 0.2
@@ -35378,13 +35368,11 @@ MonoBehaviour:
     pos2: {x: 0, y: 0}
     height: 0
     yawDeg: 0
-    whichFollowersArrived: 
   next_formationCrumb:
     valid: 0
     pos2: {x: 0, y: 0}
     height: 0
     yawDeg: 0
-    whichFollowersArrived: 
   targetObject: {fileID: 0}
   keepFollowingTargetObject: 0
   stopDistance: 0.2
@@ -36678,13 +36666,11 @@ MonoBehaviour:
     pos2: {x: 0, y: 0}
     height: 0
     yawDeg: 0
-    whichFollowersArrived: 
   next_formationCrumb:
     valid: 0
     pos2: {x: 0, y: 0}
     height: 0
     yawDeg: 0
-    whichFollowersArrived: 
   targetObject: {fileID: 0}
   keepFollowingTargetObject: 0
   stopDistance: 0.2
@@ -37674,13 +37660,11 @@ MonoBehaviour:
     pos2: {x: 0, y: 0}
     height: 0
     yawDeg: 0
-    whichFollowersArrived: 
   next_formationCrumb:
     valid: 0
     pos2: {x: 0, y: 0}
     height: 0
     yawDeg: 0
-    whichFollowersArrived: 
   targetObject: {fileID: 0}
   keepFollowingTargetObject: 0
   stopDistance: 0.2
@@ -49777,13 +49761,11 @@ MonoBehaviour:
     pos2: {x: 0, y: 0}
     height: 0
     yawDeg: 0
-    whichFollowersArrived: 
   next_formationCrumb:
     valid: 0
     pos2: {x: 0, y: 0}
     height: 0
     yawDeg: 0
-    whichFollowersArrived: 
   targetObject: {fileID: 0}
   keepFollowingTargetObject: 0
   stopDistance: 0.2
@@ -62775,13 +62757,11 @@ MonoBehaviour:
     pos2: {x: 0, y: 0}
     height: 0
     yawDeg: 0
-    whichFollowersArrived: 
   next_formationCrumb:
     valid: 0
     pos2: {x: 0, y: 0}
     height: 0
     yawDeg: 0
-    whichFollowersArrived: 
   targetObject: {fileID: 0}
   keepFollowingTargetObject: 0
   stopDistance: 0.2
@@ -67754,13 +67734,14 @@ GameObject:
   m_Component:
   - component: {fileID: 733348322}
   - component: {fileID: 733348323}
+  - component: {fileID: 733348324}
   m_Layer: 0
   m_Name: DuckPack
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &733348322
 Transform:
   m_ObjectHideFlags: 0
@@ -67794,7 +67775,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Pack
   dir: {fileID: 1920128612}
-  trail: {fileID: 0}
+  trail: {fileID: 733348324}
   packName: DuckPack
   packAgentList:
   - {fileID: 1988421401}
@@ -67802,10 +67783,29 @@ MonoBehaviour:
   - {fileID: 1361063146}
   - {fileID: 1170807869}
   - {fileID: 2065771786}
-  formation: 3
+  formation: 1
   leadershipType: 3
   followerType: 2
-  formationSpacing: 1.5
+  formationSpacing: 0.5
+--- !u!114 &733348324
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 733348321}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a33e305f12fa8440487617817d81a875, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BreadcrumbTrail
+  dropDistance: 0.5
+  maxCrumbs: 256
+  pack: {fileID: 733348323}
+  leaderCrumbs: []
+  followerCrumbTrails: []
+  lastDropPos: {x: 0, y: 0}
+  hasAny: 0
 --- !u!43 &734225645
 Mesh:
   m_ObjectHideFlags: 0
@@ -71349,11 +71349,8 @@ MonoBehaviour:
   dropDistance: 0.5
   maxCrumbs: 256
   pack: {fileID: 766807147}
-  leader: {fileID: 6544990386685219154}
-  followers:
-  - {fileID: 1651296793}
-  - {fileID: 1345767169}
-  crumbs: []
+  leaderCrumbs: []
+  followerCrumbTrails: []
   lastDropPos: {x: 0, y: 0}
   hasAny: 0
 --- !u!43 &768168287
@@ -90984,13 +90981,11 @@ MonoBehaviour:
     pos2: {x: 0, y: 0}
     height: 0
     yawDeg: 0
-    whichFollowersArrived: 
   next_formationCrumb:
     valid: 0
     pos2: {x: 0, y: 0}
     height: 0
     yawDeg: 0
-    whichFollowersArrived: 
   targetObject: {fileID: 0}
   keepFollowingTargetObject: 0
   stopDistance: 0.2
@@ -101429,13 +101424,11 @@ MonoBehaviour:
     pos2: {x: 0, y: 0}
     height: 0
     yawDeg: 0
-    whichFollowersArrived: 
   next_formationCrumb:
     valid: 0
     pos2: {x: 0, y: 0}
     height: 0
     yawDeg: 0
-    whichFollowersArrived: 
   targetObject: {fileID: 0}
   keepFollowingTargetObject: 0
   stopDistance: 0.2
@@ -102894,13 +102887,11 @@ MonoBehaviour:
     pos2: {x: 0, y: 0}
     height: 0
     yawDeg: 0
-    whichFollowersArrived: 
   next_formationCrumb:
     valid: 0
     pos2: {x: 0, y: 0}
     height: 0
     yawDeg: 0
-    whichFollowersArrived: 
   targetObject: {fileID: 0}
   keepFollowingTargetObject: 0
   stopDistance: 0.2
@@ -114925,13 +114916,11 @@ MonoBehaviour:
     pos2: {x: 0, y: 0}
     height: 0
     yawDeg: 0
-    whichFollowersArrived: 
   next_formationCrumb:
     valid: 0
     pos2: {x: 0, y: 0}
     height: 0
     yawDeg: 0
-    whichFollowersArrived: 
   targetObject: {fileID: 0}
   keepFollowingTargetObject: 0
   stopDistance: 0.2
@@ -119269,13 +119258,11 @@ MonoBehaviour:
     pos2: {x: 0, y: 0}
     height: 0
     yawDeg: 0
-    whichFollowersArrived: 
   next_formationCrumb:
     valid: 0
     pos2: {x: 0, y: 0}
     height: 0
     yawDeg: 0
-    whichFollowersArrived: 
   targetObject: {fileID: 0}
   keepFollowingTargetObject: 0
   stopDistance: 0.1
@@ -158793,13 +158780,11 @@ MonoBehaviour:
     pos2: {x: 0, y: 0}
     height: 0
     yawDeg: 0
-    whichFollowersArrived: 
   next_formationCrumb:
     valid: 0
     pos2: {x: 0, y: 0}
     height: 0
     yawDeg: 0
-    whichFollowersArrived: 
   targetObject: {fileID: 0}
   keepFollowingTargetObject: 0
   stopDistance: 0.2
@@ -159670,13 +159655,11 @@ MonoBehaviour:
     pos2: {x: 0, y: 0}
     height: 0
     yawDeg: 0
-    whichFollowersArrived: 
   next_formationCrumb:
     valid: 0
     pos2: {x: 0, y: 0}
     height: 0
     yawDeg: 0
-    whichFollowersArrived: 
   targetObject: {fileID: 0}
   keepFollowingTargetObject: 0
   stopDistance: 0.15
@@ -182101,13 +182084,11 @@ MonoBehaviour:
     pos2: {x: 0, y: 0}
     height: 0
     yawDeg: 0
-    whichFollowersArrived: 
   next_formationCrumb:
     valid: 0
     pos2: {x: 0, y: 0}
     height: 0
     yawDeg: 0
-    whichFollowersArrived: 
   targetObject: {fileID: 0}
   keepFollowingTargetObject: 0
   stopDistance: 0.2
@@ -184598,13 +184579,11 @@ MonoBehaviour:
     pos2: {x: 0, y: 0}
     height: 0
     yawDeg: 0
-    whichFollowersArrived: 
   next_formationCrumb:
     valid: 0
     pos2: {x: 0, y: 0}
     height: 0
     yawDeg: 0
-    whichFollowersArrived: 
   targetObject: {fileID: 0}
   keepFollowingTargetObject: 0
   stopDistance: 0.2
@@ -185227,13 +185206,11 @@ MonoBehaviour:
     pos2: {x: 0, y: 0}
     height: 0
     yawDeg: 0
-    whichFollowersArrived: 
   next_formationCrumb:
     valid: 0
     pos2: {x: 0, y: 0}
     height: 0
     yawDeg: 0
-    whichFollowersArrived: 
   targetObject: {fileID: 0}
   keepFollowingTargetObject: 0
   stopDistance: 0.2
@@ -189186,13 +189163,11 @@ MonoBehaviour:
     pos2: {x: 0, y: 0}
     height: 0
     yawDeg: 0
-    whichFollowersArrived: 
   next_formationCrumb:
     valid: 0
     pos2: {x: 0, y: 0}
     height: 0
     yawDeg: 0
-    whichFollowersArrived: 
   targetObject: {fileID: 0}
   keepFollowingTargetObject: 0
   stopDistance: 0.2
@@ -189583,13 +189558,11 @@ MonoBehaviour:
     pos2: {x: 0, y: 0}
     height: 0
     yawDeg: 0
-    whichFollowersArrived: 
   next_formationCrumb:
     valid: 0
     pos2: {x: 0, y: 0}
     height: 0
     yawDeg: 0
-    whichFollowersArrived: 
   targetObject: {fileID: 0}
   keepFollowingTargetObject: 0
   stopDistance: 0.2
@@ -191639,13 +191612,11 @@ MonoBehaviour:
     pos2: {x: 0, y: 0}
     height: 0
     yawDeg: 0
-    whichFollowersArrived: 
   next_formationCrumb:
     valid: 0
     pos2: {x: 0, y: 0}
     height: 0
     yawDeg: 0
-    whichFollowersArrived: 
   targetObject: {fileID: 0}
   keepFollowingTargetObject: 0
   stopDistance: 0.2
@@ -201614,13 +201585,11 @@ MonoBehaviour:
     pos2: {x: 0, y: 0}
     height: 0
     yawDeg: 0
-    whichFollowersArrived: 
   next_formationCrumb:
     valid: 0
     pos2: {x: 0, y: 0}
     height: 0
     yawDeg: 0
-    whichFollowersArrived: 
   targetObject: {fileID: 0}
   keepFollowingTargetObject: 0
   stopDistance: 0.2
@@ -206826,13 +206795,11 @@ MonoBehaviour:
     pos2: {x: 0, y: 0}
     height: 0
     yawDeg: 0
-    whichFollowersArrived: 
   next_formationCrumb:
     valid: 0
     pos2: {x: 0, y: 0}
     height: 0
     yawDeg: 0
-    whichFollowersArrived: 
   targetObject: {fileID: 0}
   keepFollowingTargetObject: 0
   stopDistance: 0.1
@@ -215314,13 +215281,11 @@ MonoBehaviour:
     pos2: {x: 0, y: 0}
     height: 0
     yawDeg: 0
-    whichFollowersArrived: 
   next_formationCrumb:
     valid: 0
     pos2: {x: 0, y: 0}
     height: 0
     yawDeg: 0
-    whichFollowersArrived: 
   targetObject: {fileID: 0}
   keepFollowingTargetObject: 0
   stopDistance: 0.15
