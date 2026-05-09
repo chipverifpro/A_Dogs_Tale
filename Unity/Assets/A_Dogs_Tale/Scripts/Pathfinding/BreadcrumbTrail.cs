@@ -1,52 +1,64 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
-
 
 [System.Serializable]
 public class Crumb
 {
     public bool valid = false;
-    //public Vector3 position;        // point creator was at
     public Vector2 pos2;
     public float height;
-    public float yawDeg;       // angle player was at: helps followers turn?
-    public List<int> whichFollowersArrived;
+    public float yawDeg;
+}
+
+[System.Serializable]
+public class FollowerCrumbTrail
+{
+    public int followerObjectId;
+    public List<Crumb> crumbs = new();
 }
 
 [DisallowMultipleComponent]
 public class BreadcrumbTrail : MonoBehaviour
 {
-    [Header("Breadcrumb Trail (for leader)")]
-    [Tooltip("Drop a new crumb when we've moved at least this far since last drop.")]
+    [Header("Breadcrumb Trail")]
+    [Tooltip("Drop a new crumb when the leader has moved at least this far since last drop.")]
     public float dropDistance = 0.5f;
 
-    [Tooltip("Hard cap on stored crumbs (acts as ring buffer ceiling).")]
+    [Tooltip("Hard cap on stored crumbs per trail. Oldest crumbs are dropped when full.")]
     public int maxCrumbs = 256;
 
     public Pack pack;
     public int numFollowers => CountPackFollowers();
 
+    [Tooltip("Reference-only leader path. Followers do not consume this list.")]
+    public List<Crumb> leaderCrumbs = new(256);
 
-    public List<Crumb> crumbs = new List<Crumb>(256);
+    [Tooltip("Per-follower paths. These crumbs already include each follower's formation offset.")]
+    public List<FollowerCrumbTrail> followerCrumbTrails = new();
+
     public Vector2 lastDropPos;
     public bool hasAny = false;
+
     private int syncedPackSignature;
     private WorldObject PackLeader => pack != null ? pack.packLeader : null;
 
-    void Awake()
+    private void Awake()
     {
         hasAny = false;
-        if (crumbs == null) crumbs = new();
+        leaderCrumbs ??= new();
+        followerCrumbTrails ??= new();
     }
 
-    void Update()
+    private void Update()
     {
         RecordIfNeeded();
     }
 
     public void ClearCrumbs()
     {
-        crumbs.Clear();
+        leaderCrumbs.Clear();
+        followerCrumbTrails.Clear();
         hasAny = false;
     }
 
@@ -62,186 +74,217 @@ public class BreadcrumbTrail : MonoBehaviour
         syncedPackSignature = currentSignature;
     }
 
-    /// Call once per frame by the owner to record position if moved enough.
-    /// Can be forced in the case of a sharp turn that we want included.
+    /// <summary>
+    /// Records a leader breadcrumb, and records one offset breadcrumb per follower.
+    /// Follower crumbs are consumed independently; leader crumbs are retained as reference history.
+    /// </summary>
     public void RecordIfNeeded(bool forceDrop = false)
     {
-        WorldObject currentLeader = PackLeader;
-        if (currentLeader == null || currentLeader.locationModule == null) return;
-        //Debug.Log($"RecordIfNeeded: numFollowers = {numFollowers}, numCrumbs = {crumbs.Count}, hasAny={hasAny}, forceDrop={forceDrop}");
-        if (numFollowers == 0) return;
+        WorldObject leader = PackLeader;
+        if (leader == null || leader.locationModule == null)
+            return;
 
         if (!hasAny)
         {
             AddCrumb();
-            lastDropPos = currentLeader.locationModule.pos2_f;
+            lastDropPos = leader.locationModule.pos2_f;
             hasAny = true;
             return;
         }
 
-        if (forceDrop && (currentLeader.locationModule.pos2 != lastDropPos))
+        if (forceDrop && leader.locationModule.pos2_f != lastDropPos)
         {
             AddCrumb();
-            lastDropPos = currentLeader.locationModule.pos2;
+            lastDropPos = leader.locationModule.pos2_f;
             return;
         }
-        if ((currentLeader.locationModule.pos2 - lastDropPos).sqrMagnitude >= dropDistance * dropDistance)
+
+        if ((leader.locationModule.pos2_f - lastDropPos).sqrMagnitude >= dropDistance * dropDistance)
         {
             AddCrumb();
-            lastDropPos = currentLeader.locationModule.pos2;
+            lastDropPos = leader.locationModule.pos2_f;
         }
     }
 
     private void AddCrumb()
     {
-        WorldObject currentLeader = PackLeader;
-        if (currentLeader == null || currentLeader.locationModule == null)
+        WorldObject leader = PackLeader;
+        if (leader == null || leader.locationModule == null)
             return;
 
-        if (crumbs == null) crumbs = new();
+        leaderCrumbs ??= new();
+        followerCrumbTrails ??= new();
 
-        if (crumbs.Count >= maxCrumbs)
-        {
-            // Drop oldest when full
-            crumbs.RemoveAt(0);
-        }
-        Crumb new_crumb = new() { pos2 = currentLeader.locationModule.pos2_f, height = currentLeader.locationModule.height, yawDeg = currentLeader.locationModule.yawDeg, valid = true };
-        new_crumb.whichFollowersArrived = new();
-        crumbs.Add(new_crumb);
+        Vector2 leaderPos2 = leader.locationModule.pos2_f;
+        float leaderHeight = leader.locationModule.height;
+        float leaderYawDeg = leader.locationModule.yawDeg;
+
+        AddLeaderCrumb(leaderPos2, leaderHeight, leaderYawDeg);
+        AddFollowerCrumbs(leaderPos2, leaderHeight, leaderYawDeg);
     }
 
-    private int FindFollowerIndex(WorldObject agent)
+    private void AddLeaderCrumb(Vector2 leaderPos2, float leaderHeight, float leaderYawDeg)
     {
-        if (agent == null || pack == null || pack.packAgentList == null)
-            return -1;
+        leaderCrumbs.Add(CreateCrumb(leaderPos2, leaderHeight, leaderYawDeg));
+        PruneCrumbList(leaderCrumbs);
+    }
 
-        int followerIndex = 0;
+    private void AddFollowerCrumbs_OLD(Vector2 leaderPos2, float leaderHeight, float leaderYawDeg)
+    {
+        if (pack == null || pack.packAgentList == null || pack.packAgentList.Count <= 1)
+            return;
+
+        PackFormations formations = Dir.Instance != null ? Dir.Instance.packFormations : null;
+
         for (int i = 1; i < pack.packAgentList.Count; i++)
         {
             WorldObject follower = pack.packAgentList[i];
             if (follower == null)
                 continue;
 
-            if (follower == agent)
-                return followerIndex;
+            int followerKey = GetFollowerKey(follower);
+            if (followerKey == 0)
+                continue;
 
-            followerIndex++;
+            Vector2 followerPos2 = leaderPos2;
+            if (formations != null)
+            {
+                Vector2 offset = formations.GetOffsetForFormation(pack.formation, i, pack.packAgentList.Count);
+                followerPos2 += formations.RotateAndScaleOffset(offset, leaderYawDeg, pack.formationSpacing);
+            }
+
+            FollowerCrumbTrail followerTrail = GetOrCreateFollowerTrail(followerKey);
+            followerTrail.crumbs.Add(CreateCrumb(followerPos2, leaderHeight, leaderYawDeg));
+            PruneCrumbList(followerTrail.crumbs);
         }
-
-        return -1;
     }
 
-    public Crumb GetNextCrumb(WorldObject agent, float arrivalDistance = 0.35f, bool markArrivals = true)
+    private void AddFollowerCrumbs(Vector2 leaderPos2, float leaderHeight, float leaderYawDeg)
     {
-        int eater_index;
-        int crumb_index;
-        // for returning an invalid crumb
-        Crumb invalid_crumb = new()
+        if (pack == null || pack.packAgentList == null || pack.packAgentList.Count <= 1)
+            return;
+
+        PackFormations formations = Dir.Instance != null ? Dir.Instance.packFormations : null;
+
+        for (int i = 1; i < pack.packAgentList.Count; i++)
+        {
+            WorldObject follower = pack.packAgentList[i];
+            if (follower == null)
+                continue;
+
+            int followerKey = GetFollowerKey(follower);
+            if (followerKey == 0)
+                continue;
+
+            Vector2 followerPos2 = leaderPos2;
+            if (formations != null)
+            {
+                Vector2 offset = formations.GetOffsetForFormation(pack.formation, i, pack.packAgentList.Count);
+                int rank = Mathf.FloorToInt(-offset.y); 
+                if (rank>0) // negative offsets are behind leader so treat y as the rank, not an offset.
+                {
+                    if (leaderCrumbs.Count<=rank) continue; // not enough leader crumbs for this rank.  Don't add a crumb.
+                    offset.y = 0; // make offset just (x,0) relative to old leaderCrumb.
+                    int rankindex = leaderCrumbs.Count-1 - rank;  // position 0 is the oldest position, so go from list end.
+                    //if (rankindex <0) continue;
+                    followerPos2  = leaderCrumbs[rankindex].pos2;
+                    leaderYawDeg = leaderCrumbs[rankindex].yawDeg;
+                } // else use offsets in front of leader like we used to.
+                followerPos2 += formations.RotateAndScaleOffset(offset, leaderYawDeg, pack.formationSpacing);
+            }
+
+            FollowerCrumbTrail followerTrail = GetOrCreateFollowerTrail(followerKey);
+            followerTrail.crumbs.Add(CreateCrumb(followerPos2, leaderHeight, leaderYawDeg));
+            PruneCrumbList(followerTrail.crumbs);
+        }
+    }
+
+    private static Crumb CreateCrumb(Vector2 pos2, float height, float yawDeg)
+    {
+        return new Crumb
+        {
+            valid = true,
+            pos2 = pos2,
+            height = height,
+            yawDeg = yawDeg
+        };
+    }
+
+    public Crumb GetNextCrumb(WorldObject agent, float arrivalDistance = 0.35f)
+    {
+        Crumb invalidCrumb = new()
         {
             valid = false,
-            pos2 = new(999f, 999f),
+            pos2 = new Vector2(999f, 999f),
             height = 999f
         };
 
-        WorldObject currentLeader = PackLeader;
-        if (agent == null || agent.agentMovementModule == null || currentLeader == null || currentLeader.locationModule == null)
-            return invalid_crumb;
-        
-        Crumb currentTarget = agent.agentMovementModule.next_actualCrumb;
-        
-
-        eater_index = FindFollowerIndex(agent);
-        if (eater_index < 0) return invalid_crumb;
-
-        if (crumbs == null || crumbs.Count == 0)
-            return invalid_crumb;
-
-        if (currentTarget != null && currentTarget.valid)
-        {
-            int currentCrumbIndex = FindMatchingCrumbIndex(currentTarget);
-            if (currentCrumbIndex >= 0)
-            {
-                Crumb currentCrumb = crumbs[currentCrumbIndex];
-                if (currentCrumb.whichFollowersArrived == null)
-                    currentCrumb.whichFollowersArrived = new();
-
-                if (!markArrivals || !IsAgentAtCrumb(agent, currentCrumb, arrivalDistance))
-                    return currentCrumb;
-
-                MarkFollowerArrivedAtCrumb(currentCrumbIndex, eater_index);
-            }
-        }
-
-        // scan through the crumb list to find the first one that the eater has not eaten
-        //for (crumb_index = crumbs.Count-1; crumb_index >=0; crumb_index--)
-        for (crumb_index = 0; crumb_index < crumbs.Count; crumb_index++)
-        {
-            ///if (crumbs[crumb_index].position == lastEaten[eater_index])
-            //if (crumbs == null) return invalid_crumb;
-            if (crumbs[crumb_index].whichFollowersArrived == null)
-                crumbs[crumb_index].whichFollowersArrived = new();
-
-            agent.agentMovementModule.next_actualCrumb = crumbs[crumb_index];
-
-            if (!crumbs[crumb_index].whichFollowersArrived.Contains(eater_index))
-            {
-                if (markArrivals && IsAgentAtCrumb(agent, crumbs[crumb_index], arrivalDistance))
-                {
-                    MarkFollowerArrivedAtCrumb(crumb_index, eater_index);
-                    crumb_index--;
-                    continue;
-                }
-
-                // return that position
-                return agent.agentMovementModule.next_actualCrumb;
-            }
-        }
-        return invalid_crumb;   // did not find an uneaten crumb.
-    }
-
-    public void MarkCurrentCrumbArrived(WorldObject agent)
-    {
         if (agent == null || agent.agentMovementModule == null)
-            return;
+            return invalidCrumb;
+
+        FollowerCrumbTrail followerTrail = FindFollowerTrail(agent);
+        if (followerTrail == null || followerTrail.crumbs == null || followerTrail.crumbs.Count == 0)
+            return invalidCrumb;
 
         Crumb currentTarget = agent.agentMovementModule.next_actualCrumb;
-        if (currentTarget == null || !currentTarget.valid)
-            return;
+        if (currentTarget != null && currentTarget.valid && followerTrail.crumbs.Contains(currentTarget))
+        {
+            if (!IsAgentAtCrumb(agent, currentTarget, arrivalDistance))
+                return currentTarget;
 
-        int followerIndex = FindFollowerIndex(agent);
-        if (followerIndex < 0)
-            return;
+            followerTrail.crumbs.Remove(currentTarget);
+        }
 
-        int currentCrumbIndex = FindMatchingCrumbIndex(currentTarget);
-        if (currentCrumbIndex < 0)
-            return;
+        while (followerTrail.crumbs.Count > 0)
+        {
+            Crumb nextCrumb = followerTrail.crumbs[0];
+            agent.agentMovementModule.next_actualCrumb = nextCrumb;
 
-        MarkFollowerArrivedAtCrumb(currentCrumbIndex, followerIndex);
+            if (!IsAgentAtCrumb(agent, nextCrumb, arrivalDistance))
+                return nextCrumb;
+
+            followerTrail.crumbs.RemoveAt(0);
+        }
+
         agent.agentMovementModule.next_actualCrumb = new Crumb();
-        agent.agentMovementModule.next_formationCrumb = new Crumb();
+        return invalidCrumb;
     }
 
-    private int FindMatchingCrumbIndex(Crumb target)
+    private FollowerCrumbTrail FindFollowerTrail(WorldObject follower)
     {
-        if (target == null || crumbs == null)
-            return -1;
+        int followerKey = GetFollowerKey(follower);
+        if (followerKey == 0 || followerCrumbTrails == null)
+            return null;
 
-        for (int i = 0; i < crumbs.Count; i++)
+        for (int i = 0; i < followerCrumbTrails.Count; i++)
         {
-            Crumb crumb = crumbs[i];
-            if (crumb == target)
-                return i;
+            FollowerCrumbTrail followerTrail = followerCrumbTrails[i];
+            if (followerTrail != null && followerTrail.followerObjectId == followerKey)
+                return followerTrail;
+        }
 
-            if (crumb != null &&
-                crumb.valid == target.valid &&
-                crumb.pos2 == target.pos2 &&
-                Mathf.Approximately(crumb.height, target.height))
+        return null;
+    }
+
+    private FollowerCrumbTrail GetOrCreateFollowerTrail(int followerKey)
+    {
+        for (int i = 0; i < followerCrumbTrails.Count; i++)
+        {
+            FollowerCrumbTrail followerTrail = followerCrumbTrails[i];
+            if (followerTrail != null && followerTrail.followerObjectId == followerKey)
             {
-                return i;
+                followerTrail.crumbs ??= new();
+                return followerTrail;
             }
         }
 
-        return -1;
+        FollowerCrumbTrail newTrail = new()
+        {
+            followerObjectId = followerKey,
+            crumbs = new List<Crumb>(Mathf.Max(0, maxCrumbs))
+        };
+        followerCrumbTrails.Add(newTrail);
+        return newTrail;
     }
 
     private bool IsAgentAtCrumb(WorldObject agent, Crumb crumb, float arrivalDistance)
@@ -255,20 +298,14 @@ public class BreadcrumbTrail : MonoBehaviour
         return (agentPos - crumb.pos2).sqrMagnitude <= arrivalDistance * arrivalDistance;
     }
 
-    private void MarkFollowerArrivedAtCrumb(int crumbIndex, int followerIndex)
+    private void PruneCrumbList(List<Crumb> crumbList)
     {
-        if (crumbs == null || crumbIndex < 0 || crumbIndex >= crumbs.Count)
+        if (crumbList == null)
             return;
 
-        Crumb crumb = crumbs[crumbIndex];
-        if (crumb.whichFollowersArrived == null)
-            crumb.whichFollowersArrived = new();
-
-        if (!crumb.whichFollowersArrived.Contains(followerIndex))
-            crumb.whichFollowersArrived.Add(followerIndex);
-
-        if (crumb.whichFollowersArrived.Count >= numFollowers)
-            crumbs.RemoveAt(crumbIndex);
+        int cappedMaxCrumbs = Mathf.Max(0, maxCrumbs);
+        while (crumbList.Count > cappedMaxCrumbs)
+            crumbList.RemoveAt(0);
     }
 
     private int ComputePackSignature()
@@ -289,6 +326,14 @@ public class BreadcrumbTrail : MonoBehaviour
             }
             return hash;
         }
+    }
+
+    private static int GetFollowerKey(WorldObject follower)
+    {
+        if (follower == null)
+            return 0;
+
+        return follower.ObjectId != 0 ? follower.ObjectId : follower.GetInstanceID();
     }
 
     private int CountPackFollowers()
