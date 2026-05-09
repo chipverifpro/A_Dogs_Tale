@@ -24,21 +24,18 @@ public class BreadcrumbTrail : MonoBehaviour
     public int maxCrumbs = 256;
 
     public Pack pack;
-
-    // The following should be grabbed directly from pack...
-    public WorldObject leader;                // who is making the trail
-    public List<WorldObject> followers;       // who is following the trail (in order)
-    public int numFollowers => followers != null ? followers.Count : 0;     // shortcut
+    public int numFollowers => CountPackFollowers();
 
 
     public List<Crumb> crumbs = new List<Crumb>(256);
     public Vector2 lastDropPos;
     public bool hasAny = false;
+    private int syncedPackSignature;
+    private WorldObject PackLeader => pack != null ? pack.packLeader : null;
 
     void Awake()
     {
         hasAny = false;
-        if (followers == null) followers = new();
         if (crumbs == null) crumbs = new();
     }
 
@@ -53,38 +50,54 @@ public class BreadcrumbTrail : MonoBehaviour
         hasAny = false;
     }
 
+    public void BindPack(Pack newPack)
+    {
+        bool packChanged = pack != newPack;
+        pack = newPack;
+
+        int currentSignature = ComputePackSignature();
+        if (packChanged || currentSignature != syncedPackSignature)
+            ClearCrumbs();
+
+        syncedPackSignature = currentSignature;
+    }
+
     /// Call once per frame by the owner to record position if moved enough.
     /// Can be forced in the case of a sharp turn that we want included.
     public void RecordIfNeeded(bool forceDrop = false)
     {
-        if (leader==null || leader.locationModule==null) return;
+        WorldObject currentLeader = PackLeader;
+        if (currentLeader == null || currentLeader.locationModule == null) return;
         //Debug.Log($"RecordIfNeeded: numFollowers = {numFollowers}, numCrumbs = {crumbs.Count}, hasAny={hasAny}, forceDrop={forceDrop}");
         if (numFollowers == 0) return;
 
         if (!hasAny)
         {
             AddCrumb();
-            lastDropPos = leader.locationModule.pos2_f;
+            lastDropPos = currentLeader.locationModule.pos2_f;
             hasAny = true;
             return;
         }
 
-        if (forceDrop && (leader.locationModule.pos2 != lastDropPos))
+        if (forceDrop && (currentLeader.locationModule.pos2 != lastDropPos))
         {
             AddCrumb();
-            lastDropPos = leader.locationModule.pos2;
+            lastDropPos = currentLeader.locationModule.pos2;
             return;
         }
-        //Debug.Log($"RecordIfNeeded: leader.pos3={leader_pos3}, lastDropPos={lastDropPos}, distSquared = {(leader_pos3 - lastDropPos).sqrMagnitude}");
-        if ((leader.locationModule.pos2 - lastDropPos).sqrMagnitude >= dropDistance * dropDistance)
+        if ((currentLeader.locationModule.pos2 - lastDropPos).sqrMagnitude >= dropDistance * dropDistance)
         {
             AddCrumb();
-            lastDropPos = leader.locationModule.pos2;
+            lastDropPos = currentLeader.locationModule.pos2;
         }
     }
 
     private void AddCrumb()
     {
+        WorldObject currentLeader = PackLeader;
+        if (currentLeader == null || currentLeader.locationModule == null)
+            return;
+
         if (crumbs == null) crumbs = new();
 
         if (crumbs.Count >= maxCrumbs)
@@ -92,69 +105,30 @@ public class BreadcrumbTrail : MonoBehaviour
             // Drop oldest when full
             crumbs.RemoveAt(0);
         }
-        //Vector3 agent_pos_3 = new(leader.pos2.x, leader.height, leader.pos2.y);
-        Crumb new_crumb = new() { pos2 = leader.locationModule.pos2_f, height = leader.locationModule.height, yawDeg = leader.locationModule.yawDeg, valid = true };
+        Crumb new_crumb = new() { pos2 = currentLeader.locationModule.pos2_f, height = currentLeader.locationModule.height, yawDeg = currentLeader.locationModule.yawDeg, valid = true };
         new_crumb.whichFollowersArrived = new();
         crumbs.Add(new_crumb);
     }
 
-    /*
-        /// Returns the newest crumb if any; else returns current transform position.
-        public Vector2 GetLatestPositionFallback()
-        {
-            if (crumbs.Count > 0) return crumbs[crumbs.Count - 1].pos2;
-            return leader.pos2;
-        }
-    */
-
-    public void AddFollower(WorldObject agent)
+    private int FindFollowerIndex(WorldObject agent)
     {
-        FindFollowerIndex(agent, addIfNotFollowing: true); // if not found, adds missing follower
-    }
+        if (agent == null || pack == null || pack.packAgentList == null)
+            return -1;
 
-    public void RemoveFollower(WorldObject agent)
-    {
-        int index = FindFollowerIndex(agent, addIfNotFollowing: false);
-        if (index >= 0)
+        int followerIndex = 0;
+        for (int i = 1; i < pack.packAgentList.Count; i++)
         {
-            followers.RemoveAt(index);
-            if (followers.Count == 0)   // if nobody left, clear the crumbs trail
-            {
-                crumbs.Clear();
-                hasAny = false;
-            }
-        }
-    }
+            WorldObject follower = pack.packAgentList[i];
+            if (follower == null)
+                continue;
 
-    public int FindFollowerIndex(WorldObject agent, bool addIfNotFollowing = true)
-    {
-        int eater_index;
-        int eater_id = agent.ObjectId;
+            if (follower == agent)
+                return followerIndex;
 
-        if (followers == null) followers = new();
+            followerIndex++;
+        }
 
-        for (eater_index = 0; eater_index < numFollowers; eater_index++)
-        {
-            if (eater_id == followers[eater_index].ObjectId)
-            {
-                break;
-            }
-        }
-        if (eater_index == numFollowers)
-        {
-            // eater not found
-            if (addIfNotFollowing)
-            {
-                // add the follower.
-                followers.Add(agent);
-            }
-            else
-            {
-                // or, return not found
-                return -1;
-            }
-        }
-        return eater_index;
+        return -1;
     }
 
     public Crumb GetNextCrumb(WorldObject agent, float arrivalDistance = 0.35f, bool markArrivals = true)
@@ -169,7 +143,8 @@ public class BreadcrumbTrail : MonoBehaviour
             height = 999f
         };
 
-        if (agent == null || agent.agentMovementModule == null || leader == null || leader.locationModule == null)
+        WorldObject currentLeader = PackLeader;
+        if (agent == null || agent.agentMovementModule == null || currentLeader == null || currentLeader.locationModule == null)
             return invalid_crumb;
         
         Crumb currentTarget = agent.agentMovementModule.next_actualCrumb;
@@ -233,7 +208,7 @@ public class BreadcrumbTrail : MonoBehaviour
         if (currentTarget == null || !currentTarget.valid)
             return;
 
-        int followerIndex = FindFollowerIndex(agent, addIfNotFollowing: false);
+        int followerIndex = FindFollowerIndex(agent);
         if (followerIndex < 0)
             return;
 
@@ -294,5 +269,39 @@ public class BreadcrumbTrail : MonoBehaviour
 
         if (crumb.whichFollowersArrived.Count >= numFollowers)
             crumbs.RemoveAt(crumbIndex);
+    }
+
+    private int ComputePackSignature()
+    {
+        if (pack == null || pack.packAgentList == null)
+            return 0;
+
+        unchecked
+        {
+            int hash = 17;
+            for (int i = 0; i < pack.packAgentList.Count; i++)
+            {
+                WorldObject member = pack.packAgentList[i];
+                int memberId = member != null
+                    ? member.ObjectId != 0 ? member.ObjectId : member.GetInstanceID()
+                    : 0;
+                hash = hash * 31 + memberId;
+            }
+            return hash;
+        }
+    }
+
+    private int CountPackFollowers()
+    {
+        if (pack == null || pack.packAgentList == null || pack.packAgentList.Count <= 1)
+            return 0;
+
+        int count = 0;
+        for (int i = 1; i < pack.packAgentList.Count; i++)
+        {
+            if (pack.packAgentList[i] != null)
+                count++;
+        }
+        return count;
     }
 }

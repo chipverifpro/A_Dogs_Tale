@@ -345,38 +345,7 @@ public class Pack : MonoBehaviour
                 trail = gameObject.AddComponent<BreadcrumbTrail>();
         }
 
-        if (trail.followers == null)
-            trail.followers = new();
-
-        int expectedFollowerCount = packAgentList != null ? Mathf.Max(0, packAgentList.Count - 1) : 0;
-        bool leaderChanged = trail.leader != null && trail.leader != packLeader;
-        bool followersChanged = trail.followers.Count != expectedFollowerCount;
-        if (!followersChanged && packAgentList != null)
-        {
-            for (int idx = 1; idx < packAgentList.Count; idx++)
-            {
-                if (trail.followers[idx - 1] != packAgentList[idx])
-                {
-                    followersChanged = true;
-                    break;
-                }
-            }
-        }
-
-        if (leaderChanged || followersChanged)
-            trail.ClearCrumbs();
-
-        trail.pack = this;
-        trail.leader = packLeader;
-        trail.followers.Clear();
-        if (packAgentList == null)
-            return;
-
-        for (int idx = 1; idx < packAgentList.Count; idx++)
-        {
-            if (packAgentList[idx] != null)
-                trail.followers.Add(packAgentList[idx]);
-        }
+        trail.BindPack(this);
     }
 
     // returns true unless agent not found.
