@@ -28,20 +28,20 @@ IMPORTANT RULES
 ACTION VOCABULARY
 These are example action names the AI may choose from. They are intentionally simple.
 
-move_to_object(target)
-take_item(target)
-return_to_human(human)
-drop_item(target)
-release_item(target)
+move_to(object_id or agent_id)
+take_item(object_id)
+drop_item(object_id)
+throw_item(object_id)
+eat_item(object_id)
 wait()
 sit()
-bark_alert()
-emote_happy()
-emote_confused()
+bark("alert")
+emote("happy")
+emote("confused")
 sniff(target_or_area)
 follow_scent(target_or_area)
-ignore(distraction)
-avoid(hazard)
+ignore(object_id or agent_id)
+avoid(object_id or agent_id)
 ask_for_help()
 
 REWARD SCALE

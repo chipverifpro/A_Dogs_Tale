@@ -559,6 +559,7 @@ public class BottomBanner : MonoBehaviour
     {
         string actorName = agent != null ? agent.DisplayName : "Unknown agent";
         Sprite sprite = GetEmoteSprite(emote, out string emoteName);
+        EmoteIconVisualFactory.Show(agent, sprite);
         AddMessageInternal(
             BannerSense.None,
             BannerLevel.None,
