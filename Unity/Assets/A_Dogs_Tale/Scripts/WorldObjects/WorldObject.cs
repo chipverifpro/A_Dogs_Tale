@@ -451,7 +451,7 @@ public class WorldObject : MonoBehaviour
         
         reactionModule?.Tick(dt);
         // QUEST
-        //fetchQuestModule?.Tick(dt);
+        fetchQuestModule?.Tick(dt);
     }
 
     public T GetModule<T>() where T : WorldModule
@@ -724,9 +724,11 @@ public class WorldObject : MonoBehaviour
         // ===============================
         // Quest
         // ===============================
-        //if (enables.HasFlag(ModuleFlags.questModuleBase))
-        //    questModuleBase = EnsureComponent<QuestModuleBase>();
-        //if (questModuleBase == null) Debug.LogWarning($"questModuleBase = null");
+        if (enables.HasFlag(ModuleFlags.fetchQuestModule))
+        {
+            fetchQuestModule = EnsureComponent<FetchQuestModule>();
+            if (fetchQuestModule == null) Debug.LogWarning($"fetchQuestModule = null");
+        }
     }
 
     public void ApplyFollowerDefaults()
