@@ -13,11 +13,13 @@ public sealed class InventoryDialogUI : MonoBehaviour
 {
     private static readonly Vector3 PreviewAnchorPosition = new(60000f, 60000f, 60000f);
     private static readonly Vector3 TradePartnerPreviewAnchorPosition = new(61000f, 60000f, 60000f);
+    private const float HeldTripleActionButtonScale = 0.86f;
 
     [Header("Resources")]
     [SerializeField] private string arrowsSpriteResourcePath = "Sprites/ArrowsSpriteSheetA";
     [SerializeField] private string inventoryActionsSpriteResourcePath = "Sprites/InventoryActionsSheetA";
     [SerializeField] private string takeItemSpriteResourcePath = "Sprites/TakeItemSpriteSheetA";
+    [SerializeField] private string dogActionsSpriteResourcePath = "Sprites/DogActions_B";
 
     [Header("Layout")]
     [SerializeField] private int uiSortOrder = 5300;
@@ -30,9 +32,15 @@ public sealed class InventoryDialogUI : MonoBehaviour
     [SerializeField] private Vector2 tooltipPadding = new(18f, 10f);
     [SerializeField] private Vector2 tooltipOffset = new(18f, -18f);
 
+    [Header("Throw")]
+    [SerializeField, Min(0f)] private float throwForwardImpulse = 7f;
+    [SerializeField, Min(0f)] private float throwUpwardImpulse = 2f;
+    [SerializeField, Min(0f)] private float throwReleaseHeight = 0.5f;
+
     private readonly Dictionary<int, Sprite> arrowSprites = new();
     private readonly Dictionary<int, Sprite> actionSprites = new();
     private readonly Dictionary<int, Sprite> takeItemSprites = new();
+    private readonly Dictionary<int, Sprite> dogActionSprites = new();
     private readonly List<Button> actionButtons = new();
     private readonly List<TradeTargetOption> tradeTargetOptions = new();
 
@@ -81,7 +89,8 @@ public sealed class InventoryDialogUI : MonoBehaviour
         Give = 2,
         Trade = 3,
         Drop = 4,
-        PickUp = 5
+        PickUp = 5,
+        Throw = 6
     }
 
     private enum TradeTargetKind
@@ -497,8 +506,9 @@ public sealed class InventoryDialogUI : MonoBehaviour
 
         CreateActionButton(leftTopRow, InventoryAction.Use, OnUseClicked);
         CreateActionButton(leftTopRow, InventoryAction.Eat, OnEatClicked);
-        CreateActionButton(leftBottomRow, InventoryAction.Drop, OnDropClicked);
-        CreateActionButton(leftBottomRow, InventoryAction.PickUp, OnPickUpClicked);
+        CreateActionButton(leftBottomRow, InventoryAction.Drop, OnDropClicked, HeldTripleActionButtonScale);
+        CreateThrowActionButton(leftBottomRow, HeldTripleActionButtonScale);
+        CreateActionButton(leftBottomRow, InventoryAction.PickUp, OnPickUpClicked, HeldTripleActionButtonScale);
 
         CreateTradePartnerActionButton(rightTopRow, "GiveButton", 2, "GIVE", OnGiveClicked);
         CreateTradePartnerActionButton(rightTopRow, "TakeItemButton", 1, "TAKE", OnTakeItemClicked);
@@ -535,7 +545,7 @@ public sealed class InventoryDialogUI : MonoBehaviour
         rowLayout.childControlHeight = false;
         rowLayout.childForceExpandWidth = false;
         rowLayout.childForceExpandHeight = false;
-        rowLayout.spacing = 22f;
+        rowLayout.spacing = 8f;
 
         LayoutElement layoutElement = rowObject.AddComponent<LayoutElement>();
         layoutElement.preferredHeight = actionButtonHeight;
@@ -544,25 +554,26 @@ public sealed class InventoryDialogUI : MonoBehaviour
         return rowObject.transform;
     }
 
-    private void CreateActionButton(Transform parent, InventoryAction action, UnityEngine.Events.UnityAction clickHandler)
+    private void CreateActionButton(Transform parent, InventoryAction action, UnityEngine.Events.UnityAction clickHandler, float heightScale = 1f)
     {
         int index = (int)action;
         Sprite sprite = actionSprites.TryGetValue(index, out Sprite foundSprite) ? foundSprite : null;
         string actionText = GetActionFallbackText(action);
         Button button = CreateSpriteButton($"{action}Button", parent, sprite, actionText, clickHandler, actionText);
 
-        float width = actionButtonHeight;
+        float buttonHeight = actionButtonHeight * Mathf.Max(0.01f, heightScale);
+        float width = buttonHeight;
         if (sprite != null && sprite.rect.height > 0f)
-            width = actionButtonHeight * (sprite.rect.width / sprite.rect.height);
+            width = buttonHeight * (sprite.rect.width / sprite.rect.height);
 
         RectTransform rect = button.GetComponent<RectTransform>();
-        rect.sizeDelta = new Vector2(width, actionButtonHeight);
+        rect.sizeDelta = new Vector2(width, buttonHeight);
 
         LayoutElement layoutElement = button.gameObject.AddComponent<LayoutElement>();
         layoutElement.preferredWidth = width;
-        layoutElement.preferredHeight = actionButtonHeight;
+        layoutElement.preferredHeight = buttonHeight;
         layoutElement.minWidth = width;
-        layoutElement.minHeight = actionButtonHeight;
+        layoutElement.minHeight = buttonHeight;
 
         actionButtons.Add(button);
     }
@@ -589,6 +600,28 @@ public sealed class InventoryDialogUI : MonoBehaviour
         layoutElement.preferredHeight = actionButtonHeight;
         layoutElement.minWidth = width;
         layoutElement.minHeight = actionButtonHeight;
+
+        actionButtons.Add(button);
+    }
+
+    private void CreateThrowActionButton(Transform parent, float heightScale = 1f)
+    {
+        Sprite sprite = dogActionSprites.TryGetValue(0, out Sprite foundSprite) ? foundSprite : null;
+        Button button = CreateSpriteButton("ThrowButton", parent, sprite, "THROW", OnThrowClicked, "THROW");
+
+        float buttonHeight = actionButtonHeight * Mathf.Max(0.01f, heightScale);
+        float width = buttonHeight;
+        if (sprite != null && sprite.rect.height > 0f)
+            width = buttonHeight * (sprite.rect.width / sprite.rect.height);
+
+        RectTransform rect = button.GetComponent<RectTransform>();
+        rect.sizeDelta = new Vector2(width, buttonHeight);
+
+        LayoutElement layoutElement = button.gameObject.AddComponent<LayoutElement>();
+        layoutElement.preferredWidth = width;
+        layoutElement.preferredHeight = buttonHeight;
+        layoutElement.minWidth = width;
+        layoutElement.minHeight = buttonHeight;
 
         actionButtons.Add(button);
     }
@@ -1326,6 +1359,28 @@ public sealed class InventoryDialogUI : MonoBehaviour
         RefreshInventoryView(forcePreviewRefresh: true);
     }
 
+    private void OnThrowClicked()
+    {
+        if (displayedContainer == null)
+            return;
+
+        WorldObject item = GetSelectedHeldItem();
+        WorldObject carrier = GetCurrentControlledWorldObject();
+        if (item == null || carrier == null)
+            return;
+
+        if (!TryThrowItemFromCarrier(displayedContainer, carrier, item, out string reason))
+        {
+            ShowInventoryMessage(reason);
+            Debug.LogWarning($"InventoryDialogUI: failed to throw {item.DisplayName}: {reason}", this);
+            return;
+        }
+
+        ShowInventoryMessage($"{carrier.DisplayName} threw {item.DisplayName}");
+        selectedIndex = Mathf.Clamp(selectedIndex, 0, displayedContainer.HeldItemCount - 1);
+        RefreshInventoryView(forcePreviewRefresh: true);
+    }
+
     private void OnPickUpClicked()
     {
         WorldObject carrier = GetCurrentControlledWorldObject();
@@ -1442,6 +1497,97 @@ public sealed class InventoryDialogUI : MonoBehaviour
         Vector3 dropPosition = carrier.transform.position + dropDirection * dropDistance;
         dropPosition.y = carrier.transform.position.y;
         return dropPosition;
+    }
+
+    private bool TryThrowItemFromCarrier(ContainerModule source, WorldObject carrier, WorldObject item, out string reason)
+    {
+        if (source == null)
+        {
+            reason = "Source inventory is unavailable.";
+            return false;
+        }
+
+        if (carrier == null)
+        {
+            reason = "No carrier selected.";
+            return false;
+        }
+
+        if (item == null)
+        {
+            reason = "No item selected.";
+            return false;
+        }
+
+        Vector3 direction = GetFacingDirection(carrier);
+        Vector3 releasePosition = GetThrowReleasePosition(carrier, item, direction);
+        if (!source.DropItemOnGround(item, releasePosition, out reason))
+            return false;
+
+        KineticModule kinetic = item.kineticModule != null
+            ? item.kineticModule
+            : item.GetComponent<KineticModule>();
+
+        if (kinetic == null)
+        {
+            item.CreateModulesIfNeeded(ModuleFlags.kineticModule);
+            kinetic = item.kineticModule != null
+                ? item.kineticModule
+                : item.GetComponent<KineticModule>();
+        }
+
+        if (kinetic == null)
+        {
+            reason = $"{item.DisplayName} has no KineticModule.";
+            return false;
+        }
+
+        kinetic.Stop();
+        kinetic.ApplyImpulse((direction * throwForwardImpulse) + (Vector3.up * throwUpwardImpulse));
+        NotifyFetchQuestModulesObjectThrown(item, carrier);
+        reason = string.Empty;
+        return true;
+    }
+
+    private static Vector3 GetFacingDirection(WorldObject carrier)
+    {
+        Vector3 direction = carrier.transform.forward;
+        direction.y = 0f;
+        if (direction.sqrMagnitude < 0.001f)
+            direction = Vector3.forward;
+
+        return direction.normalized;
+    }
+
+    private Vector3 GetThrowReleasePosition(WorldObject carrier, WorldObject item, Vector3 direction)
+    {
+        float itemRadius = item != null ? item.sizeRadius : 0f;
+        float releaseDistance = Mathf.Max(0.65f, carrier.sizeRadius + itemRadius + 0.2f);
+        Vector3 releasePosition = carrier.transform.position + direction * releaseDistance;
+        releasePosition.y = carrier.transform.position.y + throwReleaseHeight;
+        return releasePosition;
+    }
+
+    private static void NotifyFetchQuestModulesObjectThrown(WorldObject thrownItem, WorldObject thrower)
+    {
+        if (thrownItem == null)
+            return;
+
+        if (thrower != null && thrower.fetchQuestModule is FetchQuestModule throwerFetchQuest)
+            throwerFetchQuest.ObserveObjectThrown(thrownItem);
+
+        WorldObjectRegistry registry = WorldObjectRegistry.Instance;
+        if (registry == null)
+            return;
+
+        foreach (WorldObject candidate in registry.GetAllObjects())
+        {
+            if (candidate == null || candidate == thrower)
+                continue;
+
+            if (candidate.fetchQuestModule is FetchQuestModule fetchQuest && fetchQuest.IsRunning)
+                fetchQuest.ObserveObjectThrown(thrownItem);
+        }
     }
 
     private static bool SwapHeldItemWithGroundItem(ContainerModule heldContainer, WorldObject carrier, WorldObject heldItem, WorldObject groundItem, out string reason)
@@ -1583,6 +1729,7 @@ public sealed class InventoryDialogUI : MonoBehaviour
         LoadSpriteSheet(arrowsSpriteResourcePath, arrowSprites);
         LoadSpriteSheet(inventoryActionsSpriteResourcePath, actionSprites);
         LoadSpriteSheet(takeItemSpriteResourcePath, takeItemSprites);
+        LoadSpriteSheet(dogActionsSpriteResourcePath, dogActionSprites);
     }
 
     private void LoadSpriteSheet(string resourcePath, Dictionary<int, Sprite> lookup)
@@ -2057,6 +2204,7 @@ public sealed class InventoryDialogUI : MonoBehaviour
             InventoryAction.Trade => "TRADE",
             InventoryAction.Drop => "DROP",
             InventoryAction.PickUp => "PICK UP",
+            InventoryAction.Throw => "THROW",
             _ => action.ToString()
         };
     }
