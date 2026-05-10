@@ -25,6 +25,7 @@ namespace DogGame.Tasks
         private Vector2Int throughCell;
         private Vector3 doorMap;
         private Vector3 throughMap;
+        private int neighborRoomIndex = -1;
         private string? startFailure;
 
         public Task_GoThroughDoor(int doorId, WalkMode walkMode = WalkMode.None)
@@ -73,10 +74,7 @@ namespace DogGame.Tasks
 
             doorMap = CellCenterMap(doorCell, context.Agent.locationModule.height);
             throughMap = CellCenterMap(throughCell, context.Agent.locationModule.height);
-
-            Vector3 doorDelta = (throughMap - doorMap).normalized;
-            if (doorDelta.sqrMagnitude > 0.0001f)
-                throughMap += doorDelta * 0.3f;
+            neighborRoomIndex = GetRoomIndex(context.Agent, throughCell);
 
             phase = DoorPhase.MoveToDoor;
             context.Agent.agentMovementModule.SetDesiredTargetLocationMap(
@@ -94,7 +92,18 @@ namespace DogGame.Tasks
             if (context.Agent == null || context.Agent.agentMovementModule == null)
                 return TaskTickResult.Failed("missing_agent_movement_module");
 
-            if (phase == DoorPhase.MoveToDoor && !context.Agent.agentMovementModule.MoveToDestinationInProgress)
+            Cell? currentCell = context.Agent.locationModule != null ? context.Agent.locationModule.cell : null;
+            if (currentCell == null)
+                return TaskTickResult.Failed("missing_current_cell");
+
+            if (HasReachedThroughSide(currentCell, context.Agent))
+            {
+                context.Motion.StopMoving();
+                return TaskTickResult.Succeeded();
+            }
+
+            if (phase == DoorPhase.MoveToDoor &&
+                (HasReachedDoorSide(currentCell, context.Agent) || !context.Agent.agentMovementModule.MoveToDestinationInProgress))
             {
                 phase = DoorPhase.MoveThroughDoor;
                 context.Agent.agentMovementModule.SetDesiredTargetLocationMap(
@@ -106,7 +115,10 @@ namespace DogGame.Tasks
             }
 
             if (phase == DoorPhase.MoveThroughDoor && !context.Agent.agentMovementModule.MoveToDestinationInProgress)
+            {
+                context.Motion.StopMoving();
                 return TaskTickResult.Succeeded();
+            }
 
             return TaskTickResult.Running();
         }
@@ -147,6 +159,51 @@ namespace DogGame.Tasks
         private static Vector3 CellCenterMap(Vector2Int cell, float height)
         {
             return new Vector3(cell.x + 0.5f, height, cell.y + 0.5f);
+        }
+
+        private bool HasReachedDoorSide(Cell currentCell, WorldObject agent)
+        {
+            return currentCell.pos == doorCell ||
+                   currentCell.pos == throughCell ||
+                   IsNearMap(agent, doorMap, GetDoorArrivalRadius(agent));
+        }
+
+        private bool HasReachedThroughSide(Cell currentCell, WorldObject agent)
+        {
+            return currentCell.pos == throughCell ||
+                   (neighborRoomIndex >= 0 && currentCell.room_number == neighborRoomIndex);
+        }
+
+        private static float GetDoorArrivalRadius(WorldObject agent)
+        {
+            float stopDistance = agent != null && agent.agentMovementModule != null
+                ? agent.agentMovementModule.StopDistance
+                : 0.20f;
+
+            float clearance = agent != null ? Mathf.Max(0f, agent.sizeRadius) : 0.30f;
+            return Mathf.Max(stopDistance, clearance + 0.10f);
+        }
+
+        private static bool IsNearMap(WorldObject agent, Vector3 targetMap, float radius)
+        {
+            if (agent == null)
+                return false;
+
+            Vector3 delta = agent.pos3d_map - targetMap;
+            delta.y = 0f;
+            return delta.sqrMagnitude <= radius * radius;
+        }
+
+        private static int GetRoomIndex(WorldObject agent, Vector2Int cellPos)
+        {
+            if (agent == null || agent.dir == null || agent.dir.gen == null || agent.dir.gen.cellGrid == null)
+                return -1;
+
+            if (!agent.dir.gen.In(cellPos.x, cellPos.y))
+                return -1;
+
+            Cell cell = agent.dir.gen.cellGrid[cellPos.x, cellPos.y];
+            return cell != null ? cell.room_number : -1;
         }
     }
 }

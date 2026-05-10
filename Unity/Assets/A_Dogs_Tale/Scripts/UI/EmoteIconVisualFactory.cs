@@ -7,7 +7,7 @@ public static class EmoteIconVisualFactory
     const string InstanceName = "EmoteIconVisual";
     const float DefaultSize = 0.45f;
     const float DefaultThickness = 0.04f;
-    const float DefaultLifetimeSeconds = 2.5f;
+    const float DefaultLifetimeSeconds = 10f;
 
     static readonly Vector3 DefaultLocalOffset = new(0f, 1.35f, 0f);
     static readonly Vector3 DefaultSpinDegreesPerSecond = new(0f, 180f, 0f);

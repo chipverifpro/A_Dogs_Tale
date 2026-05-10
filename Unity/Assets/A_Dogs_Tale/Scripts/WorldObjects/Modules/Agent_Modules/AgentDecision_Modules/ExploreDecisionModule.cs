@@ -320,10 +320,17 @@ end
                 return;
             }
 
-            if (phase == ExplorePhase.MoveToDoor && !worldObject.agentMovementModule.MoveToDestinationInProgress)
+            if ((phase == ExplorePhase.MoveToDoor || phase == ExplorePhase.MoveThroughDoor) &&
+                HasReachedDoorDestination(currentCell, activeDoor))
             {
-                phase = ExplorePhase.MoveThroughDoor;
-                worldObject.agentMovementModule.SetDesiredTargetLocationMap(activeDoor.throughMap, WalkMode.None, requestPathfinding: true);
+                CompleteActiveDoor();
+                return;
+            }
+
+            if (phase == ExplorePhase.MoveToDoor &&
+                (HasReachedDoorStart(currentCell, activeDoor) || !worldObject.agentMovementModule.MoveToDestinationInProgress))
+            {
+                StartMoveThroughActiveDoor();
                 //Debug.Log(
                 //    $"{worldObject.DisplayName} [ExploreDecisionModule] reached door {activeDoor.key}; moving through to [{activeDoor.throughCell.x},{activeDoor.throughCell.y}]");
                 return;
@@ -333,14 +340,8 @@ end
             {
                 //Debug.Log(
                 //    $"{worldObject.DisplayName} [ExploreDecisionModule] completed door traversal {activeDoor.key} -> room {activeDoor.neighborRoomIndex}");
-                MarkDoorExplored(activeDoor);
-                phase = ExplorePhase.None;
-                RefreshDoorsForRoom(activeDoor.neighborRoomIndex);
-                queuedRoomIndex = activeDoor.neighborRoomIndex;
-                needsDoorRefresh = false;
-
-                if (TryStartRoomCenterVisit(activeDoor.neighborRoomIndex))
-                    return;
+                CompleteActiveDoor();
+                return;
             }
 
             if (phase == ExplorePhase.MoveToRoomCenter && !worldObject.agentMovementModule.MoveToDestinationInProgress)
@@ -617,6 +618,59 @@ end
             return false;
         }
 
+        private void StartMoveThroughActiveDoor()
+        {
+            phase = ExplorePhase.MoveThroughDoor;
+            worldObject.agentMovementModule.SetDesiredTargetLocationMap(activeDoor.throughMap, WalkMode.None, requestPathfinding: true);
+        }
+
+        private void CompleteActiveDoor()
+        {
+            worldObject.agentMovementModule.ClearDesiredMovement();
+            MarkDoorExplored(activeDoor);
+            phase = ExplorePhase.None;
+            RefreshDoorsForRoom(activeDoor.neighborRoomIndex);
+            queuedRoomIndex = activeDoor.neighborRoomIndex;
+            needsDoorRefresh = false;
+            TryStartRoomCenterVisit(activeDoor.neighborRoomIndex);
+        }
+
+        private bool HasReachedDoorStart(Cell currentCell, DoorGoal goal)
+        {
+            if (currentCell == null)
+                return false;
+
+            return currentCell.pos == goal.doorCell ||
+                   currentCell.pos == goal.throughCell ||
+                   IsNearMap(goal.doorMap, GetDoorArrivalRadius());
+        }
+
+        private bool HasReachedDoorDestination(Cell currentCell, DoorGoal goal)
+        {
+            if (currentCell == null)
+                return false;
+
+            return currentCell.pos == goal.throughCell ||
+                   currentCell.room_number == goal.neighborRoomIndex;
+        }
+
+        private float GetDoorArrivalRadius()
+        {
+            float stopDistance = worldObject.agentMovementModule != null
+                ? worldObject.agentMovementModule.StopDistance
+                : 0.20f;
+
+            float clearance = worldObject != null ? Mathf.Max(0f, worldObject.sizeRadius) : 0.30f;
+            return Mathf.Max(stopDistance, clearance + 0.10f);
+        }
+
+        private bool IsNearMap(Vector3 targetMap, float radius)
+        {
+            Vector3 delta = worldObject.pos3d_map - targetMap;
+            delta.y = 0f;
+            return delta.sqrMagnitude <= radius * radius;
+        }
+
         private void MarkDoorExplored(DoorGoal goal)
         {
             exploredDoorKeys.Add(goal.key);
@@ -761,8 +815,6 @@ end
                 key = BuildDoorKey(roomIndex, foundDoor.pos, foundDoor.direction),
                 reverseKey = BuildDoorKey(neighborRoomIndex, throughCell, foundDoor.direction.Opposite())
             };
-            Vector3 doorDelta = (goal.throughMap - goal.doorMap).normalized;
-            goal.throughMap += doorDelta * 0.3f;
             //Debug.Log($"{worldObject.DisplayName} new DoorGoal: doorMap = {goal.doorMap}, throughMap = {goal.throughMap}");
             return true;
         }

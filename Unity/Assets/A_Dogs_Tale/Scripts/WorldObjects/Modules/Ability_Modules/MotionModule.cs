@@ -626,10 +626,12 @@ namespace DogGame.Modules
                 eastEndWall = (eastCell.walls & DirFlags.S) != 0;
             }
 
-            return (northEndWall ? DirFlags.N : DirFlags.None)
-                 | (southEndWall ? DirFlags.S : DirFlags.None)
-                 | (westEndWall ? DirFlags.W : DirFlags.None)
-                 | (eastEndWall ? DirFlags.E : DirFlags.None);
+            return DirFlags.None;   // DEBUG disable this function.  Prevents getting stuck on walls/doors.
+
+            //return (northEndWall ? DirFlags.N : DirFlags.None)
+            //     | (southEndWall ? DirFlags.S : DirFlags.None)
+            //     | (westEndWall ? DirFlags.W : DirFlags.None)
+            //     | (eastEndWall ? DirFlags.E : DirFlags.None);
         }
 
         private Cell GetNeighborOrEmpty(int x, int y)
