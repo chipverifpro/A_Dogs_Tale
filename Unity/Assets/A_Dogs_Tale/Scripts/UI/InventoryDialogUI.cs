@@ -976,6 +976,11 @@ public sealed class InventoryDialogUI : MonoBehaviour
 
     private static int CompareTradeTargetOptions(TradeTargetOption a, TradeTargetOption b)
     {
+        bool aIsEmptyGround = IsEmptyGroundOption(a);
+        bool bIsEmptyGround = IsEmptyGroundOption(b);
+        if (aIsEmptyGround != bIsEmptyGround)
+            return aIsEmptyGround ? 1 : -1;
+
         int distanceComparison = a.DistanceSqr.CompareTo(b.DistanceSqr);
         if (distanceComparison != 0)
             return distanceComparison;
@@ -989,6 +994,11 @@ public sealed class InventoryDialogUI : MonoBehaviour
         string aItemName = a.Item != null ? a.Item.DisplayName : string.Empty;
         string bItemName = b.Item != null ? b.Item.DisplayName : string.Empty;
         return string.Compare(aItemName, bItemName, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool IsEmptyGroundOption(TradeTargetOption option)
+    {
+        return option.IsGround && option.Item == null;
     }
 
     private bool TryGetSelectedTradeTargetOption(out TradeTargetOption option)
@@ -1520,27 +1530,16 @@ public sealed class InventoryDialogUI : MonoBehaviour
         }
 
         Vector3 direction = GetFacingDirection(carrier);
+        KineticModule kinetic = EnsureKineticModule(item);
+        if (kinetic == null)
+        {
+            reason = $"{item.DisplayName} could not add a KineticModule.";
+            return false;
+        }
+
         Vector3 releasePosition = GetThrowReleasePosition(carrier, item, direction);
         if (!source.DropItemOnGround(item, releasePosition, out reason))
             return false;
-
-        KineticModule kinetic = item.kineticModule != null
-            ? item.kineticModule
-            : item.GetComponent<KineticModule>();
-
-        if (kinetic == null)
-        {
-            item.CreateModulesIfNeeded(ModuleFlags.kineticModule);
-            kinetic = item.kineticModule != null
-                ? item.kineticModule
-                : item.GetComponent<KineticModule>();
-        }
-
-        if (kinetic == null)
-        {
-            reason = $"{item.DisplayName} has no KineticModule.";
-            return false;
-        }
 
         kinetic.Stop();
         kinetic.ApplyImpulse((direction * throwForwardImpulse) + (Vector3.up * throwUpwardImpulse));
@@ -1566,6 +1565,24 @@ public sealed class InventoryDialogUI : MonoBehaviour
         Vector3 releasePosition = carrier.transform.position + direction * releaseDistance;
         releasePosition.y = carrier.transform.position.y + throwReleaseHeight;
         return releasePosition;
+    }
+
+    private static KineticModule EnsureKineticModule(WorldObject item)
+    {
+        if (item == null)
+            return null;
+
+        KineticModule kinetic = item.kineticModule != null
+            ? item.kineticModule
+            : item.GetComponent<KineticModule>();
+
+        if (kinetic != null)
+            return kinetic;
+
+        item.CreateModulesIfNeeded(ModuleFlags.kineticModule);
+        return item.kineticModule != null
+            ? item.kineticModule
+            : item.GetComponent<KineticModule>();
     }
 
     private static void NotifyFetchQuestModulesObjectThrown(WorldObject thrownItem, WorldObject thrower)

@@ -186,7 +186,10 @@ namespace DogGame.Modules
 
         private void IntegrateForces(float deltaTime)
         {
-            velocityWorld += gravity * deltaTime;
+            if (!grounded || velocityWorld.y > 0f)
+                velocityWorld += gravity * deltaTime;
+            else
+                velocityWorld.y = Mathf.Max(0f, velocityWorld.y);
 
             if (airResistance > 0f)
                 velocityWorld *= Mathf.Exp(-airResistance * deltaTime);
@@ -288,16 +291,29 @@ namespace DogGame.Modules
             }
             else
             {
-                velocityWorld.y = 0f;
+                RemoveVelocityIntoGround(groundNormal);
                 ApplyGroundFriction(deltaTime);
             }
         }
 
         private void BounceOffGround(Vector3 groundNormal)
         {
-            velocityWorld = Vector3.Reflect(velocityWorld, groundNormal.normalized) * bounceFactor;
-            velocityWorld.x *= groundHorizontalBounceDamping;
-            velocityWorld.z *= groundHorizontalBounceDamping;
+            Vector3 normal = groundNormal.normalized;
+            Vector3 normalVelocity = Vector3.Project(velocityWorld, normal);
+            Vector3 tangentVelocity = velocityWorld - normalVelocity;
+
+            if (Vector3.Dot(normalVelocity, normal) < 0f)
+                normalVelocity = -normalVelocity * bounceFactor;
+
+            velocityWorld = (tangentVelocity * groundHorizontalBounceDamping) + normalVelocity;
+        }
+
+        private void RemoveVelocityIntoGround(Vector3 groundNormal)
+        {
+            Vector3 normal = groundNormal.normalized;
+            float speedIntoGround = Vector3.Dot(velocityWorld, normal);
+            if (speedIntoGround < 0f)
+                velocityWorld -= normal * speedIntoGround;
         }
 
         private void ApplyGroundFriction(float deltaTime)
