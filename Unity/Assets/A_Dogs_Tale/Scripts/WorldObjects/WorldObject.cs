@@ -73,6 +73,7 @@ public enum ModuleFlags : ulong
     immobileDecisionModule      = 1UL << 14,
     taskFollowerDecisionModule  = 1UL << 15,
     exploreDecisionModule       = 1UL << 16,
+    kineticModule               = 1UL << 17,
 
     // --- Agent Interface Modules ---
     agentModule           = 1UL << 21,
@@ -227,6 +228,7 @@ public class WorldObject : MonoBehaviour
     public LocationModule locationModule { get; private set; }
     public MotionModule motionModule { get; private set; }
     public DoorModule doorModule { get; private set; }
+    public KineticModule kineticModule { get; private set; }
     
     // Data:
     public BlackboardModule blackboardModule { get; private set; }
@@ -331,6 +333,7 @@ public class WorldObject : MonoBehaviour
         activatorModule   = GetComponent<ActivatorModule>();
         interactionModule = GetComponent<InteractionModule>();
         doorModule        = GetComponent<DoorModule>();
+        kineticModule = GetComponent<KineticModule>();
         
         // --- Output ---
         motionModule      = GetComponent<MotionModule>();
@@ -430,6 +433,7 @@ public class WorldObject : MonoBehaviour
 
         // ABILITY
         //motionModule?.Tick(dt);
+        kineticModule?.Tick(dt);
         locationModule?.Tick(dt);
         //activatorModule?.Tick(dt);
         containerModule?.Tick(dt);
@@ -661,6 +665,12 @@ public class WorldObject : MonoBehaviour
         {
             motionModule = EnsureComponent<MotionModule>();
             if (motionModule == null) Debug.LogWarning($"motionModule = null");
+        }
+
+        if (enables.HasFlag(ModuleFlags.kineticModule))
+        {
+            kineticModule = EnsureComponent<KineticModule>();
+            if (kineticModule == null) Debug.LogWarning($"kineticModule = null");
         }
 
 

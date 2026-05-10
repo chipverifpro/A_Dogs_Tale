@@ -90,6 +90,7 @@ public class WorldObjectModulesInspector : Editor
 
     private static readonly Type[] ThingModuleTypes =
     {
+        typeof(KineticModule), // Impulse-driven movement for thrown, rolled, or kicked items
         typeof(PlacementModule),    // Furniture placement definitions (ONLY RANDOM OBJECTS)
         typeof(DoorModule),         // Can open and close (doors, chests, holes)
         typeof(ContainerModule),    // Can hold an item, inventory management
