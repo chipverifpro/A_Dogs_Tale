@@ -353,6 +353,53 @@ namespace DogGame.Modules
             isClosed = closed;
         }
 
+        public void ApplySavedContainerState(
+            int savedItemCapacity,
+            float savedMaxWeight,
+            bool savedHeldItemsVisible,
+            float savedHeldHeight,
+            bool savedIsLocked,
+            bool savedIsClosed,
+            bool savedAutoPickupNearbyItems,
+            float savedPickupRadiusTiles,
+            bool savedAutoConfigureAgentCapacity,
+            int savedDogItemCapacity,
+            int savedHumanItemCapacity)
+        {
+            itemCapacity = Mathf.Max(0, savedItemCapacity);
+            maxWeight = Mathf.Max(0f, savedMaxWeight);
+            heldItemsVisible = savedHeldItemsVisible;
+            heldHeight = savedHeldHeight;
+            isLocked = savedIsLocked;
+            isClosed = savedIsClosed;
+            autoPickupNearbyItems = savedAutoPickupNearbyItems;
+            pickupRadiusTiles = Mathf.Max(0f, savedPickupRadiusTiles);
+            autoConfigureAgentCapacity = savedAutoConfigureAgentCapacity;
+            dogItemCapacity = Mathf.Max(0, savedDogItemCapacity);
+            humanItemCapacity = Mathf.Max(0, savedHumanItemCapacity);
+        }
+
+        public void RestoreSavedContents(List<WorldObject> savedHeldItems)
+        {
+            for (int i = 0; i < heldItems.Count; i++)
+                ReleaseHeldItemState(heldItems[i]);
+
+            heldItems.Clear();
+
+            if (savedHeldItems == null)
+                return;
+
+            for (int i = 0; i < savedHeldItems.Count; i++)
+            {
+                WorldObject item = savedHeldItems[i];
+                if (item == null || item == worldObject || heldItems.Contains(item))
+                    continue;
+
+                heldItems.Add(item);
+                ApplyHeldItemState(item);
+            }
+        }
+
         public void RefreshHeldItems()
         {
             if (!CanModifyHeldItemTransforms())

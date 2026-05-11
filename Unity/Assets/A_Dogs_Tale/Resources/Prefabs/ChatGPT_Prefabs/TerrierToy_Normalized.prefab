@@ -16665,6 +16665,7 @@ GameObject:
   m_Component:
   - component: {fileID: 6992232746710947918}
   - component: {fileID: 660587346038702964}
+  - component: {fileID: 1562656206960064158}
   m_Layer: 0
   m_Name: TerrierToy_Normalized
   m_TagString: Untagged
@@ -16713,6 +16714,21 @@ MonoBehaviour:
   onActivate:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &1562656206960064158
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7656882489410913012}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5b51eeefad7b498d956628ba6705f1ea, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SavePrefabId
+  prefabId: resources:Prefabs/ChatGPT_Prefabs/TerrierToy_Normalized
+  resourcesPath: Prefabs/ChatGPT_Prefabs/TerrierToy_Normalized
+  assetPath: Assets/A_Dogs_Tale/Resources/Prefabs/ChatGPT_Prefabs/TerrierToy_Normalized.prefab
 --- !u!1 &8130048053496112685
 GameObject:
   m_ObjectHideFlags: 0

@@ -8,47 +8,58 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: -8679921383154817045, guid: e84ff85d4e095a3489ce0a47fcad216d, type: 3}
+    - target: {fileID: -8679921383154817045, guid: e84ff85d4e095a3489ce0a47fcad216d,
+        type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: e84ff85d4e095a3489ce0a47fcad216d, type: 3}
+    - target: {fileID: -8679921383154817045, guid: e84ff85d4e095a3489ce0a47fcad216d,
+        type: 3}
       propertyPath: m_LocalPosition.y
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: e84ff85d4e095a3489ce0a47fcad216d, type: 3}
+    - target: {fileID: -8679921383154817045, guid: e84ff85d4e095a3489ce0a47fcad216d,
+        type: 3}
       propertyPath: m_LocalPosition.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: e84ff85d4e095a3489ce0a47fcad216d, type: 3}
+    - target: {fileID: -8679921383154817045, guid: e84ff85d4e095a3489ce0a47fcad216d,
+        type: 3}
       propertyPath: m_LocalRotation.w
       value: 1
       objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: e84ff85d4e095a3489ce0a47fcad216d, type: 3}
+    - target: {fileID: -8679921383154817045, guid: e84ff85d4e095a3489ce0a47fcad216d,
+        type: 3}
       propertyPath: m_LocalRotation.x
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: e84ff85d4e095a3489ce0a47fcad216d, type: 3}
+    - target: {fileID: -8679921383154817045, guid: e84ff85d4e095a3489ce0a47fcad216d,
+        type: 3}
       propertyPath: m_LocalRotation.y
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: e84ff85d4e095a3489ce0a47fcad216d, type: 3}
+    - target: {fileID: -8679921383154817045, guid: e84ff85d4e095a3489ce0a47fcad216d,
+        type: 3}
       propertyPath: m_LocalRotation.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: e84ff85d4e095a3489ce0a47fcad216d, type: 3}
+    - target: {fileID: -8679921383154817045, guid: e84ff85d4e095a3489ce0a47fcad216d,
+        type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: e84ff85d4e095a3489ce0a47fcad216d, type: 3}
+    - target: {fileID: -8679921383154817045, guid: e84ff85d4e095a3489ce0a47fcad216d,
+        type: 3}
       propertyPath: m_LocalEulerAnglesHint.y
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: e84ff85d4e095a3489ce0a47fcad216d, type: 3}
+    - target: {fileID: -8679921383154817045, guid: e84ff85d4e095a3489ce0a47fcad216d,
+        type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 919132149155446097, guid: e84ff85d4e095a3489ce0a47fcad216d, type: 3}
+    - target: {fileID: 919132149155446097, guid: e84ff85d4e095a3489ce0a47fcad216d,
+        type: 3}
       propertyPath: m_Name
       value: Vase 12
       objectReference: {fileID: 0}
@@ -56,16 +67,23 @@ PrefabInstance:
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: e84ff85d4e095a3489ce0a47fcad216d, type: 3}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: e84ff85d4e095a3489ce0a47fcad216d,
+        type: 3}
       insertIndex: -1
       addedObject: {fileID: 9074643767330985296}
-    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: e84ff85d4e095a3489ce0a47fcad216d, type: 3}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: e84ff85d4e095a3489ce0a47fcad216d,
+        type: 3}
       insertIndex: -1
       addedObject: {fileID: 512471184971278734}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: e84ff85d4e095a3489ce0a47fcad216d,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 6715930924143741741}
   m_SourcePrefab: {fileID: 100100000, guid: e84ff85d4e095a3489ce0a47fcad216d, type: 3}
 --- !u!1 &6096365349208193650 stripped
 GameObject:
-  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: e84ff85d4e095a3489ce0a47fcad216d, type: 3}
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: e84ff85d4e095a3489ce0a47fcad216d,
+    type: 3}
   m_PrefabInstance: {fileID: 6366904796338767651}
   m_PrefabAsset: {fileID: 0}
 --- !u!64 &9074643767330985296
@@ -103,3 +121,20 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   hided: 1
+--- !u!114 &6715930924143741741
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6096365349208193650}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5b51eeefad7b498d956628ba6705f1ea, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SavePrefabId
+  prefabId: asset:Assets/_ThirdParty/Fries and Seagull/Ultimate Interior Pack/Prefabs/Vase
+    & Container/Vase 12.prefab
+  resourcesPath: 
+  assetPath: Assets/_ThirdParty/Fries and Seagull/Ultimate Interior Pack/Prefabs/Vase
+    & Container/Vase 12.prefab

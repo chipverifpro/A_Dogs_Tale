@@ -372,6 +372,7 @@ GameObject:
   - component: {fileID: -3591118111338617800}
   - component: {fileID: -4610726487150338804}
   - component: {fileID: -5933977183254301640}
+  - component: {fileID: 6876792711977803293}
   m_Layer: 0
   m_Name: PF_dog_food_bowl_full_with_spilled_kibble
   m_TagString: Untagged
@@ -469,6 +470,21 @@ MonoBehaviour:
   minClearCellsAround: 0
   mustTouchWall: 0
   wallPadding: 0.05
+--- !u!114 &6876792711977803293
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 330300621676859428}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5b51eeefad7b498d956628ba6705f1ea, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SavePrefabId
+  prefabId: resources:Prefabs/Generated/PF_dog_food_bowl_full_with_spilled_kibble
+  resourcesPath: Prefabs/Generated/PF_dog_food_bowl_full_with_spilled_kibble
+  assetPath: Assets/A_Dogs_Tale/Resources/Prefabs/Generated/PF_dog_food_bowl_full_with_spilled_kibble.prefab
 --- !u!1 &350010950202914225
 GameObject:
   m_ObjectHideFlags: 0

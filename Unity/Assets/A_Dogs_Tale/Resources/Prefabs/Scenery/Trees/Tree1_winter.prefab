@@ -14,6 +14,7 @@ GameObject:
   - component: {fileID: 6507922576896856436}
   - component: {fileID: 1488419384303996762}
   - component: {fileID: 8707627161814507212}
+  - component: {fileID: 7908253412367655731}
   m_Layer: 0
   m_Name: Tree1_winter
   m_TagString: Untagged
@@ -130,6 +131,8 @@ MonoBehaviour:
   objectId: -1
   displayName: Tree1_winter
   kind: 3
+  species: 0
+  breed: 
   autoRegister: 1
   adjustMapToWorld: {x: -0.5, y: 0, z: -0.5}
   sizeRadius: 0.3
@@ -159,3 +162,18 @@ MonoBehaviour:
   minClearCellsAround: 0
   mustTouchWall: 0
   wallPadding: 0.05
+--- !u!114 &7908253412367655731
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2986207661942491262}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5b51eeefad7b498d956628ba6705f1ea, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SavePrefabId
+  prefabId: resources:Prefabs/Scenery/Trees/Tree1_winter
+  resourcesPath: Prefabs/Scenery/Trees/Tree1_winter
+  assetPath: Assets/A_Dogs_Tale/Resources/Prefabs/Scenery/Trees/Tree1_winter.prefab

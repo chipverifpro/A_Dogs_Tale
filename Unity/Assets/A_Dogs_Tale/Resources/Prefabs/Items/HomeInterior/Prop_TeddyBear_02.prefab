@@ -14,6 +14,7 @@ GameObject:
   - component: {fileID: 1201156622780838331}
   - component: {fileID: 9086574806997975509}
   - component: {fileID: 873064201461672680}
+  - component: {fileID: 6825055864653907096}
   m_Layer: 0
   m_Name: Prop_TeddyBear_02
   m_TagString: Untagged
@@ -151,6 +152,8 @@ MonoBehaviour:
   objectId: -1
   displayName: Prop_TeddyBear_02
   kind: 8
+  species: 0
+  breed: 
   autoRegister: 1
   adjustMapToWorld: {x: -0.5, y: 0, z: -0.5}
   sizeRadius: 0.3
@@ -159,3 +162,18 @@ MonoBehaviour:
   onActivate:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &6825055864653907096
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2047506449276898536}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5b51eeefad7b498d956628ba6705f1ea, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SavePrefabId
+  prefabId: resources:Prefabs/Items/HomeInterior/Prop_TeddyBear_02
+  resourcesPath: Prefabs/Items/HomeInterior/Prop_TeddyBear_02
+  assetPath: Assets/A_Dogs_Tale/Resources/Prefabs/Items/HomeInterior/Prop_TeddyBear_02.prefab

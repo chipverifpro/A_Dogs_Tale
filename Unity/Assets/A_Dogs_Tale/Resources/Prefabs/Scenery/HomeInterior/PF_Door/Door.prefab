@@ -75,6 +75,10 @@ PrefabInstance:
         type: 3}
       insertIndex: -1
       addedObject: {fileID: 6090140683211513969}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 0cc3814376efbee4eb4ccf0a21bd37e1,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1826124036501924867}
   m_SourcePrefab: {fileID: 100100000, guid: 0cc3814376efbee4eb4ccf0a21bd37e1, type: 3}
 --- !u!1 &4314059688521422383 stripped
 GameObject:
@@ -116,3 +120,18 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   hided: 1
+--- !u!114 &1826124036501924867
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4314059688521422383}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5b51eeefad7b498d956628ba6705f1ea, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SavePrefabId
+  prefabId: resources:Prefabs/Scenery/HomeInterior/PF_Door/Door
+  resourcesPath: Prefabs/Scenery/HomeInterior/PF_Door/Door
+  assetPath: Assets/A_Dogs_Tale/Resources/Prefabs/Scenery/HomeInterior/PF_Door/Door.prefab

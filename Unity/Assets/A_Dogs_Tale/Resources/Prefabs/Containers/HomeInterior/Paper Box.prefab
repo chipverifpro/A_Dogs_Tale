@@ -87,6 +87,10 @@ PrefabInstance:
         type: 3}
       insertIndex: -1
       addedObject: {fileID: 2109963552755489379}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: b26fd50483d00da458bf1e38e24b3d6f,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 507465360791824607}
   m_SourcePrefab: {fileID: 100100000, guid: b26fd50483d00da458bf1e38e24b3d6f, type: 3}
 --- !u!1 &5376369687507064950 stripped
 GameObject:
@@ -143,6 +147,8 @@ MonoBehaviour:
   objectId: -1
   displayName: Paper Box
   kind: 13
+  species: 0
+  breed: 
   autoRegister: 1
   adjustMapToWorld: {x: -0.5, y: 0, z: -0.5}
   sizeRadius: 0.3
@@ -196,3 +202,18 @@ MonoBehaviour:
   autoConfigureAgentCapacity: 0
   dogItemCapacity: 1
   humanItemCapacity: 2
+--- !u!114 &507465360791824607
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5376369687507064950}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5b51eeefad7b498d956628ba6705f1ea, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SavePrefabId
+  prefabId: resources:Prefabs/Containers/HomeInterior/Paper Box
+  resourcesPath: Prefabs/Containers/HomeInterior/Paper Box
+  assetPath: Assets/A_Dogs_Tale/Resources/Prefabs/Containers/HomeInterior/Paper Box.prefab

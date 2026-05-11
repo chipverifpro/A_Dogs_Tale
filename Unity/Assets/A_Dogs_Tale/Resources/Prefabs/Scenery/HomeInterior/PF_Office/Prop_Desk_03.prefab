@@ -14,6 +14,7 @@ GameObject:
   - component: {fileID: 5969625169419426361}
   - component: {fileID: 1251410153300402850}
   - component: {fileID: 1032542958265016343}
+  - component: {fileID: 8239051949619009573}
   m_Layer: 0
   m_Name: Prop_Desk_03
   m_TagString: Untagged
@@ -129,6 +130,8 @@ MonoBehaviour:
   objectId: -1
   displayName: Prop_Desk_03
   kind: 3
+  species: 0
+  breed: 
   autoRegister: 1
   adjustMapToWorld: {x: -0.5, y: 0, z: -0.5}
   sizeRadius: 0.3
@@ -158,3 +161,18 @@ MonoBehaviour:
   minClearCellsAround: 0
   mustTouchWall: 0
   wallPadding: 0.05
+--- !u!114 &8239051949619009573
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6780511906352654198}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5b51eeefad7b498d956628ba6705f1ea, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SavePrefabId
+  prefabId: resources:Prefabs/Scenery/HomeInterior/PF_Office/Prop_Desk_03
+  resourcesPath: Prefabs/Scenery/HomeInterior/PF_Office/Prop_Desk_03
+  assetPath: Assets/A_Dogs_Tale/Resources/Prefabs/Scenery/HomeInterior/PF_Office/Prop_Desk_03.prefab

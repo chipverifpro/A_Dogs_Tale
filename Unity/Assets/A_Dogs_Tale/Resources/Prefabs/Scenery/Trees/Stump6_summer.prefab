@@ -14,6 +14,7 @@ GameObject:
   - component: {fileID: 3184013800068498178}
   - component: {fileID: 6512307767376274567}
   - component: {fileID: 1202402859091584318}
+  - component: {fileID: 7624908658565608652}
   m_Layer: 0
   m_Name: Stump6_summer
   m_TagString: Untagged
@@ -130,6 +131,8 @@ MonoBehaviour:
   objectId: -1
   displayName: Stump6_summer
   kind: 3
+  species: 0
+  breed: 
   autoRegister: 1
   adjustMapToWorld: {x: -0.5, y: 0, z: -0.5}
   sizeRadius: 0.3
@@ -159,3 +162,18 @@ MonoBehaviour:
   minClearCellsAround: 0
   mustTouchWall: 0
   wallPadding: 0.05
+--- !u!114 &7624908658565608652
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6849428267100346888}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5b51eeefad7b498d956628ba6705f1ea, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SavePrefabId
+  prefabId: resources:Prefabs/Scenery/Trees/Stump6_summer
+  resourcesPath: Prefabs/Scenery/Trees/Stump6_summer
+  assetPath: Assets/A_Dogs_Tale/Resources/Prefabs/Scenery/Trees/Stump6_summer.prefab

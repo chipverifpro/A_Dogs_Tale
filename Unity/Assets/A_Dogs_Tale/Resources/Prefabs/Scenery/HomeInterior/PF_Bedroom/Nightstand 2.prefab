@@ -97,6 +97,10 @@ PrefabInstance:
         type: 3}
       insertIndex: -1
       addedObject: {fileID: 1769213050343688020}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 9c2aca1228514864493155fa9a54c9f6,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 751990950217507619}
     - targetCorrespondingSourceObject: {fileID: 2120162945860751463, guid: 9c2aca1228514864493155fa9a54c9f6,
         type: 3}
       insertIndex: -1
@@ -199,6 +203,8 @@ MonoBehaviour:
   objectId: -1
   displayName: Nightstand 2
   kind: 3
+  species: 0
+  breed: 
   autoRegister: 1
   adjustMapToWorld: {x: -0.5, y: 0, z: -0.5}
   sizeRadius: 0.3
@@ -228,6 +234,22 @@ MonoBehaviour:
   minClearCellsAround: 0
   mustTouchWall: 0
   wallPadding: 0.05
+--- !u!114 &751990950217507619
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2286771893612105471}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5b51eeefad7b498d956628ba6705f1ea, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SavePrefabId
+  prefabId: resources:Prefabs/Scenery/HomeInterior/PF_Bedroom/Nightstand 2
+  resourcesPath: Prefabs/Scenery/HomeInterior/PF_Bedroom/Nightstand 2
+  assetPath: Assets/A_Dogs_Tale/Resources/Prefabs/Scenery/HomeInterior/PF_Bedroom/Nightstand
+    2.prefab
 --- !u!1 &6766095446206012447 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: -3559909895095799887, guid: 9c2aca1228514864493155fa9a54c9f6,

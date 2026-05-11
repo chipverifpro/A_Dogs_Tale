@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 7870160636704910788}
   - component: {fileID: 5394355981916182798}
   - component: {fileID: 8666288263200158566}
+  - component: {fileID: 186199643170218686}
   m_Layer: 0
   m_Name: Food_Burger
   m_TagString: Untagged
@@ -89,6 +90,7 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
 --- !u!64 &8666288263200158566
 MeshCollider:
@@ -112,3 +114,18 @@ MeshCollider:
   m_Convex: 1
   m_CookingOptions: 30
   m_Mesh: {fileID: 8944836183056611700, guid: 98542b411f0754645a461770ffc62b1c, type: 3}
+--- !u!114 &186199643170218686
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5898702171912911067}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5b51eeefad7b498d956628ba6705f1ea, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SavePrefabId
+  prefabId: asset:Assets/_ThirdParty/Pandazole Kitchen Food/Prefabs/Food_Burger.prefab
+  resourcesPath: 
+  assetPath: Assets/_ThirdParty/Pandazole Kitchen Food/Prefabs/Food_Burger.prefab

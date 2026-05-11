@@ -44,6 +44,7 @@ GameObject:
   - component: {fileID: 6306479208334571977}
   - component: {fileID: -3465457025554400460}
   - component: {fileID: -6637620820955624600}
+  - component: {fileID: 8905029211922196612}
   m_Layer: 0
   m_Name: PF_DoorSimple
   m_TagString: Untagged
@@ -101,11 +102,16 @@ MonoBehaviour:
   objectId: -1
   displayName: PF_DoorSimple
   kind: 0
+  species: 0
+  breed: 
   autoRegister: 1
   adjustMapToWorld: {x: -0.5, y: 0, z: -0.5}
   sizeRadius: 0.3
-  mass: 1
+  weight: 1
   immovable: 0
+  onActivate:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!114 &-6637620820955624600
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -124,6 +130,21 @@ MonoBehaviour:
   closedAngle: 0
   openAngle: 90
   openCloseSpeedDegreesPerSecond: 180
+--- !u!114 &8905029211922196612
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6127679036008410055}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5b51eeefad7b498d956628ba6705f1ea, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SavePrefabId
+  prefabId: resources:Prefabs/Terrain/Doors/PF_DoorSimple
+  resourcesPath: Prefabs/Terrain/Doors/PF_DoorSimple
+  assetPath: Assets/A_Dogs_Tale/Resources/Prefabs/Terrain/Doors/PF_DoorSimple.prefab
 --- !u!1001 &757785179219916513
 PrefabInstance:
   m_ObjectHideFlags: 0

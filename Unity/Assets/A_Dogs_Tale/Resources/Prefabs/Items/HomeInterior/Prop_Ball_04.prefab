@@ -14,6 +14,7 @@ GameObject:
   - component: {fileID: 3595047291901539217}
   - component: {fileID: 1458373808097537896}
   - component: {fileID: -794809229039522708}
+  - component: {fileID: 3909870098085393822}
   m_Layer: 0
   m_Name: Prop_Ball_04
   m_TagString: Untagged
@@ -131,6 +132,8 @@ MonoBehaviour:
   objectId: -1
   displayName: Prop_Ball_04
   kind: 8
+  species: 0
+  breed: 
   autoRegister: 1
   adjustMapToWorld: {x: -0.5, y: 0, z: -0.5}
   sizeRadius: 0.3
@@ -160,3 +163,18 @@ MonoBehaviour:
   minClearCellsAround: 0
   mustTouchWall: 0
   wallPadding: 0.05
+--- !u!114 &3909870098085393822
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4406004394358230722}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5b51eeefad7b498d956628ba6705f1ea, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SavePrefabId
+  prefabId: resources:Prefabs/Items/HomeInterior/Prop_Ball_04
+  resourcesPath: Prefabs/Items/HomeInterior/Prop_Ball_04
+  assetPath: Assets/A_Dogs_Tale/Resources/Prefabs/Items/HomeInterior/Prop_Ball_04.prefab

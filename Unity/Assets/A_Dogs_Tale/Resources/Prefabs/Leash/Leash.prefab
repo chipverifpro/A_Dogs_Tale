@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 6846948933387108003}
   - component: {fileID: 7679782560483816751}
   - component: {fileID: 2310866538637900286}
+  - component: {fileID: 3540044592011563907}
   m_Layer: 0
   m_Name: Leash
   m_TagString: Untagged
@@ -103,3 +104,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: eb8dad31f2a37483892d4ddfcc695ece, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::LeashVisual
+--- !u!114 &3540044592011563907
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5830273461789261354}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5b51eeefad7b498d956628ba6705f1ea, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SavePrefabId
+  prefabId: resources:Prefabs/Leash/Leash
+  resourcesPath: Prefabs/Leash/Leash
+  assetPath: Assets/A_Dogs_Tale/Resources/Prefabs/Leash/Leash.prefab

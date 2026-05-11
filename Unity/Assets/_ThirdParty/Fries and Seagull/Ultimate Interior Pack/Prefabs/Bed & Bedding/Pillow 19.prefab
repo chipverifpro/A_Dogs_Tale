@@ -8,80 +8,102 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: -8679921383154817045, guid: 7ae7c9a2709bfa748877959dbfd4c919, type: 3}
+    - target: {fileID: -8679921383154817045, guid: 7ae7c9a2709bfa748877959dbfd4c919,
+        type: 3}
       propertyPath: m_LocalScale.x
       value: 1
       objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 7ae7c9a2709bfa748877959dbfd4c919, type: 3}
+    - target: {fileID: -8679921383154817045, guid: 7ae7c9a2709bfa748877959dbfd4c919,
+        type: 3}
       propertyPath: m_LocalScale.y
       value: 1
       objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 7ae7c9a2709bfa748877959dbfd4c919, type: 3}
+    - target: {fileID: -8679921383154817045, guid: 7ae7c9a2709bfa748877959dbfd4c919,
+        type: 3}
       propertyPath: m_LocalScale.z
       value: 1
       objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 7ae7c9a2709bfa748877959dbfd4c919, type: 3}
+    - target: {fileID: -8679921383154817045, guid: 7ae7c9a2709bfa748877959dbfd4c919,
+        type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 7ae7c9a2709bfa748877959dbfd4c919, type: 3}
+    - target: {fileID: -8679921383154817045, guid: 7ae7c9a2709bfa748877959dbfd4c919,
+        type: 3}
       propertyPath: m_LocalPosition.y
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 7ae7c9a2709bfa748877959dbfd4c919, type: 3}
+    - target: {fileID: -8679921383154817045, guid: 7ae7c9a2709bfa748877959dbfd4c919,
+        type: 3}
       propertyPath: m_LocalPosition.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 7ae7c9a2709bfa748877959dbfd4c919, type: 3}
+    - target: {fileID: -8679921383154817045, guid: 7ae7c9a2709bfa748877959dbfd4c919,
+        type: 3}
       propertyPath: m_LocalRotation.w
       value: 1
       objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 7ae7c9a2709bfa748877959dbfd4c919, type: 3}
+    - target: {fileID: -8679921383154817045, guid: 7ae7c9a2709bfa748877959dbfd4c919,
+        type: 3}
       propertyPath: m_LocalRotation.x
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 7ae7c9a2709bfa748877959dbfd4c919, type: 3}
+    - target: {fileID: -8679921383154817045, guid: 7ae7c9a2709bfa748877959dbfd4c919,
+        type: 3}
       propertyPath: m_LocalRotation.y
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 7ae7c9a2709bfa748877959dbfd4c919, type: 3}
+    - target: {fileID: -8679921383154817045, guid: 7ae7c9a2709bfa748877959dbfd4c919,
+        type: 3}
       propertyPath: m_LocalRotation.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 7ae7c9a2709bfa748877959dbfd4c919, type: 3}
+    - target: {fileID: -8679921383154817045, guid: 7ae7c9a2709bfa748877959dbfd4c919,
+        type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 7ae7c9a2709bfa748877959dbfd4c919, type: 3}
+    - target: {fileID: -8679921383154817045, guid: 7ae7c9a2709bfa748877959dbfd4c919,
+        type: 3}
       propertyPath: m_LocalEulerAnglesHint.y
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 7ae7c9a2709bfa748877959dbfd4c919, type: 3}
+    - target: {fileID: -8679921383154817045, guid: 7ae7c9a2709bfa748877959dbfd4c919,
+        type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 7ae7c9a2709bfa748877959dbfd4c919, type: 3}
+    - target: {fileID: -8679921383154817045, guid: 7ae7c9a2709bfa748877959dbfd4c919,
+        type: 3}
       propertyPath: m_ConstrainProportionsScale
       value: 1
       objectReference: {fileID: 0}
-    - target: {fileID: 919132149155446097, guid: 7ae7c9a2709bfa748877959dbfd4c919, type: 3}
+    - target: {fileID: 919132149155446097, guid: 7ae7c9a2709bfa748877959dbfd4c919,
+        type: 3}
       propertyPath: m_Name
-      value: Pillow 2
+      value: Pillow 19
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 7ae7c9a2709bfa748877959dbfd4c919, type: 3}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 7ae7c9a2709bfa748877959dbfd4c919,
+        type: 3}
       insertIndex: -1
       addedObject: {fileID: 3330922275023502126}
-    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 7ae7c9a2709bfa748877959dbfd4c919, type: 3}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 7ae7c9a2709bfa748877959dbfd4c919,
+        type: 3}
       insertIndex: -1
       addedObject: {fileID: -5840635713384167027}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 7ae7c9a2709bfa748877959dbfd4c919,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 376321641931659817}
   m_SourcePrefab: {fileID: 100100000, guid: 7ae7c9a2709bfa748877959dbfd4c919, type: 3}
 --- !u!1 &3486621875361693513 stripped
 GameObject:
-  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 7ae7c9a2709bfa748877959dbfd4c919, type: 3}
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 7ae7c9a2709bfa748877959dbfd4c919,
+    type: 3}
   m_PrefabInstance: {fileID: 4369496379828404760}
   m_PrefabAsset: {fileID: 0}
 --- !u!114 &3330922275023502126
@@ -119,3 +141,20 @@ MeshCollider:
   m_Convex: 0
   m_CookingOptions: 30
   m_Mesh: {fileID: -5539357819512116934, guid: 7ae7c9a2709bfa748877959dbfd4c919, type: 3}
+--- !u!114 &376321641931659817
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3486621875361693513}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5b51eeefad7b498d956628ba6705f1ea, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SavePrefabId
+  prefabId: asset:Assets/_ThirdParty/Fries and Seagull/Ultimate Interior Pack/Prefabs/Bed
+    & Bedding/Pillow 19.prefab
+  resourcesPath: 
+  assetPath: Assets/_ThirdParty/Fries and Seagull/Ultimate Interior Pack/Prefabs/Bed
+    & Bedding/Pillow 19.prefab

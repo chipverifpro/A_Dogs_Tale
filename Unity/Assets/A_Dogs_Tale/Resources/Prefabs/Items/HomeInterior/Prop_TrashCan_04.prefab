@@ -14,6 +14,7 @@ GameObject:
   - component: {fileID: 3020234226532587237}
   - component: {fileID: 723502658732060205}
   - component: {fileID: 4042295371171424212}
+  - component: {fileID: 6215707174965844585}
   m_Layer: 0
   m_Name: Prop_TrashCan_04
   m_TagString: Untagged
@@ -130,6 +131,8 @@ MonoBehaviour:
   objectId: -1
   displayName: Prop_TrashCan_04
   kind: 8
+  species: 0
+  breed: 
   autoRegister: 1
   adjustMapToWorld: {x: -0.5, y: 0, z: -0.5}
   sizeRadius: 0.3
@@ -159,3 +162,18 @@ MonoBehaviour:
   minClearCellsAround: 0
   mustTouchWall: 0
   wallPadding: 0.05
+--- !u!114 &6215707174965844585
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2678356273484704690}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5b51eeefad7b498d956628ba6705f1ea, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SavePrefabId
+  prefabId: resources:Prefabs/Items/HomeInterior/Prop_TrashCan_04
+  resourcesPath: Prefabs/Items/HomeInterior/Prop_TrashCan_04
+  assetPath: Assets/A_Dogs_Tale/Resources/Prefabs/Items/HomeInterior/Prop_TrashCan_04.prefab

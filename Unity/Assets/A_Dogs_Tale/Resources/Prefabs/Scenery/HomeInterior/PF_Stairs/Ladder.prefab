@@ -83,6 +83,10 @@ PrefabInstance:
         type: 3}
       insertIndex: -1
       addedObject: {fileID: -1091677944539610369}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 7c0df5d99bef2f54d88ad122cc3b1698,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 5811378299746387656}
   m_SourcePrefab: {fileID: 100100000, guid: 7c0df5d99bef2f54d88ad122cc3b1698, type: 3}
 --- !u!1 &1974102455178734459 stripped
 GameObject:
@@ -140,6 +144,8 @@ MonoBehaviour:
   objectId: -1
   displayName: Ladder
   kind: 3
+  species: 0
+  breed: 
   autoRegister: 1
   adjustMapToWorld: {x: -0.5, y: 0, z: -0.5}
   sizeRadius: 0.3
@@ -169,3 +175,18 @@ MonoBehaviour:
   minClearCellsAround: 0
   mustTouchWall: 0
   wallPadding: 0.05
+--- !u!114 &5811378299746387656
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1974102455178734459}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5b51eeefad7b498d956628ba6705f1ea, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SavePrefabId
+  prefabId: resources:Prefabs/Scenery/HomeInterior/PF_Stairs/Ladder
+  resourcesPath: Prefabs/Scenery/HomeInterior/PF_Stairs/Ladder
+  assetPath: Assets/A_Dogs_Tale/Resources/Prefabs/Scenery/HomeInterior/PF_Stairs/Ladder.prefab

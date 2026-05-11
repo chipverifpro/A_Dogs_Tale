@@ -2545,6 +2545,7 @@ SkinnedMeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_MaskInteraction: 0
   serializedVersion: 2
   m_Quality: 0
   m_UpdateWhenOffscreen: 0
@@ -6760,6 +6761,7 @@ GameObject:
   m_Component:
   - component: {fileID: 7997089769847479514}
   - component: {fileID: 5955850347136920745}
+  - component: {fileID: 7221244312827978412}
   m_Layer: 0
   m_Name: germanshepherd
   m_TagString: Untagged
@@ -6806,6 +6808,21 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &7221244312827978412
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8843402266763018810}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5b51eeefad7b498d956628ba6705f1ea, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SavePrefabId
+  prefabId: resources:Prefabs/PackDogs/germanshepherd
+  resourcesPath: Prefabs/PackDogs/germanshepherd
+  assetPath: Assets/A_Dogs_Tale/Resources/Prefabs/PackDogs/germanshepherd.prefab
 --- !u!1 &9013224563457681554
 GameObject:
   m_ObjectHideFlags: 0

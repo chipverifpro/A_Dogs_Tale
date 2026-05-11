@@ -101,6 +101,10 @@ PrefabInstance:
         type: 3}
       insertIndex: -1
       addedObject: {fileID: -4480793734336924005}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: a60318c3065682f42b0bf9918d28c89c,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2117159155164103698}
     - targetCorrespondingSourceObject: {fileID: -3559909895095799887, guid: a60318c3065682f42b0bf9918d28c89c,
         type: 3}
       insertIndex: -1
@@ -205,6 +209,8 @@ MonoBehaviour:
   objectId: -1
   displayName: Camera
   kind: 8
+  species: 0
+  breed: 
   autoRegister: 1
   adjustMapToWorld: {x: -0.5, y: 0, z: -0.5}
   sizeRadius: 0.3
@@ -234,6 +240,21 @@ MonoBehaviour:
   minClearCellsAround: 0
   mustTouchWall: 0
   wallPadding: 0.05
+--- !u!114 &2117159155164103698
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 575911410383781014}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5b51eeefad7b498d956628ba6705f1ea, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SavePrefabId
+  prefabId: resources:Prefabs/Scenery/HomeInterior/PF_Office/Camera
+  resourcesPath: Prefabs/Scenery/HomeInterior/PF_Office/Camera
+  assetPath: Assets/A_Dogs_Tale/Resources/Prefabs/Scenery/HomeInterior/PF_Office/Camera.prefab
 --- !u!1 &5019206252864171638 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: -3559909895095799887, guid: a60318c3065682f42b0bf9918d28c89c,

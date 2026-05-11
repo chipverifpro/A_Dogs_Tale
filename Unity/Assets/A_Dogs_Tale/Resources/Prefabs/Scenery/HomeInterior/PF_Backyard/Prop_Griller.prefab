@@ -14,6 +14,7 @@ GameObject:
   - component: {fileID: 6284821598710373958}
   - component: {fileID: 2854371436966817347}
   - component: {fileID: -3421095596848808686}
+  - component: {fileID: 3355887651046942063}
   m_Layer: 0
   m_Name: Prop_Griller
   m_TagString: Untagged
@@ -131,6 +132,8 @@ MonoBehaviour:
   objectId: -1
   displayName: Prop_Griller
   kind: 3
+  species: 0
+  breed: 
   autoRegister: 1
   adjustMapToWorld: {x: -0.5, y: 0, z: -0.5}
   sizeRadius: 0.3
@@ -160,6 +163,21 @@ MonoBehaviour:
   minClearCellsAround: 0
   mustTouchWall: 0
   wallPadding: 0.05
+--- !u!114 &3355887651046942063
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 777657613197372084}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5b51eeefad7b498d956628ba6705f1ea, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SavePrefabId
+  prefabId: resources:Prefabs/Scenery/HomeInterior/PF_Backyard/Prop_Griller
+  resourcesPath: Prefabs/Scenery/HomeInterior/PF_Backyard/Prop_Griller
+  assetPath: Assets/A_Dogs_Tale/Resources/Prefabs/Scenery/HomeInterior/PF_Backyard/Prop_Griller.prefab
 --- !u!1 &4539967805613540662
 GameObject:
   m_ObjectHideFlags: 0

@@ -14,6 +14,7 @@ GameObject:
   - component: {fileID: 7254177380870071884}
   - component: {fileID: 6420303600238945376}
   - component: {fileID: 2225392400182532864}
+  - component: {fileID: 5820117986403443939}
   m_Layer: 0
   m_Name: Prop_BabyBed_01
   m_TagString: Untagged
@@ -150,6 +151,8 @@ MonoBehaviour:
   objectId: -1
   displayName: Prop_BabyBed_01
   kind: 3
+  species: 0
+  breed: 
   autoRegister: 1
   adjustMapToWorld: {x: -0.5, y: 0, z: -0.5}
   sizeRadius: 0.3
@@ -158,3 +161,18 @@ MonoBehaviour:
   onActivate:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &5820117986403443939
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7524787328815078147}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5b51eeefad7b498d956628ba6705f1ea, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SavePrefabId
+  prefabId: resources:Prefabs/Scenery/HomeInterior/PF_BedroomKids/Prop_BabyBed_01
+  resourcesPath: Prefabs/Scenery/HomeInterior/PF_BedroomKids/Prop_BabyBed_01
+  assetPath: Assets/A_Dogs_Tale/Resources/Prefabs/Scenery/HomeInterior/PF_BedroomKids/Prop_BabyBed_01.prefab

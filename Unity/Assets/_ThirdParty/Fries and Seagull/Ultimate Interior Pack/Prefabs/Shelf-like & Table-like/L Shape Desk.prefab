@@ -8,47 +8,58 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: -8679921383154817045, guid: 49bf3fc753c75f24ca3eca67be40cf23, type: 3}
+    - target: {fileID: -8679921383154817045, guid: 49bf3fc753c75f24ca3eca67be40cf23,
+        type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 49bf3fc753c75f24ca3eca67be40cf23, type: 3}
+    - target: {fileID: -8679921383154817045, guid: 49bf3fc753c75f24ca3eca67be40cf23,
+        type: 3}
       propertyPath: m_LocalPosition.y
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 49bf3fc753c75f24ca3eca67be40cf23, type: 3}
+    - target: {fileID: -8679921383154817045, guid: 49bf3fc753c75f24ca3eca67be40cf23,
+        type: 3}
       propertyPath: m_LocalPosition.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 49bf3fc753c75f24ca3eca67be40cf23, type: 3}
+    - target: {fileID: -8679921383154817045, guid: 49bf3fc753c75f24ca3eca67be40cf23,
+        type: 3}
       propertyPath: m_LocalRotation.w
       value: 1
       objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 49bf3fc753c75f24ca3eca67be40cf23, type: 3}
+    - target: {fileID: -8679921383154817045, guid: 49bf3fc753c75f24ca3eca67be40cf23,
+        type: 3}
       propertyPath: m_LocalRotation.x
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 49bf3fc753c75f24ca3eca67be40cf23, type: 3}
+    - target: {fileID: -8679921383154817045, guid: 49bf3fc753c75f24ca3eca67be40cf23,
+        type: 3}
       propertyPath: m_LocalRotation.y
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 49bf3fc753c75f24ca3eca67be40cf23, type: 3}
+    - target: {fileID: -8679921383154817045, guid: 49bf3fc753c75f24ca3eca67be40cf23,
+        type: 3}
       propertyPath: m_LocalRotation.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 49bf3fc753c75f24ca3eca67be40cf23, type: 3}
+    - target: {fileID: -8679921383154817045, guid: 49bf3fc753c75f24ca3eca67be40cf23,
+        type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 49bf3fc753c75f24ca3eca67be40cf23, type: 3}
+    - target: {fileID: -8679921383154817045, guid: 49bf3fc753c75f24ca3eca67be40cf23,
+        type: 3}
       propertyPath: m_LocalEulerAnglesHint.y
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 49bf3fc753c75f24ca3eca67be40cf23, type: 3}
+    - target: {fileID: -8679921383154817045, guid: 49bf3fc753c75f24ca3eca67be40cf23,
+        type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 919132149155446097, guid: 49bf3fc753c75f24ca3eca67be40cf23, type: 3}
+    - target: {fileID: 919132149155446097, guid: 49bf3fc753c75f24ca3eca67be40cf23,
+        type: 3}
       propertyPath: m_Name
       value: L Shape Desk
       objectReference: {fileID: 0}
@@ -56,43 +67,59 @@ PrefabInstance:
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 49bf3fc753c75f24ca3eca67be40cf23, type: 3}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 49bf3fc753c75f24ca3eca67be40cf23,
+        type: 3}
       insertIndex: -1
       addedObject: {fileID: 7673303761258791809}
-    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 49bf3fc753c75f24ca3eca67be40cf23, type: 3}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 49bf3fc753c75f24ca3eca67be40cf23,
+        type: 3}
       insertIndex: -1
       addedObject: {fileID: 3471054816164479795}
-    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 49bf3fc753c75f24ca3eca67be40cf23, type: 3}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 49bf3fc753c75f24ca3eca67be40cf23,
+        type: 3}
       insertIndex: -1
       addedObject: {fileID: 284698640965028819}
-    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 49bf3fc753c75f24ca3eca67be40cf23, type: 3}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 49bf3fc753c75f24ca3eca67be40cf23,
+        type: 3}
       insertIndex: -1
       addedObject: {fileID: 4560075411208324524}
-    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 49bf3fc753c75f24ca3eca67be40cf23, type: 3}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 49bf3fc753c75f24ca3eca67be40cf23,
+        type: 3}
       insertIndex: -1
       addedObject: {fileID: 172510363058122126}
-    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 49bf3fc753c75f24ca3eca67be40cf23, type: 3}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 49bf3fc753c75f24ca3eca67be40cf23,
+        type: 3}
       insertIndex: -1
       addedObject: {fileID: 2609433473560550756}
-    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 49bf3fc753c75f24ca3eca67be40cf23, type: 3}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 49bf3fc753c75f24ca3eca67be40cf23,
+        type: 3}
       insertIndex: -1
       addedObject: {fileID: 2151741807332987053}
-    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 49bf3fc753c75f24ca3eca67be40cf23, type: 3}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 49bf3fc753c75f24ca3eca67be40cf23,
+        type: 3}
       insertIndex: -1
       addedObject: {fileID: 7699466244141196227}
-    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 49bf3fc753c75f24ca3eca67be40cf23, type: 3}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 49bf3fc753c75f24ca3eca67be40cf23,
+        type: 3}
       insertIndex: -1
       addedObject: {fileID: 1382308148435873503}
-    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 49bf3fc753c75f24ca3eca67be40cf23, type: 3}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 49bf3fc753c75f24ca3eca67be40cf23,
+        type: 3}
       insertIndex: -1
       addedObject: {fileID: 5235191976593963569}
-    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 49bf3fc753c75f24ca3eca67be40cf23, type: 3}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 49bf3fc753c75f24ca3eca67be40cf23,
+        type: 3}
       insertIndex: -1
       addedObject: {fileID: -404779257456845694}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 49bf3fc753c75f24ca3eca67be40cf23,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 4487587218988829624}
   m_SourcePrefab: {fileID: 100100000, guid: 49bf3fc753c75f24ca3eca67be40cf23, type: 3}
 --- !u!1 &7448930132586296903 stripped
 GameObject:
-  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 49bf3fc753c75f24ca3eca67be40cf23, type: 3}
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 49bf3fc753c75f24ca3eca67be40cf23,
+    type: 3}
   m_PrefabInstance: {fileID: 7754780385980926742}
   m_PrefabAsset: {fileID: 0}
 --- !u!65 &7673303761258791809
@@ -318,3 +345,20 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   hided: 1
+--- !u!114 &4487587218988829624
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7448930132586296903}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5b51eeefad7b498d956628ba6705f1ea, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SavePrefabId
+  prefabId: asset:Assets/_ThirdParty/Fries and Seagull/Ultimate Interior Pack/Prefabs/Shelf-like
+    & Table-like/L Shape Desk.prefab
+  resourcesPath: 
+  assetPath: Assets/_ThirdParty/Fries and Seagull/Ultimate Interior Pack/Prefabs/Shelf-like
+    & Table-like/L Shape Desk.prefab

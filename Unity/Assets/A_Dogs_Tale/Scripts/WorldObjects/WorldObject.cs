@@ -510,6 +510,17 @@ public class WorldObject : MonoBehaviour
 
     public void SetObjectId(int newId) => objectId = newId;
 
+    public void ApplySavedIdentity(int savedObjectId, string savedDisplayName, WorldObjectKind savedKind, Species savedSpecies, string savedBreed)
+    {
+        IsRegistered = false;
+        objectId = savedObjectId;
+        displayName = string.IsNullOrWhiteSpace(savedDisplayName) ? gameObject.name : savedDisplayName;
+        kind = savedKind;
+        species = savedSpecies;
+        breed = savedBreed ?? "";
+        gameObject.name = displayName;
+    }
+
     // Pass interaction event to the activatorModule, but create it first if it doesn't exist.
     public ActivateResult Activate(ActivateContext context, ActivateRequest request)
     {
@@ -596,6 +607,12 @@ public class WorldObject : MonoBehaviour
             if (immobileDecisionModule == null) Debug.LogWarning($"immobileDecisionModule = null");
         }
 
+        if (enables.HasFlag(ModuleFlags.taskFollowerDecisionModule))
+        {
+            taskFollowerDecisionModule = EnsureComponent<TaskFollowerDecisionModule>();
+            if (taskFollowerDecisionModule == null) Debug.LogWarning($"taskFollowerDecisionModule = null");
+        }
+
         if (enables.HasFlag(ModuleFlags.exploreDecisionModule))
         {
             exploreDecisionModule = EnsureComponent<ExploreDecisionModule>();
@@ -621,6 +638,18 @@ public class WorldObject : MonoBehaviour
         {
             agentModule = EnsureComponent<AgentModule>();
             if (agentModule == null) Debug.LogWarning($"agentModule = null");
+        }
+
+        if (enables.HasFlag(ModuleFlags.llmThinkModule))
+        {
+            llmThinkModule = EnsureComponent<LLMThinkModule>();
+            if (llmThinkModule == null) Debug.LogWarning($"llmThinkModule = null");
+        }
+
+        if (enables.HasFlag(ModuleFlags.reactionModule))
+        {
+            reactionModule = EnsureComponent<ReactionModule>();
+            if (reactionModule == null) Debug.LogWarning($"reactionModule = null");
         }
 
 
@@ -665,6 +694,12 @@ public class WorldObject : MonoBehaviour
         {
             motionModule = EnsureComponent<MotionModule>();
             if (motionModule == null) Debug.LogWarning($"motionModule = null");
+        }
+
+        if (enables.HasFlag(ModuleFlags.doorModule))
+        {
+            doorModule = EnsureComponent<DoorModule>();
+            if (doorModule == null) Debug.LogWarning($"doorModule = null");
         }
 
         if (enables.HasFlag(ModuleFlags.kineticModule))
@@ -717,6 +752,24 @@ public class WorldObject : MonoBehaviour
         {
             agentStateModule = EnsureComponent<AgentStateModule>();
             if (agentStateModule == null) Debug.LogWarning($"agentStateModule = null");
+        }
+
+        if (enables.HasFlag(ModuleFlags.taskListModule))
+        {
+            taskListModule = EnsureComponent<TaskListModule>();
+            if (taskListModule == null) Debug.LogWarning($"taskListModule = null");
+        }
+
+        if (enables.HasFlag(ModuleFlags.llmConfigModule))
+        {
+            llmConfigModule = EnsureComponent<LLMConfigModule>();
+            if (llmConfigModule == null) Debug.LogWarning($"llmConfigModule = null");
+        }
+
+        if (enables.HasFlag(ModuleFlags.llmWorldStateModule))
+        {
+            llmWorldStateModule = EnsureComponent<LLMWorldStateModule>();
+            if (llmWorldStateModule == null) Debug.LogWarning($"llmWorldStateModule = null");
         }
 
 

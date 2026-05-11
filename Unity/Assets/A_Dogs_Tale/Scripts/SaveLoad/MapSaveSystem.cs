@@ -2,11 +2,12 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using DogGame.Modules;
 using UnityEngine;
 
 public partial class DungeonGenerator
 {
-    private const int MapSaveVersion = 1;
+    private const int MapSaveVersion = 3;
     private const string SaveDirectoryName = "DogsTaleSaves";
     private const string SingleMapSaveFilename = "dogs_tale_map_slot.json";
 
@@ -36,8 +37,8 @@ public partial class DungeonGenerator
             Directory.CreateDirectory(Path.GetDirectoryName(savePath));
             File.WriteAllText(savePath, json);
 
-            BottomBanner.Show($"Map saved to {savePath}");
-            Debug.Log($"[MapSaveSystem] Saved map to {savePath}", this);
+            BottomBanner.Show($"Map and WorldObjects saved to {savePath}");
+            Debug.Log($"[MapSaveSystem] Saved map and WorldObjects to {savePath}", this);
         }
         catch (Exception ex)
         {
@@ -103,14 +104,18 @@ public partial class DungeonGenerator
         UpdateCellGridFromRooms(rooms);
         PrepareHeightfield();
 
+        Dictionary<int, WorldObject> restoredWorldObjects = ApplySavedWorldObjects(saveData.worldObjects);
+        ApplySavedPacks(saveData.packs, restoredWorldObjects);
+        ApplySavedContainers(saveData.worldObjects, restoredWorldObjects);
+
         buildComplete = true;
         regenerateCoroutine = null;
 
         if (dir != null && dir.scentAirGround != null)
             dir.scentAirGround.StartScentSimulation();
 
-        BottomBanner.Show($"Map loaded from {savePath}");
-        Debug.Log($"[MapSaveSystem] Loaded map from {savePath}", this);
+        BottomBanner.Show($"Map and WorldObjects loaded from {savePath}");
+        Debug.Log($"[MapSaveSystem] Loaded map and WorldObjects from {savePath}", this);
     }
 
     private void ApplyMapSaveData(MapSaveData saveData)
@@ -163,6 +168,357 @@ public partial class DungeonGenerator
         }
     }
 
+    private Dictionary<int, WorldObject> ApplySavedWorldObjects(List<WorldObjectDto> savedObjects)
+    {
+        Dictionary<int, WorldObject> restoredById = new();
+        if (savedObjects == null)
+            return restoredById;
+
+        WorldObjectRegistry registry = WorldObjectRegistry.Instance;
+        if (registry == null)
+        {
+            Debug.LogWarning("[MapSaveSystem] Could not restore WorldObjects because no registry is available.", this);
+            return restoredById;
+        }
+
+        foreach (WorldObjectDto savedObject in savedObjects)
+        {
+            if (savedObject == null || savedObject.objectId <= 0)
+                continue;
+
+            WorldObject worldObject = null;
+            if (!registry.TryGet(savedObject.objectId, out worldObject) || worldObject == null)
+                worldObject = CreateSavedWorldObject(savedObject);
+
+            ApplySavedWorldObject(worldObject, savedObject);
+            if (worldObject != null)
+                restoredById[savedObject.objectId] = worldObject;
+        }
+
+        foreach (WorldObjectDto savedObject in savedObjects)
+        {
+            if (savedObject == null || savedObject.objectId <= 0 || savedObject.parentWorldObjectId <= 0)
+                continue;
+
+            if (!restoredById.TryGetValue(savedObject.objectId, out WorldObject child) || child == null)
+                continue;
+            if (!restoredById.TryGetValue(savedObject.parentWorldObjectId, out WorldObject parent) || parent == null)
+                continue;
+
+            child.transform.SetParent(parent.transform, worldPositionStays: true);
+        }
+
+        return restoredById;
+    }
+
+    private WorldObject CreateSavedWorldObject(WorldObjectDto savedObject)
+    {
+        GameObject go = InstantiateSavedPrefab(savedObject);
+        if (go == null)
+        {
+            string objectName = string.IsNullOrWhiteSpace(savedObject.displayName)
+                ? $"WorldObject_{savedObject.objectId}"
+                : savedObject.displayName;
+
+            go = new GameObject(objectName);
+            go.SetActive(false);
+        }
+        else
+        {
+            go.SetActive(false);
+        }
+
+        WorldObject worldObject = go.GetComponent<WorldObject>();
+        if (worldObject == null)
+            worldObject = go.AddComponent<WorldObject>();
+
+        WorldObjectRegistry.Instance?.Unregister(worldObject);
+        worldObject.ApplySavedIdentity(
+            savedObject.objectId,
+            savedObject.displayName,
+            (WorldObjectKind)savedObject.kind,
+            (Species)savedObject.species,
+            savedObject.breed);
+        ApplySavedPrefabIdentity(worldObject, savedObject);
+
+        return worldObject;
+    }
+
+    private GameObject InstantiateSavedPrefab(WorldObjectDto savedObject)
+    {
+        GameObject prefab = null;
+
+        if (!string.IsNullOrWhiteSpace(savedObject.prefabResourcesPath))
+            prefab = Resources.Load<GameObject>(savedObject.prefabResourcesPath);
+
+#if UNITY_EDITOR
+        if (prefab == null && !string.IsNullOrWhiteSpace(savedObject.prefabAssetPath))
+            prefab = UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>(savedObject.prefabAssetPath);
+#endif
+
+        if (prefab == null)
+        {
+            if (!string.IsNullOrWhiteSpace(savedObject.prefabId) ||
+                !string.IsNullOrWhiteSpace(savedObject.prefabResourcesPath) ||
+                !string.IsNullOrWhiteSpace(savedObject.prefabAssetPath))
+            {
+                Debug.LogWarning(
+                    $"[MapSaveSystem] Could not load prefab for {savedObject.displayName} " +
+                    $"prefabId='{savedObject.prefabId}' resourcesPath='{savedObject.prefabResourcesPath}' assetPath='{savedObject.prefabAssetPath}'. " +
+                    "Using shell fallback.",
+                    this);
+            }
+
+            return null;
+        }
+
+        return Instantiate(prefab);
+    }
+
+    private static void ApplySavedWorldObject(WorldObject worldObject, WorldObjectDto savedObject)
+    {
+        if (worldObject == null || savedObject == null)
+            return;
+
+        worldObject.ApplySavedIdentity(
+            savedObject.objectId,
+            savedObject.displayName,
+            (WorldObjectKind)savedObject.kind,
+            (Species)savedObject.species,
+            savedObject.breed);
+        ApplySavedPrefabIdentity(worldObject, savedObject);
+
+        worldObject.sizeRadius = savedObject.sizeRadius;
+        worldObject.weight = savedObject.weight;
+        worldObject.immovable = savedObject.immovable;
+        worldObject.adjustMapToWorld = savedObject.adjustMapToWorld.ToVector3();
+        worldObject.transform.SetPositionAndRotation(
+            savedObject.position.ToVector3(),
+            savedObject.rotation.ToQuaternion());
+        worldObject.transform.localScale = savedObject.localScale.ToVector3();
+
+        if (TryParseModuleFlags(savedObject.moduleFlagsRaw, out ModuleFlags moduleFlags))
+            worldObject.CreateModulesIfNeeded(moduleFlags);
+
+        ApplySavedAgentState(worldObject, savedObject.agent);
+        ApplySavedPlacementState(worldObject, savedObject.placement);
+        ApplySavedContainerState(worldObject, savedObject.container);
+
+        worldObject.agentMovementModule?.ClearDesiredMovement();
+        worldObject.RegisterIfNeeded();
+        worldObject.gameObject.SetActive(savedObject.activeSelf);
+    }
+
+    private static void ApplySavedPrefabIdentity(WorldObject worldObject, WorldObjectDto savedObject)
+    {
+        if (worldObject == null || savedObject == null)
+            return;
+
+        if (string.IsNullOrWhiteSpace(savedObject.prefabId) &&
+            string.IsNullOrWhiteSpace(savedObject.prefabResourcesPath) &&
+            string.IsNullOrWhiteSpace(savedObject.prefabAssetPath))
+        {
+            return;
+        }
+
+        SavePrefabId savePrefabId = worldObject.GetComponent<SavePrefabId>();
+        if (savePrefabId == null)
+            savePrefabId = worldObject.gameObject.AddComponent<SavePrefabId>();
+
+        savePrefabId.SetPrefabIdentity(
+            savedObject.prefabId,
+            savedObject.prefabResourcesPath,
+            savedObject.prefabAssetPath);
+    }
+
+    private static void ApplySavedAgentState(WorldObject worldObject, AgentDto agent)
+    {
+        if (worldObject == null || agent == null)
+            return;
+
+        if (worldObject.motionModule != null)
+            worldObject.motionModule.SetWalkMode((WalkMode)agent.walkMode);
+
+        if (worldObject.agentModule != null)
+        {
+            AgentDecisionType initialDecisionType = (AgentDecisionType)agent.initialDecisionType;
+            if (initialDecisionType != AgentDecisionType.Undefined)
+                worldObject.agentModule.initialDecisionType = initialDecisionType;
+        }
+    }
+
+    private static void ApplySavedPlacementState(WorldObject worldObject, PlacementDto placement)
+    {
+        if (worldObject == null || placement == null || worldObject.placementModule == null)
+            return;
+
+        worldObject.placementModule.allowedRooms = (PlacementRoomTypeFlags)placement.allowedRooms;
+        worldObject.placementModule.autoSizeFromMesh = placement.autoSizeFromMesh;
+        worldObject.placementModule.sizeInCells = placement.sizeInCells.ToVector3();
+        worldObject.placementModule.cellSize = placement.cellSize;
+        worldObject.placementModule.edgeHint = (EdgeHint)placement.edgeHint;
+        worldObject.placementModule.rotationRule = (RotationRule)placement.rotationRule;
+        worldObject.placementModule.minClearCellsAround = placement.minClearCellsAround;
+        worldObject.placementModule.mustTouchWall = placement.mustTouchWall;
+        worldObject.placementModule.wallPadding = placement.wallPadding;
+    }
+
+    private static void ApplySavedContainerState(WorldObject worldObject, ContainerDto container)
+    {
+        if (worldObject == null || container == null || worldObject.containerModule == null)
+            return;
+
+        worldObject.containerModule.ApplySavedContainerState(
+            container.itemCapacity,
+            container.maxWeight,
+            container.heldItemsVisible,
+            container.heldHeight,
+            container.isLocked,
+            container.isClosed,
+            container.autoPickupNearbyItems,
+            container.pickupRadiusTiles,
+            container.autoConfigureAgentCapacity,
+            container.dogItemCapacity,
+            container.humanItemCapacity);
+    }
+
+    private static void ApplySavedContainers(List<WorldObjectDto> savedObjects, Dictionary<int, WorldObject> restoredById)
+    {
+        if (savedObjects == null || restoredById == null)
+            return;
+
+        foreach (WorldObjectDto savedObject in savedObjects)
+        {
+            if (savedObject == null || savedObject.container == null || savedObject.container.heldObjectIds == null)
+                continue;
+            if (!restoredById.TryGetValue(savedObject.objectId, out WorldObject containerObject) || containerObject == null)
+                continue;
+            if (containerObject.containerModule == null)
+                continue;
+
+            List<WorldObject> heldItems = new();
+            foreach (int heldObjectId in savedObject.container.heldObjectIds)
+            {
+                if (restoredById.TryGetValue(heldObjectId, out WorldObject heldItem) && heldItem != null)
+                    heldItems.Add(heldItem);
+            }
+
+            containerObject.containerModule.RestoreSavedContents(heldItems);
+        }
+    }
+
+    private void ApplySavedPacks(List<PackDto> savedPacks, Dictionary<int, WorldObject> restoredById)
+    {
+        if (savedPacks == null || savedPacks.Count == 0 || restoredById == null)
+            return;
+        if (dir == null || dir.packManager == null)
+        {
+            Debug.LogWarning("[MapSaveSystem] Could not restore packs because PackManager is unavailable.", this);
+            return;
+        }
+
+        PackManager packManager = dir.packManager;
+        if (packManager.packs == null)
+            packManager.packs = new List<Pack>();
+
+        foreach (Pack pack in packManager.packs)
+        {
+            if (pack == null || pack.packAgentList == null)
+                continue;
+
+            foreach (WorldObject member in pack.packAgentList)
+            {
+                if (member != null && member.packMemberModule != null)
+                    member.packMemberModule.currentPack = null;
+            }
+            pack.packAgentList.Clear();
+        }
+
+        foreach (PackDto savedPack in savedPacks)
+        {
+            if (savedPack == null || string.IsNullOrWhiteSpace(savedPack.packName))
+                continue;
+
+            Pack pack = FindOrCreatePackForLoad(packManager, savedPack);
+            if (pack == null)
+                continue;
+
+            pack.dir = dir;
+            pack.packName = savedPack.packName;
+            pack.formation = (FormationsEnum)savedPack.formation;
+            pack.leadershipType = (AgentDecisionType)savedPack.leadershipType;
+            pack.followerType = (AgentDecisionType)savedPack.followerType;
+            pack.formationSpacing = savedPack.formationSpacing;
+            if (pack.packAgentList == null)
+                pack.packAgentList = new List<WorldObject>();
+            pack.packAgentList.Clear();
+
+            if (savedPack.memberObjectIds == null)
+                savedPack.memberObjectIds = new List<int>();
+
+            foreach (int memberId in savedPack.memberObjectIds)
+            {
+                if (!restoredById.TryGetValue(memberId, out WorldObject member) || member == null)
+                    continue;
+
+                if (member.packMemberModule == null)
+                    member.CreateModulesIfNeeded(ModuleFlags.packMemberModule);
+                if (member.packMemberModule == null)
+                    continue;
+
+                pack.packAgentList.Add(member);
+                member.packMemberModule.currentPack = pack;
+                member.transform.SetParent(pack.transform, worldPositionStays: true);
+            }
+
+            if (!packManager.packs.Contains(pack))
+                packManager.packs.Add(pack);
+
+            if (savedPack.isPlayerPack)
+            {
+                packManager.playerPack = pack;
+                dir.playerPack = pack;
+            }
+
+            if (pack.packAgentList.Count > 0)
+                pack.SetPackFollowChain();
+        }
+    }
+
+    private Pack FindOrCreatePackForLoad(PackManager packManager, PackDto savedPack)
+    {
+        for (int i = 0; i < packManager.packs.Count; i++)
+        {
+            Pack candidate = packManager.packs[i];
+            if (candidate != null && candidate.packName == savedPack.packName)
+                return candidate;
+        }
+
+        GameObject packObject = new GameObject(savedPack.packName);
+        if (packManager.PackParentObject != null)
+            packObject.transform.SetParent(packManager.PackParentObject.transform, worldPositionStays: false);
+
+        Pack pack = packObject.AddComponent<Pack>();
+        pack.dir = dir;
+        pack.packName = savedPack.packName;
+        pack.packAgentList = new List<WorldObject>();
+        packManager.packs.Add(pack);
+        return pack;
+    }
+
+    private static bool TryParseModuleFlags(string raw, out ModuleFlags moduleFlags)
+    {
+        moduleFlags = ModuleFlags.none;
+        if (string.IsNullOrWhiteSpace(raw))
+            return false;
+
+        if (!ulong.TryParse(raw, out ulong value))
+            return false;
+
+        moduleFlags = (ModuleFlags)value;
+        return true;
+    }
+
     [Serializable]
     private sealed class MapSaveData
     {
@@ -171,6 +527,8 @@ public partial class DungeonGenerator
         public int mapWidth;
         public int mapHeight;
         public List<RoomDto> rooms = new();
+        public List<WorldObjectDto> worldObjects = new();
+        public List<PackDto> packs = new();
 
         public static MapSaveData FromGenerator(DungeonGenerator generator)
         {
@@ -186,6 +544,32 @@ public partial class DungeonGenerator
             foreach (Room room in generator.rooms)
                 data.rooms.Add(RoomDto.FromRoom(room));
 
+            WorldObjectRegistry registry = WorldObjectRegistry.Instance;
+            if (registry != null)
+            {
+                data.worldObjects = new List<WorldObjectDto>();
+                foreach (WorldObject worldObject in registry.GetAllObjects())
+                {
+                    if (worldObject == null || worldObject.ObjectId <= 0)
+                        continue;
+
+                    data.worldObjects.Add(WorldObjectDto.FromWorldObject(worldObject));
+                }
+            }
+
+            PackManager packManager = Dir.Instance != null ? Dir.Instance.packManager : null;
+            if (packManager != null && packManager.packs != null)
+            {
+                data.packs = new List<PackDto>();
+                foreach (Pack pack in packManager.packs)
+                {
+                    if (pack == null)
+                        continue;
+
+                    data.packs.Add(PackDto.FromPack(pack));
+                }
+            }
+
             return data;
         }
 
@@ -195,6 +579,266 @@ public partial class DungeonGenerator
             foreach (RoomDto room in rooms)
                 restoredRooms.Add(room.ToRoom());
             return restoredRooms;
+        }
+    }
+
+    [Serializable]
+    private sealed class PackDto
+    {
+        public string packName;
+        public bool isPlayerPack;
+        public int formation;
+        public int leadershipType;
+        public int followerType;
+        public float formationSpacing;
+        public List<int> memberObjectIds = new();
+
+        public static PackDto FromPack(Pack pack)
+        {
+            PackDto dto = new()
+            {
+                packName = pack.packName,
+                isPlayerPack = pack.isPlayerPack,
+                formation = (int)pack.formation,
+                leadershipType = (int)pack.leadershipType,
+                followerType = (int)pack.followerType,
+                formationSpacing = pack.formationSpacing,
+                memberObjectIds = new List<int>()
+            };
+
+            if (pack.packAgentList != null)
+            {
+                foreach (WorldObject member in pack.packAgentList)
+                {
+                    if (member != null && member.ObjectId > 0)
+                        dto.memberObjectIds.Add(member.ObjectId);
+                }
+            }
+
+            return dto;
+        }
+    }
+
+    [Serializable]
+    private sealed class WorldObjectDto
+    {
+        public int objectId;
+        public string displayName;
+        public int kind;
+        public int species;
+        public string breed;
+        public bool activeSelf;
+        public Vector3Dto position;
+        public QuaternionDto rotation;
+        public Vector3Dto localScale;
+        public Vector3Dto adjustMapToWorld;
+        public float sizeRadius;
+        public float weight;
+        public bool immovable;
+        public int parentWorldObjectId;
+        public string prefabId;
+        public string prefabResourcesPath;
+        public string prefabAssetPath;
+        public string moduleFlagsRaw;
+        public string moduleFlagsNames;
+        public AgentDto agent;
+        public ContainerDto container;
+        public PlacementDto placement;
+
+        public static WorldObjectDto FromWorldObject(WorldObject worldObject)
+        {
+            ModuleFlags moduleFlags = ModuleFlagsFromWorldObject(worldObject);
+            SavePrefabId savePrefabId = worldObject.GetComponent<SavePrefabId>();
+            return new WorldObjectDto
+            {
+                objectId = worldObject.ObjectId,
+                displayName = worldObject.DisplayName,
+                kind = (int)worldObject.Kind,
+                species = (int)worldObject.species,
+                breed = worldObject.breed,
+                activeSelf = worldObject.gameObject.activeSelf,
+                position = Vector3Dto.FromVector3(worldObject.transform.position),
+                rotation = QuaternionDto.FromQuaternion(worldObject.transform.rotation),
+                localScale = Vector3Dto.FromVector3(worldObject.transform.localScale),
+                adjustMapToWorld = Vector3Dto.FromVector3(worldObject.adjustMapToWorld),
+                sizeRadius = worldObject.sizeRadius,
+                weight = worldObject.weight,
+                immovable = worldObject.immovable,
+                parentWorldObjectId = FindParentWorldObjectId(worldObject),
+                prefabId = savePrefabId != null ? savePrefabId.PrefabId : "",
+                prefabResourcesPath = savePrefabId != null ? savePrefabId.ResourcesPath : "",
+                prefabAssetPath = savePrefabId != null ? savePrefabId.AssetPath : "",
+                moduleFlagsRaw = ((ulong)moduleFlags).ToString(),
+                moduleFlagsNames = moduleFlags.ToString(),
+                agent = AgentDto.FromWorldObject(worldObject),
+                container = ContainerDto.FromWorldObject(worldObject),
+                placement = PlacementDto.FromWorldObject(worldObject)
+            };
+        }
+
+        private static int FindParentWorldObjectId(WorldObject worldObject)
+        {
+            if (worldObject == null || worldObject.transform.parent == null)
+                return -1;
+
+            WorldObject parent = worldObject.transform.parent.GetComponentInParent<WorldObject>();
+            if (parent == null || parent == worldObject || parent.ObjectId <= 0)
+                return -1;
+
+            return parent.ObjectId;
+        }
+
+        private static ModuleFlags ModuleFlagsFromWorldObject(WorldObject worldObject)
+        {
+            ModuleFlags flags = ModuleFlags.none;
+            if (worldObject.hearingModule != null) flags |= ModuleFlags.hearingModule;
+            if (worldObject.scentPerceptionModule != null) flags |= ModuleFlags.scentPerceptionModule;
+            if (worldObject.visionPerceptionModule != null) flags |= ModuleFlags.visionPerceptionModule;
+            if (worldObject.TasteModule != null) flags |= ModuleFlags.tasteModule;
+            if (worldObject.worldMemoryModule != null) flags |= ModuleFlags.worldMemoryModule;
+            if (worldObject.playerDecisionModule != null) flags |= ModuleFlags.playerDecisionModule;
+            if (worldObject.followerDecisionModule != null) flags |= ModuleFlags.followerDecisionModule;
+            if (worldObject.wandererDecisionModule != null) flags |= ModuleFlags.wanderDecisionModule;
+            if (worldObject.immobileDecisionModule != null) flags |= ModuleFlags.immobileDecisionModule;
+            if (worldObject.taskFollowerDecisionModule != null) flags |= ModuleFlags.taskFollowerDecisionModule;
+            if (worldObject.exploreDecisionModule != null) flags |= ModuleFlags.exploreDecisionModule;
+            if (worldObject.kineticModule != null) flags |= ModuleFlags.kineticModule;
+            if (worldObject.agentModule != null) flags |= ModuleFlags.agentModule;
+            if (worldObject.agentMovementModule != null) flags |= ModuleFlags.agentMovementModule;
+            if (worldObject.packMemberModule != null) flags |= ModuleFlags.packMemberModule;
+            if (worldObject.llmThinkModule != null) flags |= ModuleFlags.llmThinkModule;
+            if (worldObject.reactionModule != null) flags |= ModuleFlags.reactionModule;
+            if (worldObject.motivationModule != null) flags |= ModuleFlags.motivationModule;
+            if (worldObject.activatorModule != null) flags |= ModuleFlags.activatorModule;
+            if (worldObject.interactionModule != null) flags |= ModuleFlags.interactionModule;
+            if (worldObject.motionModule != null) flags |= ModuleFlags.motionModule;
+            if (worldObject.appearanceModule != null) flags |= ModuleFlags.appearanceModule;
+            if (worldObject.noiseMakerModule != null) flags |= ModuleFlags.noiseMakerModule;
+            if (worldObject.scentEmitterModule != null) flags |= ModuleFlags.scentEmitterModule;
+            if (worldObject.blackboardModule != null) flags |= ModuleFlags.blackboardModule;
+            if (worldObject.agentStateModule != null) flags |= ModuleFlags.agentStateModule;
+            if (worldObject.taskListModule != null) flags |= ModuleFlags.taskListModule;
+            if (worldObject.containerModule != null) flags |= ModuleFlags.containerModule;
+            if (worldObject.llmConfigModule != null) flags |= ModuleFlags.llmConfigModule;
+            if (worldObject.llmWorldStateModule != null) flags |= ModuleFlags.llmWorldStateModule;
+            if (worldObject.fetchQuestModule != null) flags |= ModuleFlags.fetchQuestModule;
+            if (worldObject.locationModule != null) flags |= ModuleFlags.locationModule;
+            if (worldObject.placementModule != null) flags |= ModuleFlags.placementModule;
+            if (worldObject.doorModule != null) flags |= ModuleFlags.doorModule;
+            return flags;
+        }
+    }
+
+    [Serializable]
+    private sealed class AgentDto
+    {
+        public int currentDecisionType;
+        public int initialDecisionType;
+        public int walkMode;
+        public bool isPackLeader;
+        public string currentPackName;
+
+        public static AgentDto FromWorldObject(WorldObject worldObject)
+        {
+            if (worldObject == null || worldObject.agentModule == null)
+                return null;
+
+            AgentDecisionType currentDecision = worldObject.agentModule.currentDecisionModule != null
+                ? worldObject.agentModule.currentDecisionModule.DecisionType
+                : AgentDecisionType.Undefined;
+
+            return new AgentDto
+            {
+                currentDecisionType = (int)currentDecision,
+                initialDecisionType = (int)worldObject.agentModule.initialDecisionType,
+                walkMode = worldObject.motionModule != null ? (int)worldObject.motionModule.currentWalkMode : (int)WalkMode.None,
+                isPackLeader = worldObject.packMemberModule != null && worldObject.packMemberModule.isLeader,
+                currentPackName = worldObject.packMemberModule != null && worldObject.packMemberModule.currentPack != null
+                    ? worldObject.packMemberModule.currentPack.packName
+                    : ""
+            };
+        }
+    }
+
+    [Serializable]
+    private sealed class ContainerDto
+    {
+        public int itemCapacity;
+        public float maxWeight;
+        public bool heldItemsVisible;
+        public float heldHeight;
+        public bool isLocked;
+        public bool isClosed;
+        public bool autoPickupNearbyItems;
+        public float pickupRadiusTiles;
+        public bool autoConfigureAgentCapacity;
+        public int dogItemCapacity;
+        public int humanItemCapacity;
+        public List<int> heldObjectIds = new();
+
+        public static ContainerDto FromWorldObject(WorldObject worldObject)
+        {
+            ContainerModule container = worldObject != null ? worldObject.containerModule : null;
+            if (container == null)
+                return null;
+
+            ContainerDto dto = new()
+            {
+                itemCapacity = container.itemCapacity,
+                maxWeight = container.maxWeight,
+                heldItemsVisible = container.heldItemsVisible,
+                heldHeight = container.heldHeight,
+                isLocked = container.isLocked,
+                isClosed = container.isClosed,
+                autoPickupNearbyItems = container.autoPickupNearbyItems,
+                pickupRadiusTiles = container.pickupRadiusTiles,
+                autoConfigureAgentCapacity = container.autoConfigureAgentCapacity,
+                dogItemCapacity = container.dogItemCapacity,
+                humanItemCapacity = container.humanItemCapacity,
+                heldObjectIds = new List<int>()
+            };
+
+            foreach (WorldObject heldItem in container.HeldItems)
+            {
+                if (heldItem != null && heldItem.ObjectId > 0)
+                    dto.heldObjectIds.Add(heldItem.ObjectId);
+            }
+
+            return dto;
+        }
+    }
+
+    [Serializable]
+    private sealed class PlacementDto
+    {
+        public int allowedRooms;
+        public bool autoSizeFromMesh;
+        public Vector3Dto sizeInCells;
+        public float cellSize;
+        public int edgeHint;
+        public int rotationRule;
+        public int minClearCellsAround;
+        public bool mustTouchWall;
+        public float wallPadding;
+
+        public static PlacementDto FromWorldObject(WorldObject worldObject)
+        {
+            PlacementModule placement = worldObject != null ? worldObject.placementModule : null;
+            if (placement == null)
+                return null;
+
+            return new PlacementDto
+            {
+                allowedRooms = (int)placement.allowedRooms,
+                autoSizeFromMesh = placement.autoSizeFromMesh,
+                sizeInCells = Vector3Dto.FromVector3(placement.sizeInCells),
+                cellSize = placement.cellSize,
+                edgeHint = (int)placement.edgeHint,
+                rotationRule = (int)placement.rotationRule,
+                minClearCellsAround = placement.minClearCellsAround,
+                mustTouchWall = placement.mustTouchWall,
+                wallPadding = placement.wallPadding
+            };
         }
     }
 
@@ -472,6 +1116,24 @@ public partial class DungeonGenerator
         public Color ToColor()
         {
             return new Color(r, g, b, a);
+        }
+    }
+
+    [Serializable]
+    private struct Vector3Dto
+    {
+        public float x;
+        public float y;
+        public float z;
+
+        public static Vector3Dto FromVector3(Vector3 value)
+        {
+            return new Vector3Dto { x = value.x, y = value.y, z = value.z };
+        }
+
+        public Vector3 ToVector3()
+        {
+            return new Vector3(x, y, z);
         }
     }
 

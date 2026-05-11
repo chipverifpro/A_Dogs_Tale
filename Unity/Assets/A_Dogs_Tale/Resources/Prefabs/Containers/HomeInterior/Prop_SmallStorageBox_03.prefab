@@ -15,6 +15,7 @@ GameObject:
   - component: {fileID: 352643874240156757}
   - component: {fileID: -32169897568245705}
   - component: {fileID: 6466261902140746744}
+  - component: {fileID: 7521745757005143988}
   m_Layer: 0
   m_Name: Prop_SmallStorageBox_03
   m_TagString: Untagged
@@ -130,6 +131,8 @@ MonoBehaviour:
   objectId: -1
   displayName: Prop_SmallStorageBox_03
   kind: 13
+  species: 0
+  breed: 
   autoRegister: 1
   adjustMapToWorld: {x: -0.5, y: 0, z: -0.5}
   sizeRadius: 0.3
@@ -183,3 +186,18 @@ MonoBehaviour:
   autoConfigureAgentCapacity: 0
   dogItemCapacity: 1
   humanItemCapacity: 2
+--- !u!114 &7521745757005143988
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2243383646782702323}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5b51eeefad7b498d956628ba6705f1ea, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SavePrefabId
+  prefabId: resources:Prefabs/Containers/HomeInterior/Prop_SmallStorageBox_03
+  resourcesPath: Prefabs/Containers/HomeInterior/Prop_SmallStorageBox_03
+  assetPath: Assets/A_Dogs_Tale/Resources/Prefabs/Containers/HomeInterior/Prop_SmallStorageBox_03.prefab

@@ -83,6 +83,10 @@ PrefabInstance:
         type: 3}
       insertIndex: -1
       addedObject: {fileID: 8458922336444996617}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: d8d2510b57d893d43ada4f471b98556c,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 3178073496069640164}
     - targetCorrespondingSourceObject: {fileID: -2965478996003428335, guid: d8d2510b57d893d43ada4f471b98556c,
         type: 3}
       insertIndex: -1
@@ -236,6 +240,8 @@ MonoBehaviour:
   objectId: -1
   displayName: Desk 2
   kind: 3
+  species: 0
+  breed: 
   autoRegister: 1
   adjustMapToWorld: {x: -0.5, y: 0, z: -0.5}
   sizeRadius: 0.3
@@ -265,3 +271,19 @@ MonoBehaviour:
   minClearCellsAround: 0
   mustTouchWall: 0
   wallPadding: 0.05
+--- !u!114 &3178073496069640164
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6511591926502326039}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5b51eeefad7b498d956628ba6705f1ea, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SavePrefabId
+  prefabId: resources:Prefabs/Scenery/HomeInterior/PF_Office/Desk 2
+  resourcesPath: Prefabs/Scenery/HomeInterior/PF_Office/Desk 2
+  assetPath: Assets/A_Dogs_Tale/Resources/Prefabs/Scenery/HomeInterior/PF_Office/Desk
+    2.prefab

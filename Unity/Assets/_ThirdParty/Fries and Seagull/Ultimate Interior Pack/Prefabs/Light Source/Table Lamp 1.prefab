@@ -40,15 +40,14 @@ Light:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5588498986546916824}
   m_Enabled: 1
-  serializedVersion: 10
+  serializedVersion: 12
   m_Type: 2
-  m_Shape: 0
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_Intensity: 1
   m_Range: 10
   m_SpotAngle: 30
   m_InnerSpotAngle: 21.80208
-  m_CookieSize: 10
+  m_CookieSize2D: {x: 10, y: 10}
   m_Shadows:
     m_Type: 0
     m_Resolution: -1
@@ -92,8 +91,12 @@ Light:
   m_BoundingSphereOverride: {x: 0, y: 0, z: 0, w: 0}
   m_UseBoundingSphereOverride: 0
   m_UseViewFrustumForShadowCasterCull: 1
+  m_ForceVisible: 0
   m_ShadowRadius: 0
   m_ShadowAngle: 0
+  m_LightUnit: 1
+  m_LuxAtDistance: 1
+  m_EnableSpotReflector: 1
 --- !u!1001 &4043744797830954433
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -102,78 +105,100 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: -8679921383154817045, guid: f8aea06e10eac644e9c766cb29881355, type: 3}
+    - target: {fileID: -8679921383154817045, guid: f8aea06e10eac644e9c766cb29881355,
+        type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: f8aea06e10eac644e9c766cb29881355, type: 3}
+    - target: {fileID: -8679921383154817045, guid: f8aea06e10eac644e9c766cb29881355,
+        type: 3}
       propertyPath: m_LocalPosition.y
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: f8aea06e10eac644e9c766cb29881355, type: 3}
+    - target: {fileID: -8679921383154817045, guid: f8aea06e10eac644e9c766cb29881355,
+        type: 3}
       propertyPath: m_LocalPosition.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: f8aea06e10eac644e9c766cb29881355, type: 3}
+    - target: {fileID: -8679921383154817045, guid: f8aea06e10eac644e9c766cb29881355,
+        type: 3}
       propertyPath: m_LocalRotation.w
       value: 1
       objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: f8aea06e10eac644e9c766cb29881355, type: 3}
+    - target: {fileID: -8679921383154817045, guid: f8aea06e10eac644e9c766cb29881355,
+        type: 3}
       propertyPath: m_LocalRotation.x
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: f8aea06e10eac644e9c766cb29881355, type: 3}
+    - target: {fileID: -8679921383154817045, guid: f8aea06e10eac644e9c766cb29881355,
+        type: 3}
       propertyPath: m_LocalRotation.y
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: f8aea06e10eac644e9c766cb29881355, type: 3}
+    - target: {fileID: -8679921383154817045, guid: f8aea06e10eac644e9c766cb29881355,
+        type: 3}
       propertyPath: m_LocalRotation.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: f8aea06e10eac644e9c766cb29881355, type: 3}
+    - target: {fileID: -8679921383154817045, guid: f8aea06e10eac644e9c766cb29881355,
+        type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: f8aea06e10eac644e9c766cb29881355, type: 3}
+    - target: {fileID: -8679921383154817045, guid: f8aea06e10eac644e9c766cb29881355,
+        type: 3}
       propertyPath: m_LocalEulerAnglesHint.y
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: f8aea06e10eac644e9c766cb29881355, type: 3}
+    - target: {fileID: -8679921383154817045, guid: f8aea06e10eac644e9c766cb29881355,
+        type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 919132149155446097, guid: f8aea06e10eac644e9c766cb29881355, type: 3}
+    - target: {fileID: 919132149155446097, guid: f8aea06e10eac644e9c766cb29881355,
+        type: 3}
       propertyPath: m_Name
       value: Table Lamp 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects:
-    - targetCorrespondingSourceObject: {fileID: 4195465301901452350, guid: f8aea06e10eac644e9c766cb29881355, type: 3}
+    - targetCorrespondingSourceObject: {fileID: 4195465301901452350, guid: f8aea06e10eac644e9c766cb29881355,
+        type: 3}
       insertIndex: -1
       addedObject: {fileID: 1147996351643533795}
     m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: f8aea06e10eac644e9c766cb29881355, type: 3}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: f8aea06e10eac644e9c766cb29881355,
+        type: 3}
       insertIndex: -1
       addedObject: {fileID: 5680534392123991307}
-    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: f8aea06e10eac644e9c766cb29881355, type: 3}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: f8aea06e10eac644e9c766cb29881355,
+        type: 3}
       insertIndex: -1
       addedObject: {fileID: 3497523555500375342}
-    - targetCorrespondingSourceObject: {fileID: -3559909895095799887, guid: f8aea06e10eac644e9c766cb29881355, type: 3}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: f8aea06e10eac644e9c766cb29881355,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 7842900280705805724}
+    - targetCorrespondingSourceObject: {fileID: -3559909895095799887, guid: f8aea06e10eac644e9c766cb29881355,
+        type: 3}
       insertIndex: -1
       addedObject: {fileID: 6806295255604984698}
-    - targetCorrespondingSourceObject: {fileID: -3559909895095799887, guid: f8aea06e10eac644e9c766cb29881355, type: 3}
+    - targetCorrespondingSourceObject: {fileID: -3559909895095799887, guid: f8aea06e10eac644e9c766cb29881355,
+        type: 3}
       insertIndex: -1
       addedObject: {fileID: 3069121284866160377}
   m_SourcePrefab: {fileID: 100100000, guid: f8aea06e10eac644e9c766cb29881355, type: 3}
 --- !u!4 &155107068739328511 stripped
 Transform:
-  m_CorrespondingSourceObject: {fileID: 4195465301901452350, guid: f8aea06e10eac644e9c766cb29881355, type: 3}
+  m_CorrespondingSourceObject: {fileID: 4195465301901452350, guid: f8aea06e10eac644e9c766cb29881355,
+    type: 3}
   m_PrefabInstance: {fileID: 4043744797830954433}
   m_PrefabAsset: {fileID: 0}
 --- !u!1 &3809814017560608912 stripped
 GameObject:
-  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: f8aea06e10eac644e9c766cb29881355, type: 3}
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: f8aea06e10eac644e9c766cb29881355,
+    type: 3}
   m_PrefabInstance: {fileID: 4043744797830954433}
   m_PrefabAsset: {fileID: 0}
 --- !u!64 &5680534392123991307
@@ -220,9 +245,27 @@ MonoBehaviour:
   onTurnOff:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &7842900280705805724
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3809814017560608912}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5b51eeefad7b498d956628ba6705f1ea, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SavePrefabId
+  prefabId: asset:Assets/_ThirdParty/Fries and Seagull/Ultimate Interior Pack/Prefabs/Light
+    Source/Table Lamp 1.prefab
+  resourcesPath: 
+  assetPath: Assets/_ThirdParty/Fries and Seagull/Ultimate Interior Pack/Prefabs/Light
+    Source/Table Lamp 1.prefab
 --- !u!1 &8540774017490391664 stripped
 GameObject:
-  m_CorrespondingSourceObject: {fileID: -3559909895095799887, guid: f8aea06e10eac644e9c766cb29881355, type: 3}
+  m_CorrespondingSourceObject: {fileID: -3559909895095799887, guid: f8aea06e10eac644e9c766cb29881355,
+    type: 3}
   m_PrefabInstance: {fileID: 4043744797830954433}
   m_PrefabAsset: {fileID: 0}
 --- !u!64 &6806295255604984698
@@ -262,5 +305,6 @@ MonoBehaviour:
   lightSources:
   - {fileID: 5199659380161638104}
   activeLightSourceSurfaceColor: {r: 1, g: 0.91386294, b: 0.5251572, a: 1}
-  inactiveLightSourceSurfaceColor: {r: 0.122641504, g: 0.122641504, b: 0.122641504, a: 0}
+  inactiveLightSourceSurfaceColor: {r: 0.122641504, g: 0.122641504, b: 0.122641504,
+    a: 0}
   lightEmissionColor: {r: 4, g: 3.2593873, b: 0.95359063, a: 0}

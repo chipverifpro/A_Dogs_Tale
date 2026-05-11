@@ -15,6 +15,7 @@ GameObject:
   - component: {fileID: -3837680902308035672}
   - component: {fileID: 4172696888047049702}
   - component: {fileID: 7394560330109871198}
+  - component: {fileID: 2952473554466546458}
   m_Layer: 0
   m_Name: Food_Cheese
   m_TagString: Untagged
@@ -131,6 +132,8 @@ MonoBehaviour:
   objectId: -1
   displayName: Food_Cheese
   kind: 8
+  species: 0
+  breed: 
   autoRegister: 1
   adjustMapToWorld: {x: -0.5, y: 0, z: -0.5}
   sizeRadius: 0.3
@@ -178,3 +181,18 @@ MonoBehaviour:
   parameterInt: 100
   parameterString: 
   toolTip: 
+--- !u!114 &2952473554466546458
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1485319667670839895}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5b51eeefad7b498d956628ba6705f1ea, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SavePrefabId
+  prefabId: resources:Prefabs/Items/HomeInterior/Food_Cheese
+  resourcesPath: Prefabs/Items/HomeInterior/Food_Cheese
+  assetPath: Assets/A_Dogs_Tale/Resources/Prefabs/Items/HomeInterior/Food_Cheese.prefab

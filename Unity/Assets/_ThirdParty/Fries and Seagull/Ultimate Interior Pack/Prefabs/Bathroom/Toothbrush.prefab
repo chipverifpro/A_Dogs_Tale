@@ -8,47 +8,58 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: -8679921383154817045, guid: 00a3d4b89e7cc154dac13316ccd0f3a3, type: 3}
+    - target: {fileID: -8679921383154817045, guid: 00a3d4b89e7cc154dac13316ccd0f3a3,
+        type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 00a3d4b89e7cc154dac13316ccd0f3a3, type: 3}
+    - target: {fileID: -8679921383154817045, guid: 00a3d4b89e7cc154dac13316ccd0f3a3,
+        type: 3}
       propertyPath: m_LocalPosition.y
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 00a3d4b89e7cc154dac13316ccd0f3a3, type: 3}
+    - target: {fileID: -8679921383154817045, guid: 00a3d4b89e7cc154dac13316ccd0f3a3,
+        type: 3}
       propertyPath: m_LocalPosition.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 00a3d4b89e7cc154dac13316ccd0f3a3, type: 3}
+    - target: {fileID: -8679921383154817045, guid: 00a3d4b89e7cc154dac13316ccd0f3a3,
+        type: 3}
       propertyPath: m_LocalRotation.w
       value: 1
       objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 00a3d4b89e7cc154dac13316ccd0f3a3, type: 3}
+    - target: {fileID: -8679921383154817045, guid: 00a3d4b89e7cc154dac13316ccd0f3a3,
+        type: 3}
       propertyPath: m_LocalRotation.x
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 00a3d4b89e7cc154dac13316ccd0f3a3, type: 3}
+    - target: {fileID: -8679921383154817045, guid: 00a3d4b89e7cc154dac13316ccd0f3a3,
+        type: 3}
       propertyPath: m_LocalRotation.y
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 00a3d4b89e7cc154dac13316ccd0f3a3, type: 3}
+    - target: {fileID: -8679921383154817045, guid: 00a3d4b89e7cc154dac13316ccd0f3a3,
+        type: 3}
       propertyPath: m_LocalRotation.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 00a3d4b89e7cc154dac13316ccd0f3a3, type: 3}
+    - target: {fileID: -8679921383154817045, guid: 00a3d4b89e7cc154dac13316ccd0f3a3,
+        type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 00a3d4b89e7cc154dac13316ccd0f3a3, type: 3}
+    - target: {fileID: -8679921383154817045, guid: 00a3d4b89e7cc154dac13316ccd0f3a3,
+        type: 3}
       propertyPath: m_LocalEulerAnglesHint.y
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 00a3d4b89e7cc154dac13316ccd0f3a3, type: 3}
+    - target: {fileID: -8679921383154817045, guid: 00a3d4b89e7cc154dac13316ccd0f3a3,
+        type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 919132149155446097, guid: 00a3d4b89e7cc154dac13316ccd0f3a3, type: 3}
+    - target: {fileID: 919132149155446097, guid: 00a3d4b89e7cc154dac13316ccd0f3a3,
+        type: 3}
       propertyPath: m_Name
       value: Toothbrush
       objectReference: {fileID: 0}
@@ -56,16 +67,23 @@ PrefabInstance:
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 00a3d4b89e7cc154dac13316ccd0f3a3, type: 3}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 00a3d4b89e7cc154dac13316ccd0f3a3,
+        type: 3}
       insertIndex: -1
       addedObject: {fileID: 4869900516047792734}
-    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 00a3d4b89e7cc154dac13316ccd0f3a3, type: 3}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 00a3d4b89e7cc154dac13316ccd0f3a3,
+        type: 3}
       insertIndex: -1
       addedObject: {fileID: 4363271792360633924}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 00a3d4b89e7cc154dac13316ccd0f3a3,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2612736870399502096}
   m_SourcePrefab: {fileID: 100100000, guid: 00a3d4b89e7cc154dac13316ccd0f3a3, type: 3}
 --- !u!1 &4574479104646549489 stripped
 GameObject:
-  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 00a3d4b89e7cc154dac13316ccd0f3a3, type: 3}
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 00a3d4b89e7cc154dac13316ccd0f3a3,
+    type: 3}
   m_PrefabInstance: {fileID: 3727495410771210912}
   m_PrefabAsset: {fileID: 0}
 --- !u!64 &4869900516047792734
@@ -103,3 +121,18 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   hided: 1
+--- !u!114 &2612736870399502096
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4574479104646549489}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5b51eeefad7b498d956628ba6705f1ea, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SavePrefabId
+  prefabId: asset:Assets/_ThirdParty/Fries and Seagull/Ultimate Interior Pack/Prefabs/Bathroom/Toothbrush.prefab
+  resourcesPath: 
+  assetPath: Assets/_ThirdParty/Fries and Seagull/Ultimate Interior Pack/Prefabs/Bathroom/Toothbrush.prefab

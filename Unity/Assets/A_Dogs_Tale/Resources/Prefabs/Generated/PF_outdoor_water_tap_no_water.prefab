@@ -757,6 +757,7 @@ GameObject:
   - component: {fileID: 2372048898951651411}
   - component: {fileID: -4557353244758187957}
   - component: {fileID: 2491912199350097837}
+  - component: {fileID: 5594671980995945245}
   m_Layer: 0
   m_Name: PF_outdoor_water_tap_no_water
   m_TagString: Untagged
@@ -830,6 +831,21 @@ MonoBehaviour:
   minClearCellsAround: 0
   mustTouchWall: 0
   wallPadding: 0.05
+--- !u!114 &5594671980995945245
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2133097953988961962}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5b51eeefad7b498d956628ba6705f1ea, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SavePrefabId
+  prefabId: resources:Prefabs/Generated/PF_outdoor_water_tap_no_water
+  resourcesPath: Prefabs/Generated/PF_outdoor_water_tap_no_water
+  assetPath: Assets/A_Dogs_Tale/Resources/Prefabs/Generated/PF_outdoor_water_tap_no_water.prefab
 --- !u!1 &2450480640842934085
 GameObject:
   m_ObjectHideFlags: 0

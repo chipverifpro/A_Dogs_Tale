@@ -127,6 +127,10 @@ PrefabInstance:
         type: 3}
       insertIndex: -1
       addedObject: {fileID: -631259296523946808}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 4993976cc350343438775ab18852c91d,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 8919686162245198004}
   m_SourcePrefab: {fileID: 100100000, guid: 4993976cc350343438775ab18852c91d, type: 3}
 --- !u!1 &745091817260155985 stripped
 GameObject:
@@ -183,6 +187,8 @@ MonoBehaviour:
   objectId: -1
   displayName: Kitchen Cabinet 2
   kind: 13
+  species: 0
+  breed: 
   autoRegister: 1
   adjustMapToWorld: {x: -0.5, y: 0, z: -0.5}
   sizeRadius: 0.3
@@ -236,3 +242,19 @@ MonoBehaviour:
   autoConfigureAgentCapacity: 0
   dogItemCapacity: 1
   humanItemCapacity: 2
+--- !u!114 &8919686162245198004
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 745091817260155985}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5b51eeefad7b498d956628ba6705f1ea, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SavePrefabId
+  prefabId: resources:Prefabs/Containers/HomeInterior/Kitchen Cabinet 2
+  resourcesPath: Prefabs/Containers/HomeInterior/Kitchen Cabinet 2
+  assetPath: Assets/A_Dogs_Tale/Resources/Prefabs/Containers/HomeInterior/Kitchen
+    Cabinet 2.prefab

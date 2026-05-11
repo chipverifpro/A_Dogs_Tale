@@ -14,6 +14,7 @@ GameObject:
   - component: {fileID: 5517167220018188190}
   - component: {fileID: 5338853860082511718}
   - component: {fileID: 5393838467836017269}
+  - component: {fileID: 5476749733576523371}
   m_Layer: 0
   m_Name: Prop_KidsChair
   m_TagString: Untagged
@@ -150,6 +151,8 @@ MonoBehaviour:
   objectId: -1
   displayName: Prop_KidsChair
   kind: 3
+  species: 0
+  breed: 
   autoRegister: 1
   adjustMapToWorld: {x: -0.5, y: 0, z: -0.5}
   sizeRadius: 0.3
@@ -158,3 +161,18 @@ MonoBehaviour:
   onActivate:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &5476749733576523371
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4634630125094187725}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5b51eeefad7b498d956628ba6705f1ea, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SavePrefabId
+  prefabId: resources:Prefabs/Scenery/HomeInterior/PF_BedroomKids/Prop_KidsChair
+  resourcesPath: Prefabs/Scenery/HomeInterior/PF_BedroomKids/Prop_KidsChair
+  assetPath: Assets/A_Dogs_Tale/Resources/Prefabs/Scenery/HomeInterior/PF_BedroomKids/Prop_KidsChair.prefab

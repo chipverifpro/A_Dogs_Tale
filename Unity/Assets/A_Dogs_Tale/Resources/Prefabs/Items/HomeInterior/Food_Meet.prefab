@@ -15,6 +15,7 @@ GameObject:
   - component: {fileID: 499072793254573977}
   - component: {fileID: 4023005648393937065}
   - component: {fileID: -2065577564341421566}
+  - component: {fileID: 5637031561152126106}
   m_Layer: 0
   m_Name: Food_Meet
   m_TagString: Untagged
@@ -131,6 +132,8 @@ MonoBehaviour:
   objectId: -1
   displayName: Food_Meet
   kind: 8
+  species: 0
+  breed: 
   autoRegister: 1
   adjustMapToWorld: {x: -0.5, y: 0, z: -0.5}
   sizeRadius: 0.3
@@ -178,3 +181,18 @@ MonoBehaviour:
   parameterInt: 100
   parameterString: 
   toolTip: 
+--- !u!114 &5637031561152126106
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 227577062100369360}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5b51eeefad7b498d956628ba6705f1ea, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SavePrefabId
+  prefabId: resources:Prefabs/Items/HomeInterior/Food_Meet
+  resourcesPath: Prefabs/Items/HomeInterior/Food_Meet
+  assetPath: Assets/A_Dogs_Tale/Resources/Prefabs/Items/HomeInterior/Food_Meet.prefab

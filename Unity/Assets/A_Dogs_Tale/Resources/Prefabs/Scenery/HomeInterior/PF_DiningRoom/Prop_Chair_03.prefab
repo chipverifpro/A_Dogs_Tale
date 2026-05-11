@@ -14,6 +14,7 @@ GameObject:
   - component: {fileID: 394886900676250135}
   - component: {fileID: 5824952516835933701}
   - component: {fileID: -9112500222778679625}
+  - component: {fileID: 8428801966762616488}
   m_Layer: 0
   m_Name: Prop_Chair_03
   m_TagString: Untagged
@@ -130,6 +131,8 @@ MonoBehaviour:
   objectId: -1
   displayName: Prop_Chair_03
   kind: 3
+  species: 0
+  breed: 
   autoRegister: 1
   adjustMapToWorld: {x: -0.5, y: 0, z: -0.5}
   sizeRadius: 0.3
@@ -159,3 +162,18 @@ MonoBehaviour:
   minClearCellsAround: 0
   mustTouchWall: 0
   wallPadding: 0.05
+--- !u!114 &8428801966762616488
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 701297492818294596}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5b51eeefad7b498d956628ba6705f1ea, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SavePrefabId
+  prefabId: resources:Prefabs/Scenery/HomeInterior/PF_DiningRoom/Prop_Chair_03
+  resourcesPath: Prefabs/Scenery/HomeInterior/PF_DiningRoom/Prop_Chair_03
+  assetPath: Assets/A_Dogs_Tale/Resources/Prefabs/Scenery/HomeInterior/PF_DiningRoom/Prop_Chair_03.prefab

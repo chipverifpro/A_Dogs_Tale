@@ -8,47 +8,58 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: -8679921383154817045, guid: acd206fa1ba26e94d989b7c14699d493, type: 3}
+    - target: {fileID: -8679921383154817045, guid: acd206fa1ba26e94d989b7c14699d493,
+        type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: acd206fa1ba26e94d989b7c14699d493, type: 3}
+    - target: {fileID: -8679921383154817045, guid: acd206fa1ba26e94d989b7c14699d493,
+        type: 3}
       propertyPath: m_LocalPosition.y
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: acd206fa1ba26e94d989b7c14699d493, type: 3}
+    - target: {fileID: -8679921383154817045, guid: acd206fa1ba26e94d989b7c14699d493,
+        type: 3}
       propertyPath: m_LocalPosition.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: acd206fa1ba26e94d989b7c14699d493, type: 3}
+    - target: {fileID: -8679921383154817045, guid: acd206fa1ba26e94d989b7c14699d493,
+        type: 3}
       propertyPath: m_LocalRotation.w
       value: 1
       objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: acd206fa1ba26e94d989b7c14699d493, type: 3}
+    - target: {fileID: -8679921383154817045, guid: acd206fa1ba26e94d989b7c14699d493,
+        type: 3}
       propertyPath: m_LocalRotation.x
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: acd206fa1ba26e94d989b7c14699d493, type: 3}
+    - target: {fileID: -8679921383154817045, guid: acd206fa1ba26e94d989b7c14699d493,
+        type: 3}
       propertyPath: m_LocalRotation.y
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: acd206fa1ba26e94d989b7c14699d493, type: 3}
+    - target: {fileID: -8679921383154817045, guid: acd206fa1ba26e94d989b7c14699d493,
+        type: 3}
       propertyPath: m_LocalRotation.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: acd206fa1ba26e94d989b7c14699d493, type: 3}
+    - target: {fileID: -8679921383154817045, guid: acd206fa1ba26e94d989b7c14699d493,
+        type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: acd206fa1ba26e94d989b7c14699d493, type: 3}
+    - target: {fileID: -8679921383154817045, guid: acd206fa1ba26e94d989b7c14699d493,
+        type: 3}
       propertyPath: m_LocalEulerAnglesHint.y
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: acd206fa1ba26e94d989b7c14699d493, type: 3}
+    - target: {fileID: -8679921383154817045, guid: acd206fa1ba26e94d989b7c14699d493,
+        type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 919132149155446097, guid: acd206fa1ba26e94d989b7c14699d493, type: 3}
+    - target: {fileID: 919132149155446097, guid: acd206fa1ba26e94d989b7c14699d493,
+        type: 3}
       propertyPath: m_Name
       value: Notebook 3
       objectReference: {fileID: 0}
@@ -56,16 +67,23 @@ PrefabInstance:
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: acd206fa1ba26e94d989b7c14699d493, type: 3}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: acd206fa1ba26e94d989b7c14699d493,
+        type: 3}
       insertIndex: -1
       addedObject: {fileID: 802928070180382680}
-    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: acd206fa1ba26e94d989b7c14699d493, type: 3}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: acd206fa1ba26e94d989b7c14699d493,
+        type: 3}
       insertIndex: -1
       addedObject: {fileID: 3170120982408064101}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: acd206fa1ba26e94d989b7c14699d493,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 5451965333928235738}
   m_SourcePrefab: {fileID: 100100000, guid: acd206fa1ba26e94d989b7c14699d493, type: 3}
 --- !u!1 &491708981018016029 stripped
 GameObject:
-  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: acd206fa1ba26e94d989b7c14699d493, type: 3}
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: acd206fa1ba26e94d989b7c14699d493,
+    type: 3}
   m_PrefabInstance: {fileID: 726081639335035980}
   m_PrefabAsset: {fileID: 0}
 --- !u!65 &802928070180382680
@@ -102,3 +120,20 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   hided: 1
+--- !u!114 &5451965333928235738
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 491708981018016029}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5b51eeefad7b498d956628ba6705f1ea, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SavePrefabId
+  prefabId: asset:Assets/_ThirdParty/Fries and Seagull/Ultimate Interior Pack/Prefabs/Office
+    Items/Notebook 3.prefab
+  resourcesPath: 
+  assetPath: Assets/_ThirdParty/Fries and Seagull/Ultimate Interior Pack/Prefabs/Office
+    Items/Notebook 3.prefab

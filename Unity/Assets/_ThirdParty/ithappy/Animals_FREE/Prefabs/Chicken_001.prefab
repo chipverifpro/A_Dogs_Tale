@@ -1165,6 +1165,7 @@ GameObject:
   - component: {fileID: 8881504610387854120}
   - component: {fileID: 8881504610387854121}
   - component: {fileID: 8881504610387854134}
+  - component: {fileID: 2139631382227086541}
   m_Layer: 0
   m_Name: Chicken_001
   m_TagString: Untagged
@@ -1280,6 +1281,21 @@ MonoBehaviour:
   m_MouseX: Mouse X
   m_MouseY: Mouse Y
   m_MouseScroll: Mouse ScrollWheel
+--- !u!114 &2139631382227086541
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8073443194988779917}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5b51eeefad7b498d956628ba6705f1ea, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SavePrefabId
+  prefabId: asset:Assets/_ThirdParty/ithappy/Animals_FREE/Prefabs/Chicken_001.prefab
+  resourcesPath: 
+  assetPath: Assets/_ThirdParty/ithappy/Animals_FREE/Prefabs/Chicken_001.prefab
 --- !u!1 &8122850409471221505
 GameObject:
   m_ObjectHideFlags: 0

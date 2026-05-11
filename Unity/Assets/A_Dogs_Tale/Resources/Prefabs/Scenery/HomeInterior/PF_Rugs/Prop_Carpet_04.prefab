@@ -14,6 +14,7 @@ GameObject:
   - component: {fileID: 7778461617091701906}
   - component: {fileID: -5523612997257079696}
   - component: {fileID: -5357750281761826330}
+  - component: {fileID: 587449403241154968}
   m_Layer: 0
   m_Name: Prop_Carpet_04
   m_TagString: Untagged
@@ -129,6 +130,8 @@ MonoBehaviour:
   objectId: -1
   displayName: Prop_Carpet_04
   kind: 3
+  species: 0
+  breed: 
   autoRegister: 1
   adjustMapToWorld: {x: -0.5, y: 0, z: -0.5}
   sizeRadius: 0.3
@@ -158,3 +161,18 @@ MonoBehaviour:
   minClearCellsAround: 0
   mustTouchWall: 0
   wallPadding: 0.05
+--- !u!114 &587449403241154968
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7436512195788132801}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5b51eeefad7b498d956628ba6705f1ea, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SavePrefabId
+  prefabId: resources:Prefabs/Scenery/HomeInterior/PF_Rugs/Prop_Carpet_04
+  resourcesPath: Prefabs/Scenery/HomeInterior/PF_Rugs/Prop_Carpet_04
+  assetPath: Assets/A_Dogs_Tale/Resources/Prefabs/Scenery/HomeInterior/PF_Rugs/Prop_Carpet_04.prefab

@@ -15,6 +15,7 @@ GameObject:
   - component: {fileID: 8327133997629246475}
   - component: {fileID: 8151975876127807008}
   - component: {fileID: 4610169083625811425}
+  - component: {fileID: 2033670105863751224}
   m_Layer: 0
   m_Name: Food_HotDog Sandwich.001
   m_TagString: Untagged
@@ -131,6 +132,8 @@ MonoBehaviour:
   objectId: -1
   displayName: Food_HotDog Sandwich.001
   kind: 8
+  species: 0
+  breed: 
   autoRegister: 1
   adjustMapToWorld: {x: -0.5, y: 0, z: -0.5}
   sizeRadius: 0.3
@@ -178,3 +181,19 @@ MonoBehaviour:
   parameterInt: 100
   parameterString: 
   toolTip: 
+--- !u!114 &2033670105863751224
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 609276383056010699}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5b51eeefad7b498d956628ba6705f1ea, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SavePrefabId
+  prefabId: resources:Prefabs/Items/HomeInterior/Food_HotDog Sandwich.001
+  resourcesPath: Prefabs/Items/HomeInterior/Food_HotDog Sandwich.001
+  assetPath: Assets/A_Dogs_Tale/Resources/Prefabs/Items/HomeInterior/Food_HotDog
+    Sandwich.001.prefab

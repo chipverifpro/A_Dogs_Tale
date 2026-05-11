@@ -15,6 +15,7 @@ GameObject:
   - component: {fileID: 8545457692361088084}
   - component: {fileID: 2498744026269329824}
   - component: {fileID: 4233069651370018441}
+  - component: {fileID: 2451188292520157055}
   m_Layer: 0
   m_Name: Prop_Microwave_03
   m_TagString: Untagged
@@ -151,6 +152,8 @@ MonoBehaviour:
   objectId: -1
   displayName: Prop_Microwave_03
   kind: 13
+  species: 0
+  breed: 
   autoRegister: 1
   adjustMapToWorld: {x: -0.5, y: 0, z: -0.5}
   sizeRadius: 0.3
@@ -183,3 +186,18 @@ MonoBehaviour:
   autoConfigureAgentCapacity: 0
   dogItemCapacity: 1
   humanItemCapacity: 2
+--- !u!114 &2451188292520157055
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3466312002038279949}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5b51eeefad7b498d956628ba6705f1ea, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SavePrefabId
+  prefabId: resources:Prefabs/Containers/HomeInterior/Prop_Microwave_03
+  resourcesPath: Prefabs/Containers/HomeInterior/Prop_Microwave_03
+  assetPath: Assets/A_Dogs_Tale/Resources/Prefabs/Containers/HomeInterior/Prop_Microwave_03.prefab

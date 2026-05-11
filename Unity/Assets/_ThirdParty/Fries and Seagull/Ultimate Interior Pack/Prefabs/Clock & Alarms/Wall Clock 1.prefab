@@ -8,63 +8,78 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: -8679921383154817045, guid: f95b5c9cedf5ad740b4785419d0b2e2e, type: 3}
+    - target: {fileID: -8679921383154817045, guid: f95b5c9cedf5ad740b4785419d0b2e2e,
+        type: 3}
       propertyPath: m_LocalScale.x
       value: 1
       objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: f95b5c9cedf5ad740b4785419d0b2e2e, type: 3}
+    - target: {fileID: -8679921383154817045, guid: f95b5c9cedf5ad740b4785419d0b2e2e,
+        type: 3}
       propertyPath: m_LocalScale.y
       value: 1
       objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: f95b5c9cedf5ad740b4785419d0b2e2e, type: 3}
+    - target: {fileID: -8679921383154817045, guid: f95b5c9cedf5ad740b4785419d0b2e2e,
+        type: 3}
       propertyPath: m_LocalScale.z
       value: 1
       objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: f95b5c9cedf5ad740b4785419d0b2e2e, type: 3}
+    - target: {fileID: -8679921383154817045, guid: f95b5c9cedf5ad740b4785419d0b2e2e,
+        type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: f95b5c9cedf5ad740b4785419d0b2e2e, type: 3}
+    - target: {fileID: -8679921383154817045, guid: f95b5c9cedf5ad740b4785419d0b2e2e,
+        type: 3}
       propertyPath: m_LocalPosition.y
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: f95b5c9cedf5ad740b4785419d0b2e2e, type: 3}
+    - target: {fileID: -8679921383154817045, guid: f95b5c9cedf5ad740b4785419d0b2e2e,
+        type: 3}
       propertyPath: m_LocalPosition.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: f95b5c9cedf5ad740b4785419d0b2e2e, type: 3}
+    - target: {fileID: -8679921383154817045, guid: f95b5c9cedf5ad740b4785419d0b2e2e,
+        type: 3}
       propertyPath: m_LocalRotation.w
       value: 1
       objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: f95b5c9cedf5ad740b4785419d0b2e2e, type: 3}
+    - target: {fileID: -8679921383154817045, guid: f95b5c9cedf5ad740b4785419d0b2e2e,
+        type: 3}
       propertyPath: m_LocalRotation.x
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: f95b5c9cedf5ad740b4785419d0b2e2e, type: 3}
+    - target: {fileID: -8679921383154817045, guid: f95b5c9cedf5ad740b4785419d0b2e2e,
+        type: 3}
       propertyPath: m_LocalRotation.y
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: f95b5c9cedf5ad740b4785419d0b2e2e, type: 3}
+    - target: {fileID: -8679921383154817045, guid: f95b5c9cedf5ad740b4785419d0b2e2e,
+        type: 3}
       propertyPath: m_LocalRotation.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: f95b5c9cedf5ad740b4785419d0b2e2e, type: 3}
+    - target: {fileID: -8679921383154817045, guid: f95b5c9cedf5ad740b4785419d0b2e2e,
+        type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: f95b5c9cedf5ad740b4785419d0b2e2e, type: 3}
+    - target: {fileID: -8679921383154817045, guid: f95b5c9cedf5ad740b4785419d0b2e2e,
+        type: 3}
       propertyPath: m_LocalEulerAnglesHint.y
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: f95b5c9cedf5ad740b4785419d0b2e2e, type: 3}
+    - target: {fileID: -8679921383154817045, guid: f95b5c9cedf5ad740b4785419d0b2e2e,
+        type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: f95b5c9cedf5ad740b4785419d0b2e2e, type: 3}
+    - target: {fileID: -8679921383154817045, guid: f95b5c9cedf5ad740b4785419d0b2e2e,
+        type: 3}
       propertyPath: m_ConstrainProportionsScale
       value: 1
       objectReference: {fileID: 0}
-    - target: {fileID: 919132149155446097, guid: f95b5c9cedf5ad740b4785419d0b2e2e, type: 3}
+    - target: {fileID: 919132149155446097, guid: f95b5c9cedf5ad740b4785419d0b2e2e,
+        type: 3}
       propertyPath: m_Name
       value: Wall Clock 1
       objectReference: {fileID: 0}
@@ -72,22 +87,31 @@ PrefabInstance:
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: f95b5c9cedf5ad740b4785419d0b2e2e, type: 3}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: f95b5c9cedf5ad740b4785419d0b2e2e,
+        type: 3}
       insertIndex: -1
       addedObject: {fileID: 7646201476799002589}
-    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: f95b5c9cedf5ad740b4785419d0b2e2e, type: 3}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: f95b5c9cedf5ad740b4785419d0b2e2e,
+        type: 3}
       insertIndex: -1
       addedObject: {fileID: -4149303639497636182}
-    - targetCorrespondingSourceObject: {fileID: -3559909895095799887, guid: f95b5c9cedf5ad740b4785419d0b2e2e, type: 3}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: f95b5c9cedf5ad740b4785419d0b2e2e,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 6172238897736363079}
+    - targetCorrespondingSourceObject: {fileID: -3559909895095799887, guid: f95b5c9cedf5ad740b4785419d0b2e2e,
+        type: 3}
       insertIndex: -1
       addedObject: {fileID: 3785236112710864733}
-    - targetCorrespondingSourceObject: {fileID: -2064682264359837954, guid: f95b5c9cedf5ad740b4785419d0b2e2e, type: 3}
+    - targetCorrespondingSourceObject: {fileID: -2064682264359837954, guid: f95b5c9cedf5ad740b4785419d0b2e2e,
+        type: 3}
       insertIndex: -1
       addedObject: {fileID: 5788661600908283951}
   m_SourcePrefab: {fileID: 100100000, guid: f95b5c9cedf5ad740b4785419d0b2e2e, type: 3}
 --- !u!1 &1360306073556489957 stripped
 GameObject:
-  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: f95b5c9cedf5ad740b4785419d0b2e2e, type: 3}
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: f95b5c9cedf5ad740b4785419d0b2e2e,
+    type: 3}
   m_PrefabInstance: {fileID: 2171208889639971764}
   m_PrefabAsset: {fileID: 0}
 --- !u!114 &7646201476799002589
@@ -125,9 +149,27 @@ MeshCollider:
   m_Convex: 0
   m_CookingOptions: 30
   m_Mesh: {fileID: -5539357819512116934, guid: f95b5c9cedf5ad740b4785419d0b2e2e, type: 3}
+--- !u!114 &6172238897736363079
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1360306073556489957}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5b51eeefad7b498d956628ba6705f1ea, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SavePrefabId
+  prefabId: asset:Assets/_ThirdParty/Fries and Seagull/Ultimate Interior Pack/Prefabs/Clock
+    & Alarms/Wall Clock 1.prefab
+  resourcesPath: 
+  assetPath: Assets/_ThirdParty/Fries and Seagull/Ultimate Interior Pack/Prefabs/Clock
+    & Alarms/Wall Clock 1.prefab
 --- !u!1 &5816687216520561669 stripped
 GameObject:
-  m_CorrespondingSourceObject: {fileID: -3559909895095799887, guid: f95b5c9cedf5ad740b4785419d0b2e2e, type: 3}
+  m_CorrespondingSourceObject: {fileID: -3559909895095799887, guid: f95b5c9cedf5ad740b4785419d0b2e2e,
+    type: 3}
   m_PrefabInstance: {fileID: 2171208889639971764}
   m_PrefabAsset: {fileID: 0}
 --- !u!114 &3785236112710864733
@@ -145,7 +187,8 @@ MonoBehaviour:
   hided: 1
 --- !u!1 &9041372695595414858 stripped
 GameObject:
-  m_CorrespondingSourceObject: {fileID: -2064682264359837954, guid: f95b5c9cedf5ad740b4785419d0b2e2e, type: 3}
+  m_CorrespondingSourceObject: {fileID: -2064682264359837954, guid: f95b5c9cedf5ad740b4785419d0b2e2e,
+    type: 3}
   m_PrefabInstance: {fileID: 2171208889639971764}
   m_PrefabAsset: {fileID: 0}
 --- !u!114 &5788661600908283951

@@ -111,6 +111,10 @@ PrefabInstance:
         type: 3}
       insertIndex: -1
       addedObject: {fileID: 8296549614536041857}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 88bcf39fd271b874b8770d99a815892e,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 3626092760055249738}
     - targetCorrespondingSourceObject: {fileID: -3559909895095799887, guid: 88bcf39fd271b874b8770d99a815892e,
         type: 3}
       insertIndex: -1
@@ -195,6 +199,8 @@ MonoBehaviour:
   objectId: -1
   displayName: Safe Vault
   kind: 13
+  species: 0
+  breed: 
   autoRegister: 1
   adjustMapToWorld: {x: -0.5, y: 0, z: -0.5}
   sizeRadius: 0.3
@@ -248,6 +254,21 @@ MonoBehaviour:
   autoConfigureAgentCapacity: 1
   dogItemCapacity: 1
   humanItemCapacity: 2
+--- !u!114 &3626092760055249738
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3917423388144562903}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5b51eeefad7b498d956628ba6705f1ea, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SavePrefabId
+  prefabId: resources:Prefabs/Containers/HomeInterior/Safe Vault
+  resourcesPath: Prefabs/Containers/HomeInterior/Safe Vault
+  assetPath: Assets/A_Dogs_Tale/Resources/Prefabs/Containers/HomeInterior/Safe Vault.prefab
 --- !u!1 &8360012205710532663 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: -3559909895095799887, guid: 88bcf39fd271b874b8770d99a815892e,

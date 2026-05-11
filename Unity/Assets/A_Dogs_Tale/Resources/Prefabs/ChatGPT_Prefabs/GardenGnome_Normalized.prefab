@@ -9355,6 +9355,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 3409122989832232211}
+  - component: {fileID: 2658340198057855791}
   m_Layer: 0
   m_Name: GardenGnome_Normalized
   m_TagString: Untagged
@@ -9378,6 +9379,21 @@ Transform:
   - {fileID: 5607746416221363424}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2658340198057855791
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2595326693835081641}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5b51eeefad7b498d956628ba6705f1ea, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SavePrefabId
+  prefabId: resources:Prefabs/ChatGPT_Prefabs/GardenGnome_Normalized
+  resourcesPath: Prefabs/ChatGPT_Prefabs/GardenGnome_Normalized
+  assetPath: Assets/A_Dogs_Tale/Resources/Prefabs/ChatGPT_Prefabs/GardenGnome_Normalized.prefab
 --- !u!1 &2687512124616072188
 GameObject:
   m_ObjectHideFlags: 0

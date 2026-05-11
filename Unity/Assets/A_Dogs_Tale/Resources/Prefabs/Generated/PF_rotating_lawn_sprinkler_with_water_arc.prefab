@@ -7353,6 +7353,7 @@ GameObject:
   - component: {fileID: 2924474900896288706}
   - component: {fileID: -4398520908417455686}
   - component: {fileID: -8148702168732578958}
+  - component: {fileID: 5105853742776677638}
   m_Layer: 0
   m_Name: PF_rotating_lawn_sprinkler_with_water_arc
   m_TagString: Untagged
@@ -7426,6 +7427,21 @@ MonoBehaviour:
   minClearCellsAround: 0
   mustTouchWall: 0
   wallPadding: 0.05
+--- !u!114 &5105853742776677638
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4350661798021457351}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5b51eeefad7b498d956628ba6705f1ea, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SavePrefabId
+  prefabId: resources:Prefabs/Generated/PF_rotating_lawn_sprinkler_with_water_arc
+  resourcesPath: Prefabs/Generated/PF_rotating_lawn_sprinkler_with_water_arc
+  assetPath: Assets/A_Dogs_Tale/Resources/Prefabs/Generated/PF_rotating_lawn_sprinkler_with_water_arc.prefab
 --- !u!1 &4407690787360970182
 GameObject:
   m_ObjectHideFlags: 0

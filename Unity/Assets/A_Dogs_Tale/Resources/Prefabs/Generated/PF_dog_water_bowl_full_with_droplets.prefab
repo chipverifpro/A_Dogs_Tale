@@ -1009,6 +1009,7 @@ GameObject:
   - component: {fileID: -3663097004876076399}
   - component: {fileID: 6729203707659644984}
   - component: {fileID: 8165135093611932393}
+  - component: {fileID: 1829938366536535283}
   m_Layer: 0
   m_Name: PF_dog_water_bowl_full_with_droplets
   m_TagString: Untagged
@@ -1106,6 +1107,21 @@ MonoBehaviour:
   minClearCellsAround: 0
   mustTouchWall: 0
   wallPadding: 0.05
+--- !u!114 &1829938366536535283
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2295341326916511055}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5b51eeefad7b498d956628ba6705f1ea, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SavePrefabId
+  prefabId: resources:Prefabs/Generated/PF_dog_water_bowl_full_with_droplets
+  resourcesPath: Prefabs/Generated/PF_dog_water_bowl_full_with_droplets
+  assetPath: Assets/A_Dogs_Tale/Resources/Prefabs/Generated/PF_dog_water_bowl_full_with_droplets.prefab
 --- !u!1 &2540152477531075585
 GameObject:
   m_ObjectHideFlags: 0

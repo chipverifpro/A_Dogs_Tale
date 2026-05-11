@@ -14,6 +14,7 @@ GameObject:
   - component: {fileID: 7143516816658803133}
   - component: {fileID: 5181605302193515485}
   - component: {fileID: 4500041378534834913}
+  - component: {fileID: 1309620027320888339}
   m_Layer: 0
   m_Name: Prop_ToyTrain_05
   m_TagString: Untagged
@@ -151,6 +152,8 @@ MonoBehaviour:
   objectId: -1
   displayName: Prop_ToyTrain_05
   kind: 8
+  species: 0
+  breed: 
   autoRegister: 1
   adjustMapToWorld: {x: -0.5, y: 0, z: -0.5}
   sizeRadius: 0.3
@@ -159,3 +162,18 @@ MonoBehaviour:
   onActivate:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &1309620027320888339
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8062489396906497250}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5b51eeefad7b498d956628ba6705f1ea, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SavePrefabId
+  prefabId: resources:Prefabs/Items/HomeInterior/Prop_ToyTrain_05
+  resourcesPath: Prefabs/Items/HomeInterior/Prop_ToyTrain_05
+  assetPath: Assets/A_Dogs_Tale/Resources/Prefabs/Items/HomeInterior/Prop_ToyTrain_05.prefab

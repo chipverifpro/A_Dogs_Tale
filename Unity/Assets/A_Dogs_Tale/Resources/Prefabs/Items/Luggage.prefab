@@ -167,6 +167,10 @@ PrefabInstance:
         type: 3}
       insertIndex: -1
       addedObject: {fileID: -7841733476492128034}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: de3847303c976aa43b1abf4fed7f4b88,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 5285975951116822299}
     - targetCorrespondingSourceObject: {fileID: 8057777149184220619, guid: de3847303c976aa43b1abf4fed7f4b88,
         type: 3}
       insertIndex: -1
@@ -260,6 +264,8 @@ MonoBehaviour:
   objectId: -1
   displayName: Luggage
   kind: 8
+  species: 0
+  breed: 
   autoRegister: 1
   adjustMapToWorld: {x: -0.5, y: 0, z: -0.5}
   sizeRadius: 0.3
@@ -289,6 +295,21 @@ MonoBehaviour:
   minClearCellsAround: 0
   mustTouchWall: 0
   wallPadding: 0.05
+--- !u!114 &5285975951116822299
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2147899213400464146}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5b51eeefad7b498d956628ba6705f1ea, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SavePrefabId
+  prefabId: resources:Prefabs/Items/Luggage
+  resourcesPath: Prefabs/Items/Luggage
+  assetPath: Assets/A_Dogs_Tale/Resources/Prefabs/Items/Luggage.prefab
 --- !u!1 &2776241544300104781 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: -5221774388794299890, guid: de3847303c976aa43b1abf4fed7f4b88,

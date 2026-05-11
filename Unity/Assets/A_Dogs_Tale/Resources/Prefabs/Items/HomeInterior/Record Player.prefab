@@ -83,6 +83,10 @@ PrefabInstance:
         type: 3}
       insertIndex: -1
       addedObject: {fileID: 5552327226925013176}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 7fbf2ca98bab5ad488afe52c0ecc58e8,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 8561860623647417233}
   m_SourcePrefab: {fileID: 100100000, guid: 7fbf2ca98bab5ad488afe52c0ecc58e8, type: 3}
 --- !u!1 &2168503986045970230 stripped
 GameObject:
@@ -139,6 +143,8 @@ MonoBehaviour:
   objectId: -1
   displayName: Record Player
   kind: 8
+  species: 0
+  breed: 
   autoRegister: 1
   adjustMapToWorld: {x: -0.5, y: 0, z: -0.5}
   sizeRadius: 0.3
@@ -168,3 +174,18 @@ MonoBehaviour:
   minClearCellsAround: 0
   mustTouchWall: 0
   wallPadding: 0.05
+--- !u!114 &8561860623647417233
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2168503986045970230}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5b51eeefad7b498d956628ba6705f1ea, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SavePrefabId
+  prefabId: resources:Prefabs/Items/HomeInterior/Record Player
+  resourcesPath: Prefabs/Items/HomeInterior/Record Player
+  assetPath: Assets/A_Dogs_Tale/Resources/Prefabs/Items/HomeInterior/Record Player.prefab

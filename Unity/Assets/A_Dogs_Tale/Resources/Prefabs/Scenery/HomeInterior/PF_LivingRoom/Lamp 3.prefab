@@ -188,6 +188,10 @@ PrefabInstance:
         type: 3}
       insertIndex: -1
       addedObject: {fileID: -4923471705332442136}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 0664cfa411e26364689224f5b67e3123,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2751734141763595869}
     - targetCorrespondingSourceObject: {fileID: -3559909895095799887, guid: 0664cfa411e26364689224f5b67e3123,
         type: 3}
       insertIndex: -1
@@ -300,6 +304,8 @@ MonoBehaviour:
   objectId: -1
   displayName: Lamp 3
   kind: 3
+  species: 0
+  breed: 
   autoRegister: 1
   adjustMapToWorld: {x: -0.5, y: 0, z: -0.5}
   sizeRadius: 0.3
@@ -329,3 +335,19 @@ MonoBehaviour:
   minClearCellsAround: 0
   mustTouchWall: 0
   wallPadding: 0.05
+--- !u!114 &2751734141763595869
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7405780415056360854}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5b51eeefad7b498d956628ba6705f1ea, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SavePrefabId
+  prefabId: resources:Prefabs/Scenery/HomeInterior/PF_LivingRoom/Lamp 3
+  resourcesPath: Prefabs/Scenery/HomeInterior/PF_LivingRoom/Lamp 3
+  assetPath: Assets/A_Dogs_Tale/Resources/Prefabs/Scenery/HomeInterior/PF_LivingRoom/Lamp
+    3.prefab

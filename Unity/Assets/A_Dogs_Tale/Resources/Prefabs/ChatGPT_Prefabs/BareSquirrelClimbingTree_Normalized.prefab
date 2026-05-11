@@ -37608,6 +37608,7 @@ GameObject:
   m_Component:
   - component: {fileID: 7758871938571080007}
   - component: {fileID: 1075237673914516619}
+  - component: {fileID: 5391755538135802788}
   m_Layer: 0
   m_Name: BareSquirrelClimbingTree_Normalized
   m_TagString: Untagged
@@ -37656,6 +37657,21 @@ MonoBehaviour:
   onActivate:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &5391755538135802788
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6982510473660255229}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5b51eeefad7b498d956628ba6705f1ea, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SavePrefabId
+  prefabId: resources:Prefabs/ChatGPT_Prefabs/BareSquirrelClimbingTree_Normalized
+  resourcesPath: Prefabs/ChatGPT_Prefabs/BareSquirrelClimbingTree_Normalized
+  assetPath: Assets/A_Dogs_Tale/Resources/Prefabs/ChatGPT_Prefabs/BareSquirrelClimbingTree_Normalized.prefab
 --- !u!1 &7005434918695510565
 GameObject:
   m_ObjectHideFlags: 0

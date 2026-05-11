@@ -107,6 +107,10 @@ PrefabInstance:
         type: 3}
       insertIndex: -1
       addedObject: {fileID: 8601004968095193696}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 821209dcc57c53f4db765c6f7484034e,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 6795702099219004618}
     - targetCorrespondingSourceObject: {fileID: -3559909895095799887, guid: 821209dcc57c53f4db765c6f7484034e,
         type: 3}
       insertIndex: -1
@@ -248,6 +252,8 @@ MonoBehaviour:
   objectId: -1
   displayName: Easel
   kind: 3
+  species: 0
+  breed: 
   autoRegister: 1
   adjustMapToWorld: {x: -0.5, y: 0, z: -0.5}
   sizeRadius: 0.3
@@ -277,3 +283,18 @@ MonoBehaviour:
   minClearCellsAround: 0
   mustTouchWall: 0
   wallPadding: 0.05
+--- !u!114 &6795702099219004618
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8910374847144029316}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5b51eeefad7b498d956628ba6705f1ea, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SavePrefabId
+  prefabId: resources:Prefabs/Scenery/HomeInterior/PF_BedroomKids/Easel
+  resourcesPath: Prefabs/Scenery/HomeInterior/PF_BedroomKids/Easel
+  assetPath: Assets/A_Dogs_Tale/Resources/Prefabs/Scenery/HomeInterior/PF_BedroomKids/Easel.prefab

@@ -14,6 +14,7 @@ GameObject:
   - component: {fileID: 2269382122302489934}
   - component: {fileID: 5770313202677503879}
   - component: {fileID: -8796173216241277753}
+  - component: {fileID: 4892303637275009265}
   m_Layer: 0
   m_Name: Prop_Homeplant_08
   m_TagString: Untagged
@@ -129,6 +130,8 @@ MonoBehaviour:
   objectId: -1
   displayName: Prop_Homeplant_08
   kind: 8
+  species: 0
+  breed: 
   autoRegister: 1
   adjustMapToWorld: {x: -0.5, y: 0, z: -0.5}
   sizeRadius: 0.3
@@ -158,3 +161,18 @@ MonoBehaviour:
   minClearCellsAround: 0
   mustTouchWall: 0
   wallPadding: 0.05
+--- !u!114 &4892303637275009265
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1422889911198644253}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5b51eeefad7b498d956628ba6705f1ea, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SavePrefabId
+  prefabId: resources:Prefabs/Items/HomeInterior/Prop_Homeplant_08
+  resourcesPath: Prefabs/Items/HomeInterior/Prop_Homeplant_08
+  assetPath: Assets/A_Dogs_Tale/Resources/Prefabs/Items/HomeInterior/Prop_Homeplant_08.prefab

@@ -87,6 +87,10 @@ PrefabInstance:
         type: 3}
       insertIndex: -1
       addedObject: {fileID: -8350212579202831597}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: ade93b8db23f0d4429b8df60f7164e7f,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1018998428992598566}
     - targetCorrespondingSourceObject: {fileID: -3559909895095799887, guid: ade93b8db23f0d4429b8df60f7164e7f,
         type: 3}
       insertIndex: -1
@@ -192,6 +196,8 @@ MonoBehaviour:
   objectId: -1
   displayName: Storage Box 2
   kind: 13
+  species: 0
+  breed: 
   autoRegister: 1
   adjustMapToWorld: {x: -0.5, y: 0, z: -0.5}
   sizeRadius: 0.3
@@ -245,3 +251,19 @@ MonoBehaviour:
   autoConfigureAgentCapacity: 0
   dogItemCapacity: 1
   humanItemCapacity: 2
+--- !u!114 &1018998428992598566
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8822993183886583624}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5b51eeefad7b498d956628ba6705f1ea, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SavePrefabId
+  prefabId: resources:Prefabs/Containers/HomeInterior/Storage Box 2
+  resourcesPath: Prefabs/Containers/HomeInterior/Storage Box 2
+  assetPath: Assets/A_Dogs_Tale/Resources/Prefabs/Containers/HomeInterior/Storage
+    Box 2.prefab

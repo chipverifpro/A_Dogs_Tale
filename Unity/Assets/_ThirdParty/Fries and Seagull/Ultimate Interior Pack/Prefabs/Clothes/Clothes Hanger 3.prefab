@@ -8,47 +8,58 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: -8679921383154817045, guid: 28b705805f2c2084b911070bdd04c607, type: 3}
+    - target: {fileID: -8679921383154817045, guid: 28b705805f2c2084b911070bdd04c607,
+        type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 28b705805f2c2084b911070bdd04c607, type: 3}
+    - target: {fileID: -8679921383154817045, guid: 28b705805f2c2084b911070bdd04c607,
+        type: 3}
       propertyPath: m_LocalPosition.y
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 28b705805f2c2084b911070bdd04c607, type: 3}
+    - target: {fileID: -8679921383154817045, guid: 28b705805f2c2084b911070bdd04c607,
+        type: 3}
       propertyPath: m_LocalPosition.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 28b705805f2c2084b911070bdd04c607, type: 3}
+    - target: {fileID: -8679921383154817045, guid: 28b705805f2c2084b911070bdd04c607,
+        type: 3}
       propertyPath: m_LocalRotation.w
       value: 1
       objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 28b705805f2c2084b911070bdd04c607, type: 3}
+    - target: {fileID: -8679921383154817045, guid: 28b705805f2c2084b911070bdd04c607,
+        type: 3}
       propertyPath: m_LocalRotation.x
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 28b705805f2c2084b911070bdd04c607, type: 3}
+    - target: {fileID: -8679921383154817045, guid: 28b705805f2c2084b911070bdd04c607,
+        type: 3}
       propertyPath: m_LocalRotation.y
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 28b705805f2c2084b911070bdd04c607, type: 3}
+    - target: {fileID: -8679921383154817045, guid: 28b705805f2c2084b911070bdd04c607,
+        type: 3}
       propertyPath: m_LocalRotation.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 28b705805f2c2084b911070bdd04c607, type: 3}
+    - target: {fileID: -8679921383154817045, guid: 28b705805f2c2084b911070bdd04c607,
+        type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 28b705805f2c2084b911070bdd04c607, type: 3}
+    - target: {fileID: -8679921383154817045, guid: 28b705805f2c2084b911070bdd04c607,
+        type: 3}
       propertyPath: m_LocalEulerAnglesHint.y
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 28b705805f2c2084b911070bdd04c607, type: 3}
+    - target: {fileID: -8679921383154817045, guid: 28b705805f2c2084b911070bdd04c607,
+        type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 919132149155446097, guid: 28b705805f2c2084b911070bdd04c607, type: 3}
+    - target: {fileID: 919132149155446097, guid: 28b705805f2c2084b911070bdd04c607,
+        type: 3}
       propertyPath: m_Name
       value: Clothes Hanger 3
       objectReference: {fileID: 0}
@@ -56,19 +67,27 @@ PrefabInstance:
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 28b705805f2c2084b911070bdd04c607, type: 3}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 28b705805f2c2084b911070bdd04c607,
+        type: 3}
       insertIndex: -1
       addedObject: {fileID: 7668470685577361561}
-    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 28b705805f2c2084b911070bdd04c607, type: 3}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 28b705805f2c2084b911070bdd04c607,
+        type: 3}
       insertIndex: -1
       addedObject: {fileID: 9011374649924280352}
-    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 28b705805f2c2084b911070bdd04c607, type: 3}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 28b705805f2c2084b911070bdd04c607,
+        type: 3}
       insertIndex: -1
       addedObject: {fileID: 5423126106238357241}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 28b705805f2c2084b911070bdd04c607,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 8165373399507599590}
   m_SourcePrefab: {fileID: 100100000, guid: 28b705805f2c2084b911070bdd04c607, type: 3}
 --- !u!1 &2413520416528288007 stripped
 GameObject:
-  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 28b705805f2c2084b911070bdd04c607, type: 3}
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 28b705805f2c2084b911070bdd04c607,
+    type: 3}
   m_PrefabInstance: {fileID: 3296606176344503382}
   m_PrefabAsset: {fileID: 0}
 --- !u!114 &7668470685577361561
@@ -126,3 +145,20 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 0.0948267, y: 0.1864133, z: 0.018408835}
   m_Center: {x: -0.015919685, y: 0.20287633, z: 0}
+--- !u!114 &8165373399507599590
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2413520416528288007}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5b51eeefad7b498d956628ba6705f1ea, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SavePrefabId
+  prefabId: asset:Assets/_ThirdParty/Fries and Seagull/Ultimate Interior Pack/Prefabs/Clothes/Clothes
+    Hanger 3.prefab
+  resourcesPath: 
+  assetPath: Assets/_ThirdParty/Fries and Seagull/Ultimate Interior Pack/Prefabs/Clothes/Clothes
+    Hanger 3.prefab

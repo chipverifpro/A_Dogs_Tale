@@ -14,6 +14,7 @@ GameObject:
   - component: {fileID: 6811087071146526976}
   - component: {fileID: 6970692183607858952}
   - component: {fileID: 4890483154773610931}
+  - component: {fileID: 7051190544241830728}
   m_Layer: 0
   m_Name: Prop_Sofa_02_C
   m_TagString: Untagged
@@ -150,6 +151,8 @@ MonoBehaviour:
   objectId: -1
   displayName: Prop_Sofa_02_C
   kind: 3
+  species: 0
+  breed: 
   autoRegister: 1
   adjustMapToWorld: {x: -0.5, y: 0, z: -0.5}
   sizeRadius: 0.3
@@ -158,3 +161,18 @@ MonoBehaviour:
   onActivate:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &7051190544241830728
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5928072239495574611}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5b51eeefad7b498d956628ba6705f1ea, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SavePrefabId
+  prefabId: resources:Prefabs/Scenery/HomeInterior/PF_LivingRoom/Prop_Sofa_02_C
+  resourcesPath: Prefabs/Scenery/HomeInterior/PF_LivingRoom/Prop_Sofa_02_C
+  assetPath: Assets/A_Dogs_Tale/Resources/Prefabs/Scenery/HomeInterior/PF_LivingRoom/Prop_Sofa_02_C.prefab

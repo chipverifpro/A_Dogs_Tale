@@ -83,6 +83,10 @@ PrefabInstance:
         type: 3}
       insertIndex: -1
       addedObject: {fileID: -8793286201597772282}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 776aefd9e4dbb4d49a90873a91b00304,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1299083699314694308}
   m_SourcePrefab: {fileID: 100100000, guid: 776aefd9e4dbb4d49a90873a91b00304, type: 3}
 --- !u!1 &2164513778258231673 stripped
 GameObject:
@@ -139,6 +143,8 @@ MonoBehaviour:
   objectId: -1
   displayName: Books
   kind: 8
+  species: 0
+  breed: 
   autoRegister: 1
   adjustMapToWorld: {x: -0.5, y: 0, z: -0.5}
   sizeRadius: 0.3
@@ -168,3 +174,18 @@ MonoBehaviour:
   minClearCellsAround: 0
   mustTouchWall: 0
   wallPadding: 0.05
+--- !u!114 &1299083699314694308
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2164513778258231673}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5b51eeefad7b498d956628ba6705f1ea, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SavePrefabId
+  prefabId: resources:Prefabs/Scenery/HomeInterior/PF_Office/Books
+  resourcesPath: Prefabs/Scenery/HomeInterior/PF_Office/Books
+  assetPath: Assets/A_Dogs_Tale/Resources/Prefabs/Scenery/HomeInterior/PF_Office/Books.prefab

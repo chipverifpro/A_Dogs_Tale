@@ -4308,6 +4308,7 @@ GameObject:
   - component: {fileID: 6668110685423586067}
   - component: {fileID: 8687594164954190898}
   - component: {fileID: 9001163492729379729}
+  - component: {fileID: 3480034233134144005}
   m_Layer: 0
   m_Name: PF_desk_service_bell
   m_TagString: Untagged
@@ -4381,6 +4382,21 @@ MonoBehaviour:
   minClearCellsAround: 0
   mustTouchWall: 0
   wallPadding: 0.05
+--- !u!114 &3480034233134144005
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6485208419049756056}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5b51eeefad7b498d956628ba6705f1ea, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SavePrefabId
+  prefabId: resources:Prefabs/Generated/PF_desk_service_bell
+  resourcesPath: Prefabs/Generated/PF_desk_service_bell
+  assetPath: Assets/A_Dogs_Tale/Resources/Prefabs/Generated/PF_desk_service_bell.prefab
 --- !u!1 &7278970927313655792
 GameObject:
   m_ObjectHideFlags: 0

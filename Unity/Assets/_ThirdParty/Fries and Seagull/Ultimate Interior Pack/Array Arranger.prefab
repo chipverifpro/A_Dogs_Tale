@@ -10,6 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 8949564037989780120}
   - component: {fileID: 7508996952165739779}
+  - component: {fileID: 6763555573907658183}
   m_Layer: 0
   m_Name: Array Arranger
   m_TagString: Untagged
@@ -44,11 +45,51 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cda8add98f4b71744a8708d2f71be524, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  refreshInPlay: 0
+  arrayArrangementId: 0
   pos1: {x: 0, y: 0, z: 0}
   pos2: {x: 0, y: 0, z: 0}
+  pathCurve:
+    serializedVersion: 2
+    m_Curve: []
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
   count: 0
-  randomizeRotation: 0
-  randomizeRange: {x: 0, y: 360}
+  randomizeRotationAxis: 0
+  randomizeRotationRangeXYZ:
+    c0:
+      x: 0
+      y: 0
+      z: 0
+    c1:
+      x: 0
+      y: 0
+      z: 0
+  randomizePositionAxis: 0
+  randomizePositionRangeXYZ:
+    c0:
+      x: 0
+      y: 0
+      z: 0
+    c1:
+      x: 0
+      y: 0
+      z: 0
   root: {fileID: 0}
   prefab: {fileID: 0}
+--- !u!114 &6763555573907658183
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 63407058193107036}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5b51eeefad7b498d956628ba6705f1ea, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SavePrefabId
+  prefabId: asset:Assets/_ThirdParty/Fries and Seagull/Ultimate Interior Pack/Array
+    Arranger.prefab
+  resourcesPath: 
+  assetPath: Assets/_ThirdParty/Fries and Seagull/Ultimate Interior Pack/Array Arranger.prefab

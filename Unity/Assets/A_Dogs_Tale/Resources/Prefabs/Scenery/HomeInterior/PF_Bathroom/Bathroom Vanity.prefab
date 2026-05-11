@@ -122,6 +122,10 @@ PrefabInstance:
         type: 3}
       insertIndex: -1
       addedObject: {fileID: 4986417282748655176}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 14d243ece17e4204abecc719f453af71,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 4770795592042360489}
     - targetCorrespondingSourceObject: {fileID: -465109682293703254, guid: 14d243ece17e4204abecc719f453af71,
         type: 3}
       insertIndex: -1
@@ -362,6 +366,8 @@ MonoBehaviour:
   objectId: -1
   displayName: Bathroom Vanity
   kind: 3
+  species: 0
+  breed: 
   autoRegister: 1
   adjustMapToWorld: {x: -0.5, y: 0, z: -0.5}
   sizeRadius: 0.3
@@ -391,3 +397,19 @@ MonoBehaviour:
   minClearCellsAround: 0
   mustTouchWall: 0
   wallPadding: 0.05
+--- !u!114 &4770795592042360489
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8243811998498907338}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5b51eeefad7b498d956628ba6705f1ea, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SavePrefabId
+  prefabId: resources:Prefabs/Scenery/HomeInterior/PF_Bathroom/Bathroom Vanity
+  resourcesPath: Prefabs/Scenery/HomeInterior/PF_Bathroom/Bathroom Vanity
+  assetPath: Assets/A_Dogs_Tale/Resources/Prefabs/Scenery/HomeInterior/PF_Bathroom/Bathroom
+    Vanity.prefab

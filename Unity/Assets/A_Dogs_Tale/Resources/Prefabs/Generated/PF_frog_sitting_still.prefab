@@ -2986,6 +2986,7 @@ GameObject:
   - component: {fileID: -7750415095949677221}
   - component: {fileID: 42105819105316272}
   - component: {fileID: -6500386757232685869}
+  - component: {fileID: 468603283872723149}
   m_Layer: 0
   m_Name: PF_frog_sitting_still
   m_TagString: Untagged
@@ -3121,13 +3122,11 @@ MonoBehaviour:
     pos2: {x: 0, y: 0}
     height: 0
     yawDeg: 0
-    whichFollowersArrived: 
   next_formationCrumb:
     valid: 0
     pos2: {x: 0, y: 0}
     height: 0
     yawDeg: 0
-    whichFollowersArrived: 
   targetObject: {fileID: 0}
   keepFollowingTargetObject: 0
   stopDistance: 0.2
@@ -3189,7 +3188,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ba2cf7359fae44b0a9386ea1703def7b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.AgentModule
-  agentName: Unnamed Agent
   initialDecisionType: 3
   currentDecisionModule: {fileID: 0}
 --- !u!114 &-7750415095949677221
@@ -3280,6 +3278,21 @@ MonoBehaviour:
     persistentId: 
   durationScentSources: []
   deposit_time_left: 0
+--- !u!114 &468603283872723149
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4685453263194225901}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5b51eeefad7b498d956628ba6705f1ea, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SavePrefabId
+  prefabId: resources:Prefabs/Generated/PF_frog_sitting_still
+  resourcesPath: Prefabs/Generated/PF_frog_sitting_still
+  assetPath: Assets/A_Dogs_Tale/Resources/Prefabs/Generated/PF_frog_sitting_still.prefab
 --- !u!1 &4814131545157485349
 GameObject:
   m_ObjectHideFlags: 0

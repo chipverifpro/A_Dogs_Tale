@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 5617122983955718992}
   - component: {fileID: 6677623560244842455}
   - component: {fileID: 8145089205144256616}
+  - component: {fileID: 5976913769683409150}
   m_Layer: 8
   m_Name: PF_Fog
   m_TagString: Untagged
@@ -89,6 +90,7 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
 --- !u!65 &8145089205144256616
 BoxCollider:
@@ -111,3 +113,18 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1, y: 1, z: 1}
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &5976913769683409150
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6101818331885921959}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5b51eeefad7b498d956628ba6705f1ea, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SavePrefabId
+  prefabId: resources:Prefabs/Terrain/PF_Fog
+  resourcesPath: Prefabs/Terrain/PF_Fog
+  assetPath: Assets/A_Dogs_Tale/Resources/Prefabs/Terrain/PF_Fog.prefab

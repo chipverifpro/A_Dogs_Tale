@@ -648,6 +648,7 @@ GameObject:
   - component: {fileID: 1862630411142174429}
   - component: {fileID: 4222713848330073877}
   - component: {fileID: 5221274916929225260}
+  - component: {fileID: 3862697311498097227}
   m_Layer: 0
   m_Name: MenuWheelUI
   m_TagString: Untagged
@@ -862,3 +863,18 @@ SpriteRenderer:
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 0
   m_SpriteSortPoint: 0
+--- !u!114 &3862697311498097227
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7791173747559561372}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5b51eeefad7b498d956628ba6705f1ea, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SavePrefabId
+  prefabId: resources:Prefabs/UI/MenuWheel/MenuWheelUI
+  resourcesPath: Prefabs/UI/MenuWheel/MenuWheelUI
+  assetPath: Assets/A_Dogs_Tale/Resources/Prefabs/UI/MenuWheel/MenuWheelUI.prefab

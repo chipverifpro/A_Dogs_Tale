@@ -87,6 +87,10 @@ PrefabInstance:
         type: 3}
       insertIndex: -1
       addedObject: {fileID: -5817276313352441926}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: e4baef6ddbaa24d49862e629f783082c,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1659154015394064536}
   m_SourcePrefab: {fileID: 100100000, guid: e4baef6ddbaa24d49862e629f783082c, type: 3}
 --- !u!1 &2038318885208627679 stripped
 GameObject:
@@ -143,6 +147,8 @@ MonoBehaviour:
   objectId: -1
   displayName: Pizza
   kind: 8
+  species: 0
+  breed: 
   autoRegister: 1
   adjustMapToWorld: {x: -0.5, y: 0, z: -0.5}
   sizeRadius: 0.3
@@ -190,3 +196,18 @@ MonoBehaviour:
   parameterInt: 100
   parameterString: 
   toolTip: 
+--- !u!114 &1659154015394064536
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2038318885208627679}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5b51eeefad7b498d956628ba6705f1ea, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SavePrefabId
+  prefabId: resources:Prefabs/Items/HomeInterior/Pizza
+  resourcesPath: Prefabs/Items/HomeInterior/Pizza
+  assetPath: Assets/A_Dogs_Tale/Resources/Prefabs/Items/HomeInterior/Pizza.prefab

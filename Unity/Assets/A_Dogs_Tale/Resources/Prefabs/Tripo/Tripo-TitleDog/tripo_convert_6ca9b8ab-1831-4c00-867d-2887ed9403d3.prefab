@@ -75,6 +75,10 @@ PrefabInstance:
         type: 3}
       insertIndex: -1
       addedObject: {fileID: -2811729004660448921}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 13a6eeac573ba47f3b7a2bd9672ff38e,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 8216169597625568759}
   m_SourcePrefab: {fileID: 100100000, guid: 13a6eeac573ba47f3b7a2bd9672ff38e, type: 3}
 --- !u!1 &5372510893085969591 stripped
 GameObject:
@@ -97,6 +101,8 @@ MonoBehaviour:
   objectId: -1
   displayName: TitleDog
   kind: 3
+  species: 0
+  breed: 
   autoRegister: 1
   adjustMapToWorld: {x: -0.5, y: 0, z: -0.5}
   sizeRadius: 0.3
@@ -126,3 +132,18 @@ MonoBehaviour:
   minClearCellsAround: 0
   mustTouchWall: 0
   wallPadding: 0.05
+--- !u!114 &8216169597625568759
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5372510893085969591}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5b51eeefad7b498d956628ba6705f1ea, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SavePrefabId
+  prefabId: resources:Prefabs/Tripo/Tripo-TitleDog/tripo_convert_6ca9b8ab-1831-4c00-867d-2887ed9403d3
+  resourcesPath: Prefabs/Tripo/Tripo-TitleDog/tripo_convert_6ca9b8ab-1831-4c00-867d-2887ed9403d3
+  assetPath: Assets/A_Dogs_Tale/Resources/Prefabs/Tripo/Tripo-TitleDog/tripo_convert_6ca9b8ab-1831-4c00-867d-2887ed9403d3.prefab

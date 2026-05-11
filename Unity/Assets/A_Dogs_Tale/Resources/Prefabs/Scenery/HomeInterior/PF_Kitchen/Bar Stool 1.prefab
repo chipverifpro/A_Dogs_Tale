@@ -87,6 +87,10 @@ PrefabInstance:
         type: 3}
       insertIndex: -1
       addedObject: {fileID: 7301970569885790394}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 6b64cd33f8e28c3438cb030064205dbf,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 8409299457754482800}
   m_SourcePrefab: {fileID: 100100000, guid: 6b64cd33f8e28c3438cb030064205dbf, type: 3}
 --- !u!1 &1410077314591203688 stripped
 GameObject:
@@ -164,6 +168,8 @@ MonoBehaviour:
   objectId: -1
   displayName: Bar Stool 1
   kind: 3
+  species: 0
+  breed: 
   autoRegister: 1
   adjustMapToWorld: {x: -0.5, y: 0, z: -0.5}
   sizeRadius: 0.3
@@ -193,3 +199,19 @@ MonoBehaviour:
   minClearCellsAround: 0
   mustTouchWall: 0
   wallPadding: 0.05
+--- !u!114 &8409299457754482800
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1410077314591203688}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5b51eeefad7b498d956628ba6705f1ea, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SavePrefabId
+  prefabId: resources:Prefabs/Scenery/HomeInterior/PF_Kitchen/Bar Stool 1
+  resourcesPath: Prefabs/Scenery/HomeInterior/PF_Kitchen/Bar Stool 1
+  assetPath: Assets/A_Dogs_Tale/Resources/Prefabs/Scenery/HomeInterior/PF_Kitchen/Bar
+    Stool 1.prefab

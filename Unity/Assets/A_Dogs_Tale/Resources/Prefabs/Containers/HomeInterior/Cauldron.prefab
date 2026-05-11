@@ -87,6 +87,10 @@ PrefabInstance:
         type: 3}
       insertIndex: -1
       addedObject: {fileID: 2791023866574791736}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 7eac8a5479648164e8243ae917d2a795,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 8985860072901827491}
   m_SourcePrefab: {fileID: 100100000, guid: 7eac8a5479648164e8243ae917d2a795, type: 3}
 --- !u!1 &3637226819652632623 stripped
 GameObject:
@@ -143,6 +147,8 @@ MonoBehaviour:
   objectId: -1
   displayName: Cauldron
   kind: 13
+  species: 0
+  breed: 
   autoRegister: 1
   adjustMapToWorld: {x: -0.5, y: 0, z: -0.5}
   sizeRadius: 0.3
@@ -196,3 +202,18 @@ MonoBehaviour:
   autoConfigureAgentCapacity: 0
   dogItemCapacity: 1
   humanItemCapacity: 2
+--- !u!114 &8985860072901827491
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3637226819652632623}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5b51eeefad7b498d956628ba6705f1ea, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SavePrefabId
+  prefabId: resources:Prefabs/Containers/HomeInterior/Cauldron
+  resourcesPath: Prefabs/Containers/HomeInterior/Cauldron
+  assetPath: Assets/A_Dogs_Tale/Resources/Prefabs/Containers/HomeInterior/Cauldron.prefab

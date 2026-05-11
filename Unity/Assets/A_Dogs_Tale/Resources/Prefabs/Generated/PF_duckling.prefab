@@ -594,6 +594,7 @@ GameObject:
   - component: {fileID: -7153412698701616640}
   - component: {fileID: 6454162451458787133}
   - component: {fileID: 7583054104857252313}
+  - component: {fileID: 4664488148758756851}
   m_Layer: 0
   m_Name: PF_duckling
   m_TagString: Untagged
@@ -729,13 +730,11 @@ MonoBehaviour:
     pos2: {x: 0, y: 0}
     height: 0
     yawDeg: 0
-    whichFollowersArrived: 
   next_formationCrumb:
     valid: 0
     pos2: {x: 0, y: 0}
     height: 0
     yawDeg: 0
-    whichFollowersArrived: 
   targetObject: {fileID: 0}
   keepFollowingTargetObject: 0
   stopDistance: 0.2
@@ -947,11 +946,27 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0477df26e09ec48cfa0792a308d4ce4a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.FollowerDecisionModule
-  navigationSource: 0
   followTarget: {fileID: 0}
   followDistanceMeters: 0.5
+  breadcrumbArrivalDistanceMeters: 0.35
+  formationFollowSpeedMultiplier: 1.2
   autoFollowPackLeaderOnStart: 1
   enableDebugLogging: 0
+--- !u!114 &4664488148758756851
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1887328473427943237}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5b51eeefad7b498d956628ba6705f1ea, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SavePrefabId
+  prefabId: resources:Prefabs/Generated/PF_duckling
+  resourcesPath: Prefabs/Generated/PF_duckling
+  assetPath: Assets/A_Dogs_Tale/Resources/Prefabs/Generated/PF_duckling.prefab
 --- !u!1 &1906741109647815806
 GameObject:
   m_ObjectHideFlags: 0

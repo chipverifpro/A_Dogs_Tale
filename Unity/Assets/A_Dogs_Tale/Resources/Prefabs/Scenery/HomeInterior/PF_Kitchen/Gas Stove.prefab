@@ -120,6 +120,10 @@ PrefabInstance:
         type: 3}
       insertIndex: -1
       addedObject: {fileID: 1303954762091326447}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: aaba04c9151eb0844892bb5b6847e1c2,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 9198091974878509745}
     - targetCorrespondingSourceObject: {fileID: -3559909895095799887, guid: aaba04c9151eb0844892bb5b6847e1c2,
         type: 3}
       insertIndex: -1
@@ -251,6 +255,8 @@ MonoBehaviour:
   objectId: -1
   displayName: Gas Stove
   kind: 3
+  species: 0
+  breed: 
   autoRegister: 1
   adjustMapToWorld: {x: -0.5, y: 0, z: -0.5}
   sizeRadius: 0.3
@@ -280,6 +286,22 @@ MonoBehaviour:
   minClearCellsAround: 0
   mustTouchWall: 0
   wallPadding: 0.05
+--- !u!114 &9198091974878509745
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3519235802384136717}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5b51eeefad7b498d956628ba6705f1ea, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SavePrefabId
+  prefabId: resources:Prefabs/Scenery/HomeInterior/PF_Kitchen/Gas Stove
+  resourcesPath: Prefabs/Scenery/HomeInterior/PF_Kitchen/Gas Stove
+  assetPath: Assets/A_Dogs_Tale/Resources/Prefabs/Scenery/HomeInterior/PF_Kitchen/Gas
+    Stove.prefab
 --- !u!1 &6867842009658562978 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: -2064682264359837954, guid: aaba04c9151eb0844892bb5b6847e1c2,

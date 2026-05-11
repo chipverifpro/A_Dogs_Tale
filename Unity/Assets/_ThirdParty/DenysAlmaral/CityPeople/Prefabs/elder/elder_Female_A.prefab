@@ -163,6 +163,7 @@ GameObject:
   - component: {fileID: 2947902327353102259}
   - component: {fileID: -8369540164396031870}
   - component: {fileID: 1300814111836103854}
+  - component: {fileID: 6609218103115676810}
   m_Layer: 0
   m_Name: elder_Female_A
   m_TagString: Untagged
@@ -226,11 +227,16 @@ MonoBehaviour:
   objectId: -1
   displayName: elder_Female_A
   kind: 2
+  species: 0
+  breed: 
   autoRegister: 1
   adjustMapToWorld: {x: -0.5, y: 0, z: -0.5}
   sizeRadius: 0.2
-  mass: 150
+  weight: 150
   immovable: 0
+  onActivate:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!114 &4210292868870172452
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -243,8 +249,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2fe19957d107c44258eff6ab342bfd1a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.ExploreDecisionModule
-  navigationSource: 0
-  exploreWalkMode: 1
   visitRoomCenterBeforeBacktracking: 1
   useLuaExploreScript: 0
   debugLuaExplore: 1
@@ -292,7 +296,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 40e29a7f84b4b443a858e5012f88be27, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.PlayerDecisionModule
-  navigationSource: 0
+  manualTurnDegreesPerSecond: 240
+  directInputConstraintStopSpeed: 0.01
   cameraForMovement: {fileID: 0}
   cameraModeSwitcher: {fileID: 0}
   currentDestinationObject: {fileID: 0}
@@ -313,9 +318,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4a9f755dd8eef4be79076117627b3add, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.WandererDecisionModule
-  navigationSource: 0
   dwellSecondsAtDestination: 2
-  wanderWalkMode: 1
 --- !u!114 &-6220627419518593229
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -328,9 +331,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0477df26e09ec48cfa0792a308d4ce4a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.FollowerDecisionModule
-  navigationSource: 0
   followTarget: {fileID: 0}
   followDistanceMeters: 0.5
+  breadcrumbArrivalDistanceMeters: 0.35
+  formationFollowSpeedMultiplier: 1.2
   autoFollowPackLeaderOnStart: 1
   enableDebugLogging: 0
 --- !u!114 &-1067140208972587805
@@ -345,7 +349,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7adcf621b06804d44b2f0129468cf217, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.ImmobileDecisionModule
-  navigationSource: 0
 --- !u!114 &-7769289271399334852
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -358,7 +361,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 88b41ecba910d449fae619634049787e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.TaskFollowerDecisionModule
-  navigationSource: 0
 --- !u!114 &-7755314165013992688
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -376,13 +378,11 @@ MonoBehaviour:
     pos2: {x: 0, y: 0}
     height: 0
     yawDeg: 0
-    whichFollowersArrived: 
   next_formationCrumb:
     valid: 0
     pos2: {x: 0, y: 0}
     height: 0
     yawDeg: 0
-    whichFollowersArrived: 
   targetObject: {fileID: 0}
   keepFollowingTargetObject: 0
   stopDistance: 0.2
@@ -397,8 +397,6 @@ MonoBehaviour:
   accelerationMetersPerSecondSquared: 12
   decelerationMetersPerSecondSquared: 16
   enableDebugLogging: 0
-  walkMode: 0
-  maxWalkModeSpeed: 0
   maxDistance: 1
 --- !u!114 &-5831966186440639580
 MonoBehaviour:
@@ -458,7 +456,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ba2cf7359fae44b0a9386ea1703def7b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.AgentModule
-  agentName: OldLady
   initialDecisionType: 7
   currentDecisionModule: {fileID: 0}
 --- !u!114 &-704546127970758909
@@ -665,6 +662,8 @@ MonoBehaviour:
   maxLLMItems: 8
   maxPerceptionEvents: 8
   sensitivity: 1
+  movementTrendMemorySeconds: 0.5
+  movementTrendDistanceThresholdMeters: 0.05
 --- !u!114 &-2449711936482758445
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -697,6 +696,10 @@ MonoBehaviour:
   minStrength01: 0.02
   strengthWeight: 0.65
   noveltyWeight: 0.35
+  logStrongScentsToBottomBanner: 1
+  strongScentLogThreshold01: 0.35
+  strongScentRelogSeconds: 20
+  strongScentLogStrengthJumpThreshold01: 0.2
   enableBackgroundSniff: 1
   tickIntervalSeconds: 0.25
 --- !u!114 &4675352065608614053
@@ -766,6 +769,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: daa15b5c085b642dfabf4a5a26b501fd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.ActivatorModule
+  howToUse: 0
+  parameterDestruct: 0
+  parameterFloat: -1
+  parameterInt: -1
+  parameterString: 
+  toolTip: 
 --- !u!114 &778481507829047876
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -792,8 +801,8 @@ MonoBehaviour:
   idleClip: 0
   walkClip: 1
   jogClip: 2
-  currentAnimation: 0
-  cl: {fileID: 0}
+  animationCategory: 0
+  animationClip: {fileID: 0}
   walkSpeed: 0.25
   jogSpeed: 3.25
 --- !u!114 &-8789948206032805471
@@ -850,6 +859,16 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.NoiseMakerModule
   emitFootsteps: 1
   minSpeedMetersPerSecond: 0.1
+  movementNoiseCategory: 1
+  movementSemanticTags: 0
+  movementProfileIdPrefix: Auto.Movement
+  movementSubtypeWalk: 6
+  movementSubtypeRun: 7
+  movementSubtypeSneak: 8
+  movementSubtypeCautious: 8
+  movementSubtypeCrawl: 8
+  movementSubtypeStrafe: 6
+  movementSubtypeBackpedal: 6
   stepDistanceWalk: 0.85
   stepDistanceRun: 0.55
   stepDistanceSneak: 1.1
@@ -910,6 +929,33 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fcb9092686ac74c2b91fa33260000122, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.ContainerModule
+  itemCapacity: 1
+  maxWeight: 10
+  heldItemsVisible: 1
+  heldHeight: 0
+  isLocked: 0
+  isClosed: 0
+  heldItems: []
+  autoPickupNearbyItems: 1
+  pickupRadiusTiles: 1
+  autoConfigureAgentCapacity: 1
+  dogItemCapacity: 1
+  humanItemCapacity: 2
+--- !u!114 &6609218103115676810
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 186757882122740016}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5b51eeefad7b498d956628ba6705f1ea, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SavePrefabId
+  prefabId: asset:Assets/_ThirdParty/DenysAlmaral/CityPeople/Prefabs/elder/elder_Female_A.prefab
+  resourcesPath: 
+  assetPath: Assets/_ThirdParty/DenysAlmaral/CityPeople/Prefabs/elder/elder_Female_A.prefab
 --- !u!1 &226850885270714430
 GameObject:
   m_ObjectHideFlags: 0

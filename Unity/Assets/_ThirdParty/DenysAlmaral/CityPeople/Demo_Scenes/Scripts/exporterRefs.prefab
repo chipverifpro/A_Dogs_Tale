@@ -10,6 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4032328641794248700}
   - component: {fileID: -202506089174901492}
+  - component: {fileID: 1305288845292115394}
   m_Layer: 0
   m_Name: exporterRefs
   m_TagString: Untagged
@@ -48,3 +49,19 @@ MonoBehaviour:
   textureVariants: []
   altMaterials: []
   extraAnims: []
+  extraFiles: []
+--- !u!114 &1305288845292115394
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 151189002601805762}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5b51eeefad7b498d956628ba6705f1ea, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SavePrefabId
+  prefabId: asset:Assets/_ThirdParty/DenysAlmaral/CityPeople/Demo_Scenes/Scripts/exporterRefs.prefab
+  resourcesPath: 
+  assetPath: Assets/_ThirdParty/DenysAlmaral/CityPeople/Demo_Scenes/Scripts/exporterRefs.prefab

@@ -8,79 +8,98 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: -8679921383154817045, guid: 7d298d45288e17343904403e9df54c13, type: 3}
+    - target: {fileID: -8679921383154817045, guid: 7d298d45288e17343904403e9df54c13,
+        type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 7d298d45288e17343904403e9df54c13, type: 3}
+    - target: {fileID: -8679921383154817045, guid: 7d298d45288e17343904403e9df54c13,
+        type: 3}
       propertyPath: m_LocalPosition.y
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 7d298d45288e17343904403e9df54c13, type: 3}
+    - target: {fileID: -8679921383154817045, guid: 7d298d45288e17343904403e9df54c13,
+        type: 3}
       propertyPath: m_LocalPosition.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 7d298d45288e17343904403e9df54c13, type: 3}
+    - target: {fileID: -8679921383154817045, guid: 7d298d45288e17343904403e9df54c13,
+        type: 3}
       propertyPath: m_LocalRotation.w
       value: 1
       objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 7d298d45288e17343904403e9df54c13, type: 3}
+    - target: {fileID: -8679921383154817045, guid: 7d298d45288e17343904403e9df54c13,
+        type: 3}
       propertyPath: m_LocalRotation.x
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 7d298d45288e17343904403e9df54c13, type: 3}
+    - target: {fileID: -8679921383154817045, guid: 7d298d45288e17343904403e9df54c13,
+        type: 3}
       propertyPath: m_LocalRotation.y
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 7d298d45288e17343904403e9df54c13, type: 3}
+    - target: {fileID: -8679921383154817045, guid: 7d298d45288e17343904403e9df54c13,
+        type: 3}
       propertyPath: m_LocalRotation.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 7d298d45288e17343904403e9df54c13, type: 3}
+    - target: {fileID: -8679921383154817045, guid: 7d298d45288e17343904403e9df54c13,
+        type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 7d298d45288e17343904403e9df54c13, type: 3}
+    - target: {fileID: -8679921383154817045, guid: 7d298d45288e17343904403e9df54c13,
+        type: 3}
       propertyPath: m_LocalEulerAnglesHint.y
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 7d298d45288e17343904403e9df54c13, type: 3}
+    - target: {fileID: -8679921383154817045, guid: 7d298d45288e17343904403e9df54c13,
+        type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 919132149155446097, guid: 7d298d45288e17343904403e9df54c13, type: 3}
+    - target: {fileID: 919132149155446097, guid: 7d298d45288e17343904403e9df54c13,
+        type: 3}
       propertyPath: m_Name
       value: Hexagonal Prism
       objectReference: {fileID: 0}
-    - target: {fileID: 4195465301901452350, guid: 7d298d45288e17343904403e9df54c13, type: 3}
+    - target: {fileID: 4195465301901452350, guid: 7d298d45288e17343904403e9df54c13,
+        type: 3}
       propertyPath: m_LocalRotation.w
       value: 0.9984795
       objectReference: {fileID: 0}
-    - target: {fileID: 4195465301901452350, guid: 7d298d45288e17343904403e9df54c13, type: 3}
+    - target: {fileID: 4195465301901452350, guid: 7d298d45288e17343904403e9df54c13,
+        type: 3}
       propertyPath: m_LocalRotation.x
       value: -0
       objectReference: {fileID: 0}
-    - target: {fileID: 4195465301901452350, guid: 7d298d45288e17343904403e9df54c13, type: 3}
+    - target: {fileID: 4195465301901452350, guid: 7d298d45288e17343904403e9df54c13,
+        type: 3}
       propertyPath: m_LocalRotation.y
       value: -0
       objectReference: {fileID: 0}
-    - target: {fileID: 4195465301901452350, guid: 7d298d45288e17343904403e9df54c13, type: 3}
+    - target: {fileID: 4195465301901452350, guid: 7d298d45288e17343904403e9df54c13,
+        type: 3}
       propertyPath: m_LocalRotation.z
       value: -0.05512445
       objectReference: {fileID: 0}
-    - target: {fileID: 4343573491427726851, guid: 7d298d45288e17343904403e9df54c13, type: 3}
+    - target: {fileID: 4343573491427726851, guid: 7d298d45288e17343904403e9df54c13,
+        type: 3}
       propertyPath: m_LocalRotation.w
       value: 0.99975437
       objectReference: {fileID: 0}
-    - target: {fileID: 4343573491427726851, guid: 7d298d45288e17343904403e9df54c13, type: 3}
+    - target: {fileID: 4343573491427726851, guid: 7d298d45288e17343904403e9df54c13,
+        type: 3}
       propertyPath: m_LocalRotation.x
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 4343573491427726851, guid: 7d298d45288e17343904403e9df54c13, type: 3}
+    - target: {fileID: 4343573491427726851, guid: 7d298d45288e17343904403e9df54c13,
+        type: 3}
       propertyPath: m_LocalRotation.y
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 4343573491427726851, guid: 7d298d45288e17343904403e9df54c13, type: 3}
+    - target: {fileID: 4343573491427726851, guid: 7d298d45288e17343904403e9df54c13,
+        type: 3}
       propertyPath: m_LocalRotation.z
       value: 0.022163868
       objectReference: {fileID: 0}
@@ -88,31 +107,43 @@ PrefabInstance:
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 7d298d45288e17343904403e9df54c13, type: 3}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 7d298d45288e17343904403e9df54c13,
+        type: 3}
       insertIndex: -1
       addedObject: {fileID: -3609001660481838632}
-    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 7d298d45288e17343904403e9df54c13, type: 3}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 7d298d45288e17343904403e9df54c13,
+        type: 3}
       insertIndex: -1
       addedObject: {fileID: 7307188192335034755}
-    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 7d298d45288e17343904403e9df54c13, type: 3}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 7d298d45288e17343904403e9df54c13,
+        type: 3}
       insertIndex: -1
       addedObject: {fileID: 2427518495938076664}
-    - targetCorrespondingSourceObject: {fileID: -3559909895095799887, guid: 7d298d45288e17343904403e9df54c13, type: 3}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 7d298d45288e17343904403e9df54c13,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 9098487784907268226}
+    - targetCorrespondingSourceObject: {fileID: -3559909895095799887, guid: 7d298d45288e17343904403e9df54c13,
+        type: 3}
       insertIndex: -1
       addedObject: {fileID: 5697735018907429354}
-    - targetCorrespondingSourceObject: {fileID: -3559909895095799887, guid: 7d298d45288e17343904403e9df54c13, type: 3}
+    - targetCorrespondingSourceObject: {fileID: -3559909895095799887, guid: 7d298d45288e17343904403e9df54c13,
+        type: 3}
       insertIndex: -1
       addedObject: {fileID: 209387016321178736}
-    - targetCorrespondingSourceObject: {fileID: -2064682264359837954, guid: 7d298d45288e17343904403e9df54c13, type: 3}
+    - targetCorrespondingSourceObject: {fileID: -2064682264359837954, guid: 7d298d45288e17343904403e9df54c13,
+        type: 3}
       insertIndex: -1
       addedObject: {fileID: 7060599086739147753}
-    - targetCorrespondingSourceObject: {fileID: -2064682264359837954, guid: 7d298d45288e17343904403e9df54c13, type: 3}
+    - targetCorrespondingSourceObject: {fileID: -2064682264359837954, guid: 7d298d45288e17343904403e9df54c13,
+        type: 3}
       insertIndex: -1
       addedObject: {fileID: 6991889058348787475}
   m_SourcePrefab: {fileID: 100100000, guid: 7d298d45288e17343904403e9df54c13, type: 3}
 --- !u!1 &972427481904561325 stripped
 GameObject:
-  m_CorrespondingSourceObject: {fileID: -3559909895095799887, guid: 7d298d45288e17343904403e9df54c13, type: 3}
+  m_CorrespondingSourceObject: {fileID: -3559909895095799887, guid: 7d298d45288e17343904403e9df54c13,
+    type: 3}
   m_PrefabInstance: {fileID: 4892713954588300060}
   m_PrefabAsset: {fileID: 0}
 --- !u!64 &5697735018907429354
@@ -155,7 +186,8 @@ MonoBehaviour:
   rotation: 0
 --- !u!1 &2359515670130806242 stripped
 GameObject:
-  m_CorrespondingSourceObject: {fileID: -2064682264359837954, guid: 7d298d45288e17343904403e9df54c13, type: 3}
+  m_CorrespondingSourceObject: {fileID: -2064682264359837954, guid: 7d298d45288e17343904403e9df54c13,
+    type: 3}
   m_PrefabInstance: {fileID: 4892713954588300060}
   m_PrefabAsset: {fileID: 0}
 --- !u!64 &7060599086739147753
@@ -198,7 +230,8 @@ MonoBehaviour:
   rotation: 0
 --- !u!1 &5703528254751125069 stripped
 GameObject:
-  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 7d298d45288e17343904403e9df54c13, type: 3}
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 7d298d45288e17343904403e9df54c13,
+    type: 3}
   m_PrefabInstance: {fileID: 4892713954588300060}
   m_PrefabAsset: {fileID: 0}
 --- !u!114 &-3609001660481838632
@@ -253,3 +286,20 @@ MonoBehaviour:
     value: {fileID: 209387016321178736}
   - key: 1
     value: {fileID: 6991889058348787475}
+--- !u!114 &9098487784907268226
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5703528254751125069}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5b51eeefad7b498d956628ba6705f1ea, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SavePrefabId
+  prefabId: asset:Assets/_ThirdParty/Fries and Seagull/Ultimate Interior Pack/Prefabs/Kitchen
+    Items/Hexagonal Prism.prefab
+  resourcesPath: 
+  assetPath: Assets/_ThirdParty/Fries and Seagull/Ultimate Interior Pack/Prefabs/Kitchen
+    Items/Hexagonal Prism.prefab

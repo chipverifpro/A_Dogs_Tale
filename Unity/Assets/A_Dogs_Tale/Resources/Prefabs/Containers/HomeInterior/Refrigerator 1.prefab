@@ -145,6 +145,10 @@ PrefabInstance:
         type: 3}
       insertIndex: -1
       addedObject: {fileID: 8046299615551451407}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 78bbd2790e2803a4498be32683bb7ef9,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 3762804726356810860}
     - targetCorrespondingSourceObject: {fileID: -3559909895095799887, guid: 78bbd2790e2803a4498be32683bb7ef9,
         type: 3}
       insertIndex: -1
@@ -269,6 +273,8 @@ MonoBehaviour:
   objectId: -1
   displayName: Refrigerator 1
   kind: 13
+  species: 0
+  breed: 
   autoRegister: 1
   adjustMapToWorld: {x: -0.5, y: 0, z: -0.5}
   sizeRadius: 0.3
@@ -322,6 +328,22 @@ MonoBehaviour:
   autoConfigureAgentCapacity: 0
   dogItemCapacity: 1
   humanItemCapacity: 2
+--- !u!114 &3762804726356810860
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 52107432400418595}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5b51eeefad7b498d956628ba6705f1ea, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SavePrefabId
+  prefabId: resources:Prefabs/Containers/HomeInterior/Refrigerator 1
+  resourcesPath: Prefabs/Containers/HomeInterior/Refrigerator 1
+  assetPath: Assets/A_Dogs_Tale/Resources/Prefabs/Containers/HomeInterior/Refrigerator
+    1.prefab
 --- !u!1 &4819096178803467715 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: -3559909895095799887, guid: 78bbd2790e2803a4498be32683bb7ef9,

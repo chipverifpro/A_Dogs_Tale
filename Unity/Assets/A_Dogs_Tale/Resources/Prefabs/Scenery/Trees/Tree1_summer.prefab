@@ -14,6 +14,7 @@ GameObject:
   - component: {fileID: 5504184360955044253}
   - component: {fileID: -85759363665429568}
   - component: {fileID: -1025166434263121963}
+  - component: {fileID: 2689409863110201393}
   m_Layer: 0
   m_Name: Tree1_summer
   m_TagString: Untagged
@@ -130,6 +131,8 @@ MonoBehaviour:
   objectId: -1
   displayName: Tree1_summer
   kind: 3
+  species: 0
+  breed: 
   autoRegister: 1
   adjustMapToWorld: {x: -0.5, y: 0, z: -0.5}
   sizeRadius: 0.3
@@ -159,3 +162,18 @@ MonoBehaviour:
   minClearCellsAround: 0
   mustTouchWall: 0
   wallPadding: 0.05
+--- !u!114 &2689409863110201393
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4558530772540274841}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5b51eeefad7b498d956628ba6705f1ea, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SavePrefabId
+  prefabId: resources:Prefabs/Scenery/Trees/Tree1_summer
+  resourcesPath: Prefabs/Scenery/Trees/Tree1_summer
+  assetPath: Assets/A_Dogs_Tale/Resources/Prefabs/Scenery/Trees/Tree1_summer.prefab

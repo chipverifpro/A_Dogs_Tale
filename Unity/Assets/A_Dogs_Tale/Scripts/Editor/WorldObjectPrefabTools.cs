@@ -45,6 +45,7 @@ public static class WorldObjectPrefabTools
                     continue;
 
                 bool changed = SetupOnePrefab(root);
+                changed |= EnsureSavePrefabId(root, path);
 
                 if (changed)
                 {
@@ -62,6 +63,74 @@ public static class WorldObjectPrefabTools
         }
 
         Debug.Log($"WorldObjectPrefabTools: Processed {processed} prefab(s), modified {modified}.");
+    }
+
+    [MenuItem("Tools/DogGame/Save Prefabs/Fill SavePrefabId On Selected Prefabs")]
+    public static void FillSavePrefabIdOnSelectedPrefabs()
+    {
+        FillSavePrefabIds(Selection.objects);
+    }
+
+    [MenuItem("Tools/DogGame/Save Prefabs/Fill SavePrefabId On All Project Prefabs")]
+    public static void FillSavePrefabIdOnAllProjectPrefabs()
+    {
+        string[] prefabGuids = AssetDatabase.FindAssets("t:Prefab");
+        Object[] prefabs = prefabGuids
+            .Select(guid => AssetDatabase.LoadAssetAtPath<GameObject>(AssetDatabase.GUIDToAssetPath(guid)))
+            .Where(prefab => prefab != null)
+            .Cast<Object>()
+            .ToArray();
+
+        FillSavePrefabIds(prefabs);
+    }
+
+    private static void FillSavePrefabIds(Object[] prefabs)
+    {
+        if (prefabs == null || prefabs.Length == 0)
+        {
+            Debug.LogWarning("WorldObjectPrefabTools: No prefabs selected.");
+            return;
+        }
+
+        int processed = 0;
+        int modified = 0;
+
+        try
+        {
+            AssetDatabase.StartAssetEditing();
+
+            foreach (Object obj in prefabs)
+            {
+                string path = AssetDatabase.GetAssetPath(obj);
+                if (string.IsNullOrEmpty(path) || !path.EndsWith(".prefab"))
+                    continue;
+
+                if (PrefabUtility.GetPrefabAssetType(obj) == PrefabAssetType.NotAPrefab)
+                    continue;
+
+                processed++;
+
+                GameObject root = PrefabUtility.LoadPrefabContents(path);
+                if (root == null)
+                    continue;
+
+                bool changed = EnsureSavePrefabId(root, path);
+                if (changed)
+                {
+                    modified++;
+                    PrefabUtility.SaveAsPrefabAsset(root, path);
+                }
+
+                PrefabUtility.UnloadPrefabContents(root);
+            }
+        }
+        finally
+        {
+            AssetDatabase.StopAssetEditing();
+            AssetDatabase.SaveAssets();
+        }
+
+        Debug.Log($"WorldObjectPrefabTools: SavePrefabId processed {processed} prefab(s), modified {modified}.");
     }
 
     /// <summary>
@@ -145,6 +214,43 @@ public static class WorldObjectPrefabTools
             EditorUtility.SetDirty(root);
 
         return changed;
+    }
+
+    private static bool EnsureSavePrefabId(GameObject root, string assetPath)
+    {
+        bool changed = false;
+        SavePrefabId savePrefabId = root.GetComponent<SavePrefabId>();
+        if (savePrefabId == null)
+        {
+            savePrefabId = root.AddComponent<SavePrefabId>();
+            changed = true;
+        }
+
+        string resourcesPath = ToResourcesPath(assetPath);
+        string prefabId = !string.IsNullOrWhiteSpace(resourcesPath)
+            ? $"resources:{resourcesPath}"
+            : $"asset:{assetPath}";
+
+        if (savePrefabId.PrefabId != prefabId ||
+            savePrefabId.ResourcesPath != resourcesPath ||
+            savePrefabId.AssetPath != assetPath)
+        {
+            savePrefabId.SetPrefabIdentity(prefabId, resourcesPath, assetPath);
+            changed = true;
+        }
+
+        return changed;
+    }
+
+    private static string ToResourcesPath(string assetPath)
+    {
+        const string resourcesSegment = "/Resources/";
+        int resourcesIndex = assetPath.IndexOf(resourcesSegment, System.StringComparison.Ordinal);
+        if (resourcesIndex < 0)
+            return "";
+
+        string pathAfterResources = assetPath.Substring(resourcesIndex + resourcesSegment.Length);
+        return System.IO.Path.ChangeExtension(pathAfterResources, null);
     }
 
     /// <summary>

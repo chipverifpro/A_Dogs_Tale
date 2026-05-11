@@ -55694,6 +55694,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 6228600097208508837}
+  - component: {fileID: 6693281311886458131}
   m_Layer: 0
   m_Name: CozyDogBed_Normalized
   m_TagString: Untagged
@@ -55717,6 +55718,21 @@ Transform:
   - {fileID: 7714026809513955759}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &6693281311886458131
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6718172610836036383}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5b51eeefad7b498d956628ba6705f1ea, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SavePrefabId
+  prefabId: resources:Prefabs/ChatGPT_Prefabs/CozyDogBed_Normalized
+  resourcesPath: Prefabs/ChatGPT_Prefabs/CozyDogBed_Normalized
+  assetPath: Assets/A_Dogs_Tale/Resources/Prefabs/ChatGPT_Prefabs/CozyDogBed_Normalized.prefab
 --- !u!1 &6791248233721271286
 GameObject:
   m_ObjectHideFlags: 0

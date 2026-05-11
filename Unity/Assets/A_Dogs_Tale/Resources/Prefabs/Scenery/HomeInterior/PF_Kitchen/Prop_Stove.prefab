@@ -194,6 +194,7 @@ GameObject:
   - component: {fileID: 3651966197742019746}
   - component: {fileID: 6878848282818832712}
   - component: {fileID: 7184597334681488227}
+  - component: {fileID: 945683918182637337}
   m_Layer: 0
   m_Name: Prop_Stove
   m_TagString: Untagged
@@ -336,6 +337,8 @@ MonoBehaviour:
   objectId: -1
   displayName: Prop_Stove
   kind: 3
+  species: 0
+  breed: 
   autoRegister: 1
   adjustMapToWorld: {x: -0.5, y: 0, z: -0.5}
   sizeRadius: 0.3
@@ -344,6 +347,21 @@ MonoBehaviour:
   onActivate:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &945683918182637337
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4352200305128078812}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5b51eeefad7b498d956628ba6705f1ea, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SavePrefabId
+  prefabId: resources:Prefabs/Scenery/HomeInterior/PF_Kitchen/Prop_Stove
+  resourcesPath: Prefabs/Scenery/HomeInterior/PF_Kitchen/Prop_Stove
+  assetPath: Assets/A_Dogs_Tale/Resources/Prefabs/Scenery/HomeInterior/PF_Kitchen/Prop_Stove.prefab
 --- !u!1 &4814346929221450670
 GameObject:
   m_ObjectHideFlags: 0

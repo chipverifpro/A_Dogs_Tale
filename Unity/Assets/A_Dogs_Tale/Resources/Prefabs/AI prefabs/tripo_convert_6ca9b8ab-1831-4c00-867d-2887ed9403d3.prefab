@@ -88,6 +88,7 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
 --- !u!1 &6042735224253552617
 GameObject:
@@ -99,6 +100,7 @@ GameObject:
   m_Component:
   - component: {fileID: 3909924173691282099}
   - component: {fileID: 5487283928593828123}
+  - component: {fileID: 2382591855917614535}
   m_Layer: 0
   m_Name: tripo_convert_6ca9b8ab-1831-4c00-867d-2887ed9403d3
   m_TagString: Untagged
@@ -143,3 +145,18 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1, y: 1, z: 1}
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &2382591855917614535
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6042735224253552617}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5b51eeefad7b498d956628ba6705f1ea, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SavePrefabId
+  prefabId: resources:Prefabs/AI prefabs/tripo_convert_6ca9b8ab-1831-4c00-867d-2887ed9403d3
+  resourcesPath: Prefabs/AI prefabs/tripo_convert_6ca9b8ab-1831-4c00-867d-2887ed9403d3
+  assetPath: Assets/A_Dogs_Tale/Resources/Prefabs/AI prefabs/tripo_convert_6ca9b8ab-1831-4c00-867d-2887ed9403d3.prefab

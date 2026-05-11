@@ -14,6 +14,7 @@ GameObject:
   - component: {fileID: 1392813218845177908}
   - component: {fileID: 5922727873102373246}
   - component: {fileID: 3060710647541025189}
+  - component: {fileID: 8404420783772045662}
   m_Layer: 0
   m_Name: Prop_Wardrobe_04
   m_TagString: Untagged
@@ -152,6 +153,8 @@ MonoBehaviour:
   objectId: -1
   displayName: Prop_Wardrobe_04
   kind: 3
+  species: 0
+  breed: 
   autoRegister: 1
   adjustMapToWorld: {x: -0.5, y: 0, z: -0.5}
   sizeRadius: 0.3
@@ -160,6 +163,21 @@ MonoBehaviour:
   onActivate:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &8404420783772045662
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2275775694979007851}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5b51eeefad7b498d956628ba6705f1ea, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SavePrefabId
+  prefabId: resources:Prefabs/Scenery/HomeInterior/PF_Bedroom/Prop_Wardrobe_04
+  resourcesPath: Prefabs/Scenery/HomeInterior/PF_Bedroom/Prop_Wardrobe_04
+  assetPath: Assets/A_Dogs_Tale/Resources/Prefabs/Scenery/HomeInterior/PF_Bedroom/Prop_Wardrobe_04.prefab
 --- !u!1 &3206591503468000553
 GameObject:
   m_ObjectHideFlags: 0

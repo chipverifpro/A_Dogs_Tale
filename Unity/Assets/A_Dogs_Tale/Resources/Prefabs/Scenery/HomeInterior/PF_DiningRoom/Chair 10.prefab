@@ -87,6 +87,10 @@ PrefabInstance:
         type: 3}
       insertIndex: -1
       addedObject: {fileID: -4231624274618342288}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 086e3cced7a1349419cb4ca0195573e7,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 5515838496500427577}
   m_SourcePrefab: {fileID: 100100000, guid: 086e3cced7a1349419cb4ca0195573e7, type: 3}
 --- !u!1 &4188153642472178356 stripped
 GameObject:
@@ -164,6 +168,8 @@ MonoBehaviour:
   objectId: -1
   displayName: Chair 10
   kind: 3
+  species: 0
+  breed: 
   autoRegister: 1
   adjustMapToWorld: {x: -0.5, y: 0, z: -0.5}
   sizeRadius: 0.3
@@ -193,3 +199,19 @@ MonoBehaviour:
   minClearCellsAround: 0
   mustTouchWall: 0
   wallPadding: 0.05
+--- !u!114 &5515838496500427577
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4188153642472178356}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5b51eeefad7b498d956628ba6705f1ea, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SavePrefabId
+  prefabId: resources:Prefabs/Scenery/HomeInterior/PF_DiningRoom/Chair 10
+  resourcesPath: Prefabs/Scenery/HomeInterior/PF_DiningRoom/Chair 10
+  assetPath: Assets/A_Dogs_Tale/Resources/Prefabs/Scenery/HomeInterior/PF_DiningRoom/Chair
+    10.prefab

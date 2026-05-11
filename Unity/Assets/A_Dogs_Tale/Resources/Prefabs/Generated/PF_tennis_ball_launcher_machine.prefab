@@ -5057,6 +5057,7 @@ GameObject:
   - component: {fileID: -159019852118714193}
   - component: {fileID: 8253186896282453975}
   - component: {fileID: 1666232424371017626}
+  - component: {fileID: 5387127677922344340}
   m_Layer: 0
   m_Name: PF_tennis_ball_launcher_machine
   m_TagString: Untagged
@@ -5154,6 +5155,21 @@ MonoBehaviour:
   autoConfigureAgentCapacity: 1
   dogItemCapacity: 1
   humanItemCapacity: 2
+--- !u!114 &5387127677922344340
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8678427077619614033}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5b51eeefad7b498d956628ba6705f1ea, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SavePrefabId
+  prefabId: resources:Prefabs/Generated/PF_tennis_ball_launcher_machine
+  resourcesPath: Prefabs/Generated/PF_tennis_ball_launcher_machine
+  assetPath: Assets/A_Dogs_Tale/Resources/Prefabs/Generated/PF_tennis_ball_launcher_machine.prefab
 --- !u!1 &9063874419804237851
 GameObject:
   m_ObjectHideFlags: 0

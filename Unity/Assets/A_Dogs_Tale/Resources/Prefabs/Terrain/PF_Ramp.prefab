@@ -14,6 +14,7 @@ GameObject:
   - component: {fileID: 4925419474745831488}
   - component: {fileID: 5690982214873476668}
   - component: {fileID: 865863825238367615}
+  - component: {fileID: 3699597049009918708}
   m_Layer: 0
   m_Name: PF_Ramp
   m_TagString: Untagged
@@ -1030,3 +1031,18 @@ MeshCollider:
   m_Convex: 0
   m_CookingOptions: 30
   m_Mesh: {fileID: 0}
+--- !u!114 &3699597049009918708
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8466642615260838714}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5b51eeefad7b498d956628ba6705f1ea, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SavePrefabId
+  prefabId: resources:Prefabs/Terrain/PF_Ramp
+  resourcesPath: Prefabs/Terrain/PF_Ramp
+  assetPath: Assets/A_Dogs_Tale/Resources/Prefabs/Terrain/PF_Ramp.prefab

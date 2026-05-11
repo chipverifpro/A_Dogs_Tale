@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 9124863531977808363}
   - component: {fileID: 4209695523556764702}
   - component: {fileID: -197626996281963051}
+  - component: {fileID: 1493618630403112532}
   m_Layer: 0
   m_Name: Prop_HulaHoop_03
   m_TagString: Untagged
@@ -107,6 +108,8 @@ MonoBehaviour:
   objectId: -1
   displayName: Prop_HulaHoop_03
   kind: 8
+  species: 0
+  breed: 
   autoRegister: 1
   adjustMapToWorld: {x: -0.5, y: 0, z: -0.5}
   sizeRadius: 0.3
@@ -136,3 +139,18 @@ MonoBehaviour:
   minClearCellsAround: 0
   mustTouchWall: 0
   wallPadding: 0.05
+--- !u!114 &1493618630403112532
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7323692442540816446}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5b51eeefad7b498d956628ba6705f1ea, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SavePrefabId
+  prefabId: resources:Prefabs/Items/HomeInterior/Prop_HulaHoop_03
+  resourcesPath: Prefabs/Items/HomeInterior/Prop_HulaHoop_03
+  assetPath: Assets/A_Dogs_Tale/Resources/Prefabs/Items/HomeInterior/Prop_HulaHoop_03.prefab

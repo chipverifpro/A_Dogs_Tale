@@ -137,6 +137,10 @@ PrefabInstance:
         type: 3}
       insertIndex: -1
       addedObject: {fileID: 3178242243009219202}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 10978f5e8494905428a7bcd1da4f75f2,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1355150751142951924}
     - targetCorrespondingSourceObject: {fileID: 2120162945860751463, guid: 10978f5e8494905428a7bcd1da4f75f2,
         type: 3}
       insertIndex: -1
@@ -292,6 +296,8 @@ MonoBehaviour:
   objectId: -1
   displayName: Wardrobe 1
   kind: 3
+  species: 0
+  breed: 
   autoRegister: 1
   adjustMapToWorld: {x: -0.5, y: 0, z: -0.5}
   sizeRadius: 0.3
@@ -321,6 +327,22 @@ MonoBehaviour:
   minClearCellsAround: 0
   mustTouchWall: 0
   wallPadding: 0.05
+--- !u!114 &1355150751142951924
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4718708771610955003}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5b51eeefad7b498d956628ba6705f1ea, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SavePrefabId
+  prefabId: resources:Prefabs/Scenery/HomeInterior/PF_Bedroom/Wardrobe 1
+  resourcesPath: Prefabs/Scenery/HomeInterior/PF_Bedroom/Wardrobe 1
+  assetPath: Assets/A_Dogs_Tale/Resources/Prefabs/Scenery/HomeInterior/PF_Bedroom/Wardrobe
+    1.prefab
 --- !u!1 &5823441867115651533 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 2120162945860751463, guid: 10978f5e8494905428a7bcd1da4f75f2,
