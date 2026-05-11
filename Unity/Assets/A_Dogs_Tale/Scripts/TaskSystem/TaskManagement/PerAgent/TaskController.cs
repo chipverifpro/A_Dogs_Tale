@@ -14,6 +14,15 @@ namespace DogGame.LLM
     [DisallowMultipleComponent]
     public sealed class TaskController : WorldModule
     {
+        [System.Serializable]
+        public sealed class SaveData
+        {
+            public string agentId = "";
+            public bool clearQueueOnNewPlan;
+            public TaskExecutorSaveData? executor;
+            public List<TaskRequestSaveData> queuedRequests = new();
+        }
+
         [SerializeField] private string agentId = "player";
         public string AgentId => agentId;
 
@@ -302,6 +311,50 @@ namespace DogGame.LLM
                 return;
 
             taskExecutor.ClearAll(taskContext);
+        }
+
+        public SaveData CaptureSaveData()
+        {
+            EnsureRuntimeState();
+
+            SaveData data = new()
+            {
+                agentId = agentId,
+                clearQueueOnNewPlan = clearQueueOnNewPlan,
+                executor = taskExecutor.CaptureSaveData(),
+                queuedRequests = new List<TaskRequestSaveData>()
+            };
+
+            foreach (TaskRequest request in taskQueue.Snapshot())
+            {
+                TaskRequestSaveData? requestData = TaskRequestSaveData.FromRequest(request);
+                if (requestData != null)
+                    data.queuedRequests.Add(requestData);
+            }
+
+            return data;
+        }
+
+        public void RestoreSaveData(SaveData data)
+        {
+            if (data == null || !EnsureRuntimeState())
+                return;
+
+            clearQueueOnNewPlan = data.clearQueueOnNewPlan;
+            taskExecutor.ClearAll(taskContext);
+
+            List<TaskRequest> restoredQueue = new();
+            if (data.queuedRequests != null)
+            {
+                foreach (TaskRequestSaveData requestData in data.queuedRequests)
+                {
+                    if (requestData != null && requestData.TryToRequest(out TaskRequest request))
+                        restoredQueue.Add(request);
+                }
+            }
+
+            taskQueue.Restore(restoredQueue);
+            taskExecutor.RestoreSaveData(data.executor, taskContext);
         }
 
         public void Submit(TaskRequest request)

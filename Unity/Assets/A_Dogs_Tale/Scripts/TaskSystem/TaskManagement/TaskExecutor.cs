@@ -1,5 +1,6 @@
 #nullable enable
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using DogGame.LLM;
 using DogGame.Routines;
@@ -30,6 +31,59 @@ namespace DogGame.Tasks
         public TaskExecutor(TaskQueue taskQueue)
         {
             this.taskQueue = taskQueue;
+        }
+
+        public TaskExecutorSaveData CaptureSaveData()
+        {
+            return new TaskExecutorSaveData
+            {
+                currentRequest = currentRequest.HasValue ? TaskRequestSaveData.FromRequest(currentRequest.Value) : null,
+                currentTaskStarted = currentTaskStarted,
+                currentRequestElapsed = currentRequestElapsed,
+                lastFailureReason = lastFailureReason,
+                suspendedRequests = CaptureSuspendedRequests()
+            };
+        }
+
+        private List<TaskRequestSaveData> CaptureSuspendedRequests()
+        {
+            List<TaskRequestSaveData> requests = new();
+            foreach (TaskRequest request in suspended.Reverse())
+            {
+                TaskRequestSaveData? requestData = TaskRequestSaveData.FromRequest(request);
+                if (requestData != null)
+                    requests.Add(requestData);
+            }
+
+            return requests;
+        }
+
+        public void RestoreSaveData(TaskExecutorSaveData? data, TaskContext context)
+        {
+            ClearAll(context);
+            if (data == null)
+                return;
+
+            if (data.suspendedRequests != null)
+            {
+                for (int i = 0; i < data.suspendedRequests.Count; i++)
+                {
+                    if (data.suspendedRequests[i] != null &&
+                        data.suspendedRequests[i].TryToRequest(out TaskRequest suspendedRequest))
+                    {
+                        suspended.Push(suspendedRequest);
+                    }
+                }
+            }
+
+            if (data.currentRequest != null && data.currentRequest.TryToRequest(out TaskRequest restoredCurrent))
+            {
+                currentRequest = restoredCurrent;
+                currentTask = restoredCurrent.Task;
+                currentTaskStarted = false;
+                currentRequestElapsed = data.currentRequestElapsed;
+                lastFailureReason = data.lastFailureReason;
+            }
         }
 
         private int debugDoubleTick = -1;

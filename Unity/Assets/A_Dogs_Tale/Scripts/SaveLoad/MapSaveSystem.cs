@@ -9,7 +9,7 @@ using UnityEngine;
 
 public partial class DungeonGenerator
 {
-    private const int MapSaveVersion = 6;
+    private const int MapSaveVersion = 7;
     private const string SaveDirectoryName = "DogsTaleSaves";
     private const string SingleMapSaveFilename = "dogs_tale_map_slot.json";
 
@@ -313,6 +313,7 @@ public partial class DungeonGenerator
         ApplySavedScentEmitterState(worldObject, savedObject.scentEmitter);
         ApplySavedMessageQueueState(worldObject, savedObject.messageQueues);
         ApplySavedLLMState(worldObject, savedObject.llmState);
+        ApplySavedTaskControllerState(worldObject, savedObject.taskController);
 
         worldObject.agentMovementModule?.ClearDesiredMovement();
         worldObject.RegisterIfNeeded();
@@ -420,6 +421,14 @@ public partial class DungeonGenerator
             worldObject.llmWorldStateModule.RestoreSaveData(llmState.worldState);
         if (worldObject.llmThinkModule != null)
             worldObject.llmThinkModule.RestoreSaveData(llmState.think);
+    }
+
+    private static void ApplySavedTaskControllerState(WorldObject worldObject, TaskController.SaveData taskController)
+    {
+        if (worldObject == null || taskController == null || worldObject.taskController == null)
+            return;
+
+        worldObject.taskController.RestoreSaveData(taskController);
     }
 
     private static void ApplySavedContainers(List<WorldObjectDto> savedObjects, Dictionary<int, WorldObject> restoredById)
@@ -902,6 +911,7 @@ public partial class DungeonGenerator
         public ScentEmitterDto scentEmitter;
         public MessageQueueDto messageQueues;
         public LLMStateDto llmState;
+        public TaskController.SaveData taskController;
 
         public static WorldObjectDto FromWorldObject(WorldObject worldObject)
         {
@@ -933,7 +943,10 @@ public partial class DungeonGenerator
                 placement = PlacementDto.FromWorldObject(worldObject),
                 scentEmitter = ScentEmitterDto.FromWorldObject(worldObject),
                 messageQueues = MessageQueueDto.FromWorldObject(worldObject),
-                llmState = LLMStateDto.FromWorldObject(worldObject)
+                llmState = LLMStateDto.FromWorldObject(worldObject),
+                taskController = worldObject.taskController != null
+                    ? worldObject.taskController.CaptureSaveData()
+                    : null
             };
         }
 

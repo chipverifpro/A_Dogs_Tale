@@ -13,6 +13,21 @@ namespace DogGame.Tasks
 
         public void Clear() => queued.Clear();
 
+        public List<TaskRequest> Snapshot()
+        {
+            return new List<TaskRequest>(queued);
+        }
+
+        public void Restore(IEnumerable<TaskRequest> requests)
+        {
+            queued.Clear();
+            if (requests == null)
+                return;
+
+            foreach (TaskRequest request in requests)
+                queued.Add(request);
+        }
+
         public void Enqueue(TaskRequest request, bool front=false)
         {
             // Insert in descending priority order (stable)
