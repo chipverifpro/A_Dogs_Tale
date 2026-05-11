@@ -439,6 +439,26 @@ namespace DogGame.LLM.Agent
             while (recentObservations.Count > 0)
                 yield return recentObservations.Dequeue();
         }
+
+        public List<string> CaptureRecentObservations()
+        {
+            return new List<string>(recentObservations);
+        }
+
+        public void RestoreRecentObservations(List<string> observations)
+        {
+            recentObservations.Clear();
+            if (observations == null)
+                return;
+
+            int startIndex = Mathf.Max(0, observations.Count - MaxObservations);
+            for (int i = startIndex; i < observations.Count; i++)
+            {
+                string observation = observations[i];
+                if (!string.IsNullOrWhiteSpace(observation))
+                    recentObservations.Enqueue(observation);
+            }
+        }
         #endregion
     }
 }

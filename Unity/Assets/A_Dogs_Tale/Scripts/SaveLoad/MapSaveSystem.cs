@@ -7,7 +7,7 @@ using UnityEngine;
 
 public partial class DungeonGenerator
 {
-    private const int MapSaveVersion = 3;
+    private const int MapSaveVersion = 5;
     private const string SaveDirectoryName = "DogsTaleSaves";
     private const string SingleMapSaveFilename = "dogs_tale_map_slot.json";
 
@@ -107,12 +107,14 @@ public partial class DungeonGenerator
         Dictionary<int, WorldObject> restoredWorldObjects = ApplySavedWorldObjects(saveData.worldObjects);
         ApplySavedPacks(saveData.packs, restoredWorldObjects);
         ApplySavedContainers(saveData.worldObjects, restoredWorldObjects);
+        ApplySavedScentPhysics(saveData.scentPhysics, restoredWorldObjects);
+        ApplySavedBottomBannerMessages(saveData.bottomBanner);
 
         buildComplete = true;
         regenerateCoroutine = null;
 
         if (dir != null && dir.scentAirGround != null)
-            dir.scentAirGround.StartScentSimulation();
+            dir.scentAirGround.StartScentSimulation(resetOverlayAgent: saveData.scentPhysics == null);
 
         BottomBanner.Show($"Map and WorldObjects loaded from {savePath}");
         Debug.Log($"[MapSaveSystem] Loaded map and WorldObjects from {savePath}", this);
@@ -303,6 +305,8 @@ public partial class DungeonGenerator
         ApplySavedAgentState(worldObject, savedObject.agent);
         ApplySavedPlacementState(worldObject, savedObject.placement);
         ApplySavedContainerState(worldObject, savedObject.container);
+        ApplySavedScentEmitterState(worldObject, savedObject.scentEmitter);
+        ApplySavedMessageQueueState(worldObject, savedObject.messageQueues);
 
         worldObject.agentMovementModule?.ClearDesiredMovement();
         worldObject.RegisterIfNeeded();
@@ -380,6 +384,23 @@ public partial class DungeonGenerator
             container.autoConfigureAgentCapacity,
             container.dogItemCapacity,
             container.humanItemCapacity);
+    }
+
+    private static void ApplySavedScentEmitterState(WorldObject worldObject, ScentEmitterDto scentEmitter)
+    {
+        if (worldObject == null || scentEmitter == null || worldObject.scentEmitterModule == null)
+            return;
+
+        scentEmitter.ApplyTo(worldObject.scentEmitterModule, worldObject);
+    }
+
+    private static void ApplySavedMessageQueueState(WorldObject worldObject, MessageQueueDto messageQueues)
+    {
+        if (worldObject == null || messageQueues == null)
+            return;
+
+        if (worldObject.llmWorldStateModule != null)
+            worldObject.llmWorldStateModule.RestoreRecentObservations(messageQueues.llmRecentObservations);
     }
 
     private static void ApplySavedContainers(List<WorldObjectDto> savedObjects, Dictionary<int, WorldObject> restoredById)
@@ -506,6 +527,160 @@ public partial class DungeonGenerator
         return pack;
     }
 
+    private void ApplySavedScentPhysics(ScentPhysicsDto scentPhysics, Dictionary<int, WorldObject> restoredById)
+    {
+        if (scentPhysics == null)
+            return;
+        if (dir == null || dir.scentAirGround == null)
+        {
+            Debug.LogWarning("[MapSaveSystem] Could not restore scent physics because ScentAirGround is unavailable.", this);
+            return;
+        }
+
+        ScentAirGround scentAirGround = dir.scentAirGround;
+        scentAirGround.StopScentSimulation();
+        scentAirGround.ClearAllScentVisuals();
+
+        ApplySavedScentAirGroundSettings(scentAirGround, scentPhysics.airGround);
+        ApplySavedCellScents(scentPhysics.cells);
+        scentAirGround.ScentCellsListCreate();
+        ApplySavedScentRegistry(scentPhysics.registry, restoredById);
+
+        if (dir.scentRegistry != null)
+            dir.scentRegistry.RebuildLookup();
+    }
+
+    private static void ApplySavedScentAirGroundSettings(ScentAirGround scentAirGround, ScentAirGroundDto airGround)
+    {
+        if (scentAirGround == null || airGround == null)
+            return;
+
+        scentAirGround.currentAgentId = airGround.currentAgentId;
+        scentAirGround.previousAgentIdVisualized = airGround.previousAgentIdVisualized;
+        scentAirGround.airScentVisible = airGround.airScentVisible;
+        scentAirGround.groundScentVisible = airGround.groundScentVisible;
+        scentAirGround.airScentDepositRate = airGround.airScentDepositRate;
+        scentAirGround.airDiffusionRate = airGround.airDiffusionRate;
+        scentAirGround.airDecayRate = airGround.airDecayRate;
+        scentAirGround.groundScentDepositRate = airGround.groundScentDepositRate;
+        scentAirGround.groundDiffusionRate = airGround.groundDiffusionRate;
+        scentAirGround.groundDecayRate = airGround.groundDecayRate;
+        scentAirGround.airToGroundRate = airGround.airToGroundRate;
+        scentAirGround.groundToAirRate = airGround.groundToAirRate;
+        scentAirGround.SimulationTimeStep = airGround.simulationTimeStep;
+        scentAirGround.runOnStart = airGround.runOnStart;
+        scentAirGround.practically_zero = airGround.practicallyZero;
+        scentAirGround.enableScentDiagnostics = airGround.enableScentDiagnostics;
+        scentAirGround.scentDiagnosticsEveryNFrames = airGround.scentDiagnosticsEveryNFrames;
+        scentAirGround.logScentReclamation = airGround.logScentReclamation;
+        scentAirGround.scentVisualThreshold = airGround.scentVisualThreshold;
+        scentAirGround.maxVisualIntensity = airGround.maxVisualIntensity;
+        scentAirGround.airBaseColor = airGround.airBaseColor.ToColor();
+        scentAirGround.groundBaseColor = airGround.groundBaseColor.ToColor();
+    }
+
+    private void ApplySavedScentRegistry(ScentRegistryDto registryDto, Dictionary<int, WorldObject> restoredById)
+    {
+        if (registryDto == null || dir == null || dir.scentRegistry == null)
+            return;
+
+        ScentRegistry registry = dir.scentRegistry;
+        registry.allScentSources = new List<ScentSource>();
+        if (registryDto.sources != null)
+        {
+            foreach (ScentSourceDto sourceDto in registryDto.sources)
+            {
+                if (sourceDto == null)
+                    continue;
+
+                ScentSource source = sourceDto.ToScentSource(restoredById);
+                registry.allScentSources.Add(source);
+            }
+        }
+
+        registry.RebuildLookup();
+
+        if (!string.IsNullOrWhiteSpace(registryDto.selectedTargetScentKey) &&
+            registry.TryResolveScentSource(registryDto.selectedTargetScentKey, out ScentSource selectedSource))
+        {
+            registry.SetSelectedTargetScent(selectedSource);
+        }
+        else
+        {
+            registry.SetSelectedTargetScent(null);
+        }
+    }
+
+    private void ApplySavedCellScents(List<ScentCellDto> savedCells)
+    {
+        if (savedCells == null || dir == null || dir.gen == null)
+            return;
+
+        foreach (Room room in rooms)
+        {
+            if (room == null || room.cells == null)
+                continue;
+
+            foreach (Cell cell in room.cells)
+            {
+                if (cell != null)
+                    cell.scents = null;
+            }
+        }
+
+        foreach (ScentCellDto savedCell in savedCells)
+        {
+            if (savedCell == null || savedCell.scents == null || savedCell.scents.Count == 0)
+                continue;
+
+            Cell cell = dir.gen.GetCellFromHf(savedCell.x, savedCell.y, savedCell.height, threshold: 50);
+            if (cell == null)
+                cell = FindRoomCell(savedCell.x, savedCell.y, savedCell.height);
+            if (cell == null)
+                continue;
+
+            cell.scents = new List<ScentInCell>();
+            foreach (ScentInCellDto savedScent in savedCell.scents)
+            {
+                if (savedScent == null || savedScent.agentId < 0)
+                    continue;
+
+                cell.scents.Add(savedScent.ToScentInCell());
+            }
+
+            if (cell.scents.Count == 0)
+                cell.scents = null;
+        }
+    }
+
+    private Cell FindRoomCell(int x, int y, int height)
+    {
+        if (rooms == null)
+            return null;
+
+        foreach (Room room in rooms)
+        {
+            if (room == null || room.cells == null)
+                continue;
+
+            foreach (Cell cell in room.cells)
+            {
+                if (cell != null && cell.x == x && cell.y == y && cell.height == height)
+                    return cell;
+            }
+        }
+
+        return null;
+    }
+
+    private static void ApplySavedBottomBannerMessages(BottomBanner.SaveData bottomBanner)
+    {
+        if (bottomBanner == null)
+            return;
+
+        BottomBanner.RestoreSaveData(bottomBanner);
+    }
+
     private static bool TryParseModuleFlags(string raw, out ModuleFlags moduleFlags)
     {
         moduleFlags = ModuleFlags.none;
@@ -529,6 +704,8 @@ public partial class DungeonGenerator
         public List<RoomDto> rooms = new();
         public List<WorldObjectDto> worldObjects = new();
         public List<PackDto> packs = new();
+        public ScentPhysicsDto scentPhysics;
+        public BottomBanner.SaveData bottomBanner;
 
         public static MapSaveData FromGenerator(DungeonGenerator generator)
         {
@@ -569,6 +746,9 @@ public partial class DungeonGenerator
                     data.packs.Add(PackDto.FromPack(pack));
                 }
             }
+
+            data.scentPhysics = ScentPhysicsDto.FromDir(generator.dir != null ? generator.dir : Dir.Instance);
+            data.bottomBanner = BottomBanner.CaptureSaveData();
 
             return data;
         }
@@ -644,6 +824,8 @@ public partial class DungeonGenerator
         public AgentDto agent;
         public ContainerDto container;
         public PlacementDto placement;
+        public ScentEmitterDto scentEmitter;
+        public MessageQueueDto messageQueues;
 
         public static WorldObjectDto FromWorldObject(WorldObject worldObject)
         {
@@ -672,7 +854,9 @@ public partial class DungeonGenerator
                 moduleFlagsNames = moduleFlags.ToString(),
                 agent = AgentDto.FromWorldObject(worldObject),
                 container = ContainerDto.FromWorldObject(worldObject),
-                placement = PlacementDto.FromWorldObject(worldObject)
+                placement = PlacementDto.FromWorldObject(worldObject),
+                scentEmitter = ScentEmitterDto.FromWorldObject(worldObject),
+                messageQueues = MessageQueueDto.FromWorldObject(worldObject)
             };
         }
 
@@ -838,6 +1022,386 @@ public partial class DungeonGenerator
                 minClearCellsAround = placement.minClearCellsAround,
                 mustTouchWall = placement.mustTouchWall,
                 wallPadding = placement.wallPadding
+            };
+        }
+    }
+
+    [Serializable]
+    private sealed class ScentEmitterDto
+    {
+        public float depositTimeLeft;
+        public ScentSourceDto normalScentSource;
+        public ScentSourceDto onDemandScentSource;
+        public List<DurationScentSourceDto> durationScentSources = new();
+
+        public static ScentEmitterDto FromWorldObject(WorldObject worldObject)
+        {
+            ScentEmitterModule emitter = worldObject != null ? worldObject.scentEmitterModule : null;
+            if (emitter == null)
+                return null;
+
+            ScentEmitterDto dto = new()
+            {
+                depositTimeLeft = emitter.deposit_time_left,
+                normalScentSource = ScentSourceDto.FromScentSource(emitter.normalScentSource),
+                onDemandScentSource = ScentSourceDto.FromScentSource(emitter.onDemandScentSource),
+                durationScentSources = new List<DurationScentSourceDto>()
+            };
+
+            if (emitter.durationScentSources != null)
+            {
+                foreach (DurationScentSource durationSource in emitter.durationScentSources)
+                {
+                    DurationScentSourceDto durationDto = DurationScentSourceDto.FromDurationScentSource(durationSource);
+                    if (durationDto != null)
+                        dto.durationScentSources.Add(durationDto);
+                }
+            }
+
+            return dto;
+        }
+
+        public void ApplyTo(ScentEmitterModule emitter, WorldObject owner)
+        {
+            if (emitter == null)
+                return;
+
+            emitter.deposit_time_left = depositTimeLeft;
+            emitter.normalScentSource = normalScentSource != null
+                ? normalScentSource.ToScentSource(owner)
+                : emitter.normalScentSource;
+            emitter.onDemandScentSource = onDemandScentSource != null
+                ? onDemandScentSource.ToScentSource(owner)
+                : emitter.onDemandScentSource;
+            emitter.durationScentSources = new List<DurationScentSource>();
+
+            if (durationScentSources != null)
+            {
+                foreach (DurationScentSourceDto durationDto in durationScentSources)
+                {
+                    DurationScentSource durationSource = durationDto != null ? durationDto.ToDurationScentSource(owner) : null;
+                    if (durationSource != null)
+                        emitter.durationScentSources.Add(durationSource);
+                }
+            }
+        }
+    }
+
+    [Serializable]
+    private sealed class MessageQueueDto
+    {
+        public List<string> llmRecentObservations = new();
+
+        public static MessageQueueDto FromWorldObject(WorldObject worldObject)
+        {
+            if (worldObject == null || worldObject.llmWorldStateModule == null)
+                return null;
+
+            return new MessageQueueDto
+            {
+                llmRecentObservations = worldObject.llmWorldStateModule.CaptureRecentObservations()
+            };
+        }
+    }
+
+    [Serializable]
+    private sealed class DurationScentSourceDto
+    {
+        public ScentSourceDto scentSource;
+        public float duration;
+        public float timeRemaining;
+
+        public static DurationScentSourceDto FromDurationScentSource(DurationScentSource source)
+        {
+            if (source == null)
+                return null;
+
+            return new DurationScentSourceDto
+            {
+                scentSource = ScentSourceDto.FromScentSource(source.scentSource),
+                duration = source.duration,
+                timeRemaining = source.time_remaining
+            };
+        }
+
+        public DurationScentSource ToDurationScentSource(WorldObject fallbackAgent)
+        {
+            return new DurationScentSource
+            {
+                scentSource = scentSource != null ? scentSource.ToScentSource(fallbackAgent) : null,
+                duration = duration,
+                time_remaining = timeRemaining
+            };
+        }
+    }
+
+    [Serializable]
+    private sealed class ScentPhysicsDto
+    {
+        public ScentAirGroundDto airGround;
+        public ScentRegistryDto registry;
+        public List<ScentCellDto> cells = new();
+
+        public static ScentPhysicsDto FromDir(Dir dir)
+        {
+            if (dir == null || dir.scentAirGround == null)
+                return null;
+
+            return new ScentPhysicsDto
+            {
+                airGround = ScentAirGroundDto.FromScentAirGround(dir.scentAirGround),
+                registry = ScentRegistryDto.FromScentRegistry(dir.scentRegistry),
+                cells = ScentCellDto.FromScentAirGround(dir.scentAirGround)
+            };
+        }
+    }
+
+    [Serializable]
+    private sealed class ScentAirGroundDto
+    {
+        public int currentAgentId;
+        public int previousAgentIdVisualized;
+        public bool airScentVisible;
+        public float airScentDepositRate;
+        public float airDiffusionRate;
+        public float airDecayRate;
+        public bool groundScentVisible;
+        public float groundScentDepositRate;
+        public float groundDiffusionRate;
+        public float groundDecayRate;
+        public float airToGroundRate;
+        public float groundToAirRate;
+        public float simulationTimeStep;
+        public bool runOnStart;
+        public float practicallyZero;
+        public bool enableScentDiagnostics;
+        public int scentDiagnosticsEveryNFrames;
+        public bool logScentReclamation;
+        public float scentVisualThreshold;
+        public float maxVisualIntensity;
+        public ColorDto airBaseColor;
+        public ColorDto groundBaseColor;
+
+        public static ScentAirGroundDto FromScentAirGround(ScentAirGround scentAirGround)
+        {
+            if (scentAirGround == null)
+                return null;
+
+            return new ScentAirGroundDto
+            {
+                currentAgentId = scentAirGround.currentAgentId,
+                previousAgentIdVisualized = scentAirGround.previousAgentIdVisualized,
+                airScentVisible = scentAirGround.airScentVisible,
+                airScentDepositRate = scentAirGround.airScentDepositRate,
+                airDiffusionRate = scentAirGround.airDiffusionRate,
+                airDecayRate = scentAirGround.airDecayRate,
+                groundScentVisible = scentAirGround.groundScentVisible,
+                groundScentDepositRate = scentAirGround.groundScentDepositRate,
+                groundDiffusionRate = scentAirGround.groundDiffusionRate,
+                groundDecayRate = scentAirGround.groundDecayRate,
+                airToGroundRate = scentAirGround.airToGroundRate,
+                groundToAirRate = scentAirGround.groundToAirRate,
+                simulationTimeStep = scentAirGround.SimulationTimeStep,
+                runOnStart = scentAirGround.runOnStart,
+                practicallyZero = scentAirGround.practically_zero,
+                enableScentDiagnostics = scentAirGround.enableScentDiagnostics,
+                scentDiagnosticsEveryNFrames = scentAirGround.scentDiagnosticsEveryNFrames,
+                logScentReclamation = scentAirGround.logScentReclamation,
+                scentVisualThreshold = scentAirGround.scentVisualThreshold,
+                maxVisualIntensity = scentAirGround.maxVisualIntensity,
+                airBaseColor = ColorDto.FromColor(scentAirGround.airBaseColor),
+                groundBaseColor = ColorDto.FromColor(scentAirGround.groundBaseColor)
+            };
+        }
+    }
+
+    [Serializable]
+    private sealed class ScentRegistryDto
+    {
+        public string selectedTargetScentKey;
+        public List<ScentSourceDto> sources = new();
+
+        public static ScentRegistryDto FromScentRegistry(ScentRegistry registry)
+        {
+            if (registry == null)
+                return null;
+
+            ScentRegistryDto dto = new()
+            {
+                selectedTargetScentKey = registry.SelectedTargetScentKey,
+                sources = new List<ScentSourceDto>()
+            };
+
+            if (registry.allScentSources != null)
+            {
+                foreach (ScentSource source in registry.allScentSources)
+                {
+                    ScentSourceDto sourceDto = ScentSourceDto.FromScentSource(source);
+                    if (sourceDto != null)
+                        dto.sources.Add(sourceDto);
+                }
+            }
+
+            return dto;
+        }
+    }
+
+    [Serializable]
+    private sealed class ScentSourceDto
+    {
+        public int agentId;
+        public int agentObjectId;
+        public int category;
+        public string scentName;
+        public ColorDto categoryColor;
+        public ColorDto sourceAirColor;
+        public ColorDto sourceGroundColor;
+        public float airDepositRate;
+        public float groundDepositRate;
+        public int familiarity;
+        public float sensitivityBoost;
+        public string persistentId;
+
+        public static ScentSourceDto FromScentSource(ScentSource source)
+        {
+            if (source == null)
+                return null;
+
+            return new ScentSourceDto
+            {
+                agentId = source.agentId,
+                agentObjectId = source.agent != null ? source.agent.ObjectId : -1,
+                category = (int)source.category,
+                scentName = source.scentName,
+                categoryColor = ColorDto.FromColor(source.categoryColor),
+                sourceAirColor = ColorDto.FromColor(source.sourceAirColor),
+                sourceGroundColor = ColorDto.FromColor(source.sourceGroundColor),
+                airDepositRate = source.airDepositRate,
+                groundDepositRate = source.groundDepositRate,
+                familiarity = (int)source.familiarity,
+                sensitivityBoost = source.sensitivityBoost,
+                persistentId = source.persistentId
+            };
+        }
+
+        public ScentSource ToScentSource(Dictionary<int, WorldObject> worldObjects)
+        {
+            WorldObject agent = null;
+            if (worldObjects != null && agentObjectId > 0)
+                worldObjects.TryGetValue(agentObjectId, out agent);
+
+            return ToScentSource(agent);
+        }
+
+        public ScentSource ToScentSource(WorldObject fallbackAgent)
+        {
+            WorldObject agent = fallbackAgent;
+            if (agent == null && agentObjectId > 0 && WorldObjectRegistry.Instance != null)
+                WorldObjectRegistry.Instance.TryGet(agentObjectId, out agent);
+
+            return new ScentSource
+            {
+                agentId = agentId,
+                agent = agent,
+                category = (ScentCategory)category,
+                scentName = scentName,
+                categoryColor = categoryColor.ToColor(),
+                sourceAirColor = sourceAirColor.ToColor(),
+                sourceGroundColor = sourceGroundColor.ToColor(),
+                airDepositRate = airDepositRate,
+                groundDepositRate = groundDepositRate,
+                familiarity = (ScentFamiliarity)familiarity,
+                sensitivityBoost = sensitivityBoost,
+                persistentId = persistentId
+            };
+        }
+    }
+
+    [Serializable]
+    private sealed class ScentCellDto
+    {
+        public int x;
+        public int y;
+        public int height;
+        public List<ScentInCellDto> scents = new();
+
+        public static List<ScentCellDto> FromScentAirGround(ScentAirGround scentAirGround)
+        {
+            List<ScentCellDto> scentCells = new();
+            if (scentAirGround == null || scentAirGround.cellsContainingScents == null)
+                return scentCells;
+
+            foreach (Cell cell in scentAirGround.cellsContainingScents)
+            {
+                ScentCellDto cellDto = FromCell(cell);
+                if (cellDto != null)
+                    scentCells.Add(cellDto);
+            }
+
+            return scentCells;
+        }
+
+        private static ScentCellDto FromCell(Cell cell)
+        {
+            if (cell == null || cell.scents == null || cell.scents.Count == 0)
+                return null;
+
+            ScentCellDto dto = new()
+            {
+                x = cell.x,
+                y = cell.y,
+                height = cell.height,
+                scents = new List<ScentInCellDto>()
+            };
+
+            foreach (ScentInCell scent in cell.scents)
+            {
+                ScentInCellDto scentDto = ScentInCellDto.FromScentInCell(scent);
+                if (scentDto != null)
+                    dto.scents.Add(scentDto);
+            }
+
+            return dto.scents.Count > 0 ? dto : null;
+        }
+    }
+
+    [Serializable]
+    private sealed class ScentInCellDto
+    {
+        public int agentId;
+        public float airIntensity;
+        public float airNextDelta;
+        public float groundIntensity;
+        public float groundNextDelta;
+
+        public static ScentInCellDto FromScentInCell(ScentInCell scent)
+        {
+            if (scent == null)
+                return null;
+
+            return new ScentInCellDto
+            {
+                agentId = scent.agentId,
+                airIntensity = scent.airIntensity,
+                airNextDelta = scent.airNextDelta,
+                groundIntensity = scent.groundIntensity,
+                groundNextDelta = scent.groundNextDelta
+            };
+        }
+
+        public ScentInCell ToScentInCell()
+        {
+            return new ScentInCell
+            {
+                agentId = agentId,
+                airIntensity = airIntensity,
+                airNextDelta = airNextDelta,
+                airLastVisualized = -1f,
+                airGOindex = -1,
+                groundIntensity = groundIntensity,
+                groundNextDelta = groundNextDelta,
+                groundLastVisualized = -1f,
+                groundGOindex = -1
             };
         }
     }

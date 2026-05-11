@@ -41,6 +41,27 @@ public class BottomBanner : MonoBehaviour
 {
     public static BottomBanner Instance { get; private set; }
 
+    [Serializable]
+    public sealed class SaveData
+    {
+        public float elapsedGameTimeSeconds;
+        public bool canvasVisible;
+        public List<MessageSaveData> messages = new List<MessageSaveData>();
+    }
+
+    [Serializable]
+    public sealed class MessageSaveData
+    {
+        public int sense;
+        public int level;
+        public string iconSpriteName;
+        public string message;
+        public string renderedText;
+        public bool includesGameTime;
+        public float gameTimeSeconds;
+        public string createdAtUtc;
+    }
+
     internal static void ResetStaticStateForReload()
     {
         Instance = null;
@@ -771,6 +792,126 @@ public class BottomBanner : MonoBehaviour
             panel.SetActive(false);
     }
 
+    SaveData CaptureSaveDataInternal()
+    {
+        SaveData data = new SaveData
+        {
+            elapsedGameTimeSeconds = elapsedGameTimeSeconds,
+            canvasVisible = BottomBannerCanvas == null || BottomBannerCanvas.enabled,
+            messages = new List<MessageSaveData>()
+        };
+
+        for (int i = 0; i < messageHistory.Count; i++)
+        {
+            BannerMessageEntry entry = messageHistory[i];
+            if (entry == null)
+                continue;
+
+            data.messages.Add(new MessageSaveData
+            {
+                sense = (int)entry.sense,
+                level = (int)entry.level,
+                iconSpriteName = entry.iconSprite != null ? entry.iconSprite.name : "",
+                message = entry.message,
+                renderedText = entry.renderedText,
+                includesGameTime = entry.includesGameTime,
+                gameTimeSeconds = entry.gameTimeSeconds,
+                createdAtUtc = entry.createdAtUtc.ToString("o")
+            });
+        }
+
+        return data;
+    }
+
+    void RestoreSaveDataInternal(SaveData data)
+    {
+        ClearHistoryInternal();
+
+        if (data == null)
+            return;
+
+        elapsedGameTimeSeconds = Mathf.Max(0f, data.elapsedGameTimeSeconds);
+        BuildUIIfNeeded();
+
+        if (data.messages != null)
+        {
+            foreach (MessageSaveData savedMessage in data.messages)
+            {
+                if (savedMessage == null)
+                    continue;
+
+                BannerSense sense = (BannerSense)savedMessage.sense;
+                BannerLevel level = (BannerLevel)savedMessage.level;
+                Sprite sprite = !string.IsNullOrWhiteSpace(savedMessage.iconSpriteName)
+                    ? SpriteServer.SpriteLookup(savedMessage.iconSpriteName)
+                    : null;
+                if (sprite == null)
+                    sprite = GetSpriteFor(sense, level);
+
+                DateTime createdAtUtc = DateTime.UtcNow;
+                if (!string.IsNullOrWhiteSpace(savedMessage.createdAtUtc) &&
+                    DateTime.TryParse(
+                        savedMessage.createdAtUtc,
+                        null,
+                        System.Globalization.DateTimeStyles.RoundtripKind,
+                        out DateTime parsedCreatedAtUtc))
+                {
+                    createdAtUtc = parsedCreatedAtUtc;
+                }
+
+                string renderedText = !string.IsNullOrEmpty(savedMessage.renderedText)
+                    ? savedMessage.renderedText
+                    : FormatMessageText(savedMessage.message, savedMessage.includesGameTime, false);
+
+                BannerMessageEntry entry = new BannerMessageEntry
+                {
+                    sense = sense,
+                    level = level,
+                    iconSprite = sprite,
+                    message = savedMessage.message ?? string.Empty,
+                    renderedText = renderedText,
+                    includesGameTime = savedMessage.includesGameTime,
+                    gameTimeSeconds = savedMessage.gameTimeSeconds,
+                    createdAtUtc = createdAtUtc
+                };
+
+                messageHistory.Add(entry);
+                rowObjects.Add(CreateMessageRow(sprite, renderedText));
+            }
+        }
+
+        if (panel != null)
+            panel.SetActive(messageHistory.Count > 0);
+        if (BottomBannerCanvas != null)
+            BottomBannerCanvas.enabled = data.canvasVisible;
+
+        if (autoScrollToNewest && scrollRect != null)
+        {
+            Canvas.ForceUpdateCanvases();
+            scrollRect.verticalNormalizedPosition = 0f;
+        }
+    }
+
+    void ClearHistoryInternal()
+    {
+        if (hideRoutine != null)
+        {
+            StopCoroutine(hideRoutine);
+            hideRoutine = null;
+        }
+
+        messageHistory.Clear();
+        for (int i = 0; i < rowObjects.Count; i++)
+        {
+            if (rowObjects[i] != null)
+                Destroy(rowObjects[i]);
+        }
+
+        rowObjects.Clear();
+        rowTextObjects.Clear();
+        _Clear();
+    }
+
     void _ShowFor(BannerSense sense, BannerLevel level, string message, float seconds, bool includeGameTime, bool isRichText)
     {
         _ShowFor(sense, level, message, seconds, includeGameTime, isRichText, null);
@@ -896,16 +1037,17 @@ public class BottomBanner : MonoBehaviour
         if (Instance == null)
             return;
 
-        Instance.messageHistory.Clear();
-        for (int i = 0; i < Instance.rowObjects.Count; i++)
-        {
-            if (Instance.rowObjects[i] != null)
-                Destroy(Instance.rowObjects[i]);
-        }
+        Instance.ClearHistoryInternal();
+    }
 
-        Instance.rowObjects.Clear();
-        Instance.rowTextObjects.Clear();
-        Instance._Clear();
+    public static SaveData CaptureSaveData()
+    {
+        return GetOrCreateInstance()?.CaptureSaveDataInternal();
+    }
+
+    public static void RestoreSaveData(SaveData data)
+    {
+        GetOrCreateInstance()?.RestoreSaveDataInternal(data);
     }
 
     public void Display(string message)

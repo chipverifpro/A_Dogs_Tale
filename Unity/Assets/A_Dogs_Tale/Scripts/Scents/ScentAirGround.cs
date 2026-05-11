@@ -212,14 +212,15 @@ public class ScentAirGround : MonoBehaviour
         groundScentWasVisible     = groundScentVisible;
     }
 
-    public void StartScentSimulation()
+    public void StartScentSimulation(bool resetOverlayAgent = true)
     {
         if (_simulationCoroutine != null)
         {
             StopCoroutine(_simulationCoroutine);    // kill previously still running copy?
         }
 
-        currentAgentId = 1;
+        if (resetOverlayAgent)
+            currentAgentId = 1;
         nextScentDiagnosticsFrame = Time.frameCount + Mathf.Max(1, scentDiagnosticsEveryNFrames);
         Debug.Log($"StartScentSimulation");
         // Call this every time we change map structure (load/build complete): likely to start empty or nearly so before scents start appearing.
