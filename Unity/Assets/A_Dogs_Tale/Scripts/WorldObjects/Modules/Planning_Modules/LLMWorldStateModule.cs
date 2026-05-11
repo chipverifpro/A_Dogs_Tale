@@ -32,6 +32,36 @@ namespace DogGame.LLM.Agent
     [DisallowMultipleComponent]
     public sealed class LLMWorldStateModule : WorldModule
     {
+        [Serializable]
+        public sealed class SaveData
+        {
+            public string positionContext = "";
+            public string doorsContext = "";
+            public int maxDoors;
+            public string leashContext = "";
+            public float distanceToPlayerMeters;
+            public bool isInCombat;
+            public bool isQuestCritical;
+            public bool isPlayerFocusingThisNpc;
+            public int nearbyEntityCount;
+            public string nearbySummary = "";
+            public string statusSummary = "";
+            public string goalsSummary = "";
+            public string recentEventsSummary = "";
+            public int maxCharsPerBlock;
+            public float agentWorldPositionX;
+            public float agentWorldPositionY;
+            public float agentWorldPositionZ;
+            public bool hasAgentCell;
+            public int suggestedTravelRadius;
+            public float targetX;
+            public float targetY;
+            public float targetWidth;
+            public float targetHeight;
+            public int maxVisionContextLines;
+            public List<string> recentObservations = new();
+        }
+
         public string positionContext = "";
         public string doorsContext = "";
         public int maxDoors = 5;
@@ -458,6 +488,69 @@ namespace DogGame.LLM.Agent
                 if (!string.IsNullOrWhiteSpace(observation))
                     recentObservations.Enqueue(observation);
             }
+        }
+
+        public SaveData CaptureSaveData()
+        {
+            return new SaveData
+            {
+                positionContext = positionContext,
+                doorsContext = doorsContext,
+                maxDoors = maxDoors,
+                leashContext = leashContext,
+                distanceToPlayerMeters = distanceToPlayerMeters,
+                isInCombat = isInCombat,
+                isQuestCritical = isQuestCritical,
+                isPlayerFocusingThisNpc = isPlayerFocusingThisNpc,
+                nearbyEntityCount = nearbyEntityCount,
+                nearbySummary = nearbySummary,
+                statusSummary = statusSummary,
+                goalsSummary = goalsSummary,
+                recentEventsSummary = recentEventsSummary,
+                maxCharsPerBlock = maxCharsPerBlock,
+                agentWorldPositionX = agentWorldPosition.x,
+                agentWorldPositionY = agentWorldPosition.y,
+                agentWorldPositionZ = agentWorldPosition.z,
+                hasAgentCell = hasAgentCell,
+                suggestedTravelRadius = suggestedTravelRadius,
+                targetX = tgt.x,
+                targetY = tgt.y,
+                targetWidth = tgt.width,
+                targetHeight = tgt.height,
+                maxVisionContextLines = maxVisionContextLines,
+                recentObservations = CaptureRecentObservations()
+            };
+        }
+
+        public void RestoreSaveData(SaveData data)
+        {
+            if (data == null)
+                return;
+
+            positionContext = data.positionContext ?? "";
+            doorsContext = data.doorsContext ?? "";
+            maxDoors = data.maxDoors;
+            leashContext = data.leashContext ?? "";
+            distanceToPlayerMeters = data.distanceToPlayerMeters;
+            isInCombat = data.isInCombat;
+            isQuestCritical = data.isQuestCritical;
+            isPlayerFocusingThisNpc = data.isPlayerFocusingThisNpc;
+            nearbyEntityCount = data.nearbyEntityCount;
+            nearbySummary = data.nearbySummary ?? "";
+            statusSummary = data.statusSummary ?? "";
+            goalsSummary = data.goalsSummary ?? "";
+            recentEventsSummary = data.recentEventsSummary ?? "";
+            maxCharsPerBlock = data.maxCharsPerBlock > 0 ? data.maxCharsPerBlock : maxCharsPerBlock;
+            agentWorldPosition = new Vector3(
+                data.agentWorldPositionX,
+                data.agentWorldPositionY,
+                data.agentWorldPositionZ);
+            hasAgentCell = data.hasAgentCell;
+            agentCell = hasAgentCell && worldObject != null ? worldObject.locationModule?.cell : null;
+            suggestedTravelRadius = data.suggestedTravelRadius > 0 ? data.suggestedTravelRadius : suggestedTravelRadius;
+            tgt = new Rect(data.targetX, data.targetY, data.targetWidth, data.targetHeight);
+            maxVisionContextLines = data.maxVisionContextLines > 0 ? data.maxVisionContextLines : maxVisionContextLines;
+            RestoreRecentObservations(data.recentObservations);
         }
         #endregion
     }

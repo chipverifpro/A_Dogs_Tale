@@ -286,6 +286,68 @@ public class LLMWorldScheduler : MonoBehaviour
 
     [SerializeField] public List<LLMPlanRequestOnDemand> pendingRequests = new();
 
+    [Serializable]
+    public sealed class SaveData
+    {
+        public int commandMode;
+        public List<RequestSaveData> pendingRequests = new();
+        public List<RequestSaveData> inflightRequests = new();
+    }
+
+    [Serializable]
+    public sealed class RequestSaveData
+    {
+        public string agentId = "";
+        public string prompt = "";
+        public bool hasEventCell;
+        public int eventCellX;
+        public int eventCellY;
+        public bool hasEventWorld;
+        public float eventWorldX;
+        public float eventWorldY;
+        public float eventWorldZ;
+        public int urgency;
+        public int applyMode;
+        public string tag = "";
+        public string requestId = "";
+        public int sophistication;
+        public float priorityScore;
+        public float requestTime;
+
+        public static RequestSaveData FromRequest(LLMPlanRequestOnDemand request)
+        {
+            RequestSaveData data = new();
+            if (request == null)
+                return data;
+
+            data.agentId = request.AgentId;
+            data.prompt = request.Prompt;
+            data.hasEventCell = request.EventCell.HasValue;
+            if (request.EventCell.HasValue)
+            {
+                data.eventCellX = request.EventCell.Value.x;
+                data.eventCellY = request.EventCell.Value.y;
+            }
+
+            data.hasEventWorld = request.EventWorld.HasValue;
+            if (request.EventWorld.HasValue)
+            {
+                data.eventWorldX = request.EventWorld.Value.x;
+                data.eventWorldY = request.EventWorld.Value.y;
+                data.eventWorldZ = request.EventWorld.Value.z;
+            }
+
+            data.urgency = (int)request.Urgency;
+            data.applyMode = (int)request.ApplyMode;
+            data.tag = request.Tag;
+            data.requestId = request.RequestId;
+            data.sophistication = (int)request.Sophistication;
+            data.priorityScore = request.PriorityScore;
+            data.requestTime = request.RequestTime;
+            return data;
+        }
+    }
+
     //private OpenAILLMService? openAiService;
     //private GeminiLLMService? geminiService;
     //private OllamaLLMService? ollamaService;
@@ -296,6 +358,7 @@ public class LLMWorldScheduler : MonoBehaviour
     // One in-flight request per agent.
     private readonly HashSet<string> inflightAgents = new();
     private readonly Dictionary<string, string> inflightRequestIdByAgent = new();
+    private readonly Dictionary<string, LLMPlanRequestOnDemand> inflightRequestByAgent = new();
     private readonly Dictionary<string, AgentModuleCacheEntry> agentModuleCache = new();
 
     private readonly struct AgentModuleCacheEntry
@@ -435,6 +498,7 @@ public class LLMWorldScheduler : MonoBehaviour
         {
             inflightAgents.Add(request.AgentId);
             inflightRequestIdByAgent[request.AgentId] = request.RequestId;
+            inflightRequestByAgent[request.AgentId] = request;
         }
         //string requestName = request.AgentId + ":" + request.RequestId;
         string requestName = request.RequestId;
@@ -447,7 +511,7 @@ public class LLMWorldScheduler : MonoBehaviour
         }
         catch (Exception ex)
         {
-            ReleaseInflightAgent(request.AgentId);
+            ReleaseInflightAgent(request.AgentId, request.RequestId);
             selection.OnDispatchFailure(requestName);
             UnityEngine.Debug.LogWarning($"[LLM Scheduler] Client creation failed vendor={selection.llmVendor} model={selection.llmModelString}: {ex.Message}");
             return;
@@ -466,7 +530,7 @@ public class LLMWorldScheduler : MonoBehaviour
         try
         {
             var response = await client.SendAsync(llmRequest, default);
-            ReleaseInflightAgent(schedulerRequest.AgentId);
+            ReleaseInflightAgent(schedulerRequest.AgentId, schedulerRequest.RequestId);
 
             if (response == null)
             {
@@ -508,19 +572,160 @@ public class LLMWorldScheduler : MonoBehaviour
         }
         catch (Exception ex)
         {
-            ReleaseInflightAgent(schedulerRequest.AgentId);
+            ReleaseInflightAgent(schedulerRequest.AgentId, schedulerRequest.RequestId);
             selection.OnDispatchFailure(schedulerRequest.RequestId);
             UnityEngine.Debug.LogWarning($"[LLM Scheduler] Send failed vendor={selection.llmVendor} model={selection.llmModelString} requestId={schedulerRequest.RequestId}: {ex.GetType().Name}: {ex.Message}");
         }
     }
 
-    private void ReleaseInflightAgent(string? agentId)
+    private void ReleaseInflightAgent(string? agentId, string? requestId = null)
     {
         if (string.IsNullOrWhiteSpace(agentId))
             return;
 
+        if (!string.IsNullOrWhiteSpace(requestId) &&
+            inflightRequestIdByAgent.TryGetValue(agentId, out string currentRequestId) &&
+            !string.Equals(currentRequestId, requestId, StringComparison.Ordinal))
+        {
+            return;
+        }
+
         inflightAgents.Remove(agentId);
         inflightRequestIdByAgent.Remove(agentId);
+        inflightRequestByAgent.Remove(agentId);
+    }
+
+    public SaveData CaptureSaveData()
+    {
+        SaveData data = new()
+        {
+            commandMode = (int)commandMode,
+            pendingRequests = new List<RequestSaveData>(),
+            inflightRequests = new List<RequestSaveData>()
+        };
+
+        if (pendingRequests != null)
+        {
+            foreach (LLMPlanRequestOnDemand request in pendingRequests)
+            {
+                if (request != null)
+                    data.pendingRequests.Add(RequestSaveData.FromRequest(request));
+            }
+        }
+
+        foreach (LLMPlanRequestOnDemand request in inflightRequestByAgent.Values)
+        {
+            if (request != null)
+                data.inflightRequests.Add(RequestSaveData.FromRequest(request));
+        }
+
+        return data;
+    }
+
+    public void RestoreSaveData(SaveData data)
+    {
+        DogGame.LLM.Core.LLMSessionToken.Bump();
+        ClearRuntimeRequestState();
+
+        if (data == null)
+            return;
+
+        commandMode = (SchedulerCommandMode)data.commandMode;
+        RefreshAgentModuleCache();
+
+        RestoreSavedRequestList(data.inflightRequests);
+        RestoreSavedRequestList(data.pendingRequests);
+        nextScheduleTime = Mathf.Min(nextScheduleTime, Time.time);
+    }
+
+    private void RestoreSavedRequestList(List<RequestSaveData> savedRequests)
+    {
+        if (savedRequests == null)
+            return;
+
+        foreach (RequestSaveData savedRequest in savedRequests)
+        {
+            LLMPlanRequestOnDemand? request = CreateRequestFromSaveData(savedRequest);
+            if (request == null)
+                continue;
+
+            pendingRequests.Add(request);
+            MarkAgentHasRestoredOutstandingRequest(request.AgentId);
+        }
+    }
+
+    private LLMPlanRequestOnDemand? CreateRequestFromSaveData(RequestSaveData savedRequest)
+    {
+        if (savedRequest == null || string.IsNullOrWhiteSpace(savedRequest.agentId))
+            return null;
+
+        Vector2Int? eventCell = savedRequest.hasEventCell
+            ? new Vector2Int(savedRequest.eventCellX, savedRequest.eventCellY)
+            : null;
+        Vector3? eventWorld = savedRequest.hasEventWorld
+            ? new Vector3(savedRequest.eventWorldX, savedRequest.eventWorldY, savedRequest.eventWorldZ)
+            : null;
+
+        LLMPlanRequestOnDemand request = new(
+            agentId: savedRequest.agentId,
+            prompt: savedRequest.prompt,
+            eventCell: eventCell,
+            eventWorld: eventWorld,
+            urgency: (LLMPlanUrgency)savedRequest.urgency,
+            applyMode: (LLMApplyMode)savedRequest.applyMode,
+            tag: savedRequest.tag,
+            sophistication: (Sophistication)savedRequest.sophistication,
+            onResponseJson: planJson => DeliverRestoredResponse(savedRequest.agentId, planJson),
+            priorityScoreOverride: savedRequest.priorityScore);
+
+        // Reloaded requests are re-issued as fresh provider calls. A new request id prevents
+        // a late stale response from the pre-load session from matching the replacement request.
+        request.RequestId = DogGame.LLM.Core.LLMRequestId.NewShortHex();
+        request.RequestTime = savedRequest.requestTime > 0f ? savedRequest.requestTime : Time.time;
+        return request;
+    }
+
+    private void DeliverRestoredResponse(string agentId, string planJson)
+    {
+        if (!TryResolveAgentModules(agentId, out _, out _, out GameObject agentGameObject))
+        {
+            Debug.LogWarning($"[LLM Scheduler] Restored response could not resolve agentId={agentId}.");
+            return;
+        }
+
+        LLMThinkModule thinkModule = agentGameObject.GetComponent<LLMThinkModule>();
+        if (thinkModule == null)
+        {
+            Debug.LogWarning($"[LLM Scheduler] Restored response found no LLMThinkModule for agentId={agentId}.");
+            return;
+        }
+
+        thinkModule.ReceivePlanJsonFromScheduler(planJson);
+    }
+
+    private void MarkAgentHasRestoredOutstandingRequest(string agentId)
+    {
+        if (!TryResolveAgentModules(agentId, out _, out _, out GameObject agentGameObject))
+            return;
+
+        LLMThinkModule thinkModule = agentGameObject.GetComponent<LLMThinkModule>();
+        if (thinkModule != null)
+            thinkModule.RestoreOutstandingRequestState(hasOutstandingRequest: true);
+    }
+
+    private void ClearRuntimeRequestState()
+    {
+        pendingRequests ??= new List<LLMPlanRequestOnDemand>();
+        pendingRequests.Clear();
+        inflightAgents.Clear();
+        inflightRequestIdByAgent.Clear();
+        inflightRequestByAgent.Clear();
+
+        if (llmModelsAvailable != null)
+        {
+            foreach (LLMModelSelection model in llmModelsAvailable)
+                model.currentRequests?.Clear();
+        }
     }
 
     private void ApplyCommandMode(LLMRequest llmRequest)
@@ -892,6 +1097,7 @@ public class LLMWorldScheduler : MonoBehaviour
         LLMSessionToken.Bump();
         inflightAgents.Clear();
         inflightRequestIdByAgent.Clear();
+        inflightRequestByAgent.Clear();
         agentModuleCache.Clear();
     }
 

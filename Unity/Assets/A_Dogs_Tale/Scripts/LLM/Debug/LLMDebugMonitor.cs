@@ -21,6 +21,7 @@ public class LLMDebugEntry
 
     public bool wasStale;
 
+    public bool savedPendingResponse;
     [NonSerialized] public bool pendingResponse;
 }
 
@@ -40,6 +41,13 @@ public class LLMDebugAgentLog
 /// </summary>
 public class LLMDebugMonitor : MonoBehaviour
 {
+    [Serializable]
+    public sealed class SaveData
+    {
+        public int maxNumberOfLLMLogsPerAgent;
+        public List<LLMDebugAgentLog> logsByAgent = new();
+    }
+
     [Header("History")]
     [Min(1)]
     public int maxNumberOfLLMLogsPerAgent = 5;
@@ -177,6 +185,7 @@ public class LLMDebugMonitor : MonoBehaviour
             Time_Request = Time.time,
             LLM_Request = request ?? "",
 
+            savedPendingResponse = true,
             pendingResponse = true
         };
 
@@ -196,6 +205,7 @@ public class LLMDebugMonitor : MonoBehaviour
             entry.DeltaTime_Response = entry.Time_Response - entry.Time_Request;
             entry.LLM_Response = response ?? "";
             entry.wasStale = wasStale;
+            entry.savedPendingResponse = false;
             entry.pendingResponse = false;
 
             log.pendingByRequestId.Remove(requestId);
@@ -224,6 +234,102 @@ public class LLMDebugMonitor : MonoBehaviour
                 log.pendingByRequestId.Remove(removed.requestId);
 
             log.entries.RemoveAt(log.entries.Count - 1);
+        }
+    }
+
+    public SaveData CaptureSaveData()
+    {
+        SaveData data = new()
+        {
+            maxNumberOfLLMLogsPerAgent = maxNumberOfLLMLogsPerAgent,
+            logsByAgent = new List<LLMDebugAgentLog>()
+        };
+
+        foreach (LLMDebugAgentLog log in logsByAgent)
+        {
+            if (log == null)
+                continue;
+
+            LLMDebugAgentLog logCopy = new()
+            {
+                agentId = log.agentId,
+                entries = new List<LLMDebugEntry>()
+            };
+
+            if (log.entries != null)
+            {
+                foreach (LLMDebugEntry entry in log.entries)
+                {
+                    if (entry == null)
+                        continue;
+
+                    logCopy.entries.Add(new LLMDebugEntry
+                    {
+                        agentId = entry.agentId,
+                        requestId = entry.requestId,
+                        Time_Request = entry.Time_Request,
+                        LLM_Request = entry.LLM_Request,
+                        Time_Response = entry.Time_Response,
+                        DeltaTime_Response = entry.DeltaTime_Response,
+                        LLM_Response = entry.LLM_Response,
+                        wasStale = entry.wasStale,
+                        savedPendingResponse = entry.pendingResponse,
+                        pendingResponse = entry.pendingResponse
+                    });
+                }
+            }
+
+            data.logsByAgent.Add(logCopy);
+        }
+
+        return data;
+    }
+
+    public void RestoreSaveData(SaveData data)
+    {
+        logsByAgent.Clear();
+        agentIdToLog.Clear();
+
+        if (data == null)
+            return;
+
+        maxNumberOfLLMLogsPerAgent = Mathf.Max(1, data.maxNumberOfLLMLogsPerAgent);
+        if (data.logsByAgent != null)
+        {
+            foreach (LLMDebugAgentLog savedLog in data.logsByAgent)
+            {
+                if (savedLog == null)
+                    continue;
+
+                LLMDebugAgentLog log = new()
+                {
+                    agentId = savedLog.agentId,
+                    entries = savedLog.entries != null ? new List<LLMDebugEntry>(savedLog.entries) : new List<LLMDebugEntry>(),
+                    pendingByRequestId = new Dictionary<string, LLMDebugEntry>()
+                };
+
+                foreach (LLMDebugEntry entry in log.entries)
+                {
+                    if (entry != null)
+                        entry.pendingResponse = entry.savedPendingResponse;
+                }
+
+                logsByAgent.Add(log);
+            }
+        }
+
+        RebuildLookup();
+        foreach (LLMDebugAgentLog log in logsByAgent)
+        {
+            log.pendingByRequestId = new Dictionary<string, LLMDebugEntry>();
+            if (log.entries == null)
+                continue;
+
+            foreach (LLMDebugEntry entry in log.entries)
+            {
+                if (entry != null && entry.pendingResponse && !string.IsNullOrWhiteSpace(entry.requestId))
+                    log.pendingByRequestId[entry.requestId] = entry;
+            }
         }
     }
 

@@ -22,6 +22,45 @@ namespace DogGame.LLM.Agent
     [DisallowMultipleComponent]
     public sealed class LLMConfigModule : WorldModule
     {
+        [Serializable]
+        public sealed class SaveData
+        {
+            public List<PersonalityOptionSaveData> identitySpecies = new();
+            public List<PersonalityOptionSaveData> identityRoles = new();
+            public string cachedIdentity = "";
+            public List<PersonalityOptionSaveData> personalityQuirks = new();
+            public List<PersonalityOptionSaveData> personalityComplications = new();
+            public string cachedPersonality = "";
+        }
+
+        [Serializable]
+        public sealed class PersonalityOptionSaveData
+        {
+            public string name = "";
+            public string notes = "";
+            public string options = "";
+            public int weight;
+
+            public static PersonalityOptionSaveData FromOption(global::PersonalityOption option)
+            {
+                if (option == null)
+                    return new PersonalityOptionSaveData();
+
+                return new PersonalityOptionSaveData
+                {
+                    name = option.Name,
+                    notes = option.Notes,
+                    options = option.Options,
+                    weight = option.Weight
+                };
+            }
+
+            public global::PersonalityOption ToOption()
+            {
+                return new global::PersonalityOption(name, notes, options, weight);
+            }
+        }
+
         private readonly SophisticationPolicy sophisticationPolicy = new();
 
         public LLMProfile lowProfile = new();
@@ -143,6 +182,59 @@ namespace DogGame.LLM.Agent
             req.responseSchema = schemaJson;
 
             return req;
+        }
+
+        public SaveData CaptureSaveData()
+        {
+            return new SaveData
+            {
+                identitySpecies = CaptureOptions(identity.species),
+                identityRoles = CaptureOptions(identity.roles),
+                cachedIdentity = identity.cachedIdentity,
+                personalityQuirks = CaptureOptions(personality.quirks),
+                personalityComplications = CaptureOptions(personality.complications),
+                cachedPersonality = personality.cachedPersonality
+            };
+        }
+
+        public void RestoreSaveData(SaveData data)
+        {
+            if (data == null)
+                return;
+
+            identity.species = RestoreOptions(data.identitySpecies);
+            identity.roles = RestoreOptions(data.identityRoles);
+            identity.cachedIdentity = data.cachedIdentity ?? "";
+            personality.quirks = RestoreOptions(data.personalityQuirks);
+            personality.complications = RestoreOptions(data.personalityComplications);
+            personality.cachedPersonality = data.cachedPersonality ?? "";
+        }
+
+        private static List<PersonalityOptionSaveData> CaptureOptions(List<global::PersonalityOption> options)
+        {
+            List<PersonalityOptionSaveData> savedOptions = new();
+            if (options == null)
+                return savedOptions;
+
+            foreach (global::PersonalityOption option in options)
+                savedOptions.Add(PersonalityOptionSaveData.FromOption(option));
+
+            return savedOptions;
+        }
+
+        private static List<global::PersonalityOption> RestoreOptions(List<PersonalityOptionSaveData> savedOptions)
+        {
+            List<global::PersonalityOption> options = new();
+            if (savedOptions == null)
+                return options;
+
+            foreach (PersonalityOptionSaveData savedOption in savedOptions)
+            {
+                if (savedOption != null)
+                    options.Add(savedOption.ToOption());
+            }
+
+            return options;
         }
     }
 }

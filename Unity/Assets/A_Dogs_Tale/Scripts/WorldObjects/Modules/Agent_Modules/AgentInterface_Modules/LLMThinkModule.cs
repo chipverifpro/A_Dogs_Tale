@@ -19,6 +19,14 @@ namespace DogGame.LLM
     [DisallowMultipleComponent]
     public sealed class LLMThinkModule : WorldModule
     {
+        [Serializable]
+        public sealed class SaveData
+        {
+            public bool isInflight;
+            public float nextThinkTime;
+            public float thinkIntervalSeconds;
+        }
+
         [Header("Defaults")]
         [SerializeField] private Sophistication defaultSophistication = Sophistication.Low;
 
@@ -114,6 +122,36 @@ namespace DogGame.LLM
             {
                 Debug.LogWarning($"[LLMThinkModule] PlanJsonReceived handler threw: {ex.GetType().Name}: {ex.Message}");
             }
+        }
+
+        public void ReceivePlanJsonFromScheduler(string planJson)
+        {
+            OnPlanJsonFromScheduler(planJson);
+        }
+
+        public SaveData CaptureSaveData()
+        {
+            return new SaveData
+            {
+                isInflight = isInflight,
+                nextThinkTime = nextThinkTime,
+                thinkIntervalSeconds = thinkIntervalSeconds
+            };
+        }
+
+        public void RestoreSaveData(SaveData data)
+        {
+            if (data == null)
+                return;
+
+            isInflight = data.isInflight;
+            nextThinkTime = data.nextThinkTime;
+            thinkIntervalSeconds = data.thinkIntervalSeconds;
+        }
+
+        public void RestoreOutstandingRequestState(bool hasOutstandingRequest)
+        {
+            isInflight = hasOutstandingRequest;
         }
 
         private static Sophistication? ChooseSophistication(

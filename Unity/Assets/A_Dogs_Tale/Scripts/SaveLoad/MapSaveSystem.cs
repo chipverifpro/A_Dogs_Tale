@@ -2,12 +2,14 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using DogGame.LLM;
+using DogGame.LLM.Agent;
 using DogGame.Modules;
 using UnityEngine;
 
 public partial class DungeonGenerator
 {
-    private const int MapSaveVersion = 5;
+    private const int MapSaveVersion = 6;
     private const string SaveDirectoryName = "DogsTaleSaves";
     private const string SingleMapSaveFilename = "dogs_tale_map_slot.json";
 
@@ -109,12 +111,15 @@ public partial class DungeonGenerator
         ApplySavedContainers(saveData.worldObjects, restoredWorldObjects);
         ApplySavedScentPhysics(saveData.scentPhysics, restoredWorldObjects);
         ApplySavedBottomBannerMessages(saveData.bottomBanner);
+        ApplySavedLLMDebugState(saveData.llmDebug);
 
         buildComplete = true;
         regenerateCoroutine = null;
 
         if (dir != null && dir.scentAirGround != null)
             dir.scentAirGround.StartScentSimulation(resetOverlayAgent: saveData.scentPhysics == null);
+
+        ApplySavedLLMSchedulerState(saveData.llmScheduler);
 
         BottomBanner.Show($"Map and WorldObjects loaded from {savePath}");
         Debug.Log($"[MapSaveSystem] Loaded map and WorldObjects from {savePath}", this);
@@ -307,6 +312,7 @@ public partial class DungeonGenerator
         ApplySavedContainerState(worldObject, savedObject.container);
         ApplySavedScentEmitterState(worldObject, savedObject.scentEmitter);
         ApplySavedMessageQueueState(worldObject, savedObject.messageQueues);
+        ApplySavedLLMState(worldObject, savedObject.llmState);
 
         worldObject.agentMovementModule?.ClearDesiredMovement();
         worldObject.RegisterIfNeeded();
@@ -401,6 +407,19 @@ public partial class DungeonGenerator
 
         if (worldObject.llmWorldStateModule != null)
             worldObject.llmWorldStateModule.RestoreRecentObservations(messageQueues.llmRecentObservations);
+    }
+
+    private static void ApplySavedLLMState(WorldObject worldObject, LLMStateDto llmState)
+    {
+        if (worldObject == null || llmState == null)
+            return;
+
+        if (worldObject.llmConfigModule != null)
+            worldObject.llmConfigModule.RestoreSaveData(llmState.config);
+        if (worldObject.llmWorldStateModule != null)
+            worldObject.llmWorldStateModule.RestoreSaveData(llmState.worldState);
+        if (worldObject.llmThinkModule != null)
+            worldObject.llmThinkModule.RestoreSaveData(llmState.think);
     }
 
     private static void ApplySavedContainers(List<WorldObjectDto> savedObjects, Dictionary<int, WorldObject> restoredById)
@@ -681,6 +700,40 @@ public partial class DungeonGenerator
         BottomBanner.RestoreSaveData(bottomBanner);
     }
 
+    private void ApplySavedLLMSchedulerState(LLMWorldScheduler.SaveData llmScheduler)
+    {
+        if (llmScheduler == null)
+            return;
+
+        LLMWorldScheduler scheduler = dir != null ? dir.llmWorldScheduler : null;
+        if (scheduler == null)
+            scheduler = LLMWorldScheduler.Instance;
+        if (scheduler == null)
+        {
+            Debug.LogWarning("[MapSaveSystem] Could not restore LLM scheduler state because no scheduler is available.", this);
+            return;
+        }
+
+        scheduler.RestoreSaveData(llmScheduler);
+    }
+
+    private void ApplySavedLLMDebugState(LLMDebugMonitor.SaveData llmDebug)
+    {
+        if (llmDebug == null)
+            return;
+
+        LLMDebugMonitor monitor = dir != null ? dir.llmDebugMonitor : null;
+        if (monitor == null && Dir.Instance != null)
+            monitor = Dir.Instance.llmDebugMonitor;
+        if (monitor == null)
+            monitor = FindFirstObjectByType<LLMDebugMonitor>();
+
+        if (monitor == null)
+            return;
+
+        monitor.RestoreSaveData(llmDebug);
+    }
+
     private static bool TryParseModuleFlags(string raw, out ModuleFlags moduleFlags)
     {
         moduleFlags = ModuleFlags.none;
@@ -706,6 +759,8 @@ public partial class DungeonGenerator
         public List<PackDto> packs = new();
         public ScentPhysicsDto scentPhysics;
         public BottomBanner.SaveData bottomBanner;
+        public LLMWorldScheduler.SaveData llmScheduler;
+        public LLMDebugMonitor.SaveData llmDebug;
 
         public static MapSaveData FromGenerator(DungeonGenerator generator)
         {
@@ -749,6 +804,8 @@ public partial class DungeonGenerator
 
             data.scentPhysics = ScentPhysicsDto.FromDir(generator.dir != null ? generator.dir : Dir.Instance);
             data.bottomBanner = BottomBanner.CaptureSaveData();
+            data.llmScheduler = CaptureLLMScheduler(generator.dir != null ? generator.dir : Dir.Instance);
+            data.llmDebug = CaptureLLMDebugMonitor(generator.dir != null ? generator.dir : Dir.Instance);
 
             return data;
         }
@@ -759,6 +816,24 @@ public partial class DungeonGenerator
             foreach (RoomDto room in rooms)
                 restoredRooms.Add(room.ToRoom());
             return restoredRooms;
+        }
+
+        private static LLMWorldScheduler.SaveData CaptureLLMScheduler(Dir dir)
+        {
+            LLMWorldScheduler scheduler = dir != null ? dir.llmWorldScheduler : null;
+            if (scheduler == null)
+                scheduler = LLMWorldScheduler.Instance;
+
+            return scheduler != null ? scheduler.CaptureSaveData() : null;
+        }
+
+        private static LLMDebugMonitor.SaveData CaptureLLMDebugMonitor(Dir dir)
+        {
+            LLMDebugMonitor monitor = dir != null ? dir.llmDebugMonitor : null;
+            if (monitor == null && Dir.Instance != null)
+                monitor = Dir.Instance.llmDebugMonitor;
+
+            return monitor != null ? monitor.CaptureSaveData() : null;
         }
     }
 
@@ -826,6 +901,7 @@ public partial class DungeonGenerator
         public PlacementDto placement;
         public ScentEmitterDto scentEmitter;
         public MessageQueueDto messageQueues;
+        public LLMStateDto llmState;
 
         public static WorldObjectDto FromWorldObject(WorldObject worldObject)
         {
@@ -856,7 +932,8 @@ public partial class DungeonGenerator
                 container = ContainerDto.FromWorldObject(worldObject),
                 placement = PlacementDto.FromWorldObject(worldObject),
                 scentEmitter = ScentEmitterDto.FromWorldObject(worldObject),
-                messageQueues = MessageQueueDto.FromWorldObject(worldObject)
+                messageQueues = MessageQueueDto.FromWorldObject(worldObject),
+                llmState = LLMStateDto.FromWorldObject(worldObject)
             };
         }
 
@@ -1100,6 +1177,40 @@ public partial class DungeonGenerator
             return new MessageQueueDto
             {
                 llmRecentObservations = worldObject.llmWorldStateModule.CaptureRecentObservations()
+            };
+        }
+    }
+
+    [Serializable]
+    private sealed class LLMStateDto
+    {
+        public LLMConfigModule.SaveData config;
+        public LLMWorldStateModule.SaveData worldState;
+        public LLMThinkModule.SaveData think;
+
+        public static LLMStateDto FromWorldObject(WorldObject worldObject)
+        {
+            if (worldObject == null)
+                return null;
+
+            bool hasLLMState =
+                worldObject.llmConfigModule != null ||
+                worldObject.llmWorldStateModule != null ||
+                worldObject.llmThinkModule != null;
+            if (!hasLLMState)
+                return null;
+
+            return new LLMStateDto
+            {
+                config = worldObject.llmConfigModule != null
+                    ? worldObject.llmConfigModule.CaptureSaveData()
+                    : null,
+                worldState = worldObject.llmWorldStateModule != null
+                    ? worldObject.llmWorldStateModule.CaptureSaveData()
+                    : null,
+                think = worldObject.llmThinkModule != null
+                    ? worldObject.llmThinkModule.CaptureSaveData()
+                    : null
             };
         }
     }
