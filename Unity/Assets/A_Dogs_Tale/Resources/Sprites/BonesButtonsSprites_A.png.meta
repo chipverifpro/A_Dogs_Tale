@@ -1,0 +1,740 @@
+fileFormatVersion: 2
+guid: 1cb18285735c6449e8a8610e25da7c3a
+TextureImporter:
+  internalIDToNameTable: []
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 0
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: BonesButtonsSprites_A_0
+      rect:
+        serializedVersion: 2
+        x: 76
+        y: 890
+        width: 225
+        height: 96
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 5b0d2d49a93804d1a8fe36706f4c37a7
+      internalID: 1837464471
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: BonesButtonsSprites_A_1
+      rect:
+        serializedVersion: 2
+        x: 403
+        y: 889
+        width: 317
+        height: 98
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 6f688ac29c1574f4e8ab4accd130af07
+      internalID: 1789318428
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: BonesButtonsSprites_A_2
+      rect:
+        serializedVersion: 2
+        x: 823
+        y: 887
+        width: 634
+        height: 101
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 8e4656e727c97427fac3773a11541a98
+      internalID: 1612076200
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: BonesButtonsSprites_A_3
+      rect:
+        serializedVersion: 2
+        x: 75
+        y: 779
+        width: 226
+        height: 96
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: d2a5591dd976e4887b3dc2059ea121ed
+      internalID: -1422639298
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: BonesButtonsSprites_A_4
+      rect:
+        serializedVersion: 2
+        x: 400
+        y: 777
+        width: 321
+        height: 99
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 0defdb197cead4d39a8ff3baf8f63738
+      internalID: 724454869
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: BonesButtonsSprites_A_5
+      rect:
+        serializedVersion: 2
+        x: 820
+        y: 776
+        width: 640
+        height: 101
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 0f713c8d13e4a4fa3811cb94bfeb9c70
+      internalID: 1155622477
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: BonesButtonsSprites_A_6
+      rect:
+        serializedVersion: 2
+        x: 75
+        y: 670
+        width: 227
+        height: 96
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 0224ae3558ea846b09b80b85e44b1626
+      internalID: 1659987699
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: BonesButtonsSprites_A_7
+      rect:
+        serializedVersion: 2
+        x: 400
+        y: 668
+        width: 322
+        height: 99
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 5186069219b354e71a5e02dc7a5679ec
+      internalID: -1454160374
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: BonesButtonsSprites_A_8
+      rect:
+        serializedVersion: 2
+        x: 819
+        y: 667
+        width: 642
+        height: 100
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: aa279b443a04846238ad85bd4d637be4
+      internalID: -1361346718
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: BonesButtonsSprites_A_9
+      rect:
+        serializedVersion: 2
+        x: 75
+        y: 557
+        width: 227
+        height: 95
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: fad03de911aed467486c2cc319a4bb38
+      internalID: -1208734105
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: BonesButtonsSprites_A_10
+      rect:
+        serializedVersion: 2
+        x: 400
+        y: 555
+        width: 322
+        height: 98
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 1f79e99fd886b4bad933bb2692fc6596
+      internalID: -2138311776
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: BonesButtonsSprites_A_11
+      rect:
+        serializedVersion: 2
+        x: 820
+        y: 554
+        width: 641
+        height: 100
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 3cbab8176a8d446d3b635c9608774958
+      internalID: 1734503526
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: BonesButtonsSprites_A_12
+      rect:
+        serializedVersion: 2
+        x: 73
+        y: 450
+        width: 229
+        height: 91
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: ddf91791c23ac483aa0ac4c9e7f45662
+      internalID: 1104107905
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: BonesButtonsSprites_A_13
+      rect:
+        serializedVersion: 2
+        x: 400
+        y: 448
+        width: 322
+        height: 95
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 3dfb6673b389547ee9b0a53da00c9bb4
+      internalID: 1711447568
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: BonesButtonsSprites_A_14
+      rect:
+        serializedVersion: 2
+        x: 819
+        y: 447
+        width: 642
+        height: 96
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 09e4cecf9bb0040abb3b5ad6d87ba73a
+      internalID: 1383426715
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: BonesButtonsSprites_A_15
+      rect:
+        serializedVersion: 2
+        x: 72
+        y: 343
+        width: 232
+        height: 92
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 2e098b8afb89043999d402341e85fb06
+      internalID: -1637349415
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: BonesButtonsSprites_A_16
+      rect:
+        serializedVersion: 2
+        x: 400
+        y: 341
+        width: 323
+        height: 96
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: aef72906090264510adfbaea0dcbf8a7
+      internalID: 1596732594
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: BonesButtonsSprites_A_17
+      rect:
+        serializedVersion: 2
+        x: 819
+        y: 341
+        width: 643
+        height: 96
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 348e4b1ab9a2e42c8854189eceb11f83
+      internalID: -2008467432
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: BonesButtonsSprites_A_18
+      rect:
+        serializedVersion: 2
+        x: 72
+        y: 238
+        width: 232
+        height: 92
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: fb37ba16cc4db422e9ec85459beeb097
+      internalID: -119816912
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: BonesButtonsSprites_A_19
+      rect:
+        serializedVersion: 2
+        x: 400
+        y: 236
+        width: 323
+        height: 95
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 57259c422309840c1ac873115eb51608
+      internalID: 523944299
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: BonesButtonsSprites_A_20
+      rect:
+        serializedVersion: 2
+        x: 819
+        y: 236
+        width: 643
+        height: 95
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: be480baaa9f454d049a86263f1252616
+      internalID: 1392767678
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: BonesButtonsSprites_A_21
+      rect:
+        serializedVersion: 2
+        x: 72
+        y: 136
+        width: 230
+        height: 91
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: b7fa927dd4bd84fccb1f215541c2fb91
+      internalID: -1526507158
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: BonesButtonsSprites_A_22
+      rect:
+        serializedVersion: 2
+        x: 400
+        y: 136
+        width: 322
+        height: 91
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 9a1b8c69b49d34db59b7af61689ca181
+      internalID: -1907085007
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: BonesButtonsSprites_A_23
+      rect:
+        serializedVersion: 2
+        x: 820
+        y: 135
+        width: 641
+        height: 91
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: ed59efd644d3448a3b17fc7dae2b5d98
+      internalID: -2022279425
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: BonesButtonsSprites_A_24
+      rect:
+        serializedVersion: 2
+        x: 71
+        y: 33
+        width: 231
+        height: 89
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: ff0aa2f4ac8c04c78ab6a6d56432b781
+      internalID: 856542767
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: BonesButtonsSprites_A_25
+      rect:
+        serializedVersion: 2
+        x: 400
+        y: 33
+        width: 322
+        height: 91
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: ee6007161472e448992ebc27ae211756
+      internalID: -1379545568
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: BonesButtonsSprites_A_26
+      rect:
+        serializedVersion: 2
+        x: 819
+        y: 33
+        width: 643
+        height: 91
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: ff2d4bc3a197e4df594d8b5beaaaa1d0
+      internalID: -1322143762
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 259f91a586b484f4eaa1f19da9c804c4
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries:
+      - key: SpriteEditor.SliceSettings
+        value: '{"sliceOnImport":false,"gridCellCount":{"x":1.0,"y":1.0},"gridSpriteSize":{"x":64.0,"y":64.0},"gridSpriteOffset":{"x":0.0,"y":0.0},"gridSpritePadding":{"x":0.0,"y":0.0},"pivot":{"x":0.5,"y":0.5},"pivotPixels":{"x":0.0,"y":0.0},"autoSlicingMethod":0,"spriteAlignment":0,"pivotUnitMode":0,"slicingType":0,"keepEmptyRects":false,"isAlternate":false}'
+    nameFileIdTable:
+      BonesButtonsSprites_A_0: 1837464471
+      BonesButtonsSprites_A_1: 1789318428
+      BonesButtonsSprites_A_10: -2138311776
+      BonesButtonsSprites_A_11: 1734503526
+      BonesButtonsSprites_A_12: 1104107905
+      BonesButtonsSprites_A_13: 1711447568
+      BonesButtonsSprites_A_14: 1383426715
+      BonesButtonsSprites_A_15: -1637349415
+      BonesButtonsSprites_A_16: 1596732594
+      BonesButtonsSprites_A_17: -2008467432
+      BonesButtonsSprites_A_18: -119816912
+      BonesButtonsSprites_A_19: 523944299
+      BonesButtonsSprites_A_2: 1612076200
+      BonesButtonsSprites_A_20: 1392767678
+      BonesButtonsSprites_A_21: -1526507158
+      BonesButtonsSprites_A_22: -1907085007
+      BonesButtonsSprites_A_23: -2022279425
+      BonesButtonsSprites_A_24: 856542767
+      BonesButtonsSprites_A_25: -1379545568
+      BonesButtonsSprites_A_26: -1322143762
+      BonesButtonsSprites_A_3: -1422639298
+      BonesButtonsSprites_A_4: 724454869
+      BonesButtonsSprites_A_5: 1155622477
+      BonesButtonsSprites_A_6: 1659987699
+      BonesButtonsSprites_A_7: -1454160374
+      BonesButtonsSprites_A_8: -1361346718
+      BonesButtonsSprites_A_9: -1208734105
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

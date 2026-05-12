@@ -32,7 +32,7 @@ PlayerSettings:
     x: 0
     y: 0
     width: 1
-    height: 1
+    height: 0.99999994
   m_SplashScreenBackgroundPortraitUvs:
     serializedVersion: 2
     x: 0
@@ -146,7 +146,7 @@ PlayerSettings:
   loadStoreDebugModeEnabled: 0
   visionOSBundleVersion: 1.0
   tvOSBundleVersion: 1.0
-  bundleVersion: 1.0.4
+  bundleVersion: 0.1.0
   preloadedAssets:
   - {fileID: 11400000, guid: 10eacbdfcbb5b481fb4f2129105eb5ed, type: 2}
   - {fileID: -944628639613478452, guid: ccba743ec2a994a05b552500da1f3eca, type: 3}
@@ -305,7 +305,7 @@ PlayerSettings:
   - m_BuildTarget: 
     m_Icons:
     - serializedVersion: 2
-      m_Icon: {fileID: 2800000, guid: e7dcb4867a2554588907beb7c92b296d, type: 3}
+      m_Icon: {fileID: 2800000, guid: 39f39abf219234179bdc1ac5c6e9ebc7, type: 3}
       m_Width: 128
       m_Height: 128
       m_Kind: 0
@@ -814,7 +814,8 @@ PlayerSettings:
   ps4IncludedModules: []
   ps4attribVROutputEnabled: 0
   monoEnv: 
-  splashScreenBackgroundSourceLandscape: {fileID: 0}
+  splashScreenBackgroundSourceLandscape: {fileID: 21300000, guid: 9a2358d81cd4541748a603ca352ae44b,
+    type: 3}
   splashScreenBackgroundSourcePortrait: {fileID: 0}
   blurSplashScreenBackground: 1
   spritePackerPolicy: 
