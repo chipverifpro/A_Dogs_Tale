@@ -58,7 +58,7 @@ public class SceneFader : MonoBehaviour
 
         SetupTitleSFX();    // configure music and SFX
 
-        StartCoroutine(CrossFade());
+        StartCoroutine(ShowInitialMenu());
         
         //if (audioPlayer) audioPlayer.PlayClip("Bark_GermanShepherd");
         
@@ -153,28 +153,23 @@ public class SceneFader : MonoBehaviour
         // splashImage.SetNativeSize();
     }
 
-    private IEnumerator CrossFade()
+    private IEnumerator ShowInitialMenu()
     {
         SetOverlayedGameplayUiVisible(false);
 
-        // Pick the splash before any visible alpha changes.
+        // Pick a splash now so the loading transition has an image ready immediately.
         SetRandomSplashSprite();
 
         yield return null; // let things settle out before beginning this.
-        //BottomBanner.Show("🐾 Welcome, Pup! Sniffing out treasures...");
         BottomBanner.Show("Welcome, Pup! Sniffing out treasures...");
 
-        // Display just the splash screen.
-        SetCanvasGroupState(splashCanvasGroup, 1f, false);
-        SetCanvasGroupState(menuCanvasGroup, 0f, false);
+        SetSplashMenuCameraEnabled(true);
+        SetCanvasGroupState(splashCanvasGroup, 0f, false);
+        SetCanvasGroupState(menuCanvasGroup, 1f, true);
 
         audioPlayer.PlayClip("Opening Title");
         audioPlayer.PlayClip("Bark_GS_repeat");
 
-        yield return StartCoroutine(WaitAllowSkip(minSplashSeconds));
-
-        StartCoroutine(Fade(splashCanvasGroup, 1f, 0f));
-        yield return StartCoroutine(Fade(menuCanvasGroup, 0f, 1f));
         isTitleOverlayVisible = true;
     }
 
@@ -239,6 +234,89 @@ public class SceneFader : MonoBehaviour
         if (!hasGameStarted)
         {
             // Let generator know the main menu closed. It will start its music, among other things.
+            if (dir?.gen != null)
+                dir.gen.MainMenuClosed();
+            hasGameStarted = true;
+        }
+
+        isTransitioning = false;
+    }
+
+    public IEnumerator FadeToGameAfterMapBuild(DungeonGenerator generator)
+    {
+        if (isTransitioning)
+            yield break;
+
+        if (generator == null)
+        {
+            Debug.LogWarning("[SceneFader] Cannot start simulation because no DungeonGenerator was provided.", this);
+            yield break;
+        }
+
+        yield return StartCoroutine(FadeToGameAfterMapOperation(generator, generator.BeginNewSimulation));
+    }
+
+    public IEnumerator FadeToGameAfterMapLoad(DungeonGenerator generator)
+    {
+        if (isTransitioning)
+            yield break;
+
+        if (generator == null)
+        {
+            Debug.LogWarning("[SceneFader] Cannot load simulation because no DungeonGenerator was provided.", this);
+            yield break;
+        }
+
+        if (!DungeonGenerator.SingleMapSaveExists)
+        {
+            string savePath = DungeonGenerator.SingleMapSavePath;
+            BottomBanner.Show($"No map save found at {savePath}");
+            Debug.LogWarning($"[SceneFader] Load skipped because no save exists at {savePath}", this);
+            yield break;
+        }
+
+        yield return StartCoroutine(FadeToGameAfterMapOperation(generator, generator.LoadMapFromSingleSlot));
+    }
+
+    private IEnumerator FadeToGameAfterMapOperation(DungeonGenerator generator, System.Action startMapOperation)
+    {
+        if (isTransitioning)
+            yield break;
+
+        isTransitioning = true;
+
+        BottomBanner.Show("Welcome, Pup! On the way to Adventure...");
+        SetOverlayedGameplayUiVisible(false);
+        SetSplashMenuCameraEnabled(true);
+        SetRandomSplashSprite();
+
+        SetCanvasGroupState(menuCanvasGroup, 1f, true);
+        SetCanvasGroupState(splashCanvasGroup, 0f, false);
+
+        audioPlayer.StopClips(trackName: "Opening Title", fadeOut: 1f);
+        audioPlayer.StopClips(trackName: "Bark_GS_repeat", fadeOut: -1f);
+
+        Coroutine splashFadeIn = StartCoroutine(Fade(splashCanvasGroup, 0f, 1f));
+        yield return StartCoroutine(Fade(menuCanvasGroup, 1f, 0f));
+        if (splashFadeIn != null)
+            yield return splashFadeIn;
+
+        SetCanvasGroupState(menuCanvasGroup, 0f, false);
+        SetCanvasGroupState(splashCanvasGroup, 1f, true);
+
+        startMapOperation?.Invoke();
+        while (generator.regenerateCoroutine != null || !generator.buildComplete)
+            yield return null;
+
+        yield return StartCoroutine(Fade(splashCanvasGroup, 1f, 0f));
+        SetCanvasGroupState(splashCanvasGroup, 0f, false);
+        SetCanvasGroupState(menuCanvasGroup, 0f, false);
+        SetSplashMenuCameraEnabled(false);
+        SetOverlayedGameplayUiVisible(true);
+        isTitleOverlayVisible = false;
+
+        if (!hasGameStarted)
+        {
             if (dir?.gen != null)
                 dir.gen.MainMenuClosed();
             hasGameStarted = true;

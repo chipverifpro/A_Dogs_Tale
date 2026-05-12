@@ -74,15 +74,25 @@ public class MenuManager : MonoBehaviour
     public void OnSimulation()
     {
         Debug.Log($"[MenuManager] OnSimulation invoked. fader={(fader ? fader.name : "null")} dir={(dir ? dir.name : "null")}", this);
-        //BottomBanner.Show("🐾 Digging a brand new hole...");
         BottomBanner.Show("Digging a brand new hole...");
-        dir.audioPlayer.PlayClip("Button-Click");
-        StartCoroutine(fader.FadeToGame());
-        //SceneManager.LoadScene("2D_Fargoal_Map");  // your map gen scene
-        
-        
-        //generator.Start();
-        // You can also call generator.NewMap() if you keep it same-scene
+        PlayButtonClick();
+
+        if (!TryResolveGenerator(out DungeonGenerator mapGenerator))
+            return;
+
+        if (fader == null && dir != null)
+            fader = dir.sceneFader;
+        if (fader == null)
+            fader = FindFirstObjectByType<SceneFader>();
+
+        if (fader != null)
+        {
+            StartCoroutine(fader.FadeToGameAfterMapBuild(mapGenerator));
+            return;
+        }
+
+        Debug.LogWarning("[MenuManager] No SceneFader found; starting simulation without menu transition.", this);
+        mapGenerator.BeginNewSimulation();
     }
 
     public void OnFlyover()
@@ -98,6 +108,18 @@ public class MenuManager : MonoBehaviour
         if (!TryResolveGenerator(out DungeonGenerator mapGenerator))
             return;
 
+        if (fader == null && dir != null)
+            fader = dir.sceneFader;
+        if (fader == null)
+            fader = FindFirstObjectByType<SceneFader>();
+
+        if (fader != null)
+        {
+            StartCoroutine(fader.FadeToGameAfterMapLoad(mapGenerator));
+            return;
+        }
+
+        Debug.LogWarning("[MenuManager] No SceneFader found; loading simulation without menu transition.", this);
         mapGenerator.LoadMapFromSingleSlot();
     }
 

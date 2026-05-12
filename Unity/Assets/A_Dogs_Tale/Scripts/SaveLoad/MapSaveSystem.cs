@@ -22,6 +22,8 @@ public partial class DungeonGenerator
         }
     }
 
+    public static bool SingleMapSaveExists => File.Exists(SingleMapSavePath);
+
     public void SaveCurrentMapToSingleSlot()
     {
         try
