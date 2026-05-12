@@ -117,17 +117,17 @@ namespace EditorTools
             GUILayout.Space(BoxBottomGap);
         }
 
-        private static Color GetBackgroundColor(MessageType messageType)
+        private static Color GetBackgroundColor(InspectorNoteMessageType messageType)
         {
             bool isProSkin = EditorGUIUtility.isProSkin;
 
             return messageType switch
             {
-                MessageType.Warning => isProSkin
+                InspectorNoteMessageType.Warning => isProSkin
                     ? new Color(0.33f, 0.27f, 0.12f, 1f)
                     : new Color(1.00f, 0.95f, 0.78f, 1f),
 
-                MessageType.Error => isProSkin
+                InspectorNoteMessageType.Error => isProSkin
                     ? new Color(0.35f, 0.16f, 0.16f, 1f)
                     : new Color(1.00f, 0.86f, 0.86f, 1f),
 
@@ -137,17 +137,17 @@ namespace EditorTools
             };
         }
 
-        private static Color GetBorderColor(MessageType messageType)
+        private static Color GetBorderColor(InspectorNoteMessageType messageType)
         {
             bool isProSkin = EditorGUIUtility.isProSkin;
 
             return messageType switch
             {
-                MessageType.Warning => isProSkin
+                InspectorNoteMessageType.Warning => isProSkin
                     ? new Color(0.74f, 0.58f, 0.18f, 1f)
                     : new Color(0.76f, 0.58f, 0.10f, 1f),
 
-                MessageType.Error => isProSkin
+                InspectorNoteMessageType.Error => isProSkin
                     ? new Color(0.80f, 0.30f, 0.30f, 1f)
                     : new Color(0.78f, 0.25f, 0.25f, 1f),
 
@@ -157,17 +157,17 @@ namespace EditorTools
             };
         }
 
-        private static Color GetTitleColor(MessageType messageType)
+        private static Color GetTitleColor(InspectorNoteMessageType messageType)
         {
             bool isProSkin = EditorGUIUtility.isProSkin;
 
             return messageType switch
             {
-                MessageType.Warning => isProSkin
+                InspectorNoteMessageType.Warning => isProSkin
                     ? new Color(1.00f, 0.87f, 0.45f, 1f)
                     : new Color(0.45f, 0.32f, 0.00f, 1f),
 
-                MessageType.Error => isProSkin
+                InspectorNoteMessageType.Error => isProSkin
                     ? new Color(1.00f, 0.62f, 0.62f, 1f)
                     : new Color(0.55f, 0.10f, 0.10f, 1f),
 

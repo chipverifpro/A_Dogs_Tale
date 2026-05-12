@@ -13,7 +13,7 @@ namespace DogGame.Modules
     }
 
     [DisallowMultipleComponent]
-    [InspectorNote("Ability_Modules/Activator Module", "What the agent or object does when clicked on.  To be replaced by Interaction Wheel?", UnityEditor.MessageType.Warning)]
+    [InspectorNote("Ability_Modules/Activator Module", "What the agent or object does when clicked on.  To be replaced by Interaction Wheel?", InspectorNoteMessageType.Warning)]
     public class ActivatorModule : WorldModule
     {
         public HowToUse howToUse      = HowToUse.DoNothing;

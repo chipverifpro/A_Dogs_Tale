@@ -11,7 +11,7 @@ using InspectorTools;
 // Hooks present for clearing the queue if resume is not desired.
 namespace DogGame.Modules
 {
-    [InspectorNote("AgentDecision_Modules/Task Follower Decision Module", "PLACEHOLDER. Agent responding to Tasks.",UnityEditor.MessageType.Warning)]
+    [InspectorNote("AgentDecision_Modules/Task Follower Decision Module", "PLACEHOLDER. Agent responding to Tasks.", InspectorNoteMessageType.Warning)]
     [DisallowMultipleComponent]
     public class TaskFollowerDecisionModule : AgentDecisionModuleBase
     {

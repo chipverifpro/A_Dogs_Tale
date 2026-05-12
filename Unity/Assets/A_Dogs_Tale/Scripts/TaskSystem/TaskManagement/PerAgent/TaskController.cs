@@ -4,9 +4,7 @@ using DogGame.Modules;
 using DogGame.Tasks;
 using System.Collections.Generic;
 using DogGame.LLM.Debugging;
-using NUnit.Framework.Interfaces;
 using Newtonsoft.Json.Linq;
-using Unity.Tutorials.Core.Editor;
 
 namespace DogGame.LLM
 {
@@ -100,7 +98,7 @@ namespace DogGame.LLM
                 return false;
 
             Debug.Log($"[TaskController] TryApplyPlanJson invoked controllerAgentId={agentId} rawChars={planResponseJson?.Length ?? 0}");
-            if (planResponseJson.IsNullOrEmpty())
+            if (string.IsNullOrEmpty(planResponseJson))
             {
                 Debug.LogWarning("planResponseJson is null or empty.\n");
                 return false;

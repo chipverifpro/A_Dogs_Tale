@@ -4,7 +4,7 @@ using InspectorTools;
 namespace DogGame.Modules
 {
     [DisallowMultipleComponent]
-    [InspectorNote("Sensory_Modules/Taste Module", "PLACEHOLDER ONLY.",UnityEditor.MessageType.Warning)]
+    [InspectorNote("Sensory_Modules/Taste Module", "PLACEHOLDER ONLY.", InspectorNoteMessageType.Warning)]
     public class TasteModule : WorldModule
     {
         public bool debugMode = false;

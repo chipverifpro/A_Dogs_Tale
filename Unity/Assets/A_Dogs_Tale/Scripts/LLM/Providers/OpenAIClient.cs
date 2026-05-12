@@ -5,7 +5,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using DogGame.LLM.Core;
 using Newtonsoft.Json.Linq;
-using Unity.Tutorials.Core.Editor;
 using UnityEngine;
 
 namespace DogGame.LLM.Providers
@@ -30,7 +29,7 @@ namespace DogGame.LLM.Providers
         public OpenAIClient(string model = "gpt-4.1-mini")
         {
             apiKey = ResolveApiKey(apiKeyEnvironmentVariable, apiKey);
-            if (apiKey.IsNullOrEmpty())
+            if (string.IsNullOrEmpty(apiKey))
                 Debug.LogWarning($"{Vendor}Client apiKey empty. apiKeyEnvironmentVariable={apiKeyEnvironmentVariable}");
             this.model = model;
         }

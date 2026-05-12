@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using DogGame.LLM;
 using DogGame.Tasks;
-using Unity.AppUI.Core;
 using UnityEngine;
 using UnityEngine.InputSystem;
 

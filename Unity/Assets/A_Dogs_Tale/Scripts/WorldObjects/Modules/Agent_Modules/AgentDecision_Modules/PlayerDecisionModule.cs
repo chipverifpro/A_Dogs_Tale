@@ -8,7 +8,6 @@ using DogGame.LLM.Agent;
 using System.Threading;
 using DogGame.LLM.Core;
 using System;
-using Unity.Tutorials.Core.Editor;
 using InspectorTools;
 
 namespace DogGame.Modules
@@ -337,7 +336,7 @@ namespace DogGame.Modules
             // This is where your Step 2/3/4 pipeline continues:
             // Parse -> Translate -> Instantiate -> Start task
             Debug.Log($"LLMWalkthrough2: PlayerDecisionModule got planJsonChars={planJson?.Length ?? 0}.  planJson={planJson}");
-            if (planJson.IsNullOrEmpty())
+            if (string.IsNullOrEmpty(planJson))
             {
                 Debug.LogError("OnLLMResponseJson: planJson is null or empty.");
                 return;

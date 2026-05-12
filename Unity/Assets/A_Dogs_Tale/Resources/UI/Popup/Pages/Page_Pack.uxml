@@ -4,12 +4,12 @@
     <Label text="Pack" class="card"/>
     <VisualElement name="PackToolbar" class="row">
       <DropdownField name="Formation" />
-      <Toolbar>
-        <ToolbarButton name="Order-Stay"    text="Stay"/>
-        <ToolbarButton name="Order-Patrol"  text="Patrol"/>
-        <ToolbarButton name="Order-Guard"   text="Guard"/>
-        <ToolbarButton name="Order-Track"   text="Track"/>
-      </Toolbar>
+      <VisualElement class="row">
+        <Button name="Order-Stay"    text="Stay"/>
+        <Button name="Order-Patrol"  text="Patrol"/>
+        <Button name="Order-Guard"   text="Guard"/>
+        <Button name="Order-Track"   text="Track"/>
+      </VisualElement>
     </VisualElement>
     <ListView name="PackList" fixedItemHeight="64" reorderable="true" selectionType="Single"/>
   </VisualElement>

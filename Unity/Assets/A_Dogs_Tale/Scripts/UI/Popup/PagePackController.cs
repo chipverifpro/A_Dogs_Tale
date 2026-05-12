@@ -1,7 +1,6 @@
 using UnityEngine;
 using UnityEngine.UIElements;
 using System.Collections.Generic;
-using UnityEditor.UIElements;
 
 public class PagePackController : MonoBehaviour
 {
@@ -27,10 +26,10 @@ public class PagePackController : MonoBehaviour
             formation.value = "Line";
         }
 
-        var stay   = root.Q<ToolbarButton>("Order-Stay");
-        var patrol = root.Q<ToolbarButton>("Order-Patrol");
-        var guard  = root.Q<ToolbarButton>("Order-Guard");
-        var track  = root.Q<ToolbarButton>("Order-Track");
+        var stay   = root.Q<Button>("Order-Stay");
+        var patrol = root.Q<Button>("Order-Patrol");
+        var guard  = root.Q<Button>("Order-Guard");
+        var track  = root.Q<Button>("Order-Track");
 
         if (stay != null)   stay.clicked   += () => Debug.Log("Order: Stay");
         if (patrol != null) patrol.clicked += () => Debug.Log("Order: Patrol");

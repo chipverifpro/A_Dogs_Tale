@@ -5,7 +5,7 @@ using InspectorTools;
 
 namespace DogGame.Tasks
 {
-    [InspectorNote("Data_Modules/Simple Blackboard Module", "BASE MODULE ONLY.  DO NOT INSTANTIATE! Instantiated by Blackboard Module.", UnityEditor.MessageType.Error)]
+    [InspectorNote("Data_Modules/Simple Blackboard Module", "BASE MODULE ONLY.  DO NOT INSTANTIATE! Instantiated by Blackboard Module.", InspectorNoteMessageType.Error)]
     public sealed class SimpleBlackboard : IBlackboard
     {
         private readonly Dictionary<string, object> data = new(StringComparer.Ordinal);

@@ -19,7 +19,7 @@ using InspectorTools;
 
 namespace DogGame.AI
 {
-    [InspectorNote("AgentInterface_Modules/Motivation Module", "PLACEHOLDER ONLY.",UnityEditor.MessageType.Warning)]
+    [InspectorNote("AgentInterface_Modules/Motivation Module", "PLACEHOLDER ONLY.", InspectorNoteMessageType.Warning)]
     [DisallowMultipleComponent]
     public class MotivationModule : WorldModule
     {

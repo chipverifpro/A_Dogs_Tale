@@ -1,5 +1,4 @@
 using UnityEngine;
-//using UnityEditor;      // for InspectorNote MessageType
 using InspectorTools;   // for InspectorNote
 
 /// <summary>

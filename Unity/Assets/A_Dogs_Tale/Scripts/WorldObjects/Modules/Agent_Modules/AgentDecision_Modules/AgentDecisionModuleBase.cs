@@ -16,7 +16,7 @@ namespace DogGame.Modules
             AI                  // Dog decided what to do itself (via motivations likely)
         }
     
-    [InspectorNote("AgentDecision_Modules/Agent Decision Module Base", "BASE MODULE, DO NOT INSTANTIATE.", UnityEditor.MessageType.Error)]
+    [InspectorNote("AgentDecision_Modules/Agent Decision Module Base", "BASE MODULE, DO NOT INSTANTIATE.", InspectorNoteMessageType.Error)]
     public abstract class AgentDecisionModuleBase : WorldModule
     {
 
