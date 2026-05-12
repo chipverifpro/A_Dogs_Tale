@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
@@ -15,6 +16,11 @@ public class MenuManager : MonoBehaviour
     [Header("Bottom Banner")]
     public BottomBanner bottomBanner;  // assign your existing BottomBanner
     public MenuSettingsDialog settingsDialog;
+
+    [Header("Menu Button Sprites")]
+    [SerializeField] private string buttonSpriteResourcePath = "Sprites/BonesButtonsSprites_A";
+    [SerializeField] private bool useNativeButtonSpriteSize = true;
+    [SerializeField] private float buttonSpriteSizeScale = 0.667f;
 
 
     void Awake()
@@ -37,6 +43,8 @@ public class MenuManager : MonoBehaviour
         Hook(btnDocumentation, OnDocumentation);
         Hook(btnSettings, OnSettings);
         Hook(btnQuit, QuitGame);
+
+        ApplyMainMenuButtonSprites();
 
 //        Debug.Log(
 //            $"[MenuManager] Button refs after Awake: " +
@@ -303,5 +311,79 @@ public class MenuManager : MonoBehaviour
         btn.onClick.RemoveAllListeners();
         btn.onClick.AddListener(action);
         //Debug.Log($"[MenuManager] Hook complete for '{btn.name}' -> '{action.Method.Name}'.", btn);
+    }
+
+    void ApplyMainMenuButtonSprites()
+    {
+        Sprite[] loadedSprites = Resources.LoadAll<Sprite>(buttonSpriteResourcePath);
+        if (loadedSprites == null || loadedSprites.Length == 0)
+        {
+            Debug.LogWarning($"[MenuManager] Could not load menu button sprites at Resources/{buttonSpriteResourcePath}.", this);
+            return;
+        }
+
+        Dictionary<string, Sprite> spritesByName = new Dictionary<string, Sprite>(loadedSprites.Length);
+        for (int i = 0; i < loadedSprites.Length; i++)
+        {
+            Sprite sprite = loadedSprites[i];
+            if (sprite != null)
+                spritesByName[sprite.name] = sprite;
+        }
+
+        ApplyButtonBackground(btnSimulation, spritesByName, "BonesButtonsSprites_A_22");
+        ApplyButtonBackground(btnSave, spritesByName, "BonesButtonsSprites_A_1");
+        ApplyButtonBackground(btnLoad, spritesByName, "BonesButtonsSprites_A_7");
+        ApplyButtonBackground(btnDocumentation, spritesByName, "BonesButtonsSprites_A_10");
+        ApplyButtonBackground(btnSettings, spritesByName, "BonesButtonsSprites_A_19");
+        ApplyButtonBackground(btnQuit, spritesByName, "BonesButtonsSprites_A_16");
+    }
+
+    void ApplyButtonBackground(Button button, Dictionary<string, Sprite> spritesByName, string spriteName)
+    {
+        if (!button)
+            return;
+
+        if (!spritesByName.TryGetValue(spriteName, out Sprite sprite) || sprite == null)
+        {
+            Debug.LogWarning($"[MenuManager] Could not find sprite '{spriteName}' in {buttonSpriteResourcePath}.", this);
+            return;
+        }
+
+        Image image = button.targetGraphic as Image;
+        if (image == null)
+            image = button.GetComponent<Image>();
+        if (image == null)
+        {
+            Debug.LogWarning($"[MenuManager] Button '{button.name}' has no Image background to style.", button);
+            return;
+        }
+
+        image.sprite = sprite;
+        image.type = Image.Type.Simple;
+        image.preserveAspect = true;
+        image.color = Color.white;
+        button.targetGraphic = image;
+
+        if (useNativeButtonSpriteSize)
+            SetButtonNativeSpriteSize(button, sprite);
+    }
+
+    void SetButtonNativeSpriteSize(Button button, Sprite sprite)
+    {
+        RectTransform rect = button.GetComponent<RectTransform>();
+        if (rect == null)
+            return;
+
+        Vector2 scaledSize = sprite.rect.size * Mathf.Max(0.01f, buttonSpriteSizeScale);
+        rect.sizeDelta = scaledSize;
+
+        LayoutElement layoutElement = button.GetComponent<LayoutElement>();
+        if (layoutElement == null)
+            layoutElement = button.gameObject.AddComponent<LayoutElement>();
+
+        layoutElement.preferredWidth = scaledSize.x;
+        layoutElement.preferredHeight = scaledSize.y;
+        layoutElement.minWidth = scaledSize.x;
+        layoutElement.minHeight = scaledSize.y;
     }
 }
