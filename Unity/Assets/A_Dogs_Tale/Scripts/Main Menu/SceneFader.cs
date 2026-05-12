@@ -19,6 +19,18 @@ public class SceneFader : MonoBehaviour
     public float minSplashSeconds = 1.5f;  // brief pause
     public float fadeDuration = 5f;       // cross fade duration
 
+    [Header("Title Pull-Up")]
+    [SerializeField] private RectTransform pullUpByLeash;
+    [SerializeField] private Image leashHangingImage;
+    [SerializeField] private SpriteRenderer leashHangingSpriteRenderer;
+    [SerializeField] private string leashHangingBeforeResourcePath = "Sprites/LeashHanging_A";
+    [SerializeField] private string leashHangingAfterResourcePath = "Sprites/LeashHanging_B";
+    [SerializeField] private Vector2 pullUpStartPosition = new(0f, -450f);
+    [SerializeField] private Vector2 pullUpEndPosition = Vector2.zero;
+    [SerializeField] private float pullUpDuration = 1f;
+    [SerializeField] private float pullUpOvershootY = 24f;
+    [SerializeField] private float pullUpSettleDuration = 0.18f;
+
     [Header("Debug/UX")]
     public bool allowSkip = true;          // press any key / click to skip after min time
     [SerializeField] private KeyCode returnToTitleKey = KeyCode.Delete;
@@ -165,10 +177,14 @@ public class SceneFader : MonoBehaviour
 
         SetSplashMenuCameraEnabled(true);
         SetCanvasGroupState(splashCanvasGroup, 0f, false);
-        SetCanvasGroupState(menuCanvasGroup, 1f, true);
+        PrepareTitlePullUp();
+        SetCanvasGroupState(menuCanvasGroup, 0f, false);
 
         audioPlayer.PlayClip("Opening Title");
         audioPlayer.PlayClip("Bark_GS_repeat");
+
+        yield return StartCoroutine(Fade(menuCanvasGroup, 0f, 1f));
+        yield return StartCoroutine(PlayTitlePullUp());
 
         isTitleOverlayVisible = true;
     }
@@ -371,8 +387,10 @@ public class SceneFader : MonoBehaviour
         SetOverlayedGameplayUiVisible(false);
         SetCanvasGroupState(splashCanvasGroup, 0f, false);
         SetCanvasGroupState(menuCanvasGroup, 0f, false);
+        PrepareTitlePullUp();
 
         yield return StartCoroutine(Fade(menuCanvasGroup, 0f, 1f));
+        yield return StartCoroutine(PlayTitlePullUp());
 
         isTitleOverlayVisible = true;
         isTransitioning = false;
@@ -407,6 +425,117 @@ public class SceneFader : MonoBehaviour
         canvasGroup.alpha = alpha;
         canvasGroup.blocksRaycasts = interactive;
         canvasGroup.interactable = interactive;
+    }
+
+    void PrepareTitlePullUp()
+    {
+        ResolveTitlePullUpReferences();
+
+        if (pullUpByLeash != null)
+            pullUpByLeash.anchoredPosition = pullUpStartPosition;
+
+        Sprite beforeSprite = LoadLeashSprite(leashHangingBeforeResourcePath);
+        SetLeashSprite(beforeSprite);
+    }
+
+    IEnumerator PlayTitlePullUp()
+    {
+        ResolveTitlePullUpReferences();
+        if (pullUpByLeash == null)
+            yield break;
+
+        Vector2 overshootPosition = pullUpEndPosition + new Vector2(0f, Mathf.Max(0f, pullUpOvershootY));
+        float riseDuration = Mathf.Max(0.01f, pullUpDuration);
+        float settleDuration = Mathf.Max(0.01f, pullUpSettleDuration);
+
+        yield return StartCoroutine(MovePullUpByLeash(pullUpStartPosition, overshootPosition, riseDuration, EaseOutCubic));
+        yield return StartCoroutine(MovePullUpByLeash(overshootPosition, pullUpEndPosition, settleDuration, EaseOutBack));
+
+        pullUpByLeash.anchoredPosition = pullUpEndPosition;
+
+        Sprite afterSprite = LoadLeashSprite(leashHangingAfterResourcePath);
+        SetLeashSprite(afterSprite);
+    }
+
+    IEnumerator MovePullUpByLeash(Vector2 from, Vector2 to, float duration, System.Func<float, float> ease)
+    {
+        float elapsed = 0f;
+        while (elapsed < duration)
+        {
+            elapsed += Time.deltaTime;
+            float t = Mathf.Clamp01(elapsed / duration);
+            pullUpByLeash.anchoredPosition = Vector2.LerpUnclamped(from, to, ease(t));
+            yield return null;
+        }
+    }
+
+    void ResolveTitlePullUpReferences()
+    {
+        if (pullUpByLeash == null)
+        {
+            GameObject pullUpObject = DungeonGenerator.FindInActiveScene("PullUpByLeash");
+            if (pullUpObject != null)
+                pullUpByLeash = pullUpObject.GetComponent<RectTransform>();
+        }
+
+        if (leashHangingImage == null || leashHangingSpriteRenderer == null)
+        {
+            GameObject leashObject = DungeonGenerator.FindInActiveScene("LeashHanging");
+            if (leashObject != null)
+            {
+                if (leashHangingImage == null)
+                    leashHangingImage = leashObject.GetComponent<Image>();
+                if (leashHangingSpriteRenderer == null)
+                    leashHangingSpriteRenderer = leashObject.GetComponent<SpriteRenderer>();
+            }
+        }
+    }
+
+    Sprite LoadLeashSprite(string resourcePath)
+    {
+        if (string.IsNullOrWhiteSpace(resourcePath))
+            return null;
+
+        Sprite sprite = Resources.Load<Sprite>(resourcePath);
+        if (sprite != null)
+            return sprite;
+
+        Texture2D texture = Resources.Load<Texture2D>(resourcePath);
+        if (texture == null)
+        {
+            Debug.LogWarning($"[SceneFader] Could not load leash image at Resources/{resourcePath}.", this);
+            return null;
+        }
+
+        return Sprite.Create(
+            texture,
+            new Rect(0f, 0f, texture.width, texture.height),
+            new Vector2(0.5f, 0.5f),
+            100f);
+    }
+
+    void SetLeashSprite(Sprite sprite)
+    {
+        if (sprite == null)
+            return;
+
+        if (leashHangingImage != null)
+            leashHangingImage.sprite = sprite;
+        if (leashHangingSpriteRenderer != null)
+            leashHangingSpriteRenderer.sprite = sprite;
+    }
+
+    static float EaseOutCubic(float t)
+    {
+        float inverse = 1f - t;
+        return 1f - inverse * inverse * inverse;
+    }
+
+    static float EaseOutBack(float t)
+    {
+        const float c1 = 1.70158f;
+        const float c3 = c1 + 1f;
+        return 1f + c3 * Mathf.Pow(t - 1f, 3f) + c1 * Mathf.Pow(t - 1f, 2f);
     }
 
     bool WasReturnToTitlePressedThisFrame()
