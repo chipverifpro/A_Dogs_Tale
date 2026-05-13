@@ -19,6 +19,10 @@ public class MenuManager : MonoBehaviour
 
     [Header("Menu Button Sprites")]
     [SerializeField] private string buttonSpriteResourcePath = "Sprites/BonesButtonsSprites_A";
+    [SerializeField] private string settingsIconResourcePath = "Sprites/SettingsIcons_A";
+    [SerializeField] private string settingsIconSpriteName = "SettingsIcons_A_7";
+    [SerializeField] private Vector2 settingsIconButtonSize = new Vector2(64f, 64f);
+    [SerializeField] private Vector2 settingsIconInset = new Vector2(20f, 20f);
     [SerializeField] private bool useNativeButtonSpriteSize = true;
     [SerializeField] private float buttonSpriteSizeScale = 0.667f;
 
@@ -27,17 +31,15 @@ public class MenuManager : MonoBehaviour
     {
         // If not assigned, try to find by name under the Canvas
         btnSimulation = btnSimulation ?? FindButton("Simulation");
-        btnFlyover = btnFlyover ?? FindButton("Flyover");
         btnSave = btnSave ?? FindButton("Save", warnIfMissing: false);
         btnLoad = btnLoad ?? FindButton("Load");
         btnSave = btnSave ?? CreateSaveButtonFromLoadButton();
         btnDocumentation = btnDocumentation ?? FindButton("Documentation");
-        btnSettings = btnSettings ?? FindButton("Settings");
+        btnSettings = btnSettings ?? FindButton("SettingsIcon");
         btnQuit = btnQuit ?? FindButton("Quit");
 
         // Clear any existing listeners and add ours
         Hook(btnSimulation, OnSimulation);
-        Hook(btnFlyover, OnFlyover);
         Hook(btnSave, OnSave);
         Hook(btnLoad, OnLoad);
         Hook(btnDocumentation, OnDocumentation);
@@ -45,13 +47,13 @@ public class MenuManager : MonoBehaviour
         Hook(btnQuit, QuitGame);
 
         ApplyMainMenuButtonSprites();
+        ApplySettingsIconButton();
 
 //        Debug.Log(
 //            $"[MenuManager] Button refs after Awake: " +
 //            $"NewMap={(btnNewMap ? btnNewMap.name : "null")}, " +
 //            $"EditMap={(btnEditMap ? btnEditMap.name : "null")}, " +
 //            $"Explore={(btnExplore ? btnExplore.name : "null")}, " +
-//            $"Flyover={(btnFlyover ? btnFlyover.name : "null")}, " +
 //            $"Settings={(btnSettings ? btnSettings.name : "null")}, " +
 //            $"Quit={(btnQuit ? btnQuit.name : "null")}",
 //            this);
@@ -101,13 +103,6 @@ public class MenuManager : MonoBehaviour
 
         Debug.LogWarning("[MenuManager] No SceneFader found; starting simulation without menu transition.", this);
         mapGenerator.BeginNewSimulation();
-    }
-
-    public void OnFlyover()
-    {
-        //BottomBanner.Show("🐦 Flap flap... Birdy Mode overhead!");
-        BottomBanner.Show("Flap flap... Birdy Mode overhead!");
-// TODO: switch to FlyoverCamera routine
     }
 
     public void OnLoad()
@@ -186,7 +181,6 @@ public class MenuManager : MonoBehaviour
 
     [Header("Optional direct refs (drag from Canvas)")]
     public Button btnSimulation;
-    public Button btnFlyover;
     public Button btnSave;
     public Button btnLoad;
     public Button btnDocumentation;
@@ -334,8 +328,76 @@ public class MenuManager : MonoBehaviour
         ApplyButtonBackground(btnSave, spritesByName, "BonesButtonsSprites_A_1");
         ApplyButtonBackground(btnLoad, spritesByName, "BonesButtonsSprites_A_7");
         ApplyButtonBackground(btnDocumentation, spritesByName, "BonesButtonsSprites_A_10");
-        ApplyButtonBackground(btnSettings, spritesByName, "BonesButtonsSprites_A_19");
         ApplyButtonBackground(btnQuit, spritesByName, "BonesButtonsSprites_A_16");
+    }
+
+    void ApplySettingsIconButton()
+    {
+        if (!btnSettings)
+            return;
+
+        Sprite settingsSprite = LoadSpriteByName(settingsIconResourcePath, settingsIconSpriteName);
+        if (settingsSprite == null)
+        {
+            Debug.LogWarning($"[MenuManager] Could not find settings icon '{settingsIconSpriteName}' at Resources/{settingsIconResourcePath}.", this);
+            return;
+        }
+
+        Canvas menuCanvas = btnSettings.GetComponentInParent<Canvas>();
+        if (menuCanvas != null && btnSettings.transform.parent != menuCanvas.transform)
+            btnSettings.transform.SetParent(menuCanvas.transform, worldPositionStays: false);
+
+        RectTransform rect = btnSettings.GetComponent<RectTransform>();
+        if (rect != null)
+        {
+            rect.anchorMin = new Vector2(0f, 1f);
+            rect.anchorMax = new Vector2(0f, 1f);
+            rect.pivot = new Vector2(0f, 1f);
+            rect.anchoredPosition = new Vector2(settingsIconInset.x, -settingsIconInset.y);
+            rect.sizeDelta = settingsIconButtonSize;
+            rect.SetAsLastSibling();
+        }
+
+        LayoutElement layoutElement = btnSettings.GetComponent<LayoutElement>();
+        if (layoutElement == null)
+            layoutElement = btnSettings.gameObject.AddComponent<LayoutElement>();
+        layoutElement.ignoreLayout = true;
+        layoutElement.preferredWidth = settingsIconButtonSize.x;
+        layoutElement.preferredHeight = settingsIconButtonSize.y;
+        layoutElement.minWidth = settingsIconButtonSize.x;
+        layoutElement.minHeight = settingsIconButtonSize.y;
+
+        Image image = btnSettings.targetGraphic as Image;
+        if (image == null)
+            image = btnSettings.GetComponent<Image>();
+        if (image == null)
+        {
+            Debug.LogWarning($"[MenuManager] Settings button '{btnSettings.name}' has no Image to style.", btnSettings);
+            return;
+        }
+
+        image.sprite = settingsSprite;
+        image.type = Image.Type.Simple;
+        image.preserveAspect = true;
+        image.color = Color.white;
+        btnSettings.targetGraphic = image;
+        SetButtonLabel(btnSettings, string.Empty);
+    }
+
+    Sprite LoadSpriteByName(string resourcePath, string spriteName)
+    {
+        Sprite[] loadedSprites = Resources.LoadAll<Sprite>(resourcePath);
+        if (loadedSprites == null || loadedSprites.Length == 0)
+            return null;
+
+        for (int i = 0; i < loadedSprites.Length; i++)
+        {
+            Sprite sprite = loadedSprites[i];
+            if (sprite != null && sprite.name == spriteName)
+                return sprite;
+        }
+
+        return null;
     }
 
     void ApplyButtonBackground(Button button, Dictionary<string, Sprite> spritesByName, string spriteName)
