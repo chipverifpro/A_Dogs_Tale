@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using DogGame.LLM;
 using UnityEngine;
 
@@ -11,9 +12,19 @@ public static class PersistentGameSettings
     private const float MinScentSimulationTimeStep = 0.1f;
     private const float MaxScentSimulationTimeStep = 1.0f;
 
+    public enum MapType
+    {
+        House = 0,
+        Yard = 1,
+        DogPark = 2,
+        Forest = 3,
+        Castle = 4
+    }
+
     [Serializable]
     public class Data
     {
+        public MapType mapType = MapType.House;
         public bool chatGptEnabled = true;
         public bool geminiEnabled = true;
         public bool ollamaEnabled = true;
@@ -35,6 +46,38 @@ public static class PersistentGameSettings
         PlayerPrefs.SetString(PlayerPrefsKey, JsonUtility.ToJson(normalized));
         PlayerPrefs.Save();
         ApplyToRuntime(normalized);
+    }
+
+    public static string GetSelectedMapPresetName(string subFolder = "DungeonConfigs")
+    {
+        Data data = GetCurrentOrSaved();
+        string presetName = GetMapPresetName(data.mapType);
+        if (MapPresetExists(presetName, subFolder))
+            return presetName;
+
+        string fallbackName = GetMapPresetName(MapType.House);
+        if (data.mapType != MapType.House)
+            Debug.LogWarning($"Selected map preset '{presetName}' was not found. Falling back to '{fallbackName}'.");
+
+        return fallbackName;
+    }
+
+    public static string GetMapPresetName(MapType mapType)
+    {
+        switch (mapType)
+        {
+            case MapType.Yard:
+                return "02_Yard";
+            case MapType.DogPark:
+                return "03_Dog_Park";
+            case MapType.Forest:
+                return "04_Forest";
+            case MapType.Castle:
+                return "05_Castle";
+            case MapType.House:
+            default:
+                return "01_House_Tutorial";
+        }
     }
 
     public static void ApplySavedToScheduler(LLMWorldScheduler scheduler)
@@ -132,12 +175,25 @@ public static class PersistentGameSettings
         if (data == null)
             data = new Data();
 
+        if (!Enum.IsDefined(typeof(MapType), data.mapType))
+            data.mapType = MapType.House;
+
         data.scentSimulationTimeStep = Mathf.Clamp(
             Mathf.Round(data.scentSimulationTimeStep * 10f) / 10f,
             MinScentSimulationTimeStep,
             MaxScentSimulationTimeStep);
 
         return data;
+    }
+
+    private static bool MapPresetExists(string presetName, string subFolder)
+    {
+        if (string.IsNullOrWhiteSpace(presetName))
+            return false;
+
+        string folder = Path.Combine(Application.persistentDataPath, subFolder);
+        string path = Path.Combine(folder, presetName + ".json");
+        return File.Exists(path);
     }
 
     private static bool HasAnyVendorEnabled(LLMVendorAndModel mask, LLMVendor vendor)

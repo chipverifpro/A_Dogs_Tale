@@ -63,7 +63,7 @@ public partial class DungeonGenerator
         // load the mission parameters...
 
         if (dir.dungeonBuildSettingsUI != null)
-            dir.dungeonBuildSettingsUI.LoadMapSettingsByName("01_House_Tutorial");
+            dir.dungeonBuildSettingsUI.LoadMapSettingsByName(PersistentGameSettings.GetSelectedMapPresetName(dir.dungeonBuildSettingsUI.subFolder));
 
         Debug.Log("DungeonGenerator ready. Map generation will start when Run Simulation is pressed.");
     }

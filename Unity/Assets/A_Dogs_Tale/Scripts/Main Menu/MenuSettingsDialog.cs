@@ -8,8 +8,10 @@ public class MenuSettingsDialog : MonoBehaviour
     [Header("Themed Dialog")]
     [SerializeField] private string themedDialogRootName = "SettingsDialogRoot";
     [SerializeField] private string themedDialogPrefabResourcePath = "Prefabs/UI/SettingsDialogRoot";
+    [SerializeField] private string mapTypeSpriteResourcePath = "Sprites/SettingsMapType";
     [SerializeField] private Vector2 scrollAnchorMin = new Vector2(0.08f, 0.12f);
     [SerializeField] private Vector2 scrollAnchorMax = new Vector2(0.92f, 0.72f);
+    [SerializeField] private float mapTypeButtonHeight = 112f;
     [SerializeField] private Color textColor = new Color(0.18f, 0.11f, 0.05f, 1f);
     [SerializeField] private Color sectionColor = new Color(0.23f, 0.13f, 0.05f, 1f);
     [SerializeField] private Color controlColor = new Color(0.96f, 0.86f, 0.61f, 0.72f);
@@ -23,6 +25,9 @@ public class MenuSettingsDialog : MonoBehaviour
     private Toggle wallpaperToggle;
     private Slider scentStepSlider;
     private Text scentStepValueLabel;
+    private Image[] mapTypeButtonImages;
+    private Sprite[] mapTypeSprites;
+    private PersistentGameSettings.MapType selectedMapType = PersistentGameSettings.MapType.House;
     private Font runtimeFont;
 
     public void Initialize(MenuManager owner)
@@ -137,6 +142,9 @@ public class MenuSettingsDialog : MonoBehaviour
             fitter = content.gameObject.AddComponent<ContentSizeFitter>();
         fitter.horizontalFit = ContentSizeFitter.FitMode.Unconstrained;
         fitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+
+        CreateSectionHeader(content, "MAP TYPE");
+        CreateMapTypeRow(content);
 
         CreateSectionHeader(content, "AI MODEL");
         GameObject aiRow = CreateRow(content, "AIModelRow", 42f);
@@ -280,6 +288,110 @@ public class MenuSettingsDialog : MonoBehaviour
         LayoutElement valueLayout = scentStepValueLabel.gameObject.GetComponent<LayoutElement>();
         valueLayout.preferredWidth = 54f;
         valueLayout.minWidth = 48f;
+    }
+
+    private void CreateMapTypeRow(Transform parent)
+    {
+        EnsureMapTypeSpritesLoaded();
+        mapTypeButtonImages = new Image[5];
+
+        GameObject row = CreateRow(parent, "MapTypeRow", mapTypeButtonHeight);
+        HorizontalLayoutGroup layout = row.GetComponent<HorizontalLayoutGroup>();
+        if (layout != null)
+            layout.spacing = 8f;
+
+        for (int i = 0; i < mapTypeButtonImages.Length; i++)
+        {
+            int capturedIndex = i;
+            PersistentGameSettings.MapType mapType = (PersistentGameSettings.MapType)i;
+            Button button = CreateMapTypeButton(row.transform, mapType);
+            mapTypeButtonImages[i] = button.targetGraphic as Image;
+            button.onClick.AddListener(() => SelectMapType((PersistentGameSettings.MapType)capturedIndex, save: true));
+        }
+
+        RefreshMapTypeButtonSprites();
+    }
+
+    private Button CreateMapTypeButton(Transform parent, PersistentGameSettings.MapType mapType)
+    {
+        GameObject buttonObject = new GameObject($"{mapType}MapTypeButton", typeof(RectTransform), typeof(Image), typeof(Button), typeof(LayoutElement));
+        buttonObject.transform.SetParent(parent, false);
+        SetLayerRecursive(buttonObject, parent.gameObject.layer);
+
+        Image image = buttonObject.GetComponent<Image>();
+        image.color = Color.white;
+        image.preserveAspect = true;
+        image.sprite = GetMapTypeSprite((int)mapType, selected: false);
+
+        Button button = buttonObject.GetComponent<Button>();
+        button.targetGraphic = image;
+
+        LayoutElement layout = buttonObject.GetComponent<LayoutElement>();
+        layout.flexibleWidth = 1f;
+        layout.minWidth = 74f;
+        layout.preferredHeight = mapTypeButtonHeight;
+        return button;
+    }
+
+    private void SelectMapType(PersistentGameSettings.MapType mapType, bool save)
+    {
+        selectedMapType = mapType;
+        RefreshMapTypeButtonSprites();
+
+        if (save)
+            SaveFromControls();
+    }
+
+    private void RefreshMapTypeButtonSprites()
+    {
+        if (mapTypeButtonImages == null)
+            return;
+
+        for (int i = 0; i < mapTypeButtonImages.Length; i++)
+        {
+            Image image = mapTypeButtonImages[i];
+            if (image == null)
+                continue;
+
+            bool selected = i == (int)selectedMapType;
+            Sprite sprite = GetMapTypeSprite(i, selected);
+            if (sprite != null)
+            {
+                image.sprite = sprite;
+                image.color = Color.white;
+            }
+            else
+            {
+                image.color = selected ? selectedControlColor : controlColor;
+            }
+        }
+    }
+
+    private Sprite GetMapTypeSprite(int mapTypeIndex, bool selected)
+    {
+        EnsureMapTypeSpritesLoaded();
+        if (mapTypeSprites == null)
+            return null;
+
+        int spriteIndex = mapTypeIndex + (selected ? 5 : 0);
+        string spriteName = $"SettingsMapType_{spriteIndex}";
+        for (int i = 0; i < mapTypeSprites.Length; i++)
+        {
+            if (mapTypeSprites[i] != null && mapTypeSprites[i].name == spriteName)
+                return mapTypeSprites[i];
+        }
+
+        return null;
+    }
+
+    private void EnsureMapTypeSpritesLoaded()
+    {
+        if (mapTypeSprites != null)
+            return;
+
+        mapTypeSprites = Resources.LoadAll<Sprite>(mapTypeSpriteResourcePath);
+        if (mapTypeSprites == null || mapTypeSprites.Length == 0)
+            Debug.LogWarning($"[MenuSettingsDialog] Could not load map type sprites from Resources/{mapTypeSpriteResourcePath}.", this);
     }
 
     private GameObject CreateRow(Transform parent, string name, float height)
@@ -445,6 +557,9 @@ public class MenuSettingsDialog : MonoBehaviour
         layout.childForceExpandHeight = false;
         layout.childForceExpandWidth = true;
 
+        CreateSectionHeader(panel.transform, "Map Type");
+        CreateMapTypeRow(panel.transform);
+
         CreateSectionHeader(panel.transform, "AI Models");
         chatGptToggle = CreateToggle(panel.transform, "ChatGPT", "ChatGptToggle");
         geminiToggle = CreateToggle(panel.transform, "Gemini", "GeminiToggle");
@@ -496,6 +611,7 @@ public class MenuSettingsDialog : MonoBehaviour
     {
         PersistentGameSettings.Data settings = PersistentGameSettings.GetCurrentOrSaved();
 
+        SelectMapType(settings.mapType, save: false);
         chatGptToggle?.SetIsOnWithoutNotify(settings.chatGptEnabled);
         geminiToggle?.SetIsOnWithoutNotify(settings.geminiEnabled);
         ollamaToggle?.SetIsOnWithoutNotify(settings.ollamaEnabled);
@@ -513,6 +629,7 @@ public class MenuSettingsDialog : MonoBehaviour
         PersistentGameSettings.Data current = PersistentGameSettings.GetCurrentOrSaved();
         PersistentGameSettings.SaveAndApply(new PersistentGameSettings.Data
         {
+            mapType = selectedMapType,
             chatGptEnabled = chatGptToggle != null ? chatGptToggle.isOn : current.chatGptEnabled,
             geminiEnabled = geminiToggle != null ? geminiToggle.isOn : current.geminiEnabled,
             ollamaEnabled = ollamaToggle != null ? ollamaToggle.isOn : current.ollamaEnabled,
