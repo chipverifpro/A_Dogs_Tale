@@ -28,29 +28,36 @@ public class MissionManager : MonoBehaviour
 
         mission = new()
         {
-            missionName = "Tutorial: Home",
-            missionFilename = "01_House_Tutorial"
+            missionName = "House",
+            missionFilename = "Map1_House"
         };
         missions.Add(mission);
 
         mission = new()
         {
-            missionName = "Home Escape",
-            missionFilename = "2_Home_Escape"
+            missionName = "Yard",
+            missionFilename = "Map2_Yard"
         };
         missions.Add(mission);
 
         mission = new()
         {
-            missionName = "Park",
-            missionFilename = "3_Park"
+            missionName = "Dog Park",
+            missionFilename = "Map3_DogPark"
         };
         missions.Add(mission);
         
         mission = new()
         {
-            missionName = "Neighbor House",
-            missionFilename = "4_Neighbor_House"
+            missionName = "Forest",
+            missionFilename = "Map4_Forest"
+        };
+        missions.Add(mission);
+
+        mission = new()
+        {
+            missionName = "Castle",
+            missionFilename = "Map5_Castle"
         };
         missions.Add(mission);
     }

@@ -26,7 +26,7 @@ public class MenuManager : MonoBehaviour
     [SerializeField] private bool useNativeButtonSpriteSize = true;
     [SerializeField] private float buttonSpriteSizeScale = 0.667f;
 
-
+    #region Startup
     void Awake()
     {
         // If not assigned, try to find by name under the Canvas
@@ -78,7 +78,9 @@ public class MenuManager : MonoBehaviour
 
         if (buttonsParent) buttonsParent.SetActive(true);
     }
+    #endregion
 
+    #region buttonHooks
     // === BUTTON HOOKS ===
 
     public void OnSimulation()
@@ -171,6 +173,7 @@ public class MenuManager : MonoBehaviour
         Application.OpenURL("https://github.com/chipverifpro/A_Dogs_Tale/wiki/How-to-play");
     }
 
+    #endregion
     private IEnumerator SwitchScenes(string sceneName)
     {
         // Load new scene
@@ -190,7 +193,7 @@ public class MenuManager : MonoBehaviour
     [Header("Optional game refs")]
     public DungeonGenerator generator;   // if New Map should generate immediately
 
-    
+    #region Utilities
     // ---------- Utilities ----------
     Button FindButton(string name, bool warnIfMissing = true)
     {
@@ -448,4 +451,5 @@ public class MenuManager : MonoBehaviour
         layoutElement.minWidth = scaledSize.x;
         layoutElement.minHeight = scaledSize.y;
     }
+    #endregion
 }

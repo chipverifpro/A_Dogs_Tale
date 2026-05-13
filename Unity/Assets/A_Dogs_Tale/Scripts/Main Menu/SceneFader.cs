@@ -21,6 +21,8 @@ public class SceneFader : MonoBehaviour
 
     [Header("Title Pull-Up")]
     [SerializeField] private RectTransform pullUpByLeash;
+    [SerializeField] private GameObject settingsIcon;
+    [SerializeField] private string settingsIconObjectName = "SettingsIcon";
     [SerializeField] private Image leashHangingImage;
     [SerializeField] private SpriteRenderer leashHangingSpriteRenderer;
     [SerializeField] private string leashHangingBeforeResourcePath = "Sprites/LeashHanging_A";
@@ -441,6 +443,8 @@ public class SceneFader : MonoBehaviour
     IEnumerator PlayTitlePullUp()
     {
         ResolveTitlePullUpReferences();
+        EnableTitlePullUpObjects();
+
         if (pullUpByLeash == null)
             yield break;
 
@@ -478,6 +482,9 @@ public class SceneFader : MonoBehaviour
                 pullUpByLeash = pullUpObject.GetComponent<RectTransform>();
         }
 
+        if (settingsIcon == null && !string.IsNullOrWhiteSpace(settingsIconObjectName))
+            settingsIcon = DungeonGenerator.FindInActiveScene(settingsIconObjectName);
+
         if (leashHangingImage == null || leashHangingSpriteRenderer == null)
         {
             GameObject leashObject = DungeonGenerator.FindInActiveScene("LeashHanging");
@@ -489,6 +496,15 @@ public class SceneFader : MonoBehaviour
                     leashHangingSpriteRenderer = leashObject.GetComponent<SpriteRenderer>();
             }
         }
+    }
+
+    void EnableTitlePullUpObjects()
+    {
+        if (pullUpByLeash != null && !pullUpByLeash.gameObject.activeSelf)
+            pullUpByLeash.gameObject.SetActive(true);
+
+        if (settingsIcon != null && !settingsIcon.activeSelf)
+            settingsIcon.SetActive(true);
     }
 
     Sprite LoadLeashSprite(string resourcePath)

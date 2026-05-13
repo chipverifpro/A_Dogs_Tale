@@ -102,7 +102,49 @@ public static class PersistentGameSettings
             return;
 
         dungeonGenerator.ApplyWallpaperOnWallTiles = data.wallpaperEnabled;
+        ApplySavedMapToDungeonGenerator(dungeonGenerator);
     }
+
+    public static void ApplySavedMapToDungeonGenerator(DungeonGenerator dungeonGenerator)
+    {
+        DungeonSettings cfg = dungeonGenerator.cfg;
+        Data data = GetCurrentOrSaved();
+        switch (data.mapType)
+        {
+            case MapType.House:
+                cfg.RoomAlgorithm = DungeonSettings.RoomAlgorithm_e.PackedRooms;
+                cfg.useCellularAutomata = false;
+                cfg.useScatterRooms = false;
+                cfg.usePackedRooms = true;
+                cfg.useDiagonalCorners = false;
+                cfg.mapHeight = 25;                 // small house map
+                cfg.mapWidth = 25;
+                break;
+            case MapType.Yard:
+                break;
+            case MapType.DogPark:
+                break;
+            case MapType.Forest:
+                cfg.RoomAlgorithm = DungeonSettings.RoomAlgorithm_e.CellularAutomataPerlin;
+                cfg.generateOverlappingRooms = false;
+                cfg.useCellularAutomata = true;
+                cfg.useScatterRooms = false;
+                cfg.usePerlin = true;
+                cfg.usePackedRooms = false;
+                cfg.useDiagonalCorners = true;
+                break;
+            case MapType.Castle:
+                cfg.RoomAlgorithm = DungeonSettings.RoomAlgorithm_e.PackedRooms;
+                cfg.useCellularAutomata = false;
+                cfg.useScatterRooms = false;
+                cfg.usePackedRooms = true;
+                cfg.useDiagonalCorners = false;
+                cfg.mapHeight = 100;                 // big house map
+                cfg.mapWidth = 100;
+                break;                
+        }
+    }
+
 
     public static void ApplyToRuntime(Data data)
     {

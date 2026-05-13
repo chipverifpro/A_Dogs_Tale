@@ -98,12 +98,13 @@ public partial class DungeonGenerator : MonoBehaviour
             ResetGenerationState();
             if (tm.IfYield()) yield return null;     // cooperative yield decision
 
-            BottomBanner.LogBuildProgress("Generating dungeon...");
+            BottomBanner.LogBuildProgress("Generating map...");
 
             // Step 0: Select settings
-            DungeonGenerationModeApplier.ApplyRoomAlgorithmFlags(cfg);
+            DungeonGenerationModeApplier.ApplyRoomAlgorithmFlags(cfg);  // old way
+            PersistentGameSettings.ApplySavedToDungeonGenerator(this);  // new way
 
-            BottomBanner.LogBuildProgress("Initialize dungeon...");
+            BottomBanner.LogBuildProgress("Initialize map...");
 
 
             // ===== Step 1. Initialize the dungeon
