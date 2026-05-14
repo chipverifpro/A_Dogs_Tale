@@ -147,8 +147,12 @@ public class MenuManager : MonoBehaviour
     public void OnSettings()
     {
         //BottomBanner.Show("🎨 Adjusting imagination...");
-        BottomBanner.Show("Adjusting imagination...");
-        settingsDialog?.Open();
+        if (settingsDialog == null)
+            return;
+
+        bool willOpen = !settingsDialog.IsOpen;
+        BottomBanner.Show(willOpen ? "Adjusting imagination..." : "Settings tucked away.");
+        settingsDialog.Toggle();
     }
 
     public void QuitGame()

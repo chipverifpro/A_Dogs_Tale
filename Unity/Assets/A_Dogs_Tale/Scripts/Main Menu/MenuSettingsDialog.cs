@@ -36,6 +36,8 @@ public class MenuSettingsDialog : MonoBehaviour
         HideSceneThemedDialogIfPresent();
     }
 
+    public bool IsOpen => dialogRoot != null && dialogRoot.activeSelf;
+
     private void Awake()
     {
         MenuSettingsDialog[] dialogs = GetComponents<MenuSettingsDialog>();
@@ -65,6 +67,14 @@ public class MenuSettingsDialog : MonoBehaviour
     {
         if (dialogRoot != null)
             dialogRoot.SetActive(false);
+    }
+
+    public void Toggle()
+    {
+        if (IsOpen)
+            Close();
+        else
+            Open();
     }
 
     private void EnsureBuilt()
@@ -494,7 +504,6 @@ public class MenuSettingsDialog : MonoBehaviour
             closeObject.transform.SetParent(root, false);
             SetLayerRecursive(closeObject, canvas != null ? canvas.gameObject.layer : root.gameObject.layer);
             closeButton = closeObject.GetComponent<Button>();
-            closeButton.onClick.AddListener(Close);
 
             Text closeText = closeObject.GetComponentInChildren<Text>(includeInactive: true);
             if (closeText != null)
@@ -509,6 +518,19 @@ public class MenuSettingsDialog : MonoBehaviour
             Image image = closeObject.GetComponent<Image>();
             if (image != null)
                 image.color = new Color(0.96f, 0.86f, 0.61f, 0.78f);
+        }
+
+        closeButton.onClick.RemoveListener(Close);
+        closeButton.onClick.AddListener(Close);
+        closeButton.interactable = true;
+
+        Image targetImage = closeButton.targetGraphic as Image;
+        if (targetImage == null)
+            targetImage = closeButton.GetComponent<Image>();
+        if (targetImage != null)
+        {
+            targetImage.raycastTarget = true;
+            closeButton.targetGraphic = targetImage;
         }
 
         RectTransform rect = closeButton.GetComponent<RectTransform>();

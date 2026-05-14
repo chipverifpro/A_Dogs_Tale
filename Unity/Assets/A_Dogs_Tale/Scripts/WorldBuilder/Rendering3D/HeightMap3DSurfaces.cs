@@ -33,7 +33,7 @@ public partial class DungeonGenerator
 
             if (useTriangleFloor)
             {
-                Quaternion triangleFloorRotation = Quaternion.Euler(-90f, triangleFloorDirection * 90f, 90f);
+                Quaternion triangleFloorRotation = Quaternion.Euler(-90f, triangleFloorDirection * 90f +180f, 90f);
                 Quaternion finalRotation = tilt * triangleFloorRotation;
                 Vector3 triangleScale = finalScale * 50f; // keep your existing fudge factor for now
 
