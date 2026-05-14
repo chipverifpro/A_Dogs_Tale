@@ -29,9 +29,14 @@ public class ScentGUI : MonoBehaviour
     [SerializeField] private string playPauseSpriteResourcePath = "Sprites/PlayAndPause_Dual";
     [SerializeField] private string inventoryActionSpriteResourcePath = "Sprites/InventoryActionsSheetA";
     [SerializeField] private string digHoleSpriteResourcePath = "Sprites/DigHoleSpriteA";
+    [SerializeField] private string pulldownFrameResourcePath = "Sprites/PulldownFrame";
     [SerializeField] private float noseButtonSize = 176f;
     [SerializeField] private float noseButtonMargin = 24f;
     [SerializeField] private float modeButtonSpacing = 12f;
+    [SerializeField] private float topControlButtonSize = 176f;
+    [SerializeField] private Vector2 topControlsInset = new Vector2(162f, 52f);
+    [SerializeField] private Vector2 pulldownFrameSize = new Vector2(1620f, 341f);
+    [SerializeField] private Vector2 pulldownFrameOffset = new Vector2(0f, 0f);
     [SerializeField] private float modePanelIconSize = 128f;
     [SerializeField] private float dropdownWidth = 320f;
     [SerializeField] private float dropdownMaxHeight = 420f;
@@ -64,6 +69,8 @@ public class ScentGUI : MonoBehaviour
     private bool isSniffModeActive;
 
     private Canvas overlayCanvas;
+    private RectTransform pulldownFrameRect;
+    private Image pulldownFrameImage;
     private RectTransform noseButtonRect;
     private Image noseButtonImage;
     private Image noseIconImage;
@@ -104,6 +111,8 @@ public class ScentGUI : MonoBehaviour
     private float topControlsVisibility;
     private float topControlsSlideVelocity;
     private bool uiBuilt;
+
+    private float TopControlStride => topControlButtonSize + modeButtonSpacing;
 
     private readonly AgentDecisionType[] selectableDecisionModes =
     {
@@ -268,6 +277,7 @@ public class ScentGUI : MonoBehaviour
 
         ReparentExistingUiElement(decisionModeControlsTransform, canvasObject.transform, "DecisionModeTitle");
 
+        BuildPulldownFrame(canvasObject.transform);
         BuildNoseButton(scentControlsTransform, canvasObject.transform);
         BuildModeButton(decisionModeControlsTransform, canvasObject.transform);
         BuildSpeedButton(speedControlsTransform, canvasObject.transform);
@@ -374,6 +384,79 @@ public class ScentGUI : MonoBehaviour
         return null;
     }
 
+    private void BuildPulldownFrame(Transform canvasTransform)
+    {
+        Transform existingFrame = canvasTransform.Find("PulldownFrame");
+        GameObject frameObject;
+        if (existingFrame == null)
+        {
+            frameObject = new GameObject(
+                "PulldownFrame",
+                typeof(RectTransform),
+                typeof(Image));
+            frameObject.transform.SetParent(canvasTransform, false);
+        }
+        else
+        {
+            frameObject = existingFrame.gameObject;
+        }
+
+        frameObject.transform.SetAsFirstSibling();
+
+        pulldownFrameRect = GetOrAddComponent<RectTransform>(frameObject);
+        pulldownFrameRect.anchorMin = new Vector2(1f, 1f);
+        pulldownFrameRect.anchorMax = new Vector2(1f, 1f);
+        pulldownFrameRect.pivot = new Vector2(1f, 1f);
+        pulldownFrameRect.anchoredPosition = pulldownFrameOffset;
+        pulldownFrameRect.sizeDelta = pulldownFrameSize;
+
+        pulldownFrameImage = GetOrAddComponent<Image>(frameObject);
+        pulldownFrameImage.sprite = GetPulldownFrameSprite();
+        pulldownFrameImage.color = Color.white;
+        pulldownFrameImage.preserveAspect = false;
+        pulldownFrameImage.raycastTarget = false;
+    }
+
+    private Vector2 GetTopControlPosition(int slotFromRight)
+    {
+        return new Vector2(
+            -(topControlsInset.x + TopControlStride * slotFromRight),
+            -topControlsInset.y);
+    }
+
+    private Vector2 GetTopPanelPosition(int slotFromRight)
+    {
+        return new Vector2(
+            -(topControlsInset.x + TopControlStride * slotFromRight),
+            -(topControlsInset.y + topControlButtonSize + 12f));
+    }
+
+    private void ConfigureTopControlRect(RectTransform rectTransform, int slotFromRight)
+    {
+        if (rectTransform == null)
+            return;
+
+        rectTransform.anchorMin = new Vector2(1f, 1f);
+        rectTransform.anchorMax = new Vector2(1f, 1f);
+        rectTransform.pivot = new Vector2(1f, 1f);
+        rectTransform.localScale = Vector3.one;
+        rectTransform.anchoredPosition = GetTopControlPosition(slotFromRight);
+        rectTransform.sizeDelta = new Vector2(topControlButtonSize, topControlButtonSize);
+    }
+
+    private void ConfigureTopControlIconRect(RectTransform iconRect, float sizeScale)
+    {
+        if (iconRect == null)
+            return;
+
+        iconRect.anchorMin = new Vector2(0.5f, 0.5f);
+        iconRect.anchorMax = new Vector2(0.5f, 0.5f);
+        iconRect.pivot = new Vector2(0.5f, 0.5f);
+        iconRect.localScale = Vector3.one;
+        iconRect.anchoredPosition = Vector2.zero;
+        iconRect.sizeDelta = Vector2.one * (topControlButtonSize * sizeScale);
+    }
+
     private void BuildNoseButton(Transform parent, Transform searchRoot)
     {
         Transform existingButton = FindExistingUiElement(parent, searchRoot, "ScentTargetButton");
@@ -402,6 +485,7 @@ public class ScentGUI : MonoBehaviour
             noseButtonRect.anchoredPosition = new Vector2(-noseButtonMargin, -noseButtonMargin);
             noseButtonRect.sizeDelta = new Vector2(noseButtonSize, noseButtonSize);
         }
+        ConfigureTopControlRect(noseButtonRect, 0);
 
         noseButtonImage = GetOrAddComponent<Image>(buttonObject);
         noseButtonImage.color = noseButtonColor;
@@ -434,6 +518,7 @@ public class ScentGUI : MonoBehaviour
             iconRect.sizeDelta = Vector2.one * (noseButtonSize * 0.68f);
             iconRect.anchoredPosition = Vector2.zero;
         }
+        ConfigureTopControlIconRect(iconRect, 0.68f);
 
         noseIconImage = GetOrAddComponent<Image>(iconObject);
         noseIconImage.sprite = GetScentIconSprite();
@@ -473,6 +558,7 @@ public class ScentGUI : MonoBehaviour
                 -noseButtonMargin);
             modeButtonRect.sizeDelta = new Vector2(noseButtonSize, noseButtonSize);
         }
+        ConfigureTopControlRect(modeButtonRect, 1);
 
         modeButtonImage = GetOrAddComponent<Image>(buttonObject);
         modeButtonImage.color = noseButtonColor;
@@ -505,6 +591,7 @@ public class ScentGUI : MonoBehaviour
             iconRect.sizeDelta = Vector2.one * (noseButtonSize * 0.72f);
             iconRect.anchoredPosition = Vector2.zero;
         }
+        ConfigureTopControlIconRect(iconRect, 0.72f);
 
         modeIconImage = GetOrAddComponent<Image>(iconObject);
         modeIconImage.preserveAspect = true;
@@ -544,6 +631,7 @@ public class ScentGUI : MonoBehaviour
                 -noseButtonMargin);
             simulationButtonRect.sizeDelta = new Vector2(noseButtonSize, noseButtonSize);
         }
+        ConfigureTopControlRect(simulationButtonRect, 3);
 
         simulationButtonImage = GetOrAddComponent<Image>(buttonObject);
         simulationButtonImage.color = noseButtonColor;
@@ -576,6 +664,7 @@ public class ScentGUI : MonoBehaviour
             iconRect.sizeDelta = Vector2.one * (noseButtonSize * 0.72f);
             iconRect.anchoredPosition = Vector2.zero;
         }
+        ConfigureTopControlIconRect(iconRect, 0.72f);
 
         simulationIconImage = GetOrAddComponent<Image>(iconObject);
         simulationIconImage.preserveAspect = true;
@@ -612,6 +701,7 @@ public class ScentGUI : MonoBehaviour
             -(noseButtonMargin + ((noseButtonSize + modeButtonSpacing) * 3f)),
             -noseButtonMargin);
         speedButtonRect.sizeDelta = new Vector2(noseButtonSize, noseButtonSize);
+        ConfigureTopControlRect(speedButtonRect, 2);
 
         speedButtonImage = GetOrAddComponent<Image>(buttonObject);
         speedButtonImage.color = noseButtonColor;
@@ -644,6 +734,7 @@ public class ScentGUI : MonoBehaviour
             iconRect.sizeDelta = Vector2.one * (noseButtonSize * 0.72f);
             iconRect.anchoredPosition = Vector2.zero;
         }
+        ConfigureTopControlIconRect(iconRect, 0.72f);
 
         speedIconImage = GetOrAddComponent<Image>(iconObject);
         speedIconImage.preserveAspect = true;
@@ -683,6 +774,7 @@ public class ScentGUI : MonoBehaviour
                 -noseButtonMargin);
             emoteButtonRect.sizeDelta = new Vector2(noseButtonSize, noseButtonSize);
         }
+        ConfigureTopControlRect(emoteButtonRect, 4);
 
         emoteButtonImage = GetOrAddComponent<Image>(buttonObject);
         emoteButtonImage.color = noseButtonColor;
@@ -715,6 +807,7 @@ public class ScentGUI : MonoBehaviour
             iconRect.sizeDelta = Vector2.one * (noseButtonSize * 0.72f);
             iconRect.anchoredPosition = Vector2.zero;
         }
+        ConfigureTopControlIconRect(iconRect, 0.72f);
 
         emoteIconImage = GetOrAddComponent<Image>(iconObject);
         emoteIconImage.preserveAspect = true;
@@ -754,6 +847,7 @@ public class ScentGUI : MonoBehaviour
                 -noseButtonMargin);
             inventoryButtonRect.sizeDelta = new Vector2(noseButtonSize, noseButtonSize);
         }
+        ConfigureTopControlRect(inventoryButtonRect, 5);
 
         inventoryButtonImage = GetOrAddComponent<Image>(buttonObject);
         inventoryButtonImage.color = noseButtonColor;
@@ -786,6 +880,7 @@ public class ScentGUI : MonoBehaviour
             iconRect.sizeDelta = Vector2.one * (noseButtonSize * 0.72f);
             iconRect.anchoredPosition = Vector2.zero;
         }
+        ConfigureTopControlIconRect(iconRect, 0.72f);
 
         inventoryIconImage = GetOrAddComponent<Image>(iconObject);
         inventoryIconImage.sprite = GetInventoryButtonSprite();
@@ -822,6 +917,7 @@ public class ScentGUI : MonoBehaviour
             -(noseButtonMargin + ((noseButtonSize + modeButtonSpacing) * 6f)),
             -noseButtonMargin);
         digButtonRect.sizeDelta = new Vector2(noseButtonSize, noseButtonSize);
+        ConfigureTopControlRect(digButtonRect, 6);
 
         digButtonImage = GetOrAddComponent<Image>(buttonObject);
         digButtonImage.color = noseButtonColor;
@@ -865,11 +961,11 @@ public class ScentGUI : MonoBehaviour
         if (iconRect == null)
             return;
 
-        float iconWidth = noseButtonSize * 0.72f;
+        float iconWidth = topControlButtonSize * 0.72f;
         float aspectRatio = sprite != null && sprite.rect.width > 0f
             ? sprite.rect.height / sprite.rect.width
             : 1f;
-        float iconHeight = Mathf.Min(iconWidth * aspectRatio, noseButtonSize * 0.9f);
+        float iconHeight = Mathf.Min(iconWidth * aspectRatio, topControlButtonSize * 0.9f);
         iconRect.sizeDelta = new Vector2(iconWidth, iconHeight);
     }
 
@@ -926,7 +1022,7 @@ public class ScentGUI : MonoBehaviour
             return false;
 
         float canvasScale = Screen.height > 0 ? Screen.height / 1080f : 1f;
-        float visibleButtonsBottomY = Screen.height - ((noseButtonMargin + noseButtonSize) * canvasScale);
+        float visibleButtonsBottomY = Screen.height - ((topControlsInset.y + topControlButtonSize) * canvasScale);
         return mousePosition.y >= visibleButtonsBottomY;
     }
 
@@ -940,10 +1036,12 @@ public class ScentGUI : MonoBehaviour
 
     private void ApplyTopControlsSlidePosition()
     {
-        float shownY = -noseButtonMargin;
-        float hiddenY = noseButtonSize + topControlsHiddenTopPadding;
+        float shownY = -topControlsInset.y;
+        float hiddenY = topControlButtonSize + topControlsHiddenTopPadding;
         float y = Mathf.Lerp(hiddenY, shownY, topControlsVisibility);
+        float frameY = Mathf.Lerp(GetPulldownFrameHiddenY(), pulldownFrameOffset.y, topControlsVisibility);
 
+        ApplyTopControlY(pulldownFrameRect, frameY);
         ApplyTopControlY(noseButtonRect, y);
         ApplyTopControlY(modeButtonRect, y);
         ApplyTopControlY(speedButtonRect, y);
@@ -961,6 +1059,17 @@ public class ScentGUI : MonoBehaviour
         Vector2 anchoredPosition = rectTransform.anchoredPosition;
         anchoredPosition.y = y;
         rectTransform.anchoredPosition = anchoredPosition;
+    }
+
+    private float GetPulldownFrameHiddenY()
+    {
+        if (pulldownFrameRect == null)
+            return pulldownFrameOffset.y;
+
+        float frameHeight = pulldownFrameRect.rect.height > 0f
+            ? pulldownFrameRect.rect.height
+            : pulldownFrameSize.y;
+        return pulldownFrameOffset.y + frameHeight + topControlsHiddenTopPadding;
     }
 
     private void BuildEmoteDropdown(Transform parent, Transform searchRoot)
@@ -982,9 +1091,7 @@ public class ScentGUI : MonoBehaviour
         emoteDropdownRect.anchorMin = new Vector2(1f, 1f);
         emoteDropdownRect.anchorMax = new Vector2(1f, 1f);
         emoteDropdownRect.pivot = new Vector2(1f, 1f);
-        emoteDropdownRect.anchoredPosition = new Vector2(
-            -(noseButtonMargin + ((noseButtonSize + modeButtonSpacing) * 4f)),
-            -(noseButtonMargin + noseButtonSize + 12f));
+        emoteDropdownRect.anchoredPosition = GetTopPanelPosition(4);
         emoteDropdownRect.sizeDelta = new Vector2(emoteDropdownWidth, emoteDropdownMaxHeight);
 
         Image dropdownImage = dropdownObject.GetComponent<Image>();
@@ -1085,6 +1192,11 @@ public class ScentGUI : MonoBehaviour
         if (emoteDropdownRect == null)
             return;
 
+        emoteDropdownRect.anchorMin = new Vector2(1f, 1f);
+        emoteDropdownRect.anchorMax = new Vector2(1f, 1f);
+        emoteDropdownRect.pivot = new Vector2(1f, 1f);
+        emoteDropdownRect.anchoredPosition = GetTopPanelPosition(4);
+
         Image dropdownImage = dropdownObject.GetComponent<Image>();
         if (dropdownImage != null)
             dropdownImage.color = dropdownBackgroundColor;
@@ -1116,7 +1228,7 @@ public class ScentGUI : MonoBehaviour
         dropdownRect.anchorMin = new Vector2(1f, 1f);
         dropdownRect.anchorMax = new Vector2(1f, 1f);
         dropdownRect.pivot = new Vector2(1f, 1f);
-        dropdownRect.anchoredPosition = new Vector2(-noseButtonMargin, -(noseButtonMargin + noseButtonSize + 12f));
+        dropdownRect.anchoredPosition = GetTopPanelPosition(0);
         dropdownRect.sizeDelta = new Vector2(dropdownWidth, dropdownMaxHeight);
 
         Image dropdownImage = dropdownObject.GetComponent<Image>();
@@ -1217,6 +1329,11 @@ public class ScentGUI : MonoBehaviour
         if (dropdownRect == null)
             return;
 
+        dropdownRect.anchorMin = new Vector2(1f, 1f);
+        dropdownRect.anchorMax = new Vector2(1f, 1f);
+        dropdownRect.pivot = new Vector2(1f, 1f);
+        dropdownRect.anchoredPosition = GetTopPanelPosition(0);
+
         Image dropdownImage = dropdownObject.GetComponent<Image>();
         if (dropdownImage != null)
             dropdownImage.color = dropdownBackgroundColor;
@@ -1249,9 +1366,7 @@ public class ScentGUI : MonoBehaviour
         modePanelRect.anchorMin = new Vector2(1f, 1f);
         modePanelRect.anchorMax = new Vector2(1f, 1f);
         modePanelRect.pivot = new Vector2(1f, 1f);
-        modePanelRect.anchoredPosition = new Vector2(
-            -(noseButtonMargin + noseButtonSize + modeButtonSpacing),
-            -(noseButtonMargin + noseButtonSize + 12f));
+        modePanelRect.anchoredPosition = GetTopPanelPosition(1);
 
         float padding = 12f;
         float spacing = 8f;
@@ -1297,9 +1412,7 @@ public class ScentGUI : MonoBehaviour
         speedPanelRect.anchorMin = new Vector2(1f, 1f);
         speedPanelRect.anchorMax = new Vector2(1f, 1f);
         speedPanelRect.pivot = new Vector2(1f, 1f);
-        speedPanelRect.anchoredPosition = new Vector2(
-            -(noseButtonMargin + ((noseButtonSize + modeButtonSpacing) * 2f)),
-            -(noseButtonMargin + noseButtonSize + 12f));
+        speedPanelRect.anchoredPosition = GetTopPanelPosition(2);
 
         float padding = 12f;
         float spacing = 8f;
@@ -1331,6 +1444,11 @@ public class ScentGUI : MonoBehaviour
         if (modePanelRect == null)
             return;
 
+        modePanelRect.anchorMin = new Vector2(1f, 1f);
+        modePanelRect.anchorMax = new Vector2(1f, 1f);
+        modePanelRect.pivot = new Vector2(1f, 1f);
+        modePanelRect.anchoredPosition = GetTopPanelPosition(1);
+
         Image panelImage = panelObject.GetComponent<Image>();
         if (panelImage != null)
             panelImage.color = dropdownBackgroundColor;
@@ -1357,6 +1475,11 @@ public class ScentGUI : MonoBehaviour
         speedPanelRect = panelObject.GetComponent<RectTransform>();
         if (speedPanelRect == null)
             return;
+
+        speedPanelRect.anchorMin = new Vector2(1f, 1f);
+        speedPanelRect.anchorMax = new Vector2(1f, 1f);
+        speedPanelRect.pivot = new Vector2(1f, 1f);
+        speedPanelRect.anchoredPosition = GetTopPanelPosition(2);
 
         Image panelImage = panelObject.GetComponent<Image>();
         if (panelImage != null)
@@ -2415,6 +2538,18 @@ public class ScentGUI : MonoBehaviour
         return SpriteServer.SpriteLookup("Sense_Smell_None")
             ?? SpriteServer.SpriteLookup("Sense_Smell_Low")
             ?? SpriteServer.SpriteLookup("Sense_Alert_None");
+    }
+
+    private Sprite GetPulldownFrameSprite()
+    {
+        if (string.IsNullOrWhiteSpace(pulldownFrameResourcePath))
+            return null;
+
+        Sprite sprite = Resources.Load<Sprite>(pulldownFrameResourcePath);
+        if (sprite == null)
+            Debug.LogWarning($"ScentGUI: could not load pulldown frame sprite at Resources/{pulldownFrameResourcePath}.", this);
+
+        return sprite;
     }
 
     private Sprite GetDecisionModeSprite(AgentDecisionType decisionType)

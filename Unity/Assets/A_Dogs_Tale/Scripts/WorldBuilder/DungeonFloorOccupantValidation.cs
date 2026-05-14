@@ -11,9 +11,13 @@ public partial class DungeonGenerator
         if (rooms == null || rooms.Count == 0)
             return;
 
-        List<Cell> floorCells = CollectFloorCells();
+        List<Cell> floorCells = CollectPlacementSafeFloorCells();
         if (floorCells.Count == 0)
+        {
+            string prefix = string.IsNullOrWhiteSpace(context) ? "Map floor validation" : $"Map floor validation ({context})";
+            Debug.LogWarning($"{prefix}: no non-triangular floor cells are available for agent/item placement.", this);
             return;
+        }
 
         WorldObjectRegistry registry = WorldObjectRegistry.Instance;
         if (registry == null)
@@ -64,7 +68,7 @@ public partial class DungeonGenerator
         }
     }
 
-    private List<Cell> CollectFloorCells()
+    private List<Cell> CollectPlacementSafeFloorCells()
     {
         List<Cell> floorCells = new();
         foreach (Room room in rooms)
@@ -74,12 +78,28 @@ public partial class DungeonGenerator
 
             foreach (Cell cell in room.cells)
             {
-                if (cell != null)
+                if (IsPlacementSafeFloorCell(cell))
                     floorCells.Add(cell);
             }
         }
 
         return floorCells;
+    }
+
+    private bool IsPlacementSafeFloorCell(Cell cell)
+    {
+        if (cell == null)
+            return false;
+
+        return !UsesTriangleFloor(cell);
+    }
+
+    private bool UsesTriangleFloor(Cell cell)
+    {
+        if (cell == null || cfg == null || !cfg.useDiagonalCorners || diagonalWallPrefab == null)
+            return false;
+
+        return cell.GetDiagonalOpenDirection() != DiagonalOpenDirection.None;
     }
 
     private Dictionary<Vector2Int, List<Cell>> BuildFloorCellLookup(List<Cell> floorCells)

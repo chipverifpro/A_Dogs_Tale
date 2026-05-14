@@ -65,6 +65,8 @@ public partial class DungeonGenerator
         if (dir.dungeonBuildSettingsUI != null)
             dir.dungeonBuildSettingsUI.LoadMapSettingsByName(PersistentGameSettings.GetSelectedMapPresetName(dir.dungeonBuildSettingsUI.subFolder));
 
+        PersistentGameSettings.ApplySavedGraphicsToDungeonGenerator(this);
+
         Debug.Log("DungeonGenerator ready. Map generation will start when Run Simulation is pressed.");
     }
 

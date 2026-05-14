@@ -11,6 +11,9 @@ public static class PersistentGameSettings
     private const string PlayerPrefsKey = "A_Dogs_Tale.PersistentGameSettings";
     private const float MinScentSimulationTimeStep = 0.1f;
     private const float MaxScentSimulationTimeStep = 1.0f;
+    public const int GraphicsLevelLow = 1985;
+    public const int GraphicsLevelMedium = 1990;
+    public const int GraphicsLevelHigh = 1995;
 
     public enum MapType
     {
@@ -29,6 +32,7 @@ public static class PersistentGameSettings
         public bool geminiEnabled = true;
         public bool ollamaEnabled = true;
         public float scentSimulationTimeStep = MinScentSimulationTimeStep;
+        public int graphicsLevel = GraphicsLevelHigh;
         public bool wallpaperEnabled = true;
     }
 
@@ -101,8 +105,16 @@ public static class PersistentGameSettings
         if (dungeonGenerator == null || !TryLoad(out Data data))
             return;
 
-        dungeonGenerator.ApplyWallpaperOnWallTiles = data.wallpaperEnabled;
+        ApplyGraphicsLevelToDungeonGenerator(dungeonGenerator, data.graphicsLevel);
         ApplySavedMapToDungeonGenerator(dungeonGenerator);
+    }
+
+    public static void ApplySavedGraphicsToDungeonGenerator(DungeonGenerator dungeonGenerator)
+    {
+        if (dungeonGenerator == null || !TryLoad(out Data data))
+            return;
+
+        ApplyGraphicsLevelToDungeonGenerator(dungeonGenerator, data.graphicsLevel);
     }
 
     public static void ApplySavedMapToDungeonGenerator(DungeonGenerator dungeonGenerator)
@@ -132,7 +144,7 @@ public static class PersistentGameSettings
                 cfg.usePerlin = true;
                 cfg.perlinWavelength = 0.25f;
                 cfg.perlin2Wavelength = 0.01f;
-                cfg.perlin2Amplitude = 5f;
+                cfg.perlin2Amplitude = 1f;
                 cfg.perlinThreshold = 0.45f;
                 cfg.usePackedRooms = false;
                 cfg.useDiagonalCorners = true;
@@ -172,7 +184,7 @@ public static class PersistentGameSettings
 
         DungeonGenerator dungeonGenerator = GetDungeonGenerator();
         if (dungeonGenerator != null)
-            dungeonGenerator.ApplyWallpaperOnWallTiles = normalized.wallpaperEnabled;
+            ApplyGraphicsLevelToDungeonGenerator(dungeonGenerator, normalized.graphicsLevel);
     }
 
     private static bool TryLoad(out Data data)
@@ -216,7 +228,10 @@ public static class PersistentGameSettings
 
         DungeonGenerator dungeonGenerator = GetDungeonGenerator();
         if (dungeonGenerator != null)
+        {
             data.wallpaperEnabled = dungeonGenerator.ApplyWallpaperOnWallTiles;
+            data.graphicsLevel = data.wallpaperEnabled ? GraphicsLevelHigh : GraphicsLevelLow;
+        }
 
         return Normalize(data);
     }
@@ -234,7 +249,98 @@ public static class PersistentGameSettings
             MinScentSimulationTimeStep,
             MaxScentSimulationTimeStep);
 
+        if (data.graphicsLevel == 0)
+            data.graphicsLevel = data.wallpaperEnabled ? GraphicsLevelHigh : GraphicsLevelLow;
+
+        data.graphicsLevel = SnapGraphicsLevel(data.graphicsLevel);
+        data.wallpaperEnabled = data.graphicsLevel >= GraphicsLevelMedium;
+
         return data;
+    }
+
+    public static int SnapGraphicsLevel(float value)
+    {
+        if (value < (GraphicsLevelLow + GraphicsLevelMedium) * 0.5f)
+            return GraphicsLevelLow;
+
+        if (value < (GraphicsLevelMedium + GraphicsLevelHigh) * 0.5f)
+            return GraphicsLevelMedium;
+
+        return GraphicsLevelHigh;
+    }
+
+    public static string GetGraphicsLevelLabel(int graphicsLevel)
+    {
+        switch (SnapGraphicsLevel(graphicsLevel))
+        {
+            case GraphicsLevelLow:
+                return "1985";
+            case GraphicsLevelMedium:
+                return "1990";
+            case GraphicsLevelHigh:
+            default:
+                return "1995";
+        }
+    }
+
+    private static void ApplyGraphicsLevelToDungeonGenerator(DungeonGenerator dungeonGenerator, int graphicsLevel)
+    {
+        if (dungeonGenerator == null)
+            return;
+
+        int snappedLevel = SnapGraphicsLevel(graphicsLevel);
+        DungeonSettings cfg = dungeonGenerator.cfg;
+
+        dungeonGenerator.ApplyWallpaperOnWallTiles = snappedLevel >= GraphicsLevelMedium;
+
+        switch (snappedLevel)
+        {
+            case GraphicsLevelLow:
+                dungeonGenerator.checkerFloorStrength = 0f;
+                dungeonGenerator.ConfigureSurfaceOptimization(mergeFlatSurfaceTiles: true, mergeContinuousWalls: true);
+                if (cfg != null)
+                {
+                    cfg.enableTiltedTiles = false;
+                    cfg.tiltFloorTilesMaxAngle = 0;
+                }
+                ApplyRenderResolutionScale(0.5f);
+                QualitySettings.antiAliasing = 0;
+                QualitySettings.lodBias = 0.6f;
+                break;
+
+            case GraphicsLevelMedium:
+                dungeonGenerator.checkerFloorStrength = 0.15f;
+                dungeonGenerator.ConfigureSurfaceOptimization(mergeFlatSurfaceTiles: true, mergeContinuousWalls: true);
+                if (cfg != null)
+                {
+                    cfg.enableTiltedTiles = true;
+                    cfg.tiltFloorTilesMaxAngle = 20;
+                }
+                ApplyRenderResolutionScale(0.75f);
+                QualitySettings.antiAliasing = 2;
+                QualitySettings.lodBias = 1f;
+                break;
+
+            case GraphicsLevelHigh:
+            default:
+                dungeonGenerator.checkerFloorStrength = 0.25f;
+                dungeonGenerator.ConfigureSurfaceOptimization(mergeFlatSurfaceTiles: false, mergeContinuousWalls: false);
+                if (cfg != null)
+                {
+                    cfg.enableTiltedTiles = true;
+                    cfg.tiltFloorTilesMaxAngle = 45;
+                }
+                ApplyRenderResolutionScale(1f);
+                QualitySettings.antiAliasing = 4;
+                QualitySettings.lodBias = 2f;
+                break;
+        }
+    }
+
+    private static void ApplyRenderResolutionScale(float scale)
+    {
+        float clampedScale = Mathf.Clamp(scale, 0.5f, 1f);
+        ScalableBufferManager.ResizeBuffers(clampedScale, clampedScale);
     }
 
     private static bool MapPresetExists(string presetName, string subFolder)

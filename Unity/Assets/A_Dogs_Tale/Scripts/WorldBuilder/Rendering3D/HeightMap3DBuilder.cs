@@ -30,6 +30,12 @@ public partial class DungeonGenerator : MonoBehaviour
     [Tooltip("Inset orthogonal wall segments slightly toward the room interior to avoid z-fighting with adjacent-room walls.")]
     [SerializeField] private float wallInsetIntoRoom = 0.01f;
 
+    public void ConfigureSurfaceOptimization(bool mergeFlatSurfaceTiles, bool mergeContinuousWalls)
+    {
+        this.mergeFlatSurfaceTiles = mergeFlatSurfaceTiles;
+        this.mergeContinuousWalls = mergeContinuousWalls;
+    }
+
     // 3D Build routine from rooms list.  Places prefabs in correct places.
     //   Includes floors, walls, ramps, cliffs
     //   Eventually expand to include doors, etc.

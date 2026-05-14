@@ -14,7 +14,12 @@
       <Label name="ScentSimulationTimeStepValue" text="0.1s"/>
     </VisualElement>
     <VisualElement class="card col">
-      <Toggle name="WallpaperToggle" label="Wallpaper on wall tiles"/>
+      <Label text="Graphics Level"/>
+      <VisualElement name="GraphicsQualityOptions" class="row">
+        <Button name="GraphicsQuality1985Button" text="1985" class="btn"/>
+        <Button name="GraphicsQuality1990Button" text="1990" class="btn"/>
+        <Button name="GraphicsQuality1995Button" text="1995" class="btn"/>
+      </VisualElement>
     </VisualElement>
     <Button name="OkButton" text="OK" class="btn"/>
   </VisualElement>

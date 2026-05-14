@@ -9,25 +9,36 @@ public class MenuSettingsDialog : MonoBehaviour
     [SerializeField] private string themedDialogRootName = "SettingsDialogRoot";
     [SerializeField] private string themedDialogPrefabResourcePath = "Prefabs/UI/SettingsDialogRoot";
     [SerializeField] private string mapTypeSpriteResourcePath = "Sprites/SettingsMapType";
+    [SerializeField] private string graphicsQualitySpriteResourcePath = "Sprites/GraphicsQualitySprites_A";
     [SerializeField] private Vector2 scrollAnchorMin = new Vector2(0.08f, 0.12f);
     [SerializeField] private Vector2 scrollAnchorMax = new Vector2(0.92f, 0.72f);
     [SerializeField] private float mapTypeButtonHeight = 112f;
+    [SerializeField] private float graphicsQualityButtonHeight = 112f;
     [SerializeField] private Color textColor = new Color(0.18f, 0.11f, 0.05f, 1f);
     [SerializeField] private Color sectionColor = new Color(0.23f, 0.13f, 0.05f, 1f);
     [SerializeField] private Color controlColor = new Color(0.96f, 0.86f, 0.61f, 0.72f);
     [SerializeField] private Color selectedControlColor = new Color(0.56f, 0.82f, 0.47f, 0.85f);
+
+    private static readonly int[] GraphicsQualityLevels =
+    {
+        PersistentGameSettings.GraphicsLevelLow,
+        PersistentGameSettings.GraphicsLevelMedium,
+        PersistentGameSettings.GraphicsLevelHigh
+    };
 
     private GameObject dialogRoot;
     private RectTransform panelRect;
     private Toggle chatGptToggle;
     private Toggle geminiToggle;
     private Toggle ollamaToggle;
-    private Toggle wallpaperToggle;
     private Slider scentStepSlider;
     private Text scentStepValueLabel;
     private Image[] mapTypeButtonImages;
+    private Image[] graphicsQualityButtonImages;
     private Sprite[] mapTypeSprites;
+    private Sprite[] graphicsQualitySprites;
     private PersistentGameSettings.MapType selectedMapType = PersistentGameSettings.MapType.House;
+    private int selectedGraphicsLevel = PersistentGameSettings.GraphicsLevelHigh;
     private Font runtimeFont;
 
     public void Initialize(MenuManager owner)
@@ -165,9 +176,8 @@ public class MenuSettingsDialog : MonoBehaviour
         CreateSectionHeader(content, "SCENT PHYSICS");
         CreateScentSliderRow(content);
 
-        CreateSectionHeader(content, "WORLD RENDERING");
-        GameObject worldRow = CreateRow(content, "WorldRenderingRow", 42f);
-        wallpaperToggle = CreateToggle(worldRow.transform, "Wallpaper on wall tiles", "WallpaperToggle");
+        CreateSectionHeader(content, "GRAPHICS LEVEL");
+        CreateGraphicsQualityRow(content);
 
         CreateSectionHeader(content, "LINKS");
         GameObject linkRow = CreateRow(content, "LinksRow", 44f);
@@ -181,7 +191,6 @@ public class MenuSettingsDialog : MonoBehaviour
         chatGptToggle.onValueChanged.AddListener(_ => SaveFromControls());
         geminiToggle.onValueChanged.AddListener(_ => SaveFromControls());
         ollamaToggle.onValueChanged.AddListener(_ => SaveFromControls());
-        wallpaperToggle.onValueChanged.AddListener(_ => SaveFromControls());
         scentStepSlider.onValueChanged.AddListener(OnScentStepChanged);
     }
 
@@ -322,6 +331,28 @@ public class MenuSettingsDialog : MonoBehaviour
         RefreshMapTypeButtonSprites();
     }
 
+    private void CreateGraphicsQualityRow(Transform parent)
+    {
+        EnsureGraphicsQualitySpritesLoaded();
+        graphicsQualityButtonImages = new Image[GraphicsQualityLevels.Length];
+
+        GameObject row = CreateRow(parent, "GraphicsQualityRow", graphicsQualityButtonHeight);
+        HorizontalLayoutGroup layout = row.GetComponent<HorizontalLayoutGroup>();
+        if (layout != null)
+            layout.spacing = 8f;
+
+        for (int i = 0; i < GraphicsQualityLevels.Length; i++)
+        {
+            int capturedIndex = i;
+            int graphicsLevel = GraphicsQualityLevels[i];
+            Button button = CreateGraphicsQualityButton(row.transform, graphicsLevel, capturedIndex);
+            graphicsQualityButtonImages[i] = button.targetGraphic as Image;
+            button.onClick.AddListener(() => SelectGraphicsLevel(graphicsLevel, save: true));
+        }
+
+        RefreshGraphicsQualityButtonSprites();
+    }
+
     private Button CreateMapTypeButton(Transform parent, PersistentGameSettings.MapType mapType)
     {
         GameObject buttonObject = new GameObject($"{mapType}MapTypeButton", typeof(RectTransform), typeof(Image), typeof(Button), typeof(LayoutElement));
@@ -343,10 +374,40 @@ public class MenuSettingsDialog : MonoBehaviour
         return button;
     }
 
+    private Button CreateGraphicsQualityButton(Transform parent, int graphicsLevel, int spriteIndex)
+    {
+        GameObject buttonObject = new GameObject($"GraphicsQuality{graphicsLevel}Button", typeof(RectTransform), typeof(Image), typeof(Button), typeof(LayoutElement));
+        buttonObject.transform.SetParent(parent, false);
+        SetLayerRecursive(buttonObject, parent.gameObject.layer);
+
+        Image image = buttonObject.GetComponent<Image>();
+        image.color = Color.white;
+        image.preserveAspect = true;
+        image.sprite = GetGraphicsQualitySprite(spriteIndex);
+
+        Button button = buttonObject.GetComponent<Button>();
+        button.targetGraphic = image;
+
+        LayoutElement layout = buttonObject.GetComponent<LayoutElement>();
+        layout.flexibleWidth = 1f;
+        layout.minWidth = 74f;
+        layout.preferredHeight = graphicsQualityButtonHeight;
+        return button;
+    }
+
     private void SelectMapType(PersistentGameSettings.MapType mapType, bool save)
     {
         selectedMapType = mapType;
         RefreshMapTypeButtonSprites();
+
+        if (save)
+            SaveFromControls();
+    }
+
+    private void SelectGraphicsLevel(int graphicsLevel, bool save)
+    {
+        selectedGraphicsLevel = PersistentGameSettings.SnapGraphicsLevel(graphicsLevel);
+        RefreshGraphicsQualityButtonSprites();
 
         if (save)
             SaveFromControls();
@@ -394,6 +455,49 @@ public class MenuSettingsDialog : MonoBehaviour
         return null;
     }
 
+    private void RefreshGraphicsQualityButtonSprites()
+    {
+        if (graphicsQualityButtonImages == null)
+            return;
+
+        for (int i = 0; i < graphicsQualityButtonImages.Length; i++)
+        {
+            Image image = graphicsQualityButtonImages[i];
+            if (image == null)
+                continue;
+
+            bool selected = GraphicsQualityLevels[i] == selectedGraphicsLevel;
+            Sprite sprite = GetGraphicsQualitySprite(i);
+            if (sprite != null)
+            {
+                image.sprite = sprite;
+                image.color = selected ? Color.white : new Color(1f, 1f, 1f, 0.52f);
+            }
+            else
+            {
+                image.color = selected ? selectedControlColor : controlColor;
+            }
+        }
+    }
+
+    private Sprite GetGraphicsQualitySprite(int spriteIndex)
+    {
+        EnsureGraphicsQualitySpritesLoaded();
+        if (graphicsQualitySprites == null)
+            return null;
+
+        string spriteName = $"GraphicsQualitySprites_A_{spriteIndex}";
+        for (int i = 0; i < graphicsQualitySprites.Length; i++)
+        {
+            if (graphicsQualitySprites[i] != null && graphicsQualitySprites[i].name == spriteName)
+                return graphicsQualitySprites[i];
+        }
+
+        return spriteIndex >= 0 && spriteIndex < graphicsQualitySprites.Length
+            ? graphicsQualitySprites[spriteIndex]
+            : null;
+    }
+
     private void EnsureMapTypeSpritesLoaded()
     {
         if (mapTypeSprites != null)
@@ -402,6 +506,16 @@ public class MenuSettingsDialog : MonoBehaviour
         mapTypeSprites = Resources.LoadAll<Sprite>(mapTypeSpriteResourcePath);
         if (mapTypeSprites == null || mapTypeSprites.Length == 0)
             Debug.LogWarning($"[MenuSettingsDialog] Could not load map type sprites from Resources/{mapTypeSpriteResourcePath}.", this);
+    }
+
+    private void EnsureGraphicsQualitySpritesLoaded()
+    {
+        if (graphicsQualitySprites != null)
+            return;
+
+        graphicsQualitySprites = Resources.LoadAll<Sprite>(graphicsQualitySpriteResourcePath);
+        if (graphicsQualitySprites == null || graphicsQualitySprites.Length == 0)
+            Debug.LogWarning($"[MenuSettingsDialog] Could not load graphics quality sprites from Resources/{graphicsQualitySpriteResourcePath}.", this);
     }
 
     private GameObject CreateRow(Transform parent, string name, float height)
@@ -587,7 +701,8 @@ public class MenuSettingsDialog : MonoBehaviour
         geminiToggle = CreateToggle(panel.transform, "Gemini", "GeminiToggle");
         ollamaToggle = CreateToggle(panel.transform, "Ollama", "OllamaToggle");
         CreateScentSliderRow(panel.transform);
-        wallpaperToggle = CreateToggle(panel.transform, "Wallpaper on wall tiles", "WallpaperToggle");
+        CreateSectionHeader(panel.transform, "Graphics Level");
+        CreateGraphicsQualityRow(panel.transform);
 
         Button closeButton = CreateButton(panel.transform, "Close", "CloseButton");
         closeButton.onClick.AddListener(Close);
@@ -595,7 +710,6 @@ public class MenuSettingsDialog : MonoBehaviour
         chatGptToggle.onValueChanged.AddListener(_ => SaveFromControls());
         geminiToggle.onValueChanged.AddListener(_ => SaveFromControls());
         ollamaToggle.onValueChanged.AddListener(_ => SaveFromControls());
-        wallpaperToggle.onValueChanged.AddListener(_ => SaveFromControls());
         scentStepSlider.onValueChanged.AddListener(OnScentStepChanged);
 
         dialogRoot.SetActive(false);
@@ -634,15 +748,16 @@ public class MenuSettingsDialog : MonoBehaviour
         PersistentGameSettings.Data settings = PersistentGameSettings.GetCurrentOrSaved();
 
         SelectMapType(settings.mapType, save: false);
+        SelectGraphicsLevel(settings.graphicsLevel, save: false);
         chatGptToggle?.SetIsOnWithoutNotify(settings.chatGptEnabled);
         geminiToggle?.SetIsOnWithoutNotify(settings.geminiEnabled);
         ollamaToggle?.SetIsOnWithoutNotify(settings.ollamaEnabled);
-        wallpaperToggle?.SetIsOnWithoutNotify(settings.wallpaperEnabled);
 
         float snappedValue = SnapScentStep(settings.scentSimulationTimeStep);
         if (scentStepSlider != null)
             scentStepSlider.SetValueWithoutNotify(snappedValue);
         UpdateScentStepLabel(snappedValue);
+
         RefreshToggleVisuals();
     }
 
@@ -655,7 +770,7 @@ public class MenuSettingsDialog : MonoBehaviour
             chatGptEnabled = chatGptToggle != null ? chatGptToggle.isOn : current.chatGptEnabled,
             geminiEnabled = geminiToggle != null ? geminiToggle.isOn : current.geminiEnabled,
             ollamaEnabled = ollamaToggle != null ? ollamaToggle.isOn : current.ollamaEnabled,
-            wallpaperEnabled = wallpaperToggle != null ? wallpaperToggle.isOn : current.wallpaperEnabled,
+            graphicsLevel = selectedGraphicsLevel,
             scentSimulationTimeStep = SnapScentStep(scentStepSlider != null ? scentStepSlider.value : current.scentSimulationTimeStep)
         });
     }
@@ -779,7 +894,6 @@ public class MenuSettingsDialog : MonoBehaviour
         RefreshToggleVisual(chatGptToggle);
         RefreshToggleVisual(geminiToggle);
         RefreshToggleVisual(ollamaToggle);
-        RefreshToggleVisual(wallpaperToggle);
     }
 
     private void RefreshToggleVisual(Toggle toggle)

@@ -110367,9 +110367,14 @@ MonoBehaviour:
   playPauseSpriteResourcePath: Sprites/PlayAndPause_Dual
   inventoryActionSpriteResourcePath: Sprites/InventoryActionsSheetA
   digHoleSpriteResourcePath: Sprites/DigHoleSpriteA
+  pulldownFrameResourcePath: Sprites/PulldownFrame
   noseButtonSize: 176
   noseButtonMargin: 24
   modeButtonSpacing: 12
+  topControlButtonSize: 176
+  topControlsInset: {x: 162, y: 52}
+  pulldownFrameSize: {x: 1630, y: 341}
+  pulldownFrameOffset: {x: 0, y: 0}
   modePanelIconSize: 128
   dropdownWidth: 320
   dropdownMaxHeight: 420
@@ -189503,7 +189508,6 @@ MonoBehaviour:
   randomizeInitialAgentPlacement: 1
   excludeCorridorCells: 1
   randomizeInitialAgentYaw: 1
-  initialAgentPlacementYOffset: 0.5
   maxRandomPlacementAttemptsPerAgent: 128
   logInitialAgentPlacement: 1
   startingId: 1
