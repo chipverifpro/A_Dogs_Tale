@@ -262,6 +262,8 @@ public class WorldObjectRegistry : MonoBehaviour
         return objectsById.Values;
     }
 
+    public float InitialAgentPlacementYOffset => initialAgentPlacementYOffset;
+
     private int AllocateId()
     {
         // Simple monotonic allocator. If you ever care about reuse, you can add a free list later.
@@ -469,8 +471,11 @@ public class WorldObjectRegistry : MonoBehaviour
 
     private void ApplyInitialAgentPlacement(WorldObject agent, Cell cell)
     {
-        Vector3 worldPosition = cell.center3d_f;
-        worldPosition.y += initialAgentPlacementYOffset;
+        float unitHeight = Dir.Instance != null && Dir.Instance.cfg != null
+            ? Mathf.Max(0.0001f, Dir.Instance.cfg.unitHeight)
+            : 1f;
+        Vector3 mapPosition = new(cell.x + 0.5f, cell.height * unitHeight + initialAgentPlacementYOffset, cell.y + 0.5f);
+        Vector3 worldPosition = agent.MapToWorldPosition(mapPosition);
         agent.transform.position = worldPosition;
 
         if (randomizeInitialAgentYaw)

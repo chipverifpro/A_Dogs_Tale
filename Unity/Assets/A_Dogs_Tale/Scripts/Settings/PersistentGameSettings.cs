@@ -132,12 +132,12 @@ public static class PersistentGameSettings
                 cfg.usePerlin = true;
                 cfg.perlinWavelength = 0.25f;
                 cfg.perlin2Wavelength = 0.01f;
-                cfg.perlin2Amplitude = 1f;
+                cfg.perlin2Amplitude = 5f;
                 cfg.perlinThreshold = 0.45f;
                 cfg.usePackedRooms = false;
                 cfg.useDiagonalCorners = true;
-                cfg.maxElevation = 1;
-                cfg.perlinFloorHeights = 0;
+                cfg.maxElevation = 100;
+                cfg.perlinFloorHeights = 50;
                 cfg.cellularFillPercent = 45;
                 cfg.mapHeight = 75;
                 cfg.mapWidth = 75;

@@ -117,6 +117,7 @@ public partial class DungeonGenerator
 
         buildComplete = true;
         regenerateCoroutine = null;
+        ValidateAgentsAndItemsOnFloorCells("loaded map");
 
         if (dir != null && dir.scentAirGround != null)
             dir.scentAirGround.StartScentSimulation(resetOverlayAgent: saveData.scentPhysics == null);

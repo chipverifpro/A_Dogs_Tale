@@ -337,7 +337,7 @@ public class ElementStore : ScriptableObject
 
             if (layer.kind != instance.layerKind)
             {
-                Debug.LogWarning($"ElementStore: Layer '{layerName}' kind mismatch. Existing={layer.kind}, New={instance.layerKind}. Changing layer.kind to match");
+                //Debug.LogWarning($"ElementStore: Layer '{layerName}' kind mismatch. Existing={layer.kind}, New={instance.layerKind}. Changing layer.kind to match");
                 layer.kind = instance.layerKind; // keep runtime data sane (fix bug somewhere else?)
             }
         }

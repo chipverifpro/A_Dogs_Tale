@@ -128,6 +128,7 @@ public partial class DungeonGenerator : MonoBehaviour
             Debug.Log("buildComplete");
             buildComplete = true;
             regenerateCoroutine = null;
+            ValidateAgentsAndItemsOnFloorCells("generated map");
 
             // this must be after buildComplete = true;
             //yield return StartCoroutine(dir.player.DetermineStartPosition());

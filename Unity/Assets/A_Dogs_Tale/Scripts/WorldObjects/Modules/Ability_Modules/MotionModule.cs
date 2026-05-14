@@ -336,6 +336,7 @@ namespace DogGame.Modules
             Vector3 startPosition = bodyRoot.position;
             Vector3 constrainedPosition = ResolveConstrainedWorldPosition(startPosition, proposedPosition, applyLeashConstraints: true);
             constrainedPosition = PreventConstraintRebound(startPosition, proposedPosition, constrainedPosition);
+            constrainedPosition = AdjustAgentHeightToFloorOffset(constrainedPosition);
 
             // --- 7. Commit
             Vector3 actualDelta = constrainedPosition - startPosition;
@@ -381,6 +382,7 @@ namespace DogGame.Modules
                 startPosition + desiredWorldDelta,
                 applyLeashConstraints);
             constrainedPosition = PreventConstraintRebound(startPosition, startPosition + desiredWorldDelta, constrainedPosition);
+            constrainedPosition = AdjustAgentHeightToFloorOffset(constrainedPosition);
 
             Vector3 actualDelta = constrainedPosition - startPosition;
             bodyRoot.position = constrainedPosition;
@@ -392,6 +394,44 @@ namespace DogGame.Modules
             }
 
             return actualDelta;
+        }
+
+        private Vector3 AdjustAgentHeightToFloorOffset(Vector3 worldPosition)
+        {
+            if (!IsAgentMotionOwner() || worldObject == null || dir == null || dir.gen == null || !dir.gen.buildComplete)
+                return worldPosition;
+
+            Vector3 mapPosition = worldObject.WorldToMapPosition(worldPosition);
+            int x = Mathf.FloorToInt(mapPosition.x);
+            int y = Mathf.FloorToInt(mapPosition.z);
+            int heightSteps = GetNearestHeightStep(mapPosition.y);
+
+            Cell floorCell = dir.gen.GetCellFromHf(x, y, heightSteps, threshold: 50);
+            if (floorCell == null)
+                return worldPosition;
+
+            float floorYOffset = WorldObjectRegistry.Instance != null
+                ? WorldObjectRegistry.Instance.InitialAgentPlacementYOffset
+                : 0.5f;
+            float unitHeight = dir.gen.cfg != null ? Mathf.Max(0.0001f, dir.gen.cfg.unitHeight) : 1f;
+            mapPosition.y = floorCell.height * unitHeight + floorYOffset;
+            return worldObject.MapToWorldPosition(mapPosition);
+        }
+
+        private int GetNearestHeightStep(float mapHeight)
+        {
+            float unitHeight = dir != null && dir.gen != null && dir.gen.cfg != null
+                ? Mathf.Max(0.0001f, dir.gen.cfg.unitHeight)
+                : 1f;
+            return Mathf.RoundToInt(mapHeight / unitHeight);
+        }
+
+        private bool IsAgentMotionOwner()
+        {
+            return worldObject != null &&
+                   (worldObject.Kind == WorldObjectKind.Agent ||
+                    worldObject.agentModule != null ||
+                    worldObject.GetComponent<AgentModule>() != null);
         }
 
         private static Vector3 PreventConstraintRebound(Vector3 fromWorld, Vector3 proposedWorld, Vector3 constrainedWorld)
