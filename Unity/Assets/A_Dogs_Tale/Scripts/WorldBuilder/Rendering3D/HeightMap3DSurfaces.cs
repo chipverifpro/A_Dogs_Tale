@@ -13,11 +13,12 @@ public partial class DungeonGenerator
         int x = cell.x;
         int z = cell.y;
         int ySteps = cell.height;
+        const float floorVisualYOffset = -0.5f;
 
         if (floorPrefab != null && triangleFloorPrefab != null)
         {
             Quaternion tilt = cell.tiltFloor;
-            Vector3 position = world + new Vector3(0f, ySteps * cfg.unitHeight, 0f);
+            Vector3 position = world + new Vector3(0f, ySteps * cfg.unitHeight + floorVisualYOffset, 0f);
 
             float rollRadians = tilt.eulerAngles.z * Mathf.Deg2Rad;
             float pitchRadians = tilt.eulerAngles.x * Mathf.Deg2Rad;

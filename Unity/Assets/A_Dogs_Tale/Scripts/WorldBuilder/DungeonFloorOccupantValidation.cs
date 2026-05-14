@@ -19,10 +19,9 @@ public partial class DungeonGenerator
         if (registry == null)
             return;
 
-        float floorYOffset = registry.InitialAgentPlacementYOffset;
         Dictionary<Vector2Int, List<Cell>> cellsByPosition = BuildFloorCellLookup(floorCells);
         List<WorldObject> worldObjects = new(registry.GetAllObjects());
-        HashSet<Vector3Int> occupiedFloorCells = CollectOccupiedValidFloorCells(worldObjects, cellsByPosition, floorYOffset);
+        HashSet<Vector3Int> occupiedFloorCells = CollectOccupiedValidFloorCells(worldObjects, cellsByPosition);
 
         int checkedCount = 0;
         int movedCount = 0;
@@ -35,7 +34,7 @@ public partial class DungeonGenerator
 
             checkedCount++;
 
-            Cell currentCell = FindCurrentFloorCell(worldObject, cellsByPosition, floorYOffset, out bool isOnFloorCell, out bool heightMatchesFloor);
+            Cell currentCell = FindCurrentFloorCell(worldObject, cellsByPosition, out bool isOnFloorCell, out bool heightMatchesFloor);
             if (isOnFloorCell && heightMatchesFloor)
                 continue;
 
@@ -45,8 +44,8 @@ public partial class DungeonGenerator
                 continue;
 
             Vector3 targetMapPosition = randomRelocation
-                ? GetFloorCellCenterMapPosition(targetCell, floorYOffset)
-                : GetCurrentMapPositionAtFloorHeight(worldObject, targetCell, floorYOffset);
+                ? GetFloorCellCenterMapPosition(targetCell)
+                : GetCurrentMapPositionAtFloorHeight(worldObject, targetCell);
             Vector3 targetWorldPosition = worldObject.MapToWorldPosition(targetMapPosition);
 
             PlaceWorldObjectOnFloor(worldObject, targetWorldPosition);
@@ -105,8 +104,7 @@ public partial class DungeonGenerator
 
     private HashSet<Vector3Int> CollectOccupiedValidFloorCells(
         List<WorldObject> worldObjects,
-        Dictionary<Vector2Int, List<Cell>> cellsByPosition,
-        float floorYOffset)
+        Dictionary<Vector2Int, List<Cell>> cellsByPosition)
     {
         HashSet<Vector3Int> occupiedFloorCells = new();
         foreach (WorldObject worldObject in worldObjects)
@@ -114,7 +112,7 @@ public partial class DungeonGenerator
             if (!ShouldValidateFloorOccupant(worldObject))
                 continue;
 
-            Cell cell = FindCurrentFloorCell(worldObject, cellsByPosition, floorYOffset, out bool isOnFloorCell, out bool heightMatchesFloor);
+            Cell cell = FindCurrentFloorCell(worldObject, cellsByPosition, out bool isOnFloorCell, out bool heightMatchesFloor);
             if (isOnFloorCell && heightMatchesFloor && cell != null)
                 occupiedFloorCells.Add(cell.pos3d);
         }
@@ -153,7 +151,6 @@ public partial class DungeonGenerator
     private Cell FindCurrentFloorCell(
         WorldObject worldObject,
         Dictionary<Vector2Int, List<Cell>> cellsByPosition,
-        float floorYOffset,
         out bool isOnFloorCell,
         out bool heightMatchesFloor)
     {
@@ -170,7 +167,7 @@ public partial class DungeonGenerator
 
         isOnFloorCell = true;
         Cell closestCell = cellsAtPosition[0];
-        float closestHeightDelta = Mathf.Abs(mapPosition.y - GetFloorMapHeight(closestCell, floorYOffset));
+        float closestHeightDelta = Mathf.Abs(mapPosition.y - GetFloorMapHeight(closestCell));
 
         for (int i = 1; i < cellsAtPosition.Count; i++)
         {
@@ -178,7 +175,7 @@ public partial class DungeonGenerator
             if (candidate == null)
                 continue;
 
-            float heightDelta = Mathf.Abs(mapPosition.y - GetFloorMapHeight(candidate, floorYOffset));
+            float heightDelta = Mathf.Abs(mapPosition.y - GetFloorMapHeight(candidate));
             if (heightDelta < closestHeightDelta)
             {
                 closestCell = candidate;
@@ -221,22 +218,22 @@ public partial class DungeonGenerator
         return chosenCell != null;
     }
 
-    private Vector3 GetCurrentMapPositionAtFloorHeight(WorldObject worldObject, Cell floorCell, float floorYOffset)
+    private Vector3 GetCurrentMapPositionAtFloorHeight(WorldObject worldObject, Cell floorCell)
     {
         Vector3 mapPosition = worldObject.pos3d_map;
-        mapPosition.y = GetFloorMapHeight(floorCell, floorYOffset);
+        mapPosition.y = GetFloorMapHeight(floorCell);
         return mapPosition;
     }
 
-    private Vector3 GetFloorCellCenterMapPosition(Cell floorCell, float floorYOffset)
+    private Vector3 GetFloorCellCenterMapPosition(Cell floorCell)
     {
-        return new Vector3(floorCell.x + 0.5f, GetFloorMapHeight(floorCell, floorYOffset), floorCell.y + 0.5f);
+        return new Vector3(floorCell.x + 0.5f, GetFloorMapHeight(floorCell), floorCell.y + 0.5f);
     }
 
-    private float GetFloorMapHeight(Cell floorCell, float floorYOffset)
+    private float GetFloorMapHeight(Cell floorCell)
     {
         float unitHeight = cfg != null ? Mathf.Max(0.0001f, cfg.unitHeight) : 1f;
-        return floorCell.height * unitHeight + floorYOffset;
+        return floorCell.height * unitHeight;
     }
 
     private void PlaceWorldObjectOnFloor(WorldObject worldObject, Vector3 targetWorldPosition)

@@ -25,9 +25,6 @@ public class WorldObjectRegistry : MonoBehaviour
     [Tooltip("Randomize yaw after moving an agent to its initial cell.")]
     [SerializeField] private bool randomizeInitialAgentYaw = true;
 
-    [Tooltip("Additional vertical offset above the chosen floor cell height.")]
-    [SerializeField] private float initialAgentPlacementYOffset = 0.5f;
-
     [Tooltip("Maximum random cell picks per agent before falling back to the first available cell.")]
     [SerializeField] private int maxRandomPlacementAttemptsPerAgent = 128;
 
@@ -262,8 +259,6 @@ public class WorldObjectRegistry : MonoBehaviour
         return objectsById.Values;
     }
 
-    public float InitialAgentPlacementYOffset => initialAgentPlacementYOffset;
-
     private int AllocateId()
     {
         // Simple monotonic allocator. If you ever care about reuse, you can add a free list later.
@@ -474,7 +469,7 @@ public class WorldObjectRegistry : MonoBehaviour
         float unitHeight = Dir.Instance != null && Dir.Instance.cfg != null
             ? Mathf.Max(0.0001f, Dir.Instance.cfg.unitHeight)
             : 1f;
-        Vector3 mapPosition = new(cell.x + 0.5f, cell.height * unitHeight + initialAgentPlacementYOffset, cell.y + 0.5f);
+        Vector3 mapPosition = new(cell.x + 0.5f, cell.height * unitHeight, cell.y + 0.5f);
         Vector3 worldPosition = agent.MapToWorldPosition(mapPosition);
         agent.transform.position = worldPosition;
 

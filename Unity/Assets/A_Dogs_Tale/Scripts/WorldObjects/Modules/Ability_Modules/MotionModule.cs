@@ -336,7 +336,7 @@ namespace DogGame.Modules
             Vector3 startPosition = bodyRoot.position;
             Vector3 constrainedPosition = ResolveConstrainedWorldPosition(startPosition, proposedPosition, applyLeashConstraints: true);
             constrainedPosition = PreventConstraintRebound(startPosition, proposedPosition, constrainedPosition);
-            constrainedPosition = AdjustAgentHeightToFloorOffset(constrainedPosition);
+            constrainedPosition = AdjustAgentHeightToFloor(constrainedPosition);
 
             // --- 7. Commit
             Vector3 actualDelta = constrainedPosition - startPosition;
@@ -382,7 +382,7 @@ namespace DogGame.Modules
                 startPosition + desiredWorldDelta,
                 applyLeashConstraints);
             constrainedPosition = PreventConstraintRebound(startPosition, startPosition + desiredWorldDelta, constrainedPosition);
-            constrainedPosition = AdjustAgentHeightToFloorOffset(constrainedPosition);
+            constrainedPosition = AdjustAgentHeightToFloor(constrainedPosition);
 
             Vector3 actualDelta = constrainedPosition - startPosition;
             bodyRoot.position = constrainedPosition;
@@ -396,7 +396,7 @@ namespace DogGame.Modules
             return actualDelta;
         }
 
-        private Vector3 AdjustAgentHeightToFloorOffset(Vector3 worldPosition)
+        private Vector3 AdjustAgentHeightToFloor(Vector3 worldPosition)
         {
             if (!IsAgentMotionOwner() || worldObject == null || dir == null || dir.gen == null || !dir.gen.buildComplete)
                 return worldPosition;
@@ -410,11 +410,8 @@ namespace DogGame.Modules
             if (floorCell == null)
                 return worldPosition;
 
-            float floorYOffset = WorldObjectRegistry.Instance != null
-                ? WorldObjectRegistry.Instance.InitialAgentPlacementYOffset
-                : 0.5f;
             float unitHeight = dir.gen.cfg != null ? Mathf.Max(0.0001f, dir.gen.cfg.unitHeight) : 1f;
-            mapPosition.y = floorCell.height * unitHeight + floorYOffset;
+            mapPosition.y = floorCell.height * unitHeight;
             return worldObject.MapToWorldPosition(mapPosition);
         }
 
