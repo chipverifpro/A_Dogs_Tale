@@ -82310,6 +82310,8 @@ MonoBehaviour:
   minSplashSeconds: 1.5
   fadeDuration: 1
   pullUpByLeash: {fileID: 0}
+  settingsIcon: {fileID: 0}
+  settingsIconObjectName: SettingsIcon
   leashHangingImage: {fileID: 0}
   leashHangingSpriteRenderer: {fileID: 0}
   leashHangingBeforeResourcePath: Sprites/LeashHanging_A
@@ -82323,7 +82325,7 @@ MonoBehaviour:
   returnToTitleKey: 127
   splashImage: {fileID: 1088835539}
   splashResourceFolder: Images
-  splashCount: 19
+  splashCount: 26
 --- !u!114 &836622446
 MonoBehaviour:
   m_ObjectHideFlags: 0
