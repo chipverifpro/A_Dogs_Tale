@@ -44,6 +44,8 @@ using UnityEngine;
 public partial class DungeonGenerator : MonoBehaviour
 {
     #region parameters
+    private const int MaxEmptyMapRegenerationAttempts = 5;
+
     [Header("Dir Object")]
     public Dir dir;
 
@@ -94,47 +96,94 @@ public partial class DungeonGenerator : MonoBehaviour
         if (tm == null) { tm = TimeManager.Instance.BeginTask("RegenerateDungeon"); local_tm = true; }
         try
         {
-            yield return null;  // give time for all allocations to complete
-            ResetGenerationState();
-            if (tm.IfYield()) yield return null;     // cooperative yield decision
+            for (int attempt = 1; attempt <= MaxEmptyMapRegenerationAttempts; attempt++)
+            {
+                yield return null;  // give time for all allocations to complete
+                ResetGenerationState();
+                if (tm.IfYield()) yield return null;     // cooperative yield decision
 
-            BottomBanner.LogBuildProgress("Generating map...");
+                BottomBanner.LogBuildProgress("Generating map...");
 
-            // Step 0: Select settings
-            DungeonGenerationModeApplier.ApplyRoomAlgorithmFlags(cfg);  // old way
-            PersistentGameSettings.ApplySavedToDungeonGenerator(this);  // new way
+                // Step 0: Select settings
+                DungeonGenerationModeApplier.ApplyRoomAlgorithmFlags(cfg);  // old way
+                PersistentGameSettings.ApplySavedToDungeonGenerator(this);  // new way
 
-            BottomBanner.LogBuildProgress("Initialize map...");
+                BottomBanner.LogBuildProgress("Initialize map...");
 
 
-            // ===== Step 1. Initialize the dungeon
-            InitializeDungeonTiles();
-            yield return tm.YieldOrDelay(cfg.stepDelay);
+                // ===== Step 1. Initialize the dungeon
+                InitializeDungeonTiles();
+                yield return tm.YieldOrDelay(cfg.stepDelay);
 
-            // ===== Step 2. Place rooms
-            yield return StartCoroutine(GenerateRoomLayout());
+                // ===== Step 2. Place rooms
+                yield return StartCoroutine(GenerateRoomLayout());
 
-            yield return tm.YieldOrDelay(cfg.stepDelay);
+                yield return tm.YieldOrDelay(cfg.stepDelay);
 
-            // Step 3: Combine overlapping rooms
-            yield return StartCoroutine(LocateAndMergeGeneratedRooms(tm));
+                // Step 3: Combine overlapping rooms
+                yield return StartCoroutine(LocateAndMergeGeneratedRooms(tm));
 
-            yield return StartCoroutine(PostProcessGeneratedRooms(tm));
-            yield return StartCoroutine(RebuildWallLists());
-            yield return StartCoroutine(ApplyOptionalFloorTileTilt());
-            yield return StartCoroutine(BuildFinalDungeonOutput());
+                yield return StartCoroutine(PostProcessGeneratedRooms(tm));
 
-            BottomBanner.LogBuildProgress("Dungeon generation complete!");
-            Debug.Log("buildComplete");
-            buildComplete = true;
-            regenerateCoroutine = null;
-            ValidateAgentsAndItemsOnFloorCells("generated map");
+                if (!HasAnyGeneratedRoomCells())
+                {
+                    Debug.LogWarning(
+                        $"Dungeon generation attempt {attempt}/{MaxEmptyMapRegenerationAttempts} produced 0 rooms. Regenerating map.",
+                        this);
+                    BottomBanner.LogBuildProgress("Generated 0 rooms. Regenerating map...");
 
-            // this must be after buildComplete = true;
-            //yield return StartCoroutine(dir.player.DetermineStartPosition());
+                    if (attempt >= MaxEmptyMapRegenerationAttempts)
+                    {
+                        Debug.LogError(
+                            $"Dungeon generation failed after {MaxEmptyMapRegenerationAttempts} attempts because every attempt produced 0 rooms.",
+                            this);
+                        regenerateCoroutine = null;
+                        break;
+                    }
+
+                    ReseedForEmptyMapRetry(attempt);
+                    continue;
+                }
+
+                yield return StartCoroutine(RebuildWallLists());
+                yield return StartCoroutine(ApplyOptionalFloorTileTilt());
+                yield return StartCoroutine(BuildFinalDungeonOutput());
+
+                BottomBanner.LogBuildProgress("Dungeon generation complete!");
+                Debug.Log("buildComplete");
+                buildComplete = true;
+                regenerateCoroutine = null;
+                ValidateAgentsAndItemsOnFloorCells("generated map");
+
+                // this must be after buildComplete = true;
+                //yield return StartCoroutine(dir.player.DetermineStartPosition());
+                break;
+            }
         }
         finally { if (local_tm) tm.End(); }
         TimeManager.Instance.DumpStats();
+    }
+
+    private bool HasAnyGeneratedRoomCells()
+    {
+        if (rooms == null || rooms.Count == 0)
+            return false;
+
+        for (int i = 0; i < rooms.Count; i++)
+        {
+            Room room = rooms[i];
+            if (room != null && room.cells != null && room.cells.Count > 0)
+                return true;
+        }
+
+        return false;
+    }
+
+    private void ReseedForEmptyMapRetry(int attempt)
+    {
+        cfg.seed = unchecked((int)(DateTime.Now.Ticks + attempt * 9973));
+        UnityEngine.Random.InitState(cfg.seed);
+        Debug.Log($"DungeonGenerator retry seed: {cfg.seed}", this);
     }
 
     #endregion
