@@ -18,14 +18,19 @@ public sealed class InventoryDialogUI : MonoBehaviour
     [Header("Resources")]
     [SerializeField] private string arrowsSpriteResourcePath = "Sprites/ArrowsSpriteSheetA";
     [SerializeField] private string inventoryActionsSpriteResourcePath = "Sprites/InventoryActionsSheetA";
-    [SerializeField] private string takeItemSpriteResourcePath = "Sprites/TakeItemSpriteSheetA";
     [SerializeField] private string dogActionsSpriteResourcePath = "Sprites/DogActions_B";
+    [SerializeField] private string inventoryBackgroundSpriteResourcePath = "Sprites/InventoryBackground_B";
+    [SerializeField] private string tradeArrowSpriteResourcePath = "Sprites/TradeArrows_B";
 
     [Header("Layout")]
     [SerializeField] private int uiSortOrder = 5300;
     [SerializeField] private Vector2 referenceResolution = new(1920f, 1080f);
     [SerializeField] private Vector2 dialogSize = new(820f, 820f);
+    [SerializeField] private Vector2 themedCloseButtonAnchoredPosition = new(-62f, -229f);
+    [SerializeField] private Vector2 themedCloseButtonSize = new(64f, 64f);
     [SerializeField] private float actionButtonHeight = 112f;
+    [SerializeField] private float tradeActionButtonHeight = 52f;
+    [SerializeField] private float tradeActionButtonSpacing = 4f;
     [SerializeField] private float previewSpinDegreesPerSecond = 24f;
     [SerializeField, Range(0f, 85f)] private float previewViewAngleDegrees = 30f;
     [SerializeField, Min(0f)] private float tradePartnerSearchRadiusTiles = 2f;
@@ -39,11 +44,12 @@ public sealed class InventoryDialogUI : MonoBehaviour
 
     private readonly Dictionary<int, Sprite> arrowSprites = new();
     private readonly Dictionary<int, Sprite> actionSprites = new();
-    private readonly Dictionary<int, Sprite> takeItemSprites = new();
     private readonly Dictionary<int, Sprite> dogActionSprites = new();
+    private readonly Dictionary<int, Sprite> tradeArrowSprites = new();
     private readonly List<Button> actionButtons = new();
     private readonly List<TradeTargetOption> tradeTargetOptions = new();
 
+    private Sprite inventoryBackgroundSprite;
     private Canvas overlayCanvas;
     private RectTransform dialogRect;
     private GameObject dialogRoot;
@@ -98,6 +104,8 @@ public sealed class InventoryDialogUI : MonoBehaviour
         WorldObject,
         Ground
     }
+
+    private bool HasThemedBackground => inventoryBackgroundSprite != null;
 
     private readonly struct TradeTargetOption
     {
@@ -246,7 +254,17 @@ public sealed class InventoryDialogUI : MonoBehaviour
         dialogRect.sizeDelta = dialogSize;
 
         Image dialogImage = dialogRoot.AddComponent<Image>();
-        dialogImage.color = new Color(0.08f, 0.075f, 0.055f, 0.94f);
+        if (inventoryBackgroundSprite != null)
+        {
+            dialogImage.sprite = inventoryBackgroundSprite;
+            dialogImage.type = Image.Type.Simple;
+            dialogImage.preserveAspect = true;
+            dialogImage.color = Color.white;
+        }
+        else
+        {
+            dialogImage.color = new Color(0.08f, 0.075f, 0.055f, 0.94f);
+        }
 
         BuildHeader(dialogRoot.transform);
         BuildPreviewArea(dialogRoot.transform);
@@ -258,51 +276,68 @@ public sealed class InventoryDialogUI : MonoBehaviour
 
     private void BuildHeader(Transform parent)
     {
-        GameObject titleObject = CreateUIObject("Title", parent);
-        RectTransform titleRect = titleObject.GetComponent<RectTransform>();
-        titleRect.anchorMin = new Vector2(0f, 1f);
-        titleRect.anchorMax = new Vector2(1f, 1f);
-        titleRect.pivot = new Vector2(0.5f, 1f);
-        titleRect.offsetMin = new Vector2(32f, -72f);
-        titleRect.offsetMax = new Vector2(-96f, -18f);
+        bool hasThemedBackground = HasThemedBackground;
+        if (!hasThemedBackground)
+        {
+            GameObject titleObject = CreateUIObject("Title", parent);
+            RectTransform titleRect = titleObject.GetComponent<RectTransform>();
+            titleRect.anchorMin = new Vector2(0f, 1f);
+            titleRect.anchorMax = new Vector2(1f, 1f);
+            titleRect.pivot = new Vector2(0.5f, 1f);
+            titleRect.offsetMin = new Vector2(32f, -72f);
+            titleRect.offsetMax = new Vector2(-96f, -18f);
 
-        TextMeshProUGUI titleLabel = titleObject.AddComponent<TextMeshProUGUI>();
-        titleLabel.text = "Inventory";
-        titleLabel.fontSize = 34f;
-        titleLabel.color = new Color(0.98f, 0.93f, 0.78f, 1f);
-        titleLabel.alignment = TextAlignmentOptions.MidlineLeft;
+            TextMeshProUGUI titleLabel = titleObject.AddComponent<TextMeshProUGUI>();
+            titleLabel.text = "Inventory";
+            titleLabel.fontSize = 34f;
+            titleLabel.color = new Color(0.98f, 0.93f, 0.78f, 1f);
+            titleLabel.alignment = TextAlignmentOptions.MidlineLeft;
+        }
 
-        Button closeButton = CreateSpriteButton(
-            "CloseButton",
-            parent,
-            arrowSprites.TryGetValue(5, out Sprite closeSprite) ? closeSprite : null,
-            "X",
-            OnCloseClicked,
-            "Close");
+        Button closeButton = hasThemedBackground
+            ? CreateInvisibleButton("CloseButton", parent, OnCloseClicked, "Close")
+            : CreateSpriteButton(
+                "CloseButton",
+                parent,
+                arrowSprites.TryGetValue(5, out Sprite closeSprite) ? closeSprite : null,
+                "X",
+                OnCloseClicked,
+                "Close");
 
         RectTransform closeRect = closeButton.GetComponent<RectTransform>();
         closeRect.anchorMin = new Vector2(1f, 1f);
         closeRect.anchorMax = new Vector2(1f, 1f);
         closeRect.pivot = new Vector2(1f, 1f);
-        closeRect.anchoredPosition = new Vector2(-20f, -18f);
-        closeRect.sizeDelta = new Vector2(54f, 54f);
+        closeRect.anchoredPosition = hasThemedBackground ? themedCloseButtonAnchoredPosition : new Vector2(-20f, -18f);
+        closeRect.sizeDelta = hasThemedBackground ? themedCloseButtonSize : new Vector2(54f, 54f);
     }
 
     private void BuildPreviewArea(Transform parent)
     {
         GameObject previewPanel = CreateUIObject("PreviewPanel", parent);
         RectTransform previewPanelRect = previewPanel.GetComponent<RectTransform>();
-        previewPanelRect.anchorMin = new Vector2(0f, 0.42f);
-        previewPanelRect.anchorMax = new Vector2(1f, 0.9f);
-        previewPanelRect.offsetMin = new Vector2(44f, 18f);
-        previewPanelRect.offsetMax = new Vector2(-44f, -12f);
+        if (HasThemedBackground)
+        {
+            previewPanelRect.anchorMin = Vector2.zero;
+            previewPanelRect.anchorMax = Vector2.one;
+            previewPanelRect.offsetMin = new Vector2(84f, 356f);
+            previewPanelRect.offsetMax = new Vector2(-84f, -184f);
+        }
+        else
+        {
+            previewPanelRect.anchorMin = new Vector2(0f, 0.42f);
+            previewPanelRect.anchorMax = new Vector2(1f, 0.9f);
+            previewPanelRect.offsetMin = new Vector2(44f, 18f);
+            previewPanelRect.offsetMax = new Vector2(-44f, -12f);
+        }
 
         Image previewBackground = previewPanel.AddComponent<Image>();
-        previewBackground.color = new Color(0.97f, 0.91f, 0.74f, 0.12f);
+        previewBackground.color = HasThemedBackground ? Color.clear : new Color(0.97f, 0.91f, 0.74f, 0.12f);
 
         GameObject heldItemPane = CreatePreviewPane("HeldItemPane", previewPanel.transform, new Vector2(0f, 0f), new Vector2(0.5f, 1f), new Vector2(18f, 12f), new Vector2(-10f, -12f));
         GameObject tradePartnerPane = CreatePreviewPane("TradePartnerPane", previewPanel.transform, new Vector2(0.5f, 0f), new Vector2(1f, 1f), new Vector2(10f, 12f), new Vector2(-18f, -12f));
         CreatePreviewDivider(previewPanel.transform);
+        CreateTradeActionButtonStrip(previewPanel.transform);
 
         GameObject rawImageObject = CreateUIObject("ItemPreview", heldItemPane.transform);
         RectTransform rawImageRect = rawImageObject.GetComponent<RectTransform>();
@@ -344,7 +379,7 @@ public sealed class InventoryDialogUI : MonoBehaviour
 
         itemNameLabel = labelObject.AddComponent<TextMeshProUGUI>();
         itemNameLabel.fontSize = 28f;
-        itemNameLabel.color = new Color(0.98f, 0.93f, 0.78f, 1f);
+        itemNameLabel.color = GetPreviewLabelColor();
         itemNameLabel.alignment = TextAlignmentOptions.Center;
 
         GameObject tradePartnerLabelObject = CreateUIObject("TradePartnerName", tradePartnerPane.transform);
@@ -357,7 +392,7 @@ public sealed class InventoryDialogUI : MonoBehaviour
 
         tradePartnerNameLabel = tradePartnerLabelObject.AddComponent<TextMeshProUGUI>();
         tradePartnerNameLabel.fontSize = 24f;
-        tradePartnerNameLabel.color = new Color(0.98f, 0.93f, 0.78f, 1f);
+        tradePartnerNameLabel.color = GetPreviewLabelColor();
         tradePartnerNameLabel.alignment = TextAlignmentOptions.Center;
 
         tradePartnerLeftArrowButton = CreateSpriteButton(
@@ -437,7 +472,7 @@ public sealed class InventoryDialogUI : MonoBehaviour
         paneRect.offsetMax = offsetMax;
 
         Image paneBackground = pane.AddComponent<Image>();
-        paneBackground.color = new Color(0.02f, 0.018f, 0.014f, 0.12f);
+        paneBackground.color = HasThemedBackground ? Color.clear : new Color(0.02f, 0.018f, 0.014f, 0.12f);
 
         return pane;
     }
@@ -460,13 +495,23 @@ public sealed class InventoryDialogUI : MonoBehaviour
     {
         GameObject actionPanel = CreateUIObject("ActionPanel", parent);
         RectTransform actionPanelRect = actionPanel.GetComponent<RectTransform>();
-        actionPanelRect.anchorMin = new Vector2(0f, 0f);
-        actionPanelRect.anchorMax = new Vector2(1f, 0.39f);
-        actionPanelRect.offsetMin = new Vector2(44f, 34f);
-        actionPanelRect.offsetMax = new Vector2(-44f, -20f);
+        if (HasThemedBackground)
+        {
+            actionPanelRect.anchorMin = Vector2.zero;
+            actionPanelRect.anchorMax = Vector2.one;
+            actionPanelRect.offsetMin = new Vector2(76f, 70f);
+            actionPanelRect.offsetMax = new Vector2(-76f, -484f);
+        }
+        else
+        {
+            actionPanelRect.anchorMin = new Vector2(0f, 0f);
+            actionPanelRect.anchorMax = new Vector2(1f, 0.39f);
+            actionPanelRect.offsetMin = new Vector2(44f, 34f);
+            actionPanelRect.offsetMax = new Vector2(-44f, -20f);
+        }
 
         Image actionBackground = actionPanel.AddComponent<Image>();
-        actionBackground.color = new Color(0.02f, 0.018f, 0.014f, 0.18f);
+        actionBackground.color = HasThemedBackground ? Color.clear : new Color(0.02f, 0.018f, 0.014f, 0.18f);
 
         VerticalLayoutGroup layout = actionPanel.AddComponent<VerticalLayoutGroup>();
         layout.childAlignment = TextAnchor.MiddleCenter;
@@ -475,65 +520,40 @@ public sealed class InventoryDialogUI : MonoBehaviour
         layout.childForceExpandWidth = true;
         layout.childForceExpandHeight = false;
         layout.spacing = 0f;
-        layout.padding = new RectOffset(16, 16, 16, 16);
+        layout.padding = HasThemedBackground ? new RectOffset(16, 16, 8, 8) : new RectOffset(16, 16, 16, 16);
 
-        GameObject actionHalves = CreateUIObject("ActionHalves", actionPanel.transform);
-        RectTransform actionHalvesRect = actionHalves.GetComponent<RectTransform>();
-        actionHalvesRect.anchorMin = Vector2.zero;
-        actionHalvesRect.anchorMax = Vector2.one;
-        actionHalvesRect.offsetMin = Vector2.zero;
-        actionHalvesRect.offsetMax = Vector2.zero;
-
-        LayoutElement halvesLayoutElement = actionHalves.AddComponent<LayoutElement>();
-        halvesLayoutElement.preferredHeight = actionButtonHeight * 2f + 18f;
-        halvesLayoutElement.minHeight = actionButtonHeight * 2f + 18f;
-
-        HorizontalLayoutGroup halvesLayout = actionHalves.AddComponent<HorizontalLayoutGroup>();
-        halvesLayout.childAlignment = TextAnchor.MiddleCenter;
-        halvesLayout.childControlWidth = true;
-        halvesLayout.childControlHeight = true;
-        halvesLayout.childForceExpandWidth = true;
-        halvesLayout.childForceExpandHeight = true;
-        halvesLayout.spacing = 28f;
-
-        Transform leftActionsPane = CreateActionPane("HeldItemActions", actionHalves.transform);
-        Transform rightActionsPane = CreateActionPane("TradePartnerActions", actionHalves.transform);
-
-        Transform leftTopRow = CreateActionButtonRow("HeldItemActionRowTop", leftActionsPane);
-        Transform leftBottomRow = CreateActionButtonRow("HeldItemActionRowBottom", leftActionsPane);
-        Transform rightTopRow = CreateActionButtonRow("TradePartnerActionRowTop", rightActionsPane);
-        Transform rightBottomRow = CreateActionButtonRow("TradePartnerActionRowBottom", rightActionsPane);
+        Transform leftTopRow = CreateActionButtonRow("HeldItemActionRowTop", actionPanel.transform);
+        Transform leftBottomRow = CreateActionButtonRow("HeldItemActionRowBottom", actionPanel.transform);
 
         CreateActionButton(leftTopRow, InventoryAction.Use, OnUseClicked);
         CreateActionButton(leftTopRow, InventoryAction.Eat, OnEatClicked);
         CreateActionButton(leftBottomRow, InventoryAction.Drop, OnDropClicked, HeldTripleActionButtonScale);
         CreateThrowActionButton(leftBottomRow, HeldTripleActionButtonScale);
         CreateActionButton(leftBottomRow, InventoryAction.PickUp, OnPickUpClicked, HeldTripleActionButtonScale);
-
-        CreateTradePartnerActionButton(rightTopRow, "GiveButton", 2, "GIVE", OnGiveClicked);
-        CreateTradePartnerActionButton(rightTopRow, "TakeItemButton", 1, "TAKE", OnTakeItemClicked);
-        CreateTradePartnerActionButton(rightBottomRow, "TradeButton", 0, "TRADE", OnTradeClicked);
     }
 
-    private Transform CreateActionPane(string paneName, Transform parent)
+    private void CreateTradeActionButtonStrip(Transform parent)
     {
-        GameObject paneObject = CreateUIObject(paneName, parent);
-        Image paneBackground = paneObject.AddComponent<Image>();
-        paneBackground.color = new Color(0.02f, 0.018f, 0.014f, 0.12f);
+        GameObject stripObject = CreateUIObject("TradeActionButtons", parent);
+        RectTransform stripRect = stripObject.GetComponent<RectTransform>();
+        stripRect.anchorMin = new Vector2(0.5f, 0.5f);
+        stripRect.anchorMax = new Vector2(0.5f, 0.5f);
+        stripRect.pivot = new Vector2(0.5f, 0.5f);
+        stripRect.anchoredPosition = Vector2.zero;
+        stripRect.sizeDelta = new Vector2(142f, tradeActionButtonHeight * 3f + tradeActionButtonSpacing * 2f);
 
-        VerticalLayoutGroup paneLayout = paneObject.AddComponent<VerticalLayoutGroup>();
-        paneLayout.childAlignment = TextAnchor.MiddleCenter;
-        paneLayout.childControlWidth = true;
-        paneLayout.childControlHeight = false;
-        paneLayout.childForceExpandWidth = true;
-        paneLayout.childForceExpandHeight = false;
-        paneLayout.spacing = 18f;
-        paneLayout.padding = new RectOffset(10, 10, 0, 0);
+        VerticalLayoutGroup layout = stripObject.AddComponent<VerticalLayoutGroup>();
+        layout.childAlignment = TextAnchor.MiddleCenter;
+        layout.childControlWidth = false;
+        layout.childControlHeight = false;
+        layout.childForceExpandWidth = false;
+        layout.childForceExpandHeight = false;
+        layout.spacing = tradeActionButtonSpacing;
+        layout.padding = new RectOffset(0, 0, 0, 0);
 
-        LayoutElement paneLayoutElement = paneObject.AddComponent<LayoutElement>();
-        paneLayoutElement.flexibleWidth = 1f;
-
-        return paneObject.transform;
+        CreateTradeArrowButton(stripObject.transform, "GiveButton", 0, "GIVE", OnGiveClicked);
+        CreateTradeArrowButton(stripObject.transform, "TradeButton", 1, "TRADE", OnTradeClicked);
+        CreateTradeArrowButton(stripObject.transform, "TakeItemButton", 2, "TAKE", OnTakeItemClicked);
     }
 
     private Transform CreateActionButtonRow(string rowName, Transform parent)
@@ -578,28 +598,29 @@ public sealed class InventoryDialogUI : MonoBehaviour
         actionButtons.Add(button);
     }
 
-    private void CreateTradePartnerActionButton(
+    private void CreateTradeArrowButton(
         Transform parent,
         string objectName,
         int spriteIndex,
         string actionText,
         UnityEngine.Events.UnityAction clickHandler)
     {
-        Sprite sprite = takeItemSprites.TryGetValue(spriteIndex, out Sprite foundSprite) ? foundSprite : null;
+        Sprite sprite = tradeArrowSprites.TryGetValue(spriteIndex, out Sprite foundSprite) ? foundSprite : null;
         Button button = CreateSpriteButton(objectName, parent, sprite, actionText, clickHandler, actionText);
 
-        float width = actionButtonHeight;
+        float buttonHeight = tradeActionButtonHeight;
+        float width = buttonHeight * 1.55f;
         if (sprite != null && sprite.rect.height > 0f)
-            width = actionButtonHeight * (sprite.rect.width / sprite.rect.height);
+            width = buttonHeight * (sprite.rect.width / sprite.rect.height);
 
         RectTransform rect = button.GetComponent<RectTransform>();
-        rect.sizeDelta = new Vector2(width, actionButtonHeight);
+        rect.sizeDelta = new Vector2(width, buttonHeight);
 
         LayoutElement layoutElement = button.gameObject.AddComponent<LayoutElement>();
         layoutElement.preferredWidth = width;
-        layoutElement.preferredHeight = actionButtonHeight;
+        layoutElement.preferredHeight = buttonHeight;
         layoutElement.minWidth = width;
-        layoutElement.minHeight = actionButtonHeight;
+        layoutElement.minHeight = buttonHeight;
 
         actionButtons.Add(button);
     }
@@ -648,6 +669,27 @@ public sealed class InventoryDialogUI : MonoBehaviour
 
         if (sprite == null)
             AddFallbackButtonText(buttonObject.transform, fallbackText);
+
+        if (!string.IsNullOrWhiteSpace(tooltipText))
+            AddTooltip(buttonObject, tooltipText);
+
+        return button;
+    }
+
+    private Button CreateInvisibleButton(
+        string objectName,
+        Transform parent,
+        UnityEngine.Events.UnityAction clickHandler,
+        string tooltipText = null)
+    {
+        GameObject buttonObject = CreateUIObject(objectName, parent);
+        Image image = buttonObject.AddComponent<Image>();
+        image.color = Color.clear;
+        image.raycastTarget = true;
+
+        Button button = buttonObject.AddComponent<Button>();
+        button.targetGraphic = image;
+        button.onClick.AddListener(clickHandler);
 
         if (!string.IsNullOrWhiteSpace(tooltipText))
             AddTooltip(buttonObject, tooltipText);
@@ -1743,10 +1785,18 @@ public sealed class InventoryDialogUI : MonoBehaviour
 
     private void LoadSprites()
     {
+        inventoryBackgroundSprite = Resources.Load<Sprite>(inventoryBackgroundSpriteResourcePath);
         LoadSpriteSheet(arrowsSpriteResourcePath, arrowSprites);
         LoadSpriteSheet(inventoryActionsSpriteResourcePath, actionSprites);
-        LoadSpriteSheet(takeItemSpriteResourcePath, takeItemSprites);
         LoadSpriteSheet(dogActionsSpriteResourcePath, dogActionSprites);
+        LoadSpriteSheet(tradeArrowSpriteResourcePath, tradeArrowSprites);
+    }
+
+    private Color GetPreviewLabelColor()
+    {
+        return HasThemedBackground
+            ? new Color(0.2f, 0.11f, 0.04f, 1f)
+            : new Color(0.98f, 0.93f, 0.78f, 1f);
     }
 
     private void LoadSpriteSheet(string resourcePath, Dictionary<int, Sprite> lookup)
