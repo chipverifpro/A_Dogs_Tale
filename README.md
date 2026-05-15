@@ -22,6 +22,10 @@
 <br>
 <img width="545" height="474" alt="Screenshot 2026-04-28 at 11 15 42 AM" src="https://github.com/user-attachments/assets/53c11d28-f9d3-4b7f-8a88-2833ed7e1596" />
 <br>
+Before (above) and After (below) showing new backgrounds and arrangements making the top buttons and inventory screen appear much nicer.
+<br>
+<img width="1204" height="628" alt="Screenshot 2026-05-14 at 5 19 07 PM" src="https://github.com/user-attachments/assets/01874c67-aba1-4d0d-b598-36020f19b383" />
+<br>
 Inspiration created by ChatGPT...<br>
 <img width="1024" height="1536" alt="ChatGPT Image Apr 29, 2026, 11_08_40 PM" src="https://github.com/user-attachments/assets/8dc6434c-dddc-4141-8211-30a4bb8aa37a" />
 <br>
