@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using InspectorTools;
 using UnityEngine;
 using DogGame.LLM;
@@ -68,6 +69,13 @@ namespace DogGame.Modules
         public int SuccessfulFetchCount => successfulFetchCount;
         public int FailedFetchCount => failedFetchCount;
         public string LastOutcome => lastOutcome;
+        public override string QuestTitle => "Fetch Quest";
+        public override string QuestSummary => BuildQuestSummary();
+        public override IReadOnlyList<QuestObjectiveSnapshot> ObjectiveSnapshots => BuildObjectiveSnapshots();
+        public override bool HasCountdown => IsRunning && CurrentTimeoutSeconds > 0f;
+        public override string CountdownLabel => CurrentCountdownLabel;
+        public override float CountdownRemainingSeconds => Mathf.Max(0f, CurrentTimeoutSeconds - StateElapsedSeconds);
+        public override float CountdownDurationSeconds => CurrentTimeoutSeconds;
 
         private int debugDoubleTick = -1;
 
@@ -177,7 +185,14 @@ namespace DogGame.Modules
         [ContextMenu("Begin Fetch Training With Assigned Objects")]
         private void BeginFetchTrainingWithAssignedObjects()
         {
-            BeginFetchTraining(dog, fetchObject, requester != null ? requester : worldObject);
+            BeginFetchTrainingWithAssignedObjects(dog);
+        }
+
+        public bool BeginFetchTrainingWithAssignedObjects(WorldObject fallbackDog)
+        {
+            WorldObject commandedDog = dog != null ? dog : fallbackDog;
+            BeginFetchTraining(commandedDog, fetchObject, requester != null ? requester : worldObject);
+            return IsRunning;
         }
 
         [ContextMenu("Cancel Fetch Training")]
@@ -497,6 +512,77 @@ namespace DogGame.Modules
             Vector3 delta = a.transform.position - b.transform.position;
             delta.y = 0f;
             return delta.magnitude;
+        }
+
+        private QuestObjectiveSnapshot[] BuildObjectiveSnapshots()
+        {
+            int completedCount = CompletedObjectiveCount;
+
+            return new[]
+            {
+                new QuestObjectiveSnapshot("Give the fetch command", completedCount >= 1, completedCount == 0),
+                new QuestObjectiveSnapshot("Throw the fetch object", completedCount >= 2, completedCount == 1),
+                new QuestObjectiveSnapshot("Dog picks up the fetch object", completedCount >= 3, completedCount == 2),
+                new QuestObjectiveSnapshot("Dog returns to the requester", completedCount >= 4, completedCount == 3),
+                new QuestObjectiveSnapshot("Dog releases the fetch object", completedCount >= 5, completedCount == 4)
+            };
+        }
+
+        private int CompletedObjectiveCount
+        {
+            get
+            {
+                return state switch
+                {
+                    FetchQuestState.CommandGiven => 1,
+                    FetchQuestState.WaitingForObjectToSettle => 2,
+                    FetchQuestState.SignalRetrieve => 2,
+                    FetchQuestState.WaitingForPickup => 2,
+                    FetchQuestState.SignalReturn => 3,
+                    FetchQuestState.WaitingForReturn => 3,
+                    FetchQuestState.SignalRelease => 4,
+                    FetchQuestState.WaitingForRelease => 4,
+                    FetchQuestState.Succeeded => 5,
+                    _ => 0
+                };
+            }
+        }
+
+        private float CurrentTimeoutSeconds
+        {
+            get
+            {
+                return state switch
+                {
+                    FetchQuestState.WaitingForPickup => pickupTimeoutSeconds,
+                    FetchQuestState.WaitingForReturn => returnTimeoutSeconds,
+                    FetchQuestState.WaitingForRelease => releaseTimeoutSeconds,
+                    _ => 0f
+                };
+            }
+        }
+
+        private string CurrentCountdownLabel
+        {
+            get
+            {
+                return state switch
+                {
+                    FetchQuestState.WaitingForPickup => "Pickup",
+                    FetchQuestState.WaitingForReturn => "Return",
+                    FetchQuestState.WaitingForRelease => "Release",
+                    _ => ""
+                };
+            }
+        }
+
+        private string BuildQuestSummary()
+        {
+            string dogName = dog != null ? dog.DisplayName : "Dog";
+            string objectName = fetchObject != null ? fetchObject.DisplayName : "object";
+            string requesterName = Requester != null ? Requester.DisplayName : "requester";
+
+            return $"{dogName} fetches {objectName} for {requesterName}.";
         }
 
         private void SetState(FetchQuestState nextState, string message)

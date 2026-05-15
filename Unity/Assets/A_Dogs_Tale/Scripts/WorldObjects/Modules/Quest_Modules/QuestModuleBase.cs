@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -12,8 +14,24 @@ namespace DogGame.Modules
         Cancelled
     }
 
+    public readonly struct QuestObjectiveSnapshot
+    {
+        public QuestObjectiveSnapshot(string description, bool isCompleted, bool isCurrent = false)
+        {
+            Description = description;
+            IsCompleted = isCompleted;
+            IsCurrent = isCurrent;
+        }
+
+        public string Description { get; }
+        public bool IsCompleted { get; }
+        public bool IsCurrent { get; }
+    }
+
     public abstract class QuestModuleBase : WorldModule
     {
+        private static readonly QuestObjectiveSnapshot[] NoObjectives = Array.Empty<QuestObjectiveSnapshot>();
+
         [Header("Quest State")]
         [SerializeField] private QuestRunStatus status = QuestRunStatus.Inactive;
         [SerializeField] private string currentStateName = "Inactive";
@@ -37,6 +55,26 @@ namespace DogGame.Modules
         public float StateElapsedSeconds => stateElapsedSeconds;
         public string LastSignal => lastSignal;
         public string LastMessage => lastMessage;
+        public virtual string QuestTitle => ObjectDisplayName;
+        public virtual string QuestSummary => lastMessage;
+        public virtual IReadOnlyList<QuestObjectiveSnapshot> ObjectiveSnapshots => NoObjectives;
+        public virtual bool HasCountdown => false;
+        public virtual string CountdownLabel => "";
+        public virtual float CountdownRemainingSeconds => 0f;
+        public virtual float CountdownDurationSeconds => 0f;
+
+        protected string ObjectDisplayName => worldObject != null ? worldObject.DisplayName : name;
+
+        protected virtual void OnEnable()
+        {
+            if (IsRunning)
+                QuestManager.RegisterActiveQuest(this);
+        }
+
+        protected virtual void OnDisable()
+        {
+            QuestManager.UnregisterQuest(this);
+        }
 
         public override void Tick(float deltaTime)
         {
@@ -57,6 +95,7 @@ namespace DogGame.Modules
             stateElapsedSeconds = 0f;
             currentStateName = string.IsNullOrWhiteSpace(initialStateName) ? "Running" : initialStateName;
             lastMessage = message;
+            QuestManager.RegisterActiveQuest(this);
             onQuestStarted.Invoke();
             onStateChanged.Invoke(currentStateName);
         }
@@ -81,6 +120,7 @@ namespace DogGame.Modules
             lastMessage = message;
             currentStateName = "Succeeded";
             stateElapsedSeconds = 0f;
+            QuestManager.UnregisterQuest(this);
             onQuestCompleted.Invoke();
             onStateChanged.Invoke(currentStateName);
         }
@@ -91,6 +131,7 @@ namespace DogGame.Modules
             lastMessage = reason;
             currentStateName = "Failed";
             stateElapsedSeconds = 0f;
+            QuestManager.UnregisterQuest(this);
             onQuestFailed.Invoke(reason);
             onStateChanged.Invoke(currentStateName);
         }
@@ -101,6 +142,7 @@ namespace DogGame.Modules
             lastMessage = reason;
             currentStateName = "Cancelled";
             stateElapsedSeconds = 0f;
+            QuestManager.UnregisterQuest(this);
             onQuestCancelled.Invoke(reason);
             onStateChanged.Invoke(currentStateName);
         }
@@ -113,6 +155,7 @@ namespace DogGame.Modules
             stateElapsedSeconds = 0f;
             lastSignal = "";
             lastMessage = "";
+            QuestManager.UnregisterQuest(this);
         }
 
         protected void EmitSignal(string signalName)

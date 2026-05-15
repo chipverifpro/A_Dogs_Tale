@@ -112,6 +112,8 @@ namespace DogGame.Modules
             // Route by request kind
             switch (request.kind)
             {
+                case ActivateKind.StartQuest:
+                    return HandleStartQuest(context);
                 case ActivateKind.RequestToJoinPack:
                     if (worldObject.packMemberModule == null && context.promoteTarget)
                         worldObject.CreateModulesIfNeeded(ModuleFlags.packMemberModule);
@@ -122,6 +124,26 @@ namespace DogGame.Modules
                 default:
                     return ActivateResult.Ignored("Unhandled interaction.");
             }
+        }
+
+        private ActivateResult HandleStartQuest(in ActivateContext context)
+        {
+            if (worldObject.fetchQuestModule is FetchQuestModule fetchQuest)
+            {
+                if (fetchQuest.IsRunning)
+                    return ActivateResult.Rejected($"{fetchQuest.QuestTitle} is already active.");
+
+                WorldObject commandedDog = fetchQuest.Dog != null ? fetchQuest.Dog : context.instigator;
+                bool started = fetchQuest.BeginFetchTrainingWithAssignedObjects(commandedDog);
+                return started
+                    ? ActivateResult.Accepted($"{fetchQuest.QuestTitle} started.")
+                    : ActivateResult.Failed($"Could not start {fetchQuest.QuestTitle}: {fetchQuest.LastMessage}");
+            }
+
+            if (worldObject.fetchQuestModule != null)
+                return ActivateResult.Rejected($"{worldObject.fetchQuestModule.QuestTitle} cannot be started by this interaction yet.");
+
+            return ActivateResult.Ignored("Target has no quest module.");
         }
     }
 }

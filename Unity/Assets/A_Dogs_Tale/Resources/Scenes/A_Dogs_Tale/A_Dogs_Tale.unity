@@ -71567,6 +71567,12 @@ Mesh:
       - serializedVersion: 1
         m_IndexStart: 0
         m_IndexCount: 0
+--- !u!1 &748960544 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 186757882122740016, guid: bcc8732b8b44622449c23934f89e68c0,
+    type: 3}
+  m_PrefabInstance: {fileID: 1186582954}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &750578280
 GameObject:
   m_ObjectHideFlags: 0
@@ -73863,9 +73869,10 @@ MonoBehaviour:
   packAgentList:
   - {fileID: 6544990386685219154}
   - {fileID: 1651296793}
+  - {fileID: 1345767169}
   formation: 3
   leadershipType: 1
-  followerType: 2
+  followerType: 4
   formationSpacing: 1.5
 --- !u!4 &766807148
 Transform:
@@ -73882,6 +73889,7 @@ Transform:
   m_Children:
   - {fileID: 6191479115019793372}
   - {fileID: 1651296778}
+  - {fileID: 1345767137}
   m_Father: {fileID: 125976611}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &766807149
@@ -110373,7 +110381,7 @@ MonoBehaviour:
   modeButtonSpacing: 12
   topControlButtonSize: 176
   topControlsInset: {x: 162, y: 52}
-  pulldownFrameSize: {x: 1630, y: 341}
+  pulldownFrameSize: {x: 1620, y: 341}
   pulldownFrameOffset: {x: 0, y: 0}
   modePanelIconSize: 128
   dropdownWidth: 320
@@ -114045,7 +114053,6 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 1345767137}
   - {fileID: 1880613838}
   - {fileID: 160131187}
   - {fileID: 464182954}
@@ -116020,7 +116027,7 @@ PrefabInstance:
   serializedVersion: 2
   m_Modification:
     serializedVersion: 3
-    m_TransformParent: {fileID: 1168471414}
+    m_TransformParent: {fileID: 766807148}
     m_Modifications:
     - target: {fileID: -7755314165013992688, guid: bcc8732b8b44622449c23934f89e68c0,
         type: 3}
@@ -116169,7 +116176,11 @@ PrefabInstance:
         type: 3}
       insertIndex: -1
       addedObject: {fileID: 574595621}
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 186757882122740016, guid: bcc8732b8b44622449c23934f89e68c0,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1345767203}
   m_SourcePrefab: {fileID: 100100000, guid: bcc8732b8b44622449c23934f89e68c0, type: 3}
 --- !u!43 &1190776425
 Mesh:
@@ -131614,12 +131625,68 @@ MonoBehaviour:
     type: 3}
   m_PrefabInstance: {fileID: 1186582954}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
+  m_GameObject: {fileID: 748960544}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b112db3959c164550975dd26677f8e8e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::WorldObject
+--- !u!114 &1345767203
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 748960544}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a538dfb25613c45d99e96eca908027a4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.FetchQuestModule
+  status: 0
+  currentStateName: Inactive
+  elapsedSeconds: 0
+  stateElapsedSeconds: 0
+  lastSignal: 
+  lastMessage: 
+  onQuestStarted:
+    m_PersistentCalls:
+      m_Calls: []
+  onQuestCompleted:
+    m_PersistentCalls:
+      m_Calls: []
+  onQuestFailed:
+    m_PersistentCalls:
+      m_Calls: []
+  onQuestCancelled:
+    m_PersistentCalls:
+      m_Calls: []
+  onStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  onSignal:
+    m_PersistentCalls:
+      m_Calls: []
+  dog: {fileID: 6544990386685219154}
+  fetchObject: {fileID: 574595624}
+  requester: {fileID: 1345767169}
+  state: 0
+  waitForThrownObjectToSettle: 1
+  pickupTimeoutSeconds: 30
+  returnTimeoutSeconds: 30
+  releaseTimeoutSeconds: 12
+  completeDistance: 1.5
+  returnDistance: 1.5
+  failOnWrongItemPickup: 1
+  signalMode: 1
+  suggestedTaskPriority: 70
+  debugLogStateChanges: 1
+  fetchTrainingLevel: 0
+  successTrainingGain: 0.08
+  failureTrainingLoss: 0.03
+  successfulFetchCount: 0
+  failedFetchCount: 0
+  lastOutcome: 
 --- !u!43 &1347080505
 Mesh:
   m_ObjectHideFlags: 0
@@ -147752,7 +147819,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 20, y: -19.99997}
+  m_AnchoredPosition: {x: 20, y: -20}
   m_SizeDelta: {x: 96, y: 96}
   m_Pivot: {x: 0, y: 1}
 --- !u!114 &1521713610
@@ -220441,10 +220508,6 @@ PrefabInstance:
         type: 3}
       insertIndex: -1
       addedObject: {fileID: 6544990386685219203}
-    - targetCorrespondingSourceObject: {fileID: 8843402266763018810, guid: 2ce0050a816054aaca2a1076f182f7a8,
-        type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 6544990386685219205}
   m_SourcePrefab: {fileID: 100100000, guid: 2ce0050a816054aaca2a1076f182f7a8, type: 3}
 --- !u!1 &6544990386685219093 stripped
 GameObject:
@@ -221256,62 +221319,6 @@ MonoBehaviour:
   closedAngle: 0
   openAngle: 90
   openCloseSpeedDegreesPerSecond: 180
---- !u!114 &6544990386685219205
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6544990386685219093}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a538dfb25613c45d99e96eca908027a4, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.FetchQuestModule
-  status: 0
-  currentStateName: Inactive
-  elapsedSeconds: 0
-  stateElapsedSeconds: 0
-  lastSignal: 
-  lastMessage: 
-  onQuestStarted:
-    m_PersistentCalls:
-      m_Calls: []
-  onQuestCompleted:
-    m_PersistentCalls:
-      m_Calls: []
-  onQuestFailed:
-    m_PersistentCalls:
-      m_Calls: []
-  onQuestCancelled:
-    m_PersistentCalls:
-      m_Calls: []
-  onStateChanged:
-    m_PersistentCalls:
-      m_Calls: []
-  onSignal:
-    m_PersistentCalls:
-      m_Calls: []
-  dog: {fileID: 6544990386685219154}
-  fetchObject: {fileID: 574595624}
-  requester: {fileID: 1345767169}
-  state: 0
-  waitForThrownObjectToSettle: 1
-  pickupTimeoutSeconds: 30
-  returnTimeoutSeconds: 30
-  releaseTimeoutSeconds: 12
-  completeDistance: 1.5
-  returnDistance: 1.5
-  failOnWrongItemPickup: 1
-  signalMode: 1
-  suggestedTaskPriority: 70
-  debugLogStateChanges: 1
-  fetchTrainingLevel: 0
-  successTrainingGain: 0.08
-  failureTrainingLoss: 0.03
-  successfulFetchCount: 0
-  failedFetchCount: 0
-  lastOutcome: 
 --- !u!1001 &6998193042250087962
 PrefabInstance:
   m_ObjectHideFlags: 0

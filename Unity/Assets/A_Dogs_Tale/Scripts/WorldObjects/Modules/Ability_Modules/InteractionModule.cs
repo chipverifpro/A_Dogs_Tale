@@ -48,6 +48,7 @@ namespace DogGame.UI.InteractionWheel
         bool includeScentButtons = true;
         bool includeSoundButtons = true;
         bool includeDoorButtons = true;
+        bool includeQuestButtons = true;
 
         [Header("Inspector-defined interactions for this WorldObject")]
         [SerializeField] private List<Entry> entries = new();
@@ -287,6 +288,30 @@ namespace DogGame.UI.InteractionWheel
                 Debug.Log($"[InteractionModule] Pack.Join on {target.DisplayName}: {result.kind}");
         }
 
+        private void HandleQuestGet(WheelContext ctx)
+        {
+            if (!TryGetTargetWorldObject(ctx, out WorldObject target))
+                return;
+
+            WorldObject instigator = ctx?.actor != null ? ctx.actor : target;
+            GameMode gameMode = GameInputRouter.Instance != null ? GameInputRouter.Instance.currentGameMode : GameMode.Explore;
+            Vector3 hitPoint = GetInteractionWorldPoint(ctx!, target);
+
+            var activateContext = new ActivateContext(
+                userIsInstigator: true,
+                instigator: instigator,
+                target: target,
+                gameMode: gameMode,
+                hitPoint: hitPoint,
+                promoteTarget: true);
+
+            ActivateResult result = target.Activate(activateContext, new ActivateRequest(ActivateKind.StartQuest));
+            if (!string.IsNullOrWhiteSpace(result.message))
+                Debug.Log($"[InteractionModule] Quest.Get on {target.DisplayName}: {result.kind} ({result.message})");
+            else
+                Debug.Log($"[InteractionModule] Quest.Get on {target.DisplayName}: {result.kind}");
+        }
+
         private void HandlePackLeave(WheelContext ctx)
         {
             if (!TryGetTargetAgent(ctx, out WorldObject target))
@@ -478,6 +503,13 @@ namespace DogGame.UI.InteractionWheel
 
             int basePriority = 10;
 
+            // ===== Quest =====
+            if (includeQuestButtons)
+            {
+                Add("Quest.Get", "Quest.Get", "Accept Quest", basePriority, WheelOptionRingPlacement.Inner);
+                basePriority += 10;
+            }
+
             // ===== Movement =====
             if (includeMoveButtons)
             {
@@ -570,6 +602,7 @@ namespace DogGame.UI.InteractionWheel
                     case "Pack.Join":
                     case "Pack.Leave":
                     case "Pack.Lead":
+                    case "Quest.Get":
                     case "Item.Get":
                     case "Item.Drop":
                     case "Dig.Hole":
@@ -599,6 +632,8 @@ namespace DogGame.UI.InteractionWheel
 
             bool hasScent = target.scentPerceptionModule != null;
             bool hasInventory = target.containerModule != null;
+            bool hasQuest = target.fetchQuestModule != null;
+            bool hasStartableQuest = hasQuest && !target.fetchQuestModule!.IsRunning;
 
             DoorModule? doorModule = target.GetComponent<DoorModule>();
             bool hasDoor = doorModule != null;
@@ -619,8 +654,18 @@ namespace DogGame.UI.InteractionWheel
                 entry.hint = "";
                 entry.disabledHint = "";
 
+                // ===== QUEST =====
+                if (key == "Quest.Get")
+                {
+                    entry.isVisible = hasQuest;
+                    entry.isEnabled = hasStartableQuest;
+                    entry.hint = hasQuest ? $"Accept {target.fetchQuestModule!.QuestTitle}." : "";
+                    if (hasQuest && !hasStartableQuest)
+                        entry.disabledHint = $"{target.fetchQuestModule!.QuestTitle} is already active.";
+                }
+
                 // ===== PACK =====
-                if (key == "Pack.Join")
+                else if (key == "Pack.Join")
                 {
                     entry.isEnabled = hasAgent && !inPack;
                 }
@@ -690,7 +735,7 @@ namespace DogGame.UI.InteractionWheel
         public void BindAllActions()
         {
             // Quests
-            BindAction("Quest.Get", ctx => Debug.Log("Quest.Get fired for " + ctx.target.name));
+            BindAction("Quest.Get", HandleQuestGet);
 
             // Sound
             //BindAction("Sound.Bark", ctx => Debug.Log("Sound.Bark fired for " + ctx.target.name));

@@ -75,8 +75,8 @@ public sealed class TimeTask
 
         _mgr.CountIfYield(Name, yielded: !allowContinue);
         //if (chunk / _mgr.budgetPercent > 1f) Debug.Log(Name + ": chunk/softCap " + chunk/softCap);  //DEBUG
-        return false;   // DEBUG
-        //return !allowContinue;
+        //return false;   // DEBUG
+        return !allowContinue;
 
     }
 

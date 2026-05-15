@@ -3,6 +3,7 @@ using UnityEngine.InputSystem;
 
 public enum ActivateKind
 {
+    StartQuest,
     RequestToJoinPack,
     // later: Talk, PickUp, Open, Attack, Sniff, Etc.
     
@@ -295,10 +296,14 @@ public class GameInputRouter : MonoBehaviour
             hitPoint: hitPoint,             // pos3d_world of actual contact point
             promoteTarget: true);           // allow target to add necessary Modules, if false then just fail if not available
 
-        var request = new ActivateRequest(ActivateKind.RequestToJoinPack);
-
-        // send request to the WorldObject target.
+        ActivateRequest request = new ActivateRequest(ActivateKind.StartQuest);
         ActivateResult result = target.Activate(context, request);
+
+        if (result.kind == ActivateResultKind.Ignored)
+        {
+            request = new ActivateRequest(ActivateKind.RequestToJoinPack);
+            result = target.Activate(context, request);
+        }
 
         if (result.kind != ActivateResultKind.Ignored && !string.IsNullOrEmpty(result.message))
             if (result.kind == ActivateResultKind.Errored)
