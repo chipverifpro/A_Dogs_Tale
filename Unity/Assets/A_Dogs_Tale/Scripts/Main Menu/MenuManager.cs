@@ -31,18 +31,20 @@ public class MenuManager : MonoBehaviour
     {
         // If not assigned, try to find by name under the Canvas
         btnSimulation = btnSimulation ?? FindButton("Simulation");
+        btnContinue = btnContinue ?? FindButton("Continue", warnIfMissing: false);
         btnSave = btnSave ?? FindButton("Save", warnIfMissing: false);
         btnLoad = btnLoad ?? FindButton("Load");
         btnSave = btnSave ?? CreateSaveButtonFromLoadButton();
-        btnDocumentation = btnDocumentation ?? FindButton("Documentation");
+//        btnDocumentation = btnDocumentation ?? FindButton("Documentation");
         btnSettings = btnSettings ?? FindButton("SettingsIcon");
         btnQuit = btnQuit ?? FindButton("Quit");
 
         // Clear any existing listeners and add ours
         Hook(btnSimulation, OnSimulation);
+        Hook(btnContinue, OnContinue);
         Hook(btnSave, OnSave);
         Hook(btnLoad, OnLoad);
-        Hook(btnDocumentation, OnDocumentation);
+//        Hook(btnDocumentation, OnDocumentation);
         Hook(btnSettings, OnSettings);
         Hook(btnQuit, QuitGame);
 
@@ -64,6 +66,7 @@ public class MenuManager : MonoBehaviour
         if (!settingsDialog) settingsDialog = GetComponent<MenuSettingsDialog>();
         if (!settingsDialog) settingsDialog = gameObject.AddComponent<MenuSettingsDialog>();
         settingsDialog.Initialize(this);
+        RefreshMainMenuButtonVisibility();
     }
 
     void Start()
@@ -77,6 +80,7 @@ public class MenuManager : MonoBehaviour
         );
 
         if (buttonsParent) buttonsParent.SetActive(true);
+        RefreshMainMenuButtonVisibility();
     }
     #endregion
 
@@ -128,6 +132,32 @@ public class MenuManager : MonoBehaviour
         mapGenerator.LoadMapFromSingleSlot();
     }
 
+    public void OnContinue()
+    {
+        PlayButtonClick();
+        if (!TryResolveGenerator(out DungeonGenerator mapGenerator))
+            return;
+
+        if (!mapGenerator.buildComplete)
+        {
+            BottomBanner.Show("No current map is ready yet.");
+            return;
+        }
+
+        if (fader == null && dir != null)
+            fader = dir.sceneFader;
+        if (fader == null)
+            fader = FindFirstObjectByType<SceneFader>();
+
+        if (fader != null)
+        {
+            StartCoroutine(fader.FadeToGame());
+            return;
+        }
+
+        Debug.LogWarning("[MenuManager] No SceneFader found; cannot continue from the title overlay.", this);
+    }
+
     public void OnSave()
     {
         PlayButtonClick();
@@ -137,12 +167,12 @@ public class MenuManager : MonoBehaviour
         mapGenerator.SaveCurrentMapToSingleSlot();
     }
 
-    public void OnDocumentation()
-    {
-        OpenDocs();
-        //BottomBanner.Show("🐾 Sniff sniff... Doggy documentation engaged!");
-        BottomBanner.Show("Sniff sniff... Doggy documentation engaged!");
-    }
+//    public void OnDocumentation()
+//    {
+//        OpenDocs();
+//        //BottomBanner.Show("🐾 Sniff sniff... Doggy documentation engaged!");
+//        BottomBanner.Show("Sniff sniff... Doggy documentation engaged!");
+//    }
 
     public void OnSettings()
     {
@@ -188,9 +218,10 @@ public class MenuManager : MonoBehaviour
 
     [Header("Optional direct refs (drag from Canvas)")]
     public Button btnSimulation;
+    public Button btnContinue;
     public Button btnSave;
     public Button btnLoad;
-    public Button btnDocumentation;
+//    public Button btnDocumentation;
     public Button btnSettings;  // Imagination Adjustment
     public Button btnQuit;
 
@@ -199,6 +230,38 @@ public class MenuManager : MonoBehaviour
 
     #region Utilities
     // ---------- Utilities ----------
+    public void RefreshMainMenuButtonVisibility()
+    {
+        bool hasCurrentMap = false;
+        if (TryResolveGeneratorQuiet(out DungeonGenerator mapGenerator))
+            hasCurrentMap = mapGenerator.buildComplete;
+
+        SetButtonVisible(btnContinue, hasCurrentMap);
+        SetButtonVisible(btnSave, hasCurrentMap);
+    }
+
+    bool TryResolveGeneratorQuiet(out DungeonGenerator mapGenerator)
+    {
+        mapGenerator = generator;
+        if (mapGenerator == null && dir != null)
+            mapGenerator = dir.gen;
+        if (mapGenerator == null)
+            mapGenerator = FindFirstObjectByType<DungeonGenerator>();
+        if (mapGenerator != null)
+        {
+            generator = mapGenerator;
+            return true;
+        }
+
+        return false;
+    }
+
+    static void SetButtonVisible(Button button, bool visible)
+    {
+        if (button != null && button.gameObject.activeSelf != visible)
+            button.gameObject.SetActive(visible);
+    }
+
     Button FindButton(string name, bool warnIfMissing = true)
     {
         var go = FindIncludingInactive(name);
@@ -332,9 +395,10 @@ public class MenuManager : MonoBehaviour
         }
 
         ApplyButtonBackground(btnSimulation, spritesByName, "BonesButtonsSprites_A_22");
+        ApplyButtonBackground(btnContinue, spritesByName, "BonesButtonsSprites_A_22");
         ApplyButtonBackground(btnSave, spritesByName, "BonesButtonsSprites_A_1");
         ApplyButtonBackground(btnLoad, spritesByName, "BonesButtonsSprites_A_7");
-        ApplyButtonBackground(btnDocumentation, spritesByName, "BonesButtonsSprites_A_10");
+//        ApplyButtonBackground(btnDocumentation, spritesByName, "BonesButtonsSprites_A_10");
         ApplyButtonBackground(btnQuit, spritesByName, "BonesButtonsSprites_A_16");
     }
 

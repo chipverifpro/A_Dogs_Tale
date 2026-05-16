@@ -180,6 +180,7 @@ public class SceneFader : MonoBehaviour
         SetSplashMenuCameraEnabled(true);
         SetCanvasGroupState(splashCanvasGroup, 0f, false);
         PrepareTitlePullUp();
+        RefreshTitleMenuButtons();
         SetCanvasGroupState(menuCanvasGroup, 0f, false);
 
         audioPlayer.PlayClip("Opening Title");
@@ -390,6 +391,7 @@ public class SceneFader : MonoBehaviour
         SetCanvasGroupState(splashCanvasGroup, 0f, false);
         SetCanvasGroupState(menuCanvasGroup, 0f, false);
         PrepareTitlePullUp();
+        RefreshTitleMenuButtons();
 
         yield return StartCoroutine(Fade(menuCanvasGroup, 0f, 1f));
         yield return StartCoroutine(PlayTitlePullUp());
@@ -505,6 +507,15 @@ public class SceneFader : MonoBehaviour
 
         if (settingsIcon != null && !settingsIcon.activeSelf)
             settingsIcon.SetActive(true);
+    }
+
+    void RefreshTitleMenuButtons()
+    {
+        MenuManager menuManager = dir != null ? dir.menuManager : null;
+        if (menuManager == null)
+            menuManager = FindFirstObjectByType<MenuManager>();
+
+        menuManager?.RefreshMainMenuButtonVisibility();
     }
 
     Sprite LoadLeashSprite(string resourcePath)
