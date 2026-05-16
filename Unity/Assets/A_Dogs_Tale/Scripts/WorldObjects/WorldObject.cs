@@ -240,7 +240,6 @@ public class WorldObject : MonoBehaviour
     // Quest:
     public QuestModuleBase fetchQuestModule { get; private set; }
 
-
     // Registration management functions
     public bool IsRegistered { get; private set; }
     public bool HasValidId => objectId >= 0;
@@ -846,6 +845,14 @@ public class WorldObject : MonoBehaviour
         // now create the Blackboard (SimpleBlackboard) itself
         blackboardModule.ForceInitialize();
         return blackboardModule.Blackboard;
+    }
+
+    public bool hasAnyQuestModule()
+    {
+        // if any quest module exists, return true;
+        if (fetchQuestModule != null) return true;
+
+        return false;
     }
 
     public void changeDisplayName(string newname)

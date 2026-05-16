@@ -26,8 +26,10 @@ public sealed class InventoryDialogUI : MonoBehaviour
     [SerializeField] private int uiSortOrder = 5300;
     [SerializeField] private Vector2 referenceResolution = new(1920f, 1080f);
     [SerializeField] private Vector2 dialogSize = new(820f, 820f);
-    [SerializeField] private Vector2 themedCloseButtonAnchoredPosition = new(-62f, -229f);
-    [SerializeField] private Vector2 themedCloseButtonSize = new(64f, 64f);
+    [SerializeField] private Vector2 themedCloseButtonAnchoredPosition = new(-70f, -160f);
+    [SerializeField] private Vector2 themedCloseButtonSize = new(100f, 100f);
+    [SerializeField] private Vector2 themedBallCloseButtonAnchoredPosition = new(-110f, -100f);
+    [SerializeField] private Vector2 themedBallCloseButtonSize = new(110f, 110f);
     [SerializeField] private float actionButtonHeight = 112f;
     [SerializeField] private float tradeActionButtonHeight = 52f;
     [SerializeField] private float tradeActionButtonSpacing = 4f;
@@ -310,6 +312,17 @@ public sealed class InventoryDialogUI : MonoBehaviour
         closeRect.pivot = new Vector2(1f, 1f);
         closeRect.anchoredPosition = hasThemedBackground ? themedCloseButtonAnchoredPosition : new Vector2(-20f, -18f);
         closeRect.sizeDelta = hasThemedBackground ? themedCloseButtonSize : new Vector2(54f, 54f);
+
+        if (hasThemedBackground)
+        {
+            Button ballCloseButton = CreateInvisibleButton("BallCloseButton", parent, OnCloseClicked, "Close");
+            RectTransform ballCloseRect = ballCloseButton.GetComponent<RectTransform>();
+            ballCloseRect.anchorMin = new Vector2(1f, 1f);
+            ballCloseRect.anchorMax = new Vector2(1f, 1f);
+            ballCloseRect.pivot = new Vector2(0.5f, 0.5f);
+            ballCloseRect.anchoredPosition = themedBallCloseButtonAnchoredPosition;
+            ballCloseRect.sizeDelta = themedBallCloseButtonSize;
+        }
     }
 
     private void BuildPreviewArea(Transform parent)

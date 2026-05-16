@@ -5,7 +5,6 @@ using DogGame.LLM;
 using DogGame.Modules;
 using DogGame.Tasks;
 using DogGame.World;
-using Unity.InferenceEngine;
 using UnityEngine;
 using InspectorTools;
 
@@ -42,12 +41,12 @@ namespace DogGame.UI.InteractionWheel
         [Header("Button Group Enables")]
         bool includeModeButtons = true;
         bool includePackButtons = true;
-        bool includeMoveButtons = true;
-        bool includeInventoryButtons = true;
-        bool includeDigButtons = true;
-        bool includeScentButtons = true;
-        bool includeSoundButtons = true;
-        bool includeDoorButtons = true;
+        bool includeMoveButtons = false;
+        bool includeInventoryButtons = false;
+        bool includeDigButtons = false;
+        bool includeScentButtons = false;
+        bool includeSoundButtons = false;
+        bool includeDoorButtons = false;
         bool includeQuestButtons = true;
 
         [Header("Inspector-defined interactions for this WorldObject")]
@@ -504,7 +503,7 @@ namespace DogGame.UI.InteractionWheel
             int basePriority = 10;
 
             // ===== Quest =====
-            if (includeQuestButtons)
+            if (includeQuestButtons && worldObject.hasAnyQuestModule())
             {
                 Add("Quest.Get", "Quest.Get", "Accept Quest", basePriority, WheelOptionRingPlacement.Inner);
                 basePriority += 10;

@@ -180,7 +180,14 @@ namespace DogGame.Modules
             if (!gameInputRouter.IsControlled(worldObject))
             {
                 SetDirectInputWallConstraint(false);
-                Debug.LogWarning($"[{worldObject.DisplayName}] Tick: IsControlled == false");
+                Debug.LogWarning($"[{worldObject.DisplayName}] playerDecisioinModule.Tick: IsControlled == false.  Selecting a new decisionModule.");
+                if (worldObject.packMemberModule.isLeader)
+                    if (worldObject.packMemberModule.currentPack.leadershipType == AgentDecisionType.Player)
+                        worldObject.agentModule.SwitchDecisionModule(AgentDecisionType.Wanderer); // we cannot be player, fallback to wanderer
+                    else
+                        worldObject.agentModule.SwitchDecisionModule(worldObject.packMemberModule.currentPack.leadershipType); // pack default leader type
+                else
+                    worldObject.agentModule.SwitchDecisionModule(worldObject.packMemberModule.currentPack.followerType); // pack default follower type
                 return;
             }
 

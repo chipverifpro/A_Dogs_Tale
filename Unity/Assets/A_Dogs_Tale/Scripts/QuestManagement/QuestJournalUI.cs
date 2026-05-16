@@ -230,6 +230,8 @@ public sealed class QuestJournalUI : MonoBehaviour
 
     private void RefreshQuestList()
     {
+        QuestManager.RefreshActiveQuestModules();
+
         for (int i = contentRect.childCount - 1; i >= 0; i--)
             Destroy(contentRect.GetChild(i).gameObject);
 
@@ -252,7 +254,13 @@ public sealed class QuestJournalUI : MonoBehaviour
     {
         GameObject rowObject = CreateUIObject($"{quest.QuestTitle}Row", parent);
         RectTransform rowRect = rowObject.GetComponent<RectTransform>();
-        rowRect.sizeDelta = new Vector2(0f, expandedQuestModules.Contains(quest) ? 320f : 86f);
+        float rowHeight = expandedQuestModules.Contains(quest) ? 320f : 86f;
+        rowRect.sizeDelta = new Vector2(0f, rowHeight);
+
+        LayoutElement rowLayoutElement = rowObject.AddComponent<LayoutElement>();
+        rowLayoutElement.preferredHeight = rowHeight;
+        rowLayoutElement.minHeight = rowHeight;
+        rowLayoutElement.flexibleHeight = 0f;
 
         Image rowImage = rowObject.AddComponent<Image>();
         rowImage.color = new Color(0.12f, 0.105f, 0.08f, 0.92f);
@@ -277,6 +285,11 @@ public sealed class QuestJournalUI : MonoBehaviour
         Button headerButton = CreateButton("QuestHeader", parent, "", () => ToggleExpanded(quest));
         RectTransform headerRect = headerButton.GetComponent<RectTransform>();
         headerRect.sizeDelta = new Vector2(0f, 62f);
+
+        LayoutElement headerLayoutElement = headerButton.gameObject.AddComponent<LayoutElement>();
+        headerLayoutElement.preferredHeight = 62f;
+        headerLayoutElement.minHeight = 62f;
+        headerLayoutElement.flexibleHeight = 0f;
 
         HorizontalLayoutGroup headerLayout = headerButton.gameObject.AddComponent<HorizontalLayoutGroup>();
         headerLayout.childAlignment = TextAnchor.MiddleLeft;
@@ -306,6 +319,7 @@ public sealed class QuestJournalUI : MonoBehaviour
             TextMeshProUGUI summaryLabel = CreateLabel("QuestSummary", parent, 18f, new Color(0.9f, 0.85f, 0.72f, 0.86f), TextAlignmentOptions.Left);
             summaryLabel.text = quest.QuestSummary;
             summaryLabel.rectTransform.sizeDelta = new Vector2(0f, 30f);
+            SetPreferredHeight(summaryLabel.gameObject, 30f);
         }
 
         foreach (QuestObjectiveSnapshot objective in quest.ObjectiveSnapshots)
@@ -315,6 +329,7 @@ public sealed class QuestJournalUI : MonoBehaviour
             string prefix = objective.IsCurrent && !objective.IsCompleted ? "> " : "  ";
             objectiveLabel.text = $"{prefix}{marker} {objective.Description}";
             objectiveLabel.rectTransform.sizeDelta = new Vector2(0f, 26f);
+            SetPreferredHeight(objectiveLabel.gameObject, 26f);
         }
     }
 
@@ -376,6 +391,17 @@ public sealed class QuestJournalUI : MonoBehaviour
         label.raycastTarget = false;
         label.textWrappingMode = TextWrappingModes.NoWrap;
         return label;
+    }
+
+    private static void SetPreferredHeight(GameObject uiObject, float height)
+    {
+        LayoutElement layoutElement = uiObject.GetComponent<LayoutElement>();
+        if (layoutElement == null)
+            layoutElement = uiObject.AddComponent<LayoutElement>();
+
+        layoutElement.preferredHeight = height;
+        layoutElement.minHeight = height;
+        layoutElement.flexibleHeight = 0f;
     }
 
     private static void EnsureEventSystem()

@@ -44,6 +44,11 @@ namespace DogGame.Modules
             Instance.Register(questModule);
         }
 
+        public static void RefreshActiveQuestModules()
+        {
+            Instance.RefreshFromScene(notifyIfChanged: false);
+        }
+
         public static void UnregisterQuest(QuestModuleBase questModule)
         {
             if (questModule == null || instance == null)
@@ -78,6 +83,34 @@ namespace DogGame.Modules
                 return;
 
             ActiveQuestsChanged?.Invoke();
+        }
+
+        private void RefreshFromScene(bool notifyIfChanged)
+        {
+            bool changed = false;
+
+            for (int index = activeQuestModules.Count - 1; index >= 0; index--)
+            {
+                QuestModuleBase questModule = activeQuestModules[index];
+                if (questModule != null && questModule.IsRunning)
+                    continue;
+
+                activeQuestModules.RemoveAt(index);
+                changed = true;
+            }
+
+            QuestModuleBase[] sceneQuestModules = FindObjectsByType<QuestModuleBase>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+            foreach (QuestModuleBase questModule in sceneQuestModules)
+            {
+                if (questModule == null || !questModule.IsRunning || activeQuestModules.Contains(questModule))
+                    continue;
+
+                activeQuestModules.Add(questModule);
+                changed = true;
+            }
+
+            if (changed && notifyIfChanged)
+                ActiveQuestsChanged?.Invoke();
         }
     }
 }
