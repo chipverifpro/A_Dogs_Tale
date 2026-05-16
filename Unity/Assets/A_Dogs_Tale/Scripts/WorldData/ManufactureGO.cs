@@ -11,6 +11,7 @@ using UnityEngine.Rendering;
 public class ManufactureGO : MonoBehaviour
 {
     private const string SurfaceTintMaterialName = "Green_Mat";
+    private static Material ceilingUnlitMaterial;
     
     [Header("Input data (logical elements)")]
     public Dir dir;
@@ -422,6 +423,9 @@ public class ManufactureGO : MonoBehaviour
 
         foreach (var r in renderers)
         {
+            if (inst.layerKind == ElementLayerKind.Ceiling)
+                ApplyCeilingUnlitMaterial(r);
+
             if (tintOnlySurfaceMaterial)
             {
                 ApplyColorToNamedMaterialSlots(r, mpb, finalColor, inst.textureOverride, SurfaceTintMaterialName, flipTextureVertically);
@@ -437,9 +441,75 @@ public class ManufactureGO : MonoBehaviour
             var flags = archetype.renderFlags;
             bool casts    = (flags & ElementRenderFlags.CastsShadows)    != 0;
             bool receives = (flags & ElementRenderFlags.ReceivesShadows) != 0;
+            if (inst.layerKind == ElementLayerKind.Ceiling)
+            {
+                casts = false;
+                receives = false;
+                r.lightProbeUsage = LightProbeUsage.Off;
+                r.reflectionProbeUsage = ReflectionProbeUsage.Off;
+            }
             r.shadowCastingMode = casts ? ShadowCastingMode.On : ShadowCastingMode.Off;
             r.receiveShadows    = receives;
         }
+    }
+
+    private static void ApplyCeilingUnlitMaterial(Renderer renderer)
+    {
+        if (renderer == null)
+            return;
+
+        Material unlitMaterial = GetCeilingUnlitMaterial();
+        if (unlitMaterial == null)
+            return;
+
+        Material[] materials = renderer.sharedMaterials;
+        if (materials == null || materials.Length == 0)
+            return;
+
+        bool changed = false;
+        bool replaceSingleMaterial = materials.Length == 1;
+        for (int i = 0; i < materials.Length; i++)
+        {
+            Material material = materials[i];
+            if (!replaceSingleMaterial && (material == null || !string.Equals(material.name, SurfaceTintMaterialName, System.StringComparison.Ordinal)))
+                continue;
+
+            if (material == unlitMaterial)
+                continue;
+
+            materials[i] = unlitMaterial;
+            changed = true;
+        }
+
+        if (changed)
+            renderer.sharedMaterials = materials;
+    }
+
+    private static Material GetCeilingUnlitMaterial()
+    {
+        if (ceilingUnlitMaterial != null)
+            return ceilingUnlitMaterial;
+
+        Shader shader = Shader.Find("Universal Render Pipeline/Unlit");
+        if (shader == null)
+            shader = Shader.Find("Unlit/Color");
+        if (shader == null)
+            shader = Shader.Find("Sprites/Default");
+        if (shader == null)
+            return null;
+
+        ceilingUnlitMaterial = new Material(shader)
+        {
+            name = SurfaceTintMaterialName,
+            hideFlags = HideFlags.HideAndDontSave
+        };
+
+        if (ceilingUnlitMaterial.HasProperty("_BaseColor"))
+            ceilingUnlitMaterial.SetColor("_BaseColor", Color.white);
+        if (ceilingUnlitMaterial.HasProperty("_Color"))
+            ceilingUnlitMaterial.SetColor("_Color", Color.white);
+
+        return ceilingUnlitMaterial;
     }
 
     private static bool ShouldTintOnlySurfaceMaterial(ElementInstanceData inst)
