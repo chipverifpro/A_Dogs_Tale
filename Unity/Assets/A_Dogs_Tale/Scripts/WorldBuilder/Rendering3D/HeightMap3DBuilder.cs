@@ -110,6 +110,7 @@ public partial class DungeonGenerator : MonoBehaviour
                     world,
                     cellSize,
                     roomWallpaper,
+                    roomWallpaperMirror,
                     out int triangleFloorDirection,
                     out bool suppressNorth,
                     out bool suppressEast,

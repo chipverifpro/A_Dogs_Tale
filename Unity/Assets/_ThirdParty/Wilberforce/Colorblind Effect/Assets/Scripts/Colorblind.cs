@@ -43,9 +43,9 @@ namespace Wilberforce
             }
 
 			// check if image effect are supported on current setup
-            if (!SystemInfo.supportsImageEffects || SystemInfo.graphicsShaderLevel < 30)
+            if (SystemInfo.graphicsShaderLevel < 30)
             {
-                if (!SystemInfo.supportsImageEffects) ReportError("System does not support image effects.");
+                //if (!SystemInfo.supportsImageEffects) ReportError("System does not support image effects.");
                 if (SystemInfo.graphicsShaderLevel < 30) ReportError("This effect needs at least Shader Model 3.0.");
 
                 isSupported = false;

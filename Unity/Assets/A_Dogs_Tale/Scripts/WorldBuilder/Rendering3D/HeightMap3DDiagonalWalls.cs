@@ -8,6 +8,7 @@ public partial class DungeonGenerator
         Vector3 world,
         Vector3 cellSize,
         Texture2D roomWallpaper,
+        Texture2D roomWallpaperMirror,
         out int triangleFloorDirection,
         out bool suppressNorth,
         out bool suppressEast,
@@ -52,7 +53,7 @@ public partial class DungeonGenerator
 
         if (northWall && eastWall)
         {
-            AddDiagonalWall(roomNumber, x, z, ySteps, world + CornerOffset(east: true, north: true, cellSize) + wallVerticalOffset, Yaw45, cellSize, wallHeight, diagonalLength, roomWallpaper);
+            AddDiagonalWall(roomNumber, x, z, ySteps, world + CornerOffset(east: true, north: true, cellSize) + wallVerticalOffset, Yaw45, cellSize, wallHeight, diagonalLength, roomWallpaper, roomWallpaperMirror);
             triangleFloorDirection = 0;
             if (cfg.skipOrthogonalWhenDiagonal) { suppressNorth = true; suppressEast = true; }
             return true;
@@ -60,7 +61,7 @@ public partial class DungeonGenerator
 
         if (northWall && westWall)
         {
-            AddDiagonalWall(roomNumber, x, z, ySteps, world + CornerOffset(east: false, north: true, cellSize) + wallVerticalOffset, Yaw315, cellSize, wallHeight, diagonalLength, roomWallpaper);
+            AddDiagonalWall(roomNumber, x, z, ySteps, world + CornerOffset(east: false, north: true, cellSize) + wallVerticalOffset, Yaw315, cellSize, wallHeight, diagonalLength, roomWallpaper, roomWallpaperMirror);
             triangleFloorDirection = 3;
             if (cfg.skipOrthogonalWhenDiagonal) { suppressNorth = true; suppressWest = true; }
             return true;
@@ -68,7 +69,7 @@ public partial class DungeonGenerator
 
         if (southWall && eastWall)
         {
-            AddDiagonalWall(roomNumber, x, z, ySteps, world + CornerOffset(east: true, north: false, cellSize) + wallVerticalOffset, Yaw135, cellSize, wallHeight, diagonalLength, roomWallpaper);
+            AddDiagonalWall(roomNumber, x, z, ySteps, world + CornerOffset(east: true, north: false, cellSize) + wallVerticalOffset, Yaw135, cellSize, wallHeight, diagonalLength, roomWallpaper, roomWallpaperMirror);
             triangleFloorDirection = 1;
             if (cfg.skipOrthogonalWhenDiagonal) { suppressSouth = true; suppressEast = true; }
             return true;
@@ -76,7 +77,7 @@ public partial class DungeonGenerator
 
         if (southWall && westWall)
         {
-            AddDiagonalWall(roomNumber, x, z, ySteps, world + CornerOffset(east: false, north: false, cellSize) + wallVerticalOffset, Yaw225, cellSize, wallHeight, diagonalLength, roomWallpaper);
+            AddDiagonalWall(roomNumber, x, z, ySteps, world + CornerOffset(east: false, north: false, cellSize) + wallVerticalOffset, Yaw225, cellSize, wallHeight, diagonalLength, roomWallpaper, roomWallpaperMirror);
             triangleFloorDirection = 2;
             if (cfg.skipOrthogonalWhenDiagonal) { suppressSouth = true; suppressWest = true; }
             return true;
@@ -95,9 +96,12 @@ public partial class DungeonGenerator
         Vector3 cellSize,
         float wallHeight,
         float diagonalLength,
-        Texture2D roomWallpaper)
+        Texture2D roomWallpaper,
+        Texture2D roomWallpaperMirror)
     {
         Vector3 wallScale = new Vector3(cellSize.x * 0.1f, wallHeight, diagonalLength);
+        bool mirrorWallpaper = (x % 2) == 0;
+        Texture2D diagonalWallpaper = mirrorWallpaper && roomWallpaperMirror != null ? roomWallpaperMirror : roomWallpaper;
 
         elementStore.AddWall(
             archetypeId: "DiagonalWall",
@@ -109,7 +113,7 @@ public partial class DungeonGenerator
             rotation: wallRotation,
             scale: wallScale,
             color: Color.white,
-            textureOverride: roomWallpaper,
+            textureOverride: diagonalWallpaper,
             customFlags: 0
         );
     }

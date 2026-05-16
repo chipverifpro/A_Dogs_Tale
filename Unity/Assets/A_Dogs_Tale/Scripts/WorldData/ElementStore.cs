@@ -587,6 +587,7 @@ public class ElementStore : ScriptableObject
     {
         Quaternion quadRotate = Quaternion.Euler(-90f, 0f, 0f);
         Vector3 airFogOffset = new(0f, 0.6f, 0f);
+        Vector3 cellWorldPosition = GetScentCellWorldPosition(cell);
         Vector3 overlapFuzzyScale = new(1.95f, 2f, 1.95f);
         Vector3 jitter_offset = new(0f, 0f, 0f);
 
@@ -604,7 +605,7 @@ public class ElementStore : ScriptableObject
             roomIndex: cell.room_number,
             cellCoord: cell.pos,
             heightSteps: cell.height,
-            position: cell.pos3d_world + airFogOffset + jitter_offset,
+            position: cellWorldPosition + airFogOffset + jitter_offset,
             rotation: quadRotate,
             scale: overlapFuzzyScale,
             color: color,
@@ -629,6 +630,7 @@ public class ElementStore : ScriptableObject
     {
         Quaternion quadRotate = Quaternion.Euler(-90f, 0f, 0f);
         Vector3 groundFogOffset = new(0f, 0.2f, 0f);
+        Vector3 cellWorldPosition = GetScentCellWorldPosition(cell);
         Vector3 overlapFuzzyScale = new(1.95f, 2f, 1.95f);
         Vector3 jitter_offset = new(0f, 0f, 0f);
 
@@ -646,7 +648,7 @@ public class ElementStore : ScriptableObject
             roomIndex: cell.room_number,
             cellCoord: cell.pos,
             heightSteps: cell.height,
-            position: cell.pos3d_world + groundFogOffset + jitter_offset,
+            position: cellWorldPosition + groundFogOffset + jitter_offset,
             rotation: quadRotate,
             scale: overlapFuzzyScale,
             color: color,
@@ -658,6 +660,21 @@ public class ElementStore : ScriptableObject
         //Debug.Log($"AddScentGround(@{cell.pos}, alpha={color.a}) -> GOindex={GOindex}");
         //inst.PrintElementInstanceData();
         return GOindex;
+    }
+
+    private static Vector3 GetScentCellWorldPosition(Cell cell)
+    {
+        if (cell == null)
+            return Vector3.zero;
+
+        Dir dir = Dir.Instance;
+        Vector3 worldPosition = dir != null && dir.gen != null && dir.gen.grid != null
+            ? dir.gen.grid.CellToWorld(new Vector3Int(cell.x, cell.y, 0))
+            : new Vector3(cell.x, 0f, cell.y);
+
+        float unitHeight = dir != null && dir.cfg != null ? dir.cfg.unitHeight : 1f;
+        worldPosition.y += cell.height * unitHeight;
+        return worldPosition;
     }
     
     public void AddFog(
