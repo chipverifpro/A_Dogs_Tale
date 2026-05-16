@@ -12,15 +12,19 @@ public sealed class QuestJournalUI : MonoBehaviour
     [Header("Layout")]
     [SerializeField] private int uiSortOrder = 5400;
     [SerializeField] private Vector2 referenceResolution = new(1920f, 1080f);
-    [SerializeField] private Vector2 dialogSize = new(720f, 640f);
+    [SerializeField] private Vector2 dialogSize = new(640f, 560f);
 
     private readonly HashSet<QuestModuleBase> expandedQuestModules = new();
+    private readonly List<QuestModuleBase> displayQuestModules = new();
+    private readonly Dictionary<QuestModuleBase, TextMeshProUGUI> questStatusLabels = new();
 
     private Canvas overlayCanvas;
     private GameObject dialogRoot;
     private RectTransform contentRect;
+    private ScrollRect questScrollRect;
     private TextMeshProUGUI emptyLabel;
     private bool isOpen;
+    private bool questListDirty = true;
 
     private void Awake()
     {
@@ -44,8 +48,13 @@ public sealed class QuestJournalUI : MonoBehaviour
         if (WasQuestTogglePressedThisFrame())
             Toggle();
 
-        if (isOpen)
+        if (!isOpen)
+            return;
+
+        if (questListDirty)
             RefreshQuestList();
+
+        UpdateQuestHeaderLabels();
     }
 
     public void Toggle()
@@ -61,6 +70,7 @@ public sealed class QuestJournalUI : MonoBehaviour
         EnsureEventSystem();
         isOpen = true;
         dialogRoot.SetActive(true);
+        questListDirty = true;
         RefreshQuestList();
     }
 
@@ -74,6 +84,8 @@ public sealed class QuestJournalUI : MonoBehaviour
 
     private void OnActiveQuestsChanged()
     {
+        questListDirty = true;
+
         if (isOpen)
             RefreshQuestList();
     }
@@ -119,10 +131,10 @@ public sealed class QuestJournalUI : MonoBehaviour
 
         dialogRoot = CreateUIObject("QuestJournalDialog", canvasObject.transform);
         RectTransform dialogRect = dialogRoot.GetComponent<RectTransform>();
-        dialogRect.anchorMin = new Vector2(1f, 0.5f);
-        dialogRect.anchorMax = new Vector2(1f, 0.5f);
-        dialogRect.pivot = new Vector2(1f, 0.5f);
-        dialogRect.anchoredPosition = new Vector2(-72f, 0f);
+        dialogRect.anchorMin = new Vector2(0.5f, 0.5f);
+        dialogRect.anchorMax = new Vector2(0.5f, 0.5f);
+        dialogRect.pivot = new Vector2(0.5f, 0.5f);
+        dialogRect.anchoredPosition = Vector2.zero;
         dialogRect.sizeDelta = dialogSize;
 
         Image dialogImage = dialogRoot.AddComponent<Image>();
@@ -176,8 +188,9 @@ public sealed class QuestJournalUI : MonoBehaviour
         scrollRect.offsetMin = new Vector2(14f, 14f);
         scrollRect.offsetMax = new Vector2(-14f, -14f);
 
-        ScrollRect scroll = scrollObject.AddComponent<ScrollRect>();
-        scroll.horizontal = false;
+        questScrollRect = scrollObject.AddComponent<ScrollRect>();
+        questScrollRect.horizontal = false;
+        questScrollRect.movementType = ScrollRect.MovementType.Clamped;
 
         GameObject viewportObject = CreateUIObject("Viewport", scrollObject.transform);
         RectTransform viewportRect = viewportObject.GetComponent<RectTransform>();
@@ -187,10 +200,9 @@ public sealed class QuestJournalUI : MonoBehaviour
         viewportRect.offsetMax = Vector2.zero;
 
         Image viewportImage = viewportObject.AddComponent<Image>();
-        viewportImage.color = Color.clear;
+        viewportImage.color = new Color(0.055f, 0.047f, 0.036f, 0.45f);
 
-        Mask viewportMask = viewportObject.AddComponent<Mask>();
-        viewportMask.showMaskGraphic = false;
+        viewportObject.AddComponent<RectMask2D>();
 
         GameObject contentObject = CreateUIObject("Content", viewportObject.transform);
         contentRect = contentObject.GetComponent<RectTransform>();
@@ -211,8 +223,8 @@ public sealed class QuestJournalUI : MonoBehaviour
         ContentSizeFitter fitter = contentObject.AddComponent<ContentSizeFitter>();
         fitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
 
-        scroll.viewport = viewportRect;
-        scroll.content = contentRect;
+        questScrollRect.viewport = viewportRect;
+        questScrollRect.content = contentRect;
 
         GameObject emptyObject = CreateUIObject("EmptyLabel", bodyObject.transform);
         RectTransform emptyRect = emptyObject.GetComponent<RectTransform>();
@@ -222,32 +234,79 @@ public sealed class QuestJournalUI : MonoBehaviour
         emptyRect.offsetMax = new Vector2(-32f, -32f);
 
         emptyLabel = emptyObject.AddComponent<TextMeshProUGUI>();
-        emptyLabel.text = "No active quests";
+        emptyLabel.text = "No quests";
         emptyLabel.fontSize = 26f;
         emptyLabel.color = new Color(0.86f, 0.8f, 0.66f, 0.78f);
         emptyLabel.alignment = TextAlignmentOptions.Center;
+        emptyLabel.raycastTarget = false;
     }
 
     private void RefreshQuestList()
     {
         QuestManager.RefreshActiveQuestModules();
+        questStatusLabels.Clear();
 
         for (int i = contentRect.childCount - 1; i >= 0; i--)
             Destroy(contentRect.GetChild(i).gameObject);
 
-        IReadOnlyList<QuestModuleBase> activeQuests = QuestManager.ActiveQuestModules;
+        CollectDisplayQuestModules();
         int renderedQuestCount = 0;
 
-        foreach (QuestModuleBase quest in activeQuests)
+        foreach (QuestModuleBase quest in displayQuestModules)
         {
-            if (quest == null || !quest.IsRunning)
-                continue;
-
             BuildQuestRow(quest, contentRect);
             renderedQuestCount++;
         }
 
         emptyLabel.gameObject.SetActive(renderedQuestCount == 0);
+        Canvas.ForceUpdateCanvases();
+        LayoutRebuilder.ForceRebuildLayoutImmediate(contentRect);
+        LayoutRebuilder.ForceRebuildLayoutImmediate(dialogRoot.GetComponent<RectTransform>());
+
+        if (questScrollRect != null)
+            questScrollRect.verticalNormalizedPosition = 1f;
+
+        questListDirty = false;
+    }
+
+    private void CollectDisplayQuestModules()
+    {
+        displayQuestModules.Clear();
+
+        AddKnownQuestModules(QuestModuleBase.KnownQuestModules);
+        AddKnownQuestModules(QuestManager.ActiveQuestModules);
+
+        QuestModuleBase[] sceneQuestModules = FindObjectsByType<QuestModuleBase>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+        AddKnownQuestModules(sceneQuestModules);
+
+        FetchQuestModule[] fetchQuestModules = FindObjectsByType<FetchQuestModule>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+        AddKnownQuestModules(fetchQuestModules);
+
+        WorldObject[] worldObjects = FindObjectsByType<WorldObject>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+        foreach (WorldObject worldObject in worldObjects)
+        {
+            if (worldObject == null)
+                continue;
+
+            AddKnownQuestModule(worldObject.fetchQuestModule);
+        }
+    }
+
+    private void AddKnownQuestModules(IEnumerable<QuestModuleBase> questModules)
+    {
+        if (questModules == null)
+            return;
+
+        foreach (QuestModuleBase questModule in questModules)
+            AddKnownQuestModule(questModule);
+    }
+
+    private void AddKnownQuestModule(QuestModuleBase questModule)
+    {
+        if (questModule == null || displayQuestModules.Contains(questModule))
+            return;
+
+        displayQuestModules.Add(questModule);
     }
 
     private void BuildQuestRow(QuestModuleBase quest, Transform parent)
@@ -263,7 +322,7 @@ public sealed class QuestJournalUI : MonoBehaviour
         rowLayoutElement.flexibleHeight = 0f;
 
         Image rowImage = rowObject.AddComponent<Image>();
-        rowImage.color = new Color(0.12f, 0.105f, 0.08f, 0.92f);
+        rowImage.color = GetQuestRowColor(quest.Status);
 
         VerticalLayoutGroup rowLayout = rowObject.AddComponent<VerticalLayoutGroup>();
         rowLayout.childAlignment = TextAnchor.UpperLeft;
@@ -308,8 +367,9 @@ public sealed class QuestJournalUI : MonoBehaviour
         titleLabel.rectTransform.sizeDelta = new Vector2(330f, 0f);
 
         TextMeshProUGUI timerLabel = CreateLabel("QuestTimer", headerButton.transform, 22f, new Color(0.84f, 0.95f, 1f, 1f), TextAlignmentOptions.MidlineRight);
-        timerLabel.text = quest.HasCountdown ? FormatCountdown(quest) : "";
+        timerLabel.text = quest.HasCountdown ? FormatCountdown(quest) : FormatStatus(quest.Status);
         timerLabel.rectTransform.sizeDelta = new Vector2(180f, 0f);
+        questStatusLabels[quest] = timerLabel;
     }
 
     private void BuildObjectiveList(QuestModuleBase quest, Transform parent)
@@ -340,7 +400,19 @@ public sealed class QuestJournalUI : MonoBehaviour
         else
             expandedQuestModules.Add(quest);
 
+        questListDirty = true;
         RefreshQuestList();
+    }
+
+    private void UpdateQuestHeaderLabels()
+    {
+        foreach (KeyValuePair<QuestModuleBase, TextMeshProUGUI> row in questStatusLabels)
+        {
+            if (row.Key == null || row.Value == null)
+                continue;
+
+            row.Value.text = row.Key.HasCountdown ? FormatCountdown(row.Key) : FormatStatus(row.Key.Status);
+        }
     }
 
     private static string FormatCountdown(QuestModuleBase quest)
@@ -350,6 +422,31 @@ public sealed class QuestJournalUI : MonoBehaviour
         int seconds = totalSeconds % 60;
         string label = string.IsNullOrWhiteSpace(quest.CountdownLabel) ? "Time" : quest.CountdownLabel;
         return $"{label} {minutes:00}:{seconds:00}";
+    }
+
+    private static string FormatStatus(QuestRunStatus status)
+    {
+        return status switch
+        {
+            QuestRunStatus.Inactive => "Not started",
+            QuestRunStatus.Running => "Active",
+            QuestRunStatus.Succeeded => "Completed",
+            QuestRunStatus.Failed => "Failed",
+            QuestRunStatus.Cancelled => "Cancelled",
+            _ => status.ToString()
+        };
+    }
+
+    private static Color GetQuestRowColor(QuestRunStatus status)
+    {
+        return status switch
+        {
+            QuestRunStatus.Succeeded => new Color(0.095f, 0.15f, 0.105f, 0.92f),
+            QuestRunStatus.Failed => new Color(0.17f, 0.08f, 0.065f, 0.92f),
+            QuestRunStatus.Cancelled => new Color(0.12f, 0.105f, 0.105f, 0.92f),
+            QuestRunStatus.Inactive => new Color(0.105f, 0.095f, 0.08f, 0.82f),
+            _ => new Color(0.12f, 0.105f, 0.08f, 0.92f)
+        };
     }
 
     private static Button CreateButton(string objectName, Transform parent, string text, UnityEngine.Events.UnityAction onClick)

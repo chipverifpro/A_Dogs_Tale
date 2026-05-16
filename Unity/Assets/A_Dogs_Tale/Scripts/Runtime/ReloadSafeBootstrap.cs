@@ -10,6 +10,7 @@ public static class ReloadSafeBootstrap
         Dir.ResetStaticStateForReload();
         GameInputRouter.ResetStaticStateForReload();
         WorldObjectRegistry.ResetStaticStateForReload();
+        DogGame.Modules.QuestModuleBase.ResetStaticStateForReload();
         DogGame.Modules.QuestManager.ResetStaticStateForReload();
         NoiseManager.ResetStaticStateForReload();
         BottomBanner.ResetStaticStateForReload();

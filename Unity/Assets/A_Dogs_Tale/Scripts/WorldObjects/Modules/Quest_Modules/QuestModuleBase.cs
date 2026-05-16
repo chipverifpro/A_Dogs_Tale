@@ -31,6 +31,9 @@ namespace DogGame.Modules
     public abstract class QuestModuleBase : WorldModule
     {
         private static readonly QuestObjectiveSnapshot[] NoObjectives = Array.Empty<QuestObjectiveSnapshot>();
+        private static readonly List<QuestModuleBase> KnownQuestModulesMutable = new();
+
+        public static IReadOnlyList<QuestModuleBase> KnownQuestModules => KnownQuestModulesMutable;
 
         [Header("Quest State")]
         [SerializeField] private QuestRunStatus status = QuestRunStatus.Inactive;
@@ -65,14 +68,33 @@ namespace DogGame.Modules
 
         protected string ObjectDisplayName => worldObject != null ? worldObject.DisplayName : name;
 
+        internal static void ResetStaticStateForReload()
+        {
+            KnownQuestModulesMutable.Clear();
+        }
+
+        protected override void Awake()
+        {
+            base.Awake();
+            RegisterKnownQuestModule(this);
+        }
+
         protected virtual void OnEnable()
         {
+            RegisterKnownQuestModule(this);
+
             if (IsRunning)
                 QuestManager.RegisterActiveQuest(this);
         }
 
         protected virtual void OnDisable()
         {
+            QuestManager.UnregisterQuest(this);
+        }
+
+        protected virtual void OnDestroy()
+        {
+            KnownQuestModulesMutable.Remove(this);
             QuestManager.UnregisterQuest(this);
         }
 
@@ -95,6 +117,7 @@ namespace DogGame.Modules
             stateElapsedSeconds = 0f;
             currentStateName = string.IsNullOrWhiteSpace(initialStateName) ? "Running" : initialStateName;
             lastMessage = message;
+            RegisterKnownQuestModule(this);
             QuestManager.RegisterActiveQuest(this);
             onQuestStarted.Invoke();
             onStateChanged.Invoke(currentStateName);
@@ -167,6 +190,14 @@ namespace DogGame.Modules
         protected bool TimedOut(float timeoutSeconds)
         {
             return timeoutSeconds > 0f && stateElapsedSeconds >= timeoutSeconds;
+        }
+
+        private static void RegisterKnownQuestModule(QuestModuleBase questModule)
+        {
+            if (questModule == null || KnownQuestModulesMutable.Contains(questModule))
+                return;
+
+            KnownQuestModulesMutable.Add(questModule);
         }
     }
 }
