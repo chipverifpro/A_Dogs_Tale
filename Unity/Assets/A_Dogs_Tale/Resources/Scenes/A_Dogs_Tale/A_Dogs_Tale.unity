@@ -27620,7 +27620,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: -82.72048, y: -233.11197}
+  m_AnchoredPosition: {x: -82.72048, y: -164.746}
   m_SizeDelta: {x: 215.441, y: 64.032}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &286172374
@@ -57955,7 +57955,7 @@ GameObject:
   - component: {fileID: 625848637}
   - component: {fileID: 625848636}
   m_Layer: 5
-  m_Name: Documentation
+  m_Name: Continue
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -57978,7 +57978,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: -82.386986, y: -233.77898}
+  m_AnchoredPosition: {x: -82.386986, y: -96.38}
   m_SizeDelta: {x: 214.774, y: 65.366}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &625848636
@@ -58301,7 +58301,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: -82.386986, y: -165.07948}
+  m_AnchoredPosition: {x: -82.386986, y: -96.7135}
   m_SizeDelta: {x: 214.774, y: 66.033}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &627177218
@@ -70128,7 +70128,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BreadcrumbTrail
   dropDistance: 0.5
-  maxCrumbs: 256
+  maxCrumbs: 10
   pack: {fileID: 733348323}
   leaderCrumbs: []
   followerCrumbTrails: []
@@ -73917,7 +73917,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BreadcrumbTrail
   dropDistance: 0.5
-  maxCrumbs: 256
+  maxCrumbs: 10
   pack: {fileID: 766807147}
   leaderCrumbs: []
   followerCrumbTrails: []
@@ -82361,9 +82361,9 @@ MonoBehaviour:
   buttonSpriteSizeScale: 0.667
   buttonsParent: {fileID: 2135703271}
   btnSimulation: {fileID: 1818943376}
+  btnContinue: {fileID: 0}
   btnSave: {fileID: 1783677312}
   btnLoad: {fileID: 627177219}
-  btnDocumentation: {fileID: 625848637}
   btnSettings: {fileID: 1521713611}
   btnQuit: {fileID: 286172375}
   generator: {fileID: 409665914}
@@ -107190,7 +107190,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Documentation
+  m_text: Continue
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -110345,10 +110345,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SniffModeVisuals
   sniffVolume: {fileID: 1135862880}
+  colorblindEffect: {fileID: 0}
   transitionDuration: 0.35
   sniffSaturation: -80
   sniffPostExposure: -0.5
   sniffHueShift: 20
+  applySniffHueShift: 0
+  useColorblindEffect: 1
+  sniffColorblindType: 2
   sniffColorFilter: {r: 0.8, g: 0.7, b: 1, a: 1}
   sniffVignetteIntensity: 0.35
   sniffVignetteSmoothness: 0.7
@@ -110376,6 +110380,7 @@ MonoBehaviour:
   inventoryActionSpriteResourcePath: Sprites/InventoryActionsSheetA
   digHoleSpriteResourcePath: Sprites/DigHoleSpriteA
   pulldownFrameResourcePath: Sprites/PulldownFrame
+  pulldownTabResourcePath: Sprites/PulldownTab
   noseButtonSize: 176
   noseButtonMargin: 24
   modeButtonSpacing: 12
@@ -110383,6 +110388,10 @@ MonoBehaviour:
   topControlsInset: {x: 162, y: 52}
   pulldownFrameSize: {x: 1620, y: 341}
   pulldownFrameOffset: {x: 0, y: 0}
+  pulldownTabSize: {x: 428, y: 98}
+  pulldownTabOffset: {x: 0, y: 0}
+  pulldownRetractButtonSize: {x: 428, y: 98}
+  pulldownRetractButtonOffset: {x: 0, y: 0}
   modePanelIconSize: 128
   dropdownWidth: 320
   dropdownMaxHeight: 420
@@ -110392,7 +110401,6 @@ MonoBehaviour:
   emoteGridColumns: 4
   uiSortOrder: 5100
   autoHideTopControls: 1
-  topControlsRevealEdgePixels: 10
   topControlsSlideDuration: 0.18
   topControlsHiddenTopPadding: 8
   tooltipFontSize: 22
@@ -110405,6 +110413,9 @@ MonoBehaviour:
   dropdownSelectedColor: {r: 0.88, g: 0.79, b: 0.55, a: 0.95}
   dropdownTextColor: {r: 0.19, g: 0.15, b: 0.08, a: 1}
   tooltipBackgroundColor: {r: 0.97, g: 0.96, b: 0.91, a: 0.96}
+  logSniffToggleDiagnostics: 1
+  lastSniffDiagnostic: 
+  isSniffModeActive: 0
 --- !u!43 &1139104110
 Mesh:
   m_ObjectHideFlags: 0
@@ -116053,7 +116064,7 @@ PrefabInstance:
         type: 3}
       propertyPath: currentPack
       value: 
-      objectReference: {fileID: 0}
+      objectReference: {fileID: 766807147}
     - target: {fileID: -5624995233342408198, guid: bcc8732b8b44622449c23934f89e68c0,
         type: 3}
       propertyPath: initialDecisionType
@@ -120722,7 +120733,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Play
+  m_text: Begin
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -129886,6 +129897,7 @@ GameObject:
   - component: {fileID: 1326159950}
   - component: {fileID: 1326159949}
   - component: {fileID: 1326159948}
+  - component: {fileID: 1326159951}
   m_Layer: 0
   m_Name: FogCamera
   m_TagString: Untagged
@@ -130011,6 +130023,20 @@ Camera:
   m_OcclusionCulling: 1
   m_StereoConvergence: 10
   m_StereoSeparation: 0.022
+--- !u!114 &1326159951
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1326159946}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5ae42c8f78c60684aab6be6c18bd7a9b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Wilberforce.Colorblind
+  Type: 2
+  colorblindShader: {fileID: 4800000, guid: b35b8f7ae8cf168488129d5f5f39ebf4, type: 3}
 --- !u!43 &1326341666
 Mesh:
   m_ObjectHideFlags: 0
@@ -150789,10 +150815,12 @@ MonoBehaviour:
   enableScentDiagnostics: 1
   scentDiagnosticsEveryNFrames: 5000
   logScentReclamation: 0
+  logScentOverlayDiagnostics: 1
   scentVisualThreshold: 0.00390625
   maxVisualIntensity: 0.5
   airBaseColor: {r: 0.2, g: 1, b: 1, a: 1}
   groundBaseColor: {r: 0.5, g: 1, b: 0.2, a: 1}
+  scentCamActive: 0
 --- !u!114 &1546545661
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -163774,7 +163802,7 @@ PrefabInstance:
     - target: {fileID: 4477274621950385561, guid: da33ad6d2d1f9483faa117084b30e547,
         type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4477274621950385561, guid: da33ad6d2d1f9483faa117084b30e547,
         type: 3}
@@ -178751,7 +178779,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1783677310
 RectTransform:
   m_ObjectHideFlags: 0
@@ -178769,7 +178797,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: -80.7195, y: -96.38}
+  m_AnchoredPosition: {x: -80.7195, y: -165.413}
   m_SizeDelta: {x: 211.439, y: 65.366}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1783677311
@@ -215329,9 +215357,9 @@ RectTransform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1818943374}
-  - {fileID: 1783677310}
-  - {fileID: 627177217}
   - {fileID: 625848635}
+  - {fileID: 627177217}
+  - {fileID: 1783677310}
   - {fileID: 286172373}
   m_Father: {fileID: 554327793}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}

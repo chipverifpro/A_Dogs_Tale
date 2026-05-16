@@ -17,7 +17,7 @@ MonoBehaviour:
   showBuildProcess: 0
   stepDelay: 0.1
   randomizeSeed: 1
-  seed: 1881761154
+  seed: 84069457
   useThinWalls: 1
   mapWidth: 25
   mapHeight: 25
@@ -34,8 +34,8 @@ MonoBehaviour:
   perlinFloorWavelength: 0.05
   GlobalPerlinSeed: 1
   slopeRoomMaxAngle: 0
-  enableTiltedTiles: 0
-  tiltFloorTilesMaxAngle: 0
+  enableTiltedTiles: 1
+  tiltFloorTilesMaxAngle: 20
   edgeTiltScale: 0.01
   useDiagonalCorners: 0
   skipOrthogonalWhenDiagonal: 1
