@@ -105,7 +105,9 @@ public class BottomBanner : MonoBehaviour
     float elapsedGameTimeSeconds;
     float currentPanelHeight;
     float panelHeightVelocity;
+    bool panelExpanded;
     bool legacyStyleMigrated;
+    int lastPanelToggleFrame = -1;
 
     public IReadOnlyList<BannerMessageEntry> MessageHistory => messageHistory;
 
@@ -152,6 +154,7 @@ public class BottomBanner : MonoBehaviour
     void Update()
     {
         elapsedGameTimeSeconds += GameTime.DeltaTime;
+        UpdatePanelClickToggle();
         UpdateAutoCollapse();
     }
 
@@ -353,6 +356,45 @@ public class BottomBanner : MonoBehaviour
         }
     }
 
+    void UpdatePanelClickToggle()
+    {
+        if (!autoCollapseWhenMouseAway || BottomBannerCanvas == null || !BottomBannerCanvas.enabled)
+            return;
+
+        if (panelRT == null || panel == null || !panel.activeInHierarchy)
+            return;
+
+        if (!TryGetPrimaryPressScreenPoint(out Vector2 screenPoint))
+            return;
+
+        if (!RectTransformUtility.RectangleContainsScreenPoint(panelRT, screenPoint, null))
+            return;
+
+        if (lastPanelToggleFrame == Time.frameCount)
+            return;
+
+        lastPanelToggleFrame = Time.frameCount;
+        panelExpanded = !panelExpanded;
+    }
+
+    static bool TryGetPrimaryPressScreenPoint(out Vector2 screenPoint)
+    {
+        if (Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame)
+        {
+            screenPoint = Mouse.current.position.ReadValue();
+            return true;
+        }
+
+        if (Touchscreen.current != null && Touchscreen.current.primaryTouch.press.wasPressedThisFrame)
+        {
+            screenPoint = Touchscreen.current.primaryTouch.position.ReadValue();
+            return true;
+        }
+
+        screenPoint = Vector2.zero;
+        return false;
+    }
+
     void ApplyTextLineLimit()
     {
         int maxVisibleLines = Mathf.Max(1, maxMessageLines);
@@ -368,7 +410,7 @@ public class BottomBanner : MonoBehaviour
     {
         float expandedHeight = GetExpandedPanelHeight();
         float collapsedHeight = GetCollapsedPanelHeight(expandedHeight);
-        if (!autoCollapseWhenMouseAway || IsMouseInBannerHoverZone(expandedHeight, collapsedHeight))
+        if (!autoCollapseWhenMouseAway || panelExpanded)
             return expandedHeight;
 
         return collapsedHeight;
@@ -391,19 +433,6 @@ public class BottomBanner : MonoBehaviour
     float GetMinimumCollapsedPanelHeight()
     {
         return 20f + GetRowHeight();
-    }
-
-    bool IsMouseInBannerHoverZone(float expandedHeight, float collapsedHeight)
-    {
-        if (Mouse.current == null)
-            return false;
-
-        Vector2 screenPoint = Mouse.current.position.ReadValue();
-        bool isCurrentlyExpanded = currentPanelHeight > collapsedHeight + 0.01f;
-        float hoverHeight = isCurrentlyExpanded ? expandedHeight : collapsedHeight;
-        float hoverHeightScreen = hoverHeight * GetCanvasScaleFactor();
-        float bottomInset = Mathf.Max(0f, panelRT != null ? panelRT.anchoredPosition.y : 0f) * GetCanvasScaleFactor();
-        return screenPoint.y <= bottomInset + hoverHeightScreen;
     }
 
     float GetCanvasScaleFactor()

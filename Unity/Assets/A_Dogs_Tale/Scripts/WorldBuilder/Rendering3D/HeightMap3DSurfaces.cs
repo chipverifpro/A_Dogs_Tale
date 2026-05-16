@@ -14,19 +14,18 @@ public partial class DungeonGenerator
         int z = cell.y;
         int ySteps = cell.height;
         const float floorVisualYOffset = -0.5f;
+        Quaternion tilt = cell.tiltFloor;
+
+        float rollRadians = tilt.eulerAngles.z * Mathf.Deg2Rad;
+        float pitchRadians = tilt.eulerAngles.x * Mathf.Deg2Rad;
+        float cosRoll = Mathf.Cos(rollRadians);
+        float cosPitch = Mathf.Cos(pitchRadians);
+        float scaleX = (Mathf.Abs(cosRoll) > 1e-4f) ? 1f / cosRoll : 1f;
+        float scaleZ = (Mathf.Abs(cosPitch) > 1e-4f) ? 1f / cosPitch : 1f;
 
         if (floorPrefab != null && triangleFloorPrefab != null)
         {
-            Quaternion tilt = cell.tiltFloor;
             Vector3 position = world + new Vector3(0f, ySteps * cfg.unitHeight + floorVisualYOffset, 0f);
-
-            float rollRadians = tilt.eulerAngles.z * Mathf.Deg2Rad;
-            float pitchRadians = tilt.eulerAngles.x * Mathf.Deg2Rad;
-            float cosRoll = Mathf.Cos(rollRadians);
-            float cosPitch = Mathf.Cos(pitchRadians);
-            float scaleX = (Mathf.Abs(cosRoll) > 1e-4f) ? 1f / cosRoll : 1f;
-            float scaleZ = (Mathf.Abs(cosPitch) > 1e-4f) ? 1f / cosPitch : 1f;
-
             Vector3 finalScale = new Vector3(scaleX, 1f, scaleZ);
 
             Color checkerboardColor = (Mathf.Floor(world.x + world.z) % 2 == 0) ? Color.white : Color.black;
@@ -68,16 +67,19 @@ public partial class DungeonGenerator
 
         if (rooms[roomNumber].ceilingHeight > 0f)
         {
-            float ceilingY = rooms[roomNumber].ceilingHeight + ceilingZOffset;
+            float ceilingY = ySteps * cfg.unitHeight + rooms[roomNumber].ceilingHeight + ceilingZOffset;
             Vector3 ceilingPosition = world + new Vector3(0f, ceilingY, 0f);
+            Quaternion ceilingRotation = tilt * Quaternion.Euler(90f, 0f, 0f);
+            Vector3 ceilingScale = new Vector3(scaleX, scaleZ, 1f);
 
             elementStore.AddCeilingTile(
                 archetypeId: "Ceiling",
                 roomIndex: roomNumber,
                 cellCoord: new Vector2Int(x, z),
+                heightSteps: ySteps,
                 worldPos: ceilingPosition,
-                rotation: Quaternion.Euler(90f, 0f, 0f),
-                scale: new Vector3(1f, 1f, 1f),
+                rotation: ceilingRotation,
+                scale: ceilingScale,
                 color: rooms[roomNumber].colorCeiling
             );
         }

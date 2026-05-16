@@ -490,6 +490,7 @@ public class ElementStore : ScriptableObject
             string archetypeId,
             int roomIndex,
             Vector2Int cellCoord,
+            int heightSteps,
             Vector3 worldPos,
             Quaternion rotation,
             Vector3 scale,
@@ -500,7 +501,7 @@ public class ElementStore : ScriptableObject
             layerKind: ElementLayerKind.Ceiling,
             roomIndex: roomIndex,
             cellCoord: cellCoord,
-            heightSteps: 0,
+            heightSteps: heightSteps,
             position: worldPos,
             rotation: rotation,
             scale: scale,
@@ -520,12 +521,11 @@ public class ElementStore : ScriptableObject
             return -1;
         }
 
-        // Raw map Vector3 order is x, height, row.
-        // We ignore floor tilt for now: ceiling is a flat slab at (cell.height + ceilingHeight).
-        Vector3 pos = cell.pos3d_f;
-        pos.y += ceilingHeight;  // vertical offset in map/world-up units
+        // We ignore floor tilt for now: ceiling is a flat slab above the cell's ground height.
+        Vector3 pos = GetCellGroundWorldPosition(cell);
+        pos.y += ceilingHeight;
 
-        int heightSteps = Mathf.RoundToInt(pos.y);
+        int heightSteps = cell.height;
 
         var inst = new ElementInstanceData(
             archetypeId: "PF_Ceiling",           // must match your archetype / warehouse ID
@@ -587,7 +587,7 @@ public class ElementStore : ScriptableObject
     {
         Quaternion quadRotate = Quaternion.Euler(-90f, 0f, 0f);
         Vector3 airFogOffset = new(0f, 0.6f, 0f);
-        Vector3 cellWorldPosition = GetScentCellWorldPosition(cell);
+        Vector3 cellWorldPosition = GetCellGroundWorldPosition(cell);
         Vector3 overlapFuzzyScale = new(1.95f, 2f, 1.95f);
         Vector3 jitter_offset = new(0f, 0f, 0f);
 
@@ -630,7 +630,7 @@ public class ElementStore : ScriptableObject
     {
         Quaternion quadRotate = Quaternion.Euler(-90f, 0f, 0f);
         Vector3 groundFogOffset = new(0f, 0.2f, 0f);
-        Vector3 cellWorldPosition = GetScentCellWorldPosition(cell);
+        Vector3 cellWorldPosition = GetCellGroundWorldPosition(cell);
         Vector3 overlapFuzzyScale = new(1.95f, 2f, 1.95f);
         Vector3 jitter_offset = new(0f, 0f, 0f);
 
@@ -662,7 +662,7 @@ public class ElementStore : ScriptableObject
         return GOindex;
     }
 
-    private static Vector3 GetScentCellWorldPosition(Cell cell)
+    private static Vector3 GetCellGroundWorldPosition(Cell cell)
     {
         if (cell == null)
             return Vector3.zero;

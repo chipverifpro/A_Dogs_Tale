@@ -30,6 +30,7 @@ public class ScentGUI : MonoBehaviour
     [SerializeField] private string inventoryActionSpriteResourcePath = "Sprites/InventoryActionsSheetA";
     [SerializeField] private string digHoleSpriteResourcePath = "Sprites/DigHoleSpriteA";
     [SerializeField] private string pulldownFrameResourcePath = "Sprites/PulldownFrame";
+    [SerializeField] private string pulldownTabResourcePath = "Sprites/PulldownTab";
     [SerializeField] private float noseButtonSize = 176f;
     [SerializeField] private float noseButtonMargin = 24f;
     [SerializeField] private float modeButtonSpacing = 12f;
@@ -37,6 +38,10 @@ public class ScentGUI : MonoBehaviour
     [SerializeField] private Vector2 topControlsInset = new Vector2(162f, 52f);
     [SerializeField] private Vector2 pulldownFrameSize = new Vector2(1620f, 341f);
     [SerializeField] private Vector2 pulldownFrameOffset = new Vector2(0f, 0f);
+    [SerializeField] private Vector2 pulldownTabSize = new Vector2(428f, 98f);
+    [SerializeField] private Vector2 pulldownTabOffset = new Vector2(0f, 0f);
+    [SerializeField] private Vector2 pulldownRetractButtonSize = new Vector2(428f, 98f);
+    [SerializeField] private Vector2 pulldownRetractButtonOffset = new Vector2(0f, 0f);
     [SerializeField] private float modePanelIconSize = 128f;
     [SerializeField] private float dropdownWidth = 320f;
     [SerializeField] private float dropdownMaxHeight = 420f;
@@ -46,7 +51,6 @@ public class ScentGUI : MonoBehaviour
     [SerializeField] private int emoteGridColumns = 4;
     [SerializeField] private int uiSortOrder = 5100;
     [SerializeField] private bool autoHideTopControls = true;
-    [SerializeField] private float topControlsRevealEdgePixels = 10f;
     [SerializeField] private float topControlsSlideDuration = 0.18f;
     [SerializeField] private float topControlsHiddenTopPadding = 8f;
     [SerializeField] private float tooltipFontSize = 22f;
@@ -73,6 +77,9 @@ public class ScentGUI : MonoBehaviour
     private Canvas overlayCanvas;
     private RectTransform pulldownFrameRect;
     private Image pulldownFrameImage;
+    private RectTransform pulldownTabRect;
+    private Image pulldownTabImage;
+    private RectTransform pulldownRetractButtonRect;
     private RectTransform noseButtonRect;
     private Image noseButtonImage;
     private Image noseIconImage;
@@ -112,6 +119,7 @@ public class ScentGUI : MonoBehaviour
     private DogEmojiEntry? selectedEmoteEntry;
     private float topControlsVisibility;
     private float topControlsSlideVelocity;
+    private bool pulldownOpenedByTab;
     private bool uiBuilt;
     private int lastSniffToggleFrame = -1;
 
@@ -367,6 +375,7 @@ public class ScentGUI : MonoBehaviour
         ReparentExistingUiElement(decisionModeControlsTransform, canvasObject.transform, "DecisionModeTitle");
 
         BuildPulldownFrame(canvasObject.transform);
+        BuildPulldownTab(canvasObject.transform);
         BuildNoseButton(scentControlsTransform, canvasObject.transform);
         BuildModeButton(decisionModeControlsTransform, canvasObject.transform);
         BuildSpeedButton(speedControlsTransform, canvasObject.transform);
@@ -382,6 +391,7 @@ public class ScentGUI : MonoBehaviour
         if (!autoHideTopControls)
             topControlsVisibility = 1f;
         ApplyTopControlsSlidePosition();
+        UpdatePulldownTabVisibility();
     }
 
     private Transform FindExistingScentTargetCanvas()
@@ -493,9 +503,9 @@ public class ScentGUI : MonoBehaviour
         frameObject.transform.SetAsFirstSibling();
 
         pulldownFrameRect = GetOrAddComponent<RectTransform>(frameObject);
-        pulldownFrameRect.anchorMin = new Vector2(1f, 1f);
-        pulldownFrameRect.anchorMax = new Vector2(1f, 1f);
-        pulldownFrameRect.pivot = new Vector2(1f, 1f);
+        pulldownFrameRect.anchorMin = new Vector2(0.5f, 1f);
+        pulldownFrameRect.anchorMax = new Vector2(0.5f, 1f);
+        pulldownFrameRect.pivot = new Vector2(0.5f, 1f);
         pulldownFrameRect.anchoredPosition = pulldownFrameOffset;
         pulldownFrameRect.sizeDelta = pulldownFrameSize;
 
@@ -504,6 +514,86 @@ public class ScentGUI : MonoBehaviour
         pulldownFrameImage.color = Color.white;
         pulldownFrameImage.preserveAspect = false;
         pulldownFrameImage.raycastTarget = false;
+
+        BuildPulldownRetractButton(frameObject.transform);
+    }
+
+    private void BuildPulldownRetractButton(Transform frameTransform)
+    {
+        Transform existingButton = frameTransform.Find("PulldownRetractButton");
+        GameObject buttonObject;
+        if (existingButton == null)
+        {
+            buttonObject = new GameObject(
+                "PulldownRetractButton",
+                typeof(RectTransform),
+                typeof(Image),
+                typeof(Button));
+            buttonObject.transform.SetParent(frameTransform, false);
+        }
+        else
+        {
+            buttonObject = existingButton.gameObject;
+        }
+
+        pulldownRetractButtonRect = GetOrAddComponent<RectTransform>(buttonObject);
+        pulldownRetractButtonRect.anchorMin = new Vector2(0.5f, 0f);
+        pulldownRetractButtonRect.anchorMax = new Vector2(0.5f, 0f);
+        pulldownRetractButtonRect.pivot = new Vector2(0.5f, 0f);
+        pulldownRetractButtonRect.anchoredPosition = pulldownRetractButtonOffset;
+        pulldownRetractButtonRect.sizeDelta = pulldownRetractButtonSize;
+
+        Image buttonImage = GetOrAddComponent<Image>(buttonObject);
+        buttonImage.color = new Color(1f, 1f, 1f, 0f);
+        buttonImage.raycastTarget = true;
+
+        Button button = GetOrAddComponent<Button>(buttonObject);
+        button.targetGraphic = buttonImage;
+        button.onClick.RemoveListener(CollapseTopControlsToTab);
+        button.onClick.AddListener(CollapseTopControlsToTab);
+
+        ConfigureTooltip(buttonObject, () => "Hide Controls");
+    }
+
+    private void BuildPulldownTab(Transform canvasTransform)
+    {
+        Transform existingTab = canvasTransform.Find("PulldownTab");
+        GameObject tabObject;
+        if (existingTab == null)
+        {
+            tabObject = new GameObject(
+                "PulldownTab",
+                typeof(RectTransform),
+                typeof(Image),
+                typeof(Button));
+            tabObject.transform.SetParent(canvasTransform, false);
+        }
+        else
+        {
+            tabObject = existingTab.gameObject;
+        }
+
+        tabObject.transform.SetAsLastSibling();
+
+        pulldownTabRect = GetOrAddComponent<RectTransform>(tabObject);
+        pulldownTabRect.anchorMin = new Vector2(1f, 1f);
+        pulldownTabRect.anchorMax = new Vector2(1f, 1f);
+        pulldownTabRect.pivot = new Vector2(1f, 1f);
+        pulldownTabRect.anchoredPosition = pulldownTabOffset;
+        pulldownTabRect.sizeDelta = pulldownTabSize;
+
+        pulldownTabImage = GetOrAddComponent<Image>(tabObject);
+        pulldownTabImage.sprite = GetPulldownTabSprite();
+        pulldownTabImage.color = Color.white;
+        pulldownTabImage.preserveAspect = true;
+        pulldownTabImage.raycastTarget = true;
+
+        Button button = GetOrAddComponent<Button>(tabObject);
+        button.targetGraphic = pulldownTabImage;
+        button.onClick.RemoveListener(ExpandTopControlsFromTab);
+        button.onClick.AddListener(ExpandTopControlsFromTab);
+
+        ConfigureTooltip(tabObject, () => "Show Controls");
     }
 
     private Vector2 GetTopControlPosition(int slotFromRight)
@@ -1063,9 +1153,8 @@ public class ScentGUI : MonoBehaviour
         if (!uiBuilt)
             return;
 
-        float targetVisibility = autoHideTopControls && !ShouldShowTopControls()
-            ? 0f
-            : 1f;
+        bool targetControlsVisible = !autoHideTopControls || pulldownOpenedByTab || IsAnyTopPanelOpen();
+        float targetVisibility = targetControlsVisible ? 1f : 0f;
 
         if (!autoHideTopControls)
         {
@@ -1090,29 +1179,10 @@ public class ScentGUI : MonoBehaviour
         }
 
         ApplyTopControlsSlidePosition();
+        UpdatePulldownTabVisibility(targetControlsVisible);
 
         if (targetVisibility <= 0f && topControlsVisibility < 0.05f)
             HideTooltip();
-    }
-
-    private bool ShouldShowTopControls()
-    {
-        if (IsAnyTopPanelOpen())
-            return true;
-
-        if (Mouse.current == null)
-            return false;
-
-        Vector2 mousePosition = Mouse.current.position.ReadValue();
-        if (mousePosition.y >= Screen.height - topControlsRevealEdgePixels)
-            return true;
-
-        if (topControlsVisibility <= 0.01f)
-            return false;
-
-        float canvasScale = Screen.height > 0 ? Screen.height / 1080f : 1f;
-        float visibleButtonsBottomY = Screen.height - ((topControlsInset.y + topControlButtonSize) * canvasScale);
-        return mousePosition.y >= visibleButtonsBottomY;
     }
 
     private bool IsAnyTopPanelOpen()
@@ -1138,6 +1208,45 @@ public class ScentGUI : MonoBehaviour
         ApplyTopControlY(emoteButtonRect, y);
         ApplyTopControlY(inventoryButtonRect, y);
         ApplyTopControlY(digButtonRect, y);
+    }
+
+    private void ExpandTopControlsFromTab()
+    {
+        pulldownOpenedByTab = true;
+        HideTooltip();
+
+        if (pulldownTabRect != null)
+            pulldownTabRect.gameObject.SetActive(false);
+    }
+
+    private void CollapseTopControlsToTab()
+    {
+        pulldownOpenedByTab = false;
+        CloseDropdown();
+        CloseModePanel();
+        CloseSpeedPanel();
+        CloseEmoteDropdown();
+        HideTooltip();
+    }
+
+    private void UpdatePulldownTabVisibility()
+    {
+        bool targetControlsVisible = !autoHideTopControls || pulldownOpenedByTab || IsAnyTopPanelOpen();
+        UpdatePulldownTabVisibility(targetControlsVisible);
+    }
+
+    private void UpdatePulldownTabVisibility(bool targetControlsVisible)
+    {
+        if (pulldownTabRect == null)
+            return;
+
+        bool shouldShowTab = autoHideTopControls &&
+                             !pulldownOpenedByTab &&
+                             !targetControlsVisible &&
+                             topControlsVisibility <= 0.05f;
+
+        if (pulldownTabRect.gameObject.activeSelf != shouldShowTab)
+            pulldownTabRect.gameObject.SetActive(shouldShowTab);
     }
 
     private static void ApplyTopControlY(RectTransform rectTransform, float y)
@@ -2637,6 +2746,18 @@ public class ScentGUI : MonoBehaviour
         Sprite sprite = Resources.Load<Sprite>(pulldownFrameResourcePath);
         if (sprite == null)
             Debug.LogWarning($"ScentGUI: could not load pulldown frame sprite at Resources/{pulldownFrameResourcePath}.", this);
+
+        return sprite;
+    }
+
+    private Sprite GetPulldownTabSprite()
+    {
+        if (string.IsNullOrWhiteSpace(pulldownTabResourcePath))
+            return null;
+
+        Sprite sprite = Resources.Load<Sprite>(pulldownTabResourcePath);
+        if (sprite == null)
+            Debug.LogWarning($"ScentGUI: could not load pulldown tab sprite at Resources/{pulldownTabResourcePath}.", this);
 
         return sprite;
     }

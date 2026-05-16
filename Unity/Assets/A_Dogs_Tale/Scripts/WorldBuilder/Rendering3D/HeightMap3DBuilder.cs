@@ -25,7 +25,7 @@ public partial class DungeonGenerator : MonoBehaviour
     [Header("Ceiling Appearance")]
 
     [Tooltip("Tiny extra z-offset in grid units if you want ceilings slightly above nominal height.")]
-    public float ceilingZOffset = 20f;
+    public float ceilingZOffset = 0f;
 
     [Tooltip("Inset orthogonal wall segments slightly toward the room interior to avoid z-fighting with adjacent-room walls.")]
     [SerializeField] private float wallInsetIntoRoom = 0.01f;
