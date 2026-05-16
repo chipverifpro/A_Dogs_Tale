@@ -2,6 +2,7 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
+using Wilberforce;
 
 /// <summary>
 /// Controls "sniff mode" visual treatment:
@@ -12,9 +13,19 @@ using UnityEngine.Rendering.Universal;
 /// </summary>
 public class SniffModeVisuals : MonoBehaviour
 {
+    public enum ColorblindVisionType
+    {
+        NormalVision = 0,
+        Protanopia = 1,
+        Deuteranopia = 2,
+        Tritanopia = 3
+    }
+
     [Header("References")]
     [Tooltip("Global Volume with ColorAdjustments + Vignette (+ optional DepthOfField) overrides.")]
     public Volume sniffVolume;
+    [Tooltip("Optional Colorblind image effect. If blank, sniff mode will find or add it on the main camera.")]
+    public Colorblind colorblindEffect;
 
     [Header("Transition")]
     public float transitionDuration = 0.35f;
@@ -22,7 +33,7 @@ public class SniffModeVisuals : MonoBehaviour
     // ----- Color adjustments targets -----
     [Header("Color Adjustments (Sniff Mode Targets)")]
     [Tooltip("Saturation in sniff mode (-100 = full grayscale).")]
-    [Range(-100f, 0f)]
+    [Range(0f, 0f)]
     public float sniffSaturation = -80f;
 
     [Tooltip("Post exposure in sniff mode (negative = darker).")]
@@ -31,7 +42,14 @@ public class SniffModeVisuals : MonoBehaviour
 
     [Tooltip("Hue shift in sniff mode (degrees).")]
     [Range(-180f, 180f)]
-    public float sniffHueShift = 20f;
+    public float sniffHueShift = 0f;
+    [Tooltip("Keep off when using the Colorblind effect for dog vision.")]
+    public bool applySniffHueShift = false;
+
+    [Header("Colorblind Vision")]
+    [Tooltip("Use the Wilberforce Colorblind camera effect while sniff mode is active.")]
+    public bool useColorblindEffect = true;
+    public ColorblindVisionType sniffColorblindType = ColorblindVisionType.Deuteranopia;
 
     [Tooltip("Color filter tint for sniff mode (e.g. purplish grey).")]
     public Color sniffColorFilter = new Color(0.8f, 0.7f, 1.0f, 1f);
@@ -89,6 +107,8 @@ public class SniffModeVisuals : MonoBehaviour
 
     private Coroutine transitionRoutine;
     private bool isInSniffMode = false;
+    private bool baseColorblindEnabled;
+    private int baseColorblindType;
 
     void Awake()
     {
@@ -132,6 +152,13 @@ public class SniffModeVisuals : MonoBehaviour
             baseAperture      = dof.aperture.value;
             baseFocalLength   = dof.focalLength.value;
         }
+
+        EnsureColorblindEffect();
+        if (colorblindEffect != null)
+        {
+            baseColorblindEnabled = colorblindEffect.enabled;
+            baseColorblindType = colorblindEffect.Type;
+        }
     }
 
     /// <summary>
@@ -143,6 +170,7 @@ public class SniffModeVisuals : MonoBehaviour
             return;
 
         isInSniffMode = enabled;
+        SetColorblindMode(enabled);
 
         // Apply global shader property for fog boost
         //if (sniffFogBoost != 1.0)
@@ -181,7 +209,7 @@ public class SniffModeVisuals : MonoBehaviour
         // Target values
         float targetSat   = enabled ? sniffSaturation   : baseSaturation;
         float targetExp   = enabled ? sniffPostExposure : basePostExposure;
-        float targetHue   = enabled ? sniffHueShift     : baseHueShift;
+        float targetHue   = enabled && applySniffHueShift ? sniffHueShift : baseHueShift;
         Color targetColor = enabled ? sniffColorFilter  : baseColorFilter;
 
         float startVigInt = vignette != null ? vignette.intensity.value  : 0f;
@@ -254,5 +282,47 @@ public class SniffModeVisuals : MonoBehaviour
         }
 
         transitionRoutine = null;
+    }
+
+    private void SetColorblindMode(bool enabled)
+    {
+        if (!useColorblindEffect)
+            return;
+
+        EnsureColorblindEffect();
+        if (colorblindEffect == null)
+        {
+            Debug.LogWarning("SniffModeVisuals: Colorblind effect is enabled for sniff mode, but no Camera could host the Colorblind component.", this);
+            return;
+        }
+
+        if (enabled)
+        {
+            colorblindEffect.Type = (int)sniffColorblindType;
+            colorblindEffect.enabled = true;
+        }
+        else
+        {
+            colorblindEffect.Type = baseColorblindType;
+            colorblindEffect.enabled = baseColorblindEnabled;
+        }
+    }
+
+    private void EnsureColorblindEffect()
+    {
+        if (colorblindEffect != null)
+            return;
+
+        colorblindEffect = FindFirstObjectByType<Colorblind>(FindObjectsInactive.Include);
+        if (colorblindEffect != null)
+            return;
+
+        Camera mainCamera = Camera.main;
+        if (mainCamera != null)
+        {
+            colorblindEffect = mainCamera.gameObject.AddComponent<Colorblind>();
+            colorblindEffect.Type = (int)ColorblindVisionType.NormalVision;
+            colorblindEffect.enabled = false;
+        }
     }
 }

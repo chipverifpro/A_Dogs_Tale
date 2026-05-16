@@ -586,7 +586,7 @@ public class ElementStore : ScriptableObject
     public int AddScentAir(Cell cell, Color color)
     {
         Quaternion quadRotate = Quaternion.Euler(-90f, 0f, 0f);
-        Vector3 airFogOffset = new(0f, 1.1f, 0f);
+        Vector3 airFogOffset = new(0f, 0.6f, 0f);
         Vector3 overlapFuzzyScale = new(1.95f, 2f, 1.95f);
         Vector3 jitter_offset = new(0f, 0f, 0f);
 
@@ -628,7 +628,7 @@ public class ElementStore : ScriptableObject
     public int AddScentGround(Cell cell, Color color)
     {
         Quaternion quadRotate = Quaternion.Euler(-90f, 0f, 0f);
-        Vector3 groundFogOffset = new(0f, 0.7f, 0f);
+        Vector3 groundFogOffset = new(0f, 0.2f, 0f);
         Vector3 overlapFuzzyScale = new(1.95f, 2f, 1.95f);
         Vector3 jitter_offset = new(0f, 0f, 0f);
 

@@ -69,6 +69,7 @@ public class ScentAirGround : MonoBehaviour
     public bool enableScentDiagnostics = true;
     public int scentDiagnosticsEveryNFrames = 500;
     public bool logScentReclamation = true;
+    [SerializeField] private bool logScentOverlayDiagnostics = true;
 
     // Minimum change before we bother updating visuals.
     // 1 / 256 ~ alpha resolution in 8-bit channel.
@@ -88,7 +89,8 @@ public class ScentAirGround : MonoBehaviour
     private bool anyScentGroundChanged = false;
     private bool anyScentAirCreated = false;
     private bool anyScentGroundCreated = false;
-    private bool scentCamActive = false; // tracks whether scent camera should be on or off
+    [SerializeField] private bool scentCamActive = false; // tracks whether scent camera should be on or off
+    public bool IsScentCameraActive => scentCamActive;
 
 
     private Coroutine _simulationCoroutine;     // keep pointer in order to stop.
@@ -1176,8 +1178,9 @@ public class ScentAirGround : MonoBehaviour
         if ((scentSource == null) || (scentSource.agentId == -1))
         {
             currentAgentId = -1;    // this means none.
-            // Next Update(), the scent camera will turn off'
-            // so nothing more to do here.
+            scentCamActive = false;
+            SetScentCameraEnabled(false);
+            ApplyScentUpdates();
             return; 
         }
         else
@@ -1191,8 +1194,35 @@ public class ScentAirGround : MonoBehaviour
             //groundScentVisible = true;
             //airScentVisible = true;
         }
+
+        scentCamActive = groundScentVisible || airScentVisible;
+        SetScentCameraEnabled(scentCamActive);
+
         // 4) Force at least one visualization pass so new fog appears immediately
         ForceFullVisualizationRefresh();
+    }
+
+    private void SetScentCameraEnabled(bool enabled)
+    {
+        if (dir == null || dir.scentCam == null)
+        {
+            if (logScentOverlayDiagnostics)
+                Debug.LogWarning($"[ScentAirGround] Could not set FogCamera enabled={enabled}; dir or dir.scentCam is null.", this);
+
+            return;
+        }
+
+        bool wasEnabled = dir.scentCam.enabled;
+        dir.scentCam.enabled = enabled;
+
+        if (logScentOverlayDiagnostics)
+        {
+            Debug.Log(
+                $"[ScentAirGround] FogCamera '{dir.scentCam.name}' enabled {wasEnabled}->{enabled}; " +
+                $"currentAgentId={currentAgentId}; airVisible={airScentVisible}; groundVisible={groundScentVisible}; " +
+                $"scentCamActive={scentCamActive}; overlay=({BuildOverlayDiagnosticSummary()})",
+                this);
+        }
     }
 
     private void ForceFullVisualizationRefresh()
@@ -1204,7 +1234,47 @@ public class ScentAirGround : MonoBehaviour
         // If you want immediate, you can call:
         //ScentPhysicsStepOnce(0.0f);
         VisualizeCurrentScents();
+        ApplyScentUpdates();
+
+        if (logScentOverlayDiagnostics)
+            Debug.Log($"[ScentAirGround] Overlay refresh: {BuildOverlayDiagnosticSummary()}", this);
     }    
+
+    private string BuildOverlayDiagnosticSummary()
+    {
+        int matchingCells = 0;
+        float maxAir = 0f;
+        float maxGround = 0f;
+
+        if (cellsContainingScents != null)
+        {
+            for (int i = 0; i < cellsContainingScents.Count; i++)
+            {
+                Cell cell = cellsContainingScents[i];
+                if (cell == null || cell.scents == null)
+                    continue;
+
+                int scentIndex = FindAgentIdScentIndex(cell, currentAgentId, createIfNeeded: false);
+                if (scentIndex < 0)
+                    continue;
+
+                ScentInCell scent = cell.scents[scentIndex];
+                if (scent == null)
+                    continue;
+
+                if (scent.airIntensity <= 0f && scent.groundIntensity <= 0f)
+                    continue;
+
+                matchingCells++;
+                maxAir = Mathf.Max(maxAir, scent.airIntensity);
+                maxGround = Mathf.Max(maxGround, scent.groundIntensity);
+            }
+        }
+
+        string airObjects = DescribeObjectLayerStats(ElementLayerKind.ScentAir);
+        string groundObjects = DescribeObjectLayerStats(ElementLayerKind.ScentGround);
+        return $"currentAgentId={currentAgentId}; matchingCells={matchingCells}; maxAir={maxAir:0.###}; maxGround={maxGround:0.###}; airObjects=({airObjects}); groundObjects=({groundObjects})";
+    }
 
     /// <summary>
     /// Collect scents present in the given cell, sorted strongest->weakest.

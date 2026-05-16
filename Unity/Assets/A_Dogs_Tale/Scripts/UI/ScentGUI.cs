@@ -59,6 +59,8 @@ public class ScentGUI : MonoBehaviour
     [SerializeField] private Color dropdownSelectedColor = new Color(0.88f, 0.79f, 0.55f, 0.95f);
     [SerializeField] private Color dropdownTextColor = new Color(0.19f, 0.15f, 0.08f, 1f);
     [SerializeField] private Color tooltipBackgroundColor = new Color(0.97f, 0.96f, 0.91f, 0.96f);
+    [SerializeField] private bool logSniffToggleDiagnostics = true;
+    [SerializeField] private string lastSniffDiagnostic = string.Empty;
 
     private readonly List<GameObject> dropdownRows = new List<GameObject>();
     private readonly List<GameObject> emoteDropdownTiles = new List<GameObject>();
@@ -66,7 +68,7 @@ public class ScentGUI : MonoBehaviour
     private readonly List<Image> speedButtonBackgrounds = new List<Image>();
 
     private InputAction sniffAction;
-    private bool isSniffModeActive;
+    [SerializeField] private bool isSniffModeActive;
 
     private Canvas overlayCanvas;
     private RectTransform pulldownFrameRect;
@@ -111,6 +113,7 @@ public class ScentGUI : MonoBehaviour
     private float topControlsVisibility;
     private float topControlsSlideVelocity;
     private bool uiBuilt;
+    private int lastSniffToggleFrame = -1;
 
     private float TopControlStride => topControlButtonSize + modeButtonSpacing;
 
@@ -133,16 +136,13 @@ public class ScentGUI : MonoBehaviour
 
     private void Awake()
     {
-        sniffAction = new InputAction(
-            name: "Sniff",
-            type: InputActionType.Button,
-            binding: "<Keyboard>/f"
-        );
+        EnsureSniffAction();
     }
 
     private void Start()
     {
         EnsureDir();
+        EnsureSniffVisuals();
         BuildRuntimeUIIfNeeded();
         RefreshNoseButtonSelectionState();
     }
@@ -155,6 +155,9 @@ public class ScentGUI : MonoBehaviour
         RefreshEmoteButtonState();
         UpdateTopControlsAutoHide();
 
+        if (Keyboard.current != null && Keyboard.current.fKey.wasPressedThisFrame)
+            ToggleSniffMode("Keyboard.fKey");
+
         if (Mouse.current == null || !Mouse.current.leftButton.wasPressedThisFrame)
             return;
 
@@ -163,26 +166,60 @@ public class ScentGUI : MonoBehaviour
 
     private void OnEnable()
     {
-        sniffAction.Enable();
+        EnsureSniffAction();
         sniffAction.performed += OnSniffToggle;
+        sniffAction.Enable();
     }
 
     private void OnDisable()
     {
+        if (sniffAction == null)
+            return;
+
         sniffAction.performed -= OnSniffToggle;
         sniffAction.Disable();
     }
 
+    private void EnsureSniffAction()
+    {
+        if (sniffAction != null)
+            return;
+
+        sniffAction = new InputAction(
+            name: "Sniff",
+            type: InputActionType.Button,
+            binding: "<Keyboard>/f"
+        );
+    }
+
     private void OnSniffToggle(InputAction.CallbackContext ctx)
     {
+        ToggleSniffMode("InputAction");
+    }
+
+    private void ToggleSniffMode(string triggerSource)
+    {
+        if (lastSniffToggleFrame == Time.frameCount)
+            return;
+
+        lastSniffToggleFrame = Time.frameCount;
         isSniffModeActive = !isSniffModeActive;
 
+        EnsureSniffVisuals();
+
         if (sniffVisuals != null)
+        {
             sniffVisuals.SetSniffMode(isSniffModeActive);
+        }
+        else if (logSniffToggleDiagnostics)
+        {
+            Debug.LogWarning("ScentGUI: sniffVisuals is not assigned and no SniffModeVisuals component was found.", this);
+        }
 
         if (!EnsureDir() || dir.scentRegistry == null)
         {
             Debug.LogError("ScentGUI: scentRegistry is null!");
+            LogSniffDiagnostic(triggerSource, "missing Dir or scentRegistry");
             return;
         }
 
@@ -195,6 +232,58 @@ public class ScentGUI : MonoBehaviour
             dir.scentRegistry.DeactivateScentOverlay();
             CloseDropdown();
         }
+
+        LogSniffDiagnostic(triggerSource, isSniffModeActive ? "activated" : "deactivated");
+    }
+
+    private void LogSniffDiagnostic(string triggerSource, string result)
+    {
+        if (dir == null)
+        {
+            lastSniffDiagnostic = $"Sniff {triggerSource}: {result}; Dir=null";
+        }
+        else
+        {
+            ScentAirGround scentSystem = dir.scents != null ? dir.scents : dir.scentAirGround;
+            Camera scentCamera = dir.scentCam;
+            ScentSource selected = dir.scentRegistry != null ? dir.scentRegistry.SelectedTargetScent : null;
+
+            string selectedDescription = DescribeScentSource(selected);
+            string visualDescription = sniffVisuals != null ? $"sniffVisuals={sniffVisuals.name}" : "sniffVisuals=null";
+            string cameraDescription = scentCamera != null
+                ? $"{scentCamera.name}.enabled={scentCamera.enabled}"
+                : "FogCamera=null";
+            string scentSystemDescription = scentSystem != null
+                ? $"currentAgentId={scentSystem.currentAgentId}, active={scentSystem.IsScentCameraActive}"
+                : "ScentAirGround=null";
+
+            lastSniffDiagnostic =
+                $"Sniff {triggerSource}: {result}; mode={isSniffModeActive}; selected={selectedDescription}; {visualDescription}; {cameraDescription}; {scentSystemDescription}";
+        }
+
+        if (logSniffToggleDiagnostics)
+            Debug.Log($"[ScentGUI] {lastSniffDiagnostic}", this);
+    }
+
+    private static string DescribeScentSource(ScentSource scentSource)
+    {
+        if (scentSource == null)
+            return "null";
+
+        string scentName = string.IsNullOrWhiteSpace(scentSource.scentName) ? scentSource.category.ToString() : scentSource.scentName;
+        return $"{scentName}(agentId={scentSource.agentId})";
+    }
+
+    private void EnsureSniffVisuals()
+    {
+        if (sniffVisuals != null)
+            return;
+
+        sniffVisuals = GetComponent<SniffModeVisuals>();
+        if (sniffVisuals != null)
+            return;
+
+        sniffVisuals = FindFirstObjectByType<SniffModeVisuals>(FindObjectsInactive.Include);
     }
 
     // Called by other systems (unchanged)
