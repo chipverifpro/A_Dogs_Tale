@@ -402,25 +402,11 @@ namespace DogGame.Modules
                 return worldPosition;
 
             Vector3 mapPosition = worldObject.WorldToMapPosition(worldPosition);
-            int x = Mathf.FloorToInt(mapPosition.x);
-            int y = Mathf.FloorToInt(mapPosition.z);
-            int heightSteps = GetNearestHeightStep(mapPosition.y);
-
-            Cell floorCell = dir.gen.GetCellFromHf(x, y, heightSteps, threshold: 50);
-            if (floorCell == null)
+            if (!dir.gen.TrySampleFloorAtMapPosition(mapPosition, threshold: 50, out float floorMapY, out _, out _))
                 return worldPosition;
 
-            float unitHeight = dir.gen.cfg != null ? Mathf.Max(0.0001f, dir.gen.cfg.unitHeight) : 1f;
-            mapPosition.y = floorCell.height * unitHeight;
+            mapPosition.y = floorMapY;
             return worldObject.MapToWorldPosition(mapPosition);
-        }
-
-        private int GetNearestHeightStep(float mapHeight)
-        {
-            float unitHeight = dir != null && dir.gen != null && dir.gen.cfg != null
-                ? Mathf.Max(0.0001f, dir.gen.cfg.unitHeight)
-                : 1f;
-            return Mathf.RoundToInt(mapHeight / unitHeight);
         }
 
         private bool IsAgentMotionOwner()

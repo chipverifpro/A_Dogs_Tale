@@ -43,4 +43,66 @@ public partial class DungeonGenerator
         }
         return null;
     }
+
+    public bool TrySampleFloorAtMapPosition(
+        Vector3 mapPosition,
+        int threshold,
+        out float floorMapY,
+        out Vector3 floorMapNormal,
+        out Cell floorCell)
+    {
+        floorMapY = 0f;
+        floorMapNormal = Vector3.up;
+        floorCell = null;
+
+        if (!buildComplete || hf == null)
+            return false;
+
+        float unitHeight = cfg != null ? Mathf.Max(0.0001f, cfg.unitHeight) : 1f;
+        int x = Mathf.FloorToInt(mapPosition.x);
+        int y = Mathf.FloorToInt(mapPosition.z);
+        int heightSteps = Mathf.RoundToInt(mapPosition.y / unitHeight);
+
+        floorCell = GetCellFromHf(x, y, heightSteps, threshold);
+        if (floorCell == null)
+            return false;
+
+        return TrySampleFloorAtMapPosition(mapPosition, floorCell, out floorMapY, out floorMapNormal);
+    }
+
+    public bool TrySampleFloorAtMapPosition(
+        Vector3 mapPosition,
+        Cell floorCell,
+        out float floorMapY,
+        out Vector3 floorMapNormal)
+    {
+        floorMapY = 0f;
+        floorMapNormal = Vector3.up;
+
+        if (floorCell == null)
+            return false;
+
+        float unitHeight = cfg != null ? Mathf.Max(0.0001f, cfg.unitHeight) : 1f;
+        floorMapNormal = (floorCell.tiltFloor * Vector3.up).normalized;
+        if (floorMapNormal == Vector3.zero || float.IsNaN(floorMapNormal.x) || float.IsNaN(floorMapNormal.y) || float.IsNaN(floorMapNormal.z))
+            floorMapNormal = Vector3.up;
+
+        Vector3 planePoint = new Vector3(
+            floorCell.x + 0.5f,
+            floorCell.height * unitHeight,
+            floorCell.y + 0.5f);
+
+        float normalY = floorMapNormal.y;
+        if (Mathf.Abs(normalY) < 1e-5f)
+        {
+            floorMapY = planePoint.y;
+            return true;
+        }
+
+        floorMapY = planePoint.y - (
+            floorMapNormal.x * (mapPosition.x - planePoint.x) +
+            floorMapNormal.z * (mapPosition.z - planePoint.z)) / normalY;
+
+        return !float.IsNaN(floorMapY) && !float.IsInfinity(floorMapY);
+    }
 }

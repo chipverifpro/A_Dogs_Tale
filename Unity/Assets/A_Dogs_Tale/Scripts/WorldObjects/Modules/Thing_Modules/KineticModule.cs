@@ -329,11 +329,8 @@ namespace DogGame.Modules
             if (TryGetPhysicsGround(position, deltaTime, out groundHeight, out groundNormal))
                 return true;
 
-            if (useDungeonHeightFallback && TryGetDungeonGround(position, out groundHeight))
-            {
-                groundNormal = Vector3.up;
+            if (useDungeonHeightFallback && TryGetDungeonGround(position, out groundHeight, out groundNormal))
                 return true;
-            }
 
             groundHeight = 0f;
             groundNormal = Vector3.up;
@@ -365,25 +362,22 @@ namespace DogGame.Modules
             return groundNormal.y > 0.35f;
         }
 
-        private bool TryGetDungeonGround(Vector3 position, out float groundHeight)
+        private bool TryGetDungeonGround(Vector3 position, out float groundHeight, out Vector3 groundNormal)
         {
             groundHeight = 0f;
+            groundNormal = Vector3.up;
 
             if (dir == null || dir.gen == null || !dir.gen.buildComplete || dir.gen.hf == null)
                 return false;
 
             Vector3 mapPosition = worldObject != null ? worldObject.WorldToMapPosition(position) : position;
-            int x = Mathf.FloorToInt(mapPosition.x);
-            int y = Mathf.FloorToInt(mapPosition.z);
-            float unitHeight = dir.cfg != null ? Mathf.Max(0.0001f, dir.cfg.unitHeight) : 1f;
-            int heightSteps = Mathf.RoundToInt(mapPosition.y / unitHeight);
-
-            if (!dir.gen.hf.TryQueryAt(x, y, heightSteps, heightfieldSearchSteps, out var match))
+            if (!dir.gen.TrySampleFloorAtMapPosition(mapPosition, heightfieldSearchSteps, out float groundMapY, out Vector3 groundMapNormal, out _))
                 return false;
 
-            Vector3 groundMap = new(mapPosition.x, match.z * unitHeight, mapPosition.z);
+            Vector3 groundMap = new(mapPosition.x, groundMapY, mapPosition.z);
             Vector3 groundWorld = worldObject != null ? worldObject.MapToWorldPosition(groundMap) : groundMap;
             groundHeight = groundWorld.y;
+            groundNormal = groundMapNormal;
             return true;
         }
 
