@@ -172235,7 +172235,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::BottomBanner
   backgroundColor: {r: 0.9, g: 0.9, b: 0.9, a: 0.75}
   textColor: {r: 0.13, g: 0.13, b: 0.13, a: 1}
-  fontSize: 30
+  fontSize: 36
   height: 64
   sidePadding: 16
   useSafeArea: 1
@@ -172246,7 +172246,8 @@ MonoBehaviour:
   visibleLineCount: 3
   rowMinHeight: 56
   rowSpacing: 4
-  iconSize: 105
+  iconSize: 150
+  smoothIconSampling: 1
   maxMessageLines: 3
   defaultDisplayUsesRichText: 1
   autoScrollToNewest: 1

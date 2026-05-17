@@ -31,6 +31,7 @@ public class MenuSettingsDialog : MonoBehaviour
     private Toggle chatGptToggle;
     private Toggle geminiToggle;
     private Toggle ollamaToggle;
+    private Toggle touchscreenJoystickToggle;
     private Slider scentStepSlider;
     private Text scentStepValueLabel;
     private Image[] mapTypeButtonImages;
@@ -179,6 +180,10 @@ public class MenuSettingsDialog : MonoBehaviour
         CreateSectionHeader(content, "GRAPHICS LEVEL");
         CreateGraphicsQualityRow(content);
 
+        CreateSectionHeader(content, "CONTROLS");
+        GameObject controlsRow = CreateRow(content, "ControlsRow", 42f);
+        touchscreenJoystickToggle = CreateToggle(controlsRow.transform, "Touchscreen joystick visible", "TouchscreenJoystickToggle");
+
         CreateSectionHeader(content, "LINKS");
         GameObject linkRow = CreateRow(content, "LinksRow", 44f);
         Button docsButton = CreateButton(linkRow.transform, "Documentation", "DocumentationButton");
@@ -191,6 +196,7 @@ public class MenuSettingsDialog : MonoBehaviour
         chatGptToggle.onValueChanged.AddListener(_ => SaveFromControls());
         geminiToggle.onValueChanged.AddListener(_ => SaveFromControls());
         ollamaToggle.onValueChanged.AddListener(_ => SaveFromControls());
+        touchscreenJoystickToggle.onValueChanged.AddListener(_ => SaveFromControls());
         scentStepSlider.onValueChanged.AddListener(OnScentStepChanged);
     }
 
@@ -703,6 +709,8 @@ public class MenuSettingsDialog : MonoBehaviour
         CreateScentSliderRow(panel.transform);
         CreateSectionHeader(panel.transform, "Graphics Level");
         CreateGraphicsQualityRow(panel.transform);
+        CreateSectionHeader(panel.transform, "Controls");
+        touchscreenJoystickToggle = CreateToggle(panel.transform, "Touchscreen joystick visible", "TouchscreenJoystickToggle");
 
         Button closeButton = CreateButton(panel.transform, "Close", "CloseButton");
         closeButton.onClick.AddListener(Close);
@@ -710,6 +718,7 @@ public class MenuSettingsDialog : MonoBehaviour
         chatGptToggle.onValueChanged.AddListener(_ => SaveFromControls());
         geminiToggle.onValueChanged.AddListener(_ => SaveFromControls());
         ollamaToggle.onValueChanged.AddListener(_ => SaveFromControls());
+        touchscreenJoystickToggle.onValueChanged.AddListener(_ => SaveFromControls());
         scentStepSlider.onValueChanged.AddListener(OnScentStepChanged);
 
         dialogRoot.SetActive(false);
@@ -752,6 +761,7 @@ public class MenuSettingsDialog : MonoBehaviour
         chatGptToggle?.SetIsOnWithoutNotify(settings.chatGptEnabled);
         geminiToggle?.SetIsOnWithoutNotify(settings.geminiEnabled);
         ollamaToggle?.SetIsOnWithoutNotify(settings.ollamaEnabled);
+        touchscreenJoystickToggle?.SetIsOnWithoutNotify(settings.touchscreenJoystickVisible);
 
         float snappedValue = SnapScentStep(settings.scentSimulationTimeStep);
         if (scentStepSlider != null)
@@ -770,6 +780,7 @@ public class MenuSettingsDialog : MonoBehaviour
             chatGptEnabled = chatGptToggle != null ? chatGptToggle.isOn : current.chatGptEnabled,
             geminiEnabled = geminiToggle != null ? geminiToggle.isOn : current.geminiEnabled,
             ollamaEnabled = ollamaToggle != null ? ollamaToggle.isOn : current.ollamaEnabled,
+            touchscreenJoystickVisible = touchscreenJoystickToggle != null ? touchscreenJoystickToggle.isOn : current.touchscreenJoystickVisible,
             graphicsLevel = selectedGraphicsLevel,
             scentSimulationTimeStep = SnapScentStep(scentStepSlider != null ? scentStepSlider.value : current.scentSimulationTimeStep)
         });
@@ -894,6 +905,7 @@ public class MenuSettingsDialog : MonoBehaviour
         RefreshToggleVisual(chatGptToggle);
         RefreshToggleVisual(geminiToggle);
         RefreshToggleVisual(ollamaToggle);
+        RefreshToggleVisual(touchscreenJoystickToggle);
     }
 
     private void RefreshToggleVisual(Toggle toggle)

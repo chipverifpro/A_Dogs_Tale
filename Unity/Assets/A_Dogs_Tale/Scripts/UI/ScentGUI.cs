@@ -54,6 +54,7 @@ public class ScentGUI : MonoBehaviour
     [SerializeField] private float topControlsSlideDuration = 0.18f;
     [SerializeField] private float topControlsHiddenTopPadding = 8f;
     [SerializeField] private bool respectTopSafeArea = true;
+    [SerializeField] private bool scaleTopControlsToFitWidth = true;
     [SerializeField] private float tooltipFontSize = 22f;
     [SerializeField] private float tooltipMaxWidth = 340f;
     [SerializeField] private Vector2 tooltipPadding = new Vector2(16f, 10f);
@@ -123,8 +124,6 @@ public class ScentGUI : MonoBehaviour
     private bool pulldownOpenedByTab;
     private bool uiBuilt;
     private int lastSniffToggleFrame = -1;
-
-    private float TopControlStride => topControlButtonSize + modeButtonSpacing;
 
     private readonly AgentDecisionType[] selectableDecisionModes =
     {
@@ -507,6 +506,7 @@ public class ScentGUI : MonoBehaviour
         pulldownFrameRect.anchorMin = new Vector2(0.5f, 1f);
         pulldownFrameRect.anchorMax = new Vector2(0.5f, 1f);
         pulldownFrameRect.pivot = new Vector2(0.5f, 1f);
+        pulldownFrameRect.localScale = Vector3.one * GetTopControlsFitScale();
         pulldownFrameRect.anchoredPosition = GetPulldownFrameShownPosition();
         pulldownFrameRect.sizeDelta = pulldownFrameSize;
 
@@ -580,6 +580,7 @@ public class ScentGUI : MonoBehaviour
         pulldownTabRect.anchorMin = new Vector2(1f, 1f);
         pulldownTabRect.anchorMax = new Vector2(1f, 1f);
         pulldownTabRect.pivot = new Vector2(1f, 1f);
+        pulldownTabRect.localScale = Vector3.one * GetTopControlsFitScale();
         pulldownTabRect.anchoredPosition = GetPulldownTabPosition();
         pulldownTabRect.sizeDelta = pulldownTabSize;
 
@@ -599,31 +600,46 @@ public class ScentGUI : MonoBehaviour
 
     private Vector2 GetTopControlPosition(int slotFromRight)
     {
+        float scale = GetTopControlsFitScale();
         return new Vector2(
-            -(topControlsInset.x + TopControlStride * slotFromRight),
-            -(topControlsInset.y + GetTopSafeAreaInset()));
+            GetTopControlsFrameRightEdge(scale) - GetTopControlRightInset(slotFromRight, scale),
+            -((topControlsInset.y * scale) + GetTopSafeAreaInset()));
     }
 
     private Vector2 GetTopPanelPosition(int slotFromRight)
     {
+        float scale = GetTopControlsFitScale();
         return new Vector2(
-            -(topControlsInset.x + TopControlStride * slotFromRight),
-            -(topControlsInset.y + GetTopSafeAreaInset() + topControlButtonSize + 12f));
+            GetTopControlsFrameRightEdge(scale) - GetTopControlRightInset(slotFromRight, scale),
+            -(((topControlsInset.y + topControlButtonSize) * scale) + GetTopSafeAreaInset() + 12f));
+    }
+
+    private float GetTopControlsFrameRightEdge(float scale)
+    {
+        return (pulldownFrameOffset.x * scale) + ((pulldownFrameSize.x * scale) * 0.5f);
+    }
+
+    private float GetTopControlRightInset(int slotFromRight, float scale)
+    {
+        float scaledButtonSize = topControlButtonSize * scale;
+        float scaledButtonSpacing = modeButtonSpacing * scale;
+        return (topControlsInset.x * scale) + ((scaledButtonSize + scaledButtonSpacing) * slotFromRight);
     }
 
     private Vector2 GetPulldownFrameShownPosition()
     {
-        return new Vector2(pulldownFrameOffset.x, GetPulldownFrameShownY());
+        return new Vector2(pulldownFrameOffset.x * GetTopControlsFitScale(), GetPulldownFrameShownY());
     }
 
     private float GetPulldownFrameShownY()
     {
-        return pulldownFrameOffset.y - GetTopSafeAreaInset();
+        return (pulldownFrameOffset.y * GetTopControlsFitScale()) - GetTopSafeAreaInset();
     }
 
     private Vector2 GetPulldownTabPosition()
     {
-        return new Vector2(pulldownTabOffset.x, pulldownTabOffset.y - GetTopSafeAreaInset());
+        float scale = GetTopControlsFitScale();
+        return new Vector2(pulldownTabOffset.x * scale, (pulldownTabOffset.y * scale) - GetTopSafeAreaInset());
     }
 
     private float GetTopSafeAreaInset()
@@ -643,17 +659,44 @@ public class ScentGUI : MonoBehaviour
         return topInsetPixels * (canvasHeight / Screen.height);
     }
 
+    private float GetTopControlsFitScale()
+    {
+        if (!scaleTopControlsToFitWidth)
+            return 1f;
+
+        RectTransform canvasRect = overlayCanvas != null ? overlayCanvas.transform as RectTransform : null;
+        float canvasWidth = canvasRect != null && canvasRect.rect.width > 0f
+            ? canvasRect.rect.width
+            : Screen.width;
+
+        if (canvasWidth <= 0f || pulldownFrameSize.x <= 0f)
+            return 1f;
+
+        return Mathf.Min(1f, canvasWidth / pulldownFrameSize.x);
+    }
+
     private void ConfigureTopControlRect(RectTransform rectTransform, int slotFromRight)
     {
         if (rectTransform == null)
             return;
 
-        rectTransform.anchorMin = new Vector2(1f, 1f);
-        rectTransform.anchorMax = new Vector2(1f, 1f);
+        rectTransform.anchorMin = new Vector2(0.5f, 1f);
+        rectTransform.anchorMax = new Vector2(0.5f, 1f);
         rectTransform.pivot = new Vector2(1f, 1f);
-        rectTransform.localScale = Vector3.one;
+        rectTransform.localScale = Vector3.one * GetTopControlsFitScale();
         rectTransform.anchoredPosition = GetTopControlPosition(slotFromRight);
         rectTransform.sizeDelta = new Vector2(topControlButtonSize, topControlButtonSize);
+    }
+
+    private void ConfigureTopPanelRect(RectTransform rectTransform, int slotFromRight)
+    {
+        if (rectTransform == null)
+            return;
+
+        rectTransform.anchorMin = new Vector2(0.5f, 1f);
+        rectTransform.anchorMax = new Vector2(0.5f, 1f);
+        rectTransform.pivot = new Vector2(1f, 1f);
+        rectTransform.anchoredPosition = GetTopPanelPosition(slotFromRight);
     }
 
     private void ConfigureTopControlIconRect(RectTransform iconRect, float sizeScale)
@@ -1228,21 +1271,45 @@ public class ScentGUI : MonoBehaviour
 
     private void ApplyTopControlsSlidePosition()
     {
-        float shownY = -(topControlsInset.y + GetTopSafeAreaInset());
-        float hiddenY = topControlButtonSize + topControlsHiddenTopPadding;
+        float scale = GetTopControlsFitScale();
+        float shownY = -((topControlsInset.y * scale) + GetTopSafeAreaInset());
+        float hiddenY = (topControlButtonSize * scale) + topControlsHiddenTopPadding;
         float y = Mathf.Lerp(hiddenY, shownY, topControlsVisibility);
         float frameY = Mathf.Lerp(GetPulldownFrameHiddenY(), GetPulldownFrameShownY(), topControlsVisibility);
 
-        ApplyTopControlY(pulldownFrameRect, frameY);
+        ApplyTopControlsFitScale();
+        ApplyPulldownFramePosition(frameY);
         ApplyPulldownTabPosition();
-        ApplyTopControlY(noseButtonRect, y);
-        ApplyTopControlY(modeButtonRect, y);
-        ApplyTopControlY(speedButtonRect, y);
-        ApplyTopControlY(simulationButtonRect, y);
-        ApplyTopControlY(emoteButtonRect, y);
-        ApplyTopControlY(inventoryButtonRect, y);
-        ApplyTopControlY(digButtonRect, y);
+        ApplyTopControlPosition(noseButtonRect, 0, y);
+        ApplyTopControlPosition(modeButtonRect, 1, y);
+        ApplyTopControlPosition(speedButtonRect, 2, y);
+        ApplyTopControlPosition(simulationButtonRect, 3, y);
+        ApplyTopControlPosition(emoteButtonRect, 4, y);
+        ApplyTopControlPosition(inventoryButtonRect, 5, y);
+        ApplyTopControlPosition(digButtonRect, 6, y);
         ApplyTopPanelPositions();
+    }
+
+    private void ApplyTopControlsFitScale()
+    {
+        float scale = GetTopControlsFitScale();
+        ApplyTopControlScale(pulldownFrameRect, scale);
+        ApplyTopControlScale(pulldownTabRect, scale);
+        ApplyTopControlScale(noseButtonRect, scale);
+        ApplyTopControlScale(modeButtonRect, scale);
+        ApplyTopControlScale(speedButtonRect, scale);
+        ApplyTopControlScale(simulationButtonRect, scale);
+        ApplyTopControlScale(emoteButtonRect, scale);
+        ApplyTopControlScale(inventoryButtonRect, scale);
+        ApplyTopControlScale(digButtonRect, scale);
+    }
+
+    private static void ApplyTopControlScale(RectTransform rectTransform, float scale)
+    {
+        if (rectTransform == null)
+            return;
+
+        rectTransform.localScale = Vector3.one * scale;
     }
 
     private void ExpandTopControlsFromTab()
@@ -1284,12 +1351,20 @@ public class ScentGUI : MonoBehaviour
             pulldownTabRect.gameObject.SetActive(shouldShowTab);
     }
 
-    private static void ApplyTopControlY(RectTransform rectTransform, float y)
+    private void ApplyPulldownFramePosition(float y)
+    {
+        if (pulldownFrameRect == null)
+            return;
+
+        pulldownFrameRect.anchoredPosition = new Vector2(pulldownFrameOffset.x * GetTopControlsFitScale(), y);
+    }
+
+    private void ApplyTopControlPosition(RectTransform rectTransform, int slotFromRight, float y)
     {
         if (rectTransform == null)
             return;
 
-        Vector2 anchoredPosition = rectTransform.anchoredPosition;
+        Vector2 anchoredPosition = GetTopControlPosition(slotFromRight);
         anchoredPosition.y = y;
         rectTransform.anchoredPosition = anchoredPosition;
     }
@@ -1326,7 +1401,7 @@ public class ScentGUI : MonoBehaviour
         float frameHeight = pulldownFrameRect.rect.height > 0f
             ? pulldownFrameRect.rect.height
             : pulldownFrameSize.y;
-        return GetPulldownFrameShownY() + frameHeight + topControlsHiddenTopPadding;
+        return GetPulldownFrameShownY() + (frameHeight * GetTopControlsFitScale()) + topControlsHiddenTopPadding;
     }
 
     private void BuildEmoteDropdown(Transform parent, Transform searchRoot)
@@ -1345,10 +1420,7 @@ public class ScentGUI : MonoBehaviour
         dropdownObject.transform.SetParent(parent, false);
 
         emoteDropdownRect = dropdownObject.GetComponent<RectTransform>();
-        emoteDropdownRect.anchorMin = new Vector2(1f, 1f);
-        emoteDropdownRect.anchorMax = new Vector2(1f, 1f);
-        emoteDropdownRect.pivot = new Vector2(1f, 1f);
-        emoteDropdownRect.anchoredPosition = GetTopPanelPosition(4);
+        ConfigureTopPanelRect(emoteDropdownRect, 4);
         emoteDropdownRect.sizeDelta = new Vector2(emoteDropdownWidth, emoteDropdownMaxHeight);
 
         Image dropdownImage = dropdownObject.GetComponent<Image>();
@@ -1449,10 +1521,7 @@ public class ScentGUI : MonoBehaviour
         if (emoteDropdownRect == null)
             return;
 
-        emoteDropdownRect.anchorMin = new Vector2(1f, 1f);
-        emoteDropdownRect.anchorMax = new Vector2(1f, 1f);
-        emoteDropdownRect.pivot = new Vector2(1f, 1f);
-        emoteDropdownRect.anchoredPosition = GetTopPanelPosition(4);
+        ConfigureTopPanelRect(emoteDropdownRect, 4);
 
         Image dropdownImage = dropdownObject.GetComponent<Image>();
         if (dropdownImage != null)
@@ -1482,10 +1551,7 @@ public class ScentGUI : MonoBehaviour
         dropdownObject.transform.SetParent(parent, false);
 
         dropdownRect = dropdownObject.GetComponent<RectTransform>();
-        dropdownRect.anchorMin = new Vector2(1f, 1f);
-        dropdownRect.anchorMax = new Vector2(1f, 1f);
-        dropdownRect.pivot = new Vector2(1f, 1f);
-        dropdownRect.anchoredPosition = GetTopPanelPosition(0);
+        ConfigureTopPanelRect(dropdownRect, 0);
         dropdownRect.sizeDelta = new Vector2(dropdownWidth, dropdownMaxHeight);
 
         Image dropdownImage = dropdownObject.GetComponent<Image>();
@@ -1586,10 +1652,7 @@ public class ScentGUI : MonoBehaviour
         if (dropdownRect == null)
             return;
 
-        dropdownRect.anchorMin = new Vector2(1f, 1f);
-        dropdownRect.anchorMax = new Vector2(1f, 1f);
-        dropdownRect.pivot = new Vector2(1f, 1f);
-        dropdownRect.anchoredPosition = GetTopPanelPosition(0);
+        ConfigureTopPanelRect(dropdownRect, 0);
 
         Image dropdownImage = dropdownObject.GetComponent<Image>();
         if (dropdownImage != null)
@@ -1620,10 +1683,7 @@ public class ScentGUI : MonoBehaviour
         panelObject.transform.SetParent(parent, false);
 
         modePanelRect = panelObject.GetComponent<RectTransform>();
-        modePanelRect.anchorMin = new Vector2(1f, 1f);
-        modePanelRect.anchorMax = new Vector2(1f, 1f);
-        modePanelRect.pivot = new Vector2(1f, 1f);
-        modePanelRect.anchoredPosition = GetTopPanelPosition(1);
+        ConfigureTopPanelRect(modePanelRect, 1);
 
         float padding = 12f;
         float spacing = 8f;
@@ -1666,10 +1726,7 @@ public class ScentGUI : MonoBehaviour
         panelObject.transform.SetParent(parent, false);
 
         speedPanelRect = panelObject.GetComponent<RectTransform>();
-        speedPanelRect.anchorMin = new Vector2(1f, 1f);
-        speedPanelRect.anchorMax = new Vector2(1f, 1f);
-        speedPanelRect.pivot = new Vector2(1f, 1f);
-        speedPanelRect.anchoredPosition = GetTopPanelPosition(2);
+        ConfigureTopPanelRect(speedPanelRect, 2);
 
         float padding = 12f;
         float spacing = 8f;
@@ -1701,10 +1758,7 @@ public class ScentGUI : MonoBehaviour
         if (modePanelRect == null)
             return;
 
-        modePanelRect.anchorMin = new Vector2(1f, 1f);
-        modePanelRect.anchorMax = new Vector2(1f, 1f);
-        modePanelRect.pivot = new Vector2(1f, 1f);
-        modePanelRect.anchoredPosition = GetTopPanelPosition(1);
+        ConfigureTopPanelRect(modePanelRect, 1);
 
         Image panelImage = panelObject.GetComponent<Image>();
         if (panelImage != null)
@@ -1733,10 +1787,7 @@ public class ScentGUI : MonoBehaviour
         if (speedPanelRect == null)
             return;
 
-        speedPanelRect.anchorMin = new Vector2(1f, 1f);
-        speedPanelRect.anchorMax = new Vector2(1f, 1f);
-        speedPanelRect.pivot = new Vector2(1f, 1f);
-        speedPanelRect.anchoredPosition = GetTopPanelPosition(2);
+        ConfigureTopPanelRect(speedPanelRect, 2);
 
         Image panelImage = panelObject.GetComponent<Image>();
         if (panelImage != null)

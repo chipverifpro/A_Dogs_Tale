@@ -132,6 +132,19 @@ public class NewInputAdapter : MonoBehaviour
                mobileJoystickActivationRectForOtherInput.Contains(screenPosition);
     }
 
+    public bool MobileJoystickVisiblePreference => enableMobileJoystick;
+
+    public void SetMobileJoystickVisiblePreference(bool visible)
+    {
+        enableMobileJoystick = visible;
+        if (visible)
+            return;
+
+        ClearMobileJoystick();
+        SetMobileJoystickUiVisible(false);
+        UpdateMobileJoystickSharedState(false);
+    }
+
     private void Awake()
     {
         // Ensure we have the PlayerInput component
@@ -176,6 +189,7 @@ public class NewInputAdapter : MonoBehaviour
         TryBindRuntimeState(logFailure: true);
 
         ConfigureUiInputModule();
+        PersistentGameSettings.ApplySavedToInputAdapter(this);
 
         var existingWheelUi = DogGame.UI.InteractionWheel.MenuWheelUIFactory.TryGetExisting();
         if (existingWheelUi != null)

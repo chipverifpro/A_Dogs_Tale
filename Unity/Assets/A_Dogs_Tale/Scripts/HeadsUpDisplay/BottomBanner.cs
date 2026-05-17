@@ -84,6 +84,7 @@ public class BottomBanner : MonoBehaviour
     [SerializeField] float rowMinHeight = 42f;
     [SerializeField] float rowSpacing = 4f;
     [SerializeField] float iconSize = 28f;
+    [SerializeField] bool smoothIconSampling = true;
     [SerializeField] int maxMessageLines = 2;
     [SerializeField] bool defaultDisplayUsesRichText = true;
     [SerializeField] bool autoScrollToNewest = true;
@@ -679,8 +680,10 @@ public class BottomBanner : MonoBehaviour
         GameObject iconGO = new GameObject("Icon", typeof(RectTransform), typeof(Image), typeof(LayoutElement));
         iconGO.transform.SetParent(row.transform, false);
         Image iconImage = iconGO.GetComponent<Image>();
+        ConfigureBannerIconSprite(sprite);
         iconImage.sprite = sprite;
         iconImage.preserveAspect = true;
+        iconImage.useSpriteMesh = false;
 
         LayoutElement iconLayout = iconGO.GetComponent<LayoutElement>();
         iconLayout.minWidth = iconSize;
@@ -708,6 +711,16 @@ public class BottomBanner : MonoBehaviour
         rowTextObjects.Add(text);
 
         return row;
+    }
+
+    void ConfigureBannerIconSprite(Sprite sprite)
+    {
+        if (!smoothIconSampling || sprite == null || sprite.texture == null)
+            return;
+
+        Texture texture = sprite.texture;
+        texture.filterMode = texture.mipmapCount > 1 ? FilterMode.Trilinear : FilterMode.Bilinear;
+        texture.anisoLevel = Mathf.Max(texture.anisoLevel, 1);
     }
 
     void AddMessageInternal(BannerSense sense, BannerLevel level, string message, bool includeGameTime, bool isRichText)

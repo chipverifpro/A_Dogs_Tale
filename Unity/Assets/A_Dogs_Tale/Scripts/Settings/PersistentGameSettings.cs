@@ -9,6 +9,7 @@ using UnityEngine;
 public static class PersistentGameSettings
 {
     private const string PlayerPrefsKey = "A_Dogs_Tale.PersistentGameSettings";
+    private const string TouchscreenJoystickVisibleJsonField = "\"touchscreenJoystickVisible\"";
     private const float MinScentSimulationTimeStep = 0.1f;
     private const float MaxScentSimulationTimeStep = 1.0f;
     public const int GraphicsLevelLow = 1985;
@@ -34,6 +35,7 @@ public static class PersistentGameSettings
         public float scentSimulationTimeStep = MinScentSimulationTimeStep;
         public int graphicsLevel = GraphicsLevelHigh;
         public bool wallpaperEnabled = true;
+        public bool touchscreenJoystickVisible = true;
     }
 
     public static Data GetCurrentOrSaved()
@@ -107,6 +109,14 @@ public static class PersistentGameSettings
 
         ApplyGraphicsLevelToDungeonGenerator(dungeonGenerator, data.graphicsLevel);
         ApplySavedMapToDungeonGenerator(dungeonGenerator);
+    }
+
+    public static void ApplySavedToInputAdapter(NewInputAdapter inputAdapter)
+    {
+        if (inputAdapter == null || !TryLoad(out Data data))
+            return;
+
+        inputAdapter.SetMobileJoystickVisiblePreference(data.touchscreenJoystickVisible);
     }
 
     public static void ApplySavedGraphicsToDungeonGenerator(DungeonGenerator dungeonGenerator)
@@ -185,6 +195,10 @@ public static class PersistentGameSettings
         DungeonGenerator dungeonGenerator = GetDungeonGenerator();
         if (dungeonGenerator != null)
             ApplyGraphicsLevelToDungeonGenerator(dungeonGenerator, normalized.graphicsLevel);
+
+        NewInputAdapter inputAdapter = GetInputAdapter();
+        if (inputAdapter != null)
+            inputAdapter.SetMobileJoystickVisiblePreference(normalized.touchscreenJoystickVisible);
     }
 
     private static bool TryLoad(out Data data)
@@ -202,9 +216,13 @@ public static class PersistentGameSettings
             return false;
         }
 
+        bool hasTouchscreenJoystickVisible = json.Contains(TouchscreenJoystickVisibleJsonField, StringComparison.Ordinal);
         data = JsonUtility.FromJson<Data>(json);
         if (data == null)
             return false;
+
+        if (!hasTouchscreenJoystickVisible)
+            data.touchscreenJoystickVisible = true;
 
         data = Normalize(data);
         return true;
@@ -225,6 +243,10 @@ public static class PersistentGameSettings
         ScentAirGround scentAirGround = GetScentAirGround();
         if (scentAirGround != null)
             data.scentSimulationTimeStep = scentAirGround.SimulationTimeStep;
+
+        NewInputAdapter inputAdapter = GetInputAdapter();
+        if (inputAdapter != null)
+            data.touchscreenJoystickVisible = inputAdapter.MobileJoystickVisiblePreference;
 
         DungeonGenerator dungeonGenerator = GetDungeonGenerator();
         if (dungeonGenerator != null)
@@ -419,5 +441,10 @@ public static class PersistentGameSettings
     {
         return Dir.Instance?.gen
             ?? UnityEngine.Object.FindFirstObjectByType<DungeonGenerator>(FindObjectsInactive.Include);
+    }
+
+    private static NewInputAdapter GetInputAdapter()
+    {
+        return UnityEngine.Object.FindFirstObjectByType<NewInputAdapter>(FindObjectsInactive.Include);
     }
 }

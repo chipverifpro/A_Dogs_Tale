@@ -59,6 +59,7 @@ public class PageSettingsController : MonoBehaviour
                 chatGptEnabled = chatGptToggle?.value ?? current.chatGptEnabled,
                 geminiEnabled = geminiToggle?.value ?? current.geminiEnabled,
                 ollamaEnabled = ollamaToggle?.value ?? current.ollamaEnabled,
+                touchscreenJoystickVisible = current.touchscreenJoystickVisible,
                 graphicsLevel = selectedGraphicsLevel,
                 scentSimulationTimeStep = SnapScentStep(scentStepSlider?.value ?? current.scentSimulationTimeStep)
             });
