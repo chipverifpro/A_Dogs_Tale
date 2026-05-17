@@ -69,6 +69,12 @@ public class NewInputAdapter : MonoBehaviour
     [SerializeField] private Color mobileJoystickBaseColor = new(1f, 1f, 1f, 0.20f);
     [SerializeField] private Color mobileJoystickKnobColor = new(1f, 1f, 1f, 0.45f);
 
+    [Header("Mobile Pinch Zoom")]
+    [SerializeField] private bool enableMobilePinchZoom = true;
+    [SerializeField] private float pinchZoomPixelsPerStep = 80f;
+    [SerializeField] private float pinchZoomMaxDeltaPerFrame = 3f;
+    [SerializeField] private float pinchZoomMinDistancePixels = 24f;
+
     // Latest snapshot of input. Other systems can read this.
     public PlayerInputState CurrentState { get; private set; }
 
@@ -111,6 +117,9 @@ public class NewInputAdapter : MonoBehaviour
     private int mobileJoystickPointerId = NoMobileJoystickPointer;
     private Vector2 mobileJoystickCenterScreen;
     private Vector2 mobileJoystickAxis;
+
+    private bool isPinchZoomActive;
+    private float previousPinchDistancePixels;
     
     public static bool IsPointerReservedForMobileJoystick(int pointerId)
     {
@@ -427,12 +436,14 @@ public class NewInputAdapter : MonoBehaviour
         {
             state.zoomDelta = zoomAction != null
                 ? zoomAction.ReadValue<float>()
-                : 0f;    
+                : 0f;
+            state.zoomDelta += GetMobilePinchZoomDelta();
         }
         else
         {
             // Ignore zoom while mouse is over Inspector/Console/etc.
-            state.zoomDelta = 0f;        
+            state.zoomDelta = 0f;
+            ClearPinchZoomTracking();
         }
 
 
@@ -598,6 +609,9 @@ public class NewInputAdapter : MonoBehaviour
     {
         screenPos = default;
 
+        if (isPinchZoomActive)
+            return false;
+
         // 1) Touch has priority
         if (Touchscreen.current != null)
         {
@@ -745,6 +759,89 @@ public class NewInputAdapter : MonoBehaviour
         }
 
         return false;
+    }
+
+    private float GetMobilePinchZoomDelta()
+    {
+        if (!enableMobilePinchZoom)
+        {
+            ClearPinchZoomTracking();
+            return 0f;
+        }
+
+        Touchscreen touchscreen = Touchscreen.current;
+        if (touchscreen == null)
+        {
+            ClearPinchZoomTracking();
+            return 0f;
+        }
+
+        if (!TryGetTwoPinchTouches(touchscreen, out Vector2 first, out Vector2 second))
+        {
+            ClearPinchZoomTracking();
+            return 0f;
+        }
+
+        float distance = Vector2.Distance(first, second);
+        if (distance < pinchZoomMinDistancePixels)
+        {
+            ClearPinchZoomTracking();
+            return 0f;
+        }
+
+        if (!isPinchZoomActive)
+        {
+            isPinchZoomActive = true;
+            previousPinchDistancePixels = distance;
+            ClearTapTracking();
+            return 0f;
+        }
+
+        float pixelDelta = distance - previousPinchDistancePixels;
+        previousPinchDistancePixels = distance;
+
+        float pixelsPerStep = Mathf.Max(1f, pinchZoomPixelsPerStep);
+        float zoomDelta = pixelDelta / pixelsPerStep;
+        return Mathf.Clamp(zoomDelta, -pinchZoomMaxDeltaPerFrame, pinchZoomMaxDeltaPerFrame);
+    }
+
+    private bool TryGetTwoPinchTouches(Touchscreen touchscreen, out Vector2 first, out Vector2 second)
+    {
+        first = default;
+        second = default;
+        int found = 0;
+
+        for (int i = 0; i < touchscreen.touches.Count; i++)
+        {
+            var touch = touchscreen.touches[i];
+            if (touch == null || !touch.press.isPressed)
+                continue;
+
+            int touchId = touch.touchId.ReadValue();
+            if (IsPointerReservedForMobileJoystick(touchId))
+                continue;
+
+            Vector2 position = touch.position.ReadValue();
+            if (IsPointerOverUI(touchId, position))
+                continue;
+
+            if (found == 0)
+                first = position;
+            else
+                second = position;
+
+            found++;
+            if (found >= 2)
+                return true;
+        }
+
+        return false;
+    }
+
+    private void ClearPinchZoomTracking()
+    {
+        isPinchZoomActive = false;
+        previousPinchDistancePixels = 0f;
     }
 
     private Vector2 UpdateMobileJoystick()
