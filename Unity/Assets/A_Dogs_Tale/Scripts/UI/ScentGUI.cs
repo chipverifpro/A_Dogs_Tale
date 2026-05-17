@@ -53,6 +53,7 @@ public class ScentGUI : MonoBehaviour
     [SerializeField] private bool autoHideTopControls = true;
     [SerializeField] private float topControlsSlideDuration = 0.18f;
     [SerializeField] private float topControlsHiddenTopPadding = 8f;
+    [SerializeField] private bool respectTopSafeArea = true;
     [SerializeField] private float tooltipFontSize = 22f;
     [SerializeField] private float tooltipMaxWidth = 340f;
     [SerializeField] private Vector2 tooltipPadding = new Vector2(16f, 10f);
@@ -506,7 +507,7 @@ public class ScentGUI : MonoBehaviour
         pulldownFrameRect.anchorMin = new Vector2(0.5f, 1f);
         pulldownFrameRect.anchorMax = new Vector2(0.5f, 1f);
         pulldownFrameRect.pivot = new Vector2(0.5f, 1f);
-        pulldownFrameRect.anchoredPosition = pulldownFrameOffset;
+        pulldownFrameRect.anchoredPosition = GetPulldownFrameShownPosition();
         pulldownFrameRect.sizeDelta = pulldownFrameSize;
 
         pulldownFrameImage = GetOrAddComponent<Image>(frameObject);
@@ -579,7 +580,7 @@ public class ScentGUI : MonoBehaviour
         pulldownTabRect.anchorMin = new Vector2(1f, 1f);
         pulldownTabRect.anchorMax = new Vector2(1f, 1f);
         pulldownTabRect.pivot = new Vector2(1f, 1f);
-        pulldownTabRect.anchoredPosition = pulldownTabOffset;
+        pulldownTabRect.anchoredPosition = GetPulldownTabPosition();
         pulldownTabRect.sizeDelta = pulldownTabSize;
 
         pulldownTabImage = GetOrAddComponent<Image>(tabObject);
@@ -600,14 +601,46 @@ public class ScentGUI : MonoBehaviour
     {
         return new Vector2(
             -(topControlsInset.x + TopControlStride * slotFromRight),
-            -topControlsInset.y);
+            -(topControlsInset.y + GetTopSafeAreaInset()));
     }
 
     private Vector2 GetTopPanelPosition(int slotFromRight)
     {
         return new Vector2(
             -(topControlsInset.x + TopControlStride * slotFromRight),
-            -(topControlsInset.y + topControlButtonSize + 12f));
+            -(topControlsInset.y + GetTopSafeAreaInset() + topControlButtonSize + 12f));
+    }
+
+    private Vector2 GetPulldownFrameShownPosition()
+    {
+        return new Vector2(pulldownFrameOffset.x, GetPulldownFrameShownY());
+    }
+
+    private float GetPulldownFrameShownY()
+    {
+        return pulldownFrameOffset.y - GetTopSafeAreaInset();
+    }
+
+    private Vector2 GetPulldownTabPosition()
+    {
+        return new Vector2(pulldownTabOffset.x, pulldownTabOffset.y - GetTopSafeAreaInset());
+    }
+
+    private float GetTopSafeAreaInset()
+    {
+        if (!respectTopSafeArea || overlayCanvas == null || Screen.height <= 0)
+            return 0f;
+
+        float topInsetPixels = Mathf.Max(0f, Screen.height - Screen.safeArea.yMax);
+        if (topInsetPixels <= 0f)
+            return 0f;
+
+        RectTransform canvasRect = overlayCanvas.transform as RectTransform;
+        float canvasHeight = canvasRect != null && canvasRect.rect.height > 0f
+            ? canvasRect.rect.height
+            : Screen.height;
+
+        return topInsetPixels * (canvasHeight / Screen.height);
     }
 
     private void ConfigureTopControlRect(RectTransform rectTransform, int slotFromRight)
@@ -1195,12 +1228,13 @@ public class ScentGUI : MonoBehaviour
 
     private void ApplyTopControlsSlidePosition()
     {
-        float shownY = -topControlsInset.y;
+        float shownY = -(topControlsInset.y + GetTopSafeAreaInset());
         float hiddenY = topControlButtonSize + topControlsHiddenTopPadding;
         float y = Mathf.Lerp(hiddenY, shownY, topControlsVisibility);
-        float frameY = Mathf.Lerp(GetPulldownFrameHiddenY(), pulldownFrameOffset.y, topControlsVisibility);
+        float frameY = Mathf.Lerp(GetPulldownFrameHiddenY(), GetPulldownFrameShownY(), topControlsVisibility);
 
         ApplyTopControlY(pulldownFrameRect, frameY);
+        ApplyPulldownTabPosition();
         ApplyTopControlY(noseButtonRect, y);
         ApplyTopControlY(modeButtonRect, y);
         ApplyTopControlY(speedButtonRect, y);
@@ -1208,6 +1242,7 @@ public class ScentGUI : MonoBehaviour
         ApplyTopControlY(emoteButtonRect, y);
         ApplyTopControlY(inventoryButtonRect, y);
         ApplyTopControlY(digButtonRect, y);
+        ApplyTopPanelPositions();
     }
 
     private void ExpandTopControlsFromTab()
@@ -1259,15 +1294,39 @@ public class ScentGUI : MonoBehaviour
         rectTransform.anchoredPosition = anchoredPosition;
     }
 
+    private void ApplyPulldownTabPosition()
+    {
+        if (pulldownTabRect == null)
+            return;
+
+        pulldownTabRect.anchoredPosition = GetPulldownTabPosition();
+    }
+
+    private void ApplyTopPanelPositions()
+    {
+        ApplyTopPanelPosition(dropdownRect, 0);
+        ApplyTopPanelPosition(modePanelRect, 1);
+        ApplyTopPanelPosition(speedPanelRect, 2);
+        ApplyTopPanelPosition(emoteDropdownRect, 4);
+    }
+
+    private void ApplyTopPanelPosition(RectTransform rectTransform, int slotFromRight)
+    {
+        if (rectTransform == null)
+            return;
+
+        rectTransform.anchoredPosition = GetTopPanelPosition(slotFromRight);
+    }
+
     private float GetPulldownFrameHiddenY()
     {
         if (pulldownFrameRect == null)
-            return pulldownFrameOffset.y;
+            return GetPulldownFrameShownY();
 
         float frameHeight = pulldownFrameRect.rect.height > 0f
             ? pulldownFrameRect.rect.height
             : pulldownFrameSize.y;
-        return pulldownFrameOffset.y + frameHeight + topControlsHiddenTopPadding;
+        return GetPulldownFrameShownY() + frameHeight + topControlsHiddenTopPadding;
     }
 
     private void BuildEmoteDropdown(Transform parent, Transform searchRoot)

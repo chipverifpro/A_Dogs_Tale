@@ -94722,6 +94722,15 @@ MonoBehaviour:
   nextAgentActionName: NextAgent
   tapMaxSeconds: 0.3
   tapMaxMovePixels: 18
+  enableMobileJoystick: 1
+  showMobileJoystickInEditor: 0
+  mobileJoystickMarginPixels: {x: 36, y: 36}
+  mobileJoystickRadiusPixels: 88
+  mobileJoystickActivationWidthPercent: 0.45
+  mobileJoystickActivationHeightPercent: 0.55
+  mobileJoystickDeadZone: 0.12
+  mobileJoystickBaseColor: {r: 1, g: 1, b: 1, a: 0.2}
+  mobileJoystickKnobColor: {r: 1, g: 1, b: 1, a: 0.45}
 --- !u!114 &942637345
 MonoBehaviour:
   m_ObjectHideFlags: 0

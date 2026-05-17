@@ -3,6 +3,7 @@ using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.Controls;
 using UnityEngine.InputSystem.UI;
 using UnityEngine.EventSystems;
+using UnityEngine.UI;
 using System.Collections.Generic;
 
 /// <summary>
@@ -56,6 +57,18 @@ public class NewInputAdapter : MonoBehaviour
     [SerializeField] private float tapMaxSeconds = 0.30f;      // must be < holdToOpenSeconds (default in WheelOpener is 0.45) for the wheel
     [SerializeField] private float tapMaxMovePixels = 18f;     // also must match.
 
+    [Header("Mobile Touch Movement")]
+    [SerializeField] private bool enableMobileJoystick = true;
+    [SerializeField] private bool showMobileJoystickInEditor = false;
+    [SerializeField] private Vector2 mobileJoystickMarginPixels = new(36f, 36f);
+    [SerializeField] private float mobileJoystickRadiusPixels = 88f;
+    [SerializeField] private float mobileJoystickActivationWidthPercent = 0.45f;
+    [SerializeField] private float mobileJoystickActivationHeightPercent = 0.55f;
+    [SerializeField, Range(0f, 0.5f)] private float mobileJoystickDeadZone = 0.12f;
+    [SerializeField, Range(0f, 1f)] private float mobileJoystickForwardTurnDeadZone = 0.22f;
+    [SerializeField] private Color mobileJoystickBaseColor = new(1f, 1f, 1f, 0.20f);
+    [SerializeField] private Color mobileJoystickKnobColor = new(1f, 1f, 1f, 0.45f);
+
     // Latest snapshot of input. Other systems can read this.
     public PlayerInputState CurrentState { get; private set; }
 
@@ -86,7 +99,30 @@ public class NewInputAdapter : MonoBehaviour
     private double primaryPressStartTime;
     private Vector2 primaryPressStartPos;
     private int primaryPressPointerId; // -1 mouse, touchId for touch
+
+    private const int NoMobileJoystickPointer = int.MinValue;
+    private static int reservedMobileJoystickPointerId = NoMobileJoystickPointer;
+    private static bool mobileJoystickVisibleForOtherInput;
+    private static Rect mobileJoystickActivationRectForOtherInput;
+
+    private Canvas mobileJoystickCanvas;
+    private RectTransform mobileJoystickBase;
+    private RectTransform mobileJoystickKnob;
+    private int mobileJoystickPointerId = NoMobileJoystickPointer;
+    private Vector2 mobileJoystickCenterScreen;
+    private Vector2 mobileJoystickAxis;
     
+    public static bool IsPointerReservedForMobileJoystick(int pointerId)
+    {
+        return pointerId == reservedMobileJoystickPointerId;
+    }
+
+    public static bool IsScreenPositionInMobileJoystickZone(Vector2 screenPosition)
+    {
+        return mobileJoystickVisibleForOtherInput &&
+               mobileJoystickActivationRectForOtherInput.Contains(screenPosition);
+    }
+
     private void Awake()
     {
         // Ensure we have the PlayerInput component
@@ -341,12 +377,17 @@ public class NewInputAdapter : MonoBehaviour
             return;
 
         var state = gameInputRouter.InputState;
+        Vector2 joystickAxis = UpdateMobileJoystick();
 
 
         // --- Movement axis ---
         state.moveAxis = moveAction != null
             ? moveAction.ReadValue<Vector2>()
             : Vector2.zero;
+
+        bool hasMobileJoystickInput = joystickAxis.sqrMagnitude > 0.0001f;
+        if (hasMobileJoystickInput)
+            state.moveAxis = ApplyMobileJoystickForwardTurnDeadZone(joystickAxis);
 
         if (state.moveAxis != Vector2.zero)
         {
@@ -565,15 +606,20 @@ public class NewInputAdapter : MonoBehaviour
             {
                 if (touch == null) continue;
 
+                int touchId = touch.touchId.ReadValue();
+                if (IsPointerReservedForMobileJoystick(touchId))
+                    continue;
+
                 bool pressedThisFrame = touch.press.wasPressedThisFrame;
                 bool isPressed = touch.press.isPressed;
                 bool releasedThisFrame = touch.press.wasReleasedThisFrame;
 
                 if (pressedThisFrame)
                 {
-                    if (IsPointerOverUI(touch.touchId.ReadValue()))
+                    Vector2 pressPos = touch.position.ReadValue();
+                    if (IsPointerOverUI(touchId, pressPos))
                     {
-                        Debug.Log($"[NewInputAdapter] Ignoring touch press over UI. touchId={touch.touchId.ReadValue()} pos={touch.position.ReadValue()}");
+                        Debug.Log($"[NewInputAdapter] Ignoring touch press over UI. touchId={touchId} pos={pressPos}");
                         ClearTapTracking();
                         return false;
                     }
@@ -581,13 +627,13 @@ public class NewInputAdapter : MonoBehaviour
                     // Start tracking
                     isPrimaryPressTracking = true;
                     primaryPressStartTime = Time.unscaledTimeAsDouble;
-                    primaryPressStartPos = touch.position.ReadValue();
-                    primaryPressPointerId = touch.touchId.ReadValue();
+                    primaryPressStartPos = pressPos;
+                    primaryPressPointerId = touchId;
                     return false;
                 }
 
                 // Only consider ending the same touch we started with
-                if (isPrimaryPressTracking && primaryPressPointerId == touch.touchId.ReadValue())
+                if (isPrimaryPressTracking && primaryPressPointerId == touchId)
                 {
                     if (isPressed)
                     {
@@ -611,15 +657,15 @@ public class NewInputAdapter : MonoBehaviour
 
                         ClearTapTracking();
 
-                        if (isTap && !IsPointerOverUI(touch.touchId.ReadValue()))
+                        if (isTap && !IsPointerOverUI(touchId, releasePos))
                         {
-                            Debug.Log($"[NewInputAdapter] Touch tap accepted for world input. touchId={touch.touchId.ReadValue()} pos={releasePos}");
+                            Debug.Log($"[NewInputAdapter] Touch tap accepted for world input. touchId={touchId} pos={releasePos}");
                             screenPos = releasePos;
                             return true;
                         }
                         if (isTap)
                         {
-                            Debug.Log($"[NewInputAdapter] Touch tap released over UI, suppressing world input. touchId={touch.touchId.ReadValue()} pos={releasePos}");
+                            Debug.Log($"[NewInputAdapter] Touch tap released over UI, suppressing world input. touchId={touchId} pos={releasePos}");
                         }
                     }
                 }
@@ -642,9 +688,9 @@ public class NewInputAdapter : MonoBehaviour
                 return false;
             }
 
-            if (IsPointerOverUI(-1))
+            Vector2 mousePos = Mouse.current.position.ReadValue();
+            if (IsPointerOverUI(-1, mousePos))
             {
-                Vector2 mousePos = Mouse.current.position.ReadValue();
                 //Debug.Log($"[NewInputAdapter] Ignoring mouse press over UI. pos={mousePos}");
                 LogUiRaycastHits(mousePos);
                 ClearTapTracking();
@@ -653,7 +699,7 @@ public class NewInputAdapter : MonoBehaviour
 
             isPrimaryPressTracking = true;
             primaryPressStartTime = Time.unscaledTimeAsDouble;
-            primaryPressStartPos = Mouse.current.position.ReadValue();
+            primaryPressStartPos = mousePos;
             primaryPressPointerId = -1;
             return false;
         }
@@ -685,7 +731,7 @@ public class NewInputAdapter : MonoBehaviour
                 if (isTap && suppressTap)
                     return false;
 
-                if (isTap && !IsPointerOverUI(-1))
+                if (isTap && !IsPointerOverUI(-1, currentPos))
                 {
                     Debug.Log($"[NewInputAdapter] Mouse tap accepted for world input. pos={currentPos}");
                     screenPos = currentPos;
@@ -701,6 +747,294 @@ public class NewInputAdapter : MonoBehaviour
         return false;
     }
 
+    private Vector2 UpdateMobileJoystick()
+    {
+        bool visible = ShouldShowMobileJoystick();
+        EnsureMobileJoystickUi();
+        SetMobileJoystickUiVisible(visible);
+        UpdateMobileJoystickSharedState(visible);
+
+        if (!visible)
+        {
+            ClearMobileJoystick();
+            return Vector2.zero;
+        }
+
+        mobileJoystickCenterScreen = GetMobileJoystickCenterScreen();
+        SetMobileJoystickBasePosition(mobileJoystickCenterScreen);
+
+        if (TryUpdateMobileJoystickFromTouch(out Vector2 touchAxis))
+            return touchAxis;
+
+        if (TryUpdateMobileJoystickFromMouse(out Vector2 mouseAxis))
+            return mouseAxis;
+
+        ClearMobileJoystick();
+        return Vector2.zero;
+    }
+
+    private bool TryUpdateMobileJoystickFromTouch(out Vector2 axis)
+    {
+        axis = Vector2.zero;
+
+        Touchscreen touchscreen = Touchscreen.current;
+        if (touchscreen == null)
+            return false;
+
+        for (int i = 0; i < touchscreen.touches.Count; i++)
+        {
+            var touch = touchscreen.touches[i];
+            if (touch == null)
+                continue;
+
+            int touchId = touch.touchId.ReadValue();
+            Vector2 position = touch.position.ReadValue();
+            bool pressedThisFrame = touch.press.wasPressedThisFrame;
+            bool isPressed = touch.press.isPressed;
+            bool releasedThisFrame = touch.press.wasReleasedThisFrame;
+
+            if (mobileJoystickPointerId == NoMobileJoystickPointer)
+            {
+                if (!pressedThisFrame || !IsInMobileJoystickActivationZone(position))
+                    continue;
+
+                mobileJoystickPointerId = touchId;
+                reservedMobileJoystickPointerId = touchId;
+                ClearTapTracking();
+            }
+
+            if (mobileJoystickPointerId != touchId)
+                continue;
+
+            if (!isPressed || releasedThisFrame)
+            {
+                ClearMobileJoystick();
+                return false;
+            }
+
+            axis = CalculateMobileJoystickAxis(position);
+            return true;
+        }
+
+        return false;
+    }
+
+    private bool TryUpdateMobileJoystickFromMouse(out Vector2 axis)
+    {
+        axis = Vector2.zero;
+
+#if UNITY_EDITOR
+        if (!showMobileJoystickInEditor)
+            return false;
+
+        Mouse mouse = Mouse.current;
+        if (mouse == null)
+            return false;
+
+        Vector2 position = mouse.position.ReadValue();
+        if (mobileJoystickPointerId == NoMobileJoystickPointer)
+        {
+            if (!mouse.leftButton.wasPressedThisFrame || !IsInMobileJoystickActivationZone(position))
+                return false;
+
+            mobileJoystickPointerId = -1;
+            reservedMobileJoystickPointerId = -1;
+            ClearTapTracking();
+        }
+
+        if (mobileJoystickPointerId != -1)
+            return false;
+
+        if (!mouse.leftButton.isPressed)
+        {
+            ClearMobileJoystick();
+            return false;
+        }
+
+        axis = CalculateMobileJoystickAxis(position);
+        return true;
+#else
+        return false;
+#endif
+    }
+
+    private Vector2 CalculateMobileJoystickAxis(Vector2 pointerScreenPosition)
+    {
+        Vector2 delta = pointerScreenPosition - mobileJoystickCenterScreen;
+        float radius = Mathf.Max(1f, mobileJoystickRadiusPixels);
+        Vector2 clamped = Vector2.ClampMagnitude(delta, radius);
+        Vector2 rawAxis = clamped / radius;
+
+        float magnitude = rawAxis.magnitude;
+        if (magnitude <= mobileJoystickDeadZone)
+        {
+            mobileJoystickAxis = Vector2.zero;
+        }
+        else
+        {
+            float scaledMagnitude = Mathf.InverseLerp(mobileJoystickDeadZone, 1f, magnitude);
+            mobileJoystickAxis = rawAxis.normalized * scaledMagnitude;
+        }
+
+        SetMobileJoystickKnobOffset(clamped);
+        return mobileJoystickAxis;
+    }
+
+    private Vector2 ApplyMobileJoystickForwardTurnDeadZone(Vector2 axis)
+    {
+        if (axis.y > mobileJoystickDeadZone && Mathf.Abs(axis.x) <= mobileJoystickForwardTurnDeadZone)
+            axis.x = 0f;
+
+        return axis;
+    }
+
+    private void ClearMobileJoystick()
+    {
+        mobileJoystickPointerId = NoMobileJoystickPointer;
+        reservedMobileJoystickPointerId = NoMobileJoystickPointer;
+        mobileJoystickAxis = Vector2.zero;
+        SetMobileJoystickKnobOffset(Vector2.zero);
+    }
+
+    private bool ShouldShowMobileJoystick()
+    {
+        if (!ShouldUseMobileJoystick())
+            return false;
+
+        if (dir != null && dir.gen != null && !dir.gen.buildComplete)
+            return false;
+
+        SceneFader fader = dir != null ? dir.sceneFader : null;
+        if (fader != null)
+        {
+            if (fader.menuCanvasGroup != null && fader.menuCanvasGroup.alpha > 0.01f)
+                return false;
+            if (fader.splashCanvasGroup != null && fader.splashCanvasGroup.alpha > 0.01f)
+                return false;
+        }
+
+        return true;
+    }
+
+    private bool ShouldUseMobileJoystick()
+    {
+        if (!enableMobileJoystick)
+            return false;
+
+#if UNITY_EDITOR
+        return showMobileJoystickInEditor;
+#else
+        return Application.isMobilePlatform;
+#endif
+    }
+
+    private Vector2 GetMobileJoystickCenterScreen()
+    {
+        float radius = Mathf.Max(1f, mobileJoystickRadiusPixels);
+        return new Vector2(
+            mobileJoystickMarginPixels.x + radius,
+            mobileJoystickMarginPixels.y + radius);
+    }
+
+    private bool IsInMobileJoystickActivationZone(Vector2 screenPosition)
+    {
+        return GetMobileJoystickActivationRect().Contains(screenPosition);
+    }
+
+    private Rect GetMobileJoystickActivationRect()
+    {
+        float width = Screen.width * Mathf.Clamp01(mobileJoystickActivationWidthPercent);
+        float height = Screen.height * Mathf.Clamp01(mobileJoystickActivationHeightPercent);
+        return new Rect(0f, 0f, width, height);
+    }
+
+    private void UpdateMobileJoystickSharedState(bool visible)
+    {
+        mobileJoystickVisibleForOtherInput = visible;
+        mobileJoystickActivationRectForOtherInput = visible ? GetMobileJoystickActivationRect() : default;
+    }
+
+    private void EnsureMobileJoystickUi()
+    {
+        if (mobileJoystickCanvas != null)
+            return;
+
+        GameObject canvasObject = new("MobileTouchControlsCanvas");
+        mobileJoystickCanvas = canvasObject.AddComponent<Canvas>();
+        mobileJoystickCanvas.renderMode = RenderMode.ScreenSpaceOverlay;
+        mobileJoystickCanvas.sortingOrder = 500;
+        canvasObject.AddComponent<CanvasScaler>();
+
+        mobileJoystickBase = CreateMobileJoystickImage("JoystickBase", canvasObject.transform, mobileJoystickRadiusPixels * 2f, mobileJoystickBaseColor);
+        mobileJoystickKnob = CreateMobileJoystickImage("JoystickKnob", mobileJoystickBase, mobileJoystickRadiusPixels * 0.88f, mobileJoystickKnobColor);
+        SetMobileJoystickKnobOffset(Vector2.zero);
+    }
+
+    private RectTransform CreateMobileJoystickImage(string objectName, Transform parent, float size, Color color)
+    {
+        GameObject imageObject = new(objectName);
+        imageObject.transform.SetParent(parent, worldPositionStays: false);
+
+        Image image = imageObject.AddComponent<Image>();
+        image.sprite = CreateCircleSprite(objectName);
+        image.color = color;
+        image.raycastTarget = false;
+
+        RectTransform rect = imageObject.GetComponent<RectTransform>();
+        rect.anchorMin = Vector2.zero;
+        rect.anchorMax = Vector2.zero;
+        rect.pivot = new Vector2(0.5f, 0.5f);
+        rect.sizeDelta = new Vector2(size, size);
+        rect.anchoredPosition = Vector2.zero;
+        return rect;
+    }
+
+    private static Sprite CreateCircleSprite(string spriteName)
+    {
+        const int textureSize = 64;
+        Texture2D texture = new(textureSize, textureSize, TextureFormat.RGBA32, false)
+        {
+            name = spriteName,
+            hideFlags = HideFlags.HideAndDontSave
+        };
+
+        Color clear = new(1f, 1f, 1f, 0f);
+        Color white = Color.white;
+        float radius = (textureSize - 2) * 0.5f;
+        Vector2 center = new((textureSize - 1) * 0.5f, (textureSize - 1) * 0.5f);
+
+        for (int y = 0; y < textureSize; y++)
+        {
+            for (int x = 0; x < textureSize; x++)
+            {
+                float distance = Vector2.Distance(new Vector2(x, y), center);
+                float alpha = Mathf.Clamp01(radius - distance + 1f);
+                texture.SetPixel(x, y, alpha > 0f ? new Color(white.r, white.g, white.b, alpha) : clear);
+            }
+        }
+
+        texture.Apply(updateMipmaps: false, makeNoLongerReadable: true);
+        return Sprite.Create(texture, new Rect(0f, 0f, textureSize, textureSize), new Vector2(0.5f, 0.5f), textureSize);
+    }
+
+    private void SetMobileJoystickUiVisible(bool visible)
+    {
+        if (mobileJoystickCanvas != null && mobileJoystickCanvas.gameObject.activeSelf != visible)
+            mobileJoystickCanvas.gameObject.SetActive(visible);
+    }
+
+    private void SetMobileJoystickBasePosition(Vector2 screenPosition)
+    {
+        if (mobileJoystickBase != null)
+            mobileJoystickBase.anchoredPosition = screenPosition;
+    }
+
+    private void SetMobileJoystickKnobOffset(Vector2 offset)
+    {
+        if (mobileJoystickKnob != null)
+            mobileJoystickKnob.anchoredPosition = offset;
+    }
+
     private static bool IsShiftClickModifierActive()
     {
         Keyboard keyboard = Keyboard.current;
@@ -714,15 +1048,53 @@ public class NewInputAdapter : MonoBehaviour
         primaryPressStartPos = default;
         primaryPressPointerId = 0;
     }
-    private bool IsPointerOverUI(int pointerId = -1)
+    private bool IsPointerOverUI(int pointerId = -1, Vector2? screenPosition = null)
     {
         if (EventSystem.current == null)
             return false;
 
         if (pointerId >= 0)
-            return EventSystem.current.IsPointerOverGameObject(pointerId);
+        {
+            if (EventSystem.current.IsPointerOverGameObject(pointerId))
+                return true;
 
-        return EventSystem.current.IsPointerOverGameObject();
+            return screenPosition.HasValue && IsScreenPositionOverBlockingUI(screenPosition.Value);
+        }
+
+        if (EventSystem.current.IsPointerOverGameObject())
+            return true;
+
+        return screenPosition.HasValue && IsScreenPositionOverBlockingUI(screenPosition.Value);
+    }
+
+    private static bool IsScreenPositionOverBlockingUI(Vector2 screenPosition)
+    {
+        if (EventSystem.current == null)
+            return false;
+
+        var eventData = new PointerEventData(EventSystem.current)
+        {
+            position = screenPosition
+        };
+
+        var results = new List<RaycastResult>();
+        EventSystem.current.RaycastAll(eventData, results);
+
+        for (int i = 0; i < results.Count; i++)
+        {
+            GameObject hitObject = results[i].gameObject;
+            if (hitObject == null)
+                continue;
+
+            if (hitObject.GetComponentInParent<Selectable>(includeInactive: false) != null)
+                return true;
+
+            Graphic graphic = hitObject.GetComponent<Graphic>();
+            if (graphic != null && graphic.raycastTarget)
+                return true;
+        }
+
+        return false;
     }
 
     private bool IsMouseOverGameView()

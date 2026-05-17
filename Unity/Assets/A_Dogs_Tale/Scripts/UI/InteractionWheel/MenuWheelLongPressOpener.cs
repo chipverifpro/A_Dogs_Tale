@@ -92,6 +92,13 @@ namespace DogGame.UI.InteractionWheel
             // Start tracking on press-down (Option 3: does NOT require hitting a target)
             if (pointer.pressedThisFrame)
             {
+                if (NewInputAdapter.IsPointerReservedForMobileJoystick(pointer.pointerId) ||
+                    NewInputAdapter.IsScreenPositionInMobileJoystickZone(pointer.screenPos))
+                {
+                    ClearPressTracking();
+                    return;
+                }
+
                 if (IsPointerOverUI(pointer))
                 {
                     ClearPressTracking();
@@ -105,6 +112,12 @@ namespace DogGame.UI.InteractionWheel
             // Update tracking
             if (!isPressTracking)
                 return;
+
+            if (NewInputAdapter.IsPointerReservedForMobileJoystick(pointer.pointerId))
+            {
+                ClearPressTracking();
+                return;
+            }
 
             // If pointer released/canceled, stop tracking
             if (!pointer.isDown)
@@ -307,10 +320,18 @@ namespace DogGame.UI.InteractionWheel
                     if (!isDown && !pressedThisFrame)
                         continue;
 
+                    int pointerId = touch.touchId.ReadValue();
+                    Vector2 screenPos = touch.position.ReadValue();
+                    if (NewInputAdapter.IsPointerReservedForMobileJoystick(pointerId) ||
+                        NewInputAdapter.IsScreenPositionInMobileJoystickZone(screenPos))
+                    {
+                        continue;
+                    }
+
                     pointer = new PointerState
                     {
-                        pointerId = touch.touchId.ReadValue(),
-                        screenPos = touch.position.ReadValue(),
+                        pointerId = pointerId,
+                        screenPos = screenPos,
                         isDown = isDown,
                         pressedThisFrame = pressedThisFrame
                     };

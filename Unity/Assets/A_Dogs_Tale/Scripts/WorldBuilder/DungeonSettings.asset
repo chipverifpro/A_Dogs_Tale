@@ -17,7 +17,7 @@ MonoBehaviour:
   showBuildProcess: 0
   stepDelay: 0.1
   randomizeSeed: 1
-  seed: 84069457
+  seed: 196102512
   useThinWalls: 1
   mapWidth: 25
   mapHeight: 25

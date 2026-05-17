@@ -26,6 +26,33 @@ public class MenuManager : MonoBehaviour
     [SerializeField] private bool useNativeButtonSpriteSize = true;
     [SerializeField] private float buttonSpriteSizeScale = 0.667f;
 
+    [Header("Tall Display Title Layout")]
+    [SerializeField] private RectTransform titleMenuButtons;
+    [SerializeField] private RectTransform titleText;
+    [SerializeField] private float tallDisplayAspectThreshold = 1.5f;
+    [SerializeField] private Vector2 tallDisplayButtonsPosition = Vector2.zero;
+    [SerializeField] private float tallDisplayButtonSpacing = 3f;
+    [SerializeField] private float tallDisplayTitleScaleMultiplier = 0.5f;
+
+    private Vector2 defaultTitleMenuButtonsPosition;
+    private Vector3 defaultTitleMenuButtonsScale;
+    private Vector3 defaultTitleTextScale;
+    private VerticalLayoutGroup titleMenuLayoutGroup;
+    private bool defaultTitleMenuLayoutGroupEnabled;
+    private readonly Dictionary<RectTransform, TitleButtonLayoutState> defaultTitleButtonLayouts = new();
+    private bool hasDefaultTitleLayout;
+    private int lastLayoutScreenWidth = -1;
+    private int lastLayoutScreenHeight = -1;
+
+    private struct TitleButtonLayoutState
+    {
+        public Vector2 AnchorMin;
+        public Vector2 AnchorMax;
+        public Vector2 Pivot;
+        public Vector2 AnchoredPosition;
+        public Vector2 SizeDelta;
+    }
+
     #region Startup
     void Awake()
     {
@@ -67,6 +94,7 @@ public class MenuManager : MonoBehaviour
         if (!settingsDialog) settingsDialog = gameObject.AddComponent<MenuSettingsDialog>();
         settingsDialog.Initialize(this);
         RefreshMainMenuButtonVisibility();
+        ApplyTitleScreenResponsiveLayout(force: true);
     }
 
     void Start()
@@ -81,6 +109,12 @@ public class MenuManager : MonoBehaviour
 
         if (buttonsParent) buttonsParent.SetActive(true);
         RefreshMainMenuButtonVisibility();
+        ApplyTitleScreenResponsiveLayout(force: true);
+    }
+
+    void Update()
+    {
+        ApplyTitleScreenResponsiveLayout();
     }
     #endregion
 
@@ -238,6 +272,175 @@ public class MenuManager : MonoBehaviour
 
         SetButtonVisible(btnContinue, hasCurrentMap);
         SetButtonVisible(btnSave, hasCurrentMap);
+        ApplyTitleScreenResponsiveLayout(force: true);
+    }
+
+    void ApplyTitleScreenResponsiveLayout(bool force = false)
+    {
+        if (!force && Screen.width == lastLayoutScreenWidth && Screen.height == lastLayoutScreenHeight)
+            return;
+
+        ResolveTitleScreenLayoutReferences();
+
+        lastLayoutScreenWidth = Screen.width;
+        lastLayoutScreenHeight = Screen.height;
+
+        if (!hasDefaultTitleLayout)
+            return;
+
+        bool isTallDisplay = Screen.width > 0 && Screen.height > Screen.width * tallDisplayAspectThreshold;
+        if (titleMenuButtons != null)
+        {
+            if (isTallDisplay)
+                ApplyTallDisplayButtonLayout();
+            else
+                RestoreDefaultButtonLayout();
+        }
+
+        if (titleText != null)
+        {
+            titleText.localScale = isTallDisplay
+                ? defaultTitleTextScale * Mathf.Max(0.01f, tallDisplayTitleScaleMultiplier)
+                : defaultTitleTextScale;
+        }
+    }
+
+    void ApplyTallDisplayButtonLayout()
+    {
+        if (titleMenuButtons == null)
+            return;
+
+        CaptureMissingTitleButtonLayouts();
+
+        if (titleMenuLayoutGroup != null)
+            titleMenuLayoutGroup.enabled = false;
+
+        titleMenuButtons.anchoredPosition = tallDisplayButtonsPosition;
+        titleMenuButtons.localScale = defaultTitleMenuButtonsScale;
+
+        float totalHeight = 0f;
+        int activeCount = 0;
+        for (int i = 0; i < titleMenuButtons.childCount; i++)
+        {
+            RectTransform childRect = titleMenuButtons.GetChild(i) as RectTransform;
+            if (childRect == null || !childRect.gameObject.activeSelf)
+                continue;
+
+            totalHeight += GetButtonHeight(childRect);
+            activeCount++;
+        }
+
+        if (activeCount == 0)
+            return;
+
+        totalHeight += tallDisplayButtonSpacing * (activeCount - 1);
+        float y = totalHeight * 0.5f;
+        for (int i = 0; i < titleMenuButtons.childCount; i++)
+        {
+            RectTransform childRect = titleMenuButtons.GetChild(i) as RectTransform;
+            if (childRect == null || !childRect.gameObject.activeSelf)
+                continue;
+
+            float height = GetButtonHeight(childRect);
+            y -= height * 0.5f;
+            childRect.anchorMin = new Vector2(0.5f, 0.5f);
+            childRect.anchorMax = new Vector2(0.5f, 0.5f);
+            childRect.pivot = new Vector2(0.5f, 0.5f);
+            childRect.anchoredPosition = new Vector2(0f, y);
+            y -= height * 0.5f + tallDisplayButtonSpacing;
+        }
+    }
+
+    void RestoreDefaultButtonLayout()
+    {
+        if (titleMenuButtons == null)
+            return;
+
+        titleMenuButtons.anchoredPosition = defaultTitleMenuButtonsPosition;
+        titleMenuButtons.localScale = defaultTitleMenuButtonsScale;
+
+        for (int i = 0; i < titleMenuButtons.childCount; i++)
+        {
+            RectTransform childRect = titleMenuButtons.GetChild(i) as RectTransform;
+            if (childRect == null || !defaultTitleButtonLayouts.TryGetValue(childRect, out TitleButtonLayoutState state))
+                continue;
+
+            childRect.anchorMin = state.AnchorMin;
+            childRect.anchorMax = state.AnchorMax;
+            childRect.pivot = state.Pivot;
+            childRect.anchoredPosition = state.AnchoredPosition;
+            childRect.sizeDelta = state.SizeDelta;
+        }
+
+        if (titleMenuLayoutGroup != null)
+            titleMenuLayoutGroup.enabled = defaultTitleMenuLayoutGroupEnabled;
+    }
+
+    void CaptureMissingTitleButtonLayouts()
+    {
+        if (titleMenuButtons == null)
+            return;
+
+        for (int i = 0; i < titleMenuButtons.childCount; i++)
+        {
+            RectTransform childRect = titleMenuButtons.GetChild(i) as RectTransform;
+            if (childRect == null || defaultTitleButtonLayouts.ContainsKey(childRect))
+                continue;
+
+            defaultTitleButtonLayouts[childRect] = new TitleButtonLayoutState
+            {
+                AnchorMin = childRect.anchorMin,
+                AnchorMax = childRect.anchorMax,
+                Pivot = childRect.pivot,
+                AnchoredPosition = childRect.anchoredPosition,
+                SizeDelta = childRect.sizeDelta
+            };
+        }
+    }
+
+    static float GetButtonHeight(RectTransform buttonRect)
+    {
+        return buttonRect.rect.height > 0f ? buttonRect.rect.height : buttonRect.sizeDelta.y;
+    }
+
+    void ResolveTitleScreenLayoutReferences()
+    {
+        if (titleMenuButtons == null)
+        {
+            GameObject buttonsObject = FindIncludingInactive("Buttons");
+            if (buttonsObject != null)
+                titleMenuButtons = buttonsObject.GetComponent<RectTransform>();
+        }
+
+        if (titleText == null)
+        {
+            GameObject titleObject = FindIncludingInactive("GameTitle (1)");
+            if (titleObject == null)
+                titleObject = FindIncludingInactive("GameTitle");
+            if (titleObject != null)
+                titleText = titleObject.GetComponent<RectTransform>();
+        }
+
+        if (hasDefaultTitleLayout)
+            return;
+
+        if (titleMenuButtons == null && titleText == null)
+            return;
+
+        if (titleMenuButtons != null)
+        {
+            defaultTitleMenuButtonsPosition = titleMenuButtons.anchoredPosition;
+            defaultTitleMenuButtonsScale = titleMenuButtons.localScale;
+            titleMenuLayoutGroup = titleMenuButtons.GetComponent<VerticalLayoutGroup>();
+            if (titleMenuLayoutGroup != null)
+                defaultTitleMenuLayoutGroupEnabled = titleMenuLayoutGroup.enabled;
+            CaptureMissingTitleButtonLayouts();
+        }
+
+        if (titleText != null)
+            defaultTitleTextScale = titleText.localScale;
+
+        hasDefaultTitleLayout = true;
     }
 
     bool TryResolveGeneratorQuiet(out DungeonGenerator mapGenerator)
