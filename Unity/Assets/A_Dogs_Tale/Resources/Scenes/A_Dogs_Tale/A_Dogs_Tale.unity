@@ -82359,6 +82359,12 @@ MonoBehaviour:
   settingsIconInset: {x: 20, y: 20}
   useNativeButtonSpriteSize: 1
   buttonSpriteSizeScale: 0.667
+  titleMenuButtons: {fileID: 0}
+  titleText: {fileID: 0}
+  tallDisplayAspectThreshold: 1.5
+  tallDisplayButtonsPosition: {x: 0, y: 0}
+  tallDisplayButtonSpacing: 3
+  tallDisplayTitleScaleMultiplier: 0.5
   buttonsParent: {fileID: 2135703271}
   btnSimulation: {fileID: 1818943376}
   btnContinue: {fileID: 0}
@@ -94723,12 +94729,13 @@ MonoBehaviour:
   tapMaxSeconds: 0.3
   tapMaxMovePixels: 18
   enableMobileJoystick: 1
-  showMobileJoystickInEditor: 0
+  showMobileJoystickInEditor: 1
   mobileJoystickMarginPixels: {x: 36, y: 36}
   mobileJoystickRadiusPixels: 88
   mobileJoystickActivationWidthPercent: 0.45
   mobileJoystickActivationHeightPercent: 0.55
   mobileJoystickDeadZone: 0.12
+  mobileJoystickForwardTurnDeadZone: 0.1
   mobileJoystickBaseColor: {r: 1, g: 1, b: 1, a: 0.2}
   mobileJoystickKnobColor: {r: 1, g: 1, b: 1, a: 0.45}
 --- !u!114 &942637345
@@ -110412,6 +110419,7 @@ MonoBehaviour:
   autoHideTopControls: 1
   topControlsSlideDuration: 0.18
   topControlsHiddenTopPadding: 8
+  respectTopSafeArea: 1
   tooltipFontSize: 22
   tooltipMaxWidth: 340
   tooltipPadding: {x: 16, y: 10}

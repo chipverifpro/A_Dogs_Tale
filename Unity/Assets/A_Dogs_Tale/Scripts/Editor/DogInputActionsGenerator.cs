@@ -154,7 +154,9 @@ public static class DogInputActionsGenerator
         cancelAction.AddBinding("<Keyboard>/escape");
         cancelAction.AddBinding("<Gamepad>/buttonEast");
         pointAction.AddBinding("<Mouse>/position");
+        pointAction.AddBinding("<Touchscreen>/touch*/position");
         clickAction.AddBinding("<Mouse>/leftButton");
+        clickAction.AddBinding("<Touchscreen>/touch*/press");
         clickAction.AddBinding("<Gamepad>/buttonSouth");
         rightClickAction.AddBinding("<Mouse>/rightButton");
         middleClickAction.AddBinding("<Mouse>/middleButton");

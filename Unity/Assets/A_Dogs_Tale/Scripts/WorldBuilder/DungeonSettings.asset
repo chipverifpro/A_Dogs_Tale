@@ -17,10 +17,10 @@ MonoBehaviour:
   showBuildProcess: 0
   stepDelay: 0.1
   randomizeSeed: 1
-  seed: 196102512
+  seed: -1524356450
   useThinWalls: 1
-  mapWidth: 25
-  mapHeight: 25
+  mapWidth: 100
+  mapHeight: 100
   borderKeepout: 0
   roundWorld: 1
   maxElevation: 100
@@ -41,7 +41,7 @@ MonoBehaviour:
   skipOrthogonalWhenDiagonal: 1
   perimeterWallSteps: 30
   generateWallsBetweenTouchingRooms: 1
-  useScatterRooms: 0
+  useScatterRooms: 1
   roomAttempts: 50
   roomsMax: 15
   minRoomSize: 30
@@ -82,7 +82,7 @@ MonoBehaviour:
   roomGrowAlgo: 0
   scrapAlgo: 1
   doorAlgo: 0
-  usePackedRooms: 1
+  usePackedRooms: 0
   useRoundPen: 0
   packedRoomTheme: 0
   corridor:
