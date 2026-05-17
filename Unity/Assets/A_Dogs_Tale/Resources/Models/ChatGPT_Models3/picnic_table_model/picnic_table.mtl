@@ -1,0 +1,18 @@
+# Picnic Table Materials
+newmtl Wood
+Kd 0.62 0.36 0.17
+Ka 0.25 0.14 0.06
+Ks 0.12 0.10 0.08
+Ns 18
+
+newmtl WoodDark
+Kd 0.36 0.21 0.10
+Ka 0.18 0.10 0.05
+Ks 0.08 0.07 0.06
+Ns 12
+
+newmtl Metal
+Kd 0.55 0.55 0.55
+Ka 0.20 0.20 0.20
+Ks 0.50 0.50 0.50
+Ns 80

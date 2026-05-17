@@ -1,0 +1,9 @@
+{
+  "models": [
+    "goose.obj",
+    "sheep.obj",
+    "dairy_cow.obj",
+    "brown_bull.obj"
+  ],
+  "shared_materials": "farm_animals_materials.mtl"
+}

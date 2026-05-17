@@ -1,0 +1,73 @@
+# Shared Dog Agility Course Materials
+
+newmtl FrameWhite
+Kd 0.92 0.92 0.92
+Ka 0.30 0.30 0.30
+Ks 0.15 0.15 0.15
+Ns 16
+
+newmtl BaseBlue
+Kd 0.18 0.36 0.82
+Ka 0.05 0.10 0.25
+Ks 0.08 0.10 0.18
+Ns 16
+
+newmtl HoopYellow
+Kd 0.96 0.78 0.14
+Ka 0.30 0.24 0.05
+Ks 0.10 0.09 0.05
+Ns 14
+
+newmtl AccentRed
+Kd 0.84 0.16 0.16
+Ka 0.24 0.04 0.04
+Ks 0.08 0.04 0.04
+Ns 10
+
+newmtl Metal
+Kd 0.58 0.58 0.58
+Ka 0.22 0.22 0.22
+Ks 0.40 0.40 0.40
+Ns 80
+
+newmtl PawBlue
+Kd 0.10 0.30 0.78
+Ka 0.04 0.10 0.22
+Ks 0.06 0.09 0.18
+Ns 14
+
+newmtl BoardBrown
+Kd 0.54 0.32 0.16
+Ka 0.20 0.12 0.06
+Ks 0.10 0.08 0.06
+Ns 18
+
+newmtl GripDark
+Kd 0.18 0.18 0.18
+Ka 0.08 0.08 0.08
+Ks 0.05 0.05 0.05
+Ns 8
+
+newmtl BaseWood
+Kd 0.38 0.22 0.11
+Ka 0.15 0.08 0.04
+Ks 0.07 0.06 0.05
+Ns 12
+
+newmtl Rubber
+Kd 0.03 0.03 0.03
+Ka 0.01 0.01 0.01
+Ks 0.02 0.02 0.02
+Ns 6
+
+newmtl TunnelBlue
+Kd 0.12 0.36 0.80
+Ka 0.05 0.11 0.24
+Ks 0.06 0.08 0.14
+Ns 14
+
+newmtl TunnelYellow
+Kd 0.96 0.79 0.18
+Ka 0.30 0.24 0.06
+Ks 0.07 0.06 0.04
+Ns 10

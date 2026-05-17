@@ -1,0 +1,13 @@
+{
+  "models": [
+    "dog_agility_hoop.obj",
+    "dog_teeter_totter.obj",
+    "dog_bar_jump.obj",
+    "dog_weave_poles.obj",
+    "dog_tunnel.obj",
+    "dog_pause_table.obj",
+    "dog_a_frame.obj",
+    "dog_dog_walk.obj"
+  ],
+  "shared_materials": "agility_course_materials.mtl"
+}
