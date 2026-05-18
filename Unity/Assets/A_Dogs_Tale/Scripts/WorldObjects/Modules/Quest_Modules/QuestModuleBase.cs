@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Text;
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -32,6 +33,7 @@ namespace DogGame.Modules
     {
         private static readonly QuestObjectiveSnapshot[] NoObjectives = Array.Empty<QuestObjectiveSnapshot>();
         private static readonly List<QuestModuleBase> KnownQuestModulesMutable = new();
+        private const string QuestBannerIconSpriteName = "AndroidButtonsAndQuests_1";
 
         public static IReadOnlyList<QuestModuleBase> KnownQuestModules => KnownQuestModulesMutable;
 
@@ -121,6 +123,7 @@ namespace DogGame.Modules
             QuestManager.RegisterActiveQuest(this);
             onQuestStarted.Invoke();
             onStateChanged.Invoke(currentStateName);
+            LogQuestStateToBottomBanner(currentStateName, message);
         }
 
         protected void ChangeState(string stateName, string message = "")
@@ -135,6 +138,7 @@ namespace DogGame.Modules
             stateElapsedSeconds = 0f;
             lastMessage = message;
             onStateChanged.Invoke(currentStateName);
+            LogQuestStateToBottomBanner(currentStateName, message);
         }
 
         protected void CompleteQuest(string message = "")
@@ -146,6 +150,7 @@ namespace DogGame.Modules
             QuestManager.UnregisterQuest(this);
             onQuestCompleted.Invoke();
             onStateChanged.Invoke(currentStateName);
+            LogQuestStateToBottomBanner(currentStateName, message);
         }
 
         protected void FailQuest(string reason)
@@ -157,6 +162,7 @@ namespace DogGame.Modules
             QuestManager.UnregisterQuest(this);
             onQuestFailed.Invoke(reason);
             onStateChanged.Invoke(currentStateName);
+            LogQuestStateToBottomBanner(currentStateName, reason);
         }
 
         public virtual void CancelQuest(string reason = "cancelled")
@@ -168,6 +174,7 @@ namespace DogGame.Modules
             QuestManager.UnregisterQuest(this);
             onQuestCancelled.Invoke(reason);
             onStateChanged.Invoke(currentStateName);
+            LogQuestStateToBottomBanner(currentStateName, reason);
         }
 
         protected void ResetQuestState()
@@ -198,6 +205,46 @@ namespace DogGame.Modules
                 return;
 
             KnownQuestModulesMutable.Add(questModule);
+        }
+
+        private void LogQuestStateToBottomBanner(string stateName, string message)
+        {
+            string title = string.IsNullOrWhiteSpace(QuestTitle) ? ObjectDisplayName : QuestTitle;
+            string displayState = FormatQuestStateName(stateName);
+            string bannerMessage = string.IsNullOrWhiteSpace(message)
+                ? $"Quest: {title} - {displayState}"
+                : $"Quest: {title} - {displayState}: {message}";
+
+            BottomBanner.LogMessageWithIcon(
+                BannerSense.None,
+                BannerLevel.None,
+                bannerMessage,
+                QuestBannerIconSpriteName);
+        }
+
+        private static string FormatQuestStateName(string stateName)
+        {
+            if (string.IsNullOrWhiteSpace(stateName))
+                return "Updated";
+
+            StringBuilder builder = new();
+            char previous = '\0';
+
+            foreach (char current in stateName.Trim())
+            {
+                if (builder.Length > 0 &&
+                    current != ' ' &&
+                    char.IsUpper(current) &&
+                    (char.IsLower(previous) || char.IsDigit(previous)))
+                {
+                    builder.Append(' ');
+                }
+
+                builder.Append(current == '_' ? ' ' : current);
+                previous = current;
+            }
+
+            return builder.ToString();
         }
     }
 }

@@ -28,18 +28,17 @@ public class MenuManager : MonoBehaviour
 
     [Header("Tall Display Title Layout")]
     [SerializeField] private RectTransform titleMenuButtons;
-    [SerializeField] private RectTransform titleText;
+    [SerializeField] private RectTransform titleLarge;
+    [SerializeField] private RectTransform titleSmall;
     [SerializeField] private RectTransform titleLeashHanging;
     [SerializeField] private float tallDisplayAspectThreshold = 1.5f;
     [SerializeField] private Vector2 tallDisplayButtonsPosition = Vector2.zero;
     [SerializeField] private float tallDisplayButtonSpacing = 3f;
-    [SerializeField] private float tallDisplayTitleScaleMultiplier = 0.5f;
     [SerializeField] private float tallDisplaySettingsDialogScaleMultiplier = 0.5f;
 
     private Vector2 defaultTitleMenuButtonsPosition;
     private Vector3 defaultTitleMenuButtonsScale;
     private Vector2 defaultTitleLeashHangingPosition;
-    private Vector3 defaultTitleTextScale;
     private VerticalLayoutGroup titleMenuLayoutGroup;
     private bool defaultTitleMenuLayoutGroupEnabled;
     private readonly Dictionary<RectTransform, TitleButtonLayoutState> defaultTitleButtonLayouts = new();
@@ -308,12 +307,7 @@ public class MenuManager : MonoBehaviour
                 RestoreDefaultLeashLayout();
         }
 
-        if (titleText != null)
-        {
-            titleText.localScale = isTallDisplay
-                ? defaultTitleTextScale * Mathf.Max(0.01f, tallDisplayTitleScaleMultiplier)
-                : defaultTitleTextScale;
-        }
+        ApplyTitleVariantVisibility(isTallDisplay);
 
         if (settingsDialog != null)
             settingsDialog.ApplyTallDisplayScale(isTallDisplay, tallDisplaySettingsDialogScaleMultiplier);
@@ -420,6 +414,15 @@ public class MenuManager : MonoBehaviour
         titleLeashHanging.anchoredPosition = defaultTitleLeashHangingPosition;
     }
 
+    void ApplyTitleVariantVisibility(bool isTallDisplay)
+    {
+        if (titleLarge != null)
+            titleLarge.gameObject.SetActive(!isTallDisplay);
+
+        if (titleSmall != null)
+            titleSmall.gameObject.SetActive(isTallDisplay);
+    }
+
     void CaptureMissingTitleButtonLayouts()
     {
         if (titleMenuButtons == null)
@@ -456,13 +459,18 @@ public class MenuManager : MonoBehaviour
                 titleMenuButtons = buttonsObject.GetComponent<RectTransform>();
         }
 
-        if (titleText == null)
+        if (titleLarge == null)
         {
-            GameObject titleObject = FindIncludingInactive("GameTitle (1)");
-            if (titleObject == null)
-                titleObject = FindIncludingInactive("GameTitle");
+            GameObject titleObject = FindIncludingInactive("GameTitle Large");
             if (titleObject != null)
-                titleText = titleObject.GetComponent<RectTransform>();
+                titleLarge = titleObject.GetComponent<RectTransform>();
+        }
+
+        if (titleSmall == null)
+        {
+            GameObject titleObject = FindIncludingInactive("GameTitle Small");
+            if (titleObject != null)
+                titleSmall = titleObject.GetComponent<RectTransform>();
         }
 
         if (titleLeashHanging == null)
@@ -475,7 +483,7 @@ public class MenuManager : MonoBehaviour
         if (hasDefaultTitleLayout)
             return;
 
-        if (titleMenuButtons == null && titleText == null && titleLeashHanging == null)
+        if (titleMenuButtons == null && titleLarge == null && titleSmall == null && titleLeashHanging == null)
             return;
 
         if (titleMenuButtons != null)
@@ -487,9 +495,6 @@ public class MenuManager : MonoBehaviour
                 defaultTitleMenuLayoutGroupEnabled = titleMenuLayoutGroup.enabled;
             CaptureMissingTitleButtonLayouts();
         }
-
-        if (titleText != null)
-            defaultTitleTextScale = titleText.localScale;
 
         if (titleLeashHanging != null)
             defaultTitleLeashHangingPosition = titleLeashHanging.anchoredPosition;

@@ -4,6 +4,7 @@ using DogGame.Modules;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.Events;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
@@ -17,6 +18,7 @@ public class ScentGUI : MonoBehaviour
     private const string EmoteControlsContainerName = "EmoteControls";
     private const string InventoryControlsContainerName = "InventoryControls";
     private const string DigControlsContainerName = "DigControls";
+    private const string LeftActionControlsContainerName = "LeftActionControls";
     private const string TooltipContainerName = "Tooltips";
 
     [Header("External object references")]
@@ -31,11 +33,14 @@ public class ScentGUI : MonoBehaviour
     [SerializeField] private string digHoleSpriteResourcePath = "Sprites/DigHoleSpriteA";
     [SerializeField] private string pulldownFrameResourcePath = "Sprites/PulldownFrame";
     [SerializeField] private string pulldownTabResourcePath = "Sprites/PulldownTab";
+    [SerializeField] private string androidButtonSpriteResourcePath = "Sprites/AndroidButtonsAndQuests";
     [SerializeField] private float noseButtonSize = 176f;
     [SerializeField] private float noseButtonMargin = 24f;
     [SerializeField] private float modeButtonSpacing = 12f;
     [SerializeField] private float topControlButtonSize = 176f;
     [SerializeField] private Vector2 topControlsInset = new Vector2(162f, 52f);
+    [SerializeField] private Vector2 leftActionButtonsInset = new Vector2(0f, 0f);
+    [SerializeField] private float leftActionButtonSpacing = 12f;
     [SerializeField] private Vector2 pulldownFrameSize = new Vector2(1620f, 341f);
     [SerializeField] private Vector2 pulldownFrameOffset = new Vector2(0f, 0f);
     [SerializeField] private Vector2 pulldownTabSize = new Vector2(428f, 98f);
@@ -108,6 +113,12 @@ public class ScentGUI : MonoBehaviour
     private RectTransform digButtonRect;
     private Image digButtonImage;
     private Image digIconImage;
+    private RectTransform homeButtonRect;
+    private Image homeButtonImage;
+    private RectTransform cameraModeButtonRect;
+    private Image cameraModeButtonImage;
+    private RectTransform questButtonRect;
+    private Image questButtonImage;
     private RectTransform emoteDropdownRect;
     private RectTransform emoteDropdownContentRect;
     private ScrollRect emoteDropdownScrollRect;
@@ -370,6 +381,7 @@ public class ScentGUI : MonoBehaviour
         Transform emoteControlsTransform = EnsureSectionContainer(canvasObject.transform, EmoteControlsContainerName);
         Transform inventoryControlsTransform = EnsureSectionContainer(canvasObject.transform, InventoryControlsContainerName);
         Transform digControlsTransform = EnsureSectionContainer(canvasObject.transform, DigControlsContainerName);
+        Transform leftActionControlsTransform = EnsureSectionContainer(canvasObject.transform, LeftActionControlsContainerName);
         Transform tooltipTransform = EnsureSectionContainer(canvasObject.transform, TooltipContainerName);
 
         ReparentExistingUiElement(decisionModeControlsTransform, canvasObject.transform, "DecisionModeTitle");
@@ -383,6 +395,7 @@ public class ScentGUI : MonoBehaviour
         BuildEmoteButton(emoteControlsTransform, canvasObject.transform);
         BuildInventoryButton(inventoryControlsTransform, canvasObject.transform);
         BuildDigButton(digControlsTransform, canvasObject.transform);
+        BuildLeftActionButtons(leftActionControlsTransform, canvasObject.transform);
         BuildDropdown(scentControlsTransform, canvasObject.transform);
         BuildModePanel(decisionModeControlsTransform, canvasObject.transform);
         BuildSpeedPanel(speedControlsTransform, canvasObject.transform);
@@ -710,6 +723,37 @@ public class ScentGUI : MonoBehaviour
         iconRect.localScale = Vector3.one;
         iconRect.anchoredPosition = Vector2.zero;
         iconRect.sizeDelta = Vector2.one * (topControlButtonSize * sizeScale);
+    }
+
+    private void ConfigureLeftActionButtonRect(RectTransform rectTransform, int slotFromTop)
+    {
+        if (rectTransform == null)
+            return;
+
+        rectTransform.anchorMin = new Vector2(0f, 1f);
+        rectTransform.anchorMax = new Vector2(0f, 1f);
+        rectTransform.pivot = new Vector2(0f, 1f);
+        rectTransform.sizeDelta = new Vector2(topControlButtonSize, topControlButtonSize);
+        ApplyLeftActionButtonPosition(rectTransform, slotFromTop);
+    }
+
+    private void ApplyLeftActionButtonPositions()
+    {
+        ApplyLeftActionButtonPosition(homeButtonRect, 0);
+        ApplyLeftActionButtonPosition(cameraModeButtonRect, 1);
+        ApplyLeftActionButtonPosition(questButtonRect, 2);
+    }
+
+    private void ApplyLeftActionButtonPosition(RectTransform rectTransform, int slotFromTop)
+    {
+        if (rectTransform == null)
+            return;
+
+        float scale = GetTopControlsFitScale();
+        rectTransform.localScale = Vector3.one * scale;
+        rectTransform.anchoredPosition = new Vector2(
+            leftActionButtonsInset.x * scale,
+            -(((leftActionButtonsInset.y + ((topControlButtonSize + leftActionButtonSpacing) * slotFromTop)) * scale) + GetTopSafeAreaInset()));
     }
 
     private void BuildNoseButton(Transform parent, Transform searchRoot)
@@ -1224,6 +1268,84 @@ public class ScentGUI : MonoBehaviour
         iconRect.sizeDelta = new Vector2(iconWidth, iconHeight);
     }
 
+    private void BuildLeftActionButtons(Transform parent, Transform searchRoot)
+    {
+        homeButtonRect = BuildLeftActionButton(
+            parent,
+            searchRoot,
+            "HomeButton",
+            spriteIndex: 0,
+            slotFromTop: 0,
+            HandleHomeButtonPressed,
+            "Home",
+            out homeButtonImage);
+
+        cameraModeButtonRect = BuildLeftActionButton(
+            parent,
+            searchRoot,
+            "CameraModeButton",
+            spriteIndex: 2,
+            slotFromTop: 1,
+            HandleCameraModeButtonPressed,
+            "Camera Mode",
+            out cameraModeButtonImage);
+
+        questButtonRect = BuildLeftActionButton(
+            parent,
+            searchRoot,
+            "QuestButton",
+            spriteIndex: 1,
+            slotFromTop: 2,
+            HandleQuestButtonPressed,
+            "Quests",
+            out questButtonImage);
+    }
+
+    private RectTransform BuildLeftActionButton(
+        Transform parent,
+        Transform searchRoot,
+        string buttonName,
+        int spriteIndex,
+        int slotFromTop,
+        UnityAction clickHandler,
+        string tooltipText,
+        out Image buttonImage)
+    {
+        Transform existingButton = FindExistingUiElement(parent, searchRoot, buttonName);
+        GameObject buttonObject;
+        if (existingButton == null)
+        {
+            buttonObject = new GameObject(
+                buttonName,
+                typeof(RectTransform),
+                typeof(Image),
+                typeof(Button));
+            buttonObject.transform.SetParent(parent, false);
+        }
+        else
+        {
+            buttonObject = existingButton.gameObject;
+        }
+
+        RectTransform buttonRect = GetOrAddComponent<RectTransform>(buttonObject);
+        ConfigureLeftActionButtonRect(buttonRect, slotFromTop);
+
+        buttonImage = GetOrAddComponent<Image>(buttonObject);
+        buttonImage.sprite = GetAndroidButtonSprite(spriteIndex);
+        buttonImage.preserveAspect = true;
+        buttonImage.color = Color.white;
+        buttonImage.raycastTarget = true;
+
+        Button button = GetOrAddComponent<Button>(buttonObject);
+        button.targetGraphic = buttonImage;
+        button.onClick.RemoveListener(clickHandler);
+        button.onClick.AddListener(clickHandler);
+
+        ConfigureTooltip(buttonObject, () => tooltipText);
+
+        return buttonRect;
+    }
+
     private void UpdateTopControlsAutoHide()
     {
         if (!uiBuilt)
@@ -1287,6 +1409,7 @@ public class ScentGUI : MonoBehaviour
         ApplyTopControlPosition(emoteButtonRect, 4, y);
         ApplyTopControlPosition(inventoryButtonRect, 5, y);
         ApplyTopControlPosition(digButtonRect, 6, y);
+        ApplyLeftActionButtonPositions();
         ApplyTopPanelPositions();
     }
 
@@ -2597,6 +2720,66 @@ public class ScentGUI : MonoBehaviour
         TerrainDigService.TryDigAt(controlledObject);
     }
 
+    private void HandleHomeButtonPressed()
+    {
+        CloseTopActionPanels();
+
+        SceneFader sceneFader = EnsureDir() && dir.sceneFader != null
+            ? dir.sceneFader
+            : FindFirstObjectByType<SceneFader>();
+
+        if (sceneFader == null)
+        {
+            Debug.LogWarning("ScentGUI: title menu fader is not available for Home button.", this);
+            BottomBanner.Show("Home is not ready yet.");
+            return;
+        }
+
+        sceneFader.ReturnToTitleMenu();
+    }
+
+    private void HandleCameraModeButtonPressed()
+    {
+        CloseTopActionPanels();
+
+        CameraModeSwitcher cameraModeSwitcher = EnsureDir() && dir.cameraModeSwitcher != null
+            ? dir.cameraModeSwitcher
+            : FindFirstObjectByType<CameraModeSwitcher>();
+
+        if (cameraModeSwitcher == null)
+        {
+            Debug.LogWarning("ScentGUI: camera mode switcher is not available.", this);
+            BottomBanner.Show("Camera mode is not ready yet.");
+            return;
+        }
+
+        cameraModeSwitcher.SelectNextView();
+    }
+
+    private void HandleQuestButtonPressed()
+    {
+        CloseTopActionPanels();
+
+        QuestJournalUI questJournal = FindFirstObjectByType<QuestJournalUI>();
+        if (questJournal == null)
+        {
+            _ = QuestManager.Instance;
+            GameObject journalObject = new("QuestJournalUI");
+            questJournal = journalObject.AddComponent<QuestJournalUI>();
+        }
+
+        questJournal.Toggle();
+    }
+
+    private void CloseTopActionPanels()
+    {
+        CloseDropdown();
+        CloseModePanel();
+        CloseSpeedPanel();
+        CloseEmoteDropdown();
+        HideTooltip();
+    }
+
     private static int SetWalkModeForWorldObject(WorldObject worldObject, WalkMode walkMode)
     {
         if (worldObject == null)
@@ -2900,6 +3083,11 @@ public class ScentGUI : MonoBehaviour
     private Sprite GetDigHoleButtonSprite()
     {
         return SpriteServer.SpriteSheetLookup(digHoleSpriteResourcePath, 0);
+    }
+
+    private Sprite GetAndroidButtonSprite(int index)
+    {
+        return SpriteServer.SpriteSheetLookup(androidButtonSpriteResourcePath, index);
     }
 
     private Sprite GetEmoteSprite(DogEmojiEntry entry)

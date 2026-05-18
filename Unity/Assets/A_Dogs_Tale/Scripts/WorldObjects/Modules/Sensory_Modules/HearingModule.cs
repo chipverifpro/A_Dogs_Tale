@@ -244,7 +244,7 @@ namespace DogGame.Modules
                     $"{(string.IsNullOrEmpty(h.notesShort) ? "" : $"notes={h.notesShort}")}";
                 
                 Debug.Log(hearingEventString);
-                BottomBanner.LogMessage(BannerSense.Hearing, BannerLevel.High, hearingEventString, true);
+                //BottomBanner.LogMessage(BannerSense.Hearing, BannerLevel.High, hearingEventString, true);
             }            
             //if (summarizedForLLM.Count > 0)
             //    Debug.Log($"[{worldObject.DisplayName}] Heard: {summarizedForLLM[0].category}/{summarizedForLLM[0].subtype} loud={summarizedForLLM[0].perceivedLoudness01:0.00} notes={summarizedForLLM[0].notesShort}");

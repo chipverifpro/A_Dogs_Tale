@@ -467,19 +467,7 @@ public class NewInputAdapter : MonoBehaviour
         //state.cameraViewSelect = CameraModes.Unchanged;
         if (cameraViewAction != null && cameraViewAction.triggered)
         {
-            // Example: if cameraViewAction is a cycle-next-view button,
-            // you might have another system interpret this trigger.
-            // Instead, we cycle it here, probably shouldn't do it here.
-            if (cameraMode == CameraModes.FP)
-                cameraMode = CameraModes.Overhead;
-            else if (cameraMode == CameraModes.Overhead)
-                cameraMode = CameraModes.Nose;
-            else if (cameraMode == CameraModes.Nose)
-                cameraMode = CameraModes.Perspective;
-            else if (cameraMode == CameraModes.Perspective)
-                cameraMode = CameraModes.FP;
-            else cameraMode = CameraModes.FP;
-            
+            cameraMode = CameraModeSwitcher.GetNextViewMode(cameraMode);
             state.cameraViewSelect = cameraMode;
         } else
         {

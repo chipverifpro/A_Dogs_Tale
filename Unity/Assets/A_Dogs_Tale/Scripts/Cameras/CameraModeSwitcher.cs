@@ -261,6 +261,23 @@ public class CameraModeSwitcher : MonoBehaviour
         }
     }  
 
+    public void SelectNextView()
+    {
+        SelectView(GetNextViewMode(cameraMode));
+    }
+
+    public static CameraModes GetNextViewMode(CameraModes currentMode)
+    {
+        return currentMode switch
+        {
+            CameraModes.FP => CameraModes.Overhead,
+            CameraModes.Overhead => CameraModes.Nose,
+            CameraModes.Nose => CameraModes.Perspective,
+            CameraModes.Perspective => CameraModes.FP,
+            _ => CameraModes.FP
+        };
+    }
+
     IEnumerator WaitForArrival(ICinemachineCamera target, System.Action onArrived)
     {
         // let priorities propagate one frame

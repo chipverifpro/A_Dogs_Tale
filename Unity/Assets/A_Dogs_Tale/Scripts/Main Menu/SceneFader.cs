@@ -86,7 +86,15 @@ public class SceneFader : MonoBehaviour
             return;
 
         if (WasReturnToTitlePressedThisFrame())
-            StartCoroutine(FadeToTitleMenu());
+            ReturnToTitleMenu();
+    }
+
+    public void ReturnToTitleMenu()
+    {
+        if (!hasGameStarted || isTransitioning || isTitleOverlayVisible)
+            return;
+
+        StartCoroutine(FadeToTitleMenu());
     }
 
     void SetupTitleSFX()
