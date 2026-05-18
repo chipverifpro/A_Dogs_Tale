@@ -82361,13 +82361,15 @@ MonoBehaviour:
   buttonSpriteSizeScale: 0.667
   titleMenuButtons: {fileID: 0}
   titleText: {fileID: 0}
-  tallDisplayAspectThreshold: 1.5
+  titleLeashHanging: {fileID: 0}
+  tallDisplayAspectThreshold: 1.2
   tallDisplayButtonsPosition: {x: 0, y: 0}
   tallDisplayButtonSpacing: 3
   tallDisplayTitleScaleMultiplier: 0.5
+  tallDisplaySettingsDialogScaleMultiplier: 0.5
   buttonsParent: {fileID: 2135703271}
   btnSimulation: {fileID: 1818943376}
-  btnContinue: {fileID: 0}
+  btnContinue: {fileID: 625848637}
   btnSave: {fileID: 1783677312}
   btnLoad: {fileID: 627177219}
   btnSettings: {fileID: 1521713611}
@@ -110424,6 +110426,7 @@ MonoBehaviour:
   topControlsSlideDuration: 0.18
   topControlsHiddenTopPadding: 8
   respectTopSafeArea: 1
+  scaleTopControlsToFitWidth: 1
   tooltipFontSize: 22
   tooltipMaxWidth: 340
   tooltipPadding: {x: 16, y: 10}

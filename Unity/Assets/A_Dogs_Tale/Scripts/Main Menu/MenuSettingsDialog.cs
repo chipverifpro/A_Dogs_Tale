@@ -8,10 +8,19 @@ public class MenuSettingsDialog : MonoBehaviour
     [Header("Themed Dialog")]
     [SerializeField] private string themedDialogRootName = "SettingsDialogRoot";
     [SerializeField] private string themedDialogPrefabResourcePath = "Prefabs/UI/SettingsDialogRoot";
+    [SerializeField] private string themedBackgroundImageName = "SettingsBackgroundImage";
+    [SerializeField] private string tallThemedBackgroundResourcePath = "Sprites/Settings_Background_Vert_C";
     [SerializeField] private string mapTypeSpriteResourcePath = "Sprites/SettingsMapType";
     [SerializeField] private string graphicsQualitySpriteResourcePath = "Sprites/GraphicsQualitySprites_A";
     [SerializeField] private Vector2 scrollAnchorMin = new Vector2(0.08f, 0.12f);
     [SerializeField] private Vector2 scrollAnchorMax = new Vector2(0.92f, 0.72f);
+    [SerializeField] private Vector2 tallScrollAnchorMin = new Vector2(0.12f, 0.13f);
+    [SerializeField] private Vector2 tallScrollAnchorMax = new Vector2(0.88f, 0.64f);
+    [SerializeField] private Vector2 tallThemedDialogSize = new Vector2(597f, 1091f);
+    [SerializeField] private Vector2 closeButtonAnchor = new Vector2(0.865f, 0.82f);
+    [SerializeField] private Vector2 closeButtonSize = new Vector2(110f, 72f);
+    [SerializeField] private Vector2 tallCloseButtonAnchor = new Vector2(0.79f, 0.825f);
+    [SerializeField] private Vector2 tallCloseButtonSize = new Vector2(145f, 105f);
     [SerializeField] private float mapTypeButtonHeight = 112f;
     [SerializeField] private float graphicsQualityButtonHeight = 112f;
     [SerializeField] private Color textColor = new Color(0.18f, 0.11f, 0.05f, 1f);
@@ -36,11 +45,24 @@ public class MenuSettingsDialog : MonoBehaviour
     private Text scentStepValueLabel;
     private Image[] mapTypeButtonImages;
     private Image[] graphicsQualityButtonImages;
+    private RectTransform themedScrollRect;
+    private RectTransform themedBackgroundRect;
+    private Image themedBackgroundImage;
+    private Sprite defaultThemedBackgroundSprite;
+    private Sprite tallThemedBackgroundSprite;
+    private RectTransform closeButtonRect;
+    private Vector2 defaultThemedDialogSize;
+    private Vector2 defaultThemedBackgroundSize;
+    private bool hasDefaultThemedLayout;
     private Sprite[] mapTypeSprites;
     private Sprite[] graphicsQualitySprites;
     private PersistentGameSettings.MapType selectedMapType = PersistentGameSettings.MapType.House;
     private int selectedGraphicsLevel = PersistentGameSettings.GraphicsLevelHigh;
     private Font runtimeFont;
+    private RectTransform defaultScaleTarget;
+    private Vector3 defaultScale = Vector3.one;
+    private bool tallDisplayScaleEnabled;
+    private float tallDisplayScaleMultiplier = 1f;
 
     public void Initialize(MenuManager owner)
     {
@@ -69,7 +91,9 @@ public class MenuSettingsDialog : MonoBehaviour
         if (dialogRoot == null)
             return;
 
+        ApplyResponsiveThemedLayout();
         RefreshPanelSize();
+        ApplyResponsiveScaleToBuiltDialog();
         LoadCurrentValues();
         dialogRoot.SetActive(true);
         dialogRoot.transform.SetAsLastSibling();
@@ -87,6 +111,14 @@ public class MenuSettingsDialog : MonoBehaviour
             Close();
         else
             Open();
+    }
+
+    public void ApplyTallDisplayScale(bool enabled, float scaleMultiplier)
+    {
+        tallDisplayScaleEnabled = enabled;
+        tallDisplayScaleMultiplier = Mathf.Max(0.01f, scaleMultiplier);
+        ApplyResponsiveThemedLayout();
+        ApplyResponsiveScaleToBuiltDialog();
     }
 
     private void EnsureBuilt()
@@ -127,7 +159,9 @@ public class MenuSettingsDialog : MonoBehaviour
         if (dialogRoot.transform.parent != canvas.transform)
             dialogRoot.transform.SetParent(canvas.transform, false);
 
+        CaptureThemedDialogReferences();
         BuildThemedScrollContent();
+        ApplyResponsiveThemedLayout();
         dialogRoot.SetActive(false);
         return true;
     }
@@ -145,6 +179,7 @@ public class MenuSettingsDialog : MonoBehaviour
             rootImage.raycastTarget = true;
 
         ScrollRect scrollRect = EnsureScrollView(root);
+        themedScrollRect = scrollRect.GetComponent<RectTransform>();
         RectTransform content = scrollRect.content;
         ClearChildren(content);
 
@@ -212,8 +247,8 @@ public class MenuSettingsDialog : MonoBehaviour
 
         RectTransform scrollRectTransform = scrollObject.GetComponent<RectTransform>();
         Stretch(scrollRectTransform);
-        scrollRectTransform.anchorMin = scrollAnchorMin;
-        scrollRectTransform.anchorMax = scrollAnchorMax;
+        themedScrollRect = scrollRectTransform;
+        ApplyScrollAnchorsForCurrentLayout(scrollRectTransform);
 
         Image scrollImage = scrollObject.GetComponent<Image>();
         if (scrollImage == null)
@@ -241,6 +276,105 @@ public class MenuSettingsDialog : MonoBehaviour
             scrollRect.verticalScrollbar = null;
 
         return scrollRect;
+    }
+
+    private void CaptureThemedDialogReferences()
+    {
+        if (dialogRoot == null)
+            return;
+
+        RectTransform rootRect = dialogRoot.GetComponent<RectTransform>();
+        if (rootRect != null && !hasDefaultThemedLayout)
+            defaultThemedDialogSize = rootRect.sizeDelta;
+
+        Transform backgroundTransform = FindDescendant(dialogRoot.transform, themedBackgroundImageName);
+        if (backgroundTransform != null)
+        {
+            themedBackgroundRect = backgroundTransform as RectTransform;
+            themedBackgroundImage = backgroundTransform.GetComponent<Image>();
+        }
+
+        if (themedBackgroundImage == null)
+        {
+            themedBackgroundImage = dialogRoot.GetComponent<Image>();
+            themedBackgroundRect = dialogRoot.GetComponent<RectTransform>();
+        }
+
+        if (themedBackgroundImage != null && !hasDefaultThemedLayout)
+            defaultThemedBackgroundSprite = themedBackgroundImage.sprite;
+
+        if (themedBackgroundRect != null && !hasDefaultThemedLayout)
+            defaultThemedBackgroundSize = themedBackgroundRect.sizeDelta;
+
+        hasDefaultThemedLayout = true;
+    }
+
+    private void ApplyResponsiveThemedLayout()
+    {
+        if (dialogRoot == null || dialogRoot.name != themedDialogRootName)
+            return;
+
+        CaptureThemedDialogReferences();
+
+        RectTransform rootRect = dialogRoot.GetComponent<RectTransform>();
+        if (rootRect != null)
+            rootRect.sizeDelta = tallDisplayScaleEnabled ? tallThemedDialogSize : defaultThemedDialogSize;
+
+        ApplyThemedBackgroundForCurrentLayout();
+        ApplyScrollAnchorsForCurrentLayout(themedScrollRect);
+        ApplyCloseButtonHitArea();
+    }
+
+    private void ApplyThemedBackgroundForCurrentLayout()
+    {
+        if (themedBackgroundImage == null)
+            return;
+
+        Sprite sprite = tallDisplayScaleEnabled ? GetTallThemedBackgroundSprite() : defaultThemedBackgroundSprite;
+        if (sprite != null)
+            themedBackgroundImage.sprite = sprite;
+
+        themedBackgroundImage.color = Color.white;
+        themedBackgroundImage.preserveAspect = true;
+        themedBackgroundImage.raycastTarget = false;
+
+        if (themedBackgroundRect != null)
+            themedBackgroundRect.sizeDelta = tallDisplayScaleEnabled ? tallThemedDialogSize : defaultThemedBackgroundSize;
+    }
+
+    private void ApplyScrollAnchorsForCurrentLayout(RectTransform scrollRectTransform)
+    {
+        if (scrollRectTransform == null)
+            return;
+
+        Stretch(scrollRectTransform);
+        scrollRectTransform.anchorMin = tallDisplayScaleEnabled ? tallScrollAnchorMin : scrollAnchorMin;
+        scrollRectTransform.anchorMax = tallDisplayScaleEnabled ? tallScrollAnchorMax : scrollAnchorMax;
+    }
+
+    private Sprite GetTallThemedBackgroundSprite()
+    {
+        if (tallThemedBackgroundSprite != null)
+            return tallThemedBackgroundSprite;
+
+        tallThemedBackgroundSprite = Resources.Load<Sprite>(tallThemedBackgroundResourcePath);
+        if (tallThemedBackgroundSprite != null)
+            return tallThemedBackgroundSprite;
+
+        Texture2D texture = Resources.Load<Texture2D>(tallThemedBackgroundResourcePath);
+        if (texture == null)
+        {
+            Debug.LogWarning($"[MenuSettingsDialog] Could not load tall settings background at Resources/{tallThemedBackgroundResourcePath}.", this);
+            return null;
+        }
+
+        tallThemedBackgroundSprite = Sprite.Create(
+            texture,
+            new Rect(0f, 0f, texture.width, texture.height),
+            new Vector2(0.5f, 0.5f),
+            100f);
+        tallThemedBackgroundSprite.name = texture.name;
+        return tallThemedBackgroundSprite;
     }
 
     private RectTransform EnsureViewport(Transform scrollView)
@@ -624,25 +758,12 @@ public class MenuSettingsDialog : MonoBehaviour
             closeObject.transform.SetParent(root, false);
             SetLayerRecursive(closeObject, canvas != null ? canvas.gameObject.layer : root.gameObject.layer);
             closeButton = closeObject.GetComponent<Button>();
-
-            Text closeText = closeObject.GetComponentInChildren<Text>(includeInactive: true);
-            if (closeText != null)
-            {
-                closeText.font = GetRuntimeFont();
-                closeText.text = "X";
-                closeText.color = textColor;
-                closeText.fontSize = 18;
-                closeText.fontStyle = FontStyle.Bold;
-            }
-
-            Image image = closeObject.GetComponent<Image>();
-            if (image != null)
-                image.color = new Color(0.96f, 0.86f, 0.61f, 0.78f);
         }
 
         closeButton.onClick.RemoveListener(Close);
         closeButton.onClick.AddListener(Close);
         closeButton.interactable = true;
+        closeButton.transition = Selectable.Transition.None;
 
         Image targetImage = closeButton.targetGraphic as Image;
         if (targetImage == null)
@@ -650,16 +771,57 @@ public class MenuSettingsDialog : MonoBehaviour
         if (targetImage != null)
         {
             targetImage.raycastTarget = true;
+            targetImage.color = Color.clear;
             closeButton.targetGraphic = targetImage;
         }
 
-        RectTransform rect = closeButton.GetComponent<RectTransform>();
-        rect.anchorMin = new Vector2(1f, 1f);
-        rect.anchorMax = new Vector2(1f, 1f);
-        rect.pivot = new Vector2(1f, 1f);
-        rect.anchoredPosition = new Vector2(-34f, -34f);
-        rect.sizeDelta = new Vector2(32f, 32f);
-        rect.SetAsLastSibling();
+        HideCloseButtonVisuals(closeButton.gameObject);
+
+        closeButtonRect = closeButton.GetComponent<RectTransform>();
+        ApplyCloseButtonHitArea();
+        if (closeButtonRect != null)
+            closeButtonRect.SetAsLastSibling();
+    }
+
+    private void ApplyCloseButtonHitArea()
+    {
+        if (closeButtonRect == null)
+            return;
+
+        Vector2 anchor = tallDisplayScaleEnabled ? tallCloseButtonAnchor : closeButtonAnchor;
+        closeButtonRect.anchorMin = anchor;
+        closeButtonRect.anchorMax = anchor;
+        closeButtonRect.pivot = new Vector2(0.5f, 0.5f);
+        closeButtonRect.anchoredPosition = Vector2.zero;
+        closeButtonRect.sizeDelta = tallDisplayScaleEnabled ? tallCloseButtonSize : closeButtonSize;
+    }
+
+    private static void HideCloseButtonVisuals(GameObject closeObject)
+    {
+        if (closeObject == null)
+            return;
+
+        Text[] texts = closeObject.GetComponentsInChildren<Text>(includeInactive: true);
+        for (int i = 0; i < texts.Length; i++)
+        {
+            if (texts[i] == null)
+                continue;
+
+            texts[i].text = string.Empty;
+            texts[i].raycastTarget = false;
+            texts[i].enabled = false;
+        }
+
+        Graphic[] graphics = closeObject.GetComponentsInChildren<Graphic>(includeInactive: true);
+        for (int i = 0; i < graphics.Length; i++)
+        {
+            Graphic graphic = graphics[i];
+            if (graphic == null)
+                continue;
+
+            graphic.color = Color.clear;
+            graphic.raycastTarget = graphic.gameObject == closeObject;
+        }
     }
 
     private void BuildFallbackDialog()
@@ -737,6 +899,33 @@ public class MenuSettingsDialog : MonoBehaviour
         float width = Mathf.Clamp(rect.width * 0.82f, 400f, 560f);
         float height = Mathf.Clamp(rect.height * 0.82f, 250f, 340f);
         panelRect.sizeDelta = new Vector2(width, height);
+    }
+
+    private void ApplyResponsiveScaleToBuiltDialog()
+    {
+        RectTransform target = GetResponsiveScaleTarget();
+        if (target == null)
+            return;
+
+        if (defaultScaleTarget != target)
+        {
+            defaultScaleTarget = target;
+            defaultScale = target.localScale;
+        }
+
+        float multiplier = tallDisplayScaleEnabled ? tallDisplayScaleMultiplier : 1f;
+        target.localScale = defaultScale * multiplier;
+    }
+
+    private RectTransform GetResponsiveScaleTarget()
+    {
+        if (dialogRoot == null)
+            return null;
+
+        if (dialogRoot.name == themedDialogRootName)
+            return dialogRoot.GetComponent<RectTransform>();
+
+        return panelRect;
     }
 
     private void OnScentStepChanged(float value)

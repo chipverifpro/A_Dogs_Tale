@@ -29,13 +29,16 @@ public class MenuManager : MonoBehaviour
     [Header("Tall Display Title Layout")]
     [SerializeField] private RectTransform titleMenuButtons;
     [SerializeField] private RectTransform titleText;
+    [SerializeField] private RectTransform titleLeashHanging;
     [SerializeField] private float tallDisplayAspectThreshold = 1.5f;
     [SerializeField] private Vector2 tallDisplayButtonsPosition = Vector2.zero;
     [SerializeField] private float tallDisplayButtonSpacing = 3f;
     [SerializeField] private float tallDisplayTitleScaleMultiplier = 0.5f;
+    [SerializeField] private float tallDisplaySettingsDialogScaleMultiplier = 0.5f;
 
     private Vector2 defaultTitleMenuButtonsPosition;
     private Vector3 defaultTitleMenuButtonsScale;
+    private Vector2 defaultTitleLeashHangingPosition;
     private Vector3 defaultTitleTextScale;
     private VerticalLayoutGroup titleMenuLayoutGroup;
     private bool defaultTitleMenuLayoutGroupEnabled;
@@ -297,12 +300,23 @@ public class MenuManager : MonoBehaviour
                 RestoreDefaultButtonLayout();
         }
 
+        if (titleLeashHanging != null)
+        {
+            if (isTallDisplay)
+                ApplyTallDisplayLeashLayout();
+            else
+                RestoreDefaultLeashLayout();
+        }
+
         if (titleText != null)
         {
             titleText.localScale = isTallDisplay
                 ? defaultTitleTextScale * Mathf.Max(0.01f, tallDisplayTitleScaleMultiplier)
                 : defaultTitleTextScale;
         }
+
+        if (settingsDialog != null)
+            settingsDialog.ApplyTallDisplayScale(isTallDisplay, tallDisplaySettingsDialogScaleMultiplier);
     }
 
     void ApplyTallDisplayButtonLayout()
@@ -315,26 +329,14 @@ public class MenuManager : MonoBehaviour
         if (titleMenuLayoutGroup != null)
             titleMenuLayoutGroup.enabled = false;
 
-        titleMenuButtons.anchoredPosition = tallDisplayButtonsPosition;
+        titleMenuButtons.anchoredPosition = new Vector2(
+            tallDisplayButtonsPosition.x,
+            defaultTitleMenuButtonsPosition.y);
         titleMenuButtons.localScale = defaultTitleMenuButtonsScale;
 
-        float totalHeight = 0f;
-        int activeCount = 0;
-        for (int i = 0; i < titleMenuButtons.childCount; i++)
-        {
-            RectTransform childRect = titleMenuButtons.GetChild(i) as RectTransform;
-            if (childRect == null || !childRect.gameObject.activeSelf)
-                continue;
-
-            totalHeight += GetButtonHeight(childRect);
-            activeCount++;
-        }
-
-        if (activeCount == 0)
-            return;
-
-        totalHeight += tallDisplayButtonSpacing * (activeCount - 1);
-        float y = totalHeight * 0.5f;
+        float y = GetTallDisplayFirstButtonCenterY();
+        float previousHeight = 0f;
+        bool placedButton = false;
         for (int i = 0; i < titleMenuButtons.childCount; i++)
         {
             RectTransform childRect = titleMenuButtons.GetChild(i) as RectTransform;
@@ -342,13 +344,47 @@ public class MenuManager : MonoBehaviour
                 continue;
 
             float height = GetButtonHeight(childRect);
-            y -= height * 0.5f;
+            if (placedButton)
+                y -= (previousHeight * 0.5f) + tallDisplayButtonSpacing + (height * 0.5f);
+
             childRect.anchorMin = new Vector2(0.5f, 0.5f);
             childRect.anchorMax = new Vector2(0.5f, 0.5f);
             childRect.pivot = new Vector2(0.5f, 0.5f);
             childRect.anchoredPosition = new Vector2(0f, y);
-            y -= height * 0.5f + tallDisplayButtonSpacing;
+
+            previousHeight = height;
+            placedButton = true;
         }
+    }
+
+    float GetTallDisplayFirstButtonCenterY()
+    {
+        if (titleMenuButtons == null)
+            return 0f;
+
+        for (int i = 0; i < titleMenuButtons.childCount; i++)
+        {
+            RectTransform childRect = titleMenuButtons.GetChild(i) as RectTransform;
+            if (childRect == null || !childRect.gameObject.activeSelf)
+                continue;
+
+            if (defaultTitleButtonLayouts.TryGetValue(childRect, out TitleButtonLayoutState state))
+                return state.AnchoredPosition.y;
+
+            return childRect.anchoredPosition.y;
+        }
+
+        return 0f;
+    }
+
+    void ApplyTallDisplayLeashLayout()
+    {
+        if (titleLeashHanging == null)
+            return;
+
+        Vector2 position = defaultTitleLeashHangingPosition;
+        position.x = tallDisplayButtonsPosition.x;
+        titleLeashHanging.anchoredPosition = position;
     }
 
     void RestoreDefaultButtonLayout()
@@ -374,6 +410,14 @@ public class MenuManager : MonoBehaviour
 
         if (titleMenuLayoutGroup != null)
             titleMenuLayoutGroup.enabled = defaultTitleMenuLayoutGroupEnabled;
+    }
+
+    void RestoreDefaultLeashLayout()
+    {
+        if (titleLeashHanging == null)
+            return;
+
+        titleLeashHanging.anchoredPosition = defaultTitleLeashHangingPosition;
     }
 
     void CaptureMissingTitleButtonLayouts()
@@ -421,10 +465,17 @@ public class MenuManager : MonoBehaviour
                 titleText = titleObject.GetComponent<RectTransform>();
         }
 
+        if (titleLeashHanging == null)
+        {
+            GameObject leashObject = FindIncludingInactive("LeashHanging");
+            if (leashObject != null)
+                titleLeashHanging = leashObject.GetComponent<RectTransform>();
+        }
+
         if (hasDefaultTitleLayout)
             return;
 
-        if (titleMenuButtons == null && titleText == null)
+        if (titleMenuButtons == null && titleText == null && titleLeashHanging == null)
             return;
 
         if (titleMenuButtons != null)
@@ -439,6 +490,9 @@ public class MenuManager : MonoBehaviour
 
         if (titleText != null)
             defaultTitleTextScale = titleText.localScale;
+
+        if (titleLeashHanging != null)
+            defaultTitleLeashHangingPosition = titleLeashHanging.anchoredPosition;
 
         hasDefaultTitleLayout = true;
     }
