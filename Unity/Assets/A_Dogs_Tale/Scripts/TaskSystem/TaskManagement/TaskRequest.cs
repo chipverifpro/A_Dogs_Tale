@@ -54,6 +54,7 @@ namespace DogGame.Tasks
     public sealed class TaskRequestSaveData
     {
         public AgentTaskSaveData? task;
+        public List<AgentTaskSaveData> taskNodes = new();
         public int priority;
         public bool canInterrupt;
         public bool resumePrevious;
@@ -64,13 +65,15 @@ namespace DogGame.Tasks
 
         public static TaskRequestSaveData? FromRequest(TaskRequest request)
         {
-            AgentTaskSaveData? taskData = AgentTaskSaveData.FromTask(request.Task);
+            List<AgentTaskSaveData> taskNodes = new();
+            AgentTaskSaveData? taskData = AgentTaskSaveData.FromTask(request.Task, taskNodes);
             if (taskData == null || taskData.unsupported)
                 return null;
 
             return new TaskRequestSaveData
             {
                 task = taskData,
+                taskNodes = taskNodes,
                 priority = request.Priority,
                 canInterrupt = request.CanInterrupt,
                 resumePrevious = request.ResumePrevious,
@@ -84,7 +87,7 @@ namespace DogGame.Tasks
         public bool TryToRequest(out TaskRequest request)
         {
             request = default;
-            if (task == null || !task.TryToTask(out IAgentTask restoredTask))
+            if (task == null || !task.TryToTask(taskNodes, out IAgentTask restoredTask))
                 return false;
 
             request = new TaskRequest(
@@ -103,6 +106,8 @@ namespace DogGame.Tasks
     [Serializable]
     public sealed class AgentTaskSaveData
     {
+        private const int MaxSerializableTaskChildDepth = 4;
+
         public string taskType = "";
         public string debugName = "";
         public bool unsupported;
@@ -116,73 +121,106 @@ namespace DogGame.Tasks
         public string stringValue2 = "";
         public string stringValue3 = "";
         public bool boolValue;
-        public List<AgentTaskSaveData> children = new();
+        public List<int> children = new();
 
         public static AgentTaskSaveData? FromTask(IAgentTask task)
+        {
+            return FromTask(task, new List<AgentTaskSaveData>());
+        }
+
+        public static AgentTaskSaveData? FromTask(IAgentTask task, List<AgentTaskSaveData> taskNodes)
+        {
+            return FromTask(task, taskNodes, 0, new HashSet<IAgentTask>());
+        }
+
+        private static AgentTaskSaveData? FromTask(IAgentTask task, List<AgentTaskSaveData> taskNodes, int childDepth, HashSet<IAgentTask> visiting)
         {
             if (task == null)
                 return null;
 
+            if (childDepth > MaxSerializableTaskChildDepth || visiting.Contains(task))
+            {
+                return new AgentTaskSaveData
+                {
+                    taskType = task.GetType().Name,
+                    debugName = task.DebugName,
+                    unsupported = true
+                };
+            }
+
+            visiting.Add(task);
             AgentTaskSaveData data = new()
             {
                 taskType = task.GetType().Name,
                 debugName = task.DebugName
             };
 
-            switch (task)
+            try
             {
-                case Task_MoveToLocation:
-                    data.floatValue = GetField<float>(task, "mapX");
-                    data.floatValue2 = GetField<float>(task, "mapY");
-                    return data;
-                case Task_MoveToCell:
-                    data.intValue = GetField<int>(task, "cellX");
-                    data.intValue2 = GetField<int>(task, "cellY");
-                    return data;
-                case Task_MoveToObject:
-                    data.intValue = GetField<WorldObject>(task, "target")?.ObjectId ?? -1;
-                    return data;
-                case Task_Wait:
-                    data.floatValue = Mathf.Max(0f, GetField<float>(task, "remainingSeconds"));
-                    return data;
-                case Task_Bark:
-                    data.floatValue = GetField<int>(task, "volume");
-                    return data;
-                case Task_Emote:
-                    data.stringValue = GetField<string>(task, "emote") ?? "";
-                    return data;
-                case Task_SetWalkMode:
-                    data.intValue = (int)GetField<WalkMode>(task, "walkMode");
-                    return data;
-                case Task_GoThroughDoor:
-                    data.intValue = GetField<int>(task, "doorId");
-                    data.intValue2 = (int)GetField<WalkMode>(task, "walkMode");
-                    return data;
-                case Task_RunLua:
-                    CaptureRunLua(task, data);
-                    return data;
-                case Task_ScentFollowLua:
-                    IAgentTask? innerTask = GetField<IAgentTask>(task, "innerTask");
-                    AgentTaskSaveData? innerData = innerTask != null ? FromTask(innerTask) : null;
-                    if (innerData != null)
-                    {
-                        data.children.Add(innerData);
+                switch (task)
+                {
+                    case Task_MoveToLocation:
+                        data.floatValue = GetField<float>(task, "mapX");
+                        data.floatValue2 = GetField<float>(task, "mapY");
                         return data;
-                    }
-                    break;
-                case Task_RandomNearbyMove:
-                    data.intValue = GetField<int>(task, "radiusCells");
-                    return data;
-                case Task_Sequence:
-                    CaptureSequence(task, data);
-                    return data;
-            }
+                    case Task_MoveToCell:
+                        data.intValue = GetField<int>(task, "cellX");
+                        data.intValue2 = GetField<int>(task, "cellY");
+                        return data;
+                    case Task_MoveToObject:
+                        data.intValue = GetField<WorldObject>(task, "target")?.ObjectId ?? -1;
+                        return data;
+                    case Task_Wait:
+                        data.floatValue = Mathf.Max(0f, GetField<float>(task, "remainingSeconds"));
+                        return data;
+                    case Task_Bark:
+                        data.floatValue = GetField<int>(task, "volume");
+                        return data;
+                    case Task_Emote:
+                        data.stringValue = GetField<string>(task, "emote") ?? "";
+                        return data;
+                    case Task_SetWalkMode:
+                        data.intValue = (int)GetField<WalkMode>(task, "walkMode");
+                        return data;
+                    case Task_GoThroughDoor:
+                        data.intValue = GetField<int>(task, "doorId");
+                        data.intValue2 = (int)GetField<WalkMode>(task, "walkMode");
+                        return data;
+                    case Task_RunLua:
+                        CaptureRunLua(task, data);
+                        return data;
+                    case Task_ScentFollowLua:
+                        IAgentTask? innerTask = GetField<IAgentTask>(task, "innerTask");
+                        AgentTaskSaveData? innerData = innerTask != null ? FromTask(innerTask, taskNodes, childDepth + 1, visiting) : null;
+                        if (innerData != null && !innerData.unsupported)
+                        {
+                            data.children.Add(AddTaskNode(taskNodes, innerData));
+                            return data;
+                        }
+                        break;
+                    case Task_RandomNearbyMove:
+                        data.intValue = GetField<int>(task, "radiusCells");
+                        return data;
+                    case Task_Sequence:
+                        CaptureSequence(task, data, taskNodes, childDepth, visiting);
+                        return data;
+                }
 
-            data.unsupported = true;
-            return data;
+                data.unsupported = true;
+                return data;
+            }
+            finally
+            {
+                visiting.Remove(task);
+            }
         }
 
         public bool TryToTask(out IAgentTask task)
+        {
+            return TryToTask(null, out task);
+        }
+
+        public bool TryToTask(List<AgentTaskSaveData>? taskNodes, out IAgentTask task)
         {
             task = null!;
             if (unsupported)
@@ -232,7 +270,9 @@ namespace DogGame.Tasks
                         visitRoomCenterBeforeBacktracking: boolValue);
                     return true;
                 case nameof(Task_ScentFollowLua):
-                    if (children != null && children.Count > 0 && children[0].TryToTask(out IAgentTask restoredInner))
+                    if (children != null &&
+                        children.Count > 0 &&
+                        TryRestoreChildTask(children[0], taskNodes, out IAgentTask restoredInner))
                     {
                         task = restoredInner;
                         return true;
@@ -245,9 +285,9 @@ namespace DogGame.Tasks
                     List<IAgentTask> restoredChildren = new();
                     if (children != null)
                     {
-                        foreach (AgentTaskSaveData child in children)
+                        foreach (int childIndex in children)
                         {
-                            if (child != null && child.TryToTask(out IAgentTask childTask))
+                            if (TryRestoreChildTask(childIndex, taskNodes, out IAgentTask childTask))
                                 restoredChildren.Add(childTask);
                         }
                     }
@@ -270,7 +310,12 @@ namespace DogGame.Tasks
             data.boolValue = GetField<bool>(task, "visitRoomCenterBeforeBacktracking");
         }
 
-        private static void CaptureSequence(IAgentTask task, AgentTaskSaveData data)
+        private static void CaptureSequence(
+            IAgentTask task,
+            AgentTaskSaveData data,
+            List<AgentTaskSaveData> taskNodes,
+            int childDepth,
+            HashSet<IAgentTask> visiting)
         {
             List<IAgentTask> steps = GetField<List<IAgentTask>>(task, "steps") ?? new List<IAgentTask>();
             int stepIndex = Mathf.Clamp(GetField<int>(task, "stepIndex"), 0, Mathf.Max(0, steps.Count));
@@ -278,10 +323,29 @@ namespace DogGame.Tasks
 
             for (int i = stepIndex; i < steps.Count; i++)
             {
-                AgentTaskSaveData? child = FromTask(steps[i]);
+                AgentTaskSaveData? child = FromTask(steps[i], taskNodes, childDepth + 1, visiting);
                 if (child != null && !child.unsupported)
-                    data.children.Add(child);
+                    data.children.Add(AddTaskNode(taskNodes, child));
             }
+        }
+
+        private static int AddTaskNode(List<AgentTaskSaveData> taskNodes, AgentTaskSaveData taskData)
+        {
+            taskNodes.Add(taskData);
+            return taskNodes.Count - 1;
+        }
+
+        private static bool TryRestoreChildTask(
+            int childIndex,
+            List<AgentTaskSaveData>? taskNodes,
+            out IAgentTask task)
+        {
+            task = null!;
+            if (taskNodes == null || childIndex < 0 || childIndex >= taskNodes.Count)
+                return false;
+
+            AgentTaskSaveData child = taskNodes[childIndex];
+            return child != null && child.TryToTask(taskNodes, out task);
         }
 
         private static T? GetField<T>(object instance, string name)
