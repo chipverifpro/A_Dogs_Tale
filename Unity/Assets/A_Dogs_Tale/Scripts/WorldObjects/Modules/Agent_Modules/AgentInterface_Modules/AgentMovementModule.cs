@@ -76,11 +76,18 @@ namespace DogGame.Modules
 
         [Header("Stall Recovery")]
         [SerializeField] private bool enableStallRecovery = true;
+        [Tooltip("Legacy tick threshold retained for existing prefabs. Recovery now also requires Stall Seconds Before Recover.")]
         [SerializeField] private int stallTicksBeforeRecover = 3;
+        [Tooltip("How long the agent must fail to change map position before center-cell recovery starts.")]
+        [SerializeField] private float stallSecondsBeforeRecover = 1.25f;
         [SerializeField] private float stallPositionEpsilon = 0.01f;
+        [Tooltip("If the body is still this many degrees away from the desired movement direction, do not treat the agent as stuck yet.")]
+        [SerializeField] private float stallTurnGraceAngleDegrees = 18f;
+        [SerializeField] private float stallTurnGraceMinDesiredSpeed = 0.05f;
         [SerializeField] private bool enableStallDebugLogging = false;
         private Vector3 lastStallCheckPosition = Vector3.zero;
         private int consecutiveStallTicks = 0;
+        private float stalledSeconds = 0f;
         private bool recoveringToCellCenter = false;
         private Vector3 recoveryTargetMap = Vector3.zero;
         
@@ -169,6 +176,7 @@ namespace DogGame.Modules
         // Set target once, and we will keep following it until we arrive.
         public void SetDesiredTargetWorldObject(WorldObject target, bool keepFollowing=false)
         {
+            bool targetChanged = this.targetObject != target || this.keepFollowingTargetObject != keepFollowing;
             this.targetObject = target;
             this.keepFollowingTargetObject = keepFollowing;
             this.targetLocationMap = target != null ? target.pos3d_map : null;
@@ -176,6 +184,8 @@ namespace DogGame.Modules
             this.requirePathOrLineOfSight = false;
             pathSpeedFactor = 1.0f;
             MoveToDestinationInProgress = target != null;
+            if (targetChanged)
+                ResetStallRecoveryTracking();
             CacheTargetObjectCell();
             RebuildPathToCurrentTarget(forceRebuild: true);
         }
@@ -203,7 +213,7 @@ namespace DogGame.Modules
             ClearActivePath();
             hasLastKnownTargetObjectCell = false;
             recoveringToCellCenter = false;
-            consecutiveStallTicks = 0;
+            ResetStallRecoveryTracking();
             MoveToDestinationInProgress = false;
         }
 
@@ -575,6 +585,7 @@ namespace DogGame.Modules
         public void ClearDesiredMove()
         {
             desiredVelocity = Vector3.zero;
+            ResetStallRecoveryTracking();
         }
 
         private int debugDoubleTick = -1;
@@ -621,7 +632,7 @@ namespace DogGame.Modules
                     if (PointTowardMapLocation(recoveryTargetMap))//, centerRecoveryArrivalRadius))
                     {
                         recoveringToCellCenter = false;
-                        consecutiveStallTicks = 0;
+                        ResetStallRecoveryTracking();
                         if (enableStallDebugLogging)
                             Debug.Log($"[AgentMovementModule] {worldObject.DisplayName} finished center-cell recovery.", this);
                     }
@@ -637,7 +648,7 @@ namespace DogGame.Modules
                     if (deltaDistanceSqr < stopDistanceSqr)
                     {
                         recoveringToCellCenter = false;
-                        consecutiveStallTicks = 0;
+                        ResetStallRecoveryTracking();
                         PointTowardMapLocation(targetLocationMap.Value);
                         if (enableStallDebugLogging)
                         {
@@ -702,7 +713,7 @@ namespace DogGame.Modules
             else
             {
                 recoveringToCellCenter = false;
-                consecutiveStallTicks = 0;
+                ResetStallRecoveryTracking();
                 MoveToDestinationInProgress = false;
             }
 
@@ -731,7 +742,7 @@ namespace DogGame.Modules
             // Delegate to MotionModule for actual movement + rotation, clamp at maxDistance.
             worldObject.motionModule.ApplyMotionMap(currentVelocity, deltaTime, maxDistance, speedFactor01);
 
-            UpdateStallRecoveryState();
+            UpdateStallRecoveryState(deltaTime);
 
             if (recoveringToCellCenter && enableStallDebugLogging)
             {
@@ -750,7 +761,7 @@ namespace DogGame.Modules
             maxDistance = 0f;
             ClearActivePath();
             recoveringToCellCenter = false;
-            consecutiveStallTicks = 0;
+            ResetStallRecoveryTracking();
             MoveToDestinationInProgress = false;
             worldObject.motionModule?.StopHorizontalMotion();
         }
@@ -767,6 +778,13 @@ namespace DogGame.Modules
 
         public void SetDesiredTargetLocationMap(Vector3 targetLocation_map, WalkMode mode, bool requestPathfinding, bool allowDoors, float speedFactor = 1.0f, bool requirePathOrLineOfSight = false)
         {
+            bool targetChanged =
+                targetObject != null ||
+                !targetLocationMap.HasValue ||
+                (targetLocationMap.Value - targetLocation_map).sqrMagnitude > 0.0001f ||
+                this.requirePathOrLineOfSight != requirePathOrLineOfSight ||
+                allowPathThroughDoors != allowDoors;
+
             targetObject = null;
             targetLocationMap = targetLocation_map;
             SetPathSpeedFactor(speedFactor);
@@ -775,7 +793,8 @@ namespace DogGame.Modules
                 SetWalkMode(mode);
             allowPathThroughDoors = allowDoors;
             recoveringToCellCenter = false;
-            consecutiveStallTicks = 0;
+            if (targetChanged)
+                ResetStallRecoveryTracking();
             MoveToDestinationInProgress = true;
             if (requestPathfinding)
                 RebuildPathToCurrentTarget(forceRebuild: true);
@@ -798,7 +817,7 @@ namespace DogGame.Modules
             MoveToDestinationInProgress = false;
         }
 
-        private void UpdateStallRecoveryState()
+        private void UpdateStallRecoveryState(float deltaTime)
         {
             if (!enableStallRecovery || worldObject == null || worldObject.locationModule == null || !dir.gen.buildComplete)
                 return;
@@ -817,8 +836,15 @@ namespace DogGame.Modules
                 
             if (!hasMovementIntent)
             {
-                consecutiveStallTicks = 0;
+                ResetStallRecoveryTracking();
                 recoveringToCellCenter = false;
+                lastStallCheckPosition = currentPos;
+                return;
+            }
+
+            if (IsStillTurningTowardDesiredVelocity())
+            {
+                ResetStallRecoveryTracking();
                 lastStallCheckPosition = currentPos;
                 return;
             }
@@ -826,10 +852,11 @@ namespace DogGame.Modules
             if (delta.sqrMagnitude <= epsilonSqr)
             {
                 consecutiveStallTicks++;
+                stalledSeconds += Mathf.Max(0f, deltaTime);
             }
             else
             {
-                consecutiveStallTicks = 0;
+                ResetStallRecoveryTracking();
             }
             
             if (recoveringToCellCenter)
@@ -838,20 +865,58 @@ namespace DogGame.Modules
             if (consecutiveStallTicks < Mathf.Max(1, stallTicksBeforeRecover))
                 return;
 
+            if (stalledSeconds < Mathf.Max(0f, stallSecondsBeforeRecover))
+                return;
+
             Cell currentCell = worldObject.locationModule.cell;
             if (currentCell == null)
                 return;
 
             recoveryTargetMap = CellCenterMap(currentCell.pos, currentCell.height);
             recoveringToCellCenter = true;
-            consecutiveStallTicks = 0;
+            float stalledDuration = stalledSeconds;
+            ResetStallRecoveryTracking();
 
             if (enableStallDebugLogging)
             {
                 Debug.Log(
-                    $"[AgentMovementModule] {worldObject.DisplayName} stall detected; recovering to cell center {currentCell.pos} = {recoveryTargetMap}.",
+                    $"[AgentMovementModule] {worldObject.DisplayName} stall detected after {stalledDuration:0.00}s; recovering to cell center {currentCell.pos} = {recoveryTargetMap}.",
                     this);
             }
+        }
+
+        private void ResetStallRecoveryTracking()
+        {
+            consecutiveStallTicks = 0;
+            stalledSeconds = 0f;
+        }
+
+        private bool IsStillTurningTowardDesiredVelocity()
+        {
+            if (worldObject == null || worldObject.motionModule == null)
+                return false;
+
+            Vector3 desiredDirection = desiredVelocity;
+            desiredDirection.y = 0f;
+            float minSpeed = Mathf.Max(0f, stallTurnGraceMinDesiredSpeed);
+            if (desiredDirection.sqrMagnitude < minSpeed * minSpeed)
+                return false;
+
+            Transform bodyRoot = worldObject.motionModule.bodyRoot != null
+                ? worldObject.motionModule.bodyRoot
+                : worldObject.transform;
+            if (bodyRoot == null)
+                return false;
+
+            Vector3 forward = bodyRoot.forward;
+            forward.y = 0f;
+            if (forward.sqrMagnitude < 0.0001f)
+                return false;
+
+            forward.Normalize();
+            desiredDirection.Normalize();
+            float angle = Vector3.Angle(forward, desiredDirection);
+            return angle > Mathf.Max(0f, stallTurnGraceAngleDegrees);
         }
     }
 }
