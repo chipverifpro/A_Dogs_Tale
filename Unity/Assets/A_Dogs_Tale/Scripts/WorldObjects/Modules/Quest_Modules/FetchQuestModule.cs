@@ -76,6 +76,10 @@ namespace DogGame.Modules
         public override string CountdownLabel => CurrentCountdownLabel;
         public override float CountdownRemainingSeconds => Mathf.Max(0f, CurrentTimeoutSeconds - StateElapsedSeconds);
         public override float CountdownDurationSeconds => CurrentTimeoutSeconds;
+        public override WorldObject QuestInteractionTarget => Requester;
+        protected override WorldObject QuestIconTarget => Requester;
+        protected override string QuestIconSpriteSheet => "TricksSpritesheet_B";
+        protected override int QuestIconSpriteIndex => 0;
 
         private int debugDoubleTick = -1;
 

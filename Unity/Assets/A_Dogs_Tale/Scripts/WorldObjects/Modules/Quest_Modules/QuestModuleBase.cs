@@ -34,6 +34,9 @@ namespace DogGame.Modules
         private static readonly QuestObjectiveSnapshot[] NoObjectives = Array.Empty<QuestObjectiveSnapshot>();
         private static readonly List<QuestModuleBase> KnownQuestModulesMutable = new();
         private const string QuestBannerIconSpriteName = "AndroidButtonsAndQuests_1";
+        private const string QuestOverheadIconInstanceName = "QuestRequestIconVisual";
+        private const float QuestOverheadIconSize = 0.45f;
+        private const float QuestOverheadIconTopPadding = 0.12f;
 
         public static IReadOnlyList<QuestModuleBase> KnownQuestModules => KnownQuestModulesMutable;
 
@@ -67,6 +70,11 @@ namespace DogGame.Modules
         public virtual string CountdownLabel => "";
         public virtual float CountdownRemainingSeconds => 0f;
         public virtual float CountdownDurationSeconds => 0f;
+        public virtual WorldObject QuestInteractionTarget => worldObject;
+        public virtual bool CanStartFromQuestDialog => !IsRunning;
+        protected virtual WorldObject QuestIconTarget => worldObject;
+        protected virtual string QuestIconSpriteSheet => "";
+        protected virtual int QuestIconSpriteIndex => -1;
 
         protected string ObjectDisplayName => worldObject != null ? worldObject.DisplayName : name;
 
@@ -86,16 +94,21 @@ namespace DogGame.Modules
             RegisterKnownQuestModule(this);
 
             if (IsRunning)
+            {
                 QuestManager.RegisterActiveQuest(this);
+                ShowQuestRequestIcon();
+            }
         }
 
         protected virtual void OnDisable()
         {
+            HideQuestRequestIcon();
             QuestManager.UnregisterQuest(this);
         }
 
         protected virtual void OnDestroy()
         {
+            HideQuestRequestIcon();
             KnownQuestModulesMutable.Remove(this);
             QuestManager.UnregisterQuest(this);
         }
@@ -121,6 +134,7 @@ namespace DogGame.Modules
             lastMessage = message;
             RegisterKnownQuestModule(this);
             QuestManager.RegisterActiveQuest(this);
+            ShowQuestRequestIcon();
             onQuestStarted.Invoke();
             onStateChanged.Invoke(currentStateName);
             LogQuestStateToBottomBanner(currentStateName, message);
@@ -137,6 +151,7 @@ namespace DogGame.Modules
             currentStateName = stateName;
             stateElapsedSeconds = 0f;
             lastMessage = message;
+            ShowQuestRequestIcon();
             onStateChanged.Invoke(currentStateName);
             LogQuestStateToBottomBanner(currentStateName, message);
         }
@@ -147,6 +162,7 @@ namespace DogGame.Modules
             lastMessage = message;
             currentStateName = "Succeeded";
             stateElapsedSeconds = 0f;
+            HideQuestRequestIcon();
             QuestManager.UnregisterQuest(this);
             onQuestCompleted.Invoke();
             onStateChanged.Invoke(currentStateName);
@@ -159,6 +175,7 @@ namespace DogGame.Modules
             lastMessage = reason;
             currentStateName = "Failed";
             stateElapsedSeconds = 0f;
+            HideQuestRequestIcon();
             QuestManager.UnregisterQuest(this);
             onQuestFailed.Invoke(reason);
             onStateChanged.Invoke(currentStateName);
@@ -171,6 +188,7 @@ namespace DogGame.Modules
             lastMessage = reason;
             currentStateName = "Cancelled";
             stateElapsedSeconds = 0f;
+            HideQuestRequestIcon();
             QuestManager.UnregisterQuest(this);
             onQuestCancelled.Invoke(reason);
             onStateChanged.Invoke(currentStateName);
@@ -185,6 +203,7 @@ namespace DogGame.Modules
             stateElapsedSeconds = 0f;
             lastSignal = "";
             lastMessage = "";
+            HideQuestRequestIcon();
             QuestManager.UnregisterQuest(this);
         }
 
@@ -220,6 +239,83 @@ namespace DogGame.Modules
                 BannerLevel.None,
                 bannerMessage,
                 QuestBannerIconSpriteName);
+        }
+
+        private void ShowQuestRequestIcon()
+        {
+            WorldObject target = QuestIconTarget;
+            if (target == null || QuestIconSpriteIndex < 0 || string.IsNullOrWhiteSpace(QuestIconSpriteSheet))
+                return;
+
+            Sprite iconSprite = SpriteServer.SpriteSheetLookup(QuestIconSpriteSheet, QuestIconSpriteIndex);
+            if (iconSprite == null)
+                return;
+
+            Vector3 localOffset = GetQuestIconLocalOffset(target);
+            EmoteIconVisualFactory.Show(
+                target.transform,
+                iconSprite,
+                localOffset: localOffset,
+                size: QuestOverheadIconSize,
+                lifetimeSeconds: 0f,
+                instanceName: QuestOverheadIconInstanceName);
+        }
+
+        private void HideQuestRequestIcon()
+        {
+            WorldObject target = QuestIconTarget;
+            if (target == null)
+                return;
+
+            EmoteIconVisualFactory.Hide(target.transform, QuestOverheadIconInstanceName);
+        }
+
+        private static Vector3 GetQuestIconLocalOffset(WorldObject target)
+        {
+            if (target == null)
+                return new Vector3(0f, 1.35f, 0f);
+
+            if (!TryGetRenderableBounds(target, out Bounds bounds))
+                return new Vector3(0f, 1.35f, 0f);
+
+            float iconCenterY = bounds.max.y + (QuestOverheadIconSize * 0.5f) + QuestOverheadIconTopPadding;
+            Vector3 localOffset = target.transform.InverseTransformPoint(new Vector3(
+                target.transform.position.x,
+                iconCenterY,
+                target.transform.position.z));
+
+            localOffset.x = 0f;
+            localOffset.z = 0f;
+            return localOffset;
+        }
+
+        private static bool TryGetRenderableBounds(WorldObject target, out Bounds bounds)
+        {
+            bounds = default;
+            if (target == null)
+                return false;
+
+            Renderer[] renderers = target.GetComponentsInChildren<Renderer>(includeInactive: false);
+            bool hasBounds = false;
+
+            for (int i = 0; i < renderers.Length; i++)
+            {
+                Renderer renderer = renderers[i];
+                if (renderer == null || !renderer.enabled || renderer.GetComponentInParent<EmoteIconSpinner>() != null)
+                    continue;
+
+                if (!hasBounds)
+                {
+                    bounds = renderer.bounds;
+                    hasBounds = true;
+                }
+                else
+                {
+                    bounds.Encapsulate(renderer.bounds);
+                }
+            }
+
+            return hasBounds;
         }
 
         private static string FormatQuestStateName(string stateName)

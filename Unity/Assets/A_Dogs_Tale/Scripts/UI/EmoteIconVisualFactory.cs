@@ -34,19 +34,20 @@ public static class EmoteIconVisualFactory
         float size = DefaultSize,
         float thickness = DefaultThickness,
         float lifetimeSeconds = DefaultLifetimeSeconds,
-        Vector3? spinDegreesPerSecond = null)
+        Vector3? spinDegreesPerSecond = null,
+        string instanceName = InstanceName)
     {
         if (anchor == null || sprite == null || sprite.texture == null)
             return null;
 
-        Transform existing = anchor.Find(InstanceName);
+        Transform existing = anchor.Find(instanceName);
         if (existing != null)
         {
             existing.gameObject.SetActive(false);
             Object.Destroy(existing.gameObject);
         }
 
-        GameObject iconObject = new GameObject(InstanceName);
+        GameObject iconObject = new GameObject(instanceName);
         iconObject.transform.SetParent(anchor, false);
         iconObject.transform.localPosition = localOffset ?? DefaultLocalOffset;
         iconObject.transform.localRotation = Quaternion.identity;
@@ -67,6 +68,19 @@ public static class EmoteIconVisualFactory
             Object.Destroy(iconObject, lifetimeSeconds);
 
         return iconObject;
+    }
+
+    public static void Hide(Transform anchor, string instanceName = InstanceName)
+    {
+        if (anchor == null)
+            return;
+
+        Transform existing = anchor.Find(instanceName);
+        if (existing == null)
+            return;
+
+        existing.gameObject.SetActive(false);
+        Object.Destroy(existing.gameObject);
     }
 
     static Mesh CreateSquareCardMesh(Sprite sprite, float size, float thickness)

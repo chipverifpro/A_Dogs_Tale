@@ -13,6 +13,8 @@ public sealed class QuestJournalUI : MonoBehaviour
     [SerializeField] private int uiSortOrder = 5400;
     [SerializeField] private Vector2 referenceResolution = new(1920f, 1080f);
     [SerializeField] private Vector2 dialogSize = new(640f, 560f);
+    [SerializeField] private float questAcceptRange = 2.5f;
+    [SerializeField] private float proximityRefreshInterval = 0.5f;
 
     private readonly HashSet<QuestModuleBase> expandedQuestModules = new();
     private readonly List<QuestModuleBase> displayQuestModules = new();
@@ -25,6 +27,7 @@ public sealed class QuestJournalUI : MonoBehaviour
     private TextMeshProUGUI emptyLabel;
     private bool isOpen;
     private bool questListDirty = true;
+    private float nextProximityRefreshTime;
 
     private void Awake()
     {
@@ -54,6 +57,12 @@ public sealed class QuestJournalUI : MonoBehaviour
         if (questListDirty)
             RefreshQuestList();
 
+        if (Time.unscaledTime >= nextProximityRefreshTime)
+        {
+            nextProximityRefreshTime = Time.unscaledTime + Mathf.Max(0.1f, proximityRefreshInterval);
+            questListDirty = true;
+        }
+
         UpdateQuestHeaderLabels();
     }
 
@@ -71,6 +80,7 @@ public sealed class QuestJournalUI : MonoBehaviour
         isOpen = true;
         dialogRoot.SetActive(true);
         questListDirty = true;
+        nextProximityRefreshTime = 0f;
         RefreshQuestList();
     }
 
@@ -313,7 +323,10 @@ public sealed class QuestJournalUI : MonoBehaviour
     {
         GameObject rowObject = CreateUIObject($"{quest.QuestTitle}Row", parent);
         RectTransform rowRect = rowObject.GetComponent<RectTransform>();
-        float rowHeight = expandedQuestModules.Contains(quest) ? 320f : 86f;
+        bool expanded = expandedQuestModules.Contains(quest);
+        float rowHeight = expanded ? 320f : 86f;
+        if (expanded && CanShowAcceptQuestButton(quest))
+            rowHeight += 48f;
         rowRect.sizeDelta = new Vector2(0f, rowHeight);
 
         LayoutElement rowLayoutElement = rowObject.AddComponent<LayoutElement>();
@@ -335,7 +348,7 @@ public sealed class QuestJournalUI : MonoBehaviour
 
         BuildQuestHeader(quest, rowObject.transform);
 
-        if (expandedQuestModules.Contains(quest))
+        if (expanded)
             BuildObjectiveList(quest, rowObject.transform);
     }
 
@@ -391,6 +404,93 @@ public sealed class QuestJournalUI : MonoBehaviour
             objectiveLabel.rectTransform.sizeDelta = new Vector2(0f, 26f);
             SetPreferredHeight(objectiveLabel.gameObject, 26f);
         }
+
+        if (CanShowAcceptQuestButton(quest))
+            BuildAcceptQuestButton(quest, parent);
+    }
+
+    private void BuildAcceptQuestButton(QuestModuleBase quest, Transform parent)
+    {
+        Button acceptButton = CreateButton("AcceptQuestButton", parent, "Accept Quest", () => AcceptQuestFromDialog(quest));
+        RectTransform acceptRect = acceptButton.GetComponent<RectTransform>();
+        acceptRect.sizeDelta = new Vector2(0f, 42f);
+        SetPreferredHeight(acceptButton.gameObject, 42f);
+    }
+
+    private void AcceptQuestFromDialog(QuestModuleBase quest)
+    {
+        if (quest == null)
+            return;
+
+        if (!TryGetQuestActorAndTarget(quest, out WorldObject actor, out WorldObject target))
+            return;
+
+        if (!IsQuestGiverNearby(actor, target))
+        {
+            BottomBanner.Show($"{target.DisplayName} is too far away.");
+            questListDirty = true;
+            RefreshQuestList();
+            return;
+        }
+
+        GameInputRouter router = GameInputRouter.Instance;
+        GameMode gameMode = router != null ? router.currentGameMode : GameMode.Explore;
+        Vector3 hitPoint = target.transform.position;
+
+        var activateContext = new ActivateContext(
+            userIsInstigator: true,
+            instigator: actor,
+            target: target,
+            gameMode: gameMode,
+            hitPoint: hitPoint,
+            promoteTarget: true);
+
+        ActivateResult result = target.Activate(activateContext, new ActivateRequest(ActivateKind.StartQuest));
+        if (!string.IsNullOrWhiteSpace(result.message))
+        {
+            if (result.kind == ActivateResultKind.Accepted)
+                BottomBanner.Show(result.message);
+            else
+                BottomBanner.Show($"Quest not accepted: {result.message}");
+        }
+
+        questListDirty = true;
+        RefreshQuestList();
+    }
+
+    private bool CanShowAcceptQuestButton(QuestModuleBase quest)
+    {
+        if (quest == null || !quest.CanStartFromQuestDialog)
+            return false;
+
+        return TryGetQuestActorAndTarget(quest, out WorldObject actor, out WorldObject target) &&
+               IsQuestGiverNearby(actor, target);
+    }
+
+    private bool TryGetQuestActorAndTarget(QuestModuleBase quest, out WorldObject actor, out WorldObject target)
+    {
+        actor = GetCurrentControlledWorldObject();
+        target = quest != null ? quest.QuestInteractionTarget : null;
+        return actor != null && target != null;
+    }
+
+    private bool IsQuestGiverNearby(WorldObject actor, WorldObject target)
+    {
+        if (actor == null || target == null)
+            return false;
+
+        Vector3 delta = actor.transform.position - target.transform.position;
+        return delta.sqrMagnitude <= questAcceptRange * questAcceptRange;
+    }
+
+    private static WorldObject GetCurrentControlledWorldObject()
+    {
+        GameInputRouter router = GameInputRouter.Instance;
+        if (router != null && router.currentControlledWorldObject != null)
+            return router.currentControlledWorldObject;
+
+        Dir dir = Dir.Instance;
+        return dir != null && dir.playerPack != null ? dir.playerPack.packLeader : null;
     }
 
     private void ToggleExpanded(QuestModuleBase quest)
