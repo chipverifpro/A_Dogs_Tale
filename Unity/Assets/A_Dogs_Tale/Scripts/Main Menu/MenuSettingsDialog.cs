@@ -42,7 +42,12 @@ public class MenuSettingsDialog : MonoBehaviour
     private Toggle ollamaToggle;
     private Toggle touchscreenJoystickToggle;
     private Slider scentStepSlider;
+    private Slider buttonSizeSlider;
     private Text scentStepValueLabel;
+    private Text buttonSizeValueLabel;
+    private Image buttonSizeSampleIconImage;
+    private RectTransform buttonSizeSampleButtonRect;
+    private LayoutElement buttonSizeSampleButtonLayout;
     private Image[] mapTypeButtonImages;
     private Image[] graphicsQualityButtonImages;
     private RectTransform themedScrollRect;
@@ -63,6 +68,7 @@ public class MenuSettingsDialog : MonoBehaviour
     private Vector3 defaultScale = Vector3.one;
     private bool tallDisplayScaleEnabled;
     private float tallDisplayScaleMultiplier = 1f;
+    private int lastButtonSizeSampleEmoteIndex = -1;
 
     public void Initialize(MenuManager owner)
     {
@@ -218,6 +224,7 @@ public class MenuSettingsDialog : MonoBehaviour
         CreateSectionHeader(content, "CONTROLS");
         GameObject controlsRow = CreateRow(content, "ControlsRow", 42f);
         touchscreenJoystickToggle = CreateToggle(controlsRow.transform, "Touchscreen joystick visible", "TouchscreenJoystickToggle");
+        CreateButtonSizeRow(content);
 
         CreateSectionHeader(content, "LINKS");
         GameObject linkRow = CreateRow(content, "LinksRow", 44f);
@@ -233,6 +240,7 @@ public class MenuSettingsDialog : MonoBehaviour
         ollamaToggle.onValueChanged.AddListener(_ => SaveFromControls());
         touchscreenJoystickToggle.onValueChanged.AddListener(_ => SaveFromControls());
         scentStepSlider.onValueChanged.AddListener(OnScentStepChanged);
+        buttonSizeSlider.onValueChanged.AddListener(OnButtonSizeChanged);
     }
 
     private ScrollRect EnsureScrollView(Transform root)
@@ -447,6 +455,85 @@ public class MenuSettingsDialog : MonoBehaviour
         LayoutElement valueLayout = scentStepValueLabel.gameObject.GetComponent<LayoutElement>();
         valueLayout.preferredWidth = 54f;
         valueLayout.minWidth = 48f;
+    }
+
+    private void CreateButtonSizeRow(Transform parent)
+    {
+        GameObject row = CreateRow(parent, "ButtonSizeRow", PersistentGameSettings.MaxButtonSize + 16f);
+        HorizontalLayoutGroup rowLayout = row.GetComponent<HorizontalLayoutGroup>();
+        if (rowLayout != null)
+        {
+            rowLayout.childAlignment = TextAnchor.MiddleLeft;
+            rowLayout.childControlHeight = false;
+            rowLayout.childForceExpandHeight = false;
+        }
+
+        Text label = CreateLabel(row.transform, "Button Size", 17, FontStyle.Bold, TextAnchor.MiddleLeft, 100f);
+        LayoutElement labelLayout = label.gameObject.GetComponent<LayoutElement>();
+        labelLayout.preferredWidth = 116f;
+        labelLayout.minWidth = 96f;
+
+        GameObject sliderObject = DefaultControls.CreateSlider(new DefaultControls.Resources());
+        sliderObject.name = "ButtonSizeSlider";
+        sliderObject.transform.SetParent(row.transform, false);
+        SetLayerRecursive(sliderObject, row.layer);
+
+        buttonSizeSlider = sliderObject.GetComponent<Slider>();
+        buttonSizeSlider.minValue = PersistentGameSettings.MinButtonSize;
+        buttonSizeSlider.maxValue = PersistentGameSettings.MaxButtonSize;
+        buttonSizeSlider.wholeNumbers = true;
+
+        LayoutElement sliderLayout = sliderObject.AddComponent<LayoutElement>();
+        sliderLayout.flexibleWidth = 1f;
+        sliderLayout.minWidth = 120f;
+        sliderLayout.preferredHeight = 20f;
+
+        buttonSizeValueLabel = CreateLabel(row.transform, "176", 16, FontStyle.Bold, TextAnchor.MiddleRight, 46f, "ButtonSizeValueLabel");
+        LayoutElement valueLayout = buttonSizeValueLabel.gameObject.GetComponent<LayoutElement>();
+        valueLayout.preferredWidth = 54f;
+        valueLayout.minWidth = 46f;
+
+        Button sampleButton = CreateButtonSizeSampleButton(row.transform);
+        sampleButton.onClick.AddListener(ShowRandomButtonSizeSampleEmote);
+        ShowRandomButtonSizeSampleEmote();
+    }
+
+    private Button CreateButtonSizeSampleButton(Transform parent)
+    {
+        GameObject buttonObject = DefaultControls.CreateButton(new DefaultControls.Resources());
+        buttonObject.name = "ButtonSizeSampleButton";
+        buttonObject.transform.SetParent(parent, false);
+        SetLayerRecursive(buttonObject, parent.gameObject.layer);
+
+        Button button = buttonObject.GetComponent<Button>();
+        Image backgroundImage = buttonObject.GetComponent<Image>();
+        if (backgroundImage != null)
+        {
+            backgroundImage.color = controlColor;
+            button.targetGraphic = backgroundImage;
+        }
+
+        Text text = buttonObject.GetComponentInChildren<Text>(includeInactive: true);
+        if (text != null)
+            text.gameObject.SetActive(false);
+
+        GameObject iconObject = new GameObject("Icon", typeof(RectTransform), typeof(Image));
+        iconObject.transform.SetParent(buttonObject.transform, false);
+        SetLayerRecursive(iconObject, buttonObject.layer);
+
+        RectTransform iconRect = iconObject.GetComponent<RectTransform>();
+        Stretch(iconRect);
+        iconRect.offsetMin = new Vector2(8f, 8f);
+        iconRect.offsetMax = new Vector2(-8f, -8f);
+
+        buttonSizeSampleIconImage = iconObject.GetComponent<Image>();
+        buttonSizeSampleIconImage.preserveAspect = true;
+        buttonSizeSampleIconImage.raycastTarget = false;
+        buttonSizeSampleIconImage.color = Color.white;
+
+        buttonSizeSampleButtonRect = buttonObject.GetComponent<RectTransform>();
+        buttonSizeSampleButtonLayout = buttonObject.AddComponent<LayoutElement>();
+        return button;
     }
 
     private void CreateMapTypeRow(Transform parent)
@@ -873,6 +960,7 @@ public class MenuSettingsDialog : MonoBehaviour
         CreateGraphicsQualityRow(panel.transform);
         CreateSectionHeader(panel.transform, "Controls");
         touchscreenJoystickToggle = CreateToggle(panel.transform, "Touchscreen joystick visible", "TouchscreenJoystickToggle");
+        CreateButtonSizeRow(panel.transform);
 
         Button closeButton = CreateButton(panel.transform, "Close", "CloseButton");
         closeButton.onClick.AddListener(Close);
@@ -882,6 +970,7 @@ public class MenuSettingsDialog : MonoBehaviour
         ollamaToggle.onValueChanged.AddListener(_ => SaveFromControls());
         touchscreenJoystickToggle.onValueChanged.AddListener(_ => SaveFromControls());
         scentStepSlider.onValueChanged.AddListener(OnScentStepChanged);
+        buttonSizeSlider.onValueChanged.AddListener(OnButtonSizeChanged);
 
         dialogRoot.SetActive(false);
     }
@@ -941,6 +1030,19 @@ public class MenuSettingsDialog : MonoBehaviour
         SaveFromControls();
     }
 
+    private void OnButtonSizeChanged(float value)
+    {
+        if (buttonSizeSlider == null)
+            return;
+
+        float snappedValue = PersistentGameSettings.SnapButtonSize(value);
+        if (!Mathf.Approximately(snappedValue, buttonSizeSlider.value))
+            buttonSizeSlider.SetValueWithoutNotify(snappedValue);
+
+        UpdateButtonSizeSample(snappedValue);
+        SaveFromControls();
+    }
+
     private void LoadCurrentValues()
     {
         PersistentGameSettings.Data settings = PersistentGameSettings.GetCurrentOrSaved();
@@ -957,6 +1059,11 @@ public class MenuSettingsDialog : MonoBehaviour
             scentStepSlider.SetValueWithoutNotify(snappedValue);
         UpdateScentStepLabel(snappedValue);
 
+        float buttonSize = PersistentGameSettings.SnapButtonSize(settings.buttonSize);
+        if (buttonSizeSlider != null)
+            buttonSizeSlider.SetValueWithoutNotify(buttonSize);
+        UpdateButtonSizeSample(buttonSize);
+
         RefreshToggleVisuals();
     }
 
@@ -971,7 +1078,8 @@ public class MenuSettingsDialog : MonoBehaviour
             ollamaEnabled = ollamaToggle != null ? ollamaToggle.isOn : current.ollamaEnabled,
             touchscreenJoystickVisible = touchscreenJoystickToggle != null ? touchscreenJoystickToggle.isOn : current.touchscreenJoystickVisible,
             graphicsLevel = selectedGraphicsLevel,
-            scentSimulationTimeStep = SnapScentStep(scentStepSlider != null ? scentStepSlider.value : current.scentSimulationTimeStep)
+            scentSimulationTimeStep = SnapScentStep(scentStepSlider != null ? scentStepSlider.value : current.scentSimulationTimeStep),
+            buttonSize = PersistentGameSettings.SnapButtonSize(buttonSizeSlider != null ? buttonSizeSlider.value : current.buttonSize)
         });
     }
 
@@ -984,6 +1092,47 @@ public class MenuSettingsDialog : MonoBehaviour
     private static float SnapScentStep(float value)
     {
         return Mathf.Clamp(Mathf.Round(value * 10f) / 10f, 0.1f, 1.0f);
+    }
+
+    private void UpdateButtonSizeSample(float value)
+    {
+        float buttonSize = PersistentGameSettings.SnapButtonSize(value);
+        if (buttonSizeValueLabel != null)
+            buttonSizeValueLabel.text = buttonSize.ToString("0");
+
+        if (buttonSizeSampleButtonLayout != null)
+        {
+            buttonSizeSampleButtonLayout.minWidth = buttonSize;
+            buttonSizeSampleButtonLayout.minHeight = buttonSize;
+            buttonSizeSampleButtonLayout.preferredWidth = buttonSize;
+            buttonSizeSampleButtonLayout.preferredHeight = buttonSize;
+        }
+
+        if (buttonSizeSampleButtonRect != null)
+            buttonSizeSampleButtonRect.sizeDelta = new Vector2(buttonSize, buttonSize);
+    }
+
+    private void ShowRandomButtonSizeSampleEmote()
+    {
+        if (buttonSizeSampleIconImage == null || DogEmojiCatalog.Entries == null || DogEmojiCatalog.Entries.Length == 0)
+            return;
+
+        int startIndex = UnityEngine.Random.Range(0, DogEmojiCatalog.Entries.Length);
+        for (int offset = 0; offset < DogEmojiCatalog.Entries.Length; offset++)
+        {
+            int index = (startIndex + offset) % DogEmojiCatalog.Entries.Length;
+            if (DogEmojiCatalog.Entries.Length > 1 && index == lastButtonSizeSampleEmoteIndex)
+                continue;
+
+            DogEmojiEntry entry = DogEmojiCatalog.Entries[index];
+            Sprite sprite = SpriteServer.SpriteSheetLookup($"DogEmojiSheet{entry.SheetId}", entry.SpriteIndex);
+            if (sprite == null)
+                continue;
+
+            lastButtonSizeSampleEmoteIndex = index;
+            buttonSizeSampleIconImage.sprite = sprite;
+            return;
+        }
     }
 
     private Canvas ResolveMenuCanvas()

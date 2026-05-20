@@ -10,8 +10,12 @@ public static class PersistentGameSettings
 {
     private const string PlayerPrefsKey = "A_Dogs_Tale.PersistentGameSettings";
     private const string TouchscreenJoystickVisibleJsonField = "\"touchscreenJoystickVisible\"";
+    private const string ButtonSizeJsonField = "\"buttonSize\"";
     private const float MinScentSimulationTimeStep = 0.1f;
     private const float MaxScentSimulationTimeStep = 1.0f;
+    public const float MinButtonSize = 40f;
+    public const float MaxButtonSize = 250f;
+    public const float DefaultButtonSize = 176f;
     public const int GraphicsLevelLow = 1985;
     public const int GraphicsLevelMedium = 1990;
     public const int GraphicsLevelHigh = 1995;
@@ -22,7 +26,7 @@ public static class PersistentGameSettings
         Yard = 1,
         DogPark = 2,
         Forest = 3,
-        Castle = 4
+        Castle = 4,
     }
 
     [Serializable]
@@ -36,6 +40,7 @@ public static class PersistentGameSettings
         public int graphicsLevel = GraphicsLevelHigh;
         public bool wallpaperEnabled = true;
         public bool touchscreenJoystickVisible = true;
+        public float buttonSize = DefaultButtonSize;
     }
 
     public static Data GetCurrentOrSaved()
@@ -233,12 +238,15 @@ public static class PersistentGameSettings
         }
 
         bool hasTouchscreenJoystickVisible = json.Contains(TouchscreenJoystickVisibleJsonField, StringComparison.Ordinal);
+        bool hasButtonSize = json.Contains(ButtonSizeJsonField, StringComparison.Ordinal);
         data = JsonUtility.FromJson<Data>(json);
         if (data == null)
             return false;
 
         if (!hasTouchscreenJoystickVisible)
             data.touchscreenJoystickVisible = true;
+        if (!hasButtonSize)
+            data.buttonSize = DefaultButtonSize;
 
         data = Normalize(data);
         return true;
@@ -292,8 +300,14 @@ public static class PersistentGameSettings
 
         data.graphicsLevel = SnapGraphicsLevel(data.graphicsLevel);
         data.wallpaperEnabled = data.graphicsLevel >= GraphicsLevelMedium;
+        data.buttonSize = SnapButtonSize(data.buttonSize);
 
         return data;
+    }
+
+    public static float SnapButtonSize(float value)
+    {
+        return Mathf.Clamp(Mathf.Round(value), MinButtonSize, MaxButtonSize);
     }
 
     public static int SnapGraphicsLevel(float value)

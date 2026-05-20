@@ -14,6 +14,7 @@ public sealed class InventoryDialogUI : MonoBehaviour
     private static readonly Vector3 PreviewAnchorPosition = new(60000f, 60000f, 60000f);
     private static readonly Vector3 TradePartnerPreviewAnchorPosition = new(61000f, 60000f, 60000f);
     private const float HeldTripleActionButtonScale = 0.86f;
+    private static readonly Vector2 PreviewArrowButtonSize = new(41f, 41f);
 
     [Header("Resources")]
     [SerializeField] private string arrowsSpriteResourcePath = "Sprites/ArrowsSpriteSheetA";
@@ -26,6 +27,7 @@ public sealed class InventoryDialogUI : MonoBehaviour
     [SerializeField] private int uiSortOrder = 5300;
     [SerializeField] private Vector2 referenceResolution = new(1920f, 1080f);
     [SerializeField] private Vector2 dialogSize = new(820f, 820f);
+    [SerializeField, Range(0f, 75f)] private float dialogScaleReductionPercent = 25f;
     [SerializeField] private Vector2 themedCloseButtonAnchoredPosition = new(-70f, -160f);
     [SerializeField] private Vector2 themedCloseButtonSize = new(100f, 100f);
     [SerializeField] private Vector2 themedBallCloseButtonAnchoredPosition = new(-110f, -100f);
@@ -148,6 +150,11 @@ public sealed class InventoryDialogUI : MonoBehaviour
         Hide();
     }
 
+    private void OnValidate()
+    {
+        ApplyDialogScale();
+    }
+
     private void Update()
     {
         if (WasInventoryTogglePressedThisFrame())
@@ -254,6 +261,7 @@ public sealed class InventoryDialogUI : MonoBehaviour
         dialogRect.pivot = new Vector2(0.5f, 0.5f);
         dialogRect.anchoredPosition = Vector2.zero;
         dialogRect.sizeDelta = dialogSize;
+        ApplyDialogScale();
 
         Image dialogImage = dialogRoot.AddComponent<Image>();
         if (inventoryBackgroundSprite != null)
@@ -274,6 +282,16 @@ public sealed class InventoryDialogUI : MonoBehaviour
         BuildTooltip(canvasObject.transform);
         EnsurePreviewWorld();
         EnsureTradePartnerPreviewWorld();
+    }
+
+    private void ApplyDialogScale()
+    {
+        if (dialogRect == null)
+            return;
+
+        float reduction01 = Mathf.Clamp01(dialogScaleReductionPercent / 100f);
+        float scale = Mathf.Max(0.01f, 1f - reduction01);
+        dialogRect.localScale = new Vector3(scale, scale, 1f);
     }
 
     private void BuildHeader(Transform parent)
@@ -420,8 +438,8 @@ public sealed class InventoryDialogUI : MonoBehaviour
         tradeLeftRect.anchorMin = new Vector2(0f, 0.5f);
         tradeLeftRect.anchorMax = new Vector2(0f, 0.5f);
         tradeLeftRect.pivot = new Vector2(0f, 0.5f);
-        tradeLeftRect.anchoredPosition = new Vector2(18f, 18f);
-        tradeLeftRect.sizeDelta = new Vector2(82f, 82f);
+        tradeLeftRect.anchoredPosition = new Vector2(30f, 0f);
+        tradeLeftRect.sizeDelta = PreviewArrowButtonSize;
 
         tradePartnerRightArrowButton = CreateSpriteButton(
             "NextTradeTargetButton",
@@ -435,8 +453,8 @@ public sealed class InventoryDialogUI : MonoBehaviour
         tradeRightRect.anchorMin = new Vector2(1f, 0.5f);
         tradeRightRect.anchorMax = new Vector2(1f, 0.5f);
         tradeRightRect.pivot = new Vector2(1f, 0.5f);
-        tradeRightRect.anchoredPosition = new Vector2(-18f, 18f);
-        tradeRightRect.sizeDelta = new Vector2(82f, 82f);
+        tradeRightRect.anchoredPosition = new Vector2(-30f, 0f);
+        tradeRightRect.sizeDelta = PreviewArrowButtonSize;
 
         leftArrowButton = CreateSpriteButton(
             "PreviousItemButton",
@@ -450,8 +468,8 @@ public sealed class InventoryDialogUI : MonoBehaviour
         leftRect.anchorMin = new Vector2(0f, 0.5f);
         leftRect.anchorMax = new Vector2(0f, 0.5f);
         leftRect.pivot = new Vector2(0f, 0.5f);
-        leftRect.anchoredPosition = new Vector2(18f, 18f);
-        leftRect.sizeDelta = new Vector2(82f, 82f);
+        leftRect.anchoredPosition = new Vector2(30f, 0f);
+        leftRect.sizeDelta = PreviewArrowButtonSize;
 
         rightArrowButton = CreateSpriteButton(
             "NextItemButton",
@@ -465,8 +483,8 @@ public sealed class InventoryDialogUI : MonoBehaviour
         rightRect.anchorMin = new Vector2(1f, 0.5f);
         rightRect.anchorMax = new Vector2(1f, 0.5f);
         rightRect.pivot = new Vector2(1f, 0.5f);
-        rightRect.anchoredPosition = new Vector2(-18f, 18f);
-        rightRect.sizeDelta = new Vector2(82f, 82f);
+        rightRect.anchoredPosition = new Vector2(-30f, 0f);
+        rightRect.sizeDelta = PreviewArrowButtonSize;
     }
 
     private GameObject CreatePreviewPane(
