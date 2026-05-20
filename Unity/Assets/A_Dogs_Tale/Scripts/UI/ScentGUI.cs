@@ -20,6 +20,13 @@ public class ScentGUI : MonoBehaviour
     private const string DigControlsContainerName = "DigControls";
     private const string LeftActionControlsContainerName = "LeftActionControls";
     private const string TooltipContainerName = "Tooltips";
+    private const int TopControlButtonCount = 10;
+    private const int QuestButtonTopSlotFromRight = 7;
+    private const int CameraModeButtonTopSlotFromRight = 8;
+    private const int HomeButtonTopSlotFromRight = 9;
+    private const int TopControlColumnsWhenTwoRows = 5;
+    private const string DefaultTwoRowPulldownFrameResourcePath = "Sprites/PulldownFrame_2x5";
+    private const string LegacyTwoRowPulldownFrameResourcePath = "Sprites/PulldownFrame_2row";
 
     [Header("External object references")]
     private Dir dir;
@@ -32,6 +39,7 @@ public class ScentGUI : MonoBehaviour
     [SerializeField] private string inventoryActionSpriteResourcePath = "Sprites/InventoryActionsSheetA";
     [SerializeField] private string digHoleSpriteResourcePath = "Sprites/DigHoleSpriteA";
     [SerializeField] private string pulldownFrameResourcePath = "Sprites/PulldownFrame";
+    [SerializeField] private string pulldownFrameTwoRowResourcePath = DefaultTwoRowPulldownFrameResourcePath;
     [SerializeField] private string pulldownTabResourcePath = "Sprites/PulldownTab";
     [SerializeField] private string androidButtonSpriteResourcePath = "Sprites/AndroidButtonsAndQuests";
     [SerializeField] private float noseButtonSize = 176f;
@@ -39,8 +47,6 @@ public class ScentGUI : MonoBehaviour
     [SerializeField] private float modeButtonSpacing = 12f;
     [SerializeField] private float topControlButtonSize = 176f;
     [SerializeField] private Vector2 topControlsInset = new Vector2(162f, 52f);
-    [SerializeField] private Vector2 leftActionButtonsInset = new Vector2(0f, 0f);
-    [SerializeField] private float leftActionButtonSpacing = 12f;
     [SerializeField] private Vector2 pulldownFrameSize = new Vector2(1620f, 341f);
     [SerializeField] private Vector2 pulldownFrameOffset = new Vector2(0f, 0f);
     [SerializeField] private Vector2 pulldownTabSize = new Vector2(428f, 98f);
@@ -84,6 +90,8 @@ public class ScentGUI : MonoBehaviour
     private Canvas overlayCanvas;
     private RectTransform pulldownFrameRect;
     private Image pulldownFrameImage;
+    private Sprite pulldownFrameSprite;
+    private Sprite pulldownFrameTwoRowSprite;
     private RectTransform pulldownTabRect;
     private Image pulldownTabImage;
     private RectTransform pulldownRetractButtonRect;
@@ -135,6 +143,8 @@ public class ScentGUI : MonoBehaviour
     private bool pulldownOpenedByTab;
     private bool uiBuilt;
     private int lastSniffToggleFrame = -1;
+    private float appliedPersistentButtonSize = -1f;
+    private float nextPersistentButtonSizeRefreshTime;
 
     private readonly AgentDecisionType[] selectableDecisionModes =
     {
@@ -168,6 +178,7 @@ public class ScentGUI : MonoBehaviour
 
     private void Update()
     {
+        RefreshPersistentButtonSizePreference();
         RefreshModeButtonState();
         RefreshSpeedButtonState();
         RefreshSimulationButtonState();
@@ -339,6 +350,7 @@ public class ScentGUI : MonoBehaviour
             return;
 
         uiBuilt = true;
+        RefreshPersistentButtonSizePreference(force: true);
 
         Transform canvasTransform = FindExistingScentTargetCanvas();
         GameObject canvasObject;
@@ -521,7 +533,7 @@ public class ScentGUI : MonoBehaviour
         pulldownFrameRect.pivot = new Vector2(0.5f, 1f);
         pulldownFrameRect.localScale = Vector3.one * GetTopControlsFitScale();
         pulldownFrameRect.anchoredPosition = GetPulldownFrameShownPosition();
-        pulldownFrameRect.sizeDelta = pulldownFrameSize;
+        pulldownFrameRect.sizeDelta = GetPulldownFrameSizeForCurrentButtonSize();
 
         pulldownFrameImage = GetOrAddComponent<Image>(frameObject);
         pulldownFrameImage.sprite = GetPulldownFrameSprite();
@@ -614,6 +626,21 @@ public class ScentGUI : MonoBehaviour
     private Vector2 GetTopControlPosition(int slotFromRight)
     {
         float scale = GetTopControlsFitScale();
+        if (UseTwoRowTopControls())
+        {
+            int indexFromLeft = Mathf.Clamp(TopControlButtonCount - 1 - slotFromRight, 0, TopControlButtonCount - 1);
+            int row = indexFromLeft / TopControlColumnsWhenTwoRows;
+            int column = indexFromLeft % TopControlColumnsWhenTwoRows;
+            float frameWidth = GetPulldownFrameSizeForCurrentButtonSize().x * scale;
+            float leftEdge = (pulldownFrameOffset.x * scale) - (frameWidth * 0.5f);
+            float x = leftEdge +
+                      (topControlsInset.x * scale) +
+                      ((topControlButtonSize + modeButtonSpacing) * column * scale) +
+                      (topControlButtonSize * scale);
+            float y = -(((topControlsInset.y + ((topControlButtonSize + modeButtonSpacing) * row)) * scale) + GetTopSafeAreaInset());
+            return new Vector2(x, y);
+        }
+
         return new Vector2(
             GetTopControlsFrameRightEdge(scale) - GetTopControlRightInset(slotFromRight, scale),
             -((topControlsInset.y * scale) + GetTopSafeAreaInset()));
@@ -622,14 +649,19 @@ public class ScentGUI : MonoBehaviour
     private Vector2 GetTopPanelPosition(int slotFromRight)
     {
         float scale = GetTopControlsFitScale();
-        return new Vector2(
-            GetTopControlsFrameRightEdge(scale) - GetTopControlRightInset(slotFromRight, scale),
-            -(((topControlsInset.y + topControlButtonSize) * scale) + GetTopSafeAreaInset() + 12f));
+        Vector2 buttonPosition = GetTopControlPosition(slotFromRight);
+        int row = UseTwoRowTopControls()
+            ? Mathf.Clamp(TopControlButtonCount - 1 - slotFromRight, 0, TopControlButtonCount - 1) / TopControlColumnsWhenTwoRows
+            : 0;
+        float y = -(((topControlsInset.y +
+                      (topControlButtonSize * (row + 1)) +
+                      (modeButtonSpacing * row)) * scale) + GetTopSafeAreaInset() + 12f);
+        return new Vector2(buttonPosition.x, y);
     }
 
     private float GetTopControlsFrameRightEdge(float scale)
     {
-        return (pulldownFrameOffset.x * scale) + ((pulldownFrameSize.x * scale) * 0.5f);
+        return (pulldownFrameOffset.x * scale) + ((GetPulldownFrameSizeForCurrentButtonSize().x * scale) * 0.5f);
     }
 
     private float GetTopControlRightInset(int slotFromRight, float scale)
@@ -677,15 +709,62 @@ public class ScentGUI : MonoBehaviour
         if (!scaleTopControlsToFitWidth)
             return 1f;
 
-        RectTransform canvasRect = overlayCanvas != null ? overlayCanvas.transform as RectTransform : null;
-        float canvasWidth = canvasRect != null && canvasRect.rect.width > 0f
-            ? canvasRect.rect.width
-            : Screen.width;
+        float canvasWidth = GetCanvasWidth();
 
-        if (canvasWidth <= 0f || pulldownFrameSize.x <= 0f)
+        float frameWidth = GetPulldownFrameSizeForCurrentButtonSize().x;
+        if (canvasWidth <= 0f || frameWidth <= 0f)
             return 1f;
 
-        return Mathf.Min(1f, canvasWidth / pulldownFrameSize.x);
+        return Mathf.Min(1f, canvasWidth / frameWidth);
+    }
+
+    private Vector2 GetPulldownFrameSizeForCurrentButtonSize()
+    {
+        return UseTwoRowTopControls()
+            ? GetPulldownFrameSize(columns: TopControlColumnsWhenTwoRows, rows: 2)
+            : GetPulldownFrameSize(columns: TopControlButtonCount, rows: 1);
+    }
+
+    private Vector2 GetSingleRowPulldownFrameSizeForCurrentButtonSize()
+    {
+        return GetPulldownFrameSize(columns: TopControlButtonCount, rows: 1);
+    }
+
+    private Vector2 GetPulldownFrameSize(int columns, int rows)
+    {
+        float buttonSize = Mathf.Max(1f, topControlButtonSize);
+        float spacing = Mathf.Max(0f, modeButtonSpacing);
+        int clampedColumns = Mathf.Max(1, columns);
+        int clampedRows = Mathf.Max(1, rows);
+        float width = (topControlsInset.x * 2f) +
+                      (buttonSize * clampedColumns) +
+                      (spacing * Mathf.Max(0, clampedColumns - 1));
+        float bottomPadding = Mathf.Max(0f, pulldownFrameSize.y - topControlsInset.y - PersistentGameSettings.DefaultButtonSize);
+        float height = topControlsInset.y +
+                       (buttonSize * clampedRows) +
+                       (spacing * Mathf.Max(0, clampedRows - 1)) +
+                       bottomPadding;
+        return new Vector2(Mathf.Max(1f, width), Mathf.Max(1f, height));
+    }
+
+    private bool UseTwoRowTopControls()
+    {
+        if (!scaleTopControlsToFitWidth)
+            return false;
+
+        float canvasWidth = GetCanvasWidth();
+        if (canvasWidth <= 0f)
+            return false;
+
+        return GetSingleRowPulldownFrameSizeForCurrentButtonSize().x > canvasWidth;
+    }
+
+    private float GetCanvasWidth()
+    {
+        RectTransform canvasRect = overlayCanvas != null ? overlayCanvas.transform as RectTransform : null;
+        return canvasRect != null && canvasRect.rect.width > 0f
+            ? canvasRect.rect.width
+            : Screen.width;
     }
 
     private void ConfigureTopControlRect(RectTransform rectTransform, int slotFromRight)
@@ -723,37 +802,6 @@ public class ScentGUI : MonoBehaviour
         iconRect.localScale = Vector3.one;
         iconRect.anchoredPosition = Vector2.zero;
         iconRect.sizeDelta = Vector2.one * (topControlButtonSize * sizeScale);
-    }
-
-    private void ConfigureLeftActionButtonRect(RectTransform rectTransform, int slotFromTop)
-    {
-        if (rectTransform == null)
-            return;
-
-        rectTransform.anchorMin = new Vector2(0f, 1f);
-        rectTransform.anchorMax = new Vector2(0f, 1f);
-        rectTransform.pivot = new Vector2(0f, 1f);
-        rectTransform.sizeDelta = new Vector2(topControlButtonSize, topControlButtonSize);
-        ApplyLeftActionButtonPosition(rectTransform, slotFromTop);
-    }
-
-    private void ApplyLeftActionButtonPositions()
-    {
-        ApplyLeftActionButtonPosition(homeButtonRect, 0);
-        ApplyLeftActionButtonPosition(cameraModeButtonRect, 1);
-        ApplyLeftActionButtonPosition(questButtonRect, 2);
-    }
-
-    private void ApplyLeftActionButtonPosition(RectTransform rectTransform, int slotFromTop)
-    {
-        if (rectTransform == null)
-            return;
-
-        float scale = GetTopControlsFitScale();
-        rectTransform.localScale = Vector3.one * scale;
-        rectTransform.anchoredPosition = new Vector2(
-            leftActionButtonsInset.x * scale,
-            -(((leftActionButtonsInset.y + ((topControlButtonSize + leftActionButtonSpacing) * slotFromTop)) * scale) + GetTopSafeAreaInset()));
     }
 
     private void BuildNoseButton(Transform parent, Transform searchRoot)
@@ -1275,7 +1323,7 @@ public class ScentGUI : MonoBehaviour
             searchRoot,
             "HomeButton",
             spriteIndex: 0,
-            slotFromTop: 0,
+            slotFromRight: HomeButtonTopSlotFromRight,
             HandleHomeButtonPressed,
             "Home",
             out homeButtonImage);
@@ -1285,7 +1333,7 @@ public class ScentGUI : MonoBehaviour
             searchRoot,
             "CameraModeButton",
             spriteIndex: 2,
-            slotFromTop: 1,
+            slotFromRight: CameraModeButtonTopSlotFromRight,
             HandleCameraModeButtonPressed,
             "Camera Mode",
             out cameraModeButtonImage);
@@ -1295,7 +1343,7 @@ public class ScentGUI : MonoBehaviour
             searchRoot,
             "QuestButton",
             spriteIndex: 1,
-            slotFromTop: 2,
+            slotFromRight: QuestButtonTopSlotFromRight,
             HandleQuestButtonPressed,
             "Quests",
             out questButtonImage);
@@ -1306,7 +1354,7 @@ public class ScentGUI : MonoBehaviour
         Transform searchRoot,
         string buttonName,
         int spriteIndex,
-        int slotFromTop,
+        int slotFromRight,
         UnityAction clickHandler,
         string tooltipText,
         out Image buttonImage)
@@ -1328,7 +1376,7 @@ public class ScentGUI : MonoBehaviour
         }
 
         RectTransform buttonRect = GetOrAddComponent<RectTransform>(buttonObject);
-        ConfigureLeftActionButtonRect(buttonRect, slotFromTop);
+        ConfigureTopControlRect(buttonRect, slotFromRight);
 
         buttonImage = GetOrAddComponent<Image>(buttonObject);
         buttonImage.sprite = GetAndroidButtonSprite(spriteIndex);
@@ -1395,7 +1443,8 @@ public class ScentGUI : MonoBehaviour
     {
         float scale = GetTopControlsFitScale();
         float shownY = -((topControlsInset.y * scale) + GetTopSafeAreaInset());
-        float hiddenY = (topControlButtonSize * scale) + topControlsHiddenTopPadding;
+        int rowCount = UseTwoRowTopControls() ? 2 : 1;
+        float hiddenY = (((topControlButtonSize * rowCount) + (modeButtonSpacing * Mathf.Max(0, rowCount - 1))) * scale) + topControlsHiddenTopPadding;
         float y = Mathf.Lerp(hiddenY, shownY, topControlsVisibility);
         float frameY = Mathf.Lerp(GetPulldownFrameHiddenY(), GetPulldownFrameShownY(), topControlsVisibility);
 
@@ -1409,13 +1458,16 @@ public class ScentGUI : MonoBehaviour
         ApplyTopControlPosition(emoteButtonRect, 4, y);
         ApplyTopControlPosition(inventoryButtonRect, 5, y);
         ApplyTopControlPosition(digButtonRect, 6, y);
-        ApplyLeftActionButtonPositions();
+        ApplyTopControlPosition(questButtonRect, QuestButtonTopSlotFromRight, y);
+        ApplyTopControlPosition(cameraModeButtonRect, CameraModeButtonTopSlotFromRight, y);
+        ApplyTopControlPosition(homeButtonRect, HomeButtonTopSlotFromRight, y);
         ApplyTopPanelPositions();
     }
 
     private void ApplyTopControlsFitScale()
     {
         float scale = GetTopControlsFitScale();
+        ApplyTopControlSizesForCurrentButtonSize();
         ApplyTopControlScale(pulldownFrameRect, scale);
         ApplyTopControlScale(pulldownTabRect, scale);
         ApplyTopControlScale(noseButtonRect, scale);
@@ -1425,6 +1477,66 @@ public class ScentGUI : MonoBehaviour
         ApplyTopControlScale(emoteButtonRect, scale);
         ApplyTopControlScale(inventoryButtonRect, scale);
         ApplyTopControlScale(digButtonRect, scale);
+        ApplyTopControlScale(questButtonRect, scale);
+        ApplyTopControlScale(cameraModeButtonRect, scale);
+        ApplyTopControlScale(homeButtonRect, scale);
+    }
+
+    private void RefreshPersistentButtonSizePreference(bool force = false)
+    {
+        if (!force && Time.unscaledTime < nextPersistentButtonSizeRefreshTime)
+            return;
+
+        nextPersistentButtonSizeRefreshTime = Time.unscaledTime + 0.25f;
+        float savedButtonSize = PersistentGameSettings.SnapButtonSize(PersistentGameSettings.GetCurrentOrSaved().buttonSize);
+        if (!force && Mathf.Approximately(savedButtonSize, appliedPersistentButtonSize))
+            return;
+
+        appliedPersistentButtonSize = savedButtonSize;
+        topControlButtonSize = savedButtonSize;
+        noseButtonSize = savedButtonSize;
+
+        if (pulldownFrameRect == null)
+            return;
+
+        ApplyTopControlSizesForCurrentButtonSize();
+        ApplyTopControlsSlidePosition();
+    }
+
+    private void ApplyTopControlSizesForCurrentButtonSize()
+    {
+        if (pulldownFrameRect != null)
+            pulldownFrameRect.sizeDelta = GetPulldownFrameSizeForCurrentButtonSize();
+
+        if (pulldownFrameImage != null)
+            pulldownFrameImage.sprite = GetPulldownFrameSprite();
+
+        ApplyTopControlButtonSize(noseButtonRect);
+        ApplyTopControlButtonSize(modeButtonRect);
+        ApplyTopControlButtonSize(speedButtonRect);
+        ApplyTopControlButtonSize(simulationButtonRect);
+        ApplyTopControlButtonSize(emoteButtonRect);
+        ApplyTopControlButtonSize(inventoryButtonRect);
+        ApplyTopControlButtonSize(digButtonRect);
+        ApplyTopControlButtonSize(homeButtonRect);
+        ApplyTopControlButtonSize(cameraModeButtonRect);
+        ApplyTopControlButtonSize(questButtonRect);
+
+        ConfigureTopControlIconRect(noseIconImage != null ? noseIconImage.rectTransform : null, 0.68f);
+        ConfigureTopControlIconRect(modeIconImage != null ? modeIconImage.rectTransform : null, 0.72f);
+        ConfigureTopControlIconRect(speedIconImage != null ? speedIconImage.rectTransform : null, 0.72f);
+        ConfigureTopControlIconRect(simulationIconImage != null ? simulationIconImage.rectTransform : null, 0.72f);
+        ConfigureTopControlIconRect(emoteIconImage != null ? emoteIconImage.rectTransform : null, 0.72f);
+        ConfigureTopControlIconRect(inventoryIconImage != null ? inventoryIconImage.rectTransform : null, 0.72f);
+        SetDigIconSize(digIconImage != null ? digIconImage.rectTransform : null, digIconImage != null ? digIconImage.sprite : null);
+    }
+
+    private void ApplyTopControlButtonSize(RectTransform rectTransform)
+    {
+        if (rectTransform == null)
+            return;
+
+        rectTransform.sizeDelta = new Vector2(topControlButtonSize, topControlButtonSize);
     }
 
     private static void ApplyTopControlScale(RectTransform rectTransform, float scale)
@@ -1488,7 +1600,17 @@ public class ScentGUI : MonoBehaviour
             return;
 
         Vector2 anchoredPosition = GetTopControlPosition(slotFromRight);
-        anchoredPosition.y = y;
+        if (UseTwoRowTopControls())
+        {
+            float scale = GetTopControlsFitScale();
+            float topRowShownY = -((topControlsInset.y * scale) + GetTopSafeAreaInset());
+            anchoredPosition.y = y + (anchoredPosition.y - topRowShownY);
+        }
+        else
+        {
+            anchoredPosition.y = y;
+        }
+
         rectTransform.anchoredPosition = anchoredPosition;
     }
 
@@ -1523,7 +1645,7 @@ public class ScentGUI : MonoBehaviour
 
         float frameHeight = pulldownFrameRect.rect.height > 0f
             ? pulldownFrameRect.rect.height
-            : pulldownFrameSize.y;
+            : GetPulldownFrameSizeForCurrentButtonSize().y;
         return GetPulldownFrameShownY() + (frameHeight * GetTopControlsFitScale()) + topControlsHiddenTopPadding;
     }
 
@@ -3033,14 +3155,56 @@ public class ScentGUI : MonoBehaviour
 
     private Sprite GetPulldownFrameSprite()
     {
-        if (string.IsNullOrWhiteSpace(pulldownFrameResourcePath))
+        bool useTwoRows = UseTwoRowTopControls();
+        if (useTwoRows)
+        {
+            if (pulldownFrameTwoRowSprite == null)
+                pulldownFrameTwoRowSprite = LoadPulldownFrameSprite(GetPulldownFrameTwoRowResourcePath());
+
+            if (pulldownFrameTwoRowSprite != null)
+                return pulldownFrameTwoRowSprite;
+        }
+
+        if (pulldownFrameSprite == null)
+            pulldownFrameSprite = LoadPulldownFrameSprite(pulldownFrameResourcePath);
+
+        return pulldownFrameSprite;
+    }
+
+    private string GetPulldownFrameTwoRowResourcePath()
+    {
+        if (string.IsNullOrWhiteSpace(pulldownFrameTwoRowResourcePath) ||
+            pulldownFrameTwoRowResourcePath == LegacyTwoRowPulldownFrameResourcePath)
+        {
+            pulldownFrameTwoRowResourcePath = DefaultTwoRowPulldownFrameResourcePath;
+        }
+
+        return pulldownFrameTwoRowResourcePath;
+    }
+
+    private Sprite LoadPulldownFrameSprite(string resourcePath)
+    {
+        if (string.IsNullOrWhiteSpace(resourcePath))
             return null;
 
-        Sprite sprite = Resources.Load<Sprite>(pulldownFrameResourcePath);
-        if (sprite == null)
-            Debug.LogWarning($"ScentGUI: could not load pulldown frame sprite at Resources/{pulldownFrameResourcePath}.", this);
+        Sprite sprite = Resources.Load<Sprite>(resourcePath);
+        if (sprite != null)
+            return sprite;
 
-        return sprite;
+        Texture2D texture = Resources.Load<Texture2D>(resourcePath);
+        if (texture != null)
+        {
+            Sprite generatedSprite = Sprite.Create(
+                texture,
+                new Rect(0f, 0f, texture.width, texture.height),
+                new Vector2(0.5f, 0.5f),
+                100f);
+            generatedSprite.name = texture.name;
+            return generatedSprite;
+        }
+
+        Debug.LogWarning($"ScentGUI: could not load pulldown frame sprite at Resources/{resourcePath}.", this);
+        return null;
     }
 
     private Sprite GetPulldownTabSprite()
