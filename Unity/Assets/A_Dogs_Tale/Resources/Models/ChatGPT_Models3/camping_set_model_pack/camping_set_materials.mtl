@@ -1,0 +1,175 @@
+# Camping set shared materials
+
+newmtl TentGreen
+Kd 0.18 0.45 0.24
+Ka 0.05 0.13 0.06
+Ks 0.06 0.08 0.04
+Ns 10
+
+newmtl TentBlue
+Kd 0.12 0.32 0.78
+Ka 0.04 0.09 0.22
+Ks 0.08 0.10 0.15
+Ns 14
+
+newmtl TentTan
+Kd 0.70 0.55 0.34
+Ka 0.20 0.15 0.08
+Ks 0.05 0.04 0.03
+Ns 8
+
+newmtl TentRed
+Kd 0.70 0.16 0.12
+Ka 0.20 0.04 0.03
+Ks 0.06 0.04 0.03
+Ns 10
+
+newmtl InnerDark
+Kd 0.055 0.050 0.045
+Ka 0.015 0.014 0.012
+Ks 0.02 0.02 0.02
+Ns 4
+
+newmtl Wood
+Kd 0.46 0.27 0.12
+Ka 0.13 0.07 0.03
+Ks 0.05 0.04 0.03
+Ns 10
+
+newmtl Bark
+Kd 0.28 0.15 0.07
+Ka 0.08 0.04 0.02
+Ks 0.04 0.03 0.02
+Ns 8
+
+newmtl Metal
+Kd 0.52 0.52 0.52
+Ka 0.18 0.18 0.18
+Ks 0.35 0.35 0.35
+Ns 70
+
+newmtl FireOrange
+Kd 0.95 0.35 0.06
+Ka 0.35 0.10 0.02
+Ks 0.08 0.05 0.02
+Ns 8
+
+newmtl FireYellow
+Kd 1.00 0.78 0.12
+Ka 0.38 0.24 0.04
+Ks 0.06 0.05 0.02
+Ns 8
+
+newmtl FireCore
+Kd 1.00 0.94 0.60
+Ka 0.45 0.34 0.12
+Ks 0.05 0.05 0.03
+Ns 8
+
+newmtl Stone
+Kd 0.40 0.40 0.38
+Ka 0.12 0.12 0.11
+Ks 0.06 0.06 0.05
+Ns 8
+
+newmtl ChairFabric
+Kd 0.16 0.35 0.70
+Ka 0.05 0.10 0.21
+Ks 0.06 0.08 0.12
+Ns 12
+
+newmtl SleepingBag
+Kd 0.20 0.55 0.75
+Ka 0.05 0.15 0.22
+Ks 0.04 0.06 0.08
+Ns 10
+
+newmtl Skin
+Kd 0.78 0.56 0.40
+Ka 0.22 0.15 0.10
+Ks 0.05 0.04 0.03
+Ns 10
+
+newmtl SkinDark
+Kd 0.52 0.34 0.22
+Ka 0.16 0.10 0.06
+Ks 0.05 0.04 0.03
+Ns 10
+
+newmtl HairBrown
+Kd 0.20 0.11 0.05
+Ka 0.06 0.03 0.015
+Ks 0.04 0.03 0.02
+Ns 8
+
+newmtl HairBlack
+Kd 0.05 0.04 0.035
+Ka 0.015 0.012 0.010
+Ks 0.04 0.035 0.03
+Ns 8
+
+newmtl ShirtRed
+Kd 0.70 0.16 0.14
+Ka 0.20 0.04 0.03
+Ks 0.06 0.04 0.03
+Ns 10
+
+newmtl ShirtBlue
+Kd 0.15 0.32 0.72
+Ka 0.04 0.09 0.20
+Ks 0.06 0.08 0.12
+Ns 10
+
+newmtl ShirtGreen
+Kd 0.18 0.48 0.24
+Ka 0.05 0.14 0.06
+Ks 0.05 0.06 0.04
+Ns 10
+
+newmtl Pants
+Kd 0.34 0.28 0.22
+Ka 0.10 0.08 0.06
+Ks 0.04 0.035 0.025
+Ns 8
+
+newmtl Backpack
+Kd 0.18 0.42 0.22
+Ka 0.05 0.12 0.06
+Ks 0.05 0.06 0.04
+Ns 8
+
+newmtl Boot
+Kd 0.10 0.07 0.04
+Ka 0.03 0.02 0.01
+Ks 0.04 0.03 0.02
+Ns 8
+
+newmtl BearFur
+Kd 0.30 0.17 0.08
+Ka 0.09 0.05 0.02
+Ks 0.04 0.03 0.02
+Ns 8
+
+newmtl DeerFur
+Kd 0.55 0.34 0.17
+Ka 0.16 0.09 0.04
+Ks 0.05 0.04 0.03
+Ns 8
+
+newmtl DeerBelly
+Kd 0.82 0.67 0.46
+Ka 0.22 0.17 0.11
+Ks 0.04 0.03 0.02
+Ns 8
+
+newmtl Antler
+Kd 0.72 0.63 0.45
+Ka 0.20 0.17 0.12
+Ks 0.05 0.04 0.03
+Ns 8
+
+newmtl EyeBlack
+Kd 0.015 0.015 0.015
+Ka 0.004 0.004 0.004
+Ks 0.18 0.18 0.18
+Ns 70

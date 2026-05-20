@@ -1,0 +1,61 @@
+# Canine Tow Clip Detailed Latch materials
+
+newmtl dark_metal
+Ka 0.10 0.10 0.10
+Kd 0.22 0.22 0.21
+Ks 0.55 0.55 0.55
+Ns 90
+
+newmtl brushed_metal
+Ka 0.20 0.20 0.20
+Kd 0.55 0.53 0.48
+Ks 0.75 0.75 0.72
+Ns 120
+
+newmtl spring_steel
+Ka 0.18 0.18 0.18
+Kd 0.62 0.62 0.58
+Ks 0.85 0.85 0.80
+Ns 160
+
+newmtl blue_rubber
+Ka 0.02 0.06 0.10
+Kd 0.05 0.20 0.35
+Ks 0.10 0.10 0.10
+Ns 25
+
+newmtl dark_blue_rubber
+Ka 0.01 0.03 0.05
+Kd 0.02 0.10 0.20
+Ks 0.08 0.08 0.08
+Ns 20
+
+newmtl orange_gate
+Ka 0.20 0.08 0.02
+Kd 0.90 0.38 0.08
+Ks 0.40 0.25 0.15
+Ns 65
+
+newmtl ghost_orange
+Ka 0.20 0.10 0.02
+Kd 1.00 0.55 0.18
+Ks 0.15 0.15 0.15
+Ns 20
+
+newmtl target_marker
+Ka 0.15 0.15 0.15
+Kd 0.70 0.70 0.65
+Ks 0.60 0.60 0.60
+Ns 80
+
+newmtl leash_blue
+Ka 0.02 0.05 0.08
+Kd 0.04 0.18 0.45
+Ks 0.20 0.20 0.25
+Ns 30
+
+newmtl arrow_blue
+Ka 0.02 0.06 0.10
+Kd 0.05 0.32 0.75
+Ks 0.20 0.20 0.25
+Ns 30
