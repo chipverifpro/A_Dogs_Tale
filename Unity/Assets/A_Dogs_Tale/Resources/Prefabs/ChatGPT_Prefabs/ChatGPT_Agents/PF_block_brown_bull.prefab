@@ -241,7 +241,7 @@ GameObject:
   - component: {fileID: -8043536255772160988}
   - component: {fileID: 36985612650291474}
   m_Layer: 0
-  m_Name: PF_brown_bull
+  m_Name: PF_block_brown_bull
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

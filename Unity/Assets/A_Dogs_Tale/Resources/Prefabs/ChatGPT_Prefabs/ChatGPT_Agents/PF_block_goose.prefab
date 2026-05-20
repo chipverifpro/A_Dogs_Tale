@@ -22,7 +22,7 @@ GameObject:
   - component: {fileID: 5900784530591428798}
   - component: {fileID: 5868777224296052802}
   m_Layer: 0
-  m_Name: PF_goose
+  m_Name: PF_block_goose
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

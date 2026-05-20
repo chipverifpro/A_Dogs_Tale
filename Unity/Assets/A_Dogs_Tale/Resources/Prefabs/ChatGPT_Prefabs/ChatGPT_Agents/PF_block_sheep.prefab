@@ -85,7 +85,7 @@ GameObject:
   - component: {fileID: -5360092574309519570}
   - component: {fileID: 8357928731610998098}
   m_Layer: 0
-  m_Name: PF_sheep
+  m_Name: PF_block_sheep
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

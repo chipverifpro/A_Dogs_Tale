@@ -1,0 +1,55 @@
+# Shepherd staff materials - usual crook hook
+
+newmtl WoodStaff
+Kd 0.50 0.30 0.13
+Ka 0.16 0.09 0.04
+Ks 0.07 0.05 0.03
+Ns 12
+
+newmtl DarkWood
+Kd 0.28 0.16 0.07
+Ka 0.08 0.04 0.02
+Ks 0.05 0.04 0.03
+Ns 10
+
+newmtl Skin
+Kd 0.78 0.55 0.38
+Ka 0.22 0.15 0.10
+Ks 0.05 0.04 0.03
+Ns 10
+
+newmtl HairBrown
+Kd 0.20 0.11 0.05
+Ka 0.06 0.03 0.015
+Ks 0.04 0.03 0.02
+Ns 8
+
+newmtl TunicBlue
+Kd 0.18 0.36 0.72
+Ka 0.05 0.10 0.22
+Ks 0.06 0.08 0.12
+Ns 12
+
+newmtl PantsTan
+Kd 0.62 0.48 0.30
+Ka 0.18 0.13 0.08
+Ks 0.05 0.04 0.03
+Ns 8
+
+newmtl BootDark
+Kd 0.12 0.08 0.05
+Ka 0.035 0.025 0.015
+Ks 0.05 0.04 0.03
+Ns 8
+
+newmtl Belt
+Kd 0.22 0.11 0.05
+Ka 0.06 0.03 0.01
+Ks 0.04 0.03 0.02
+Ns 8
+
+newmtl EyeBlack
+Kd 0.02 0.02 0.02
+Ka 0.005 0.005 0.005
+Ks 0.20 0.20 0.20
+Ns 80

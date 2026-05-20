@@ -1,0 +1,66 @@
+# Smooth farm animal materials
+newmtl WoolCream
+Kd 0.94 0.91 0.82
+Ka 0.28 0.26 0.22
+Ks 0.08 0.07 0.06
+Ns 18
+
+newmtl WoolShadow
+Kd 0.80 0.76 0.66
+Ka 0.22 0.20 0.17
+Ks 0.05 0.05 0.04
+Ns 12
+
+newmtl SheepFaceDark
+Kd 0.18 0.17 0.16
+Ka 0.05 0.05 0.05
+Ks 0.06 0.06 0.05
+Ns 10
+
+newmtl CowWhite
+Kd 0.92 0.91 0.86
+Ka 0.26 0.25 0.23
+Ks 0.10 0.10 0.09
+Ns 20
+
+newmtl CowBlack
+Kd 0.06 0.06 0.06
+Ka 0.02 0.02 0.02
+Ks 0.06 0.06 0.06
+Ns 16
+
+newmtl PinkMuzzle
+Kd 0.93 0.65 0.62
+Ka 0.24 0.15 0.14
+Ks 0.06 0.04 0.04
+Ns 10
+
+newmtl BullBrown
+Kd 0.42 0.24 0.12
+Ka 0.13 0.07 0.03
+Ks 0.08 0.06 0.04
+Ns 18
+
+newmtl BullDarkBrown
+Kd 0.24 0.13 0.06
+Ka 0.07 0.04 0.02
+Ks 0.07 0.05 0.03
+Ns 14
+
+newmtl HoofDark
+Kd 0.10 0.095 0.085
+Ka 0.03 0.03 0.025
+Ks 0.08 0.07 0.06
+Ns 16
+
+newmtl HornBone
+Kd 0.78 0.70 0.52
+Ka 0.22 0.19 0.13
+Ks 0.09 0.08 0.05
+Ns 18
+
+newmtl EyeBlack
+Kd 0.015 0.015 0.015
+Ka 0.005 0.005 0.005
+Ks 0.20 0.20 0.20
+Ns 80

@@ -1,0 +1,9 @@
+{
+  "models": [
+    "smooth_sheep.obj",
+    "smooth_dairy_cow.obj",
+    "smooth_brown_bull.obj"
+  ],
+  "materials": "smooth_farm_animals.mtl",
+  "style": "smooth low-poly rounded farm animals"
+}

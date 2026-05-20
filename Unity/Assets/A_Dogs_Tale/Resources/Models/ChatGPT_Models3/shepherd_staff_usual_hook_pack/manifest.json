@@ -1,0 +1,8 @@
+{
+  "models": [
+    "shepherd_staff_usual_hook.obj",
+    "shepherd_boy_holding_staff_usual_hook.obj"
+  ],
+  "materials": "shepherd_staff_usual_hook_materials.mtl",
+  "revision_note": "usual open shepherd crook hook, not a spiral"
+}
