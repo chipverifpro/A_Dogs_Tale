@@ -88,15 +88,21 @@ public class Herd : Pack
 
     [Header("Boids Radius")]
     [SerializeField, Min(0.1f)] private float neighborRadiusMeters = 4.5f;
-    [SerializeField, Min(0.1f)] private float separationRadiusMeters = 0.85f;
+    [SerializeField, Min(0.1f)] private float separationRadiusMeters = 1.35f;
     [SerializeField, Min(0.1f)] private float gatherToLeaderDistanceMeters = 6.0f;
     [SerializeField, Min(0.1f)] private float agentAwarenessRadiusMeters = 7.0f;
     [SerializeField, Min(0.1f)] private float safeAgentComfortRadiusMeters = 3.0f;
+
+    [Header("Herd Shape")]
+    [SerializeField, Min(0.1f)] private float preferredMemberSpacingMeters = 1.4f;
+    [SerializeField, Min(0.1f)] private float dangerPathStepMeters = 2.5f;
 
     [Header("Boids Weights")]
     [SerializeField, Min(0f)] private float cohesionWeight = 1.15f;
     [SerializeField, Min(0f)] private float alignmentWeight = 0.85f;
     [SerializeField, Min(0f)] private float separationWeight = 1.75f;
+    [SerializeField, Min(0f)] private float dangerSeparationMultiplier = 3.0f;
+    [SerializeField, Min(0f)] private float dangerCohesionWeight = 0.65f;
     [SerializeField, Min(0f)] private float dangerAvoidanceWeight = 3.0f;
     [SerializeField, Min(0f)] private float safeAgentInfluenceWeight = 0.25f;
     [SerializeField, Min(0f)] private float independentLeaderMotivationWeight = 0.35f;
@@ -158,6 +164,8 @@ public class Herd : Pack
         gatherToLeaderDistanceMeters = Mathf.Max(neighborRadiusMeters, gatherToLeaderDistanceMeters);
         agentAwarenessRadiusMeters = Mathf.Max(0.1f, agentAwarenessRadiusMeters);
         safeAgentComfortRadiusMeters = Mathf.Max(0.1f, safeAgentComfortRadiusMeters);
+        preferredMemberSpacingMeters = Mathf.Max(0.1f, preferredMemberSpacingMeters);
+        dangerPathStepMeters = Mathf.Max(0.1f, dangerPathStepMeters);
         debugLogEveryFrames = Mathf.Max(1, debugLogEveryFrames);
     }
 
@@ -372,23 +380,25 @@ public class Herd : Pack
         WorldObject leader = packLeader;
         if (leader != null && leader != sheep)
         {
-            Vector3 toLeader = leader.pos3d_map - selfPos;
-            toLeader.y = 0f;
-            if (toLeader.sqrMagnitude > gatherToLeaderDistanceMeters * gatherToLeaderDistanceMeters)
+            Vector3 gatherTarget = GetGatherTargetMap(sheep, leader);
+            Vector3 toGatherTarget = gatherTarget - selfPos;
+            toGatherTarget.y = 0f;
+            if (toGatherTarget.sqrMagnitude > gatherToLeaderDistanceMeters * gatherToLeaderDistanceMeters)
             {
                 result = new HerdSteeringResult(
-                    leader.pos3d_map,
+                    gatherTarget,
                     flockingSpeedFactor,
                     WalkMode.Walk,
                     dangerNearby: false,
                     usePathTarget: true);
                 LogDebugFrame(
-                    $"Steering {DescribeWorldObject(sheep)}: gather-to-leader target={leader.pos3d_map} " +
-                    $"distance={Mathf.Sqrt(toLeader.sqrMagnitude):0.00} threshold={gatherToLeaderDistanceMeters:0.00}");
+                    $"Steering {DescribeWorldObject(sheep)}: gather-to-slot target={gatherTarget} " +
+                    $"distance={Mathf.Sqrt(toGatherTarget.sqrMagnitude):0.00} threshold={gatherToLeaderDistanceMeters:0.00}");
                 return true;
             }
         }
 
+        Vector3 herdCenter = GetHerdCentroidMap();
         Vector3 cohesionCenter = Vector3.zero;
         Vector3 alignment = Vector3.zero;
         Vector3 separation = Vector3.zero;
@@ -428,6 +438,10 @@ public class Herd : Pack
             {
                 float distance = Mathf.Sqrt(sqrDistance);
                 separation -= toMember.normalized / Mathf.Max(0.1f, distance);
+            }
+            else if (sqrDistance <= 0.0001f)
+            {
+                separation += GetMemberSlotDirection(sheep);
             }
         }
 
@@ -469,7 +483,17 @@ public class Herd : Pack
         if (alignmentCount > 0)
             steering += NormalizeOrZero(alignment / alignmentCount) * alignmentWeight;
 
-        steering += NormalizeOrZero(separation) * separationWeight;
+        if (dangerNearby)
+        {
+            Vector3 towardCenter = herdCenter - selfPos;
+            towardCenter.y = 0f;
+            steering += NormalizeOrZero(towardCenter) * dangerCohesionWeight;
+        }
+
+        float activeSeparationWeight = dangerNearby
+            ? separationWeight * dangerSeparationMultiplier
+            : separationWeight;
+        steering += NormalizeOrZero(separation) * activeSeparationWeight;
         steering += NormalizeOrZero(dangerAvoidance) * dangerAvoidanceWeight;
         steering += NormalizeOrZero(safeInfluence) * safeAgentInfluenceWeight;
 
@@ -498,7 +522,17 @@ public class Herd : Pack
                 : relaxedSpeedFactor;
 
         WalkMode walkMode = dangerNearby ? WalkMode.Run : WalkMode.Walk;
-        result = new HerdSteeringResult(steering.normalized, speedFactor, walkMode, dangerNearby);
+        Vector3 steeringDirection = steering.normalized;
+        if (dangerNearby && TryFindSteeringPathTarget(selfPos, steeringDirection, out Vector3 dangerTarget))
+        {
+            result = new HerdSteeringResult(dangerTarget, speedFactor, walkMode, dangerNearby, usePathTarget: true);
+            LogDebugFrame(
+                $"Steering {DescribeWorldObject(sheep)}: danger path target={dangerTarget} dir={steeringDirection} " +
+                $"speed={speedFactor:0.00} nearbyHerd={cohesionCount} sensedAgents={sensedAgentScratch.Count}");
+            return true;
+        }
+
+        result = new HerdSteeringResult(steeringDirection, speedFactor, walkMode, dangerNearby);
         LogDebugFrame(
             $"Steering {DescribeWorldObject(sheep)}: boids dir={result.directionMap} speed={speedFactor:0.00} " +
             $"nearbyHerd={cohesionCount} aligned={alignmentCount} sensedAgents={sensedAgentScratch.Count} danger={dangerNearby}");
@@ -647,6 +681,106 @@ public class Herd : Pack
     {
         value.y = 0f;
         return value.sqrMagnitude > 0.0001f ? value.normalized : Vector3.zero;
+    }
+
+    private Vector3 GetHerdCentroidMap()
+    {
+        if (packAgentList == null || packAgentList.Count == 0)
+            return Vector3.zero;
+
+        Vector3 sum = Vector3.zero;
+        int count = 0;
+        foreach (WorldObject member in packAgentList)
+        {
+            if (member == null)
+                continue;
+
+            sum += member.pos3d_map;
+            count++;
+        }
+
+        return count > 0 ? sum / count : Vector3.zero;
+    }
+
+    private Vector3 GetGatherTargetMap(WorldObject member, WorldObject leader)
+    {
+        Vector3 target = leader != null ? leader.pos3d_map : GetHerdCentroidMap();
+        target += GetMemberSlotOffset(member);
+        return ProjectToNearestKnownWalkableMap(target);
+    }
+
+    private Vector3 GetMemberSlotOffset(WorldObject member)
+    {
+        int memberIndex = packAgentList != null ? packAgentList.IndexOf(member) : -1;
+        if (memberIndex <= 0)
+            return Vector3.zero;
+
+        float angleRadians = memberIndex * 137.507764f * Mathf.Deg2Rad;
+        float radius = preferredMemberSpacingMeters * Mathf.Sqrt(memberIndex);
+        return new Vector3(Mathf.Cos(angleRadians) * radius, 0f, Mathf.Sin(angleRadians) * radius);
+    }
+
+    private Vector3 GetMemberSlotDirection(WorldObject member)
+    {
+        Vector3 offset = GetMemberSlotOffset(member);
+        if (offset.sqrMagnitude > 0.0001f)
+            return offset.normalized;
+
+        int hash = member != null
+            ? StringComparer.Ordinal.GetHashCode(member.DisplayName ?? member.name)
+            : 1;
+        float angleRadians = (Mathf.Abs(hash) % 360) * Mathf.Deg2Rad;
+        return new Vector3(Mathf.Cos(angleRadians), 0f, Mathf.Sin(angleRadians));
+    }
+
+    private bool TryFindSteeringPathTarget(Vector3 originMap, Vector3 directionMap, out Vector3 targetMap)
+    {
+        targetMap = default;
+        directionMap = NormalizeOrZero(directionMap);
+        if (directionMap.sqrMagnitude <= 0.0001f)
+            return false;
+
+        float[] angleOffsets = { 0f, 35f, -35f, 70f, -70f, 110f, -110f, 180f };
+        float[] distanceFactors = { 1f, 0.65f, 0.35f };
+
+        foreach (float distanceFactor in distanceFactors)
+        {
+            foreach (float angleOffset in angleOffsets)
+            {
+                Vector3 candidateDirection = Quaternion.Euler(0f, angleOffset, 0f) * directionMap;
+                Vector3 candidate = originMap + candidateDirection * dangerPathStepMeters * distanceFactor;
+                if (TryProjectToKnownWalkableMap(candidate, out targetMap))
+                    return true;
+            }
+        }
+
+        return false;
+    }
+
+    private Vector3 ProjectToNearestKnownWalkableMap(Vector3 targetMap)
+    {
+        return TryProjectToKnownWalkableMap(targetMap, out Vector3 projected)
+            ? projected
+            : targetMap;
+    }
+
+    private bool TryProjectToKnownWalkableMap(Vector3 targetMap, out Vector3 projectedMap)
+    {
+        projectedMap = default;
+        if (dir == null || dir.gen == null || dir.gen.cellGrid == null)
+            return false;
+
+        int cellX = Mathf.FloorToInt(targetMap.x);
+        int cellY = Mathf.FloorToInt(targetMap.z);
+        if (!dir.gen.In(cellX, cellY))
+            return false;
+
+        Cell cell = dir.gen.cellGrid[cellX, cellY];
+        if (cell == null)
+            return false;
+
+        projectedMap = cell.center3d_f;
+        return true;
     }
 
     public bool ShouldEmitDebugLogThisFrame()

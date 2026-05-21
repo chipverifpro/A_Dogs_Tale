@@ -69981,6 +69981,7 @@ MonoBehaviour:
   steeringRecomputeIntervalSeconds: 0.1
   maxMoveDistancePerTick: 1
   enableDebugLogging: 0
+  debugLogEveryFrames: 60
 --- !u!43 &721639596
 Mesh:
   m_ObjectHideFlags: 0
@@ -73615,6 +73616,7 @@ MonoBehaviour:
   - {fileID: 6544990386685219154}
   neighborRadiusMeters: 4.5
   separationRadiusMeters: 0.85
+  gatherToLeaderDistanceMeters: 6
   agentAwarenessRadiusMeters: 7
   safeAgentComfortRadiusMeters: 3
   cohesionWeight: 1.15
@@ -73626,6 +73628,8 @@ MonoBehaviour:
   relaxedSpeedFactor: 0.65
   flockingSpeedFactor: 0.9
   dangerSpeedFactor: 1.3
+  herdDebugLogging: 0
+  debugLogEveryFrames: 60
   memberProfiles:
   - member: {fileID: 1534480777}
     leadership01: 0
@@ -137390,6 +137394,7 @@ MonoBehaviour:
   steeringRecomputeIntervalSeconds: 0.1
   maxMoveDistancePerTick: 1
   enableDebugLogging: 0
+  debugLogEveryFrames: 60
 --- !u!1001 &1403490402
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -149697,7 +149702,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.HerdDecisionModule
   steeringRecomputeIntervalSeconds: 0.1
   maxMoveDistancePerTick: 1
-  enableDebugLogging: 1
+  enableDebugLogging: 0
+  debugLogEveryFrames: 60
 --- !u!1001 &1534901051
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -187219,6 +187225,7 @@ MonoBehaviour:
   steeringRecomputeIntervalSeconds: 0.1
   maxMoveDistancePerTick: 1
   enableDebugLogging: 0
+  debugLogEveryFrames: 60
 --- !u!1 &1918049958
 GameObject:
   m_ObjectHideFlags: 0
@@ -196853,6 +196860,7 @@ MonoBehaviour:
   steeringRecomputeIntervalSeconds: 0.1
   maxMoveDistancePerTick: 1
   enableDebugLogging: 0
+  debugLogEveryFrames: 60
 --- !u!43 &1985699001
 Mesh:
   m_ObjectHideFlags: 0
@@ -211974,6 +211982,7 @@ MonoBehaviour:
   steeringRecomputeIntervalSeconds: 0.1
   maxMoveDistancePerTick: 1
   enableDebugLogging: 0
+  debugLogEveryFrames: 60
 --- !u!43 &2120335038
 Mesh:
   m_ObjectHideFlags: 0
