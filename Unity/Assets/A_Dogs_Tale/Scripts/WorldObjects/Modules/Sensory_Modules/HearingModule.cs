@@ -76,7 +76,8 @@ namespace DogGame.Modules
 
         public List<PerceptionEvent> GetPerceptionEvents() => perceptionEvents;
         public void ClearPerceptionEvents() => perceptionEvents.Clear();
-
+        public bool DisplayHearingSummary = true;
+        
         private int debugDoubleTick = -1;
         public override void Tick(float deltaTime)
         {
@@ -243,7 +244,8 @@ namespace DogGame.Modules
                     $"room={sourceRoomName} " +
                     $"{(string.IsNullOrEmpty(h.notesShort) ? "" : $"notes={h.notesShort}")}";
                 
-                Debug.Log(hearingEventString);
+                if (DisplayHearingSummary)
+                    Debug.Log(hearingEventString);
                 //BottomBanner.LogMessage(BannerSense.Hearing, BannerLevel.High, hearingEventString, true);
             }            
             //if (summarizedForLLM.Count > 0)

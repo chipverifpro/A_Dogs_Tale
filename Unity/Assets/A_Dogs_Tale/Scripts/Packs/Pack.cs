@@ -92,6 +92,12 @@ public class Pack : MonoBehaviour
         // and any other initialization.
         foreach (WorldObject agent in packAgentList)
         {
+            if (agent == null)
+                continue;
+
+            if (agent.packMemberModule != null)
+                agent.packMemberModule.currentPack = this;
+
             //Debug.LogWarning($"[Packs.Awake {gameObject.name}] setting parent of {agent.DisplayName} to {this.name}");
             agent.gameObject.transform.SetParent(this.gameObject.transform,false);
         }

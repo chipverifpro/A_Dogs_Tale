@@ -56,6 +56,8 @@ namespace DogGame.Modules
         public Vector2 pos2_f => new(x_f, y_f);
         public Vector2Int pos2 => new(x, y);
 
+        public bool DisplayRoomSnapshot = false;
+        
         #endregion
         #region Cell
         public Cell cell
@@ -171,7 +173,8 @@ namespace DogGame.Modules
 //                $"[{agentName}] {action} {roomName}. {snapshot.ToLogText()}",
 //                "MapsSpriteSheet_2",
 //                true);
-            Debug.Log($"[{agentName}] {action} {roomName}. {snapshot.ToLogText()}");
+            if (DisplayRoomSnapshot)
+                Debug.Log($"[{agentName}] {action} {roomName}. {snapshot.ToLogText()}");
         }
 
         #endregion

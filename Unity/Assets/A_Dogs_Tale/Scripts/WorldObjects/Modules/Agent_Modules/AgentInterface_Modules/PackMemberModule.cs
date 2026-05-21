@@ -23,6 +23,17 @@ namespace DogGame.Modules
 
         protected override void Awake()
         {
+            if (currentPack == null)
+            {
+                Pack hierarchyPack = GetComponentInParent<Pack>();
+                if (hierarchyPack != null &&
+                    hierarchyPack.packAgentList != null &&
+                    hierarchyPack.packAgentList.Contains(worldObject))
+                {
+                    currentPack = hierarchyPack;
+                }
+            }
+
             if (currentPack!=null)
             {
                 //Debug.LogWarning($"[PackMemberModule.Awake {gameObject.name}] setting parent of {name} to {currentPack.name}");

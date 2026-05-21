@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using DogGame.Modules;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 [Serializable]
 public sealed class HerdMemberProfile
@@ -44,12 +45,26 @@ public readonly struct HerdSteeringResult
     public HerdSteeringResult(Vector3 directionMap, float speedFactor, WalkMode walkMode, bool dangerNearby)
     {
         this.directionMap = directionMap;
+        this.targetMap = default;
+        this.usePathTarget = false;
+        this.speedFactor = speedFactor;
+        this.walkMode = walkMode;
+        this.dangerNearby = dangerNearby;
+    }
+
+    public HerdSteeringResult(Vector3 targetMap, float speedFactor, WalkMode walkMode, bool dangerNearby, bool usePathTarget)
+    {
+        this.directionMap = Vector3.zero;
+        this.targetMap = targetMap;
+        this.usePathTarget = usePathTarget;
         this.speedFactor = speedFactor;
         this.walkMode = walkMode;
         this.dangerNearby = dangerNearby;
     }
 
     public readonly Vector3 directionMap;
+    public readonly Vector3 targetMap;
+    public readonly bool usePathTarget;
     public readonly float speedFactor;
     public readonly WalkMode walkMode;
     public readonly bool dangerNearby;
@@ -74,6 +89,7 @@ public class Herd : Pack
     [Header("Boids Radius")]
     [SerializeField, Min(0.1f)] private float neighborRadiusMeters = 4.5f;
     [SerializeField, Min(0.1f)] private float separationRadiusMeters = 0.85f;
+    [SerializeField, Min(0.1f)] private float gatherToLeaderDistanceMeters = 6.0f;
     [SerializeField, Min(0.1f)] private float agentAwarenessRadiusMeters = 7.0f;
     [SerializeField, Min(0.1f)] private float safeAgentComfortRadiusMeters = 3.0f;
 
@@ -90,6 +106,11 @@ public class Herd : Pack
     [SerializeField, Min(0.1f)] private float flockingSpeedFactor = 0.9f;
     [SerializeField, Min(0.1f)] private float dangerSpeedFactor = 1.3f;
 
+    [Header("Debug")]
+    [FormerlySerializedAs("HerdDebugLogging")]
+    [SerializeField] private bool herdDebugLogging = false;
+    [SerializeField, Min(1)] private int debugLogEveryFrames = 60;
+
     [Header("Runtime Profiles")]
     [SerializeField] private List<HerdMemberProfile> memberProfiles = new();
     private readonly List<HerdSensedAgent> sensedAgentScratch = new();
@@ -100,6 +121,8 @@ public class Herd : Pack
     public WorldObject GuardianDog => guardianDog;
     public bool HasReachedTargetSize => agentCount >= targetHerdSize;
     public bool IsPastPerformanceSoftLimit => agentCount >= performanceSoftLimit;
+    public bool DebugLoggingEnabled => herdDebugLogging;
+    public int DebugLogEveryFrames => Mathf.Max(1, debugLogEveryFrames);
 
     protected override void Awake()
     {
@@ -112,6 +135,18 @@ public class Herd : Pack
         leadershipType = AgentDecisionType.Herd;
 
         RefreshMemberProfiles();
+        LogDebug(
+            $"Awake: members={DescribeMemberCount()} leader={DescribeWorldObject(packLeader)} " +
+            $"followerType={followerType} leadershipType={leadershipType}");
+    }
+
+    protected override void Start()
+    {
+        base.Start();
+        bool activated = SetPackFollowChain();
+        LogDebug(
+            $"Start: SetPackFollowChain={activated} members={DescribeMemberCount()} " +
+            $"leader={DescribeWorldObject(packLeader)} shepherd={DescribeWorldObject(shepherdHuman)} guardian={DescribeWorldObject(guardianDog)}");
     }
 
     private void OnValidate()
@@ -120,8 +155,10 @@ public class Herd : Pack
         performanceSoftLimit = Mathf.Max(targetHerdSize, performanceSoftLimit);
         neighborRadiusMeters = Mathf.Max(0.1f, neighborRadiusMeters);
         separationRadiusMeters = Mathf.Clamp(separationRadiusMeters, 0.1f, neighborRadiusMeters);
+        gatherToLeaderDistanceMeters = Mathf.Max(neighborRadiusMeters, gatherToLeaderDistanceMeters);
         agentAwarenessRadiusMeters = Mathf.Max(0.1f, agentAwarenessRadiusMeters);
         safeAgentComfortRadiusMeters = Mathf.Max(0.1f, safeAgentComfortRadiusMeters);
+        debugLogEveryFrames = Mathf.Max(1, debugLogEveryFrames);
     }
 
     public override bool AddMember(WorldObject agent, bool setAsLeader = false)
@@ -133,6 +170,7 @@ public class Herd : Pack
 
         bool changed = base.AddMember(agent, setAsLeader);
         RefreshMemberProfiles();
+        LogDebug($"AddMember: member={DescribeWorldObject(agent)} changed={changed} setAsLeader={setAsLeader} members={DescribeMemberCount()}");
         return changed;
     }
 
@@ -140,24 +178,66 @@ public class Herd : Pack
     {
         bool removed = base.RemoveMember(agent);
         RefreshMemberProfiles();
+        LogDebug($"RemoveMember: member={DescribeWorldObject(agent)} removed={removed} members={DescribeMemberCount()}");
         return removed;
     }
 
     public override bool SetPackFollowChain()
     {
+        return ReassertHerdDecisionModules("SetPackFollowChain");
+    }
+
+    public bool ReassertHerdDecisionModules(string reason, bool forceLog = false)
+    {
+        int reconciledCount = ReconcileMemberListFromScene(forceLog);
         if (packAgentList == null || packAgentList.Count == 0)
+        {
+            LogDebug($"ReassertHerdDecisionModules failed: packAgentList is null or empty after scene reconciliation. reason='{reason}'", forceLog);
             return false;
+        }
 
         RefreshMemberProfiles();
 
+        int switchedCount = 0;
+        int alreadyActiveCount = 0;
+        int missingAgentModuleCount = 0;
+        int nullMemberCount = 0;
+
         foreach (WorldObject member in packAgentList)
         {
-            if (member == null || member.agentModule == null)
+            if (member == null)
+            {
+                nullMemberCount++;
                 continue;
+            }
+
+            if (member.agentModule == null)
+            {
+                missingAgentModuleCount++;
+                LogDebug($"Reassert skipped {DescribeWorldObject(member)}: missing AgentModule.", forceLog);
+                continue;
+            }
+
+            AgentDecisionModuleBase currentDecision = member.agentModule.currentDecisionModule;
+            if (currentDecision != null && currentDecision.DecisionType == AgentDecisionType.Herd)
+            {
+                alreadyActiveCount++;
+                continue;
+            }
 
             member.agentModule.SwitchDecisionModule(AgentDecisionType.Herd);
+            switchedCount++;
+            LogDebug(
+                $"Reassert switched {DescribeWorldObject(member)} to Herd; " +
+                $"previousDecision={currentDecision?.GetType().Name ?? "null"} " +
+                $"currentDecision={member.agentModule.currentDecisionModule?.GetType().Name ?? "null"}",
+                forceLog);
         }
 
+        LogDebug(
+            $"Reassert complete reason='{reason}': switched={switchedCount} alreadyHerd={alreadyActiveCount} " +
+            $"missingAgentModule={missingAgentModuleCount} nullMembers={nullMemberCount} reconciled={reconciledCount} members={DescribeMemberCount()}",
+            forceLog);
         return true;
     }
 
@@ -283,9 +363,32 @@ public class Herd : Pack
         result = default;
 
         if (sheep == null || packAgentList == null || packAgentList.Count == 0)
+        {
+            LogDebugFrame($"TryComputeSteering failed: sheep={DescribeWorldObject(sheep)} members={DescribeMemberCount()}");
             return false;
+        }
 
         Vector3 selfPos = sheep.pos3d_map;
+        WorldObject leader = packLeader;
+        if (leader != null && leader != sheep)
+        {
+            Vector3 toLeader = leader.pos3d_map - selfPos;
+            toLeader.y = 0f;
+            if (toLeader.sqrMagnitude > gatherToLeaderDistanceMeters * gatherToLeaderDistanceMeters)
+            {
+                result = new HerdSteeringResult(
+                    leader.pos3d_map,
+                    flockingSpeedFactor,
+                    WalkMode.Walk,
+                    dangerNearby: false,
+                    usePathTarget: true);
+                LogDebugFrame(
+                    $"Steering {DescribeWorldObject(sheep)}: gather-to-leader target={leader.pos3d_map} " +
+                    $"distance={Mathf.Sqrt(toLeader.sqrMagnitude):0.00} threshold={gatherToLeaderDistanceMeters:0.00}");
+                return true;
+            }
+        }
+
         Vector3 cohesionCenter = Vector3.zero;
         Vector3 alignment = Vector3.zero;
         Vector3 separation = Vector3.zero;
@@ -380,7 +483,13 @@ public class Herd : Pack
         }
 
         if (steering.sqrMagnitude <= 0.0001f)
+        {
+            LogDebugFrame(
+                $"Steering {DescribeWorldObject(sheep)} failed: steering zero. " +
+                $"nearbyHerd={cohesionCount} aligned={alignmentCount} sensedAgents={sensedAgentScratch.Count} " +
+                $"leader={DescribeWorldObject(leader)} pos={selfPos}");
             return false;
+        }
 
         float speedFactor = dangerNearby
             ? dangerSpeedFactor
@@ -390,6 +499,9 @@ public class Herd : Pack
 
         WalkMode walkMode = dangerNearby ? WalkMode.Run : WalkMode.Walk;
         result = new HerdSteeringResult(steering.normalized, speedFactor, walkMode, dangerNearby);
+        LogDebugFrame(
+            $"Steering {DescribeWorldObject(sheep)}: boids dir={result.directionMap} speed={speedFactor:0.00} " +
+            $"nearbyHerd={cohesionCount} aligned={alignmentCount} sensedAgents={sensedAgentScratch.Count} danger={dangerNearby}");
         return true;
     }
 
@@ -418,6 +530,70 @@ public class Herd : Pack
 
         foreach (WorldObject member in packAgentList)
             GetOrCreateProfile(member);
+    }
+
+    private int ReconcileMemberListFromScene(bool forceLog)
+    {
+        if (packAgentList == null)
+            packAgentList = new List<WorldObject>();
+
+        int addedCount = 0;
+
+        WorldObject[] childMembers = GetComponentsInChildren<WorldObject>(includeInactive: true);
+        foreach (WorldObject childMember in childMembers)
+        {
+            if (TryReconcileMember(childMember, "child hierarchy", forceLog))
+                addedCount++;
+        }
+
+        if (Application.isPlaying)
+        {
+            foreach (WorldObject registeredObject in WorldObjectRegistry.Instance.GetAllObjects())
+            {
+                if (registeredObject == null ||
+                    registeredObject.Kind != WorldObjectKind.Agent ||
+                    registeredObject.packMemberModule == null ||
+                    registeredObject.packMemberModule.currentPack != this)
+                {
+                    continue;
+                }
+
+                if (TryReconcileMember(registeredObject, "currentPack reference", forceLog))
+                    addedCount++;
+            }
+        }
+
+        if (addedCount > 0)
+            RefreshMemberProfiles();
+
+        return addedCount;
+    }
+
+    private bool TryReconcileMember(WorldObject member, string source, bool forceLog)
+    {
+        if (member == null || member.Kind != WorldObjectKind.Agent)
+            return false;
+
+        if (member.packMemberModule == null)
+        {
+            LogDebug($"Reconcile skipped {DescribeWorldObject(member)} from {source}: missing PackMemberModule.", forceLog);
+            return false;
+        }
+
+        if (packAgentList.Contains(member))
+        {
+            if (member.packMemberModule.currentPack == null)
+                member.packMemberModule.currentPack = this;
+            return false;
+        }
+
+        if (member.packMemberModule.currentPack != null && member.packMemberModule.currentPack != this)
+            return false;
+
+        member.packMemberModule.currentPack = this;
+        packAgentList.Add(member);
+        LogDebug($"Reconcile added {DescribeWorldObject(member)} from {source}.", forceLog);
+        return true;
     }
 
     private HerdMemberProfile GetOrCreateProfile(WorldObject member)
@@ -471,5 +647,41 @@ public class Herd : Pack
     {
         value.y = 0f;
         return value.sqrMagnitude > 0.0001f ? value.normalized : Vector3.zero;
+    }
+
+    public bool ShouldEmitDebugLogThisFrame()
+    {
+        return herdDebugLogging && Time.frameCount % DebugLogEveryFrames == 0;
+    }
+
+    public void LogDebug(string message)
+    {
+        LogDebug(message, force: false);
+    }
+
+    public void LogDebug(string message, bool force)
+    {
+        if (!force && !herdDebugLogging)
+            return;
+
+        Debug.Log($"[Herd {packName}] {message}", this);
+    }
+
+    public void LogDebugFrame(string message)
+    {
+        if (!ShouldEmitDebugLogThisFrame())
+            return;
+
+        LogDebug(message);
+    }
+
+    private string DescribeMemberCount()
+    {
+        return packAgentList != null ? packAgentList.Count.ToString() : "null";
+    }
+
+    private static string DescribeWorldObject(WorldObject value)
+    {
+        return value != null ? $"{value.DisplayName}#{value.ObjectId}" : "null";
     }
 }
