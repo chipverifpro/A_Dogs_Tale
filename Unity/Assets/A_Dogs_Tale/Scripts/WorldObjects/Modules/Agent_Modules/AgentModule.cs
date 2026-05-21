@@ -145,6 +145,12 @@ namespace DogGame.Modules
                     ExploreDecisionModule exploreDecisionModule = (ExploreDecisionModule) currentDecisionModule;
                 }
 
+                if(currentDecisionModule.DecisionType == AgentDecisionType.Herd)
+                {
+                    // cast the decision module
+                    HerdDecisionModule herdDecisionModule = (HerdDecisionModule) currentDecisionModule;
+                }
+
                 if(currentDecisionModule.DecisionType == AgentDecisionType.Player)
                 {
                     // cast the decision module
@@ -218,6 +224,11 @@ namespace DogGame.Modules
         {
             SwitchDecisionModule(AgentDecisionType.TaskFollower);
         }
+
+        public void BecomeHerdMember()
+        {
+            SwitchDecisionModule(AgentDecisionType.Herd);
+        }
     }
 
     public enum AgentDecisionType
@@ -230,6 +241,7 @@ namespace DogGame.Modules
         LLM,            // driven by LLM (obsolete)
         TaskFollower,   // drives based on Task
         Explorer,      // goes through all doors it sees
+        Herd,          // boids-based flocking for sheep
 
         // Add more: Predator, Boss, Civilian, Summoned, etc.
     }

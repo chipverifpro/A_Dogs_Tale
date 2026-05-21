@@ -176,10 +176,11 @@ Assets/A_Dogs_Tale/
    NoiseSummarizer.cs
    NoiseTypes.cs
   Objects/Doors/DoorSimpleController.cs
-  Packs/Leashes/
-   LeashSystem.cs
-   LeashVisualizer.cs
   Packs/
+   Herd.cs
+   Leashes/
+    LeashSystem.cs
+    LeashVisualizer.cs
    Pack.cs
    PackFormations.cs
    PackManager.cs
@@ -440,6 +441,7 @@ Assets/A_Dogs_Tale/
    AgentDecisionModuleBase.cs
    ExploreDecisionModule.cs
    FollowerDecisionModule.cs
+   HerdDecisionModule.cs
    ImmobileDecisionModule.cs
    PlayerDecisionModule.cs
    TaskFollowerDecisionModule.cs

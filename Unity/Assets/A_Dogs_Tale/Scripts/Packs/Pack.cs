@@ -56,7 +56,7 @@ public class Pack : MonoBehaviour
     public WorldObject packLeader =>
         packAgentList != null && packAgentList.Count > 0 ? packAgentList[0] : null;
     
-    void Start()
+    protected virtual void Start()
     {
         if (dir!=null && dir.packManager!=null && dir.packManager.PackParentObject!=null)
         {
@@ -70,7 +70,7 @@ public class Pack : MonoBehaviour
         }
     }
 
-    void Awake()
+    protected virtual void Awake()
     {
         // --- packAgentsList ---
         if (packAgentList==null) 
@@ -137,7 +137,7 @@ public class Pack : MonoBehaviour
 
     // returns true if the agent is now in the pack (including was already there).
     // if setAsLeader and the agent is already there but wasn't the leader, then moves agent to leader position.
-    public bool AddMember(WorldObject agent, bool setAsLeader = false)
+    public virtual bool AddMember(WorldObject agent, bool setAsLeader = false)
     {
         //Debug.Log($"AddMember({agent.DisplayName}, {setAsLeader})");
         if ((agent==null) || (agent.packMemberModule==null))
@@ -186,7 +186,7 @@ public class Pack : MonoBehaviour
     // Changes leader and followers to appropriate types,
     // and to follow at correct interval spacing.
     // NOTE: If followerType is not Follower, add to the if below.
-    public bool SetPackFollowChain()
+    public virtual bool SetPackFollowChain()
     {
         if (packAgentList.Count == 0) return false;
 
@@ -272,7 +272,7 @@ public class Pack : MonoBehaviour
 
     // returns true if the pack no longer contains the member (or never did)
     // returns false if the agent is null or doesn't contain a PackMemberModule.
-    public bool RemoveMember(WorldObject agent)
+    public virtual bool RemoveMember(WorldObject agent)
     {
         if ((agent==null) || (agent.packMemberModule==null))
             return false;   // not a valid pack member

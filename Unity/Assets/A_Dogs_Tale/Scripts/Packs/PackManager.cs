@@ -117,4 +117,19 @@ public class PackManager : MonoBehaviour
         packs.Add(pack);    // register new pack
         return pack;
     }
+
+    public Herd CreateNewHerd(string newHerdName = "Herd", WorldObject firstSheep = null)
+    {
+        GameObject new_go = new();
+        new_go.name = newHerdName;
+        Herd herd = new_go.AddComponent<Herd>();
+        herd.packName = newHerdName;
+        herd.dir = dir;
+        if (firstSheep != null)
+        {
+            herd.AddMember(firstSheep, true);
+        }
+        packs.Add(herd);
+        return herd;
+    }
 }

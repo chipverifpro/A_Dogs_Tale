@@ -53,6 +53,7 @@ public class WorldObjectModulesInspector : Editor
         typeof(ExploreDecisionModule),
         typeof(WandererDecisionModule),
         typeof(FollowerDecisionModule),
+        typeof(HerdDecisionModule),
         typeof(ImmobileDecisionModule),
         typeof(TaskFollowerDecisionModule),
     };

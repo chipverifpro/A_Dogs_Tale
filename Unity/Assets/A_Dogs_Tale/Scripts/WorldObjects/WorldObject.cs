@@ -50,7 +50,8 @@ public enum Species
     Machine,        // (Roomba vacuum)
     SmallAnimal,    // prey size animal (mouse)
     BigAnimal,      // dog size or larger (cat)
-    Other
+    Other,
+    Sheep
 }
 
 [Flags]
@@ -74,6 +75,7 @@ public enum ModuleFlags : ulong
     taskFollowerDecisionModule  = 1UL << 15,
     exploreDecisionModule       = 1UL << 16,
     kineticModule               = 1UL << 17,
+    herdDecisionModule          = 1UL << 18,
 
     // --- Agent Interface Modules ---
     agentModule           = 1UL << 21,
@@ -131,7 +133,8 @@ public static class ModuleFlagsTemplates  // extension functions for the ModuleF
                                                        | ModuleFlags.wanderDecisionModule
                                                        | ModuleFlags.immobileDecisionModule
                                                        | ModuleFlags.taskFollowerDecisionModule
-                                                       | ModuleFlags.exploreDecisionModule;
+                                                       | ModuleFlags.exploreDecisionModule
+                                                       | ModuleFlags.herdDecisionModule;
     public static readonly ModuleFlags ScatterTerrain = ModuleFlags.placementModule
                                                        | ModuleFlags.locationModule
                                                        | ModuleFlags.scentEmitterModule
@@ -192,6 +195,7 @@ public class WorldObject : MonoBehaviour
     public ImmobileDecisionModule immobileDecisionModule { get; private set; }
     public TaskFollowerDecisionModule taskFollowerDecisionModule { get; private set; }
     public ExploreDecisionModule exploreDecisionModule { get; private set; }
+    public HerdDecisionModule herdDecisionModule { get; private set; }
     
     // --- Agent Interface Modules ---
     public AgentModule  agentModule { get; private set; }
@@ -316,6 +320,7 @@ public class WorldObject : MonoBehaviour
         immobileDecisionModule = GetComponent<ImmobileDecisionModule>();
         taskFollowerDecisionModule = GetComponent<TaskFollowerDecisionModule>();
         exploreDecisionModule = GetComponent<ExploreDecisionModule>();
+        herdDecisionModule = GetComponent<HerdDecisionModule>();
         
         // --- Agent Interface Modules ---
         agentModule           = GetComponent<AgentModule>();
@@ -616,6 +621,12 @@ public class WorldObject : MonoBehaviour
         {
             exploreDecisionModule = EnsureComponent<ExploreDecisionModule>();
             if (exploreDecisionModule == null) Debug.LogWarning($"exploreDecisionModule = null");
+        }
+
+        if (enables.HasFlag(ModuleFlags.herdDecisionModule))
+        {
+            herdDecisionModule = EnsureComponent<HerdDecisionModule>();
+            if (herdDecisionModule == null) Debug.LogWarning($"herdDecisionModule = null");
         }
 
         // ===============================
