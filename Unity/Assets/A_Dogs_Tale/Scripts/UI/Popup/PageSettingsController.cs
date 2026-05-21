@@ -61,7 +61,9 @@ public class PageSettingsController : MonoBehaviour
                 ollamaEnabled = ollamaToggle?.value ?? current.ollamaEnabled,
                 touchscreenJoystickVisible = current.touchscreenJoystickVisible,
                 graphicsLevel = selectedGraphicsLevel,
-                scentSimulationTimeStep = SnapScentStep(scentStepSlider?.value ?? current.scentSimulationTimeStep)
+                scentSimulationTimeStep = SnapScentStep(scentStepSlider?.value ?? current.scentSimulationTimeStep),
+                buttonSize = current.buttonSize,
+                androidFullscreenEnabled = current.androidFullscreenEnabled
             });
         }
 

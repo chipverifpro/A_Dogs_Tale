@@ -1,0 +1,60 @@
+{
+    "friendlyName": "ADT Test Small Phone 720x1280",
+    "version": 1,
+    "screens": [
+        {
+            "width": 720,
+            "height": 1280,
+            "navigationBarHeight": 96,
+            "dpi": 320.0,
+            "orientations": [
+                {
+                    "orientation": 1,
+                    "safeArea": {
+                        "serializedVersion": "2",
+                        "x": 0.0,
+                        "y": 96.0,
+                        "width": 720.0,
+                        "height": 1160.0
+                    }
+                },
+                {
+                    "orientation": 3,
+                    "safeArea": {
+                        "serializedVersion": "2",
+                        "x": 24.0,
+                        "y": 0.0,
+                        "width": 1160.0,
+                        "height": 720.0
+                    }
+                },
+                {
+                    "orientation": 4,
+                    "safeArea": {
+                        "serializedVersion": "2",
+                        "x": 24.0,
+                        "y": 0.0,
+                        "width": 1160.0,
+                        "height": 720.0
+                    }
+                }
+            ]
+        }
+    ],
+    "systemInfo": {
+        "deviceModel": "ADT_Generic_SmallPhone_720x1280",
+        "deviceType": 1,
+        "operatingSystem": "Android",
+        "operatingSystemFamily": 1,
+        "processorCount": 8,
+        "processorFrequency": 0,
+        "processorType": "ARM64",
+        "supportsAccelerometer": true,
+        "supportsAudio": true,
+        "supportsGyroscope": true,
+        "supportsLocationService": true,
+        "supportsVibration": true,
+        "systemMemorySize": 4096,
+        "unsupportedIdentifier": "n/a"
+    }
+}

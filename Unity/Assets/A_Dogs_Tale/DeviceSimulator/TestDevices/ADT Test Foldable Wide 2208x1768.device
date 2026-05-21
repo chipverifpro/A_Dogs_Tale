@@ -1,0 +1,60 @@
+{
+    "friendlyName": "ADT Test Foldable Wide 2208x1768",
+    "version": 1,
+    "screens": [
+        {
+            "width": 2208,
+            "height": 1768,
+            "navigationBarHeight": 0,
+            "dpi": 374.0,
+            "orientations": [
+                {
+                    "orientation": 1,
+                    "safeArea": {
+                        "serializedVersion": "2",
+                        "x": 0.0,
+                        "y": 0.0,
+                        "width": 2208.0,
+                        "height": 1728.0
+                    }
+                },
+                {
+                    "orientation": 3,
+                    "safeArea": {
+                        "serializedVersion": "2",
+                        "x": 40.0,
+                        "y": 0.0,
+                        "width": 1728.0,
+                        "height": 2208.0
+                    }
+                },
+                {
+                    "orientation": 4,
+                    "safeArea": {
+                        "serializedVersion": "2",
+                        "x": 40.0,
+                        "y": 0.0,
+                        "width": 1728.0,
+                        "height": 2208.0
+                    }
+                }
+            ]
+        }
+    ],
+    "systemInfo": {
+        "deviceModel": "ADT_Generic_FoldableWide_2208x1768",
+        "deviceType": 1,
+        "operatingSystem": "Android",
+        "operatingSystemFamily": 1,
+        "processorCount": 8,
+        "processorFrequency": 0,
+        "processorType": "ARM64",
+        "supportsAccelerometer": true,
+        "supportsAudio": true,
+        "supportsGyroscope": true,
+        "supportsLocationService": true,
+        "supportsVibration": true,
+        "systemMemorySize": 4096,
+        "unsupportedIdentifier": "n/a"
+    }
+}

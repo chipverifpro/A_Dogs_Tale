@@ -11,6 +11,7 @@ public static class PersistentGameSettings
     private const string PlayerPrefsKey = "A_Dogs_Tale.PersistentGameSettings";
     private const string TouchscreenJoystickVisibleJsonField = "\"touchscreenJoystickVisible\"";
     private const string ButtonSizeJsonField = "\"buttonSize\"";
+    private const string AndroidFullscreenJsonField = "\"androidFullscreenEnabled\"";
     private const float MinScentSimulationTimeStep = 0.1f;
     private const float MaxScentSimulationTimeStep = 1.0f;
     public const float MinButtonSize = 40f;
@@ -41,6 +42,7 @@ public static class PersistentGameSettings
         public bool wallpaperEnabled = true;
         public bool touchscreenJoystickVisible = true;
         public float buttonSize = DefaultButtonSize;
+        public bool androidFullscreenEnabled = false;
     }
 
     public static Data GetCurrentOrSaved()
@@ -118,10 +120,12 @@ public static class PersistentGameSettings
 
     public static void ApplySavedToInputAdapter(NewInputAdapter inputAdapter)
     {
-        if (inputAdapter == null || !TryLoad(out Data data))
-            return;
+        Data data = GetCurrentOrSaved();
 
-        inputAdapter.SetMobileJoystickVisiblePreference(data.touchscreenJoystickVisible);
+        if (inputAdapter != null)
+            inputAdapter.SetMobileJoystickVisiblePreference(data.touchscreenJoystickVisible);
+
+        ApplyAndroidDisplayMode(data);
     }
 
     public static void ApplySavedGraphicsToDungeonGenerator(DungeonGenerator dungeonGenerator)
@@ -220,6 +224,8 @@ public static class PersistentGameSettings
         NewInputAdapter inputAdapter = GetInputAdapter();
         if (inputAdapter != null)
             inputAdapter.SetMobileJoystickVisiblePreference(normalized.touchscreenJoystickVisible);
+
+        ApplyAndroidDisplayMode(normalized);
     }
 
     private static bool TryLoad(out Data data)
@@ -239,6 +245,7 @@ public static class PersistentGameSettings
 
         bool hasTouchscreenJoystickVisible = json.Contains(TouchscreenJoystickVisibleJsonField, StringComparison.Ordinal);
         bool hasButtonSize = json.Contains(ButtonSizeJsonField, StringComparison.Ordinal);
+        bool hasAndroidFullscreen = json.Contains(AndroidFullscreenJsonField, StringComparison.Ordinal);
         data = JsonUtility.FromJson<Data>(json);
         if (data == null)
             return false;
@@ -247,6 +254,8 @@ public static class PersistentGameSettings
             data.touchscreenJoystickVisible = true;
         if (!hasButtonSize)
             data.buttonSize = DefaultButtonSize;
+        if (!hasAndroidFullscreen)
+            data.androidFullscreenEnabled = false;
 
         data = Normalize(data);
         return true;
@@ -282,6 +291,16 @@ public static class PersistentGameSettings
         return Normalize(data);
     }
 
+    public static bool IsAndroidDevice()
+    {
+        return Application.platform == RuntimePlatform.Android;
+    }
+
+    public static bool ShouldShowAndroidDisplayModeSetting()
+    {
+        return IsAndroidDevice() || Application.isEditor;
+    }
+
     private static Data Normalize(Data data)
     {
         if (data == null)
@@ -303,6 +322,14 @@ public static class PersistentGameSettings
         data.buttonSize = SnapButtonSize(data.buttonSize);
 
         return data;
+    }
+
+    private static void ApplyAndroidDisplayMode(Data data)
+    {
+        if (!ShouldShowAndroidDisplayModeSetting())
+            return;
+
+        Screen.fullScreen = Normalize(data).androidFullscreenEnabled;
     }
 
     public static float SnapButtonSize(float value)

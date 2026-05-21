@@ -4354,7 +4354,7 @@ PrefabInstance:
     - target: {fileID: 5465417884456115473, guid: 713603339bb3d4be4ad0d349ad65d76b,
         type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0.5
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5465417884456115473, guid: 713603339bb3d4be4ad0d349ad65d76b,
         type: 3}
@@ -32784,7 +32784,7 @@ PrefabInstance:
     - target: {fileID: 2421648922703722734, guid: 77179a6ab454e4985903d09faacee2f4,
         type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0.5
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 2421648922703722734, guid: 77179a6ab454e4985903d09faacee2f4,
         type: 3}
@@ -67354,7 +67354,7 @@ PrefabInstance:
     - target: {fileID: 6657885744878398192, guid: 053fef6cc17b11f4485e27a5d11ffafe,
         type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0.5
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6657885744878398192, guid: 053fef6cc17b11f4485e27a5d11ffafe,
         type: 3}
@@ -110505,6 +110505,7 @@ MonoBehaviour:
   inventoryActionSpriteResourcePath: Sprites/InventoryActionsSheetA
   digHoleSpriteResourcePath: Sprites/DigHoleSpriteA
   pulldownFrameResourcePath: Sprites/PulldownFrame
+  pulldownFrameTwoRowResourcePath: Sprites/PulldownFrame_2row
   pulldownTabResourcePath: Sprites/PulldownTab
   androidButtonSpriteResourcePath: Sprites/AndroidButtonsAndQuests
   noseButtonSize: 176
@@ -110512,8 +110513,6 @@ MonoBehaviour:
   modeButtonSpacing: 12
   topControlButtonSize: 176
   topControlsInset: {x: 162, y: 52}
-  leftActionButtonsInset: {x: 0, y: 0}
-  leftActionButtonSpacing: 12
   pulldownFrameSize: {x: 1620, y: 341}
   pulldownFrameOffset: {x: 0, y: 0}
   pulldownTabSize: {x: 428, y: 98}
@@ -173088,7 +173087,7 @@ PrefabInstance:
     - target: {fileID: 6657885744878398192, guid: 59550f3766bc54123a4d44b66c853067,
         type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0.5
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6657885744878398192, guid: 59550f3766bc54123a4d44b66c853067,
         type: 3}

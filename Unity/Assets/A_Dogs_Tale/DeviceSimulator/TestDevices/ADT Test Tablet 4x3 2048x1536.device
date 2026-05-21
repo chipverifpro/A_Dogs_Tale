@@ -1,0 +1,60 @@
+{
+    "friendlyName": "ADT Test Tablet 4x3 2048x1536",
+    "version": 1,
+    "screens": [
+        {
+            "width": 2048,
+            "height": 1536,
+            "navigationBarHeight": 0,
+            "dpi": 264.0,
+            "orientations": [
+                {
+                    "orientation": 1,
+                    "safeArea": {
+                        "serializedVersion": "2",
+                        "x": 0.0,
+                        "y": 0.0,
+                        "width": 2048.0,
+                        "height": 1536.0
+                    }
+                },
+                {
+                    "orientation": 3,
+                    "safeArea": {
+                        "serializedVersion": "2",
+                        "x": 0.0,
+                        "y": 0.0,
+                        "width": 1536.0,
+                        "height": 2048.0
+                    }
+                },
+                {
+                    "orientation": 4,
+                    "safeArea": {
+                        "serializedVersion": "2",
+                        "x": 0.0,
+                        "y": 0.0,
+                        "width": 1536.0,
+                        "height": 2048.0
+                    }
+                }
+            ]
+        }
+    ],
+    "systemInfo": {
+        "deviceModel": "ADT_Generic_Tablet_4x3_2048x1536",
+        "deviceType": 1,
+        "operatingSystem": "Android",
+        "operatingSystemFamily": 1,
+        "processorCount": 8,
+        "processorFrequency": 0,
+        "processorType": "ARM64",
+        "supportsAccelerometer": true,
+        "supportsAudio": true,
+        "supportsGyroscope": true,
+        "supportsLocationService": true,
+        "supportsVibration": true,
+        "systemMemorySize": 4096,
+        "unsupportedIdentifier": "n/a"
+    }
+}

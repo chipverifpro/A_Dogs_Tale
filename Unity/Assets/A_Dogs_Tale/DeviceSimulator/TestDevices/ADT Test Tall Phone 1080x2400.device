@@ -1,0 +1,69 @@
+{
+    "friendlyName": "ADT Test Tall Phone 1080x2400",
+    "version": 1,
+    "screens": [
+        {
+            "width": 1080,
+            "height": 2400,
+            "navigationBarHeight": 120,
+            "dpi": 420.0,
+            "orientations": [
+                {
+                    "orientation": 1,
+                    "safeArea": {
+                        "serializedVersion": "2",
+                        "x": 0.0,
+                        "y": 120.0,
+                        "width": 1080.0,
+                        "height": 2184.0
+                    },
+                    "cutouts": [
+                        {
+                            "serializedVersion": "2",
+                            "x": 440.0,
+                            "y": 2304.0,
+                            "width": 200.0,
+                            "height": 96.0
+                        }
+                    ]
+                },
+                {
+                    "orientation": 3,
+                    "safeArea": {
+                        "serializedVersion": "2",
+                        "x": 96.0,
+                        "y": 0.0,
+                        "width": 2184.0,
+                        "height": 1080.0
+                    }
+                },
+                {
+                    "orientation": 4,
+                    "safeArea": {
+                        "serializedVersion": "2",
+                        "x": 96.0,
+                        "y": 0.0,
+                        "width": 2184.0,
+                        "height": 1080.0
+                    }
+                }
+            ]
+        }
+    ],
+    "systemInfo": {
+        "deviceModel": "ADT_Generic_TallPhone_1080x2400",
+        "deviceType": 1,
+        "operatingSystem": "Android",
+        "operatingSystemFamily": 1,
+        "processorCount": 8,
+        "processorFrequency": 0,
+        "processorType": "ARM64",
+        "supportsAccelerometer": true,
+        "supportsAudio": true,
+        "supportsGyroscope": true,
+        "supportsLocationService": true,
+        "supportsVibration": true,
+        "systemMemorySize": 4096,
+        "unsupportedIdentifier": "n/a"
+    }
+}

@@ -1,0 +1,60 @@
+{
+    "friendlyName": "ADT Test Tablet Wide 2560x1600",
+    "version": 1,
+    "screens": [
+        {
+            "width": 2560,
+            "height": 1600,
+            "navigationBarHeight": 0,
+            "dpi": 287.0,
+            "orientations": [
+                {
+                    "orientation": 1,
+                    "safeArea": {
+                        "serializedVersion": "2",
+                        "x": 0.0,
+                        "y": 0.0,
+                        "width": 2560.0,
+                        "height": 1600.0
+                    }
+                },
+                {
+                    "orientation": 3,
+                    "safeArea": {
+                        "serializedVersion": "2",
+                        "x": 0.0,
+                        "y": 0.0,
+                        "width": 1600.0,
+                        "height": 2560.0
+                    }
+                },
+                {
+                    "orientation": 4,
+                    "safeArea": {
+                        "serializedVersion": "2",
+                        "x": 0.0,
+                        "y": 0.0,
+                        "width": 1600.0,
+                        "height": 2560.0
+                    }
+                }
+            ]
+        }
+    ],
+    "systemInfo": {
+        "deviceModel": "ADT_Generic_TabletWide_2560x1600",
+        "deviceType": 1,
+        "operatingSystem": "Android",
+        "operatingSystemFamily": 1,
+        "processorCount": 8,
+        "processorFrequency": 0,
+        "processorType": "ARM64",
+        "supportsAccelerometer": true,
+        "supportsAudio": true,
+        "supportsGyroscope": true,
+        "supportsLocationService": true,
+        "supportsVibration": true,
+        "systemMemorySize": 4096,
+        "unsupportedIdentifier": "n/a"
+    }
+}

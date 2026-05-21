@@ -41,6 +41,8 @@ public class MenuSettingsDialog : MonoBehaviour
     private Toggle geminiToggle;
     private Toggle ollamaToggle;
     private Toggle touchscreenJoystickToggle;
+    private Toggle androidSafeAreaToggle;
+    private Toggle androidFullscreenToggle;
     private Slider scentStepSlider;
     private Slider buttonSizeSlider;
     private Text scentStepValueLabel;
@@ -224,6 +226,7 @@ public class MenuSettingsDialog : MonoBehaviour
         CreateSectionHeader(content, "CONTROLS");
         GameObject controlsRow = CreateRow(content, "ControlsRow", 42f);
         touchscreenJoystickToggle = CreateToggle(controlsRow.transform, "Touchscreen joystick visible", "TouchscreenJoystickToggle");
+        CreateAndroidDisplayModeRow(content);
         CreateButtonSizeRow(content);
 
         CreateSectionHeader(content, "LINKS");
@@ -239,6 +242,7 @@ public class MenuSettingsDialog : MonoBehaviour
         geminiToggle.onValueChanged.AddListener(_ => SaveFromControls());
         ollamaToggle.onValueChanged.AddListener(_ => SaveFromControls());
         touchscreenJoystickToggle.onValueChanged.AddListener(_ => SaveFromControls());
+        AddAndroidDisplayModeListeners();
         scentStepSlider.onValueChanged.AddListener(OnScentStepChanged);
         buttonSizeSlider.onValueChanged.AddListener(OnButtonSizeChanged);
     }
@@ -534,6 +538,47 @@ public class MenuSettingsDialog : MonoBehaviour
         buttonSizeSampleButtonRect = buttonObject.GetComponent<RectTransform>();
         buttonSizeSampleButtonLayout = buttonObject.AddComponent<LayoutElement>();
         return button;
+    }
+
+    private void CreateAndroidDisplayModeRow(Transform parent)
+    {
+        if (!PersistentGameSettings.ShouldShowAndroidDisplayModeSetting())
+            return;
+
+        GameObject row = CreateRow(parent, "AndroidDisplayModeRow", 42f);
+
+        Text label = CreateLabel(row.transform, "Android screen", 17, FontStyle.Bold, TextAnchor.MiddleLeft, 100f);
+        LayoutElement labelLayout = label.gameObject.GetComponent<LayoutElement>();
+        labelLayout.preferredWidth = 130f;
+        labelLayout.minWidth = 120f;
+
+        androidSafeAreaToggle = CreateToggle(row.transform, "Safe area", "AndroidSafeAreaToggle");
+        androidFullscreenToggle = CreateToggle(row.transform, "Fullscreen", "AndroidFullscreenToggle");
+    }
+
+    private void AddAndroidDisplayModeListeners()
+    {
+        if (androidSafeAreaToggle != null)
+        {
+            androidSafeAreaToggle.onValueChanged.AddListener(isOn =>
+            {
+                if (isOn)
+                    SetAndroidDisplayMode(fullscreen: false, save: true);
+                else if (androidFullscreenToggle == null || !androidFullscreenToggle.isOn)
+                    SetAndroidDisplayMode(fullscreen: false, save: false);
+            });
+        }
+
+        if (androidFullscreenToggle != null)
+        {
+            androidFullscreenToggle.onValueChanged.AddListener(isOn =>
+            {
+                if (isOn)
+                    SetAndroidDisplayMode(fullscreen: true, save: true);
+                else if (androidSafeAreaToggle == null || !androidSafeAreaToggle.isOn)
+                    SetAndroidDisplayMode(fullscreen: true, save: false);
+            });
+        }
     }
 
     private void CreateMapTypeRow(Transform parent)
@@ -960,6 +1005,7 @@ public class MenuSettingsDialog : MonoBehaviour
         CreateGraphicsQualityRow(panel.transform);
         CreateSectionHeader(panel.transform, "Controls");
         touchscreenJoystickToggle = CreateToggle(panel.transform, "Touchscreen joystick visible", "TouchscreenJoystickToggle");
+        CreateAndroidDisplayModeRow(panel.transform);
         CreateButtonSizeRow(panel.transform);
 
         Button closeButton = CreateButton(panel.transform, "Close", "CloseButton");
@@ -969,6 +1015,7 @@ public class MenuSettingsDialog : MonoBehaviour
         geminiToggle.onValueChanged.AddListener(_ => SaveFromControls());
         ollamaToggle.onValueChanged.AddListener(_ => SaveFromControls());
         touchscreenJoystickToggle.onValueChanged.AddListener(_ => SaveFromControls());
+        AddAndroidDisplayModeListeners();
         scentStepSlider.onValueChanged.AddListener(OnScentStepChanged);
         buttonSizeSlider.onValueChanged.AddListener(OnButtonSizeChanged);
 
@@ -1053,6 +1100,7 @@ public class MenuSettingsDialog : MonoBehaviour
         geminiToggle?.SetIsOnWithoutNotify(settings.geminiEnabled);
         ollamaToggle?.SetIsOnWithoutNotify(settings.ollamaEnabled);
         touchscreenJoystickToggle?.SetIsOnWithoutNotify(settings.touchscreenJoystickVisible);
+        SetAndroidDisplayMode(settings.androidFullscreenEnabled, save: false);
 
         float snappedValue = SnapScentStep(settings.scentSimulationTimeStep);
         if (scentStepSlider != null)
@@ -1079,7 +1127,8 @@ public class MenuSettingsDialog : MonoBehaviour
             touchscreenJoystickVisible = touchscreenJoystickToggle != null ? touchscreenJoystickToggle.isOn : current.touchscreenJoystickVisible,
             graphicsLevel = selectedGraphicsLevel,
             scentSimulationTimeStep = SnapScentStep(scentStepSlider != null ? scentStepSlider.value : current.scentSimulationTimeStep),
-            buttonSize = PersistentGameSettings.SnapButtonSize(buttonSizeSlider != null ? buttonSizeSlider.value : current.buttonSize)
+            buttonSize = PersistentGameSettings.SnapButtonSize(buttonSizeSlider != null ? buttonSizeSlider.value : current.buttonSize),
+            androidFullscreenEnabled = androidFullscreenToggle != null ? androidFullscreenToggle.isOn : current.androidFullscreenEnabled
         });
     }
 
@@ -1092,6 +1141,17 @@ public class MenuSettingsDialog : MonoBehaviour
     private static float SnapScentStep(float value)
     {
         return Mathf.Clamp(Mathf.Round(value * 10f) / 10f, 0.1f, 1.0f);
+    }
+
+    private void SetAndroidDisplayMode(bool fullscreen, bool save)
+    {
+        androidSafeAreaToggle?.SetIsOnWithoutNotify(!fullscreen);
+        androidFullscreenToggle?.SetIsOnWithoutNotify(fullscreen);
+        RefreshToggleVisual(androidSafeAreaToggle);
+        RefreshToggleVisual(androidFullscreenToggle);
+
+        if (save)
+            SaveFromControls();
     }
 
     private void UpdateButtonSizeSample(float value)
@@ -1244,6 +1304,8 @@ public class MenuSettingsDialog : MonoBehaviour
         RefreshToggleVisual(geminiToggle);
         RefreshToggleVisual(ollamaToggle);
         RefreshToggleVisual(touchscreenJoystickToggle);
+        RefreshToggleVisual(androidSafeAreaToggle);
+        RefreshToggleVisual(androidFullscreenToggle);
     }
 
     private void RefreshToggleVisual(Toggle toggle)
