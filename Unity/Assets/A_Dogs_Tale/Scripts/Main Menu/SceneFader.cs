@@ -146,6 +146,8 @@ public class SceneFader : MonoBehaviour
 
     [Header("Splash Image")]
     [SerializeField] private Image splashImage;              // drag the Image component from SplashCanvas here
+    [SerializeField] private GameObject buildingMessage;
+    [SerializeField] private TMPro.TMP_Text buildingMessageText;
     [SerializeField] private string splashResourceFolder = "Images";
     [SerializeField] private int splashCount = 19;
 
@@ -178,6 +180,7 @@ public class SceneFader : MonoBehaviour
     private IEnumerator ShowInitialMenu()
     {
         SetOverlayedGameplayUiVisible(false);
+        SetBuildingMessageVisible(false);
 
         // Pick a splash now so the loading transition has an image ready immediately.
         SetRandomSplashSprite();
@@ -314,7 +317,9 @@ public class SceneFader : MonoBehaviour
 
         BottomBanner.Show("Welcome, Pup! On the way to Adventure...");
         SetOverlayedGameplayUiVisible(false);
+        SetRandomBuildingMessage();
         SetSplashMenuCameraEnabled(true);
+        SetBuildingMessageVisible(true);
         SetRandomSplashSprite();
 
         SetCanvasGroupState(menuCanvasGroup, 1f, true);
@@ -338,6 +343,7 @@ public class SceneFader : MonoBehaviour
         yield return StartCoroutine(Fade(splashCanvasGroup, 1f, 0f));
         SetCanvasGroupState(splashCanvasGroup, 0f, false);
         SetCanvasGroupState(menuCanvasGroup, 0f, false);
+        SetBuildingMessageVisible(false);
         SetSplashMenuCameraEnabled(false);
         SetOverlayedGameplayUiVisible(true);
         isTitleOverlayVisible = false;
@@ -420,6 +426,34 @@ public class SceneFader : MonoBehaviour
         GameObject target = DungeonGenerator.FindInActiveScene(objectName);
         if (target != null)
             target.SetActive(visible);
+    }
+
+    void SetBuildingMessageVisible(bool visible)
+    {
+        ResolveBuildingMessage();
+
+        if (buildingMessage != null && buildingMessage.activeSelf != visible)
+            buildingMessage.SetActive(visible);
+    }
+
+    void SetRandomBuildingMessage()
+    {
+        if (loadingMessages == null || loadingMessages.Length == 0)
+            return;
+
+        ResolveBuildingMessage();
+
+        if (buildingMessageText != null)
+            buildingMessageText.text = loadingMessages[Random.Range(0, loadingMessages.Length)];
+    }
+
+    void ResolveBuildingMessage()
+    {
+        if (buildingMessage == null)
+            buildingMessage = DungeonGenerator.FindInActiveScene("BuildingMessage");
+
+        if (buildingMessageText == null && buildingMessage != null)
+            buildingMessageText = buildingMessage.GetComponent<TMPro.TMP_Text>();
     }
 
     void SetSplashMenuCameraEnabled(bool enabled)
@@ -598,4 +632,100 @@ public class SceneFader : MonoBehaviour
         Keyboard keyboard = Keyboard.current;
         return keyboard != null && key != Key.None && keyboard[key].wasPressedThisFrame;
     }
+
+
+    [SerializeField] private string[] loadingMessages =
+    {
+        "Building the world...",
+        "Digging up a map...",
+        "Searching for a home...",
+        "Raising the fences...",
+        "Planting the trees...",
+        "Laying the trails...",
+        "Marking the paths...",
+        "Setting the pawprints...",
+        "Hiding the treasures...",
+        "Burying the bones...",
+        "Painting the doghouse...",
+        "Assembling the park...",
+        "Growing the grass...",
+        "Filling the water bowls...",
+        "Opening the gates...",
+        "Placing the landmarks...",
+        "Packing the forest...",
+        "Building the castle...",
+        "Sniff-proofing the yard...",
+        "Unrolling the adventure...",
+
+        "Following a scent trail...",
+        "Sniffing out clues...",
+        "Wagging into position...",
+        "Picking the best stick...",
+        "Rounding up the pack...",
+        "Finding something interesting...",
+        "Checking every corner...",
+        "Listening for trouble...",
+        "Tracking fresh footprints...",
+        "Looking for the ball...",
+        "Preparing zoomies...",
+        "Practicing good dog manners...",
+        "Choosing who gets the stick...",
+        "Deciding where to dig...",
+        "Testing the nose-cam...",
+        "Perking up the ears...",
+        "Focusing on the target...",
+        "Picking a favorite route...",
+        "Getting ready to explore...",
+        "Waiting for the signal...",
+
+        "Gathering the pack...",
+        "Choosing a leader...",
+        "Forming up the team...",
+        "Getting into formation...",
+        "Counting noses...",
+        "Making room in the line...",
+        "Lining up the scouts...",
+        "Teaching everyone the route...",
+        "Deciding who follows who...",
+        "Organizing the adventure party...",
+
+        "Preparing today’s mission...",
+        "Hiding the quest markers...",
+        "Looking for lost things...",
+        "Setting the scene...",
+        "Getting the adventure ready...",
+        "Placing mysterious clues...",
+        "Checking the old map...",
+        "Opening the next chapter...",
+        "Waiting for the heroes...",
+        "Making something worth sniffing...",
+
+        "Stirring the scent fog...",
+        "Mixing the smells...",
+        "Freshening the trail...",
+        "Blowing scent through the wind...",
+        "Updating the nose report...",
+        "Tuning the sniff sensors...",
+        "Sharpening the trail markers...",
+        "Making everything smell important...",
+        "Leaving suspicious scents around...",
+        "Preparing premium smells...",
+
+        "Convincing the sheep to cooperate...",
+        "Asking the ducks to hold still...",
+        "Translating barks...",
+        "Re-hiding the bone...",
+        "Pretending this was all planned...",
+        "Untangling the leashes...",
+        "Calibrating tail wag speed...",
+        "Making the grass slightly chewable...",
+        "Negotiating with squirrels...",
+        "Dog-proofing the interface...",
+        "Reticulating pawprints...",
+        "Rendering extra enthusiasm...",
+        "Politely ignoring the mailman...",
+        "Importing sticks...",
+        "Fluffing the clouds...",
+        "Making the world 37% sniffier..."
+    };
 }
