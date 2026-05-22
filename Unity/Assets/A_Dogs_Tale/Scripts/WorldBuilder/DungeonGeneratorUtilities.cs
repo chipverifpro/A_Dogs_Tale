@@ -14,7 +14,8 @@ public partial class DungeonGenerator
     /// <param name="eightWay">If adjacency is considered, choose 4-way or 8-way</param>
     public static List<Room> MergeOverlappingRooms(List<Room> rooms, bool considerAdjacency = false, bool eightWay = true)
     {
-        return RoomMergeUtility.MergeOverlappingRooms(rooms, considerAdjacency, eightWay);
+        //return RoomMergeUtility.MergeOverlappingRooms(rooms, considerAdjacency, eightWay);
+        return RoomMergeUtility.SimpleMergeOverlappingRooms(rooms, considerAdjacency, eightWay);
     }
 
     public static bool Check(object o, string name, UnityEngine.Object ctx = null)

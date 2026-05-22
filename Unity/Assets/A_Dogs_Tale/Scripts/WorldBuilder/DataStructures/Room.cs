@@ -22,6 +22,7 @@ public class Room
     public int Size => cells.Count;     // OLD used tiles, NEW will use cells
     public int Last => cells.Count - 1; // Handy index for editing a newly added cell.
     public Color colorFloor = new(1f, 0.4f, 0.7f, 0.5f); // semi-transparent pink; // Color for the whole room, cell may override this
+    public Color colorWalls = new(1f, 0.4f, 0.7f, 1f); // Solid color used when no wallpaper texture is applied.
     public List<int> neighbors = new(); // List of neighboring rooms by index into global "rooms" list
     public bool isCorridor = false;     // Indicate if this room was generated as a corridor
     public bool connectedToCorridor = false; // Corridor defined as room 0.  gets set during build.  Should all be true for a fully connected map.
@@ -134,7 +135,19 @@ public class Room
     public Color setColorFloor(Color? color = null, bool highlight = true, string rgba = "")
     {
         colorFloor = getColor(color: color, highlight: highlight, rgba: rgba);
+        colorWalls = SolidColor(colorFloor);
         return colorFloor;
+    }
+
+    public Color setColorWalls(Color? color = null, bool highlight = true, string rgba = "")
+    {
+        colorWalls = SolidColor(getColor(color: color, highlight: highlight, rgba: rgba));
+        return colorWalls;
+    }
+
+    public static Color SolidColor(Color color)
+    {
+        return new Color(color.r, color.g, color.b, 1f);
     }
 
     //getColor is a simple helper to generate a Color based on various ways to specify a color
@@ -147,7 +160,7 @@ public class Room
         if (color != null)
             return_color = (Color)color;
         else if ((!string.IsNullOrEmpty(rgba)) && (ColorUtility.TryParseHtmlString(rgba, out colorrgba)))
-            colorFloor = colorrgba;
+            return_color = colorrgba;
         else if (highlight)
             return_color = UnityEngine.Random.ColorHSV(0f, 1f, 0.6f, 1f, 0.6f, 1f);   // Bright Random
         else // highlight == false

@@ -112,7 +112,7 @@ public partial class DungeonGenerator
             worldPos: wallPosition,
             rotation: wallRotation,
             scale: wallScale,
-            color: Color.white,
+            color: WallColorForRoom(roomNumber, diagonalWallpaper),
             textureOverride: diagonalWallpaper,
             customFlags: 0
         );

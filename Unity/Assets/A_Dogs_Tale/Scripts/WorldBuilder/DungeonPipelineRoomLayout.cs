@@ -26,6 +26,8 @@ public partial class DungeonGenerator
             BottomBanner.LogBuildProgress("Scattering rooms...");
             yield return StartCoroutine(ScatterRooms(tm: null));
             Debug.Log("ScatterRooms done, room_rects.Count = " + room_rects.Count);
+            // EXPERIMENT: Reuse Doors routine from PackedRooms algorithm
+            //yield return StartCoroutine(RunDoors());
             //DrawMapByRects(room_rects, room_rects_color);
             //DrawWalls();
         }
@@ -50,17 +52,20 @@ public partial class DungeonGenerator
         {
             BottomBanner.LogBuildProgress("Convert all Rects to Rooms...");
             rooms = ConvertAllRectToRooms(room_rects, room_rects_color, SetTile: true);
-            DrawMapByRooms(rooms);
-            DrawWalls();
-            if (tm.IfYield()) yield return null;     // cooperative yield decision
+            //DrawMapByRooms(rooms);
+            //DrawWalls();
+            //if (tm.IfYield()) yield return null;     // cooperative yield decision
 
             yield return tm.YieldOrDelay(cfg.stepDelay);
             // Step 4: Merge overlapping rooms
             BottomBanner.LogBuildProgress("Merging Overlapping Rooms...");
             if (cfg.MergeScatteredRooms)
+            {
                 rooms = MergeOverlappingRooms(rooms, considerAdjacency: true, eightWay: false);
-            DrawMapByRooms(rooms);
-            DrawWalls();
+                RoomMergeUtility.RemoveOverlappingCellsFromLaterRooms(rooms, removeEmptyRooms: true);
+            }
+            //DrawMapByRooms(rooms);
+            //DrawWalls();
             yield return tm.YieldOrDelay(cfg.stepDelay); // depends on cfg.showBuildProcess
         }
     }
@@ -76,15 +81,16 @@ public partial class DungeonGenerator
         if (!NeedsRoomCorridors())
             yield break;
 
-        DrawMapByRooms(rooms);
-        DrawWalls();
+        //DrawMapByRooms(rooms);
+        //DrawWalls();
 
         // Step 5: Connect rooms with corridors
         BottomBanner.LogBuildProgress("Connecting Rooms with Corridors...");
         yield return StartCoroutine(ConnectRoomsByCorridors(tm: null));
+        RoomMergeUtility.RemoveOverlappingCellsFromLaterRooms(rooms, removeEmptyRooms: false);
 
-        DrawMapByRooms(rooms);
-        DrawWalls();
+        //DrawMapByRooms(rooms);
+        //DrawWalls();
         yield return tm.YieldOrDelay(cfg.stepDelay);
     }
 

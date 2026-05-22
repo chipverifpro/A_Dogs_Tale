@@ -117,7 +117,7 @@ public partial class DungeonGenerator
         Texture2D wallWallpaper = mirrorWallpaper ? roomWallpaperMirror : roomWallpaper;
 
         int customFlags = neighborIsDoor ? 1 : 0; // 1 = door segment
-        Color wallColor = neighborIsDoor ? Color.red : Color.white;
+        Color wallColor = neighborIsDoor ? Color.red : WallColorForRoom(roomNumber, wallWallpaper);
 
         elementStore.AddWall(
             archetypeId: neighborIsDoor ? "Door" : "Wall",
@@ -132,5 +132,16 @@ public partial class DungeonGenerator
             textureOverride: neighborIsDoor ? null : wallWallpaper,
             customFlags: customFlags
         );
+    }
+
+    Color WallColorForRoom(int roomNumber, Texture2D wallWallpaper)
+    {
+        if (wallWallpaper != null)
+            return Color.white;
+
+        if (rooms == null || roomNumber < 0 || roomNumber >= rooms.Count || rooms[roomNumber] == null)
+            return Color.white;
+
+        return rooms[roomNumber].colorWalls;
     }
 }

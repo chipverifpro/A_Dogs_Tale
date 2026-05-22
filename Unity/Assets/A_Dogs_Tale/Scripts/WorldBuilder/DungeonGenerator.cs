@@ -146,6 +146,7 @@ public partial class DungeonGenerator : MonoBehaviour
                 }
 
                 yield return StartCoroutine(RebuildWallLists());
+                
                 yield return StartCoroutine(ApplyOptionalFloorTileTilt());
                 yield return StartCoroutine(BuildFinalDungeonOutput());
 

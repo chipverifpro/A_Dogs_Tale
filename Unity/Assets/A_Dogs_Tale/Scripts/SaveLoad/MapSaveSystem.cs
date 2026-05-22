@@ -1541,6 +1541,8 @@ public partial class DungeonGenerator
         public List<CellDto> cells = new();
         public List<DoorDto> doors = new();
         public ColorDto colorFloor;
+        public bool hasColorWalls;
+        public ColorDto colorWalls;
         public List<int> neighbors = new();
         public bool isCorridor;
         public bool connectedToCorridor;
@@ -1558,6 +1560,8 @@ public partial class DungeonGenerator
                 myRoomNumber = room.my_room_number,
                 name = room.name,
                 colorFloor = ColorDto.FromColor(room.colorFloor),
+                hasColorWalls = true,
+                colorWalls = ColorDto.FromColor(room.colorWalls),
                 neighbors = room.neighbors != null ? new List<int>(room.neighbors) : new List<int>(),
                 isCorridor = room.isCorridor,
                 connectedToCorridor = room.connectedToCorridor,
@@ -1593,6 +1597,7 @@ public partial class DungeonGenerator
                 cells = new List<Cell>(),
                 doors = new List<Door>(),
                 colorFloor = colorFloor.ToColor(),
+                colorWalls = hasColorWalls ? colorWalls.ToColor() : Room.SolidColor(colorFloor.ToColor()),
                 neighbors = neighbors != null ? new List<int>(neighbors) : new List<int>(),
                 isCorridor = isCorridor,
                 connectedToCorridor = connectedToCorridor,

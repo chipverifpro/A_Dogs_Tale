@@ -122856,7 +122856,7 @@ MonoBehaviour:
   species: 4
   breed: Flying Crate
   autoRegister: 1
-  adjustMapToWorld: {x: -0.5, y: 0, z: -0.5}
+  adjustMapToWorld: {x: -0.5, y: 0.5, z: -0.5}
   sizeRadius: 0.4
   weight: 100
   immovable: 0

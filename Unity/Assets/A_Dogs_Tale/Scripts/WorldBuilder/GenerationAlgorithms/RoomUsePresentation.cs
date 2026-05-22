@@ -67,6 +67,7 @@ public static partial class RoomUseAssigner
         }
 
         room.colorFloor = roomColor;
+        room.colorWalls = Room.SolidColor(roomColor);
         room.name = BuildRoomName(roomLabel, roomNameCounts);
 
         if (room.cells == null)

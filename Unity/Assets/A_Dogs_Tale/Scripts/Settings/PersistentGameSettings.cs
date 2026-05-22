@@ -160,8 +160,46 @@ public static class PersistentGameSettings
                 cfg.mapWidth = 25;
                 break;
             case MapType.Yard:
+                cfg.RoomAlgorithm = DungeonSettings.RoomAlgorithm_e.Scatter_NoOverlap;
+                cfg.generateOverlappingRooms = false;
+                cfg.useCellularAutomata = false;
+                cfg.useScatterRooms = true;
+                cfg.usePerlin = false;
+                cfg.usePackedRooms = false;
+                cfg.useDiagonalCorners = false;
+                cfg.maxElevation = 0;
+//                cfg.perlinFloorHeights = 50;
+//                cfg.cellularFillPercent = 45;
+                cfg.mapHeight = 50;
+                cfg.mapWidth = 50;
+                cfg.useScatterRooms = true;
+                cfg.roomAttempts = 10;
+                cfg.roomsMax = 5;
+                cfg.minRoomSize = 5;
+                cfg.maxRoomSize = 15;
+                cfg.generateOverlappingRooms = true;
+                cfg.MergeScatteredRooms = true;
+                cfg.allowVerticalStacking = false;
+                cfg.minVerticalStackHeight = 5;  // less than this results in merged rooms
+                cfg.ovalRooms = false;
                 break;
             case MapType.DogPark:
+                cfg.RoomAlgorithm = DungeonSettings.RoomAlgorithm_e.CellularAutomataPerlin;
+                cfg.generateOverlappingRooms = false;
+                cfg.useCellularAutomata = true;
+                cfg.useScatterRooms = false;
+                cfg.usePerlin = true;
+                cfg.perlinWavelength = 0.25f;
+                cfg.perlin2Wavelength = 0.01f;
+                cfg.perlin2Amplitude = .5f;
+                cfg.perlinThreshold = 0.55f;
+                cfg.usePackedRooms = false;
+                cfg.useDiagonalCorners = true;
+                cfg.maxElevation = 100;
+                cfg.perlinFloorHeights = 50;
+                cfg.cellularFillPercent = 45;
+                cfg.mapHeight = 50;
+                cfg.mapWidth = 50;
                 break;
             case MapType.Forest:
                 cfg.RoomAlgorithm = DungeonSettings.RoomAlgorithm_e.CellularAutomataPerlin;
