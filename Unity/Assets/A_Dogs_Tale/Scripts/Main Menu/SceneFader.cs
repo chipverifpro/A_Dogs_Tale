@@ -52,7 +52,10 @@ public class SceneFader : MonoBehaviour
         else
         {
             Destroy(gameObject);
+            return;
         }
+
+        PrimeStartupBlackScreen();
     }
 
     void Start()
@@ -179,20 +182,15 @@ public class SceneFader : MonoBehaviour
 
     private IEnumerator ShowInitialMenu()
     {
+        PrimeStartupBlackScreen();
         SetOverlayedGameplayUiVisible(false);
         SetBuildingMessageVisible(false);
+        RefreshTitleMenuButtons();
 
         // Pick a splash now so the loading transition has an image ready immediately.
         SetRandomSplashSprite();
 
-        yield return null; // let things settle out before beginning this.
         BottomBanner.Show("Welcome, Pup! Sniffing out treasures...");
-
-        SetSplashMenuCameraEnabled(true);
-        SetCanvasGroupState(splashCanvasGroup, 0f, false);
-        PrepareTitlePullUp();
-        RefreshTitleMenuButtons();
-        SetCanvasGroupState(menuCanvasGroup, 0f, false);
 
         audioPlayer.PlayClip("Opening Title");
         audioPlayer.PlayClip("Bark_GS_repeat");
@@ -201,6 +199,14 @@ public class SceneFader : MonoBehaviour
         yield return StartCoroutine(PlayTitlePullUp());
 
         isTitleOverlayVisible = true;
+    }
+
+    private void PrimeStartupBlackScreen()
+    {
+        SetSplashMenuCameraEnabled(true);
+        SetCanvasGroupState(splashCanvasGroup, 0f, false);
+        SetCanvasGroupState(menuCanvasGroup, 0f, false);
+        PrepareTitlePullUp();
     }
 
 /*

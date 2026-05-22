@@ -151,7 +151,7 @@ MonoBehaviour:
   species: 0
   breed: 
   autoRegister: 1
-  adjustMapToWorld: {x: -0.5, y: 0, z: -0.5}
+  adjustMapToWorld: {x: -0.5, y: 0.5, z: -0.5}
   sizeRadius: 0.3
   weight: 1
   immovable: 0

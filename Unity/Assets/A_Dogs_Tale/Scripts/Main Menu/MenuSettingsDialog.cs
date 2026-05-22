@@ -236,6 +236,7 @@ public class MenuSettingsDialog : MonoBehaviour
         Button closeButton = CreateButton(linkRow.transform, "Close", "CloseButton");
         closeButton.onClick.AddListener(Close);
 
+        CreateVersionFooter(content);
         CreateCloseButtonOverlay(root, canvas);
 
         chatGptToggle.onValueChanged.AddListener(_ => SaveFromControls());
@@ -816,6 +817,26 @@ public class MenuSettingsDialog : MonoBehaviour
         label.color = sectionColor;
     }
 
+    private void CreateVersionFooter(Transform parent)
+    {
+        Text label = CreateLabel(
+            parent,
+            GetVersionFooterText(),
+            14,
+            FontStyle.Normal,
+            TextAnchor.MiddleCenter,
+            24f,
+            "VersionFooterLabel");
+
+        label.color = new Color(textColor.r, textColor.g, textColor.b, 0.72f);
+    }
+
+    private static string GetVersionFooterText()
+    {
+        string version = Application.version;
+        return string.IsNullOrWhiteSpace(version) ? "Version unknown" : $"Version {version}";
+    }
+
     private Toggle CreateToggle(Transform parent, string labelText, string objectName)
     {
         GameObject toggleObject = DefaultControls.CreateToggle(new DefaultControls.Resources());
@@ -1010,6 +1031,8 @@ public class MenuSettingsDialog : MonoBehaviour
 
         Button closeButton = CreateButton(panel.transform, "Close", "CloseButton");
         closeButton.onClick.AddListener(Close);
+
+        CreateVersionFooter(panel.transform);
 
         chatGptToggle.onValueChanged.AddListener(_ => SaveFromControls());
         geminiToggle.onValueChanged.AddListener(_ => SaveFromControls());

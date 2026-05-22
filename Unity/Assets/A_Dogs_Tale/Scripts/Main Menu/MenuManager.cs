@@ -30,6 +30,8 @@ public class MenuManager : MonoBehaviour
     [SerializeField] private RectTransform titleMenuButtons;
     [SerializeField] private RectTransform titleLarge;
     [SerializeField] private RectTransform titleSmall;
+    [SerializeField] private RectTransform splashTitleLarge;
+    [SerializeField] private RectTransform splashTitleSmall;
     [SerializeField] private RectTransform titleLeashHanging;
     [SerializeField] private float tallDisplayAspectThreshold = 1.5f;
     [SerializeField] private Vector2 tallDisplayButtonsPosition = Vector2.zero;
@@ -421,6 +423,12 @@ public class MenuManager : MonoBehaviour
 
         if (titleSmall != null)
             titleSmall.gameObject.SetActive(isTallDisplay);
+
+        if (splashTitleLarge != null)
+            splashTitleLarge.gameObject.SetActive(!isTallDisplay);
+
+        if (splashTitleSmall != null)
+            splashTitleSmall.gameObject.SetActive(isTallDisplay);
     }
 
     void CaptureMissingTitleButtonLayouts()
@@ -461,16 +469,32 @@ public class MenuManager : MonoBehaviour
 
         if (titleLarge == null)
         {
-            GameObject titleObject = FindIncludingInactive("GameTitle Large");
+            GameObject titleObject = FindCanvasChildIncludingInactive("MenuCanvas", "GameTitle Large") ??
+                                     FindIncludingInactive("GameTitle Large");
             if (titleObject != null)
                 titleLarge = titleObject.GetComponent<RectTransform>();
         }
 
         if (titleSmall == null)
         {
-            GameObject titleObject = FindIncludingInactive("GameTitle Small");
+            GameObject titleObject = FindCanvasChildIncludingInactive("MenuCanvas", "GameTitle Small") ??
+                                     FindIncludingInactive("GameTitle Small");
             if (titleObject != null)
                 titleSmall = titleObject.GetComponent<RectTransform>();
+        }
+
+        if (splashTitleLarge == null)
+        {
+            GameObject titleObject = FindCanvasChildIncludingInactive("SplashCanvas", "GameTitle Large");
+            if (titleObject != null)
+                splashTitleLarge = titleObject.GetComponent<RectTransform>();
+        }
+
+        if (splashTitleSmall == null)
+        {
+            GameObject titleObject = FindCanvasChildIncludingInactive("SplashCanvas", "GameTitle Small");
+            if (titleObject != null)
+                splashTitleSmall = titleObject.GetComponent<RectTransform>();
         }
 
         if (titleLeashHanging == null)
@@ -483,7 +507,8 @@ public class MenuManager : MonoBehaviour
         if (hasDefaultTitleLayout)
             return;
 
-        if (titleMenuButtons == null && titleLarge == null && titleSmall == null && titleLeashHanging == null)
+        if (titleMenuButtons == null && titleLarge == null && titleSmall == null &&
+            splashTitleLarge == null && splashTitleSmall == null && titleLeashHanging == null)
             return;
 
         if (titleMenuButtons != null)
@@ -622,6 +647,22 @@ public class MenuManager : MonoBehaviour
                 return obj;
             }
         }
+        return null;
+    }
+
+    GameObject FindCanvasChildIncludingInactive(string canvasName, string childName)
+    {
+        GameObject canvas = FindIncludingInactive(canvasName);
+        if (canvas == null)
+            return null;
+
+        Transform[] children = canvas.GetComponentsInChildren<Transform>(true);
+        foreach (Transform child in children)
+        {
+            if (child.name == childName)
+                return child.gameObject;
+        }
+
         return null;
     }
 
