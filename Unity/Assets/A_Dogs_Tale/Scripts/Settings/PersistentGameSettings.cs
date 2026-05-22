@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using DogGame.LLM;
 using UnityEngine;
+using static DungeonSettings;
 
 /// <summary>
 /// Stores a small set of user-adjustable runtime settings and reapplies them on launch.
@@ -144,6 +145,7 @@ public static class PersistentGameSettings
         {
             case MapType.House:
                 cfg.RoomAlgorithm = DungeonSettings.RoomAlgorithm_e.PackedRooms;
+                cfg.packedRoomTheme = PackedRoomTheme_e.House;
                 cfg.useCellularAutomata = false;
                 cfg.useScatterRooms = false;
                 cfg.usePackedRooms = true;
@@ -161,6 +163,7 @@ public static class PersistentGameSettings
                 break;
             case MapType.Yard:
                 cfg.RoomAlgorithm = DungeonSettings.RoomAlgorithm_e.Scatter_NoOverlap;
+                cfg.packedRoomTheme = PackedRoomTheme_e.Park;
                 cfg.generateOverlappingRooms = false;
                 cfg.useCellularAutomata = false;
                 cfg.useScatterRooms = true;
@@ -185,6 +188,7 @@ public static class PersistentGameSettings
                 break;
             case MapType.DogPark:
                 cfg.RoomAlgorithm = DungeonSettings.RoomAlgorithm_e.CellularAutomataPerlin;
+                cfg.packedRoomTheme = PackedRoomTheme_e.Park;
                 cfg.generateOverlappingRooms = false;
                 cfg.useCellularAutomata = true;
                 cfg.useScatterRooms = false;
@@ -203,6 +207,7 @@ public static class PersistentGameSettings
                 break;
             case MapType.Forest:
                 cfg.RoomAlgorithm = DungeonSettings.RoomAlgorithm_e.CellularAutomataPerlin;
+                cfg.packedRoomTheme = PackedRoomTheme_e.Park;
                 cfg.generateOverlappingRooms = false;
                 cfg.useCellularAutomata = true;
                 cfg.useScatterRooms = false;
@@ -221,6 +226,7 @@ public static class PersistentGameSettings
                 break;
             case MapType.Castle:
                 cfg.RoomAlgorithm = DungeonSettings.RoomAlgorithm_e.PackedRooms;
+                cfg.packedRoomTheme = PackedRoomTheme_e.House;
                 cfg.useCellularAutomata = false;
                 cfg.useScatterRooms = false;
                 cfg.usePackedRooms = true;
