@@ -23,6 +23,8 @@ public class MenuManager : MonoBehaviour
     [SerializeField] private string settingsIconSpriteName = "SettingsIcons_A_7";
     [SerializeField] private Vector2 settingsIconButtonSize = new Vector2(64f, 64f);
     [SerializeField] private Vector2 settingsIconInset = new Vector2(20f, 20f);
+    [SerializeField] private Vector2 settingsIconLabelSize = new Vector2(140f, 32f);
+    [SerializeField] private float settingsIconLabelGap = -30f;
     [SerializeField] private bool useNativeButtonSpriteSize = true;
     [SerializeField] private float buttonSpriteSizeScale = 0.667f;
 
@@ -754,6 +756,67 @@ public class MenuManager : MonoBehaviour
         image.color = Color.white;
         btnSettings.targetGraphic = image;
         SetButtonLabel(btnSettings, string.Empty);
+        ApplySettingsIconLabel();
+    }
+
+    void ApplySettingsIconLabel()
+    {
+        if (!btnSettings)
+            return;
+
+        const string labelObjectName = "SettingsIconLabel";
+        RectTransform settingsRect = btnSettings.GetComponent<RectTransform>();
+        if (settingsRect == null)
+            return;
+
+        Transform existing = btnSettings.transform.Find(labelObjectName);
+        GameObject labelObject = existing != null
+            ? existing.gameObject
+            : new GameObject(labelObjectName, typeof(RectTransform), typeof(TMPro.TextMeshProUGUI));
+        if (existing == null)
+            labelObject.transform.SetParent(btnSettings.transform, worldPositionStays: false);
+
+        RectTransform labelRect = labelObject.GetComponent<RectTransform>();
+        labelRect.anchorMin = new Vector2(0.5f, 0f);
+        labelRect.anchorMax = new Vector2(0.5f, 0f);
+        labelRect.pivot = new Vector2(0.5f, 1f);
+        labelRect.anchoredPosition = new Vector2(0f, -settingsIconLabelGap);
+        labelRect.sizeDelta = settingsIconLabelSize;
+
+        TMPro.TextMeshProUGUI label = labelObject.GetComponent<TMPro.TextMeshProUGUI>();
+        label.text = "Settings";
+        label.alignment = TMPro.TextAlignmentOptions.Top;
+        label.raycastTarget = false;
+
+        TMPro.TMP_Text sourceLabel = GetMainMenuButtonLabelSource();
+        if (sourceLabel != null)
+        {
+            label.font = sourceLabel.font;
+            label.fontSharedMaterial = sourceLabel.fontSharedMaterial;
+            label.fontSize = sourceLabel.fontSize;
+            label.color = sourceLabel.color;
+            label.fontStyle = sourceLabel.fontStyle;
+            label.enableAutoSizing = sourceLabel.enableAutoSizing;
+            label.fontSizeMin = sourceLabel.fontSizeMin;
+            label.fontSizeMax = sourceLabel.fontSizeMax;
+        }
+    }
+
+    TMPro.TMP_Text GetMainMenuButtonLabelSource()
+    {
+        Button[] buttons = { btnSimulation, btnContinue, btnSave, btnLoad, btnQuit };
+        for (int i = 0; i < buttons.Length; i++)
+        {
+            Button button = buttons[i];
+            if (!button)
+                continue;
+
+            TMPro.TMP_Text label = button.GetComponentInChildren<TMPro.TMP_Text>(includeInactive: true);
+            if (label != null)
+                return label;
+        }
+
+        return null;
     }
 
     Sprite LoadSpriteByName(string resourcePath, string spriteName)

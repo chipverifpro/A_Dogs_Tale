@@ -17,10 +17,10 @@ public class MenuSettingsDialog : MonoBehaviour
     [SerializeField] private Vector2 tallScrollAnchorMin = new Vector2(0.12f, 0.13f);
     [SerializeField] private Vector2 tallScrollAnchorMax = new Vector2(0.88f, 0.64f);
     [SerializeField] private Vector2 tallThemedDialogSize = new Vector2(597f, 1091f);
-    [SerializeField] private Vector2 closeButtonAnchor = new Vector2(0.865f, 0.82f);
-    [SerializeField] private Vector2 closeButtonSize = new Vector2(110f, 72f);
-    [SerializeField] private Vector2 tallCloseButtonAnchor = new Vector2(0.79f, 0.825f);
-    [SerializeField] private Vector2 tallCloseButtonSize = new Vector2(145f, 105f);
+    [SerializeField] private Vector2 closeButtonAnchor = new Vector2(0.86f, 0.80f);
+    [SerializeField] private Vector2 closeButtonSize = new Vector2(150f, 130f);
+    [SerializeField] private Vector2 tallCloseButtonAnchor = new Vector2(0.79f, 0.805f);
+    [SerializeField] private Vector2 tallCloseButtonSize = new Vector2(190f, 165f);
     [SerializeField] private float mapTypeButtonHeight = 112f;
     [SerializeField] private float graphicsQualityButtonHeight = 112f;
     [SerializeField] private Color textColor = new Color(0.18f, 0.11f, 0.05f, 1f);

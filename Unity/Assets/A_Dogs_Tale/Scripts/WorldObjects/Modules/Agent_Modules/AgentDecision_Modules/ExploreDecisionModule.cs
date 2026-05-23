@@ -282,6 +282,7 @@ end
         private int activeRoomCenterRoomIndex = -1;
         private ExplorePhase phase;
         private bool needsDoorRefresh = true;
+        private bool explorationExhausted;
         private int queuedRoomIndex = -1;
 
         private LuaRuntime? luaRuntime;
@@ -342,6 +343,15 @@ end
                 return;
             }
 
+            if (explorationExhausted)
+            {
+                if (currentCell.room_number == queuedRoomIndex)
+                    return;
+
+                explorationExhausted = false;
+                needsDoorRefresh = true;
+            }
+
             if (needsDoorRefresh)
             {
                 RefreshDoorsForRoom(currentCell.room_number);
@@ -358,6 +368,7 @@ end
                 {
                     worldObject.agentMovementModule.ClearDesiredTarget();
                     worldObject.agentMovementModule.ClearDesiredMove();
+                    MarkExplorationExhausted(currentCell.room_number);
                 }
                 return;
             }
@@ -669,6 +680,7 @@ end
 
                 activeDoor = goal;
                 phase = ExplorePhase.MoveToDoor;
+                explorationExhausted = false;
                 worldObject.agentMovementModule.SetDesiredTargetLocationMap(goal.doorMap, WalkMode.None, requestPathfinding: true);
                 //Debug.Log(
                 //    $"{worldObject.DisplayName} [ExploreDecisionModule] heading to door {goal.key} from room {goal.roomIndex} toward room {goal.neighborRoomIndex}");
@@ -690,10 +702,17 @@ end
             worldObject.agentMovementModule.ClearDesiredMovement();
             MarkDoorExplored(activeDoor);
             phase = ExplorePhase.None;
+            explorationExhausted = false;
             RefreshDoorsForRoom(activeDoor.neighborRoomIndex);
             queuedRoomIndex = activeDoor.neighborRoomIndex;
             needsDoorRefresh = false;
             TryStartRoomCenterVisit(activeDoor.neighborRoomIndex);
+        }
+
+        private void MarkExplorationExhausted(int roomIndex)
+        {
+            queuedRoomIndex = roomIndex;
+            explorationExhausted = true;
         }
 
         private bool HasReachedDoorStart(Cell currentCell, DoorGoal goal)
@@ -892,6 +911,7 @@ end
             queuedDoorKeys.Clear();
             phase = ExplorePhase.None;
             needsDoorRefresh = true;
+            explorationExhausted = false;
             queuedRoomIndex = -1;
             nextLuaExploreTickTime = 0f;
         }
@@ -903,6 +923,7 @@ end
             StopMovementIntent();
             phase = ExplorePhase.None;
             needsDoorRefresh = true;
+            explorationExhausted = false;
             queuedRoomIndex = -1;
             nextLuaExploreTickTime = 0f;
         }
