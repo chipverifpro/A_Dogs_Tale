@@ -57,6 +57,7 @@ public class ScentGUI : MonoBehaviour
     [SerializeField] private Vector2 pulldownTabOffset = new Vector2(0f, 0f);
     [SerializeField] private Vector2 pulldownRetractButtonSize = new Vector2(428f, 98f);
     [SerializeField] private Vector2 pulldownRetractButtonOffset = new Vector2(0f, 0f);
+    [SerializeField] private float pulldownEndRetractButtonWidth = 150f;
     [SerializeField] private float modePanelIconSize = 128f;
     [SerializeField] private float dropdownWidth = 320f;
     [SerializeField] private float dropdownMaxHeight = 420f;
@@ -102,6 +103,8 @@ public class ScentGUI : MonoBehaviour
     private RectTransform pulldownTabRect;
     private Image pulldownTabImage;
     private RectTransform pulldownRetractButtonRect;
+    private RectTransform pulldownLeftRetractButtonRect;
+    private RectTransform pulldownRightRetractButtonRect;
     private RectTransform noseButtonRect;
     private Image noseButtonImage;
     private Image noseIconImage;
@@ -567,6 +570,7 @@ public class ScentGUI : MonoBehaviour
         pulldownFrameImage.raycastTarget = false;
 
         BuildPulldownRetractButton(frameObject.transform);
+        BuildPulldownEndRetractButtons(frameObject.transform);
     }
 
     private void BuildPulldownRetractButton(Transform frameTransform)
@@ -606,6 +610,64 @@ public class ScentGUI : MonoBehaviour
         button.onClick.AddListener(CollapseTopControlsToTab);
 
         ConfigureTooltip(buttonObject, () => "Hide Controls");
+    }
+
+    private void BuildPulldownEndRetractButtons(Transform frameTransform)
+    {
+        pulldownLeftRetractButtonRect = BuildPulldownEndRetractButton(frameTransform, "PulldownLeftRetractButton", leftSide: true);
+        pulldownRightRetractButtonRect = BuildPulldownEndRetractButton(frameTransform, "PulldownRightRetractButton", leftSide: false);
+        ApplyPulldownEndRetractButtonRects();
+    }
+
+    private RectTransform BuildPulldownEndRetractButton(Transform frameTransform, string objectName, bool leftSide)
+    {
+        Transform existingButton = frameTransform.Find(objectName);
+        GameObject buttonObject;
+        if (existingButton == null)
+        {
+            buttonObject = new GameObject(
+                objectName,
+                typeof(RectTransform),
+                typeof(Image),
+                typeof(Button));
+            buttonObject.transform.SetParent(frameTransform, false);
+        }
+        else
+        {
+            buttonObject = existingButton.gameObject;
+        }
+
+        RectTransform rect = GetOrAddComponent<RectTransform>(buttonObject);
+        rect.anchorMin = new Vector2(leftSide ? 0f : 1f, 0.5f);
+        rect.anchorMax = new Vector2(leftSide ? 0f : 1f, 0.5f);
+        rect.pivot = new Vector2(leftSide ? 0f : 1f, 0.5f);
+        rect.anchoredPosition = Vector2.zero;
+
+        Image buttonImage = GetOrAddComponent<Image>(buttonObject);
+        buttonImage.color = new Color(1f, 1f, 1f, 0f);
+        buttonImage.raycastTarget = true;
+
+        Button button = GetOrAddComponent<Button>(buttonObject);
+        button.targetGraphic = buttonImage;
+        button.onClick.RemoveListener(CollapseTopControlsToTab);
+        button.onClick.RemoveListener(AudioPlayer.PlayUiButtonClick);
+        button.onClick.AddListener(AudioPlayer.PlayUiButtonClick);
+        button.onClick.AddListener(CollapseTopControlsToTab);
+
+        ConfigureTooltip(buttonObject, () => "Hide Controls");
+        return rect;
+    }
+
+    private void ApplyPulldownEndRetractButtonRects()
+    {
+        Vector2 frameSize = GetPulldownFrameSizeForCurrentButtonSize();
+        Vector2 size = new Vector2(Mathf.Max(1f, pulldownEndRetractButtonWidth), frameSize.y);
+
+        if (pulldownLeftRetractButtonRect != null)
+            pulldownLeftRetractButtonRect.sizeDelta = size;
+
+        if (pulldownRightRetractButtonRect != null)
+            pulldownRightRetractButtonRect.sizeDelta = size;
     }
 
     private void BuildPulldownTab(Transform canvasTransform)
@@ -1584,6 +1646,8 @@ public class ScentGUI : MonoBehaviour
 
         if (pulldownFrameImage != null)
             pulldownFrameImage.sprite = GetPulldownFrameSprite();
+
+        ApplyPulldownEndRetractButtonRects();
 
         ApplyTopControlButtonSize(noseButtonRect);
         ApplyTopControlButtonSize(modeButtonRect);
