@@ -152,7 +152,7 @@ public class SceneFader : MonoBehaviour
     [SerializeField] private GameObject buildingMessage;
     [SerializeField] private TMPro.TMP_Text buildingMessageText;
     [SerializeField] private string splashResourceFolder = "Images";
-    [SerializeField] private int splashCount = 19;
+    [SerializeField] private int splashCount = 40;
 
     // Call this right before you display the splash.
     private void SetRandomSplashSprite()

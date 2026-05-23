@@ -83416,7 +83416,7 @@ MonoBehaviour:
   buildingMessage: {fileID: 0}
   buildingMessageText: {fileID: 0}
   splashResourceFolder: Images
-  splashCount: 26
+  splashCount: 40
   loadingMessages:
   - Building the world...
   - Digging up a map...
