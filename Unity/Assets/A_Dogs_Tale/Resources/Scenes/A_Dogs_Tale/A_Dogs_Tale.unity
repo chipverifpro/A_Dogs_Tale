@@ -4675,6 +4675,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8702612660371804369, guid: f681e65d2c53a4c73b3188b15f0dc38a,
         type: 3}
+      propertyPath: rotationSpeedDegreesPerSecond
+      value: 720
+      objectReference: {fileID: 0}
+    - target: {fileID: 8702612660371804369, guid: f681e65d2c53a4c73b3188b15f0dc38a,
+        type: 3}
       propertyPath: maxSpeedsByMode.Array.data[1].maxSpeed
       value: 1
       objectReference: {fileID: 0}
@@ -11460,6 +11465,11 @@ PrefabInstance:
         type: 3}
       propertyPath: currentWalkMode
       value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 2790383282455412347, guid: 11adcadc90efe42fc9167d6888414a7d,
+        type: 3}
+      propertyPath: rotationSpeedDegreesPerSecond
+      value: 720
       objectReference: {fileID: 0}
     - target: {fileID: 2790383282455412347, guid: 11adcadc90efe42fc9167d6888414a7d,
         type: 3}
@@ -52605,6 +52615,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1179662329684058446, guid: 0cd47bbe10129457c8fb291022f561d6,
         type: 3}
+      propertyPath: rotationSpeedDegreesPerSecond
+      value: 720
+      objectReference: {fileID: 0}
+    - target: {fileID: 1179662329684058446, guid: 0cd47bbe10129457c8fb291022f561d6,
+        type: 3}
       propertyPath: maxSpeedsByMode.Array.data[1].maxSpeed
       value: 1
       objectReference: {fileID: 0}
@@ -66298,6 +66313,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1748949407541359514, guid: 81f57b71fcca04137be31cab165ad147,
         type: 3}
+      propertyPath: rotationSpeedDegreesPerSecond
+      value: 720
+      objectReference: {fileID: 0}
+    - target: {fileID: 1748949407541359514, guid: 81f57b71fcca04137be31cab165ad147,
+        type: 3}
       propertyPath: maxSpeedsByMode.Array.data[1].maxSpeed
       value: 1
       objectReference: {fileID: 0}
@@ -67193,6 +67213,11 @@ PrefabInstance:
         type: 3}
       propertyPath: currentWalkMode
       value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 9118493201690358483, guid: 6faf501bd71834b7d83fc2128ab7fa1e,
+        type: 3}
+      propertyPath: rotationSpeedDegreesPerSecond
+      value: 720
       objectReference: {fileID: 0}
     - target: {fileID: 9118493201690358483, guid: 6faf501bd71834b7d83fc2128ab7fa1e,
         type: 3}
@@ -69656,7 +69681,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b113f5611dac47a3ac3d18b2345d3ff1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.HerdDecisionModule
-  steeringRecomputeIntervalSeconds: 0.1
+  steeringRecomputeIntervalSeconds: 0.35
   maxMoveDistancePerTick: 1
   enableDebugLogging: 0
   debugLogEveryFrames: 60
@@ -73299,15 +73324,15 @@ MonoBehaviour:
   additionalDangerousAgents:
   - {fileID: 6544990386685219154}
   neighborRadiusMeters: 4.5
-  separationRadiusMeters: 0.85
+  separationRadiusMeters: 1.35
   gatherToLeaderDistanceMeters: 6
   agentAwarenessRadiusMeters: 7
   safeAgentComfortRadiusMeters: 3
-  preferredMemberSpacingMeters: 1.4
+  preferredMemberSpacingMeters: 2
   dangerPathStepMeters: 2.5
-  cohesionWeight: 1.15
+  cohesionWeight: 0.85
   alignmentWeight: 0.85
-  separationWeight: 1.75
+  separationWeight: 2.4
   dangerSeparationMultiplier: 3
   dangerCohesionWeight: 0.65
   dangerAvoidanceWeight: 3
@@ -73661,7 +73686,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b113f5611dac47a3ac3d18b2345d3ff1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.HerdDecisionModule
-  steeringRecomputeIntervalSeconds: 0.1
+  steeringRecomputeIntervalSeconds: 0.35
   maxMoveDistancePerTick: 1
   enableDebugLogging: 0
   debugLogEveryFrames: 60
@@ -77517,6 +77542,11 @@ PrefabInstance:
         type: 3}
       propertyPath: currentWalkMode
       value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 4326395508093983605, guid: e1043d3c6201f4a6291e82963a3f5eb1,
+        type: 3}
+      propertyPath: rotationSpeedDegreesPerSecond
+      value: 720
       objectReference: {fileID: 0}
     - target: {fileID: 4326395508093983605, guid: e1043d3c6201f4a6291e82963a3f5eb1,
         type: 3}
@@ -99042,6 +99072,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -1850936565826693851, guid: 035b558c085754103a015515362d1d89,
         type: 3}
+      propertyPath: rotationSpeedDegreesPerSecond
+      value: 720
+      objectReference: {fileID: 0}
+    - target: {fileID: -1850936565826693851, guid: 035b558c085754103a015515362d1d89,
+        type: 3}
       propertyPath: maxSpeedsByMode.Array.data[1].maxSpeed
       value: 1
       objectReference: {fileID: 0}
@@ -101586,6 +101621,11 @@ PrefabInstance:
         type: 3}
       propertyPath: currentWalkMode
       value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 9128679039778162789, guid: 6803b47ee11834655bd0edbb252b827f,
+        type: 3}
+      propertyPath: rotationSpeedDegreesPerSecond
+      value: 720
       objectReference: {fileID: 0}
     - target: {fileID: 9128679039778162789, guid: 6803b47ee11834655bd0edbb252b827f,
         type: 3}
@@ -111077,6 +111117,7 @@ MonoBehaviour:
   pulldownTabOffset: {x: 0, y: 0}
   pulldownRetractButtonSize: {x: 428, y: 98}
   pulldownRetractButtonOffset: {x: 0, y: 0}
+  pulldownEndRetractButtonWidth: 150
   modePanelIconSize: 128
   dropdownWidth: 320
   dropdownMaxHeight: 420
@@ -137461,7 +137502,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b113f5611dac47a3ac3d18b2345d3ff1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.HerdDecisionModule
-  steeringRecomputeIntervalSeconds: 0.1
+  steeringRecomputeIntervalSeconds: 0.35
   maxMoveDistancePerTick: 1
   enableDebugLogging: 0
   debugLogEveryFrames: 60
@@ -144424,7 +144465,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b113f5611dac47a3ac3d18b2345d3ff1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.HerdDecisionModule
-  steeringRecomputeIntervalSeconds: 0.1
+  steeringRecomputeIntervalSeconds: 0.35
   maxMoveDistancePerTick: 1
   enableDebugLogging: 0
   debugLogEveryFrames: 60
@@ -144974,6 +145015,11 @@ PrefabInstance:
         type: 3}
       propertyPath: currentWalkMode
       value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: -3485612484355426584, guid: 8a714564d12c345fd845d4fca8ad7f71,
+        type: 3}
+      propertyPath: rotationSpeedDegreesPerSecond
+      value: 720
       objectReference: {fileID: 0}
     - target: {fileID: -3485612484355426584, guid: 8a714564d12c345fd845d4fca8ad7f71,
         type: 3}
@@ -149927,7 +149973,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b113f5611dac47a3ac3d18b2345d3ff1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.HerdDecisionModule
-  steeringRecomputeIntervalSeconds: 0.1
+  steeringRecomputeIntervalSeconds: 0.35
   maxMoveDistancePerTick: 1
   enableDebugLogging: 0
   debugLogEveryFrames: 60
@@ -154123,7 +154169,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b113f5611dac47a3ac3d18b2345d3ff1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.HerdDecisionModule
-  steeringRecomputeIntervalSeconds: 0.1
+  steeringRecomputeIntervalSeconds: 0.35
   maxMoveDistancePerTick: 1
   enableDebugLogging: 0
   debugLogEveryFrames: 60
@@ -156069,7 +156115,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b113f5611dac47a3ac3d18b2345d3ff1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.HerdDecisionModule
-  steeringRecomputeIntervalSeconds: 0.1
+  steeringRecomputeIntervalSeconds: 0.35
   maxMoveDistancePerTick: 1
   enableDebugLogging: 0
   debugLogEveryFrames: 60
@@ -160294,6 +160340,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1164153767007980331, guid: da6c0e0dd7c6e441dbf48fb0c07f93d8,
         type: 3}
+      propertyPath: rotationSpeedDegreesPerSecond
+      value: 720
+      objectReference: {fileID: 0}
+    - target: {fileID: 1164153767007980331, guid: da6c0e0dd7c6e441dbf48fb0c07f93d8,
+        type: 3}
       propertyPath: maxSpeedsByMode.Array.data[1].maxSpeed
       value: 1
       objectReference: {fileID: 0}
@@ -161798,6 +161849,11 @@ PrefabInstance:
         type: 3}
       propertyPath: currentWalkMode
       value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 4275949689030419490, guid: a50b2d3904e734043a0a9acc49067be3,
+        type: 3}
+      propertyPath: rotationSpeedDegreesPerSecond
+      value: 720
       objectReference: {fileID: 0}
     - target: {fileID: 4275949689030419490, guid: a50b2d3904e734043a0a9acc49067be3,
         type: 3}
@@ -187925,7 +187981,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b113f5611dac47a3ac3d18b2345d3ff1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.HerdDecisionModule
-  steeringRecomputeIntervalSeconds: 0.1
+  steeringRecomputeIntervalSeconds: 0.35
   maxMoveDistancePerTick: 1
   enableDebugLogging: 0
   debugLogEveryFrames: 60
@@ -195158,6 +195214,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4760595266589760189, guid: a71054c06879b433abb2967215d27e91,
         type: 3}
+      propertyPath: rotationSpeedDegreesPerSecond
+      value: 720
+      objectReference: {fileID: 0}
+    - target: {fileID: 4760595266589760189, guid: a71054c06879b433abb2967215d27e91,
+        type: 3}
       propertyPath: maxSpeedsByMode.Array.data[1].maxSpeed
       value: 1
       objectReference: {fileID: 0}
@@ -197337,7 +197398,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b113f5611dac47a3ac3d18b2345d3ff1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.HerdDecisionModule
-  steeringRecomputeIntervalSeconds: 0.1
+  steeringRecomputeIntervalSeconds: 0.35
   maxMoveDistancePerTick: 1
   enableDebugLogging: 0
   debugLogEveryFrames: 60
@@ -208128,7 +208189,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b113f5611dac47a3ac3d18b2345d3ff1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.HerdDecisionModule
-  steeringRecomputeIntervalSeconds: 0.1
+  steeringRecomputeIntervalSeconds: 0.35
   maxMoveDistancePerTick: 1
   enableDebugLogging: 0
   debugLogEveryFrames: 60
@@ -212642,7 +212703,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b113f5611dac47a3ac3d18b2345d3ff1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.HerdDecisionModule
-  steeringRecomputeIntervalSeconds: 0.1
+  steeringRecomputeIntervalSeconds: 0.35
   maxMoveDistancePerTick: 1
   enableDebugLogging: 0
   debugLogEveryFrames: 60

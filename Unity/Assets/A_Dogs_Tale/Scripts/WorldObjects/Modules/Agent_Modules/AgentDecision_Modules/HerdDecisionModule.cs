@@ -10,7 +10,7 @@ namespace DogGame.Modules
         public override AgentDecisionType DecisionType => AgentDecisionType.Herd;
 
         [Header("Herd Steering")]
-        [SerializeField, Min(0.02f)] private float steeringRecomputeIntervalSeconds = 0.10f;
+        [SerializeField, Min(0.02f)] private float steeringRecomputeIntervalSeconds = 0.35f;
         [SerializeField, Min(0.05f)] private float maxMoveDistancePerTick = 1.0f;
         [SerializeField] private bool enableDebugLogging = false;
         [SerializeField, Min(1)] private int debugLogEveryFrames = 60;
@@ -49,7 +49,7 @@ namespace DogGame.Modules
             if (steeringCooldownSeconds <= 0f)
             {
                 hasCachedSteering = herd.TryComputeSteering(worldObject, out cachedSteering);
-                steeringCooldownSeconds = steeringRecomputeIntervalSeconds;
+                steeringCooldownSeconds = GetNextSteeringRecomputeDelay();
             }
 
             if (!hasCachedSteering)
@@ -117,6 +117,12 @@ namespace DogGame.Modules
             return worldObject != null && worldObject.packMemberModule != null
                 ? worldObject.packMemberModule.currentPack as Herd
                 : null;
+        }
+
+        private float GetNextSteeringRecomputeDelay()
+        {
+            float interval = Mathf.Max(0.02f, steeringRecomputeIntervalSeconds);
+            return interval * Random.Range(0.8f, 1.2f);
         }
 
         private void LogDebug(Herd herd, string message, bool force)
