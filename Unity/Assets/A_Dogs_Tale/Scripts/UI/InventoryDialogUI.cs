@@ -696,6 +696,7 @@ public sealed class InventoryDialogUI : MonoBehaviour
 
         Button button = buttonObject.AddComponent<Button>();
         button.targetGraphic = image;
+        button.onClick.AddListener(AudioPlayer.PlayUiButtonClick);
         button.onClick.AddListener(clickHandler);
 
         if (sprite == null)
@@ -720,6 +721,7 @@ public sealed class InventoryDialogUI : MonoBehaviour
 
         Button button = buttonObject.AddComponent<Button>();
         button.targetGraphic = image;
+        button.onClick.AddListener(AudioPlayer.PlayUiButtonClick);
         button.onClick.AddListener(clickHandler);
 
         if (!string.IsNullOrWhiteSpace(tooltipText))

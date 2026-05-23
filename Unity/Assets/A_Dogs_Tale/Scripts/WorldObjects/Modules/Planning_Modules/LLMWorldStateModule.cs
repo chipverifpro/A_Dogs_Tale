@@ -359,6 +359,13 @@ namespace DogGame.LLM.Agent
         public List<FoundDoor> GetDoorsInRoom(Vector3 mapPos, Room room, RectInt radiusBounds, int maxDoors)
         {
             List<FoundDoor> foundDoors = new();
+            GetDoorsInRoom(mapPos, room, radiusBounds, maxDoors, foundDoors);
+            return foundDoors;
+        }
+
+        public void GetDoorsInRoom(Vector3 mapPos, Room room, RectInt radiusBounds, int maxDoors, List<FoundDoor> foundDoors)
+        {
+            foundDoors.Clear();
 
             foreach (Cell c in room.cells)
             {
@@ -390,8 +397,6 @@ namespace DogGame.LLM.Agent
 
             if (maxDoors > 0 && foundDoors.Count > maxDoors)
                 foundDoors.RemoveRange(maxDoors, foundDoors.Count - maxDoors);
-
-            return foundDoors;
         }
 
         public string BuildDoorsList(Vector3 mapPos, Room room, RectInt radiusBounds, int maxDoors)

@@ -141,8 +141,6 @@ function tick()
         return
     end
 
-    log("tick room=" .. tostring(Room.Id) .. " doorCount=" .. tostring(Room.DoorCount) .. " pending=" .. tostring(state.pendingAction))
-
     if VisitRoomCenterBeforeBacktracking and not state.centeredRooms[Room.Id] then
         state.pendingAction = "center"
         log("First visit to room " .. tostring(Room.Id) .. "; issuing GoToRoomCenter()")

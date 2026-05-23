@@ -155,6 +155,7 @@ namespace DogGame.UI.InteractionWheel
 
         private void HandleClicked()
         {
+            AudioPlayer.PlayUiButtonClick();
             onClicked?.Invoke();
         }
 

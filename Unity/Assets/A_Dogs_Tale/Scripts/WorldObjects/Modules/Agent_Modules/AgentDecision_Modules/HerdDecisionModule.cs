@@ -66,11 +66,14 @@ namespace DogGame.Modules
                     cachedSteering.walkMode,
                     requestPathfinding: true,
                     speedFactor: cachedSteering.speedFactor);
-                LogDebug(
-                    herd,
-                    $"Applied gather path target={cachedSteering.targetMap} speed={cachedSteering.speedFactor:0.00} " +
-                    $"moveInProgress={worldObject.agentMovementModule.MoveToDestinationInProgress}",
-                    force: false);
+                if (ShouldEmitDebugLog(herd))
+                {
+                    LogDebug(
+                        herd,
+                        $"Applied gather path target={cachedSteering.targetMap} speed={cachedSteering.speedFactor:0.00} " +
+                        $"moveInProgress={worldObject.agentMovementModule.MoveToDestinationInProgress}",
+                        force: false);
+                }
             }
             else
             {
@@ -80,11 +83,14 @@ namespace DogGame.Modules
                     maxDistance: maxMoveDistancePerTick,
                     speedFactor: cachedSteering.speedFactor,
                     changeWalkMode: cachedSteering.walkMode);
-                LogDebug(
-                    herd,
-                    $"Applied boids move dir={cachedSteering.directionMap} speed={cachedSteering.speedFactor:0.00} " +
-                    $"danger={cachedSteering.dangerNearby}",
-                    force: false);
+                if (ShouldEmitDebugLog(herd))
+                {
+                    LogDebug(
+                        herd,
+                        $"Applied boids move dir={cachedSteering.directionMap} speed={cachedSteering.speedFactor:0.00} " +
+                        $"danger={cachedSteering.dangerNearby}",
+                        force: false);
+                }
             }
 
         }

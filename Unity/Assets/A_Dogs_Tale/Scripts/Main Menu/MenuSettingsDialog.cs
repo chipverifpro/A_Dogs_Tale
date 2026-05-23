@@ -40,12 +40,21 @@ public class MenuSettingsDialog : MonoBehaviour
     private Toggle chatGptToggle;
     private Toggle geminiToggle;
     private Toggle ollamaToggle;
+    private Toggle musicToggle;
+    private Toggle sfxToggle;
+    private Toggle uiToggle;
     private Toggle touchscreenJoystickToggle;
     private Toggle androidSafeAreaToggle;
     private Toggle androidFullscreenToggle;
     private Slider scentStepSlider;
+    private Slider musicVolumeSlider;
+    private Slider sfxVolumeSlider;
+    private Slider uiVolumeSlider;
     private Slider buttonSizeSlider;
     private Text scentStepValueLabel;
+    private Text musicVolumeValueLabel;
+    private Text sfxVolumeValueLabel;
+    private Text uiVolumeValueLabel;
     private Text buttonSizeValueLabel;
     private Image buttonSizeSampleIconImage;
     private RectTransform buttonSizeSampleButtonRect;
@@ -223,6 +232,9 @@ public class MenuSettingsDialog : MonoBehaviour
         CreateSectionHeader(content, "GRAPHICS LEVEL");
         CreateGraphicsQualityRow(content);
 
+        CreateSectionHeader(content, "SOUND");
+        CreateSoundSettingsRows(content);
+
         CreateSectionHeader(content, "CONTROLS");
         GameObject controlsRow = CreateRow(content, "ControlsRow", 42f);
         touchscreenJoystickToggle = CreateToggle(controlsRow.transform, "Touchscreen joystick visible", "TouchscreenJoystickToggle");
@@ -243,8 +255,14 @@ public class MenuSettingsDialog : MonoBehaviour
         geminiToggle.onValueChanged.AddListener(_ => SaveFromControls());
         ollamaToggle.onValueChanged.AddListener(_ => SaveFromControls());
         touchscreenJoystickToggle.onValueChanged.AddListener(_ => SaveFromControls());
+        musicToggle.onValueChanged.AddListener(_ => SaveFromControls());
+        sfxToggle.onValueChanged.AddListener(_ => SaveFromControls());
+        uiToggle.onValueChanged.AddListener(_ => SaveFromControls());
         AddAndroidDisplayModeListeners();
         scentStepSlider.onValueChanged.AddListener(OnScentStepChanged);
+        musicVolumeSlider.onValueChanged.AddListener(OnMusicVolumeChanged);
+        sfxVolumeSlider.onValueChanged.AddListener(OnSfxVolumeChanged);
+        uiVolumeSlider.onValueChanged.AddListener(OnUiVolumeChanged);
         buttonSizeSlider.onValueChanged.AddListener(OnButtonSizeChanged);
     }
 
@@ -462,6 +480,87 @@ public class MenuSettingsDialog : MonoBehaviour
         valueLayout.minWidth = 48f;
     }
 
+    private void CreateSoundSettingsRows(Transform parent)
+    {
+        GameObject enableRow = CreateRow(parent, "SoundEnableRow", 42f);
+        musicToggle = CreateToggle(enableRow.transform, "Music Enable", "MusicEnableToggle");
+        sfxToggle = CreateToggle(enableRow.transform, "SFX Enable", "SfxEnableToggle");
+        uiToggle = CreateToggle(enableRow.transform, "UI Enable", "UiEnableToggle");
+
+        CreateMusicVolumeRow(parent);
+        CreateSfxVolumeRow(parent);
+        CreateUiVolumeRow(parent);
+
+        GameObject testRow = CreateRow(parent, "SoundTestRow", 42f);
+        Button testButton = CreateButton(testRow.transform, "Test Bark", "TestBarkButton");
+        testButton.onClick.AddListener(PlayTestBark);
+    }
+
+    private void CreateMusicVolumeRow(Transform parent)
+    {
+        musicVolumeSlider = CreateVolumeSliderRow(
+            parent,
+            "MusicVolumeRow",
+            "Music Volume",
+            "MusicVolumeSlider",
+            "MusicVolumeValueLabel",
+            out musicVolumeValueLabel);
+    }
+
+    private void CreateSfxVolumeRow(Transform parent)
+    {
+        sfxVolumeSlider = CreateVolumeSliderRow(
+            parent,
+            "SfxVolumeRow",
+            "SFX Volume",
+            "SfxVolumeSlider",
+            "SfxVolumeValueLabel",
+            out sfxVolumeValueLabel);
+    }
+
+    private void CreateUiVolumeRow(Transform parent)
+    {
+        uiVolumeSlider = CreateVolumeSliderRow(
+            parent,
+            "UiVolumeRow",
+            "UI Volume",
+            "UiVolumeSlider",
+            "UiVolumeValueLabel",
+            out uiVolumeValueLabel);
+    }
+
+    private Slider CreateVolumeSliderRow(Transform parent, string rowName, string labelText, string sliderName, string valueLabelName, out Text valueLabel)
+    {
+        GameObject row = CreateRow(parent, rowName, 42f);
+
+        Text label = CreateLabel(row.transform, labelText, 17, FontStyle.Bold, TextAnchor.MiddleLeft, 100f);
+        LayoutElement labelLayout = label.gameObject.GetComponent<LayoutElement>();
+        labelLayout.preferredWidth = 120f;
+        labelLayout.minWidth = 100f;
+
+        GameObject sliderObject = DefaultControls.CreateSlider(new DefaultControls.Resources());
+        sliderObject.name = sliderName;
+        sliderObject.transform.SetParent(row.transform, false);
+        SetLayerRecursive(sliderObject, row.layer);
+
+        Slider slider = sliderObject.GetComponent<Slider>();
+        slider.minValue = 0f;
+        slider.maxValue = 1f;
+        slider.wholeNumbers = false;
+
+        LayoutElement sliderLayout = sliderObject.AddComponent<LayoutElement>();
+        sliderLayout.flexibleWidth = 1f;
+        sliderLayout.minWidth = 140f;
+        sliderLayout.preferredHeight = 20f;
+
+        valueLabel = CreateLabel(row.transform, "100%", 16, FontStyle.Bold, TextAnchor.MiddleRight, 54f, valueLabelName);
+        LayoutElement valueLayout = valueLabel.gameObject.GetComponent<LayoutElement>();
+        valueLayout.preferredWidth = 60f;
+        valueLayout.minWidth = 54f;
+
+        return slider;
+    }
+
     private void CreateButtonSizeRow(Transform parent)
     {
         GameObject row = CreateRow(parent, "ButtonSizeRow", PersistentGameSettings.MaxButtonSize + 16f);
@@ -538,6 +637,7 @@ public class MenuSettingsDialog : MonoBehaviour
 
         buttonSizeSampleButtonRect = buttonObject.GetComponent<RectTransform>();
         buttonSizeSampleButtonLayout = buttonObject.AddComponent<LayoutElement>();
+        button.onClick.AddListener(AudioPlayer.PlayUiButtonClick);
         return button;
     }
 
@@ -598,6 +698,7 @@ public class MenuSettingsDialog : MonoBehaviour
             PersistentGameSettings.MapType mapType = (PersistentGameSettings.MapType)i;
             Button button = CreateMapTypeButton(row.transform, mapType);
             mapTypeButtonImages[i] = button.targetGraphic as Image;
+            button.onClick.AddListener(AudioPlayer.PlayUiButtonClick);
             button.onClick.AddListener(() => SelectMapType((PersistentGameSettings.MapType)capturedIndex, save: true));
         }
 
@@ -620,6 +721,7 @@ public class MenuSettingsDialog : MonoBehaviour
             int graphicsLevel = GraphicsQualityLevels[i];
             Button button = CreateGraphicsQualityButton(row.transform, graphicsLevel, capturedIndex);
             graphicsQualityButtonImages[i] = button.targetGraphic as Image;
+            button.onClick.AddListener(AudioPlayer.PlayUiButtonClick);
             button.onClick.AddListener(() => SelectGraphicsLevel(graphicsLevel, save: true));
         }
 
@@ -896,7 +998,9 @@ public class MenuSettingsDialog : MonoBehaviour
         layout.flexibleWidth = 1f;
         layout.minWidth = 140f;
         layout.preferredHeight = 38f;
-        return buttonObject.GetComponent<Button>();
+        Button button = buttonObject.GetComponent<Button>();
+        button.onClick.AddListener(AudioPlayer.PlayUiButtonClick);
+        return button;
     }
 
     private void CreateCloseButtonOverlay(Transform root, Canvas canvas)
@@ -914,6 +1018,8 @@ public class MenuSettingsDialog : MonoBehaviour
         }
 
         closeButton.onClick.RemoveListener(Close);
+        closeButton.onClick.RemoveListener(AudioPlayer.PlayUiButtonClick);
+        closeButton.onClick.AddListener(AudioPlayer.PlayUiButtonClick);
         closeButton.onClick.AddListener(Close);
         closeButton.interactable = true;
         closeButton.transition = Selectable.Transition.None;
@@ -1024,6 +1130,8 @@ public class MenuSettingsDialog : MonoBehaviour
         CreateScentSliderRow(panel.transform);
         CreateSectionHeader(panel.transform, "Graphics Level");
         CreateGraphicsQualityRow(panel.transform);
+        CreateSectionHeader(panel.transform, "Sound");
+        CreateSoundSettingsRows(panel.transform);
         CreateSectionHeader(panel.transform, "Controls");
         touchscreenJoystickToggle = CreateToggle(panel.transform, "Touchscreen joystick visible", "TouchscreenJoystickToggle");
         CreateAndroidDisplayModeRow(panel.transform);
@@ -1038,8 +1146,14 @@ public class MenuSettingsDialog : MonoBehaviour
         geminiToggle.onValueChanged.AddListener(_ => SaveFromControls());
         ollamaToggle.onValueChanged.AddListener(_ => SaveFromControls());
         touchscreenJoystickToggle.onValueChanged.AddListener(_ => SaveFromControls());
+        musicToggle.onValueChanged.AddListener(_ => SaveFromControls());
+        sfxToggle.onValueChanged.AddListener(_ => SaveFromControls());
+        uiToggle.onValueChanged.AddListener(_ => SaveFromControls());
         AddAndroidDisplayModeListeners();
         scentStepSlider.onValueChanged.AddListener(OnScentStepChanged);
+        musicVolumeSlider.onValueChanged.AddListener(OnMusicVolumeChanged);
+        sfxVolumeSlider.onValueChanged.AddListener(OnSfxVolumeChanged);
+        uiVolumeSlider.onValueChanged.AddListener(OnUiVolumeChanged);
         buttonSizeSlider.onValueChanged.AddListener(OnButtonSizeChanged);
 
         dialogRoot.SetActive(false);
@@ -1100,6 +1214,45 @@ public class MenuSettingsDialog : MonoBehaviour
         SaveFromControls();
     }
 
+    private void OnMusicVolumeChanged(float value)
+    {
+        if (musicVolumeSlider == null)
+            return;
+
+        float snappedValue = SnapVolume(value);
+        if (!Mathf.Approximately(snappedValue, musicVolumeSlider.value))
+            musicVolumeSlider.SetValueWithoutNotify(snappedValue);
+
+        UpdateMusicVolumeLabel(snappedValue);
+        SaveFromControls();
+    }
+
+    private void OnSfxVolumeChanged(float value)
+    {
+        if (sfxVolumeSlider == null)
+            return;
+
+        float snappedValue = SnapVolume(value);
+        if (!Mathf.Approximately(snappedValue, sfxVolumeSlider.value))
+            sfxVolumeSlider.SetValueWithoutNotify(snappedValue);
+
+        UpdateSfxVolumeLabel(snappedValue);
+        SaveFromControls();
+    }
+
+    private void OnUiVolumeChanged(float value)
+    {
+        if (uiVolumeSlider == null)
+            return;
+
+        float snappedValue = SnapVolume(value);
+        if (!Mathf.Approximately(snappedValue, uiVolumeSlider.value))
+            uiVolumeSlider.SetValueWithoutNotify(snappedValue);
+
+        UpdateUiVolumeLabel(snappedValue);
+        SaveFromControls();
+    }
+
     private void OnButtonSizeChanged(float value)
     {
         if (buttonSizeSlider == null)
@@ -1122,6 +1275,9 @@ public class MenuSettingsDialog : MonoBehaviour
         chatGptToggle?.SetIsOnWithoutNotify(settings.chatGptEnabled);
         geminiToggle?.SetIsOnWithoutNotify(settings.geminiEnabled);
         ollamaToggle?.SetIsOnWithoutNotify(settings.ollamaEnabled);
+        musicToggle?.SetIsOnWithoutNotify(settings.musicEnabled);
+        sfxToggle?.SetIsOnWithoutNotify(settings.sfxEnabled);
+        uiToggle?.SetIsOnWithoutNotify(settings.uiEnabled);
         touchscreenJoystickToggle?.SetIsOnWithoutNotify(settings.touchscreenJoystickVisible);
         SetAndroidDisplayMode(settings.androidFullscreenEnabled, save: false);
 
@@ -1129,6 +1285,21 @@ public class MenuSettingsDialog : MonoBehaviour
         if (scentStepSlider != null)
             scentStepSlider.SetValueWithoutNotify(snappedValue);
         UpdateScentStepLabel(snappedValue);
+
+        float musicVolume = SnapVolume(settings.musicVolume);
+        if (musicVolumeSlider != null)
+            musicVolumeSlider.SetValueWithoutNotify(musicVolume);
+        UpdateMusicVolumeLabel(musicVolume);
+
+        float sfxVolume = SnapVolume(settings.sfxVolume);
+        if (sfxVolumeSlider != null)
+            sfxVolumeSlider.SetValueWithoutNotify(sfxVolume);
+        UpdateSfxVolumeLabel(sfxVolume);
+
+        float uiVolume = SnapVolume(settings.uiVolume);
+        if (uiVolumeSlider != null)
+            uiVolumeSlider.SetValueWithoutNotify(uiVolume);
+        UpdateUiVolumeLabel(uiVolume);
 
         float buttonSize = PersistentGameSettings.SnapButtonSize(settings.buttonSize);
         if (buttonSizeSlider != null)
@@ -1147,6 +1318,12 @@ public class MenuSettingsDialog : MonoBehaviour
             chatGptEnabled = chatGptToggle != null ? chatGptToggle.isOn : current.chatGptEnabled,
             geminiEnabled = geminiToggle != null ? geminiToggle.isOn : current.geminiEnabled,
             ollamaEnabled = ollamaToggle != null ? ollamaToggle.isOn : current.ollamaEnabled,
+            musicEnabled = musicToggle != null ? musicToggle.isOn : current.musicEnabled,
+            musicVolume = SnapVolume(musicVolumeSlider != null ? musicVolumeSlider.value : current.musicVolume),
+            sfxEnabled = sfxToggle != null ? sfxToggle.isOn : current.sfxEnabled,
+            sfxVolume = SnapVolume(sfxVolumeSlider != null ? sfxVolumeSlider.value : current.sfxVolume),
+            uiEnabled = uiToggle != null ? uiToggle.isOn : current.uiEnabled,
+            uiVolume = SnapVolume(uiVolumeSlider != null ? uiVolumeSlider.value : current.uiVolume),
             touchscreenJoystickVisible = touchscreenJoystickToggle != null ? touchscreenJoystickToggle.isOn : current.touchscreenJoystickVisible,
             graphicsLevel = selectedGraphicsLevel,
             scentSimulationTimeStep = SnapScentStep(scentStepSlider != null ? scentStepSlider.value : current.scentSimulationTimeStep),
@@ -1161,9 +1338,44 @@ public class MenuSettingsDialog : MonoBehaviour
             scentStepValueLabel.text = $"{SnapScentStep(value):0.0}s";
     }
 
+    private void UpdateMusicVolumeLabel(float value)
+    {
+        if (musicVolumeValueLabel != null)
+            musicVolumeValueLabel.text = $"{Mathf.RoundToInt(SnapVolume(value) * 100f)}%";
+    }
+
+    private void UpdateSfxVolumeLabel(float value)
+    {
+        if (sfxVolumeValueLabel != null)
+            sfxVolumeValueLabel.text = $"{Mathf.RoundToInt(SnapVolume(value) * 100f)}%";
+    }
+
+    private void UpdateUiVolumeLabel(float value)
+    {
+        if (uiVolumeValueLabel != null)
+            uiVolumeValueLabel.text = $"{Mathf.RoundToInt(SnapVolume(value) * 100f)}%";
+    }
+
     private static float SnapScentStep(float value)
     {
         return Mathf.Clamp(Mathf.Round(value * 10f) / 10f, 0.1f, 1.0f);
+    }
+
+    private static float SnapVolume(float value)
+    {
+        return Mathf.Clamp01(Mathf.Round(value * 100f) / 100f);
+    }
+
+    private void PlayTestBark()
+    {
+        SaveFromControls();
+        AudioPlayer player = AudioPlayer.Instance;
+        if (player == null && menuManager != null)
+            player = menuManager.audioPlayer;
+        if (player == null && Dir.Instance != null)
+            player = Dir.Instance.audioPlayer;
+
+        player?.PlayClip("Bark", 1f);
     }
 
     private void SetAndroidDisplayMode(bool fullscreen, bool save)
@@ -1326,6 +1538,9 @@ public class MenuSettingsDialog : MonoBehaviour
         RefreshToggleVisual(chatGptToggle);
         RefreshToggleVisual(geminiToggle);
         RefreshToggleVisual(ollamaToggle);
+        RefreshToggleVisual(musicToggle);
+        RefreshToggleVisual(sfxToggle);
+        RefreshToggleVisual(uiToggle);
         RefreshToggleVisual(touchscreenJoystickToggle);
         RefreshToggleVisual(androidSafeAreaToggle);
         RefreshToggleVisual(androidFullscreenToggle);

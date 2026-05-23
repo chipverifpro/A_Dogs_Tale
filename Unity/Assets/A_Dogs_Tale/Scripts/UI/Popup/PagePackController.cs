@@ -31,9 +31,9 @@ public class PagePackController : MonoBehaviour
         var guard  = root.Q<Button>("Order-Guard");
         var track  = root.Q<Button>("Order-Track");
 
-        if (stay != null)   stay.clicked   += () => Debug.Log("Order: Stay");
-        if (patrol != null) patrol.clicked += () => Debug.Log("Order: Patrol");
-        if (guard != null)  guard.clicked  += () => Debug.Log("Order: Guard");
-        if (track != null)  track.clicked  += () => Debug.Log("Order: Track");
+        if (stay != null)   stay.clicked   += () => { AudioPlayer.PlayUiButtonClick(); Debug.Log("Order: Stay"); };
+        if (patrol != null) patrol.clicked += () => { AudioPlayer.PlayUiButtonClick(); Debug.Log("Order: Patrol"); };
+        if (guard != null)  guard.clicked  += () => { AudioPlayer.PlayUiButtonClick(); Debug.Log("Order: Guard"); };
+        if (track != null)  track.clicked  += () => { AudioPlayer.PlayUiButtonClick(); Debug.Log("Order: Track"); };
     }
 }

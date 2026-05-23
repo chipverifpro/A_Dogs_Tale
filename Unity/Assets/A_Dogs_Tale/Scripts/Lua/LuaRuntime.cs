@@ -30,6 +30,7 @@ namespace DogGame.Lua
         private LuaHelpers? bindings;
         private string debugAgentName = "<unknown>";
         private string debugScriptName = "<unloaded>";
+        private readonly Stopwatch callStopwatch = new();
 
         public LuaRuntime()
             : this(
@@ -211,6 +212,57 @@ namespace DogGame.Lua
             return CallFunction("tick");
         }
 
+        public bool CallFunction(string functionName)
+        {
+            try
+            {
+                DynValue function = script.Globals.Get(functionName);
+                if (function.IsNil())
+                {
+                    UnityEngine.Debug.LogError($"[LuaRuntime] Lua function '{functionName}' was not found.");
+                    return false;
+                }
+
+                DynValue coroutineValue = script.CreateCoroutine(function);
+                MoonSharp.Interpreter.Coroutine coroutine = coroutineValue.Coroutine;
+                coroutine.AutoYieldCounter = autoYieldCounter;
+
+                callStopwatch.Restart();
+                DynValue callResult = coroutine.Resume();
+                int resumeCount = 0;
+
+                while (coroutine.State == CoroutineState.ForceSuspended)
+                {
+                    resumeCount++;
+                    if (resumeCount > maxResumeCount || callStopwatch.ElapsedMilliseconds > maxCallMilliseconds + 1000)
+                    {
+                        UnityEngine.Debug.LogError($"[LuaRuntime] Lua function '{functionName}' exceeded the execution budget.  stopwatch={callStopwatch.ElapsedMilliseconds} > max={maxCallMilliseconds}");
+                        return false;
+                    }
+
+                    callResult = coroutine.Resume();
+                }
+
+                if (coroutine.State != CoroutineState.Dead)
+                {
+                    UnityEngine.Debug.LogError($"[LuaRuntime] Lua function '{functionName}' yielded unexpectedly (state={coroutine.State}, type={callResult.Type}).");
+                    return false;
+                }
+
+                return true;
+            }
+            catch (InterpreterException exception)
+            {
+                UnityEngine.Debug.LogError("[LuaRuntime] Lua runtime error: " + exception.DecoratedMessage);
+                return false;
+            }
+            catch (Exception exception)
+            {
+                UnityEngine.Debug.LogError("[LuaRuntime] General runtime error: " + exception);
+                return false;
+            }
+        }
+
         public bool CallFunction(string functionName, params object?[] args)
         {
             try
@@ -226,7 +278,7 @@ namespace DogGame.Lua
                 MoonSharp.Interpreter.Coroutine coroutine = coroutineValue.Coroutine;
                 coroutine.AutoYieldCounter = autoYieldCounter;
 
-                Stopwatch stopwatch = Stopwatch.StartNew();
+                callStopwatch.Restart();
                 DynValue[] dynArgs = BuildDynArgs(args);
                 DynValue callResult = dynArgs.Length == 0
                     ? coroutine.Resume()
@@ -236,9 +288,9 @@ namespace DogGame.Lua
                 while (coroutine.State == CoroutineState.ForceSuspended)
                 {
                     resumeCount++;
-                    if (resumeCount > maxResumeCount || stopwatch.ElapsedMilliseconds > maxCallMilliseconds+1000)
+                    if (resumeCount > maxResumeCount || callStopwatch.ElapsedMilliseconds > maxCallMilliseconds+1000)
                     {
-                        UnityEngine.Debug.LogError($"[LuaRuntime] Lua function '{functionName}' exceeded the execution budget.  stopwatch={stopwatch.ElapsedMilliseconds} > max={maxCallMilliseconds}");
+                        UnityEngine.Debug.LogError($"[LuaRuntime] Lua function '{functionName}' exceeded the execution budget.  stopwatch={callStopwatch.ElapsedMilliseconds} > max={maxCallMilliseconds}");
                         return false;
                     }
 

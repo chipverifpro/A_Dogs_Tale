@@ -18,6 +18,7 @@ public class AudioPlayTracking
 {
     public AudioSource src;         // src
     public GameObject go;           // go
+    public float baseVolume = 1f;   // source volume before channel-level settings
     public bool isTempGO;           // singleton
     public Coroutine loopCo;        // loop/play control
     public bool isPlaying = false;
@@ -31,8 +32,25 @@ public partial class AudioPlayer : MonoBehaviour
     public Dir dir;
     public AudioCatalog audioCatalog;
     public GameObject nowPlayingContainer;
+    [Header("Channel Settings")]
+    public bool musicEnabled = true;
+    [Range(0f, 1f)] public float musicVolume = 1f;
+    public bool sfxEnabled = true;
+    [Range(0f, 1f)] public float sfxVolume = 1f;
+    public bool uiEnabled = true;
+    [Range(0f, 1f)] public float uiVolume = 1f;
 
     public static AudioPlayer Instance { get; private set; }
+    private string lastRequestedMusicClipName;
+
+    public static void PlayUiButtonClick()
+    {
+        AudioPlayer player = Instance
+            ?? Dir.Instance?.audioPlayer
+            ?? Object.FindFirstObjectByType<AudioPlayer>(FindObjectsInactive.Include);
+
+        player?.PlayClip("Button-Click");
+    }
 
     void Awake()
     {
@@ -55,6 +73,8 @@ public partial class AudioPlayer : MonoBehaviour
             nowPlayingContainer = GameObject.Find("NowPlayingTemps");    // where temp objects are placed in hierarchy
 
         audioCatalog.StartAudioCatalog();
+        PersistentGameSettings.Data settings = PersistentGameSettings.GetCurrentOrSaved();
+        ApplySoundSettings(settings.musicEnabled, settings.musicVolume, settings.sfxEnabled, settings.sfxVolume, settings.uiEnabled, settings.uiVolume);
         //DontDestroyOnLoad(gameObject); // optional: keep across scenes
     }
 
@@ -80,6 +100,12 @@ public partial class AudioPlayer : MonoBehaviour
             Debug.LogWarning($"[PlayClip] Audio definition '{name}' not found in clipCfgList. PlayClip aborting.");
             return false;
         }
+
+        if (string.Equals(clipCfg.channel, "Music", System.StringComparison.OrdinalIgnoreCase))
+            lastRequestedMusicClipName = clipCfg.name;
+
+        if (!IsChannelEnabled(clipCfg.channel))
+            return false;
 
         // 2. Ensure clip loaded
         if (clipCfg.clip == null)
@@ -148,7 +174,8 @@ public partial class AudioPlayer : MonoBehaviour
         // 5. Volume and pitch
         float volume_min = (clipCfg.volumeRange?.x) ?? 1f;
         float volume_max = (clipCfg.volumeRange?.y) ?? 1f;
-        src.volume = UnityEngine.Random.Range(volume_min, volume_max) * volumePct;
+        taskInfo.baseVolume = UnityEngine.Random.Range(volume_min, volume_max) * volumePct;
+        src.volume = taskInfo.baseVolume * GetChannelVolume(clipCfg.channel);
 
         float pitch_min = (clipCfg.pitchRange?.x) ?? 1f;
         float pitch_max = (clipCfg.pitchRange?.y) ?? 1f;
@@ -166,6 +193,97 @@ public partial class AudioPlayer : MonoBehaviour
         taskInfo.loopCo = co; // save coroutine ID for manual kills
 
         return true;    // successfully started playing.
+    }
+
+    public void ApplySoundSettings(bool musicEnabled, float musicVolume, bool sfxEnabled, float sfxVolume, bool uiEnabled, float uiVolume)
+    {
+        bool wasMusicEnabled = this.musicEnabled;
+        this.musicEnabled = musicEnabled;
+        this.musicVolume = Mathf.Clamp01(musicVolume);
+        this.sfxEnabled = sfxEnabled;
+        this.sfxVolume = Mathf.Clamp01(sfxVolume);
+        this.uiEnabled = uiEnabled;
+        this.uiVolume = Mathf.Clamp01(uiVolume);
+
+        RefreshRunningChannelVolumes("Music");
+        RefreshRunningChannelVolumes("SFX");
+        RefreshRunningChannelVolumes("UI");
+
+        if (!wasMusicEnabled && this.musicEnabled && !HasRunningChannel("Music") && !string.IsNullOrWhiteSpace(lastRequestedMusicClipName))
+            PlayClip(lastRequestedMusicClipName);
+    }
+
+    private bool IsChannelEnabled(string channel)
+    {
+        if (string.Equals(channel, "Music", System.StringComparison.OrdinalIgnoreCase))
+            return musicEnabled;
+
+        if (string.Equals(channel, "SFX", System.StringComparison.OrdinalIgnoreCase))
+            return sfxEnabled;
+
+        if (string.Equals(channel, "UI", System.StringComparison.OrdinalIgnoreCase))
+            return uiEnabled;
+
+        return true;
+    }
+
+    private float GetChannelVolume(string channel)
+    {
+        if (string.Equals(channel, "Music", System.StringComparison.OrdinalIgnoreCase))
+            return musicEnabled ? musicVolume : 0f;
+
+        if (string.Equals(channel, "SFX", System.StringComparison.OrdinalIgnoreCase))
+            return sfxEnabled ? sfxVolume : 0f;
+
+        if (string.Equals(channel, "UI", System.StringComparison.OrdinalIgnoreCase))
+            return uiEnabled ? uiVolume : 0f;
+
+        return 1f;
+    }
+
+    private void RefreshRunningChannelVolumes(string channel)
+    {
+        if (audioCatalog == null || audioCatalog.clipCfgList == null)
+            return;
+
+        if (!IsChannelEnabled(channel))
+        {
+            StopClips(channelName: channel, fadeOut: 0f);
+            return;
+        }
+
+        float channelVolume = GetChannelVolume(channel);
+        for (int clipIndex = 0; clipIndex < audioCatalog.clipCfgList.Count; clipIndex++)
+        {
+            AudioClipCfg clipCfg = audioCatalog.clipCfgList[clipIndex];
+            if (clipCfg == null || !string.Equals(clipCfg.channel, channel, System.StringComparison.OrdinalIgnoreCase))
+                continue;
+
+            for (int taskIndex = 0; taskIndex < clipCfg.running_Tasks.Count; taskIndex++)
+            {
+                AudioPlayTracking task = clipCfg.running_Tasks[taskIndex];
+                if (task?.src != null)
+                    task.src.volume = task.baseVolume * channelVolume;
+            }
+        }
+    }
+
+    private bool HasRunningChannel(string channel)
+    {
+        if (audioCatalog == null || audioCatalog.clipCfgList == null)
+            return false;
+
+        for (int clipIndex = 0; clipIndex < audioCatalog.clipCfgList.Count; clipIndex++)
+        {
+            AudioClipCfg clipCfg = audioCatalog.clipCfgList[clipIndex];
+            if (clipCfg == null || !string.Equals(clipCfg.channel, channel, System.StringComparison.OrdinalIgnoreCase))
+                continue;
+
+            if (clipCfg.running_Tasks.Count > 0)
+                return true;
+        }
+
+        return false;
     }
 
     // PlayWithInterval() will handle all cases of plaing a track.

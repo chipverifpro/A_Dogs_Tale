@@ -214,6 +214,7 @@ public class MenuManager : MonoBehaviour
 
     public void OnSettings()
     {
+        PlayButtonClick();
         //BottomBanner.Show("🎨 Adjusting imagination...");
         if (settingsDialog == null)
             return;
@@ -225,6 +226,7 @@ public class MenuManager : MonoBehaviour
 
     public void QuitGame()
     {
+        PlayButtonClick();
         //BottomBanner.Show("💤 Curling up for a nap...");
         BottomBanner.Show("Curling up for a nap...");
 #if UNITY_EDITOR
@@ -628,11 +630,7 @@ public class MenuManager : MonoBehaviour
 
     void PlayButtonClick()
     {
-        AudioPlayer player = audioPlayer;
-        if (player == null && dir != null)
-            player = dir.audioPlayer;
-
-        player?.PlayClip("Button-Click");
+        AudioPlayer.PlayUiButtonClick();
     }
 
     GameObject FindIncludingInactive(string name)

@@ -74589,7 +74589,7 @@ MonoBehaviour:
   - {fileID: 1345767169}
   formation: 3
   leadershipType: 1
-  followerType: 4
+  followerType: 2
   formationSpacing: 1.5
 --- !u!4 &766807148
 Transform:
@@ -86670,7 +86670,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.ExploreDecisionModule
   visitRoomCenterBeforeBacktracking: 1
-  useLuaExploreScript: 1
+  useLuaExploreScript: 0
   debugLuaExplore: 1
   luaExploreFileName: ExploreMode.lua
   luaExploreScript: 
@@ -91775,7 +91775,7 @@ PrefabInstance:
     - target: {fileID: 7746797788051448446, guid: 641606249ac0ef04b8f3f30c58b0d9e6,
         type: 3}
       propertyPath: m_LocalRotation.w
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7746797788051448446, guid: 641606249ac0ef04b8f3f30c58b0d9e6,
         type: 3}
@@ -162235,7 +162235,7 @@ PrefabInstance:
     - target: {fileID: 4477274621950385561, guid: da33ad6d2d1f9483faa117084b30e547,
         type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 4477274621950385561, guid: da33ad6d2d1f9483faa117084b30e547,
         type: 3}
@@ -224095,7 +224095,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.ExploreDecisionModule
   visitRoomCenterBeforeBacktracking: 1
-  useLuaExploreScript: 1
+  useLuaExploreScript: 0
   debugLuaExplore: 1
   luaExploreFileName: ExploreMode.lua
   luaExploreScript: 

@@ -2,6 +2,7 @@ using UnityEngine;
 using System.Linq;
 using DogGame.AI;
 using InspectorTools;
+using Unity.Profiling;
 
 // ----- Not a BASE CLASS -----
 
@@ -15,6 +16,16 @@ namespace DogGame.Modules
     [DisallowMultipleComponent]
     public class AgentModule : WorldModule
     {
+        private static readonly ProfilerMarker AgentDecisionPlayerTickMarker = new("AgentModule.Decision.Player");
+        private static readonly ProfilerMarker AgentDecisionFollowerTickMarker = new("AgentModule.Decision.Follower");
+        private static readonly ProfilerMarker AgentDecisionWandererTickMarker = new("AgentModule.Decision.Wanderer");
+        private static readonly ProfilerMarker AgentDecisionImmobileTickMarker = new("AgentModule.Decision.Immobile");
+        private static readonly ProfilerMarker AgentDecisionLlmTickMarker = new("AgentModule.Decision.LLM");
+        private static readonly ProfilerMarker AgentDecisionTaskFollowerTickMarker = new("AgentModule.Decision.TaskFollower");
+        private static readonly ProfilerMarker AgentDecisionExplorerTickMarker = new("AgentModule.Decision.Explorer");
+        private static readonly ProfilerMarker AgentDecisionHerdTickMarker = new("AgentModule.Decision.Herd");
+        private static readonly ProfilerMarker AgentDecisionUnknownTickMarker = new("AgentModule.Decision.Unknown");
+
         //[Header("Agent Specific Modules")]
         // Agent Specific modules (most build on other modules):
         //public AgentMovementModule agentMovementModule { get; protected set; }
@@ -71,7 +82,36 @@ namespace DogGame.Modules
 
             if (currentDecisionModule != null)
             {
-                currentDecisionModule.Tick(deltaTime);
+                switch (currentDecisionModule.DecisionType)
+                {
+                    case AgentDecisionType.Player:
+                        using (AgentDecisionPlayerTickMarker.Auto()) currentDecisionModule.Tick(deltaTime);
+                        break;
+                    case AgentDecisionType.Follower:
+                        using (AgentDecisionFollowerTickMarker.Auto()) currentDecisionModule.Tick(deltaTime);
+                        break;
+                    case AgentDecisionType.Wanderer:
+                        using (AgentDecisionWandererTickMarker.Auto()) currentDecisionModule.Tick(deltaTime);
+                        break;
+                    case AgentDecisionType.Immobile:
+                        using (AgentDecisionImmobileTickMarker.Auto()) currentDecisionModule.Tick(deltaTime);
+                        break;
+                    case AgentDecisionType.LLM:
+                        using (AgentDecisionLlmTickMarker.Auto()) currentDecisionModule.Tick(deltaTime);
+                        break;
+                    case AgentDecisionType.TaskFollower:
+                        using (AgentDecisionTaskFollowerTickMarker.Auto()) currentDecisionModule.Tick(deltaTime);
+                        break;
+                    case AgentDecisionType.Explorer:
+                        using (AgentDecisionExplorerTickMarker.Auto()) currentDecisionModule.Tick(deltaTime);
+                        break;
+                    case AgentDecisionType.Herd:
+                        using (AgentDecisionHerdTickMarker.Auto()) currentDecisionModule.Tick(deltaTime);
+                        break;
+                    default:
+                        using (AgentDecisionUnknownTickMarker.Auto()) currentDecisionModule.Tick(deltaTime);
+                        break;
+                }
             }
         }
 

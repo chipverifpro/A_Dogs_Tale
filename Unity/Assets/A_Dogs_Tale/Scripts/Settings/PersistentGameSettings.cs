@@ -13,6 +13,12 @@ public static class PersistentGameSettings
     private const string TouchscreenJoystickVisibleJsonField = "\"touchscreenJoystickVisible\"";
     private const string ButtonSizeJsonField = "\"buttonSize\"";
     private const string AndroidFullscreenJsonField = "\"androidFullscreenEnabled\"";
+    private const string MusicEnabledJsonField = "\"musicEnabled\"";
+    private const string MusicVolumeJsonField = "\"musicVolume\"";
+    private const string SfxEnabledJsonField = "\"sfxEnabled\"";
+    private const string SfxVolumeJsonField = "\"sfxVolume\"";
+    private const string UiEnabledJsonField = "\"uiEnabled\"";
+    private const string UiVolumeJsonField = "\"uiVolume\"";
     private const float MinScentSimulationTimeStep = 0.1f;
     private const float MaxScentSimulationTimeStep = 1.0f;
     public const float MinButtonSize = 40f;
@@ -41,6 +47,12 @@ public static class PersistentGameSettings
         public float scentSimulationTimeStep = MinScentSimulationTimeStep;
         public int graphicsLevel = GraphicsLevelHigh;
         public bool wallpaperEnabled = true;
+        public bool musicEnabled = true;
+        public float musicVolume = 1f;
+        public bool sfxEnabled = true;
+        public float sfxVolume = 1f;
+        public bool uiEnabled = true;
+        public float uiVolume = 1f;
         public bool touchscreenJoystickVisible = true;
         public float buttonSize = DefaultButtonSize;
         public bool androidFullscreenEnabled = false;
@@ -269,6 +281,16 @@ public static class PersistentGameSettings
         if (inputAdapter != null)
             inputAdapter.SetMobileJoystickVisiblePreference(normalized.touchscreenJoystickVisible);
 
+        AudioPlayer audioPlayer = GetAudioPlayer();
+        if (audioPlayer != null)
+            audioPlayer.ApplySoundSettings(
+                normalized.musicEnabled,
+                normalized.musicVolume,
+                normalized.sfxEnabled,
+                normalized.sfxVolume,
+                normalized.uiEnabled,
+                normalized.uiVolume);
+
         ApplyAndroidDisplayMode(normalized);
     }
 
@@ -290,6 +312,12 @@ public static class PersistentGameSettings
         bool hasTouchscreenJoystickVisible = json.Contains(TouchscreenJoystickVisibleJsonField, StringComparison.Ordinal);
         bool hasButtonSize = json.Contains(ButtonSizeJsonField, StringComparison.Ordinal);
         bool hasAndroidFullscreen = json.Contains(AndroidFullscreenJsonField, StringComparison.Ordinal);
+        bool hasMusicEnabled = json.Contains(MusicEnabledJsonField, StringComparison.Ordinal);
+        bool hasMusicVolume = json.Contains(MusicVolumeJsonField, StringComparison.Ordinal);
+        bool hasSfxEnabled = json.Contains(SfxEnabledJsonField, StringComparison.Ordinal);
+        bool hasSfxVolume = json.Contains(SfxVolumeJsonField, StringComparison.Ordinal);
+        bool hasUiEnabled = json.Contains(UiEnabledJsonField, StringComparison.Ordinal);
+        bool hasUiVolume = json.Contains(UiVolumeJsonField, StringComparison.Ordinal);
         data = JsonUtility.FromJson<Data>(json);
         if (data == null)
             return false;
@@ -300,6 +328,18 @@ public static class PersistentGameSettings
             data.buttonSize = DefaultButtonSize;
         if (!hasAndroidFullscreen)
             data.androidFullscreenEnabled = false;
+        if (!hasMusicEnabled)
+            data.musicEnabled = true;
+        if (!hasMusicVolume)
+            data.musicVolume = 1f;
+        if (!hasSfxEnabled)
+            data.sfxEnabled = true;
+        if (!hasSfxVolume)
+            data.sfxVolume = 1f;
+        if (!hasUiEnabled)
+            data.uiEnabled = true;
+        if (!hasUiVolume)
+            data.uiVolume = 1f;
 
         data = Normalize(data);
         return true;
@@ -330,6 +370,17 @@ public static class PersistentGameSettings
         {
             data.wallpaperEnabled = dungeonGenerator.ApplyWallpaperOnWallTiles;
             data.graphicsLevel = data.wallpaperEnabled ? GraphicsLevelHigh : GraphicsLevelLow;
+        }
+
+        AudioPlayer audioPlayer = GetAudioPlayer();
+        if (audioPlayer != null)
+        {
+            data.musicEnabled = audioPlayer.musicEnabled;
+            data.musicVolume = audioPlayer.musicVolume;
+            data.sfxEnabled = audioPlayer.sfxEnabled;
+            data.sfxVolume = audioPlayer.sfxVolume;
+            data.uiEnabled = audioPlayer.uiEnabled;
+            data.uiVolume = audioPlayer.uiVolume;
         }
 
         return Normalize(data);
@@ -363,6 +414,9 @@ public static class PersistentGameSettings
 
         data.graphicsLevel = SnapGraphicsLevel(data.graphicsLevel);
         data.wallpaperEnabled = data.graphicsLevel >= GraphicsLevelMedium;
+        data.musicVolume = Mathf.Clamp01(data.musicVolume);
+        data.sfxVolume = Mathf.Clamp01(data.sfxVolume);
+        data.uiVolume = Mathf.Clamp01(data.uiVolume);
         data.buttonSize = SnapButtonSize(data.buttonSize);
 
         return data;
@@ -547,5 +601,12 @@ public static class PersistentGameSettings
     private static NewInputAdapter GetInputAdapter()
     {
         return UnityEngine.Object.FindFirstObjectByType<NewInputAdapter>(FindObjectsInactive.Include);
+    }
+
+    private static AudioPlayer GetAudioPlayer()
+    {
+        return Dir.Instance?.audioPlayer
+            ?? AudioPlayer.Instance
+            ?? UnityEngine.Object.FindFirstObjectByType<AudioPlayer>(FindObjectsInactive.Include);
     }
 }

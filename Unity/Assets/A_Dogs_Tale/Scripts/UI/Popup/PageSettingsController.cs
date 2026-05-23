@@ -27,6 +27,16 @@ public class PageSettingsController : MonoBehaviour
         Toggle ollamaToggle = root.Q<Toggle>("OllamaToggle");
         Slider scentStepSlider = root.Q<Slider>("ScentSimulationTimeStepSlider");
         Label scentStepValue = root.Q<Label>("ScentSimulationTimeStepValue");
+        Toggle musicToggle = root.Q<Toggle>("MusicEnableToggle");
+        Slider musicVolumeSlider = root.Q<Slider>("MusicVolumeSlider");
+        Label musicVolumeValue = root.Q<Label>("MusicVolumeValue");
+        Toggle sfxToggle = root.Q<Toggle>("SfxEnableToggle");
+        Slider sfxVolumeSlider = root.Q<Slider>("SfxVolumeSlider");
+        Label sfxVolumeValue = root.Q<Label>("SfxVolumeValue");
+        Toggle uiToggle = root.Q<Toggle>("UiEnableToggle");
+        Slider uiVolumeSlider = root.Q<Slider>("UiVolumeSlider");
+        Label uiVolumeValue = root.Q<Label>("UiVolumeValue");
+        Button testBarkButton = root.Q<Button>("TestBarkButton");
         Button[] graphicsQualityButtons =
         {
             root.Q<Button>("GraphicsQuality1985Button"),
@@ -46,8 +56,23 @@ public class PageSettingsController : MonoBehaviour
             ollamaToggle.SetValueWithoutNotify(settings.ollamaEnabled);
         if (scentStepSlider != null)
             scentStepSlider.SetValueWithoutNotify(settings.scentSimulationTimeStep);
+        if (musicToggle != null)
+            musicToggle.SetValueWithoutNotify(settings.musicEnabled);
+        if (musicVolumeSlider != null)
+            musicVolumeSlider.SetValueWithoutNotify(settings.musicVolume);
+        if (sfxToggle != null)
+            sfxToggle.SetValueWithoutNotify(settings.sfxEnabled);
+        if (sfxVolumeSlider != null)
+            sfxVolumeSlider.SetValueWithoutNotify(settings.sfxVolume);
+        if (uiToggle != null)
+            uiToggle.SetValueWithoutNotify(settings.uiEnabled);
+        if (uiVolumeSlider != null)
+            uiVolumeSlider.SetValueWithoutNotify(settings.uiVolume);
 
         UpdateScentStepLabel(scentStepValue, settings.scentSimulationTimeStep);
+        UpdateVolumeLabel(musicVolumeValue, settings.musicVolume);
+        UpdateVolumeLabel(sfxVolumeValue, settings.sfxVolume);
+        UpdateVolumeLabel(uiVolumeValue, settings.uiVolume);
         RefreshGraphicsQualityButtons(graphicsQualityButtons, selectedGraphicsLevel);
 
         void SaveCurrentValues()
@@ -59,6 +84,12 @@ public class PageSettingsController : MonoBehaviour
                 chatGptEnabled = chatGptToggle?.value ?? current.chatGptEnabled,
                 geminiEnabled = geminiToggle?.value ?? current.geminiEnabled,
                 ollamaEnabled = ollamaToggle?.value ?? current.ollamaEnabled,
+                musicEnabled = musicToggle?.value ?? current.musicEnabled,
+                musicVolume = SnapVolume(musicVolumeSlider?.value ?? current.musicVolume),
+                sfxEnabled = sfxToggle?.value ?? current.sfxEnabled,
+                sfxVolume = SnapVolume(sfxVolumeSlider?.value ?? current.sfxVolume),
+                uiEnabled = uiToggle?.value ?? current.uiEnabled,
+                uiVolume = SnapVolume(uiVolumeSlider?.value ?? current.uiVolume),
                 touchscreenJoystickVisible = current.touchscreenJoystickVisible,
                 graphicsLevel = selectedGraphicsLevel,
                 scentSimulationTimeStep = SnapScentStep(scentStepSlider?.value ?? current.scentSimulationTimeStep),
@@ -76,6 +107,15 @@ public class PageSettingsController : MonoBehaviour
         if (ollamaToggle != null)
             ollamaToggle.RegisterValueChangedCallback(_ => SaveCurrentValues());
 
+        if (musicToggle != null)
+            musicToggle.RegisterValueChangedCallback(_ => SaveCurrentValues());
+
+        if (sfxToggle != null)
+            sfxToggle.RegisterValueChangedCallback(_ => SaveCurrentValues());
+
+        if (uiToggle != null)
+            uiToggle.RegisterValueChangedCallback(_ => SaveCurrentValues());
+
         if (scentStepSlider != null)
         {
             scentStepSlider.RegisterValueChangedCallback(evt =>
@@ -89,6 +129,56 @@ public class PageSettingsController : MonoBehaviour
             });
         }
 
+        if (musicVolumeSlider != null)
+        {
+            musicVolumeSlider.RegisterValueChangedCallback(evt =>
+            {
+                float snappedValue = SnapVolume(evt.newValue);
+                if (!Mathf.Approximately(snappedValue, musicVolumeSlider.value))
+                    musicVolumeSlider.SetValueWithoutNotify(snappedValue);
+
+                UpdateVolumeLabel(musicVolumeValue, snappedValue);
+                SaveCurrentValues();
+            });
+        }
+
+        if (sfxVolumeSlider != null)
+        {
+            sfxVolumeSlider.RegisterValueChangedCallback(evt =>
+            {
+                float snappedValue = SnapVolume(evt.newValue);
+                if (!Mathf.Approximately(snappedValue, sfxVolumeSlider.value))
+                    sfxVolumeSlider.SetValueWithoutNotify(snappedValue);
+
+                UpdateVolumeLabel(sfxVolumeValue, snappedValue);
+                SaveCurrentValues();
+            });
+        }
+
+        if (uiVolumeSlider != null)
+        {
+            uiVolumeSlider.RegisterValueChangedCallback(evt =>
+            {
+                float snappedValue = SnapVolume(evt.newValue);
+                if (!Mathf.Approximately(snappedValue, uiVolumeSlider.value))
+                    uiVolumeSlider.SetValueWithoutNotify(snappedValue);
+
+                UpdateVolumeLabel(uiVolumeValue, snappedValue);
+                SaveCurrentValues();
+            });
+        }
+
+        if (testBarkButton != null)
+        {
+            testBarkButton.clicked += () =>
+            {
+                AudioPlayer.PlayUiButtonClick();
+                SaveCurrentValues();
+                AudioPlayer player = AudioPlayer.Instance ?? Dir.Instance?.audioPlayer;
+                player?.PlayClip("Bark", 1f);
+            };
+        }
+
         for (int i = 0; i < graphicsQualityButtons.Length; i++)
         {
             int capturedIndex = i;
@@ -98,6 +188,7 @@ public class PageSettingsController : MonoBehaviour
 
             button.clicked += () =>
             {
+                AudioPlayer.PlayUiButtonClick();
                 selectedGraphicsLevel = GraphicsQualityLevels[capturedIndex];
                 RefreshGraphicsQualityButtons(graphicsQualityButtons, selectedGraphicsLevel);
                 SaveCurrentValues();
@@ -105,7 +196,7 @@ public class PageSettingsController : MonoBehaviour
         }
 
         if (okButton != null)
-            okButton.clicked += () => popupController?.Close();
+            okButton.clicked += () => { AudioPlayer.PlayUiButtonClick(); popupController?.Close(); };
     }
 
     private static float SnapScentStep(float value)
@@ -120,6 +211,17 @@ public class PageSettingsController : MonoBehaviour
     {
         if (label != null)
             label.text = $"{SnapScentStep(value):0.0}s";
+    }
+
+    private static float SnapVolume(float value)
+    {
+        return Mathf.Clamp01(Mathf.Round(value * 100f) / 100f);
+    }
+
+    private static void UpdateVolumeLabel(Label label, float value)
+    {
+        if (label != null)
+            label.text = $"{Mathf.RoundToInt(SnapVolume(value) * 100f)}%";
     }
 
     private void RefreshGraphicsQualityButtons(Button[] buttons, int selectedGraphicsLevel)

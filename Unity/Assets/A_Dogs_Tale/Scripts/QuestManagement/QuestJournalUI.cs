@@ -556,6 +556,7 @@ public sealed class QuestJournalUI : MonoBehaviour
         Image image = buttonObject.AddComponent<Image>();
         image.color = new Color(0.18f, 0.15f, 0.105f, 0.88f);
         button.targetGraphic = image;
+        button.onClick.AddListener(AudioPlayer.PlayUiButtonClick);
         button.onClick.AddListener(onClick);
 
         ColorBlock colors = button.colors;

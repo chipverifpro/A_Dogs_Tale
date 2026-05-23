@@ -369,10 +369,12 @@ public class Herd : Pack
     public bool TryComputeSteering(WorldObject sheep, out HerdSteeringResult result)
     {
         result = default;
+        bool logThisFrame = ShouldEmitDebugLogThisFrame();
 
         if (sheep == null || packAgentList == null || packAgentList.Count == 0)
         {
-            LogDebugFrame($"TryComputeSteering failed: sheep={DescribeWorldObject(sheep)} members={DescribeMemberCount()}");
+            if (logThisFrame)
+                LogDebugFrame($"TryComputeSteering failed: sheep={DescribeWorldObject(sheep)} members={DescribeMemberCount()}");
             return false;
         }
 
@@ -391,9 +393,12 @@ public class Herd : Pack
                     WalkMode.Walk,
                     dangerNearby: false,
                     usePathTarget: true);
-                LogDebugFrame(
-                    $"Steering {DescribeWorldObject(sheep)}: gather-to-slot target={gatherTarget} " +
-                    $"distance={Mathf.Sqrt(toGatherTarget.sqrMagnitude):0.00} threshold={gatherToLeaderDistanceMeters:0.00}");
+                if (logThisFrame)
+                {
+                    LogDebugFrame(
+                        $"Steering {DescribeWorldObject(sheep)}: gather-to-slot target={gatherTarget} " +
+                        $"distance={Mathf.Sqrt(toGatherTarget.sqrMagnitude):0.00} threshold={gatherToLeaderDistanceMeters:0.00}");
+                }
                 return true;
             }
         }
@@ -508,10 +513,13 @@ public class Herd : Pack
 
         if (steering.sqrMagnitude <= 0.0001f)
         {
-            LogDebugFrame(
-                $"Steering {DescribeWorldObject(sheep)} failed: steering zero. " +
-                $"nearbyHerd={cohesionCount} aligned={alignmentCount} sensedAgents={sensedAgentScratch.Count} " +
-                $"leader={DescribeWorldObject(leader)} pos={selfPos}");
+            if (logThisFrame)
+            {
+                LogDebugFrame(
+                    $"Steering {DescribeWorldObject(sheep)} failed: steering zero. " +
+                    $"nearbyHerd={cohesionCount} aligned={alignmentCount} sensedAgents={sensedAgentScratch.Count} " +
+                    $"leader={DescribeWorldObject(leader)} pos={selfPos}");
+            }
             return false;
         }
 
@@ -526,16 +534,22 @@ public class Herd : Pack
         if (dangerNearby && TryFindSteeringPathTarget(selfPos, steeringDirection, out Vector3 dangerTarget))
         {
             result = new HerdSteeringResult(dangerTarget, speedFactor, walkMode, dangerNearby, usePathTarget: true);
-            LogDebugFrame(
-                $"Steering {DescribeWorldObject(sheep)}: danger path target={dangerTarget} dir={steeringDirection} " +
-                $"speed={speedFactor:0.00} nearbyHerd={cohesionCount} sensedAgents={sensedAgentScratch.Count}");
+            if (logThisFrame)
+            {
+                LogDebugFrame(
+                    $"Steering {DescribeWorldObject(sheep)}: danger path target={dangerTarget} dir={steeringDirection} " +
+                    $"speed={speedFactor:0.00} nearbyHerd={cohesionCount} sensedAgents={sensedAgentScratch.Count}");
+            }
             return true;
         }
 
         result = new HerdSteeringResult(steeringDirection, speedFactor, walkMode, dangerNearby);
-        LogDebugFrame(
-            $"Steering {DescribeWorldObject(sheep)}: boids dir={result.directionMap} speed={speedFactor:0.00} " +
-            $"nearbyHerd={cohesionCount} aligned={alignmentCount} sensedAgents={sensedAgentScratch.Count} danger={dangerNearby}");
+        if (logThisFrame)
+        {
+            LogDebugFrame(
+                $"Steering {DescribeWorldObject(sheep)}: boids dir={result.directionMap} speed={speedFactor:0.00} " +
+                $"nearbyHerd={cohesionCount} aligned={alignmentCount} sensedAgents={sensedAgentScratch.Count} danger={dangerNearby}");
+        }
         return true;
     }
 

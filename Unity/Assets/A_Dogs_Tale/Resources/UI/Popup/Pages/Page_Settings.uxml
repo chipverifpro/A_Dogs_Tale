@@ -21,6 +21,19 @@
         <Button name="GraphicsQuality1995Button" text="1995" class="btn"/>
       </VisualElement>
     </VisualElement>
+    <VisualElement class="card col">
+      <Label text="Sound"/>
+      <Toggle name="MusicEnableToggle" label="Music Enable"/>
+      <Slider name="MusicVolumeSlider" highValue="1" lowValue="0"/>
+      <Label name="MusicVolumeValue" text="100%"/>
+      <Toggle name="SfxEnableToggle" label="SFX Enable"/>
+      <Slider name="SfxVolumeSlider" highValue="1" lowValue="0"/>
+      <Label name="SfxVolumeValue" text="100%"/>
+      <Toggle name="UiEnableToggle" label="UI Enable"/>
+      <Slider name="UiVolumeSlider" highValue="1" lowValue="0"/>
+      <Label name="UiVolumeValue" text="100%"/>
+      <Button name="TestBarkButton" text="Test Bark" class="btn"/>
+    </VisualElement>
     <Button name="OkButton" text="OK" class="btn"/>
   </VisualElement>
 </UXML>

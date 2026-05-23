@@ -12,6 +12,7 @@ namespace DogGame.Lua
         public string Name = "";
         public List<int> Doors = new();
         public int DoorCount = 0;
+        private readonly List<(int doorId, float distSqr)> sortedDoors = new();
 
         public WorldObject worldObject;
         public AgentState state;
@@ -49,7 +50,7 @@ namespace DogGame.Lua
                 return;
 
             Vector3 currentMap = worldObject.pos3d_map;
-            List<(int doorId, float distSqr)> sortedDoors = new();
+            sortedDoors.Clear();
 
             for (int i = 0; i < room.cells.Count; i++)
             {

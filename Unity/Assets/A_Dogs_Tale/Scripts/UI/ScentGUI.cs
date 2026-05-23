@@ -601,6 +601,8 @@ public class ScentGUI : MonoBehaviour
         Button button = GetOrAddComponent<Button>(buttonObject);
         button.targetGraphic = buttonImage;
         button.onClick.RemoveListener(CollapseTopControlsToTab);
+        button.onClick.RemoveListener(AudioPlayer.PlayUiButtonClick);
+        button.onClick.AddListener(AudioPlayer.PlayUiButtonClick);
         button.onClick.AddListener(CollapseTopControlsToTab);
 
         ConfigureTooltip(buttonObject, () => "Hide Controls");
@@ -643,6 +645,8 @@ public class ScentGUI : MonoBehaviour
         Button button = GetOrAddComponent<Button>(tabObject);
         button.targetGraphic = pulldownTabImage;
         button.onClick.RemoveListener(ExpandTopControlsFromTab);
+        button.onClick.RemoveListener(AudioPlayer.PlayUiButtonClick);
+        button.onClick.AddListener(AudioPlayer.PlayUiButtonClick);
         button.onClick.AddListener(ExpandTopControlsFromTab);
 
         ConfigureTooltip(tabObject, () => "Show Controls");
@@ -871,6 +875,8 @@ public class ScentGUI : MonoBehaviour
         Button button = GetOrAddComponent<Button>(buttonObject);
         button.targetGraphic = noseButtonImage;
         button.onClick.RemoveListener(ToggleDropdown);
+        button.onClick.RemoveListener(AudioPlayer.PlayUiButtonClick);
+        button.onClick.AddListener(AudioPlayer.PlayUiButtonClick);
         button.onClick.AddListener(ToggleDropdown);
 
         Transform existingPreview = buttonObject.transform.Find("AgentPreview");
@@ -968,6 +974,8 @@ public class ScentGUI : MonoBehaviour
         Button button = GetOrAddComponent<Button>(buttonObject);
         button.targetGraphic = modeButtonImage;
         button.onClick.RemoveListener(ToggleModePanel);
+        button.onClick.RemoveListener(AudioPlayer.PlayUiButtonClick);
+        button.onClick.AddListener(AudioPlayer.PlayUiButtonClick);
         button.onClick.AddListener(ToggleModePanel);
 
         Transform existingIcon = buttonObject.transform.Find("Icon");
@@ -1041,6 +1049,8 @@ public class ScentGUI : MonoBehaviour
         Button button = GetOrAddComponent<Button>(buttonObject);
         button.targetGraphic = simulationButtonImage;
         button.onClick.RemoveListener(ToggleSimulationPause);
+        button.onClick.RemoveListener(AudioPlayer.PlayUiButtonClick);
+        button.onClick.AddListener(AudioPlayer.PlayUiButtonClick);
         button.onClick.AddListener(ToggleSimulationPause);
 
         Transform existingIcon = buttonObject.transform.Find("Icon");
@@ -1111,6 +1121,8 @@ public class ScentGUI : MonoBehaviour
         Button button = GetOrAddComponent<Button>(buttonObject);
         button.targetGraphic = speedButtonImage;
         button.onClick.RemoveListener(ToggleSpeedPanel);
+        button.onClick.RemoveListener(AudioPlayer.PlayUiButtonClick);
+        button.onClick.AddListener(AudioPlayer.PlayUiButtonClick);
         button.onClick.AddListener(ToggleSpeedPanel);
 
         Transform existingIcon = buttonObject.transform.Find("Icon");
@@ -1184,6 +1196,8 @@ public class ScentGUI : MonoBehaviour
         Button button = GetOrAddComponent<Button>(buttonObject);
         button.targetGraphic = emoteButtonImage;
         button.onClick.RemoveListener(ToggleEmoteDropdown);
+        button.onClick.RemoveListener(AudioPlayer.PlayUiButtonClick);
+        button.onClick.AddListener(AudioPlayer.PlayUiButtonClick);
         button.onClick.AddListener(ToggleEmoteDropdown);
 
         Transform existingIcon = buttonObject.transform.Find("Icon");
@@ -1257,6 +1271,8 @@ public class ScentGUI : MonoBehaviour
         Button button = GetOrAddComponent<Button>(buttonObject);
         button.targetGraphic = inventoryButtonImage;
         button.onClick.RemoveListener(OpenInventoryDialog);
+        button.onClick.RemoveListener(AudioPlayer.PlayUiButtonClick);
+        button.onClick.AddListener(AudioPlayer.PlayUiButtonClick);
         button.onClick.AddListener(OpenInventoryDialog);
 
         Transform existingIcon = buttonObject.transform.Find("Icon");
@@ -1327,6 +1343,8 @@ public class ScentGUI : MonoBehaviour
         Button button = GetOrAddComponent<Button>(buttonObject);
         button.targetGraphic = digButtonImage;
         button.onClick.RemoveListener(HandleDigButtonPressed);
+        button.onClick.RemoveListener(AudioPlayer.PlayUiButtonClick);
+        button.onClick.AddListener(AudioPlayer.PlayUiButtonClick);
         button.onClick.AddListener(HandleDigButtonPressed);
 
         Transform existingIcon = buttonObject.transform.Find("Icon");
@@ -1441,6 +1459,8 @@ public class ScentGUI : MonoBehaviour
         Button button = GetOrAddComponent<Button>(buttonObject);
         button.targetGraphic = buttonImage;
         button.onClick.RemoveListener(clickHandler);
+        button.onClick.RemoveListener(AudioPlayer.PlayUiButtonClick);
+        button.onClick.AddListener(AudioPlayer.PlayUiButtonClick);
         button.onClick.AddListener(clickHandler);
 
         ConfigureTooltip(buttonObject, () => tooltipText);
@@ -2119,6 +2139,7 @@ public class ScentGUI : MonoBehaviour
         Button button = GetOrAddComponent<Button>(buttonObject);
         button.targetGraphic = background;
         button.onClick.RemoveAllListeners();
+        button.onClick.AddListener(AudioPlayer.PlayUiButtonClick);
         button.onClick.AddListener(() => HandleDecisionModeSelected(decisionType));
 
         Transform iconTransform = buttonObject.transform.Find("Icon");
@@ -2148,6 +2169,7 @@ public class ScentGUI : MonoBehaviour
 
         Button button = buttonObject.GetComponent<Button>();
         button.targetGraphic = background;
+        button.onClick.AddListener(AudioPlayer.PlayUiButtonClick);
         button.onClick.AddListener(() => HandleDecisionModeSelected(decisionType));
 
         GameObject iconObject = new GameObject("Icon", typeof(RectTransform), typeof(Image));
@@ -2176,6 +2198,7 @@ public class ScentGUI : MonoBehaviour
         Button button = GetOrAddComponent<Button>(buttonObject);
         button.targetGraphic = background;
         button.onClick.RemoveAllListeners();
+        button.onClick.AddListener(AudioPlayer.PlayUiButtonClick);
         button.onClick.AddListener(() => HandleSpeedModeSelected(walkMode));
 
         Transform iconTransform = buttonObject.transform.Find("Icon");
@@ -2205,6 +2228,7 @@ public class ScentGUI : MonoBehaviour
 
         Button button = buttonObject.GetComponent<Button>();
         button.targetGraphic = background;
+        button.onClick.AddListener(AudioPlayer.PlayUiButtonClick);
         button.onClick.AddListener(() => HandleSpeedModeSelected(walkMode));
 
         GameObject iconObject = new GameObject("Icon", typeof(RectTransform), typeof(Image));
@@ -2691,6 +2715,7 @@ public class ScentGUI : MonoBehaviour
 
         Button button = tileObject.GetComponent<Button>();
         button.targetGraphic = background;
+        button.onClick.AddListener(AudioPlayer.PlayUiButtonClick);
         button.onClick.AddListener(() => HandleEmoteSelected(entry));
 
         GameObject iconObject = new GameObject(
@@ -2738,6 +2763,7 @@ public class ScentGUI : MonoBehaviour
 
         Button button = rowObject.GetComponent<Button>();
         button.targetGraphic = background;
+        button.onClick.AddListener(AudioPlayer.PlayUiButtonClick);
         button.onClick.AddListener(() => HandleScentSelected(scentSource));
 
         GameObject swatchObject = new GameObject(

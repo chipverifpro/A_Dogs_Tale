@@ -117,6 +117,8 @@ public class DungeonGUISelector : MonoBehaviour
         if (regenerateButton)
         {
             regenerateButton.onClick.RemoveListener(OnRegenerateClicked);
+            regenerateButton.onClick.RemoveListener(AudioPlayer.PlayUiButtonClick);
+            regenerateButton.onClick.AddListener(AudioPlayer.PlayUiButtonClick);
             regenerateButton.onClick.AddListener(OnRegenerateClicked);
         }
     }

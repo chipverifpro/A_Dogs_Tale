@@ -6,6 +6,7 @@ using DogGame.Lua;
 using DogGame.LLM;
 using DogGame.Tasks;
 using InspectorTools;
+using Unity.Profiling;
 
 namespace DogGame.Modules
 {
@@ -14,6 +15,12 @@ namespace DogGame.Modules
     [DisallowMultipleComponent]
     public class ExploreDecisionModule : AgentDecisionModuleBase
     {
+        private static readonly ProfilerMarker ExploreLuaUpdateStateMarker = new("ExploreDecision.Lua.UpdateState");
+        private static readonly ProfilerMarker ExploreLuaSetStateMarker = new("ExploreDecision.Lua.SetState");
+        private static readonly ProfilerMarker ExploreLuaCallTickMarker = new("ExploreDecision.Lua.CallTick");
+        private static readonly ProfilerMarker ExploreRefreshDoorsMarker = new("ExploreDecision.RefreshDoorsForRoom");
+        private static readonly ProfilerMarker ExploreActivateDoorMarker = new("ExploreDecision.TryActivateNextDoor");
+
 private const string DefaultLuaExploreScript = @"state = {
     roomPath = {},
     enteredByDoor = {},
@@ -158,8 +165,6 @@ function tick()
         return
     end
 
-    log('tick room=' .. tostring(Room.Id) .. ' doorCount=' .. tostring(Room.DoorCount) .. ' pending=' .. tostring(state.pendingAction))
-
     if VisitRoomCenterBeforeBacktracking and not state.centeredRooms[Room.Id] then
         state.pendingAction = 'center'
         log('First visit to room ' .. tostring(Room.Id) .. '; issuing GoToRoomCenter()')
@@ -215,25 +220,61 @@ end
             public DirFlags direction;
             public Vector3 doorMap;
             public Vector3 throughMap;
-            public string key;
-            public string reverseKey;
+            public DoorKey key;
+            public DoorKey reverseKey;
+        }
+
+        private readonly struct DoorKey : IEquatable<DoorKey>
+        {
+            private readonly int roomIndex;
+            private readonly int x;
+            private readonly int y;
+            private readonly DirFlags direction;
+
+            public DoorKey(int roomIndex, Vector2Int cell, DirFlags direction)
+            {
+                this.roomIndex = roomIndex;
+                x = cell.x;
+                y = cell.y;
+                this.direction = direction;
+            }
+
+            public bool Equals(DoorKey other)
+            {
+                return roomIndex == other.roomIndex &&
+                       x == other.x &&
+                       y == other.y &&
+                       direction == other.direction;
+            }
+
+            public override bool Equals(object? obj)
+            {
+                return obj is DoorKey other && Equals(other);
+            }
+
+            public override int GetHashCode()
+            {
+                return HashCode.Combine(roomIndex, x, y, direction);
+            }
         }
 
         [Tooltip("When enabled, each newly visited room is explored by moving to its center before trying doors.")]
         [SerializeField] private bool visitRoomCenterBeforeBacktracking = true;
         [Header("Lua Explore")]
         [Tooltip("Runs the explore behavior through the Lua runtime instead of the built-in C# door queue.")]
-        [SerializeField] private bool useLuaExploreScript = true;
+        [SerializeField] private bool useLuaExploreScript = false;
         [SerializeField] private bool debugLuaExplore = true;
         [SerializeField] private string luaExploreFileName = "ExploreMode.lua";
+        [SerializeField, Min(0f)] private float luaExploreTickIntervalSeconds = 0.10f;
         [TextArea(8, 30)]
         [SerializeField] private string luaExploreScript = "";
         //[SerializeField] private float arriveDistance = 0.35f;
         [SerializeField] private int maxDoorsPerRefresh = 32;
 
         private readonly List<DoorGoal> toExplore = new();
-        private readonly HashSet<string> queuedDoorKeys = new();
-        private readonly HashSet<string> exploredDoorKeys = new();
+        private readonly List<DogGame.LLM.Agent.LLMWorldStateModule.FoundDoor> foundDoorsScratch = new();
+        private readonly HashSet<DoorKey> queuedDoorKeys = new();
+        private readonly HashSet<DoorKey> exploredDoorKeys = new();
         private readonly HashSet<int> centeredRoomIds = new();
 
         private DoorGoal activeDoor;
@@ -254,6 +295,7 @@ end
         private int lastLuaDoorCount = -1;
         private bool lastLuaRoomValid;
         private string loadedLuaExploreFriendlyName = "";
+        private float nextLuaExploreTickTime;
 
         public override void Initialize(AgentModule agentController)
         {
@@ -371,15 +413,25 @@ end
                 return;
             }
 
+            if (luaExploreTickIntervalSeconds > 0f && Time.time < nextLuaExploreTickTime)
+                return;
+
+            nextLuaExploreTickTime = Time.time + luaExploreTickIntervalSeconds;
+
             if (!EnsureLuaExploreReady())
                 return;
 
-            UpdateLuaExploreState();
-            luaRuntime!.SetState(luaAgentState);
+            using (ExploreLuaUpdateStateMarker.Auto())
+                UpdateLuaExploreState();
+            using (ExploreLuaSetStateMarker.Auto())
+                luaRuntime!.SetState(luaAgentState);
             luaRuntime.SetGlobal("VisitRoomCenterBeforeBacktracking", visitRoomCenterBeforeBacktracking);
             LogLuaRoomState();
 
-            if (!luaRuntime.CallFunction("tick"))
+            bool tickSucceeded;
+            using (ExploreLuaCallTickMarker.Auto())
+                tickSucceeded = luaRuntime.CallTick();
+            if (!tickSucceeded)
                 LogLuaExplore($"Lua explore tick failed for '{loadedLuaExploreFriendlyName}'.");
         }
 
@@ -504,6 +556,7 @@ end
             lastLuaRoomId = int.MinValue;
             lastLuaDoorCount = -1;
             lastLuaRoomValid = false;
+            nextLuaExploreTickTime = 0f;
         }
 
         private void CancelExploreTasks()
@@ -561,6 +614,8 @@ end
 
         private void RefreshDoorsForRoom(int roomIndex)
         {
+            using (ExploreRefreshDoorsMarker.Auto())
+            {
             if (worldObject.llmWorldStateModule == null || dir == null || dir.gen == null || dir.gen.rooms == null)
                 return;
 
@@ -572,14 +627,16 @@ end
                 return;
 
             RectInt roomBounds = room.GetBounds();
-            worldObject.llmWorldStateModule.BuildDoorsList(worldObject.pos3d_map, room, roomBounds, maxDoorsPerRefresh);
+            worldObject.llmWorldStateModule.GetDoorsInRoom(
+                worldObject.pos3d_map,
+                room,
+                roomBounds,
+                maxDoorsPerRefresh,
+                foundDoorsScratch);
 
-            List<DogGame.LLM.Agent.LLMWorldStateModule.FoundDoor> foundDoors =
-                worldObject.llmWorldStateModule.GetDoorsInRoom(worldObject.pos3d_map, room, roomBounds, maxDoorsPerRefresh);
-
-            for (int i = 0; i < foundDoors.Count; i++)
+            for (int i = 0; i < foundDoorsScratch.Count; i++)
             {
-                if (!TryCreateDoorGoal(roomIndex, foundDoors[i], out DoorGoal goal))
+                if (!TryCreateDoorGoal(roomIndex, foundDoorsScratch[i], out DoorGoal goal))
                     continue;
 
                 if (exploredDoorKeys.Contains(goal.key) || queuedDoorKeys.Contains(goal.key))
@@ -590,10 +647,13 @@ end
                 //Debug.Log(
                 //    $"{worldObject.DisplayName} [ExploreDecisionModule] Queued door {goal.key} -> room {goal.neighborRoomIndex} for {worldObject.DisplayName}");
             }
+            }
         }
 
         private bool TryActivateNextDoor(Cell currentCell)
         {
+            using (ExploreActivateDoorMarker.Auto())
+            {
             while (toExplore.Count > 0)
             {
                 int index = FindBestQueuedDoorIndex(currentCell);
@@ -616,6 +676,7 @@ end
             }
 
             return false;
+            }
         }
 
         private void StartMoveThroughActiveDoor()
@@ -812,8 +873,8 @@ end
                 direction = foundDoor.direction,
                 doorMap = CellCenterMap(doorCell),
                 throughMap = CellCenterMap(nextCell),
-                key = BuildDoorKey(roomIndex, foundDoor.pos, foundDoor.direction),
-                reverseKey = BuildDoorKey(neighborRoomIndex, throughCell, foundDoor.direction.Opposite())
+                key = new DoorKey(roomIndex, foundDoor.pos, foundDoor.direction),
+                reverseKey = new DoorKey(neighborRoomIndex, throughCell, foundDoor.direction.Opposite())
             };
             //Debug.Log($"{worldObject.DisplayName} new DoorGoal: doorMap = {goal.doorMap}, throughMap = {goal.throughMap}");
             return true;
@@ -824,11 +885,6 @@ end
             return cell.center3d_f;
         }
 
-        private static string BuildDoorKey(int roomIndex, Vector2Int cell, DirFlags direction)
-        {
-            return $"{roomIndex}:{cell.x},{cell.y}:{(int)direction}";
-        }
-
         public override void BeginDecisionModule(bool resume=false)
         {
             UseAutonomousFaceMovement();
@@ -837,6 +893,7 @@ end
             phase = ExplorePhase.None;
             needsDoorRefresh = true;
             queuedRoomIndex = -1;
+            nextLuaExploreTickTime = 0f;
         }
         public override void EndDecisionModule()
         {
@@ -847,6 +904,7 @@ end
             phase = ExplorePhase.None;
             needsDoorRefresh = true;
             queuedRoomIndex = -1;
+            nextLuaExploreTickTime = 0f;
         }
     }
 }

@@ -67,10 +67,10 @@ public class PopupController : MonoBehaviour
             return;
         }
 
-        tabGame.clicked += () => SwitchTab("Game");
-        tabPack.clicked += () => SwitchTab("Pack");
-        tabInventory.clicked += () => SwitchTab("Inventory");
-        tabSettings.clicked += () => SwitchTab("Settings");
+        tabGame.clicked += () => { AudioPlayer.PlayUiButtonClick(); SwitchTab("Game"); };
+        tabPack.clicked += () => { AudioPlayer.PlayUiButtonClick(); SwitchTab("Pack"); };
+        tabInventory.clicked += () => { AudioPlayer.PlayUiButtonClick(); SwitchTab("Inventory"); };
+        tabSettings.clicked += () => { AudioPlayer.PlayUiButtonClick(); SwitchTab("Settings"); };
 
         Debug.Log($"PopupController: success: {allButtons.Count} buttons assigned.");
         ApplyResponsiveLayout();
@@ -276,7 +276,7 @@ public class PopupController : MonoBehaviour
         // Wire up tab clicks
         tabGame.clicked      += () => SwitchTab("Game");
         tabPack.clicked      += () => SwitchTab("Pack");
-        tabInventory.clicked += () => SwitchTab("Inventory");
+        tabInventory.clicked += () => { AudioPlayer.PlayUiButtonClick(); SwitchTab("Inventory"); };
         tabSettings.clicked  += () => SwitchTab("Settings");
 
         ApplyResponsiveLayout();

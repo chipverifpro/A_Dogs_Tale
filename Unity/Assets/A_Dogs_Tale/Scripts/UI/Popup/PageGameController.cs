@@ -10,9 +10,9 @@ public class PageGameController : MonoBehaviour
         var load  = root.Q<Button>("Btn-Load");
         var exit  = root.Q<Button>("Btn-Exit");
 
-        if (pause != null) pause.clicked += () => Debug.Log("Pause/Resume clicked");
-        if (save != null)  save.clicked  += () => Debug.Log("Save clicked");
-        if (load != null)  load.clicked  += () => Debug.Log("Load clicked");
-        if (exit != null)  exit.clicked  += () => Debug.Log("Exit clicked");
+        if (pause != null) pause.clicked += () => { AudioPlayer.PlayUiButtonClick(); Debug.Log("Pause/Resume clicked"); };
+        if (save != null)  save.clicked  += () => { AudioPlayer.PlayUiButtonClick(); Debug.Log("Save clicked"); };
+        if (load != null)  load.clicked  += () => { AudioPlayer.PlayUiButtonClick(); Debug.Log("Load clicked"); };
+        if (exit != null)  exit.clicked  += () => { AudioPlayer.PlayUiButtonClick(); Debug.Log("Exit clicked"); };
     }
 }

@@ -18,12 +18,12 @@ public class DungeonBuildSettingsUIBinder : MonoBehaviour
 
     void Awake()
     {
-        if (saveBtn)   saveBtn.onClick.AddListener(ui.SaveFromInput);
-        if (loadBtn)   loadBtn.onClick.AddListener(ui.LoadSelected);
-        if (deleteBtn) deleteBtn.onClick.AddListener(ui.DeleteSelected);
-        if (refreshBtn)refreshBtn.onClick.AddListener(ui.RefreshListButton);
+        if (saveBtn)   { saveBtn.onClick.AddListener(AudioPlayer.PlayUiButtonClick); saveBtn.onClick.AddListener(ui.SaveFromInput); }
+        if (loadBtn)   { loadBtn.onClick.AddListener(AudioPlayer.PlayUiButtonClick); loadBtn.onClick.AddListener(ui.LoadSelected); }
+        if (deleteBtn) { deleteBtn.onClick.AddListener(AudioPlayer.PlayUiButtonClick); deleteBtn.onClick.AddListener(ui.DeleteSelected); }
+        if (refreshBtn){ refreshBtn.onClick.AddListener(AudioPlayer.PlayUiButtonClick); refreshBtn.onClick.AddListener(ui.RefreshListButton); }
 #if UNITY_EDITOR
-        if (revealBtn) revealBtn.onClick.AddListener(ui.RevealFolder);
+        if (revealBtn) { revealBtn.onClick.AddListener(AudioPlayer.PlayUiButtonClick); revealBtn.onClick.AddListener(ui.RevealFolder); }
 #endif
 
         if (uguiDropdown) uguiDropdown.onValueChanged.AddListener(ui.OnDropdownChanged);

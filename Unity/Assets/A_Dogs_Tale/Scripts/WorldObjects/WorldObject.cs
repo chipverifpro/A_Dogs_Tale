@@ -9,6 +9,7 @@ using DogGame.LLM.Agent;
 using DogGame;
 using DogGame.UI.InteractionWheel;
 using DogGame.World;
+using Unity.Profiling;
 using UnityEngine.Events;
 using UnityEngine.Serialization;
 
@@ -152,6 +153,24 @@ public static class ModuleFlagsTemplates  // extension functions for the ModuleF
 [DefaultExecutionOrder(-100)] // positive = runs early, before modules try to access their worldObject
 public class WorldObject : MonoBehaviour
 {
+    private static readonly ProfilerMarker WorldObjectTickMarker = new("WorldObject.TickCallerAllModules");
+    private static readonly ProfilerMarker HearingTickMarker = new("WorldObject.Tick.Hearing");
+    private static readonly ProfilerMarker AgentTickMarker = new("WorldObject.Tick.Agent");
+    private static readonly ProfilerMarker VisionTickMarker = new("WorldObject.Tick.Vision");
+    private static readonly ProfilerMarker ScentPerceptionTickMarker = new("WorldObject.Tick.ScentPerception");
+    private static readonly ProfilerMarker AgentMovementTickMarker = new("WorldObject.Tick.AgentMovement");
+    private static readonly ProfilerMarker PackMemberTickMarker = new("WorldObject.Tick.PackMember");
+    private static readonly ProfilerMarker LlmThinkTickMarker = new("WorldObject.Tick.LLMThink");
+    private static readonly ProfilerMarker MotivationTickMarker = new("WorldObject.Tick.Motivation");
+    private static readonly ProfilerMarker KineticTickMarker = new("WorldObject.Tick.Kinetic");
+    private static readonly ProfilerMarker LocationTickMarker = new("WorldObject.Tick.Location");
+    private static readonly ProfilerMarker ContainerTickMarker = new("WorldObject.Tick.Container");
+    private static readonly ProfilerMarker AgentStateTickMarker = new("WorldObject.Tick.AgentState");
+    private static readonly ProfilerMarker NoiseMakerTickMarker = new("WorldObject.Tick.NoiseMaker");
+    private static readonly ProfilerMarker ScentEmitterTickMarker = new("WorldObject.Tick.ScentEmitter");
+    private static readonly ProfilerMarker ReactionTickMarker = new("WorldObject.Tick.Reaction");
+    private static readonly ProfilerMarker FetchQuestTickMarker = new("WorldObject.Tick.FetchQuest");
+
     [Header("GameObject directory")]
     public Dir dir => Dir.Instance;
 
@@ -393,69 +412,104 @@ public class WorldObject : MonoBehaviour
     private int debugDoubleTick = -1;
     private void TickCallerAllModules()
     {
-        //Debug.Log($"[{ToString()}] TickCallerAllModules");
-        // Ensure this isn't being called more than once per frame:
+        using (WorldObjectTickMarker.Auto())
+        {
+            //Debug.Log($"[{ToString()}] TickCallerAllModules");
+            // Ensure this isn't being called more than once per frame:
             if (debugDoubleTick == Time.frameCount)
                 Debug.LogError("ERROR: TickCallerAllModules run more than once per frame");
             debugDoubleTick = Time.frameCount;
 
-        //float dt = Time.deltaTime;
-        float dt = GameTime.DeltaTime;
-        if (dt <= 0f)
-            return;
+            //float dt = Time.deltaTime;
+            float dt = GameTime.DeltaTime;
+            if (dt <= 0f)
+                return;
             
-        // SENSES
-        //visionPerceptionModule?.Tick(dt);
-        hearingModule?.Tick(dt);
-        //scentPerceptionModule?.Tick(dt);
-        //TasteModule?.Tick(dt);
+            // SENSES
+            //visionPerceptionModule?.Tick(dt);
+            if (hearingModule != null)
+                using (HearingTickMarker.Auto())
+                    hearingModule.Tick(dt);
+            //scentPerceptionModule?.Tick(dt);
+            //TasteModule?.Tick(dt);
 
-        // PLANNING             // Enqueue tasks
-        // reactionModule       
-        // llmPlanningModule
+            // PLANNING             // Enqueue tasks
+            // reactionModule       
+            // llmPlanningModule
 
-        // AGENT DECISION       // Enqueue tasks
-        agentModule?.Tick(dt);  // forwards to appropriate active DecisionModule...
+            // AGENT DECISION       // Enqueue tasks
+            if (agentModule != null)
+                using (AgentTickMarker.Auto())
+                    agentModule.Tick(dt);  // forwards to appropriate active DecisionModule...
             //playerDecisionModule?.Tick(dt);
             //wanderDecisionModule?.Tick(dt);
             //followerDecisionModule?.Tick(dt);
             //immobileDecisionModule?.Tick(dt);
             //...
 
-        // AGENT EXECUTION
-        //taskExecutor?.Tick(context, dt); // needs context
+            // AGENT EXECUTION
+            //taskExecutor?.Tick(context, dt); // needs context
 
-        // AGENT INTERFACE
-        visionPerceptionModule?.Tick(dt);
-        scentPerceptionModule?.Tick(dt);
-        agentMovementModule?.Tick(dt);
-        packMemberModule?.Tick(dt);
-        llmThinkModule?.Tick(dt);
+            // AGENT INTERFACE
+            if (visionPerceptionModule != null)
+                using (VisionTickMarker.Auto())
+                    visionPerceptionModule.Tick(dt);
+            if (scentPerceptionModule != null)
+                using (ScentPerceptionTickMarker.Auto())
+                    scentPerceptionModule.Tick(dt);
+            if (agentMovementModule != null)
+                using (AgentMovementTickMarker.Auto())
+                    agentMovementModule.Tick(dt);
+            if (packMemberModule != null)
+                using (PackMemberTickMarker.Auto())
+                    packMemberModule.Tick(dt);
+            if (llmThinkModule != null)
+                using (LlmThinkTickMarker.Auto())
+                    llmThinkModule.Tick(dt);
 
-        // MOTIVATION
-        motivationModule?.Tick(dt);
+            // MOTIVATION
+            if (motivationModule != null)
+                using (MotivationTickMarker.Auto())
+                    motivationModule.Tick(dt);
 
-        // ABILITY
-        //motionModule?.Tick(dt);
-        kineticModule?.Tick(dt);
-        locationModule?.Tick(dt);
-        //activatorModule?.Tick(dt);
-        containerModule?.Tick(dt);
-        //interactionModule?.Tick(dt);
+            // ABILITY
+            //motionModule?.Tick(dt);
+            if (kineticModule != null)
+                using (KineticTickMarker.Auto())
+                    kineticModule.Tick(dt);
+            if (locationModule != null)
+                using (LocationTickMarker.Auto())
+                    locationModule.Tick(dt);
+            //activatorModule?.Tick(dt);
+            if (containerModule != null)
+                using (ContainerTickMarker.Auto())
+                    containerModule.Tick(dt);
+            //interactionModule?.Tick(dt);
         
-        // DATA                             // No need to tick
-        //blackboardModule?.Tick(dt);
-        //placementModule?.Tick(dt);
-        agentStateModule?.Tick(dt);
+            // DATA                             // No need to tick
+            //blackboardModule?.Tick(dt);
+            //placementModule?.Tick(dt);
+            if (agentStateModule != null)
+                using (AgentStateTickMarker.Auto())
+                    agentStateModule.Tick(dt);
 
-        // OUTPUT
-        //appearanceModule?.Tick(dt);
-        noiseMakerModule?.Tick(dt);
-        scentEmitterModule?.Tick(dt);
+            // OUTPUT
+            //appearanceModule?.Tick(dt);
+            if (noiseMakerModule != null)
+                using (NoiseMakerTickMarker.Auto())
+                    noiseMakerModule.Tick(dt);
+            if (scentEmitterModule != null)
+                using (ScentEmitterTickMarker.Auto())
+                    scentEmitterModule.Tick(dt);
         
-        reactionModule?.Tick(dt);
-        // QUEST
-        fetchQuestModule?.Tick(dt);
+            if (reactionModule != null)
+                using (ReactionTickMarker.Auto())
+                    reactionModule.Tick(dt);
+            // QUEST
+            if (fetchQuestModule != null)
+                using (FetchQuestTickMarker.Auto())
+                    fetchQuestModule.Tick(dt);
+        }
     }
 
     public T GetModule<T>() where T : WorldModule
