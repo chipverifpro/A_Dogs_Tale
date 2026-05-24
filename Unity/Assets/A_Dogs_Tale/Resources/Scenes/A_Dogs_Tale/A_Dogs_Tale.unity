@@ -111121,8 +111121,8 @@ MonoBehaviour:
   modePanelIconSize: 128
   dropdownWidth: 320
   dropdownMaxHeight: 420
-  emoteDropdownWidth: 520
-  emoteDropdownMaxHeight: 520
+  emoteDropdownWidth: 620
+  emoteDropdownMaxHeight: 620
   emoteTileSize: 96
   emoteGridColumns: 4
   uiSortOrder: 5100

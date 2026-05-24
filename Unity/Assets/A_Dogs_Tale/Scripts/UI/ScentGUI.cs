@@ -30,6 +30,7 @@ public class ScentGUI : MonoBehaviour
     private const int TopControlColumnsWhenTwoRows = 5;
     private const string DefaultTwoRowPulldownFrameResourcePath = "Sprites/PulldownFrame_2x5";
     private const string LegacyTwoRowPulldownFrameResourcePath = "Sprites/PulldownFrame_2row";
+    private const float PanelSpritePixelsPerUnit = 100f;
 
     [Header("External object references")]
     private Dir dir;
@@ -44,6 +45,9 @@ public class ScentGUI : MonoBehaviour
     [SerializeField] private string pulldownFrameResourcePath = "Sprites/PulldownFrame";
     [SerializeField] private string pulldownFrameTwoRowResourcePath = DefaultTwoRowPulldownFrameResourcePath;
     [SerializeField] private string pulldownTabResourcePath = "Sprites/PulldownTab";
+    [SerializeField] private string behaviorFrameResourcePath = "Sprites/Behavior_Frame_A";
+    [SerializeField] private string gaitFrameResourcePath = "Sprites/Gait_Frame_AB";
+    [SerializeField] private string emoteFrameResourcePath = "Sprites/Emotes_Frame_A";
     [SerializeField] private string androidButtonSpriteResourcePath = "Sprites/AndroidButtonsAndQuests";
     [SerializeField] private string targetIconSpriteResourcePath = "Sprites/TargetIcon_D";
     [SerializeField] private float noseButtonSize = 176f;
@@ -61,8 +65,8 @@ public class ScentGUI : MonoBehaviour
     [SerializeField] private float modePanelIconSize = 128f;
     [SerializeField] private float dropdownWidth = 320f;
     [SerializeField] private float dropdownMaxHeight = 420f;
-    [SerializeField] private float emoteDropdownWidth = 520f;
-    [SerializeField] private float emoteDropdownMaxHeight = 520f;
+    [SerializeField] private float emoteDropdownWidth = 620f;
+    [SerializeField] private float emoteDropdownMaxHeight = 620f;
     [SerializeField] private float emoteTileSize = 96f;
     [SerializeField] private int emoteGridColumns = 4;
     [SerializeField] private int uiSortOrder = 5100;
@@ -100,6 +104,9 @@ public class ScentGUI : MonoBehaviour
     private Image pulldownFrameImage;
     private Sprite pulldownFrameSprite;
     private Sprite pulldownFrameTwoRowSprite;
+    private Sprite behaviorFrameSprite;
+    private Sprite gaitFrameSprite;
+    private Sprite emoteFrameSprite;
     private RectTransform pulldownTabRect;
     private Image pulldownTabImage;
     private RectTransform pulldownRetractButtonRect;
@@ -920,7 +927,7 @@ public class ScentGUI : MonoBehaviour
         rectTransform.anchorMin = new Vector2(0.5f, 1f);
         rectTransform.anchorMax = new Vector2(0.5f, 1f);
         rectTransform.pivot = new Vector2(1f, 1f);
-        rectTransform.anchoredPosition = GetTopPanelPosition(slotFromRight);
+        rectTransform.anchoredPosition = GetTopPanelPositionForRect(rectTransform, slotFromRight);
     }
 
     private void ConfigureTopControlIconRect(RectTransform iconRect, float sizeScale)
@@ -1110,7 +1117,7 @@ public class ScentGUI : MonoBehaviour
         modeIconImage.color = Color.white;
         RefreshModeButtonState(force: true);
 
-        ConfigureTooltip(buttonObject, () => "Movement Mode");
+        ConfigureTooltip(buttonObject, () => "Behavior");
     }
 
     private void BuildSimulationButton(Transform parent, Transform searchRoot)
@@ -1257,7 +1264,7 @@ public class ScentGUI : MonoBehaviour
         speedIconImage.color = Color.white;
         RefreshSpeedButtonState(force: true);
 
-        ConfigureTooltip(buttonObject, () => "Speed Select");
+        ConfigureTooltip(buttonObject, () => "Gait");
     }
 
     private void BuildEmoteButton(Transform parent, Transform searchRoot)
@@ -1815,13 +1822,56 @@ public class ScentGUI : MonoBehaviour
         if (rectTransform == null)
             return;
 
+        if (rectTransform == modePanelRect)
+        {
+            ApplyCenteredModePanelPosition();
+            return;
+        }
+
+        if (rectTransform == speedPanelRect)
+        {
+            ApplyCenteredSpeedPanelPosition();
+            return;
+        }
+
         if (rectTransform == emoteDropdownRect)
         {
             ApplyCenteredEmoteDropdownPosition();
             return;
         }
 
-        rectTransform.anchoredPosition = GetTopPanelPosition(slotFromRight);
+        rectTransform.anchoredPosition = GetTopPanelPositionForRect(rectTransform, slotFromRight);
+    }
+
+    private Vector2 GetTopPanelPositionForRect(RectTransform rectTransform, int slotFromRight)
+    {
+        Vector2 position = GetTopPanelPosition(slotFromRight);
+        if (rectTransform == speedPanelRect)
+            position.y -= 48f;
+
+        return position;
+    }
+
+    private void ApplyCenteredModePanelPosition()
+    {
+        if (modePanelRect == null)
+            return;
+
+        modePanelRect.anchorMin = new Vector2(0.5f, 0.5f);
+        modePanelRect.anchorMax = new Vector2(0.5f, 0.5f);
+        modePanelRect.pivot = new Vector2(0.5f, 0.5f);
+        modePanelRect.anchoredPosition = Vector2.zero;
+    }
+
+    private void ApplyCenteredSpeedPanelPosition()
+    {
+        if (speedPanelRect == null)
+            return;
+
+        speedPanelRect.anchorMin = new Vector2(0.5f, 0.5f);
+        speedPanelRect.anchorMax = new Vector2(0.5f, 0.5f);
+        speedPanelRect.pivot = new Vector2(0.5f, 0.5f);
+        speedPanelRect.anchoredPosition = Vector2.zero;
     }
 
     private void ApplyCenteredEmoteDropdownPosition()
@@ -1869,11 +1919,13 @@ public class ScentGUI : MonoBehaviour
 
         emoteDropdownRect = dropdownObject.GetComponent<RectTransform>();
         ConfigureTopPanelRect(emoteDropdownRect, 4);
-        emoteDropdownRect.sizeDelta = new Vector2(GetVisibleEmoteDropdownWidth(), emoteDropdownMaxHeight);
+        emoteDropdownRect.sizeDelta = new Vector2(GetVisibleEmoteDropdownWidth(), GetVisibleEmoteDropdownHeight());
         ApplyCenteredEmoteDropdownPosition();
 
         Image dropdownImage = dropdownObject.GetComponent<Image>();
-        dropdownImage.color = dropdownBackgroundColor;
+        bool hasFrame = ApplyPanelFrame(dropdownImage, GetEmoteFrameSprite());
+        if (!hasFrame)
+            dropdownImage.color = dropdownBackgroundColor;
 
         GameObject titleObject = CreateTMPLabel(
             parent: dropdownObject.transform,
@@ -1888,6 +1940,7 @@ public class ScentGUI : MonoBehaviour
         titleRect.pivot = new Vector2(0.5f, 1f);
         titleRect.offsetMin = new Vector2(14f, -42f);
         titleRect.offsetMax = new Vector2(-14f, -10f);
+        titleObject.SetActive(!hasFrame);
 
         GameObject scrollObject = new GameObject(
             "ScrollView",
@@ -1899,8 +1952,8 @@ public class ScentGUI : MonoBehaviour
         RectTransform scrollRectTransform = scrollObject.GetComponent<RectTransform>();
         scrollRectTransform.anchorMin = new Vector2(0f, 0f);
         scrollRectTransform.anchorMax = new Vector2(1f, 1f);
-        scrollRectTransform.offsetMin = new Vector2(12f, 12f);
-        scrollRectTransform.offsetMax = new Vector2(-16f, -48f);
+        scrollRectTransform.offsetMin = hasFrame ? new Vector2(58f, 54f) : new Vector2(12f, 12f);
+        scrollRectTransform.offsetMax = hasFrame ? new Vector2(-58f, -132f) : new Vector2(-16f, -48f);
 
         Image scrollBackground = scrollObject.GetComponent<Image>();
         scrollBackground.color = new Color(1f, 1f, 1f, 0.08f);
@@ -1975,11 +2028,25 @@ public class ScentGUI : MonoBehaviour
         ApplyCenteredEmoteDropdownPosition();
 
         Image dropdownImage = dropdownObject.GetComponent<Image>();
-        if (dropdownImage != null)
+        bool hasFrame = ApplyPanelFrame(dropdownImage, GetEmoteFrameSprite());
+        if (dropdownImage != null && !hasFrame)
             dropdownImage.color = dropdownBackgroundColor;
+
+        Transform titleTransform = dropdownObject.transform.Find("Title");
+        if (titleTransform != null)
+            titleTransform.gameObject.SetActive(!hasFrame);
 
         Transform scrollTransform = dropdownObject.transform.Find("ScrollView");
         emoteDropdownScrollRect = scrollTransform != null ? scrollTransform.GetComponent<ScrollRect>() : null;
+        if (scrollTransform != null)
+        {
+            RectTransform scrollRectTransform = scrollTransform.GetComponent<RectTransform>();
+            if (scrollRectTransform != null)
+            {
+                scrollRectTransform.offsetMin = hasFrame ? new Vector2(58f, 54f) : new Vector2(12f, 12f);
+                scrollRectTransform.offsetMax = hasFrame ? new Vector2(-58f, -132f) : new Vector2(-16f, -48f);
+            }
+        }
         Transform contentTransform = dropdownObject.transform.Find("ScrollView/Viewport/Content");
         emoteDropdownContentRect = contentTransform != null ? contentTransform.GetComponent<RectTransform>() : null;
 
@@ -2136,23 +2203,12 @@ public class ScentGUI : MonoBehaviour
         modePanelRect = panelObject.GetComponent<RectTransform>();
         ConfigureTopPanelRect(modePanelRect, 1);
 
-        float padding = 12f;
-        float spacing = 8f;
-        modePanelRect.sizeDelta = new Vector2(
-            padding * 2f + modePanelIconSize * 3f + spacing * 2f,
-            padding * 2f + modePanelIconSize * 2f + spacing);
-
         Image panelImage = panelObject.GetComponent<Image>();
-        panelImage.color = dropdownBackgroundColor;
+        bool hasFrame = ApplyPanelFrame(panelImage, GetBehaviorFrameSprite());
+        if (!hasFrame)
+            panelImage.color = dropdownBackgroundColor;
 
-        GridLayoutGroup grid = panelObject.GetComponent<GridLayoutGroup>();
-        grid.padding = new RectOffset((int)padding, (int)padding, (int)padding, (int)padding);
-        grid.cellSize = new Vector2(modePanelIconSize, modePanelIconSize);
-        grid.spacing = new Vector2(spacing, spacing);
-        grid.startCorner = GridLayoutGroup.Corner.UpperLeft;
-        grid.startAxis = GridLayoutGroup.Axis.Horizontal;
-        grid.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
-        grid.constraintCount = 3;
+        ConfigureModePanelLayout(panelObject, hasFrame);
 
         for (int i = 0; i < selectableDecisionModes.Length; i++)
             CreateModePanelButton(selectableDecisionModes[i]);
@@ -2179,28 +2235,81 @@ public class ScentGUI : MonoBehaviour
         speedPanelRect = panelObject.GetComponent<RectTransform>();
         ConfigureTopPanelRect(speedPanelRect, 2);
 
-        float padding = 12f;
-        float spacing = 8f;
-        speedPanelRect.sizeDelta = new Vector2(
-            padding * 2f + modePanelIconSize * 3f + spacing * 2f,
-            padding * 2f + modePanelIconSize);
-
         Image panelImage = panelObject.GetComponent<Image>();
-        panelImage.color = dropdownBackgroundColor;
+        bool hasFrame = ApplyPanelFrame(panelImage, GetGaitFrameSprite());
+        if (!hasFrame)
+            panelImage.color = dropdownBackgroundColor;
 
-        GridLayoutGroup grid = panelObject.GetComponent<GridLayoutGroup>();
-        grid.padding = new RectOffset((int)padding, (int)padding, (int)padding, (int)padding);
-        grid.cellSize = new Vector2(modePanelIconSize, modePanelIconSize);
-        grid.spacing = new Vector2(spacing, spacing);
-        grid.startCorner = GridLayoutGroup.Corner.UpperLeft;
-        grid.startAxis = GridLayoutGroup.Axis.Horizontal;
-        grid.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
-        grid.constraintCount = 3;
+        ConfigureSpeedPanelLayout(panelObject, hasFrame);
 
         for (int i = 0; i < selectableSpeedModes.Length; i++)
             CreateSpeedPanelButton(selectableSpeedModes[i]);
 
         panelObject.SetActive(false);
+    }
+
+    private void ConfigureModePanelLayout(GameObject panelObject, bool hasFrame)
+    {
+        if (modePanelRect != null)
+        {
+            float fallbackPadding = 12f;
+            float spacing = 8f;
+            modePanelRect.sizeDelta = hasFrame
+                ? new Vector2(400f, 266.7f)
+                : new Vector2(
+                    fallbackPadding * 2f + modePanelIconSize * 3f + spacing * 2f,
+                    fallbackPadding * 2f + modePanelIconSize * 2f + spacing);
+        }
+
+        GridLayoutGroup grid = panelObject.GetComponent<GridLayoutGroup>();
+        if (grid == null)
+            return;
+
+        grid.padding = hasFrame
+            ? new RectOffset(67, 67, 75, 16)
+            : new RectOffset(12, 12, 12, 12);
+        float cellSize = hasFrame ? 85f : modePanelIconSize;
+        float gridSpacing = hasFrame ? 5f : 8f;
+        grid.cellSize = new Vector2(cellSize, cellSize);
+        grid.spacing = new Vector2(gridSpacing, gridSpacing);
+        grid.startCorner = GridLayoutGroup.Corner.UpperLeft;
+        grid.startAxis = GridLayoutGroup.Axis.Horizontal;
+        grid.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
+        grid.constraintCount = 3;
+
+        if (hasFrame)
+            ApplyCenteredModePanelPosition();
+    }
+
+    private void ConfigureSpeedPanelLayout(GameObject panelObject, bool hasFrame)
+    {
+        if (speedPanelRect != null)
+        {
+            float fallbackPadding = 12f;
+            float spacing = 8f;
+            speedPanelRect.sizeDelta = hasFrame
+                ? new Vector2(1120f, 374f)
+                : new Vector2(
+                    fallbackPadding * 2f + modePanelIconSize * 3f + spacing * 2f,
+                    fallbackPadding * 2f + modePanelIconSize);
+        }
+
+        GridLayoutGroup grid = panelObject.GetComponent<GridLayoutGroup>();
+        if (grid == null)
+            return;
+
+        grid.padding = hasFrame
+            ? new RectOffset(360, 360, 104, 14)
+            : new RectOffset(12, 12, 12, 12);
+        grid.cellSize = new Vector2(modePanelIconSize, modePanelIconSize);
+        grid.spacing = new Vector2(8f, 8f);
+        grid.startCorner = GridLayoutGroup.Corner.UpperLeft;
+        grid.startAxis = GridLayoutGroup.Axis.Horizontal;
+        grid.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
+        grid.constraintCount = 3;
+
+        if (hasFrame)
+            ApplyCenteredSpeedPanelPosition();
     }
 
     private void BindExistingModePanel(GameObject panelObject)
@@ -2212,8 +2321,11 @@ public class ScentGUI : MonoBehaviour
         ConfigureTopPanelRect(modePanelRect, 1);
 
         Image panelImage = panelObject.GetComponent<Image>();
-        if (panelImage != null)
+        bool hasFrame = ApplyPanelFrame(panelImage, GetBehaviorFrameSprite());
+        if (panelImage != null && !hasFrame)
             panelImage.color = dropdownBackgroundColor;
+
+        ConfigureModePanelLayout(panelObject, hasFrame);
 
         modeButtonBackgrounds.Clear();
         for (int i = 0; i < selectableDecisionModes.Length; i++)
@@ -2241,8 +2353,11 @@ public class ScentGUI : MonoBehaviour
         ConfigureTopPanelRect(speedPanelRect, 2);
 
         Image panelImage = panelObject.GetComponent<Image>();
-        if (panelImage != null)
+        bool hasFrame = ApplyPanelFrame(panelImage, GetGaitFrameSprite());
+        if (panelImage != null && !hasFrame)
             panelImage.color = dropdownBackgroundColor;
+
+        ConfigureSpeedPanelLayout(panelObject, hasFrame);
 
         speedButtonBackgrounds.Clear();
         for (int i = 0; i < selectableSpeedModes.Length; i++)
@@ -2796,7 +2911,7 @@ public class ScentGUI : MonoBehaviour
         float chrome = 32f;
         float spacing = 8f;
         float desiredHeight = headerHeight + chrome + (rowCount * emoteTileSize) + (Mathf.Max(0, rowCount - 1) * spacing) + 16f;
-        emoteDropdownRect.sizeDelta = new Vector2(GetVisibleEmoteDropdownWidth(), Mathf.Min(emoteDropdownMaxHeight, desiredHeight));
+        emoteDropdownRect.sizeDelta = new Vector2(GetVisibleEmoteDropdownWidth(), Mathf.Min(GetVisibleEmoteDropdownHeight(), desiredHeight));
         ClampEmoteDropdownToCanvas();
     }
 
@@ -2808,6 +2923,16 @@ public class ScentGUI : MonoBehaviour
             return emoteDropdownWidth;
 
         return Mathf.Min(emoteDropdownWidth, Mathf.Max(1f, canvasRect.rect.width - (margin * 2f)));
+    }
+
+    private float GetVisibleEmoteDropdownHeight()
+    {
+        const float margin = 12f;
+        RectTransform canvasRect = overlayCanvas != null ? overlayCanvas.transform as RectTransform : null;
+        if (canvasRect == null || canvasRect.rect.height <= 0f)
+            return emoteDropdownMaxHeight;
+
+        return Mathf.Min(emoteDropdownMaxHeight, Mathf.Max(1f, canvasRect.rect.height - (margin * 2f)));
     }
 
     private void ClampEmoteDropdownToCanvas()
@@ -3795,6 +3920,74 @@ public class ScentGUI : MonoBehaviour
 
         Debug.LogWarning($"ScentGUI: could not load pulldown frame sprite at Resources/{resourcePath}.", this);
         return null;
+    }
+
+    private Sprite GetBehaviorFrameSprite()
+    {
+        if (behaviorFrameSprite == null)
+            behaviorFrameSprite = LoadPanelFrameSprite(behaviorFrameResourcePath);
+
+        return behaviorFrameSprite;
+    }
+
+    private Sprite GetGaitFrameSprite()
+    {
+        if (gaitFrameSprite == null)
+            gaitFrameSprite = LoadPanelFrameSprite(gaitFrameResourcePath, useTopHalf: true);
+
+        return gaitFrameSprite;
+    }
+
+    private Sprite GetEmoteFrameSprite()
+    {
+        if (emoteFrameSprite == null)
+            emoteFrameSprite = LoadPanelFrameSprite(emoteFrameResourcePath);
+
+        return emoteFrameSprite;
+    }
+
+    private Sprite LoadPanelFrameSprite(string resourcePath, bool useTopHalf = false)
+    {
+        if (string.IsNullOrWhiteSpace(resourcePath))
+            return null;
+
+        if (!useTopHalf)
+        {
+            Sprite sprite = Resources.Load<Sprite>(resourcePath);
+            if (sprite != null)
+                return sprite;
+        }
+
+        Texture2D texture = Resources.Load<Texture2D>(resourcePath);
+        if (texture != null)
+        {
+            Rect spriteRect = useTopHalf
+                ? new Rect(0f, texture.height * 0.5f, texture.width, texture.height * 0.5f)
+                : new Rect(0f, 0f, texture.width, texture.height);
+
+            Sprite generatedSprite = Sprite.Create(
+                texture,
+                spriteRect,
+                new Vector2(0.5f, 0.5f),
+                PanelSpritePixelsPerUnit);
+            generatedSprite.name = useTopHalf ? $"{texture.name}_0" : texture.name;
+            return generatedSprite;
+        }
+
+        Debug.LogWarning($"ScentGUI: could not load panel frame sprite at Resources/{resourcePath}.", this);
+        return null;
+    }
+
+    private static bool ApplyPanelFrame(Image image, Sprite frameSprite)
+    {
+        if (image == null || frameSprite == null)
+            return false;
+
+        image.sprite = frameSprite;
+        image.type = Image.Type.Simple;
+        image.preserveAspect = false;
+        image.color = Color.white;
+        return true;
     }
 
     private Sprite GetPulldownTabSprite()

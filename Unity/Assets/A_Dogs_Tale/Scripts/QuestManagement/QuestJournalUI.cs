@@ -12,9 +12,10 @@ public sealed class QuestJournalUI : MonoBehaviour
     [Header("Layout")]
     [SerializeField] private int uiSortOrder = 5400;
     [SerializeField] private Vector2 referenceResolution = new(1920f, 1080f);
-    [SerializeField] private Vector2 dialogSize = new(640f, 560f);
+    [SerializeField] private Vector2 dialogSize = new(760f, 600f);
     [SerializeField] private float questAcceptRange = 2.5f;
     [SerializeField] private float proximityRefreshInterval = 0.5f;
+    [SerializeField] private string questFrameResourcePath = "Sprites/Quest_Frame_A";
 
     private readonly HashSet<QuestModuleBase> expandedQuestModules = new();
     private readonly List<QuestModuleBase> displayQuestModules = new();
@@ -25,6 +26,8 @@ public sealed class QuestJournalUI : MonoBehaviour
     private RectTransform contentRect;
     private ScrollRect questScrollRect;
     private TextMeshProUGUI emptyLabel;
+    private Sprite questFrameSprite;
+    private bool questFrameApplied;
     private bool isOpen;
     private bool questListDirty = true;
     private float nextProximityRefreshTime;
@@ -148,7 +151,9 @@ public sealed class QuestJournalUI : MonoBehaviour
         dialogRect.sizeDelta = dialogSize;
 
         Image dialogImage = dialogRoot.AddComponent<Image>();
-        dialogImage.color = new Color(0.055f, 0.05f, 0.043f, 0.96f);
+        questFrameApplied = ApplyFrame(dialogImage, GetQuestFrameSprite());
+        if (!questFrameApplied)
+            dialogImage.color = new Color(0.055f, 0.05f, 0.043f, 0.96f);
 
         BuildHeader(dialogRoot.transform);
         BuildBody(dialogRoot.transform);
@@ -169,14 +174,15 @@ public sealed class QuestJournalUI : MonoBehaviour
         titleLabel.fontSize = 34f;
         titleLabel.color = new Color(0.98f, 0.93f, 0.78f, 1f);
         titleLabel.alignment = TextAlignmentOptions.MidlineLeft;
+        titleObject.SetActive(!questFrameApplied);
 
         Button closeButton = CreateButton("CloseButton", parent, "X", Hide);
         RectTransform closeRect = closeButton.GetComponent<RectTransform>();
         closeRect.anchorMin = new Vector2(1f, 1f);
         closeRect.anchorMax = new Vector2(1f, 1f);
         closeRect.pivot = new Vector2(1f, 1f);
-        closeRect.anchoredPosition = new Vector2(-20f, -18f);
-        closeRect.sizeDelta = new Vector2(54f, 54f);
+        closeRect.anchoredPosition = questFrameApplied ? new Vector2(-46f, -54f) : new Vector2(-20f, -18f);
+        closeRect.sizeDelta = questFrameApplied ? new Vector2(70f, 70f) : new Vector2(54f, 54f);
     }
 
     private void BuildBody(Transform parent)
@@ -185,11 +191,11 @@ public sealed class QuestJournalUI : MonoBehaviour
         RectTransform bodyRect = bodyObject.GetComponent<RectTransform>();
         bodyRect.anchorMin = Vector2.zero;
         bodyRect.anchorMax = Vector2.one;
-        bodyRect.offsetMin = new Vector2(28f, 28f);
-        bodyRect.offsetMax = new Vector2(-28f, -86f);
+        bodyRect.offsetMin = questFrameApplied ? new Vector2(76f, 64f) : new Vector2(28f, 28f);
+        bodyRect.offsetMax = questFrameApplied ? new Vector2(-76f, -146f) : new Vector2(-28f, -86f);
 
         Image bodyImage = bodyObject.AddComponent<Image>();
-        bodyImage.color = new Color(0.02f, 0.018f, 0.014f, 0.32f);
+        bodyImage.color = questFrameApplied ? Color.clear : new Color(0.02f, 0.018f, 0.014f, 0.32f);
 
         GameObject scrollObject = CreateUIObject("ScrollView", bodyObject.transform);
         RectTransform scrollRect = scrollObject.GetComponent<RectTransform>();
@@ -547,6 +553,51 @@ public sealed class QuestJournalUI : MonoBehaviour
             QuestRunStatus.Inactive => new Color(0.105f, 0.095f, 0.08f, 0.82f),
             _ => new Color(0.12f, 0.105f, 0.08f, 0.92f)
         };
+    }
+
+    private Sprite GetQuestFrameSprite()
+    {
+        if (questFrameSprite == null)
+            questFrameSprite = LoadFrameSprite(questFrameResourcePath);
+
+        return questFrameSprite;
+    }
+
+    private Sprite LoadFrameSprite(string resourcePath)
+    {
+        if (string.IsNullOrWhiteSpace(resourcePath))
+            return null;
+
+        Sprite sprite = Resources.Load<Sprite>(resourcePath);
+        if (sprite != null)
+            return sprite;
+
+        Texture2D texture = Resources.Load<Texture2D>(resourcePath);
+        if (texture != null)
+        {
+            Sprite generatedSprite = Sprite.Create(
+                texture,
+                new Rect(0f, 0f, texture.width, texture.height),
+                new Vector2(0.5f, 0.5f),
+                100f);
+            generatedSprite.name = texture.name;
+            return generatedSprite;
+        }
+
+        Debug.LogWarning($"QuestJournalUI: could not load quest frame sprite at Resources/{resourcePath}.", this);
+        return null;
+    }
+
+    private static bool ApplyFrame(Image image, Sprite frameSprite)
+    {
+        if (image == null || frameSprite == null)
+            return false;
+
+        image.sprite = frameSprite;
+        image.type = Image.Type.Simple;
+        image.preserveAspect = false;
+        image.color = Color.white;
+        return true;
     }
 
     private static Button CreateButton(string objectName, Transform parent, string text, UnityEngine.Events.UnityAction onClick)
