@@ -1,6 +1,8 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.EventSystems;
+using UnityEngine.InputSystem;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 
@@ -120,6 +122,9 @@ public class MenuManager : MonoBehaviour
 
     void Update()
     {
+        if (WasTitleContinuePressedThisFrame())
+            OnContinue();
+
         ApplyTitleScreenResponsiveLayout();
     }
     #endregion
@@ -250,6 +255,48 @@ public class MenuManager : MonoBehaviour
     }
 
     #endregion
+
+    bool WasTitleContinuePressedThisFrame()
+    {
+        Keyboard keyboard = Keyboard.current;
+        if (keyboard == null || !keyboard.escapeKey.wasPressedThisFrame)
+            return false;
+
+        if (!IsTitleOverlayVisible())
+            return false;
+
+        if (!IsContinueButtonAvailable())
+            return false;
+
+        GameObject selectedObject = EventSystem.current != null ? EventSystem.current.currentSelectedGameObject : null;
+        return selectedObject == null ||
+               (selectedObject.GetComponent<TMPro.TMP_InputField>() == null &&
+                selectedObject.GetComponent<InputField>() == null);
+    }
+
+    bool IsTitleOverlayVisible()
+    {
+        SceneFader sceneFader = fader;
+        if (sceneFader == null && dir != null)
+            sceneFader = dir.sceneFader;
+        if (sceneFader == null)
+            sceneFader = FindFirstObjectByType<SceneFader>();
+        if (sceneFader != null)
+        {
+            fader = sceneFader;
+            return sceneFader.IsTitleOverlayVisible;
+        }
+
+        return true;
+    }
+
+    bool IsContinueButtonAvailable()
+    {
+        return btnContinue != null &&
+               btnContinue.gameObject.activeInHierarchy &&
+               btnContinue.interactable;
+    }
+
     private IEnumerator SwitchScenes(string sceneName)
     {
         // Load new scene

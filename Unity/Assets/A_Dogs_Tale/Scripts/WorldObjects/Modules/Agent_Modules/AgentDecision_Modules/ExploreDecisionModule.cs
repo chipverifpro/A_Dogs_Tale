@@ -20,6 +20,7 @@ namespace DogGame.Modules
         private static readonly ProfilerMarker ExploreLuaCallTickMarker = new("ExploreDecision.Lua.CallTick");
         private static readonly ProfilerMarker ExploreRefreshDoorsMarker = new("ExploreDecision.RefreshDoorsForRoom");
         private static readonly ProfilerMarker ExploreActivateDoorMarker = new("ExploreDecision.TryActivateNextDoor");
+        private const string ExplorationCompleteBannerMessage = "Nothing left to explore. Switching to Stay.";
 
 private const string DefaultLuaExploreScript = @"state = {
     roomPath = {},
@@ -366,9 +367,7 @@ end
 
                 if (!TryActivateNextDoor(currentCell))
                 {
-                    worldObject.agentMovementModule.ClearDesiredTarget();
-                    worldObject.agentMovementModule.ClearDesiredMove();
-                    MarkExplorationExhausted(currentCell.room_number);
+                    CompleteExplorationAndStay(currentCell.room_number);
                 }
                 return;
             }
@@ -713,6 +712,17 @@ end
         {
             queuedRoomIndex = roomIndex;
             explorationExhausted = true;
+        }
+
+        private void CompleteExplorationAndStay(int roomIndex)
+        {
+            worldObject.agentMovementModule.ClearDesiredTarget();
+            worldObject.agentMovementModule.ClearDesiredMove();
+            MarkExplorationExhausted(roomIndex);
+            BottomBanner.Show(ExplorationCompleteBannerMessage);
+
+            if (worldObject.agentModule != null)
+                worldObject.agentModule.SwitchDecisionModule(AgentDecisionType.Immobile);
         }
 
         private bool HasReachedDoorStart(Cell currentCell, DoorGoal goal)

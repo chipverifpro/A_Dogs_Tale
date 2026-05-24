@@ -1007,6 +1007,14 @@ public class BottomBanner : MonoBehaviour
         GetOrCreateInstance()?._SetVisible(visible);
     }
 
+    public static void Collapse()
+    {
+        if (Instance == null)
+            return;
+
+        Instance.panelExpanded = false;
+    }
+
     public static void Show(BannerSense sense, BannerLevel level, string message, bool includeGameTime = false)
     {
         GetOrCreateInstance()?.AddMessageInternal(sense, level, message, includeGameTime, false);

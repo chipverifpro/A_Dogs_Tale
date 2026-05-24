@@ -317,8 +317,8 @@ public class PopupController : MonoBehaviour
 
         if (inputState.pausePressed)
         {
-            dialogMode = false;
-            Toggle();
+            if (isOpen)
+                Close();
         }
         if (!isOpen) return;
 

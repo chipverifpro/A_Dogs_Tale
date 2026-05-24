@@ -33,6 +33,10 @@ public class SceneFader : MonoBehaviour
     [SerializeField] private float pullUpOvershootY = 24f;
     [SerializeField] private float pullUpSettleDuration = 0.18f;
 
+    [Header("Gameplay Intro")]
+    [SerializeField] private bool showPlayerIntroEmote = true;
+    [SerializeField] private string playerIntroEmoteId = "A_0";
+
     [Header("Debug/UX")]
     public bool allowSkip = true;          // press any key / click to skip after min time
     [SerializeField] private KeyCode returnToTitleKey = KeyCode.Delete;
@@ -41,6 +45,7 @@ public class SceneFader : MonoBehaviour
     bool isTransitioning;
     bool hasGameStarted;
 
+    public bool IsTitleOverlayVisible => isTitleOverlayVisible;
 
     void Awake()
     {
@@ -266,6 +271,7 @@ public class SceneFader : MonoBehaviour
         SetSplashMenuCameraEnabled(false);
         SetOverlayedGameplayUiVisible(true);
         isTitleOverlayVisible = false;
+        TriggerPlayerIntroEmote();
 
         if (!hasGameStarted)
         {
@@ -353,6 +359,7 @@ public class SceneFader : MonoBehaviour
         SetSplashMenuCameraEnabled(false);
         SetOverlayedGameplayUiVisible(true);
         isTitleOverlayVisible = false;
+        TriggerPlayerIntroEmote();
 
         if (!hasGameStarted)
         {
@@ -425,6 +432,30 @@ public class SceneFader : MonoBehaviour
         SetSceneObjectActive("GeneratorCanvas", visible);
         SetSceneObjectActive("ScentTargetCanvas", visible);
         BottomBanner.SetVisible(visible);
+    }
+
+    void TriggerPlayerIntroEmote()
+    {
+        if (!showPlayerIntroEmote || string.IsNullOrWhiteSpace(playerIntroEmoteId))
+            return;
+
+        WorldObject controlledObject = null;
+        if (dir != null)
+        {
+            controlledObject = dir.gameInputRouter != null
+                ? dir.gameInputRouter.currentControlledWorldObject
+                : dir.playerPack != null ? dir.playerPack.packLeader : null;
+        }
+
+        if (controlledObject == null)
+            controlledObject = GameInputRouter.Instance != null
+                ? GameInputRouter.Instance.currentControlledWorldObject
+                : null;
+
+        if (controlledObject == null)
+            return;
+
+        BottomBanner.LogEmote(controlledObject, playerIntroEmoteId);
     }
 
     void SetSceneObjectActive(string objectName, bool visible)

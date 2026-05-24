@@ -197,6 +197,9 @@ public class ScentGUI : MonoBehaviour
 
     private void Update()
     {
+        if (WasEscapePressedThisFrame())
+            CloseOverlaysFromEscape();
+
         RefreshPersistentButtonSizePreference();
         RefreshModeButtonState();
         RefreshSpeedButtonState();
@@ -213,6 +216,44 @@ public class ScentGUI : MonoBehaviour
             return;
 
         CloseOpenPanelsIfClickedOutside(Mouse.current.position.ReadValue());
+    }
+
+    private bool WasEscapePressedThisFrame()
+    {
+        Keyboard keyboard = Keyboard.current;
+        if (keyboard == null || !keyboard.escapeKey.wasPressedThisFrame)
+            return false;
+
+        GameObject selectedObject = EventSystem.current != null ? EventSystem.current.currentSelectedGameObject : null;
+        return selectedObject == null ||
+               (selectedObject.GetComponent<TMP_InputField>() == null &&
+                selectedObject.GetComponent<InputField>() == null);
+    }
+
+    private void CloseOverlaysFromEscape()
+    {
+        CloseDropdown();
+        CloseModePanel();
+        CloseSpeedPanel();
+        CloseEmoteDropdown();
+        CollapseTopControlsToTab();
+        BottomBanner.Collapse();
+
+        MenuSettingsDialog[] settingsDialogs = FindObjectsByType<MenuSettingsDialog>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+        for (int i = 0; i < settingsDialogs.Length; i++)
+            settingsDialogs[i]?.Close();
+
+        InventoryDialogUI[] inventoryDialogs = FindObjectsByType<InventoryDialogUI>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+        for (int i = 0; i < inventoryDialogs.Length; i++)
+            inventoryDialogs[i]?.Hide();
+
+        QuestJournalUI[] questDialogs = FindObjectsByType<QuestJournalUI>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+        for (int i = 0; i < questDialogs.Length; i++)
+            questDialogs[i]?.Hide();
+
+        PopupController[] popupControllers = FindObjectsByType<PopupController>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+        for (int i = 0; i < popupControllers.Length; i++)
+            popupControllers[i]?.Close();
     }
 
     private void OnEnable()
@@ -1774,7 +1815,30 @@ public class ScentGUI : MonoBehaviour
         if (rectTransform == null)
             return;
 
+        if (rectTransform == emoteDropdownRect)
+        {
+            ApplyCenteredEmoteDropdownPosition();
+            return;
+        }
+
         rectTransform.anchoredPosition = GetTopPanelPosition(slotFromRight);
+    }
+
+    private void ApplyCenteredEmoteDropdownPosition()
+    {
+        if (emoteDropdownRect == null)
+            return;
+
+        emoteDropdownRect.anchorMin = new Vector2(0.5f, 0.5f);
+        emoteDropdownRect.anchorMax = new Vector2(0.5f, 0.5f);
+        emoteDropdownRect.pivot = new Vector2(0.5f, 0.5f);
+        emoteDropdownRect.anchoredPosition = Vector2.zero;
+        ClampEmoteDropdownToCanvas();
+    }
+
+    private Transform GetTopLevelOverlayParent(Transform fallbackParent)
+    {
+        return overlayCanvas != null ? overlayCanvas.transform : fallbackParent;
     }
 
     private float GetPulldownFrameHiddenY()
@@ -1801,11 +1865,12 @@ public class ScentGUI : MonoBehaviour
             "EmoteDropdown",
             typeof(RectTransform),
             typeof(Image));
-        dropdownObject.transform.SetParent(parent, false);
+        dropdownObject.transform.SetParent(GetTopLevelOverlayParent(parent), false);
 
         emoteDropdownRect = dropdownObject.GetComponent<RectTransform>();
         ConfigureTopPanelRect(emoteDropdownRect, 4);
-        emoteDropdownRect.sizeDelta = new Vector2(emoteDropdownWidth, emoteDropdownMaxHeight);
+        emoteDropdownRect.sizeDelta = new Vector2(GetVisibleEmoteDropdownWidth(), emoteDropdownMaxHeight);
+        ApplyCenteredEmoteDropdownPosition();
 
         Image dropdownImage = dropdownObject.GetComponent<Image>();
         dropdownImage.color = dropdownBackgroundColor;
@@ -1905,7 +1970,9 @@ public class ScentGUI : MonoBehaviour
         if (emoteDropdownRect == null)
             return;
 
+        dropdownObject.transform.SetParent(GetTopLevelOverlayParent(dropdownObject.transform.parent), worldPositionStays: false);
         ConfigureTopPanelRect(emoteDropdownRect, 4);
+        ApplyCenteredEmoteDropdownPosition();
 
         Image dropdownImage = dropdownObject.GetComponent<Image>();
         if (dropdownImage != null)
@@ -2547,8 +2614,10 @@ public class ScentGUI : MonoBehaviour
         CloseSpeedPanel();
         EnsureDefaultEmoteSelection();
         RefreshEmoteDropdownContents();
+        ApplyCenteredEmoteDropdownPosition();
         emoteDropdownRect.gameObject.SetActive(true);
         Canvas.ForceUpdateCanvases();
+        ClampEmoteDropdownToCanvas();
         if (emoteDropdownScrollRect != null)
             emoteDropdownScrollRect.verticalNormalizedPosition = 1f;
     }
@@ -2727,7 +2796,57 @@ public class ScentGUI : MonoBehaviour
         float chrome = 32f;
         float spacing = 8f;
         float desiredHeight = headerHeight + chrome + (rowCount * emoteTileSize) + (Mathf.Max(0, rowCount - 1) * spacing) + 16f;
-        emoteDropdownRect.sizeDelta = new Vector2(emoteDropdownWidth, Mathf.Min(emoteDropdownMaxHeight, desiredHeight));
+        emoteDropdownRect.sizeDelta = new Vector2(GetVisibleEmoteDropdownWidth(), Mathf.Min(emoteDropdownMaxHeight, desiredHeight));
+        ClampEmoteDropdownToCanvas();
+    }
+
+    private float GetVisibleEmoteDropdownWidth()
+    {
+        const float margin = 12f;
+        RectTransform canvasRect = overlayCanvas != null ? overlayCanvas.transform as RectTransform : null;
+        if (canvasRect == null || canvasRect.rect.width <= 0f)
+            return emoteDropdownWidth;
+
+        return Mathf.Min(emoteDropdownWidth, Mathf.Max(1f, canvasRect.rect.width - (margin * 2f)));
+    }
+
+    private void ClampEmoteDropdownToCanvas()
+    {
+        if (emoteDropdownRect == null || overlayCanvas == null)
+            return;
+
+        RectTransform canvasRect = overlayCanvas.transform as RectTransform;
+        if (canvasRect == null || canvasRect.rect.width <= 0f || canvasRect.rect.height <= 0f)
+            return;
+
+        float margin = 12f;
+        Vector2 size = emoteDropdownRect.rect.size;
+        if (size.x <= 0f || size.y <= 0f)
+            size = emoteDropdownRect.sizeDelta;
+
+        float canvasLeft = canvasRect.rect.xMin + margin;
+        float canvasRight = canvasRect.rect.xMax - margin;
+        float canvasBottom = canvasRect.rect.yMin + margin;
+        float canvasTop = canvasRect.rect.yMax - margin;
+
+        Vector2 pivot = emoteDropdownRect.pivot;
+        Vector2 position = emoteDropdownRect.anchoredPosition;
+        float left = position.x - (size.x * pivot.x);
+        float right = left + size.x;
+        float top = position.y + (size.y * (1f - pivot.y));
+        float bottom = top - size.y;
+
+        if (left < canvasLeft)
+            position.x += canvasLeft - left;
+        else if (right > canvasRight)
+            position.x -= right - canvasRight;
+
+        if (bottom < canvasBottom)
+            position.y += canvasBottom - bottom;
+        else if (top > canvasTop)
+            position.y -= top - canvasTop;
+
+        emoteDropdownRect.anchoredPosition = position;
     }
 
     private GameObject CreateInfoRowForParent(Transform parent, string message)
