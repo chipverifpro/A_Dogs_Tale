@@ -39255,9 +39255,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 422996051}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 0}
+  m_Script: {fileID: 11500000, guid: d1759db0a33e446ba04009d977eee817, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::ScentGuiTooltipTrigger
+  m_EditorClassIdentifier: Assembly-CSharp::TopPulldownTooltipTrigger
 --- !u!114 &422996054
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -85693,9 +85693,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 849604218}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 0}
+  m_Script: {fileID: 11500000, guid: d1759db0a33e446ba04009d977eee817, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::ScentGuiTooltipTrigger
+  m_EditorClassIdentifier: Assembly-CSharp::TopPulldownTooltipTrigger
 --- !u!114 &849604221
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -111094,7 +111094,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 25482a76cfa0045b48cc81a3b0583b89, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::ScentGUI
+  m_EditorClassIdentifier: Assembly-CSharp::TopPulldown
   sniffVisuals: {fileID: 0}
   modeSpriteResourcePath: Sprites/SpriteSheet_Modes_V3
   speedSpriteResourcePath: Sprites/Speeds
@@ -117334,9 +117334,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 1192272993}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 0}
+  m_Script: {fileID: 11500000, guid: d1759db0a33e446ba04009d977eee817, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::ScentGuiTooltipTrigger
+  m_EditorClassIdentifier: Assembly-CSharp::TopPulldownTooltipTrigger
 --- !u!114 &1192272996
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -129375,9 +129375,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 1318145632}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 0}
+  m_Script: {fileID: 11500000, guid: d1759db0a33e446ba04009d977eee817, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::ScentGuiTooltipTrigger
+  m_EditorClassIdentifier: Assembly-CSharp::TopPulldownTooltipTrigger
 --- !u!114 &1318145635
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -172942,9 +172942,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 1743110935}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 0}
+  m_Script: {fileID: 11500000, guid: d1759db0a33e446ba04009d977eee817, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::ScentGuiTooltipTrigger
+  m_EditorClassIdentifier: Assembly-CSharp::TopPulldownTooltipTrigger
 --- !u!114 &1743110938
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -181343,9 +181343,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 1840636952}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 0}
+  m_Script: {fileID: 11500000, guid: d1759db0a33e446ba04009d977eee817, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::ScentGuiTooltipTrigger
+  m_EditorClassIdentifier: Assembly-CSharp::TopPulldownTooltipTrigger
 --- !u!114 &1840636955
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -182270,9 +182270,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 1854405888}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 0}
+  m_Script: {fileID: 11500000, guid: d1759db0a33e446ba04009d977eee817, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::ScentGuiTooltipTrigger
+  m_EditorClassIdentifier: Assembly-CSharp::TopPulldownTooltipTrigger
 --- !u!114 &1854405891
 MonoBehaviour:
   m_ObjectHideFlags: 0
