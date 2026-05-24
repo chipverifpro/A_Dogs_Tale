@@ -35,13 +35,13 @@ public partial class TopPulldown
         speedButtonRect.anchorMax = new Vector2(1f, 1f);
         speedButtonRect.pivot = new Vector2(1f, 1f);
         speedButtonRect.anchoredPosition = new Vector2(
-            -(noseButtonMargin + ((noseButtonSize + modeButtonSpacing) * 3f)),
-            -noseButtonMargin);
-        speedButtonRect.sizeDelta = new Vector2(noseButtonSize, noseButtonSize);
+            -(topControlButtonMargin + ((topControlButtonSize + modeButtonSpacing) * 3f)),
+            -topControlButtonMargin);
+        speedButtonRect.sizeDelta = new Vector2(topControlButtonSize, topControlButtonSize);
         ConfigureTopControlRect(speedButtonRect, 2);
 
         speedButtonImage = GetOrAddComponent<Image>(buttonObject);
-        speedButtonImage.color = noseButtonColor;
+        speedButtonImage.color = topControlButtonColor;
         speedButtonImage.raycastTarget = true;
 
         Button button = GetOrAddComponent<Button>(buttonObject);
@@ -70,7 +70,7 @@ public partial class TopPulldown
             iconRect.anchorMin = new Vector2(0.5f, 0.5f);
             iconRect.anchorMax = new Vector2(0.5f, 0.5f);
             iconRect.pivot = new Vector2(0.5f, 0.5f);
-            iconRect.sizeDelta = Vector2.one * (noseButtonSize * 0.72f);
+            iconRect.sizeDelta = Vector2.one * (topControlButtonSize * 0.72f);
             iconRect.anchoredPosition = Vector2.zero;
         }
         ConfigureTopControlIconRect(iconRect, 0.72f);
@@ -328,7 +328,7 @@ public partial class TopPulldown
         displayedWalkMode = currentWalkMode;
         speedIconImage.sprite = GetSpeedModeSprite(currentWalkMode);
         speedButtonImage.color = currentWalkMode == WalkMode.None
-            ? noseButtonColor
+            ? topControlButtonColor
             : dropdownSelectedColor;
 
         RefreshSpeedPanelSelection();

@@ -249,7 +249,7 @@ public partial class TopPulldown
         ApplyTopControlsFitScale();
         ApplyPulldownFramePosition(frameY);
         ApplyPulldownTabPosition();
-        ApplyTopControlPosition(noseButtonRect, 0, y);
+        ApplyTopControlPosition(targetButtonRect, 0, y);
         ApplyTopControlPosition(modeButtonRect, 1, y);
         ApplyTopControlPosition(speedButtonRect, 2, y);
         ApplyTopControlPosition(simulationButtonRect, 3, y);
@@ -268,7 +268,7 @@ public partial class TopPulldown
         ApplyTopControlSizesForCurrentButtonSize();
         ApplyTopControlScale(pulldownFrameRect, scale);
         ApplyTopControlScale(pulldownTabRect, scale);
-        ApplyTopControlScale(noseButtonRect, scale);
+        ApplyTopControlScale(targetButtonRect, scale);
         ApplyTopControlScale(modeButtonRect, scale);
         ApplyTopControlScale(speedButtonRect, scale);
         ApplyTopControlScale(simulationButtonRect, scale);
@@ -292,7 +292,6 @@ public partial class TopPulldown
 
         appliedPersistentButtonSize = savedButtonSize;
         topControlButtonSize = savedButtonSize;
-        noseButtonSize = savedButtonSize;
 
         if (pulldownFrameRect == null)
             return;
@@ -311,7 +310,7 @@ public partial class TopPulldown
 
         ApplyPulldownEndRetractButtonRects();
 
-        ApplyTopControlButtonSize(noseButtonRect);
+        ApplyTopControlButtonSize(targetButtonRect);
         ApplyTopControlButtonSize(modeButtonRect);
         ApplyTopControlButtonSize(speedButtonRect);
         ApplyTopControlButtonSize(simulationButtonRect);
@@ -322,7 +321,7 @@ public partial class TopPulldown
         ApplyTopControlButtonSize(cameraModeButtonRect);
         ApplyTopControlButtonSize(questButtonRect);
 
-        ConfigureTopControlIconRect(noseIconImage != null ? noseIconImage.rectTransform : null, 0.68f);
+        ConfigureTopControlIconRect(targetButtonIconImage != null ? targetButtonIconImage.rectTransform : null, 0.68f);
         ConfigureTopControlIconRect(targetPreviewImage != null ? targetPreviewImage.rectTransform : null, 0.82f);
         ConfigureTopControlIconRect(modeIconImage != null ? modeIconImage.rectTransform : null, 0.72f);
         ConfigureTopControlIconRect(speedIconImage != null ? speedIconImage.rectTransform : null, 0.72f);

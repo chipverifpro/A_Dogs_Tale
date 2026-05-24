@@ -7,6 +7,7 @@ using UnityEngine.EventSystems;
 using UnityEngine.Events;
 using UnityEngine.InputSystem;
 using UnityEngine.Rendering;
+using UnityEngine.Serialization;
 using UnityEngine.UI;
 
 public partial class TopPulldown : MonoBehaviour
@@ -50,9 +51,10 @@ public partial class TopPulldown : MonoBehaviour
     [SerializeField] private string emoteFrameResourcePath = "Sprites/Emotes_Frame_A";
     [SerializeField] private string androidButtonSpriteResourcePath = "Sprites/AndroidButtonsAndQuests";
     [SerializeField] private string targetIconSpriteResourcePath = "Sprites/TargetIcon_D";
-    [SerializeField] private float noseButtonSize = 176f;
-    [SerializeField] private float noseButtonMargin = 24f;
+    [FormerlySerializedAs("noseButtonMargin")]
+    [SerializeField] private float topControlButtonMargin = 24f;
     [SerializeField] private float modeButtonSpacing = 12f;
+    [FormerlySerializedAs("noseButtonSize")]
     [SerializeField] private float topControlButtonSize = 176f;
     [SerializeField] private Vector2 topControlsInset = new Vector2(162f, 52f);
     [SerializeField] private Vector2 pulldownFrameSize = new Vector2(1620f, 341f);
@@ -82,7 +84,8 @@ public partial class TopPulldown : MonoBehaviour
     [SerializeField] private float tooltipMaxWidth = 340f;
     [SerializeField] private Vector2 tooltipPadding = new Vector2(16f, 10f);
     [SerializeField] private Vector2 tooltipScreenOffset = new Vector2(18f, -18f);
-    [SerializeField] private Color noseButtonColor = new Color(0.96f, 0.95f, 0.9f, 0.96f);
+    [FormerlySerializedAs("noseButtonColor")]
+    [SerializeField] private Color topControlButtonColor = new Color(0.96f, 0.95f, 0.9f, 0.96f);
     [SerializeField] private Color dropdownBackgroundColor = new Color(0.97f, 0.96f, 0.91f, 0f);
     [SerializeField] private Color dropdownRowColor = new Color(1f, 1f, 1f, 0.9f);
     [SerializeField] private Color dropdownSelectedColor = new Color(0.88f, 0.79f, 0.55f, 0.95f);
@@ -112,9 +115,9 @@ public partial class TopPulldown : MonoBehaviour
     private RectTransform pulldownRetractButtonRect;
     private RectTransform pulldownLeftRetractButtonRect;
     private RectTransform pulldownRightRetractButtonRect;
-    private RectTransform noseButtonRect;
-    private Image noseButtonImage;
-    private Image noseIconImage;
+    private RectTransform targetButtonRect;
+    private Image targetButtonImage;
+    private Image targetButtonIconImage;
     private RawImage targetPreviewImage;
     private Image targetCrosshairImage;
     private RenderTexture targetPreviewTexture;
@@ -199,7 +202,7 @@ public partial class TopPulldown : MonoBehaviour
         EnsureDir();
         EnsureSniffVisuals();
         BuildRuntimeUIIfNeeded();
-        RefreshNoseButtonSelectionState();
+        RefreshTargetButtonSelectionState();
     }
 
     private void Update()
@@ -350,7 +353,7 @@ public partial class TopPulldown : MonoBehaviour
 
         BuildPulldownFrame(canvasObject.transform);
         BuildPulldownTab(canvasObject.transform);
-        BuildNoseButton(scentControlsTransform, canvasObject.transform);
+        BuildTargetButton(scentControlsTransform, canvasObject.transform);
         BuildModeButton(decisionModeControlsTransform, canvasObject.transform);
         BuildSpeedButton(speedControlsTransform, canvasObject.transform);
         BuildSimulationButton(simulationControlsTransform, canvasObject.transform);

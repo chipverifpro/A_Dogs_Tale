@@ -37,14 +37,14 @@ public partial class TopPulldown
             modeButtonRect.anchorMax = new Vector2(1f, 1f);
             modeButtonRect.pivot = new Vector2(1f, 1f);
             modeButtonRect.anchoredPosition = new Vector2(
-                -(noseButtonMargin + noseButtonSize + modeButtonSpacing),
-                -noseButtonMargin);
-            modeButtonRect.sizeDelta = new Vector2(noseButtonSize, noseButtonSize);
+                -(topControlButtonMargin + topControlButtonSize + modeButtonSpacing),
+                -topControlButtonMargin);
+            modeButtonRect.sizeDelta = new Vector2(topControlButtonSize, topControlButtonSize);
         }
         ConfigureTopControlRect(modeButtonRect, 1);
 
         modeButtonImage = GetOrAddComponent<Image>(buttonObject);
-        modeButtonImage.color = noseButtonColor;
+        modeButtonImage.color = topControlButtonColor;
         modeButtonImage.raycastTarget = true;
 
         Button button = GetOrAddComponent<Button>(buttonObject);
@@ -73,7 +73,7 @@ public partial class TopPulldown
             iconRect.anchorMin = new Vector2(0.5f, 0.5f);
             iconRect.anchorMax = new Vector2(0.5f, 0.5f);
             iconRect.pivot = new Vector2(0.5f, 0.5f);
-            iconRect.sizeDelta = Vector2.one * (noseButtonSize * 0.72f);
+            iconRect.sizeDelta = Vector2.one * (topControlButtonSize * 0.72f);
             iconRect.anchoredPosition = Vector2.zero;
         }
         ConfigureTopControlIconRect(iconRect, 0.72f);
@@ -306,7 +306,7 @@ public partial class TopPulldown
         displayedDecisionType = currentDecisionType;
         modeIconImage.sprite = GetDecisionModeSprite(currentDecisionType);
         modeButtonImage.color = currentDecisionType == AgentDecisionType.Undefined
-            ? noseButtonColor
+            ? topControlButtonColor
             : dropdownSelectedColor;
 
         RefreshModePanelSelection();

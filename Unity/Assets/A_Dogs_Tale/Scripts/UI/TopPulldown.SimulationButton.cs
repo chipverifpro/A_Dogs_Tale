@@ -37,14 +37,14 @@ public partial class TopPulldown
             simulationButtonRect.anchorMax = new Vector2(1f, 1f);
             simulationButtonRect.pivot = new Vector2(1f, 1f);
             simulationButtonRect.anchoredPosition = new Vector2(
-                -(noseButtonMargin + ((noseButtonSize + modeButtonSpacing) * 3f)),
-                -noseButtonMargin);
-            simulationButtonRect.sizeDelta = new Vector2(noseButtonSize, noseButtonSize);
+                -(topControlButtonMargin + ((topControlButtonSize + modeButtonSpacing) * 3f)),
+                -topControlButtonMargin);
+            simulationButtonRect.sizeDelta = new Vector2(topControlButtonSize, topControlButtonSize);
         }
         ConfigureTopControlRect(simulationButtonRect, 3);
 
         simulationButtonImage = GetOrAddComponent<Image>(buttonObject);
-        simulationButtonImage.color = noseButtonColor;
+        simulationButtonImage.color = topControlButtonColor;
         simulationButtonImage.raycastTarget = true;
 
         Button button = GetOrAddComponent<Button>(buttonObject);
@@ -73,7 +73,7 @@ public partial class TopPulldown
             iconRect.anchorMin = new Vector2(0.5f, 0.5f);
             iconRect.anchorMax = new Vector2(0.5f, 0.5f);
             iconRect.pivot = new Vector2(0.5f, 0.5f);
-            iconRect.sizeDelta = Vector2.one * (noseButtonSize * 0.72f);
+            iconRect.sizeDelta = Vector2.one * (topControlButtonSize * 0.72f);
             iconRect.anchoredPosition = Vector2.zero;
         }
         ConfigureTopControlIconRect(iconRect, 0.72f);
@@ -105,7 +105,7 @@ public partial class TopPulldown
         simulationIconImage.sprite = GetSimulationControlSprite(isPaused);
         simulationButtonImage.color = isPaused
             ? dropdownSelectedColor
-            : noseButtonColor;
+            : topControlButtonColor;
 
         RefreshActiveTooltipText();
     }

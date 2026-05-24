@@ -35,13 +35,13 @@ public partial class TopPulldown
         digButtonRect.anchorMax = new Vector2(1f, 1f);
         digButtonRect.pivot = new Vector2(1f, 1f);
         digButtonRect.anchoredPosition = new Vector2(
-            -(noseButtonMargin + ((noseButtonSize + modeButtonSpacing) * 6f)),
-            -noseButtonMargin);
-        digButtonRect.sizeDelta = new Vector2(noseButtonSize, noseButtonSize);
+            -(topControlButtonMargin + ((topControlButtonSize + modeButtonSpacing) * 6f)),
+            -topControlButtonMargin);
+        digButtonRect.sizeDelta = new Vector2(topControlButtonSize, topControlButtonSize);
         ConfigureTopControlRect(digButtonRect, 6);
 
         digButtonImage = GetOrAddComponent<Image>(buttonObject);
-        digButtonImage.color = noseButtonColor;
+        digButtonImage.color = topControlButtonColor;
         digButtonImage.raycastTarget = true;
 
         Button button = GetOrAddComponent<Button>(buttonObject);
