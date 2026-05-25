@@ -34,6 +34,8 @@ public class CameraModeSwitcher : MonoBehaviour
     private Coroutine waiter = null;
     private Coroutine startupZoomRoutine = null;
     private bool loggedTargetWarning = false;   // only display ONE target warning instead of spamming every frame.
+    private bool hasDefaultPerspectiveOffset = false;
+    private Vector3 defaultPerspectiveOffset;
 
     void Awake()
     {
@@ -78,6 +80,7 @@ public class CameraModeSwitcher : MonoBehaviour
             vcamNose = GameObject.Find("vcamNose")?.GetComponent<CinemachineVirtualCamera>();
 
         EnsureFreeCamera();
+        CaptureDefaultPerspectiveOffsetIfNeeded();
 
         // --- Find the player model ---
         //if (!playerModel)
@@ -98,7 +101,7 @@ public class CameraModeSwitcher : MonoBehaviour
     void Start()
     {
         if (zoomPerspectiveInOnStartup)
-            startupZoomRoutine = StartCoroutine(ZoomPerspectiveInOnStartup());
+            StartPerspectiveStartupZoom(waitForNewBuildCycle: false);
 
         //if (player == null) player = FindFirstObjectByType<Player>();
     }
@@ -404,6 +407,30 @@ public class CameraModeSwitcher : MonoBehaviour
     [SerializeField] private float startupZoomDelay = 0.35f;
     [SerializeField] private float startupZoomDuration = 1.25f;
 
+    public void RestartPerspectiveStartupZoomForNewMap()
+    {
+        StartPerspectiveStartupZoom(waitForNewBuildCycle: true);
+    }
+
+    private void StartPerspectiveStartupZoom(bool waitForNewBuildCycle)
+    {
+        if (startupZoomRoutine != null)
+        {
+            StopCoroutine(startupZoomRoutine);
+            startupZoomRoutine = null;
+        }
+
+        InitializeConnections();
+        CaptureDefaultPerspectiveOffsetIfNeeded();
+        ResetPerspectiveZoomToDefault();
+
+        if (cameraMode == CameraModes.Perspective)
+            cameraMode = CameraModes.Unchanged;
+
+        SelectView(CameraModes.Perspective);
+        startupZoomRoutine = StartCoroutine(ZoomPerspectiveInOnStartup(waitForNewBuildCycle));
+    }
+
     public void ApplyZoomDelta(float delta)
     {
         Debug.Log($"ApplyZoomDelta({delta}) cameraMode={cameraMode}");
@@ -464,8 +491,22 @@ public class CameraModeSwitcher : MonoBehaviour
         }
     }
 
-    private IEnumerator ZoomPerspectiveInOnStartup()
+    private IEnumerator ZoomPerspectiveInOnStartup(bool waitForNewBuildCycle)
     {
+        if (waitForNewBuildCycle)
+        {
+            while (!freeCameraActive &&
+                   (dir == null ||
+                    dir.gen == null ||
+                    dir.gen.buildComplete))
+            {
+                if (dir == null)
+                    dir = Dir.Instance ?? FindFirstObjectByType<Dir>();
+
+                yield return null;
+            }
+        }
+
         while (!freeCameraActive &&
                (dir == null ||
                 dir.gen == null ||
@@ -549,6 +590,23 @@ public class CameraModeSwitcher : MonoBehaviour
             : null;
 
         return transposer != null;
+    }
+
+    private void CaptureDefaultPerspectiveOffsetIfNeeded()
+    {
+        if (hasDefaultPerspectiveOffset || !TryGetPerspectiveTransposer(out CinemachineTransposer transposer))
+            return;
+
+        defaultPerspectiveOffset = transposer.m_FollowOffset;
+        hasDefaultPerspectiveOffset = true;
+    }
+
+    private void ResetPerspectiveZoomToDefault()
+    {
+        if (!hasDefaultPerspectiveOffset || !TryGetPerspectiveTransposer(out CinemachineTransposer transposer))
+            return;
+
+        transposer.m_FollowOffset = defaultPerspectiveOffset;
     }
 
     private void SetPerspectiveZoomZ(CinemachineTransposer transposer, float z)

@@ -141,6 +141,8 @@ public class MenuManager : MonoBehaviour
         if (!TryResolveGenerator(out DungeonGenerator mapGenerator))
             return;
 
+        RestartCameraStartupZoom(mapGenerator);
+
         if (fader == null && dir != null)
             fader = dir.sceneFader;
         if (fader == null)
@@ -162,6 +164,9 @@ public class MenuManager : MonoBehaviour
         if (!TryResolveGenerator(out DungeonGenerator mapGenerator))
             return;
 
+        if (DungeonGenerator.SingleMapSaveExists)
+            RestartCameraStartupZoom(mapGenerator);
+
         if (fader == null && dir != null)
             fader = dir.sceneFader;
         if (fader == null)
@@ -175,6 +180,19 @@ public class MenuManager : MonoBehaviour
 
         Debug.LogWarning("[MenuManager] No SceneFader found; loading simulation without menu transition.", this);
         mapGenerator.LoadMapFromSingleSlot();
+    }
+
+    private void RestartCameraStartupZoom(DungeonGenerator mapGenerator)
+    {
+        CameraModeSwitcher cameraModeSwitcher = null;
+        if (mapGenerator != null && mapGenerator.dir != null)
+            cameraModeSwitcher = mapGenerator.dir.cameraModeSwitcher;
+        if (cameraModeSwitcher == null && dir != null)
+            cameraModeSwitcher = dir.cameraModeSwitcher;
+        if (cameraModeSwitcher == null)
+            cameraModeSwitcher = FindFirstObjectByType<CameraModeSwitcher>();
+
+        cameraModeSwitcher?.RestartPerspectiveStartupZoomForNewMap();
     }
 
     public void OnContinue()
@@ -210,6 +228,7 @@ public class MenuManager : MonoBehaviour
             return;
 
         mapGenerator.SaveCurrentMapToSingleSlot();
+        RefreshMainMenuButtonVisibility();
     }
 
 //    public void OnDocumentation()
@@ -327,6 +346,7 @@ public class MenuManager : MonoBehaviour
 
         SetButtonVisible(btnContinue, hasCurrentMap);
         SetButtonVisible(btnSave, hasCurrentMap);
+        SetButtonVisible(btnLoad, DungeonGenerator.SingleMapSaveExists);
         ApplyTitleScreenResponsiveLayout(force: true);
     }
 
