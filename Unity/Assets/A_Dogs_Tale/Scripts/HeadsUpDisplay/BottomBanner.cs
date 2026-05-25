@@ -177,9 +177,20 @@ public class BottomBanner : MonoBehaviour
 
         if (BottomBannerCanvas == null)
         {
-            GameObject canvasGO = new GameObject("BottomBannerCanvas", typeof(Canvas), typeof(CanvasScaler), typeof(GraphicRaycaster));
-            canvasGO.transform.SetParent(transform, false);
-            BottomBannerCanvas = canvasGO.GetComponent<Canvas>();
+            Transform existingCanvas = transform.Find("BottomBannerCanvas");
+            if (existingCanvas != null)
+            {
+                BottomBannerCanvas = existingCanvas.GetComponent<Canvas>();
+                if (BottomBannerCanvas == null)
+                    BottomBannerCanvas = existingCanvas.gameObject.AddComponent<Canvas>();
+            }
+
+            if (BottomBannerCanvas == null)
+            {
+                GameObject canvasGO = new GameObject("BottomBannerCanvas", typeof(Canvas), typeof(CanvasScaler), typeof(GraphicRaycaster));
+                canvasGO.transform.SetParent(transform, false);
+                BottomBannerCanvas = canvasGO.GetComponent<Canvas>();
+            }
         }
 
         EnsureRootOverlayCanvas();
@@ -189,14 +200,23 @@ public class BottomBanner : MonoBehaviour
         BottomBannerCanvas.sortingOrder = 5000;
 
         CanvasScaler scaler = BottomBannerCanvas.GetComponent<CanvasScaler>();
+        if (scaler == null)
+            scaler = BottomBannerCanvas.gameObject.AddComponent<CanvasScaler>();
         scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
         scaler.referenceResolution = new Vector2(1920f, 1080f);
         scaler.matchWidthOrHeight = 1f;
 
         if (panel == null)
         {
-            panel = new GameObject("BannerPanel", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
-            panel.transform.SetParent(BottomBannerCanvas.transform, false);
+            panel = FindDirectChild(BottomBannerCanvas.transform, "BannerPanel");
+            RemoveDuplicateDirectChildren(BottomBannerCanvas.transform, "BannerPanel", panel);
+
+            if (panel == null)
+            {
+                panel = new GameObject("BannerPanel", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
+                panel.transform.SetParent(BottomBannerCanvas.transform, false);
+            }
+
             panelRT = panel.GetComponent<RectTransform>();
         }
         else if (panelRT == null)
@@ -204,7 +224,19 @@ public class BottomBanner : MonoBehaviour
             panelRT = panel.GetComponent<RectTransform>();
         }
 
+        RemoveDuplicateDirectChildren(BottomBannerCanvas.transform, "BannerPanel", panel);
+
+        if (panelRT == null)
+        {
+            DestroyGeneratedObject(panel);
+            panel = new GameObject("BannerPanel", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
+            panel.transform.SetParent(BottomBannerCanvas.transform, false);
+            panelRT = panel.GetComponent<RectTransform>();
+        }
+
         Image panelImage = panel.GetComponent<Image>();
+        if (panelImage == null)
+            panelImage = panel.AddComponent<Image>();
         panelImage.color = backgroundColor;
 
         panelRT.anchorMin = new Vector2(0f, 0f);
@@ -217,34 +249,78 @@ public class BottomBanner : MonoBehaviour
 
         if (scrollRect == null)
         {
-            GameObject scrollGO = new GameObject("MessageScrollView", typeof(RectTransform), typeof(Image), typeof(ScrollRect));
-            scrollGO.transform.SetParent(panel.transform, false);
+            GameObject scrollGO = FindDirectChild(panel.transform, "MessageScrollView");
+            if (scrollGO == null)
+            {
+                scrollGO = new GameObject("MessageScrollView", typeof(RectTransform), typeof(Image), typeof(ScrollRect));
+                scrollGO.transform.SetParent(panel.transform, false);
+            }
+
+            RemoveDuplicateDirectChildren(panel.transform, "MessageScrollView", scrollGO);
 
             RectTransform scrollRT = scrollGO.GetComponent<RectTransform>();
+            if (scrollRT == null)
+            {
+                DestroyGeneratedObject(scrollGO);
+                scrollGO = new GameObject("MessageScrollView", typeof(RectTransform), typeof(Image), typeof(ScrollRect));
+                scrollGO.transform.SetParent(panel.transform, false);
+                scrollRT = scrollGO.GetComponent<RectTransform>();
+            }
             scrollRT.anchorMin = Vector2.zero;
             scrollRT.anchorMax = Vector2.one;
             scrollRT.offsetMin = new Vector2(sidePadding, 10f);
             scrollRT.offsetMax = new Vector2(-sidePadding, -10f);
 
             Image scrollImage = scrollGO.GetComponent<Image>();
+            if (scrollImage == null)
+                scrollImage = scrollGO.AddComponent<Image>();
             scrollImage.color = new Color(1f, 1f, 1f, 0f);
             scrollRect = scrollGO.GetComponent<ScrollRect>();
+            if (scrollRect == null)
+                scrollRect = scrollGO.AddComponent<ScrollRect>();
             scrollRect.horizontal = false;
             scrollRect.movementType = ScrollRect.MovementType.Clamped;
             scrollRect.scrollSensitivity = 24f;
 
-            GameObject viewportGO = new GameObject("Viewport", typeof(RectTransform), typeof(Image), typeof(RectMask2D));
-            viewportGO.transform.SetParent(scrollGO.transform, false);
+            GameObject viewportGO = FindDirectChild(scrollGO.transform, "Viewport");
+            if (viewportGO == null)
+            {
+                viewportGO = new GameObject("Viewport", typeof(RectTransform), typeof(Image), typeof(RectMask2D));
+                viewportGO.transform.SetParent(scrollGO.transform, false);
+            }
             viewportRT = viewportGO.GetComponent<RectTransform>();
+            if (viewportRT == null)
+            {
+                DestroyGeneratedObject(viewportGO);
+                viewportGO = new GameObject("Viewport", typeof(RectTransform), typeof(Image), typeof(RectMask2D));
+                viewportGO.transform.SetParent(scrollGO.transform, false);
+                viewportRT = viewportGO.GetComponent<RectTransform>();
+            }
             viewportRT.anchorMin = Vector2.zero;
             viewportRT.anchorMax = Vector2.one;
             viewportRT.offsetMin = Vector2.zero;
             viewportRT.offsetMax = new Vector2(-18f, 0f);
-            viewportGO.GetComponent<Image>().color = new Color(1f, 1f, 1f, 0.025f);
+            Image viewportImage = viewportGO.GetComponent<Image>();
+            if (viewportImage == null)
+                viewportImage = viewportGO.AddComponent<Image>();
+            viewportImage.color = new Color(1f, 1f, 1f, 0.025f);
+            if (viewportGO.GetComponent<RectMask2D>() == null)
+                viewportGO.AddComponent<RectMask2D>();
 
-            GameObject contentGO = new GameObject("Content", typeof(RectTransform), typeof(VerticalLayoutGroup), typeof(ContentSizeFitter));
-            contentGO.transform.SetParent(viewportGO.transform, false);
+            GameObject contentGO = FindDirectChild(viewportGO.transform, "Content");
+            if (contentGO == null)
+            {
+                contentGO = new GameObject("Content", typeof(RectTransform), typeof(VerticalLayoutGroup), typeof(ContentSizeFitter));
+                contentGO.transform.SetParent(viewportGO.transform, false);
+            }
             contentRT = contentGO.GetComponent<RectTransform>();
+            if (contentRT == null)
+            {
+                DestroyGeneratedObject(contentGO);
+                contentGO = new GameObject("Content", typeof(RectTransform), typeof(VerticalLayoutGroup), typeof(ContentSizeFitter));
+                contentGO.transform.SetParent(viewportGO.transform, false);
+                contentRT = contentGO.GetComponent<RectTransform>();
+            }
             contentRT.anchorMin = new Vector2(0f, 1f);
             contentRT.anchorMax = new Vector2(1f, 1f);
             contentRT.pivot = new Vector2(0.5f, 1f);
@@ -252,6 +328,8 @@ public class BottomBanner : MonoBehaviour
             contentRT.offsetMax = Vector2.zero;
 
             VerticalLayoutGroup layout = contentGO.GetComponent<VerticalLayoutGroup>();
+            if (layout == null)
+                layout = contentGO.AddComponent<VerticalLayoutGroup>();
             layout.padding = new RectOffset(0, 0, 0, 0);
             layout.spacing = rowSpacing;
             layout.childAlignment = TextAnchor.UpperLeft;
@@ -261,10 +339,14 @@ public class BottomBanner : MonoBehaviour
             layout.childForceExpandWidth = true;
 
             ContentSizeFitter fitter = contentGO.GetComponent<ContentSizeFitter>();
+            if (fitter == null)
+                fitter = contentGO.AddComponent<ContentSizeFitter>();
             fitter.horizontalFit = ContentSizeFitter.FitMode.Unconstrained;
             fitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
 
-            verticalScrollbar = CreateScrollbar(scrollGO.transform);
+            verticalScrollbar = scrollGO.GetComponentInChildren<Scrollbar>(true);
+            if (verticalScrollbar == null)
+                verticalScrollbar = CreateScrollbar(scrollGO.transform);
             scrollRect.viewport = viewportRT;
             scrollRect.content = contentRT;
             scrollRect.verticalScrollbar = verticalScrollbar;
@@ -273,6 +355,47 @@ public class BottomBanner : MonoBehaviour
         }
 
         ApplySafeArea();
+    }
+
+    static GameObject FindDirectChild(Transform parent, string childName)
+    {
+        if (parent == null || string.IsNullOrWhiteSpace(childName))
+            return null;
+
+        for (int i = 0; i < parent.childCount; i++)
+        {
+            Transform child = parent.GetChild(i);
+            if (child != null && child.name == childName)
+                return child.gameObject;
+        }
+
+        return null;
+    }
+
+    static void RemoveDuplicateDirectChildren(Transform parent, string childName, GameObject keep)
+    {
+        if (parent == null || string.IsNullOrWhiteSpace(childName) || keep == null)
+            return;
+
+        for (int i = parent.childCount - 1; i >= 0; i--)
+        {
+            Transform child = parent.GetChild(i);
+            if (child == null || child.gameObject == keep || child.name != childName)
+                continue;
+
+            DestroyGeneratedObject(child.gameObject);
+        }
+    }
+
+    static void DestroyGeneratedObject(GameObject go)
+    {
+        if (go == null)
+            return;
+
+        if (Application.isPlaying)
+            Destroy(go);
+        else
+            DestroyImmediate(go);
     }
 
     void EnsureRootOverlayCanvas()

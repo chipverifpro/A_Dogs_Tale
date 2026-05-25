@@ -210,6 +210,9 @@ namespace DogGame.LLM.Core
                 ? spec.debugRequestId
                 : LLMRequestId.NewShortHex();
             var debugMonitor = Dir.Instance != null ? Dir.Instance.llmDebugMonitor : null;
+
+            ShowLlmActivityBanner(agentId, "sent LLM request to", Vendor, "LLM_Icons_A_0");
+
             if (debugMonitor != null)
             {
                 debugMonitor.DebugLLMRequest(
@@ -236,6 +239,9 @@ namespace DogGame.LLM.Core
                     bool stale = tokenAtStart != CurrentSessionToken;
 
                     string raw = unityRequest.downloadHandler?.text ?? "";
+
+                    ShowLlmActivityBanner(agentId, "received LLM response from", Vendor, "LLM_Icons_A_1");
+
                     if (debugMonitor != null)
                     {
                         debugMonitor.DebugLLMResponse(
@@ -311,6 +317,32 @@ namespace DogGame.LLM.Core
             };
 
             return await tcs.Task.ConfigureAwait(false);
+        }
+
+        private static void ShowLlmActivityBanner(string agentId, string action, string vendor, string iconSpriteName)
+        {
+            try
+            {
+                string actor = string.IsNullOrWhiteSpace(agentId) ? "Unknown agent" : agentId.Trim();
+                string displayVendor = FormatVendorForBanner(vendor);
+                BottomBanner.LogMessageWithIcon(
+                    BannerSense.None,
+                    BannerLevel.None,
+                    $"{actor} {action} {displayVendor}",
+                    iconSpriteName);
+            }
+            catch (Exception ex)
+            {
+                Debug.LogWarning($"[LLM] Failed to show activity banner: {ex.Message}");
+            }
+        }
+
+        private static string FormatVendorForBanner(string vendor)
+        {
+            if (string.Equals(vendor, "OpenAI", StringComparison.OrdinalIgnoreCase))
+                return "ChatGPT";
+
+            return string.IsNullOrWhiteSpace(vendor) ? "LLM" : vendor.Trim();
         }
 
         /// <summary>

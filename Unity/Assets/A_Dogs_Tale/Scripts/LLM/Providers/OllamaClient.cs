@@ -15,7 +15,7 @@ namespace DogGame.LLM.Providers
     {
         public override string Vendor => "Ollama";
         public readonly string baseUrl = "http://localhost:11434/v1";
-        public readonly string model = "Gemma3:1b";
+        public readonly string model = "qwen2.5:1.5b";
         public readonly string apiKeyEnvironmentVariable = ""; // none needed
         public readonly string apiKey = ""; // none needed
         public readonly int timeoutSeconds = 300;
