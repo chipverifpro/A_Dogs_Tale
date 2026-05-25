@@ -29,3 +29,5 @@ Before (above) and After (below) showing new backgrounds and arrangements making
 Inspiration created by ChatGPT...<br>
 <img width="1024" height="1536" alt="ChatGPT Image Apr 29, 2026, 11_08_40 PM" src="https://github.com/user-attachments/assets/8dc6434c-dddc-4141-8211-30a4bb8aa37a" />
 <br>
+<img width="906" height="734" alt="Screenshot 2026-05-25 at 3 09 12 PM" src="https://github.com/user-attachments/assets/0ca2df98-bf91-4dba-8443-ed6266f2ab76" />
+<br>
