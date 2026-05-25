@@ -1,12 +1,9 @@
 using System.Collections.Generic;
-using DogGame;
 using DogGame.Modules;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
-using UnityEngine.Events;
 using UnityEngine.InputSystem;
-using UnityEngine.Rendering;
 using UnityEngine.Serialization;
 using UnityEngine.UI;
 

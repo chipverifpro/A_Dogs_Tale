@@ -2,13 +2,11 @@
 using System;
 using System.Collections.Generic;
 using DogGame.LLM.Core;
-using DogGame.LLM.Personality;
 using DogGame.LLM.Policy;
 using DogGame.LLM.Prompting;
 using DogGame.Modules;
 using Newtonsoft.Json.Linq;
 using UnityEngine;
-using static DogGame.LLM.Core.LLMClientBase;
 using InspectorTools;
 
 namespace DogGame.LLM.Agent

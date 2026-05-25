@@ -1,11 +1,4 @@
-using System;
-using UnityEngine;
-using DogGame.Modules;
-using DogGame.AI;
-
-
-
-    [System.Serializable]
+[System.Serializable]
     public struct PromoteToPackMemberOptions
     {
         public bool addColliderIfMissing;      // for clicking

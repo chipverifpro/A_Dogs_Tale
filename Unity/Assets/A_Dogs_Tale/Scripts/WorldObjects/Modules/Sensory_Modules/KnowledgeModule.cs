@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using UnityEngine;
-using DogGame.Noise;
 using System;
 using System.Linq;
 using System.Text.RegularExpressions;

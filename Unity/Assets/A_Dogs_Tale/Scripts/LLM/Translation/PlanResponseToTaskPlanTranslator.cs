@@ -1,10 +1,6 @@
 #nullable enable
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using DogGame.LLM;                 // PlanResponseV1, PlanIntentionV1, PlanIntentionType
-using Newtonsoft.Json.Linq;
-using UnityEngine;
 
 namespace DogGame.LLM.Translation
 {

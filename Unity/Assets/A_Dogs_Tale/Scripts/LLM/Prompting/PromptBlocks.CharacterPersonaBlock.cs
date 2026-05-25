@@ -1,6 +1,3 @@
-using System.Text;
-using DogGame.LLM.Agent;
-
 namespace DogGame.LLM.Prompting
 {
     public static partial class PromptBlocks

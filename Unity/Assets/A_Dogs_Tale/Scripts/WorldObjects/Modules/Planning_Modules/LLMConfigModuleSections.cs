@@ -4,9 +4,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using DogGame.LLM.Core;
-using DogGame.LLM.Personality;
-using DogGame.LLM.Policy;
-using DogGame.LLM.Prompting;
 using UnityEngine;
 
 // These classes are subsets of LLMConfigModule

@@ -1,6 +1,5 @@
 #nullable enable
 using System.Collections.Generic;
-using UnityEngine;
 using DogGame.Modules;
 using static DogGame.Modules.VisionPerceptionModule;
 

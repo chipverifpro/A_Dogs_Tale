@@ -1,7 +1,6 @@
 #nullable enable
 using UnityEngine;
 using DogGame.LLM;
-using DogGame.Tasks;
 
 namespace DogGame.Tasks
 {

@@ -10,7 +10,6 @@
 #nullable enable
 using System.Collections.Generic;
 using UnityEngine;
-using DogGame.AI.Perception;
 using InspectorTools;
 
 namespace DogGame.Modules

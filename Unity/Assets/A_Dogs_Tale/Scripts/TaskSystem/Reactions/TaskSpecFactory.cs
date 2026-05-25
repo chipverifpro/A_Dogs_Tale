@@ -4,7 +4,6 @@ using UnityEngine;
 using DogGame.LLM;
 using DogGame.Tasks;
 using DogGame.Modules;
-using DogGame.Lua;
 
 namespace DogGame.Reactions
 {

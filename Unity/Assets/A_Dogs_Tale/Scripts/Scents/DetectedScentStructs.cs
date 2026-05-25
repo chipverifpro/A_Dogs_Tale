@@ -1,7 +1,6 @@
 #nullable enable
 using System;
 using UnityEngine;
-using DogGame.AI.Perception;
 
 namespace DogGame.Modules
 {

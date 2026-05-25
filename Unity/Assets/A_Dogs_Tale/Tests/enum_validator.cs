@@ -21,9 +21,6 @@
 // -- The compiler already reports if the same name is used twice,
 //    so that's not included.
 
-using System.Collections.Generic;
-using UnityEngine;
-using System;
 /*
 namespace ModuleFlagsValidator
 {

@@ -1,7 +1,6 @@
 using UnityEngine;
 using Cinemachine;
 using DogGame.Language;
-using DogGame.LLM;
 
 [DefaultExecutionOrder(-1000)] // big negative = runs very early
 public class Dir : MonoBehaviour

@@ -1,4 +1,3 @@
-using System.Collections;
 using UnityEngine;
 
 // This class gives quick feedback on activity statistics

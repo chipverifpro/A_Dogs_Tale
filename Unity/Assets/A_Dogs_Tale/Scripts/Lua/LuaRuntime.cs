@@ -3,7 +3,6 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using MoonSharp.Interpreter;
-using UnityEngine;
 using DogGame.Modules;
 
 namespace DogGame.Lua

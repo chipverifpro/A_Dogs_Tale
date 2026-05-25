@@ -5,7 +5,6 @@ using UnityEngine;
 using DogGame.Reactions;
 using DogGame.LLM;
 using DogGame.Tasks;
-using DogGame.Perception;
 using DogGame.Modules;
 
 namespace DogGame.Routines

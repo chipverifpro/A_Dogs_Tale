@@ -1,8 +1,5 @@
 // Assets/A_Dogs_Tale/Scripts/LLM/Core/LLMRequestPacketFormatter.cs
 #nullable enable
-using System.Text;
-using DogGame.LLM.Prompting; // if your LLMJsonNormalizer lives here (adjust if not)
-
 namespace DogGame.LLM.Core
 {
     public static class LLMRequestPacketFormatter

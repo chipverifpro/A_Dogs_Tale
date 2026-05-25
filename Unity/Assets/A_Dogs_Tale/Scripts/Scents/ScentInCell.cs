@@ -1,8 +1,3 @@
-using UnityEngine;
-using System.Collections.Generic;
-using System;
-using DogGame.LLM.Agent;
-
 [System.Serializable]
 public class ScentInCell             // Everything about ONE scent at one location
 {

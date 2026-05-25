@@ -1,6 +1,4 @@
 using UnityEngine;
-using System;
-using DogGame.Language;
 
 public class ConvertScreenToWorld : MonoBehaviour
 {
