@@ -83410,13 +83410,15 @@ MonoBehaviour:
   pullUpDuration: 1
   pullUpOvershootY: 24
   pullUpSettleDuration: 0.18
+  showPlayerIntroEmote: 1
+  playerIntroEmoteId: A_0
   allowSkip: 1
   returnToTitleKey: 127
   splashImage: {fileID: 1088835539}
   buildingMessage: {fileID: 0}
   buildingMessageText: {fileID: 0}
   splashResourceFolder: Images
-  splashCount: 40
+  splashCount: 67
   loadingMessages:
   - Building the world...
   - Digging up a map...
@@ -111104,10 +111106,12 @@ MonoBehaviour:
   pulldownFrameResourcePath: Sprites/PulldownFrame
   pulldownFrameTwoRowResourcePath: Sprites/PulldownFrame_2row
   pulldownTabResourcePath: Sprites/PulldownTab
+  behaviorFrameResourcePath: Sprites/Behavior_Frame_A
+  gaitFrameResourcePath: Sprites/Gait_Frame_AB
+  emoteFrameResourcePath: Sprites/Emotes_Frame_A
   androidButtonSpriteResourcePath: Sprites/AndroidButtonsAndQuests
   targetIconSpriteResourcePath: Sprites/TargetIcon_D
-  noseButtonSize: 176
-  noseButtonMargin: 24
+  topControlButtonMargin: 24
   modeButtonSpacing: 12
   topControlButtonSize: 176
   topControlsInset: {x: 162, y: 52}
@@ -111138,7 +111142,7 @@ MonoBehaviour:
   tooltipMaxWidth: 340
   tooltipPadding: {x: 16, y: 10}
   tooltipScreenOffset: {x: 18, y: -18}
-  noseButtonColor: {r: 0.96, g: 0.95, b: 0.9, a: 0.96}
+  topControlButtonColor: {r: 0.96, g: 0.95, b: 0.9, a: 0.96}
   dropdownBackgroundColor: {r: 0.97, g: 0.96, b: 0.91, a: 0}
   dropdownRowColor: {r: 1, g: 1, b: 1, a: 0.9}
   dropdownSelectedColor: {r: 0.88, g: 0.79, b: 0.55, a: 0.95}
@@ -179278,7 +179282,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   dir: {fileID: 1920128612}
-  cameraMode: 4
+  cameraMode: 3
   playerVisible: 1
   brain: {fileID: 1815589289}
   vcamFP: {fileID: 445485060}
@@ -179298,6 +179302,9 @@ MonoBehaviour:
   maxZoom: 50
   minFOV: 30
   maxFOV: 60
+  zoomPerspectiveInOnStartup: 1
+  startupZoomDelay: 10
+  startupZoomDuration: 1.25
 --- !u!114 &1815589289
 MonoBehaviour:
   m_ObjectHideFlags: 0

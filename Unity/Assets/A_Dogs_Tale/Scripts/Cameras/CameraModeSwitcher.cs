@@ -32,6 +32,7 @@ public class CameraModeSwitcher : MonoBehaviour
     private FreeCameraController freeCameraController;
 
     private Coroutine waiter = null;
+    private Coroutine startupZoomRoutine = null;
     private bool loggedTargetWarning = false;   // only display ONE target warning instead of spamming every frame.
 
     void Awake()
@@ -96,6 +97,9 @@ public class CameraModeSwitcher : MonoBehaviour
 
     void Start()
     {
+        if (zoomPerspectiveInOnStartup)
+            startupZoomRoutine = StartCoroutine(ZoomPerspectiveInOnStartup());
+
         //if (player == null) player = FindFirstObjectByType<Player>();
     }
 
@@ -395,6 +399,10 @@ public class CameraModeSwitcher : MonoBehaviour
     public float minFOV = 30f;       // narrowest FOV
     public float maxFOV = 60f;       // widest FOV
 
+    [Header("Startup Zoom")]
+    [SerializeField] private bool zoomPerspectiveInOnStartup = true;
+    [SerializeField] private float startupZoomDelay = 0.35f;
+    [SerializeField] private float startupZoomDuration = 1.25f;
 
     public void ApplyZoomDelta(float delta)
     {
@@ -410,6 +418,12 @@ public class CameraModeSwitcher : MonoBehaviour
 
         if (Mathf.Approximately(delta, 0f))
             return;
+
+        if (startupZoomRoutine != null)
+        {
+            StopCoroutine(startupZoomRoutine);
+            startupZoomRoutine = null;
+        }
 
         if (freeCameraActive && vcamFree != null)
         {
@@ -433,15 +447,7 @@ public class CameraModeSwitcher : MonoBehaviour
         // Top cam (Transposer): adjust FollowOffset.z for zoom effect
         if (IsLive(vcamPerspective))
         {
-            var transposer = vcamPerspective.GetCinemachineComponent<CinemachineTransposer>();
-            if (transposer != null)
-            {
-                var off = transposer.m_FollowOffset;
-                off.z = Mathf.Clamp(off.z + delta, -maxZoom, -minZoom);
-                off.y = 5 - (off.z / 2);
-                transposer.m_FollowOffset = off;
-                Debug.Log($"Perspective zoom transposer.z = {off.z:0.0} transposer.y = {off.y:0.0}");
-            }
+            ApplyPerspectiveZoomDelta(delta);
         }
 
         // Overhead cam (Transposer): keep old behavior = change height (FollowOffset.y)
@@ -456,6 +462,101 @@ public class CameraModeSwitcher : MonoBehaviour
                 Debug.Log($"Overhead zoom transposer.y = {off.y:0.0}");
             }
         }
+    }
+
+    private IEnumerator ZoomPerspectiveInOnStartup()
+    {
+        while (!freeCameraActive &&
+               (dir == null ||
+                dir.gen == null ||
+                !dir.gen.buildComplete))
+        {
+            if (dir == null)
+                dir = Dir.Instance ?? FindFirstObjectByType<Dir>();
+
+            yield return null;
+        }
+
+        float waitStartedAt = Time.time;
+        while (!freeCameraActive &&
+               vcamPerspective != null &&
+               !IsLive(vcamPerspective) &&
+               Time.time - waitStartedAt < 5f)
+        {
+            yield return null;
+        }
+
+        if (freeCameraActive || !TryGetPerspectiveTransposer(out CinemachineTransposer transposer))
+        {
+            startupZoomRoutine = null;
+            yield break;
+        }
+
+        if (startupZoomDelay > 0f)
+            yield return new WaitForSeconds(startupZoomDelay);
+
+        if (freeCameraActive)
+        {
+            startupZoomRoutine = null;
+            yield break;
+        }
+
+        float startZ = transposer.m_FollowOffset.z;
+        float targetZ = -minZoom;
+
+        if (Mathf.Approximately(startZ, targetZ))
+        {
+            startupZoomRoutine = null;
+            yield break;
+        }
+
+        float duration = Mathf.Max(0.01f, startupZoomDuration);
+        float elapsed = 0f;
+
+        while (elapsed < duration)
+        {
+            if (freeCameraActive || !TryGetPerspectiveTransposer(out transposer))
+                break;
+
+            elapsed += Time.deltaTime;
+            float t = Mathf.Clamp01(elapsed / duration);
+            float smoothedT = Mathf.SmoothStep(0f, 1f, t);
+            SetPerspectiveZoomZ(transposer, Mathf.Lerp(startZ, targetZ, smoothedT));
+            yield return null;
+        }
+
+        if (!freeCameraActive && TryGetPerspectiveTransposer(out transposer))
+            SetPerspectiveZoomZ(transposer, targetZ);
+
+        startupZoomRoutine = null;
+    }
+
+    private void ApplyPerspectiveZoomDelta(float delta)
+    {
+        if (!TryGetPerspectiveTransposer(out CinemachineTransposer transposer))
+            return;
+
+        Vector3 off = transposer.m_FollowOffset;
+        SetPerspectiveZoomZ(transposer, off.z + delta);
+        off = transposer.m_FollowOffset;
+        Debug.Log($"Perspective zoom transposer.z = {off.z:0.0} transposer.y = {off.y:0.0}");
+    }
+
+    private bool TryGetPerspectiveTransposer(out CinemachineTransposer transposer)
+    {
+        transposer = vcamPerspective != null
+            ? vcamPerspective.GetCinemachineComponent<CinemachineTransposer>()
+            : null;
+
+        return transposer != null;
+    }
+
+    private void SetPerspectiveZoomZ(CinemachineTransposer transposer, float z)
+    {
+        Vector3 off = transposer.m_FollowOffset;
+        off.z = Mathf.Clamp(z, -maxZoom, -minZoom);
+        off.y = 5f - (off.z / 2f);
+        transposer.m_FollowOffset = off;
     }
 
     public void ToggleFreeCamera()
