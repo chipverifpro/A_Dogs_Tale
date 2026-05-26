@@ -47,6 +47,13 @@ public class SceneFader : MonoBehaviour
 
     public bool IsTitleOverlayVisible => isTitleOverlayVisible;
 
+    private enum SplashOrientation
+    {
+        Horizontal,
+        Vertical,
+        Square
+    }
+
     void Awake()
     {
         if (Instance == null)
@@ -158,6 +165,8 @@ public class SceneFader : MonoBehaviour
     [SerializeField] private TMPro.TMP_Text buildingMessageText;
     [SerializeField] private string splashResourceFolder = "Images";
     [SerializeField] private int splashCount = 40;
+    [Tooltip("Screen aspect ratios above this are horizontal, below its inverse are vertical, and between them are treated as square.")]
+    [SerializeField] private float splashOrientationAspectThreshold = 1.2f;
 
     // Call this right before you display the splash.
     private void SetRandomSplashSprite()
@@ -171,7 +180,7 @@ public class SceneFader : MonoBehaviour
         int chosenIndex = Random.Range(1, splashCount + 1); // inclusive 1..10
         string resourcePath = $"{splashResourceFolder}/SplashScreen{chosenIndex}";
 
-        Sprite loadedSprite = Resources.Load<Sprite>(resourcePath);
+        Sprite loadedSprite = LoadSplashSpriteForCurrentScreen(resourcePath);
         if (loadedSprite == null)
         {
             Debug.LogError($"[TitleScreen] Could not load splash sprite at Resources/{resourcePath}. " +
@@ -184,6 +193,82 @@ public class SceneFader : MonoBehaviour
 
         // Optional: if you want the Image to match the sprite’s native size
         // splashImage.SetNativeSize();
+    }
+
+    private Sprite LoadSplashSpriteForCurrentScreen(string resourcePath)
+    {
+        Sprite[] sprites = Resources.LoadAll<Sprite>(resourcePath);
+        if (sprites == null || sprites.Length == 0)
+            return Resources.Load<Sprite>(resourcePath);
+
+        if (sprites.Length == 1)
+            return sprites[0];
+
+        SplashOrientation orientation = GetSplashOrientation();
+        Sprite selectedSprite = orientation switch
+        {
+            SplashOrientation.Horizontal => FindSplashVariant(sprites, "_0"),
+            SplashOrientation.Vertical => FindSplashVariant(sprites, "_1"),
+            _ => FindSplashVariant(sprites, "_2")
+        };
+
+        if (selectedSprite != null)
+            return selectedSprite;
+
+        if (orientation == SplashOrientation.Square)
+            return FindUnsuffixedSplashVariant(sprites) ?? FindSplashVariant(sprites, "_0") ?? sprites[0];
+
+        return FindSplashVariant(sprites, "_2") ?? FindUnsuffixedSplashVariant(sprites) ?? sprites[0];
+    }
+
+    private SplashOrientation GetSplashOrientation()
+    {
+        float threshold = Mathf.Max(1f, splashOrientationAspectThreshold);
+        float screenAspect = GetSplashScreenAspect();
+        if (screenAspect >= threshold)
+            return SplashOrientation.Horizontal;
+
+        if (screenAspect <= 1f / threshold)
+            return SplashOrientation.Vertical;
+
+        return SplashOrientation.Square;
+    }
+
+    private float GetSplashScreenAspect()
+    {
+        RectTransform parentRect = splashImage != null ? splashImage.rectTransform.parent as RectTransform : null;
+        float width = parentRect != null && parentRect.rect.width > 0f ? parentRect.rect.width : Screen.width;
+        float height = parentRect != null && parentRect.rect.height > 0f ? parentRect.rect.height : Screen.height;
+        return height > 0f ? width / height : 1f;
+    }
+
+    private static Sprite FindSplashVariant(Sprite[] sprites, string suffix)
+    {
+        foreach (Sprite sprite in sprites)
+        {
+            if (sprite != null && sprite.name.EndsWith(suffix, System.StringComparison.Ordinal))
+                return sprite;
+        }
+
+        return null;
+    }
+
+    private static Sprite FindUnsuffixedSplashVariant(Sprite[] sprites)
+    {
+        foreach (Sprite sprite in sprites)
+        {
+            if (sprite == null)
+                continue;
+
+            int underscoreIndex = sprite.name.LastIndexOf('_');
+            bool hasNumericSuffix = underscoreIndex >= 0
+                && underscoreIndex < sprite.name.Length - 1
+                && int.TryParse(sprite.name.Substring(underscoreIndex + 1), out _);
+            if (!hasNumericSuffix)
+                return sprite;
+        }
+
+        return null;
     }
 
     private void ApplySplashCoverLayout(Sprite sprite)
