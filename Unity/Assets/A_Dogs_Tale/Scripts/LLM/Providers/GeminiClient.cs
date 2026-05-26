@@ -22,7 +22,7 @@ namespace DogGame.LLM.Providers
         private readonly string apiKey = "";
         public readonly int timeoutSeconds = 60;
         public readonly float temperature = 0.2f;
-        public readonly int maxOutputTokens = 800;
+        public readonly int maxOutputTokens = 1600;
         public readonly string modelUniqueInstructions = "";
 
         // constructor:
@@ -64,7 +64,7 @@ namespace DogGame.LLM.Providers
                 ["generationConfig"] = new JObject
                 {
                     ["temperature"] = temperature,
-                    ["maxOutputTokens"] = maxOutputTokens,
+                    ["maxOutputTokens"] = ResolveMaxOutputTokens(request, maxOutputTokens),
                     ["response_mime_type"] = "application/json"
                 }
             };

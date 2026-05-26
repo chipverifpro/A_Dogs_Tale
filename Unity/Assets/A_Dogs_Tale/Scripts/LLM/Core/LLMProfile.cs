@@ -9,7 +9,8 @@ namespace DogGame.LLM.Core
         public string model;               // provider model id
         public Sophistication level;
 
-        public int maxOutputTokens = 512;
+        public int maxOutputTokens = 1024;
+        public int contextWindowTokens = 8192;
         public float temperature = 0.7f;
 
         public bool allowTools = false;

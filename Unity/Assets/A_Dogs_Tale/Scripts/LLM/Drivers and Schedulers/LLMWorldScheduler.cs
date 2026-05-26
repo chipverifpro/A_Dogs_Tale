@@ -545,6 +545,7 @@ public class LLMWorldScheduler : MonoBehaviour
             if (response == null)
             {
                 selection.OnDispatchFailure(schedulerRequest.RequestId);
+                ShowLlmFailureBanner(agentName, "LLM failed: null response.");
                 UnityEngine.Debug.LogWarning($"[LLM Scheduler] Null response requestId={schedulerRequest.RequestId} agentId={schedulerRequest.AgentId}");
                 return;
             }
@@ -559,6 +560,7 @@ public class LLMWorldScheduler : MonoBehaviour
             if (!response.succeeded)
             {
                 selection.OnDispatchFailure(schedulerRequest.RequestId);
+                ShowLlmFailureBanner(agentName, $"LLM failed: {response.errorMessage}");
                 UnityEngine.Debug.LogWarning($"[LLM Scheduler] LLM failed requestId={schedulerRequest.RequestId} agentId={schedulerRequest.AgentId} err={response.errorMessage}");
                 return;
             }
@@ -571,11 +573,13 @@ public class LLMWorldScheduler : MonoBehaviour
             if (!TryBuildSchedulerResponsePayload(llmRequest, response, schedulerRequest, rawPayload, out string callbackPayload, out string? modeError))
             {
                 selection.OnDispatchFailure(schedulerRequest.RequestId);
+                ShowLlmFailureBanner(agentName, $"LLM returned invalid command: {modeError}");
                 UnityEngine.Debug.LogWarning($"[LLM Scheduler] Response hook failed requestId={schedulerRequest.RequestId} agentId={schedulerRequest.AgentId} err={modeError}");
                 return;
             }
 
             selection.OnDispatchSuccess(schedulerRequest.RequestId);
+            ShowLlmReceivedBanner(agentName, selection.VendorName);
             UnityEngine.Debug.Log(
                 $"[LLM Scheduler] Delivering callback requestId={schedulerRequest.RequestId} agentId={schedulerRequest.AgentId} mode={llmRequest.commandMode} chars={callbackPayload.Length}");
             schedulerRequest.OnResponseJson?.Invoke(callbackPayload);
@@ -584,8 +588,57 @@ public class LLMWorldScheduler : MonoBehaviour
         {
             ReleaseInflightAgent(schedulerRequest.AgentId, schedulerRequest.RequestId);
             selection.OnDispatchFailure(schedulerRequest.RequestId);
+            ShowLlmFailureBanner(agentName, $"LLM failed: {ex.GetType().Name}: {ex.Message}");
             UnityEngine.Debug.LogWarning($"[LLM Scheduler] Send failed vendor={selection.llmVendor} model={selection.llmModelString} requestId={schedulerRequest.RequestId}: {ex.GetType().Name}: {ex.Message}");
         }
+    }
+
+    private static void ShowLlmReceivedBanner(string agentName, string vendor)
+    {
+        ShowLlmBannerWithIcon(
+            agentName,
+            $"received LLM response from {FormatVendorForBanner(vendor)}",
+            "LLM_Icons_A_1");
+    }
+
+    private static void ShowLlmFailureBanner(string agentName, string reason)
+    {
+        ShowLlmBannerWithIcon(agentName, SummarizeBannerReason(reason), "Sad");
+    }
+
+    private static void ShowLlmBannerWithIcon(string agentName, string message, string iconSpriteName)
+    {
+        try
+        {
+            string actor = string.IsNullOrWhiteSpace(agentName) ? "Unknown agent" : agentName.Trim();
+            BottomBanner.LogMessageWithIcon(
+                BannerSense.None,
+                BannerLevel.None,
+                $"{actor} {message}",
+                iconSpriteName);
+        }
+        catch (Exception ex)
+        {
+            Debug.LogWarning($"[LLM Scheduler] Failed to show bottom banner: {ex.Message}");
+        }
+    }
+
+    private static string FormatVendorForBanner(string vendor)
+    {
+        if (string.Equals(vendor, "OpenAI", StringComparison.OrdinalIgnoreCase))
+            return "ChatGPT";
+
+        return string.IsNullOrWhiteSpace(vendor) ? "LLM" : vendor.Trim();
+    }
+
+    private static string SummarizeBannerReason(string reason)
+    {
+        if (string.IsNullOrWhiteSpace(reason))
+            return "LLM failed.";
+
+        string oneLine = reason.Replace("\r", " ").Replace("\n", " ").Trim();
+        const int maxLength = 220;
+        return oneLine.Length <= maxLength ? oneLine : oneLine.Substring(0, maxLength - 3) + "...";
     }
 
     private void ReleaseInflightAgent(string? agentId, string? requestId = null)

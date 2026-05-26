@@ -240,8 +240,6 @@ namespace DogGame.LLM.Core
 
                     string raw = unityRequest.downloadHandler?.text ?? "";
 
-                    ShowLlmActivityBanner(agentId, "received LLM response from", Vendor, "LLM_Icons_A_1");
-
                     if (debugMonitor != null)
                     {
                         debugMonitor.DebugLLMResponse(
@@ -484,6 +482,18 @@ namespace DogGame.LLM.Core
         {
             if (request.metadata == null) return null;
             return request.metadata.TryGetValue(key, out var value) ? value : null;
+        }
+
+        protected static int ResolveMaxOutputTokens(LLMRequest request, int fallbackMaxOutputTokens)
+        {
+            int profileMaxOutputTokens = request?.profile != null ? request.profile.maxOutputTokens : 0;
+            return Mathf.Clamp(Mathf.Max(fallbackMaxOutputTokens, profileMaxOutputTokens), 1, 32000);
+        }
+
+        protected static int ResolveContextWindowTokens(LLMRequest request, int fallbackContextWindowTokens)
+        {
+            int profileContextWindowTokens = request?.profile != null ? request.profile.contextWindowTokens : 0;
+            return Mathf.Clamp(Mathf.Max(fallbackContextWindowTokens, profileContextWindowTokens), 1, 256000);
         }
 
         public static class LLMPacketJsonPrinter
