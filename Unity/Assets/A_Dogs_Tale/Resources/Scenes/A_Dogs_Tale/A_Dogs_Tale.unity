@@ -94943,7 +94943,6 @@ Transform:
   - {fileID: 1554749956}
   - {fileID: 1618901363}
   - {fileID: 1642226070}
-  - {fileID: 1713417600}
   - {fileID: 351839180}
   - {fileID: 1135862879}
   m_Father: {fileID: 1767335688}
@@ -167769,7 +167768,7 @@ MonoBehaviour:
   m_ScaleFactor: 1
   m_ReferenceResolution: {x: 800, y: 600}
   m_ScreenMatchMode: 0
-  m_MatchWidthOrHeight: 1
+  m_MatchWidthOrHeight: 0.5
   m_PhysicalUnit: 3
   m_FallbackScreenDPI: 96
   m_DefaultSpriteDPI: 96
@@ -170704,7 +170703,7 @@ RectTransform:
   m_LocalScale: {x: 0, y: 0, z: 0}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 942637343}
+  m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
@@ -170726,7 +170725,7 @@ MonoBehaviour:
   backgroundColor: {r: 0.9, g: 0.9, b: 0.9, a: 0.75}
   textColor: {r: 0.13, g: 0.13, b: 0.13, a: 1}
   fontSize: 36
-  height: 64
+  height: 490
   sidePadding: 16
   useSafeArea: 1
   autoCollapseWhenMouseAway: 1
@@ -170804,7 +170803,7 @@ Canvas:
   m_AdditionalShaderChannelsFlag: 25
   m_UpdateRectTransformForStandalone: 0
   m_SortingLayerID: 0
-  m_SortingOrder: 5000
+  m_SortingOrder: 0
   m_TargetDisplay: 0
 --- !u!1001 &1716333284
 PrefabInstance:
@@ -225575,3 +225574,4 @@ SceneRoots:
   - {fileID: 81350533}
   - {fileID: 1041234626}
   - {fileID: 1686830407}
+  - {fileID: 1713417600}

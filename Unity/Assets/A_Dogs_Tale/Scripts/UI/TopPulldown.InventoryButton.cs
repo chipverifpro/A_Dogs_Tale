@@ -41,10 +41,10 @@ public partial class TopPulldown
 
         Button button = GetOrAddComponent<Button>(buttonObject);
         button.targetGraphic = inventoryButtonImage;
-        button.onClick.RemoveListener(OpenInventoryDialog);
+        button.onClick.RemoveListener(ToggleInventoryDialog);
         button.onClick.RemoveListener(AudioPlayer.PlayUiButtonClick);
         button.onClick.AddListener(AudioPlayer.PlayUiButtonClick);
-        button.onClick.AddListener(OpenInventoryDialog);
+        button.onClick.AddListener(ToggleInventoryDialog);
 
         Transform existingIcon = buttonObject.transform.Find("Icon");
         GameObject iconObject;
@@ -78,7 +78,7 @@ public partial class TopPulldown
         ConfigureTooltip(buttonObject, () => "Inventory");
     }
 
-    private void OpenInventoryDialog()
+    private void ToggleInventoryDialog()
     {
         CloseDropdown();
         CloseModePanel();
@@ -92,7 +92,7 @@ public partial class TopPulldown
             inventoryDialog = inventoryDialogObject.AddComponent<InventoryDialogUI>();
         }
 
-        inventoryDialog.Show();
+        inventoryDialog.Toggle();
     }
 
     private Sprite GetInventoryButtonSprite()

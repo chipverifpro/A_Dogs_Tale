@@ -476,6 +476,7 @@ public partial class TopPulldown
         speedPanelRect.anchorMax = new Vector2(0.5f, 0.5f);
         speedPanelRect.pivot = new Vector2(0.5f, 0.5f);
         speedPanelRect.anchoredPosition = Vector2.zero;
+        PositionSpeedPanelCloseOverlay();
     }
 
     private void ApplyCenteredEmoteDropdownPosition()

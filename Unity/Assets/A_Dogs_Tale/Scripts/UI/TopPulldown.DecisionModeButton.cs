@@ -108,6 +108,7 @@ public partial class TopPulldown
         for (int i = 0; i < selectableDecisionModes.Length; i++)
             CreateModePanelButton(selectableDecisionModes[i]);
 
+        EnsureInvisibleFrameCloseButton(panelObject.transform, CloseModePanel, new Vector2(-82f, -48f), new Vector2(36f, 36f));
         panelObject.SetActive(false);
     }
 
@@ -158,6 +159,7 @@ public partial class TopPulldown
             panelImage.color = dropdownBackgroundColor;
 
         ConfigureModePanelLayout(panelObject, hasFrame);
+        EnsureInvisibleFrameCloseButton(panelObject.transform, CloseModePanel, new Vector2(-82f, -48f), new Vector2(36f, 36f));
 
         modeButtonBackgrounds.Clear();
         for (int i = 0; i < selectableDecisionModes.Length; i++)

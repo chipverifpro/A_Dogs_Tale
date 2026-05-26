@@ -28,8 +28,6 @@ public sealed class InventoryDialogUI : MonoBehaviour
     [SerializeField] private Vector2 referenceResolution = new(1920f, 1080f);
     [SerializeField] private Vector2 dialogSize = new(820f, 820f);
     [SerializeField, Range(0f, 75f)] private float dialogScaleReductionPercent = 25f;
-    [SerializeField] private Vector2 themedCloseButtonAnchoredPosition = new(-70f, -160f);
-    [SerializeField] private Vector2 themedCloseButtonSize = new(100f, 100f);
     [SerializeField] private Vector2 themedBallCloseButtonAnchoredPosition = new(-110f, -100f);
     [SerializeField] private Vector2 themedBallCloseButtonSize = new(110f, 110f);
     [SerializeField] private float actionButtonHeight = 112f;
@@ -314,33 +312,13 @@ public sealed class InventoryDialogUI : MonoBehaviour
             titleLabel.alignment = TextAlignmentOptions.MidlineLeft;
         }
 
-        Button closeButton = hasThemedBackground
-            ? CreateInvisibleButton("CloseButton", parent, OnCloseClicked, "Close")
-            : CreateSpriteButton(
-                "CloseButton",
-                parent,
-                arrowSprites.TryGetValue(5, out Sprite closeSprite) ? closeSprite : null,
-                "X",
-                OnCloseClicked,
-                "Close");
-
+        Button closeButton = CreateInvisibleButton("CloseButton", parent, OnCloseClicked, "Close");
         RectTransform closeRect = closeButton.GetComponent<RectTransform>();
         closeRect.anchorMin = new Vector2(1f, 1f);
         closeRect.anchorMax = new Vector2(1f, 1f);
-        closeRect.pivot = new Vector2(1f, 1f);
-        closeRect.anchoredPosition = hasThemedBackground ? themedCloseButtonAnchoredPosition : new Vector2(-20f, -18f);
-        closeRect.sizeDelta = hasThemedBackground ? themedCloseButtonSize : new Vector2(54f, 54f);
-
-        if (hasThemedBackground)
-        {
-            Button ballCloseButton = CreateInvisibleButton("BallCloseButton", parent, OnCloseClicked, "Close");
-            RectTransform ballCloseRect = ballCloseButton.GetComponent<RectTransform>();
-            ballCloseRect.anchorMin = new Vector2(1f, 1f);
-            ballCloseRect.anchorMax = new Vector2(1f, 1f);
-            ballCloseRect.pivot = new Vector2(0.5f, 0.5f);
-            ballCloseRect.anchoredPosition = themedBallCloseButtonAnchoredPosition;
-            ballCloseRect.sizeDelta = themedBallCloseButtonSize;
-        }
+        closeRect.pivot = hasThemedBackground ? new Vector2(0.5f, 0.5f) : new Vector2(1f, 1f);
+        closeRect.anchoredPosition = hasThemedBackground ? themedBallCloseButtonAnchoredPosition : new Vector2(-20f, -18f);
+        closeRect.sizeDelta = hasThemedBackground ? themedBallCloseButtonSize : new Vector2(54f, 54f);
     }
 
     private void BuildPreviewArea(Transform parent)

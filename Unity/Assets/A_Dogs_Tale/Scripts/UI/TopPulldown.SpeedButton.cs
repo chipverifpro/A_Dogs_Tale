@@ -4,6 +4,8 @@ using UnityEngine.UI;
 
 public partial class TopPulldown
 {
+    private RectTransform speedPanelCloseButtonRect;
+
     private void BuildSpeedButton(Transform parent, Transform searchRoot)
     {
         Transform existingButton = FindExistingUiElement(parent, searchRoot, "SpeedModeButton");
@@ -105,6 +107,7 @@ public partial class TopPulldown
         for (int i = 0; i < selectableSpeedModes.Length; i++)
             CreateSpeedPanelButton(selectableSpeedModes[i]);
 
+        EnsureSpeedPanelCloseOverlay();
         panelObject.SetActive(false);
     }
 
@@ -153,6 +156,7 @@ public partial class TopPulldown
             panelImage.color = dropdownBackgroundColor;
 
         ConfigureSpeedPanelLayout(panelObject, hasFrame);
+        EnsureSpeedPanelCloseOverlay();
 
         speedButtonBackgrounds.Clear();
         for (int i = 0; i < selectableSpeedModes.Length; i++)
@@ -244,6 +248,7 @@ public partial class TopPulldown
             RefreshSpeedButtonState(force: true);
             RefreshSpeedPanelSelection();
             speedPanelRect.gameObject.SetActive(true);
+            SetSpeedPanelCloseOverlayVisible(true);
         }
         else
         {
@@ -256,7 +261,89 @@ public partial class TopPulldown
         if (speedPanelRect != null)
             speedPanelRect.gameObject.SetActive(false);
 
+        SetSpeedPanelCloseOverlayVisible(false);
         HideTooltip();
+    }
+
+    private void EnsureSpeedPanelCloseOverlay()
+    {
+        if (overlayCanvas == null)
+            return;
+
+        Transform oldGridChild = speedPanelRect != null ? speedPanelRect.Find("FrameCloseButton") : null;
+        if (oldGridChild != null)
+        {
+            if (Application.isPlaying)
+                Destroy(oldGridChild.gameObject);
+            else
+                DestroyImmediate(oldGridChild.gameObject);
+        }
+
+        Transform parent = overlayCanvas.transform;
+        Transform existingButton = parent.Find("SpeedPanelCloseButton");
+        GameObject buttonObject;
+        if (existingButton == null)
+        {
+            buttonObject = new GameObject(
+                "SpeedPanelCloseButton",
+                typeof(RectTransform),
+                typeof(Image),
+                typeof(Button));
+            buttonObject.transform.SetParent(parent, false);
+        }
+        else
+        {
+            buttonObject = existingButton.gameObject;
+        }
+
+        speedPanelCloseButtonRect = GetOrAddComponent<RectTransform>(buttonObject);
+        speedPanelCloseButtonRect.anchorMin = new Vector2(0.5f, 0.5f);
+        speedPanelCloseButtonRect.anchorMax = new Vector2(0.5f, 0.5f);
+        speedPanelCloseButtonRect.pivot = new Vector2(0.5f, 0.5f);
+        speedPanelCloseButtonRect.sizeDelta = new Vector2(104f, 95f);
+        PositionSpeedPanelCloseOverlay();
+
+        Image image = GetOrAddComponent<Image>(buttonObject);
+        image.color = new Color(1f, 1f, 1f, 0.001f);
+        image.raycastTarget = true;
+
+        Button button = GetOrAddComponent<Button>(buttonObject);
+        button.targetGraphic = image;
+        button.onClick.RemoveAllListeners();
+        button.onClick.AddListener(AudioPlayer.PlayUiButtonClick);
+        button.onClick.AddListener(CloseSpeedPanel);
+
+        ConfigureTooltip(buttonObject, () => "Close");
+        buttonObject.SetActive(false);
+    }
+
+    private void PositionSpeedPanelCloseOverlay()
+    {
+        if (speedPanelRect == null || speedPanelCloseButtonRect == null)
+            return;
+
+        Vector2 panelSize = speedPanelRect.rect.size;
+        if (panelSize.x <= 0f || panelSize.y <= 0f)
+            panelSize = speedPanelRect.sizeDelta;
+
+        Vector2 closeSize = speedPanelCloseButtonRect.sizeDelta;
+        speedPanelCloseButtonRect.anchoredPosition = speedPanelRect.anchoredPosition +
+            new Vector2((panelSize.x * 0.5f) - 310f, (panelSize.y * 0.5f) - 95f);
+        speedPanelCloseButtonRect.SetAsLastSibling();
+    }
+
+    private void SetSpeedPanelCloseOverlayVisible(bool visible)
+    {
+        if (speedPanelCloseButtonRect == null)
+            EnsureSpeedPanelCloseOverlay();
+
+        if (speedPanelCloseButtonRect == null)
+            return;
+
+        if (visible)
+            PositionSpeedPanelCloseOverlay();
+
+        speedPanelCloseButtonRect.gameObject.SetActive(visible);
     }
 
     private void HandleSpeedModeSelected(WalkMode walkMode)

@@ -145,50 +145,6 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Gait_Frame_AB_1
-      rect:
-        serializedVersion: 2
-        x: 395
-        y: 1003
-        width: 4
-        height: 4
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: e0ed1b0c6562f4b24ad3e696bce09302
-      internalID: -1149818305
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Gait_Frame_AB_2
-      rect:
-        serializedVersion: 2
-        x: 394
-        y: 995
-        width: 15
-        height: 4
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: be71208b767ff4a00acaa80b4406a8e2
-      internalID: -1145203092
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
       name: Gait_Frame_AB_3
       rect:
         serializedVersion: 2
@@ -206,6 +162,28 @@ TextureImporter:
       bones: []
       spriteID: 4bd8afb789ee74b169f7ddef313dd688
       internalID: -2120637119
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Gait_Frame_AB_4
+      rect:
+        serializedVersion: 2
+        x: 394
+        y: 995
+        width: 15
+        height: 4
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 02c4c5583092242e49b6febb1cd40e92
+      internalID: -36883850
       vertices: []
       indices: 
       edges: []
@@ -230,6 +208,7 @@ TextureImporter:
       Gait_Frame_AB_1: -1149818305
       Gait_Frame_AB_2: -1145203092
       Gait_Frame_AB_3: -2120637119
+      Gait_Frame_AB_4: -36883850
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

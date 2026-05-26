@@ -180,6 +180,7 @@ public class BottomBanner : MonoBehaviour
             Transform existingCanvas = transform.Find("BottomBannerCanvas");
             if (existingCanvas != null)
             {
+                existingCanvas.gameObject.SetActive(true);
                 BottomBannerCanvas = existingCanvas.GetComponent<Canvas>();
                 if (BottomBannerCanvas == null)
                     BottomBannerCanvas = existingCanvas.gameObject.AddComponent<Canvas>();
@@ -196,8 +197,9 @@ public class BottomBanner : MonoBehaviour
         EnsureRootOverlayCanvas();
 
         BottomBannerCanvas.renderMode = RenderMode.ScreenSpaceOverlay;
+        BottomBannerCanvas.enabled = true;
         BottomBannerCanvas.overrideSorting = true;
-        BottomBannerCanvas.sortingOrder = 5000;
+        BottomBannerCanvas.sortingOrder = -1;
 
         CanvasScaler scaler = BottomBannerCanvas.GetComponent<CanvasScaler>();
         if (scaler == null)
@@ -209,6 +211,8 @@ public class BottomBanner : MonoBehaviour
         if (panel == null)
         {
             panel = FindDirectChild(BottomBannerCanvas.transform, "BannerPanel");
+            if (panel != null)
+                panel.SetActive(true);
             RemoveDuplicateDirectChildren(BottomBannerCanvas.transform, "BannerPanel", panel);
 
             if (panel == null)
@@ -225,6 +229,7 @@ public class BottomBanner : MonoBehaviour
         }
 
         RemoveDuplicateDirectChildren(BottomBannerCanvas.transform, "BannerPanel", panel);
+        panel.SetActive(true);
 
         if (panelRT == null)
         {
@@ -250,6 +255,8 @@ public class BottomBanner : MonoBehaviour
         if (scrollRect == null)
         {
             GameObject scrollGO = FindDirectChild(panel.transform, "MessageScrollView");
+            if (scrollGO != null)
+                scrollGO.SetActive(true);
             if (scrollGO == null)
             {
                 scrollGO = new GameObject("MessageScrollView", typeof(RectTransform), typeof(Image), typeof(ScrollRect));
@@ -283,6 +290,8 @@ public class BottomBanner : MonoBehaviour
             scrollRect.scrollSensitivity = 24f;
 
             GameObject viewportGO = FindDirectChild(scrollGO.transform, "Viewport");
+            if (viewportGO != null)
+                viewportGO.SetActive(true);
             if (viewportGO == null)
             {
                 viewportGO = new GameObject("Viewport", typeof(RectTransform), typeof(Image), typeof(RectMask2D));
@@ -308,6 +317,8 @@ public class BottomBanner : MonoBehaviour
                 viewportGO.AddComponent<RectMask2D>();
 
             GameObject contentGO = FindDirectChild(viewportGO.transform, "Content");
+            if (contentGO != null)
+                contentGO.SetActive(true);
             if (contentGO == null)
             {
                 contentGO = new GameObject("Content", typeof(RectTransform), typeof(VerticalLayoutGroup), typeof(ContentSizeFitter));
@@ -347,6 +358,8 @@ public class BottomBanner : MonoBehaviour
             verticalScrollbar = scrollGO.GetComponentInChildren<Scrollbar>(true);
             if (verticalScrollbar == null)
                 verticalScrollbar = CreateScrollbar(scrollGO.transform);
+            else
+                verticalScrollbar.gameObject.SetActive(true);
             scrollRect.viewport = viewportRT;
             scrollRect.content = contentRT;
             scrollRect.verticalScrollbar = verticalScrollbar;

@@ -4,6 +4,9 @@ using UnityEngine.UI;
 
 public partial class TopPulldown
 {
+    private static readonly Vector2 FrameCloseButtonAnchoredPosition = new(-64f, -64f);
+    private static readonly Vector2 FrameCloseButtonSize = new(96f, 96f);
+
     private static T GetOrAddComponent<T>(GameObject target) where T : Component
     {
         T component = target.GetComponent<T>();
@@ -11,6 +14,62 @@ public partial class TopPulldown
             return component;
 
         return target.AddComponent<T>();
+    }
+
+    private RectTransform EnsureInvisibleFrameCloseButton(Transform parent, UnityEngine.Events.UnityAction onClick)
+    {
+        return EnsureInvisibleFrameCloseButton(parent, onClick, FrameCloseButtonAnchoredPosition, FrameCloseButtonSize);
+    }
+
+    private RectTransform EnsureInvisibleFrameCloseButton(
+        Transform parent,
+        UnityEngine.Events.UnityAction onClick,
+        Vector2 anchoredPosition,
+        Vector2 size)
+    {
+        if (parent == null || onClick == null)
+            return null;
+
+        Transform existingButton = parent.Find("FrameCloseButton");
+        GameObject buttonObject;
+        if (existingButton == null)
+        {
+            buttonObject = new GameObject(
+                "FrameCloseButton",
+                typeof(RectTransform),
+                typeof(Image),
+                typeof(Button),
+                typeof(LayoutElement));
+            buttonObject.transform.SetParent(parent, false);
+        }
+        else
+        {
+            buttonObject = existingButton.gameObject;
+        }
+
+        RectTransform rect = GetOrAddComponent<RectTransform>(buttonObject);
+        rect.anchorMin = new Vector2(1f, 1f);
+        rect.anchorMax = new Vector2(1f, 1f);
+        rect.pivot = new Vector2(0.5f, 0.5f);
+        rect.anchoredPosition = anchoredPosition;
+        rect.sizeDelta = size;
+
+        Image image = GetOrAddComponent<Image>(buttonObject);
+        image.color = Color.clear;
+        image.raycastTarget = true;
+
+        LayoutElement layout = GetOrAddComponent<LayoutElement>(buttonObject);
+        layout.ignoreLayout = true;
+
+        Button button = GetOrAddComponent<Button>(buttonObject);
+        button.targetGraphic = image;
+        button.onClick.RemoveAllListeners();
+        button.onClick.AddListener(AudioPlayer.PlayUiButtonClick);
+        button.onClick.AddListener(onClick);
+
+        ConfigureTooltip(buttonObject, () => "Close");
+        buttonObject.transform.SetAsLastSibling();
+        return rect;
     }
 
     private Scrollbar CreateScrollbar(Transform parent)

@@ -116,6 +116,7 @@ public partial class TopPulldown
         emoteDropdownScrollRect.verticalScrollbarVisibility = ScrollRect.ScrollbarVisibility.AutoHideAndExpandViewport;
         emoteDropdownScrollRect.verticalScrollbarSpacing = 4f;
 
+        EnsureInvisibleFrameCloseButton(dropdownObject.transform, CloseEmoteDropdown);
         dropdownObject.SetActive(false);
     }
 
@@ -152,6 +153,7 @@ public partial class TopPulldown
         Transform contentTransform = dropdownObject.transform.Find("ScrollView/Viewport/Content");
         emoteDropdownContentRect = contentTransform != null ? contentTransform.GetComponent<RectTransform>() : null;
 
+        EnsureInvisibleFrameCloseButton(dropdownObject.transform, CloseEmoteDropdown);
         dropdownObject.SetActive(false);
     }
 

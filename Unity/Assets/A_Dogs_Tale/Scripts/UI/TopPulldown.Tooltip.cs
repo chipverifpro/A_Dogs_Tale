@@ -61,6 +61,7 @@ public partial class TopPulldown
         if (TMP_Settings.defaultFontAsset != null)
             tooltipLabel.font = TMP_Settings.defaultFontAsset;
 
+        BringTooltipToFront();
         tooltipObject.SetActive(false);
     }
 
@@ -103,7 +104,7 @@ public partial class TopPulldown
         tooltipRect.gameObject.SetActive(true);
         UpdateTooltipText(text);
         PositionTooltip(screenPosition);
-        tooltipRect.SetAsLastSibling();
+        BringTooltipToFront();
     }
 
     internal void MoveTooltip(TopPulldownTooltipTrigger trigger, Vector2 screenPosition)
@@ -179,5 +180,16 @@ public partial class TopPulldown
         anchoredPosition.x = Mathf.Clamp(anchoredPosition.x, minX, Mathf.Max(minX, maxX));
         anchoredPosition.y = Mathf.Clamp(anchoredPosition.y, Mathf.Min(minY, maxY), Mathf.Max(minY, maxY));
         tooltipRect.anchoredPosition = anchoredPosition;
+    }
+
+    private void BringTooltipToFront()
+    {
+        if (tooltipRect == null)
+            return;
+
+        if (tooltipRect.parent != null)
+            tooltipRect.parent.SetAsLastSibling();
+
+        tooltipRect.SetAsLastSibling();
     }
 }

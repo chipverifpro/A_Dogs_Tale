@@ -16,6 +16,8 @@ public sealed class QuestJournalUI : MonoBehaviour
     [SerializeField] private float questAcceptRange = 2.5f;
     [SerializeField] private float proximityRefreshInterval = 0.5f;
     [SerializeField] private string questFrameResourcePath = "Sprites/Quest_Frame_A";
+    [SerializeField] private Vector2 questFrameCloseButtonAnchoredPosition = new(-160f, -100f);
+    [SerializeField] private Vector2 questFrameCloseButtonSize = new(100f, 100f);
 
     private readonly HashSet<QuestModuleBase> expandedQuestModules = new();
     private readonly List<QuestModuleBase> displayQuestModules = new();
@@ -24,8 +26,10 @@ public sealed class QuestJournalUI : MonoBehaviour
     private Canvas overlayCanvas;
     private GameObject dialogRoot;
     private RectTransform contentRect;
+    private RectTransform tooltipRect;
     private ScrollRect questScrollRect;
     private TextMeshProUGUI emptyLabel;
+    private TextMeshProUGUI tooltipLabel;
     private Sprite questFrameSprite;
     private bool questFrameApplied;
     private bool isOpen;
@@ -93,6 +97,8 @@ public sealed class QuestJournalUI : MonoBehaviour
 
         if (dialogRoot != null)
             dialogRoot.SetActive(false);
+
+        HideTooltip();
     }
 
     private void OnActiveQuestsChanged()
@@ -157,6 +163,7 @@ public sealed class QuestJournalUI : MonoBehaviour
 
         BuildHeader(dialogRoot.transform);
         BuildBody(dialogRoot.transform);
+        BuildTooltip(canvasObject.transform);
     }
 
     private void BuildHeader(Transform parent)
@@ -176,13 +183,13 @@ public sealed class QuestJournalUI : MonoBehaviour
         titleLabel.alignment = TextAlignmentOptions.MidlineLeft;
         titleObject.SetActive(!questFrameApplied);
 
-        Button closeButton = CreateButton("CloseButton", parent, "X", Hide);
+        Button closeButton = CreateInvisibleButton("CloseButton", parent, Hide);
         RectTransform closeRect = closeButton.GetComponent<RectTransform>();
         closeRect.anchorMin = new Vector2(1f, 1f);
         closeRect.anchorMax = new Vector2(1f, 1f);
-        closeRect.pivot = new Vector2(1f, 1f);
-        closeRect.anchoredPosition = questFrameApplied ? new Vector2(-46f, -54f) : new Vector2(-20f, -18f);
-        closeRect.sizeDelta = questFrameApplied ? new Vector2(70f, 70f) : new Vector2(54f, 54f);
+        closeRect.pivot = questFrameApplied ? new Vector2(0.5f, 0.5f) : new Vector2(1f, 1f);
+        closeRect.anchoredPosition = questFrameApplied ? questFrameCloseButtonAnchoredPosition : new Vector2(-20f, -18f);
+        closeRect.sizeDelta = questFrameApplied ? questFrameCloseButtonSize : new Vector2(54f, 54f);
     }
 
     private void BuildBody(Transform parent)
@@ -630,6 +637,80 @@ public sealed class QuestJournalUI : MonoBehaviour
         return button;
     }
 
+    private Button CreateInvisibleButton(string objectName, Transform parent, UnityEngine.Events.UnityAction onClick)
+    {
+        GameObject buttonObject = CreateUIObject(objectName, parent);
+        Image image = buttonObject.AddComponent<Image>();
+        image.color = new Color(1f, 1f, 1f, 0.001f);
+        image.raycastTarget = true;
+
+        Button button = buttonObject.AddComponent<Button>();
+        button.targetGraphic = image;
+        button.onClick.AddListener(AudioPlayer.PlayUiButtonClick);
+        button.onClick.AddListener(onClick);
+
+        QuestJournalTooltipTrigger trigger = buttonObject.AddComponent<QuestJournalTooltipTrigger>();
+        trigger.Initialize(this, "Close");
+
+        return button;
+    }
+
+    private void BuildTooltip(Transform parent)
+    {
+        GameObject tooltipObject = CreateUIObject("QuestJournalTooltip", parent);
+        tooltipRect = tooltipObject.GetComponent<RectTransform>();
+        tooltipRect.anchorMin = new Vector2(0f, 1f);
+        tooltipRect.anchorMax = new Vector2(0f, 1f);
+        tooltipRect.pivot = new Vector2(0f, 1f);
+        tooltipRect.sizeDelta = new Vector2(96f, 42f);
+
+        Image background = tooltipObject.AddComponent<Image>();
+        background.color = new Color(0.97f, 0.91f, 0.72f, 0.97f);
+        background.raycastTarget = false;
+
+        tooltipLabel = CreateLabel("Label", tooltipObject.transform, 22f, new Color(0.08f, 0.06f, 0.03f, 1f), TextAlignmentOptions.Center);
+        tooltipLabel.rectTransform.anchorMin = Vector2.zero;
+        tooltipLabel.rectTransform.anchorMax = Vector2.one;
+        tooltipLabel.rectTransform.offsetMin = new Vector2(12f, 8f);
+        tooltipLabel.rectTransform.offsetMax = new Vector2(-12f, -8f);
+
+        tooltipObject.SetActive(false);
+    }
+
+    public void ShowTooltip(string text, Vector2 screenPosition)
+    {
+        if (tooltipRect == null || tooltipLabel == null || string.IsNullOrWhiteSpace(text))
+            return;
+
+        tooltipLabel.text = text;
+        tooltipRect.gameObject.SetActive(true);
+        PositionTooltip(screenPosition);
+        tooltipRect.SetAsLastSibling();
+    }
+
+    public void HideTooltip()
+    {
+        if (tooltipRect != null)
+            tooltipRect.gameObject.SetActive(false);
+    }
+
+    private void PositionTooltip(Vector2 screenPosition)
+    {
+        if (tooltipRect == null || overlayCanvas == null)
+            return;
+
+        RectTransform canvasRect = overlayCanvas.transform as RectTransform;
+        if (canvasRect == null)
+            return;
+
+        if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(canvasRect, screenPosition, null, out Vector2 localPoint))
+            return;
+
+        tooltipRect.anchoredPosition = new Vector2(
+            localPoint.x + (canvasRect.rect.width * 0.5f) + 18f,
+            localPoint.y - (canvasRect.rect.height * 0.5f) - 18f);
+    }
+
     private static TextMeshProUGUI CreateLabel(string objectName, Transform parent, float fontSize, Color color, TextAlignmentOptions alignment)
     {
         GameObject labelObject = CreateUIObject(objectName, parent);
@@ -666,5 +747,32 @@ public sealed class QuestJournalUI : MonoBehaviour
         GameObject uiObject = new(objectName, typeof(RectTransform));
         uiObject.transform.SetParent(parent, false);
         return uiObject;
+    }
+}
+
+public sealed class QuestJournalTooltipTrigger : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerMoveHandler
+{
+    private QuestJournalUI owner;
+    private string tooltipText;
+
+    public void Initialize(QuestJournalUI owner, string tooltipText)
+    {
+        this.owner = owner;
+        this.tooltipText = tooltipText;
+    }
+
+    public void OnPointerEnter(PointerEventData eventData)
+    {
+        owner?.ShowTooltip(tooltipText, eventData.position);
+    }
+
+    public void OnPointerMove(PointerEventData eventData)
+    {
+        owner?.ShowTooltip(tooltipText, eventData.position);
+    }
+
+    public void OnPointerExit(PointerEventData eventData)
+    {
+        owner?.HideTooltip();
     }
 }

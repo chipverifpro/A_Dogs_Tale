@@ -180,9 +180,46 @@ public class SceneFader : MonoBehaviour
         }
 
         splashImage.sprite = loadedSprite;
+        ApplySplashCoverLayout(loadedSprite);
 
         // Optional: if you want the Image to match the sprite’s native size
         // splashImage.SetNativeSize();
+    }
+
+    private void ApplySplashCoverLayout(Sprite sprite)
+    {
+        if (sprite == null || splashImage == null || Mathf.Approximately(sprite.rect.height, 0f))
+            return;
+
+        splashImage.type = Image.Type.Simple;
+        splashImage.preserveAspect = false;
+
+        RectTransform imageRect = splashImage.rectTransform;
+        imageRect.anchorMin = new Vector2(0.5f, 0.5f);
+        imageRect.anchorMax = new Vector2(0.5f, 0.5f);
+        imageRect.pivot = new Vector2(0.5f, 0.5f);
+        imageRect.anchoredPosition = Vector2.zero;
+
+        float spriteAspect = sprite.rect.width / sprite.rect.height;
+        AspectRatioFitter aspectFitter = splashImage.GetComponent<AspectRatioFitter>();
+        if (aspectFitter != null)
+        {
+            aspectFitter.enabled = true;
+            aspectFitter.aspectMode = AspectRatioFitter.AspectMode.EnvelopeParent;
+            aspectFitter.aspectRatio = spriteAspect;
+            return;
+        }
+
+        RectTransform parentRect = imageRect.parent as RectTransform;
+        float parentWidth = parentRect != null && parentRect.rect.width > 0f ? parentRect.rect.width : Screen.width;
+        float parentHeight = parentRect != null && parentRect.rect.height > 0f ? parentRect.rect.height : Screen.height;
+        if (parentWidth <= 0f || parentHeight <= 0f)
+            return;
+
+        float parentAspect = parentWidth / parentHeight;
+        imageRect.sizeDelta = spriteAspect > parentAspect
+            ? new Vector2(parentHeight * spriteAspect, parentHeight)
+            : new Vector2(parentWidth, parentWidth / spriteAspect);
     }
 
     private IEnumerator ShowInitialMenu()
