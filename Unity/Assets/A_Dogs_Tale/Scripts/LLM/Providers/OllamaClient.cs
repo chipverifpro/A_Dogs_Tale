@@ -74,7 +74,8 @@ namespace DogGame.LLM.Providers
                 timeoutSeconds = timeoutSeconds,
                 headers = null,
                 debugRequestId = requestId,
-                debugAgentId = agentId
+                debugAgentId = agentId,
+                debugRequestPacketJson = global::DogGame.LLM.LLMRequestSerializer.ToJson(request)
             };
 
             return PostJsonAsync(spec, cancellationToken, ParseResponsesApi_OutputText);

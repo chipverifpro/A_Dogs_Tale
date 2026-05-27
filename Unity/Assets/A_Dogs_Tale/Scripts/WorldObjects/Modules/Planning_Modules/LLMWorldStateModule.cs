@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Text;
 using DogGame.LLM.Policy;
 using DogGame.Modules;
+using DogGame.Tasks;
 using UnityEngine;
 using InspectorTools;
 
@@ -348,6 +349,7 @@ namespace DogGame.LLM.Agent
 
         public struct FoundDoor
         {
+            public int doorId;
             public Vector2Int pos;
             public float distSqr;
             public bool open;
@@ -365,6 +367,7 @@ namespace DogGame.LLM.Agent
         public void GetDoorsInRoom(Vector3 mapPos, Room room, RectInt radiusBounds, int maxDoors, List<FoundDoor> foundDoors)
         {
             foundDoors.Clear();
+            HashSet<(int doorId, Vector2Int pos, DirFlags direction)> seenDoors = new();
 
             foreach (Cell c in room.cells)
             {
@@ -379,8 +382,13 @@ namespace DogGame.LLM.Agent
                     if ((c.doors & dir) == 0)
                         continue;
 
+                    int doorId = DoorIdUtility.Build(c.pos, dir);
+                    if (!seenDoors.Add((doorId, c.pos, dir)))
+                        continue;
+
                     FoundDoor door = new FoundDoor
                     {
+                        doorId = doorId,
                         pos = c.pos,
                         distSqr = Vector3.SqrMagnitude(mapPos - c.center3d_f),
                         direction = dir,
@@ -410,7 +418,7 @@ namespace DogGame.LLM.Agent
             doorsContext = $"{foundDoors.Count} room exits nearby: ";
             foreach (FoundDoor foundDoor in foundDoors)
             {
-                doorsContext += $"Door to {DirFlagsEx.ToLongName(foundDoor.direction)} is {foundDoor.IsOpen} at [{foundDoor.pos.x},{foundDoor.pos.y}]; ";
+                doorsContext += $"Door (doorId={foundDoor.doorId}) to {DirFlagsEx.ToLongName(foundDoor.direction)} is {foundDoor.IsOpen} at [{foundDoor.pos.x},{foundDoor.pos.y}]; ";
             }
 
             doorsContext = doorsContext.Trim();

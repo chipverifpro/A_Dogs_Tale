@@ -19,7 +19,6 @@ namespace DogGame.LLM.Providers
         private readonly string baseUrl = "https://generativelanguage.googleapis.com/v1beta";
         private readonly string model = "gemini-2.5-flash-lite";
         public readonly string apiKeyEnvironmentVariable = "GEMINI_API_KEY";
-        private readonly string apiKey = "";
         public readonly int timeoutSeconds = 60;
         public readonly float temperature = 0.2f;
         public readonly int maxOutputTokens = 1600;
@@ -28,8 +27,7 @@ namespace DogGame.LLM.Providers
         // constructor:
         public GeminiClient(string model = "gemini-2.5-flash-lite")
         {
-            apiKey = ResolveApiKey(apiKeyEnvironmentVariable, apiKey);
-            if (string.IsNullOrEmpty(apiKey))
+            if (string.IsNullOrEmpty(ResolveApiKey(apiKeyEnvironmentVariable, "")))
                 Debug.LogWarning($"{Vendor}Client: apiKey is empty. apiKeyEnvironmentVariable={apiKeyEnvironmentVariable}");
             this.model = model;
         }
@@ -71,6 +69,7 @@ namespace DogGame.LLM.Providers
 
             if (string.IsNullOrWhiteSpace(baseUrl))
                 throw new InvalidOperationException("[Gemini] baseUrl is not set.");
+            string apiKey = ResolveApiKey(apiKeyEnvironmentVariable, "");
             if (string.IsNullOrWhiteSpace(apiKey))
                 throw new InvalidOperationException("[Gemini] apiKey is not set.");
             if (string.IsNullOrWhiteSpace(model))
@@ -85,7 +84,8 @@ namespace DogGame.LLM.Providers
                 timeoutSeconds = timeoutSeconds,
                 headers = null,
                 debugRequestId = requestId,
-                debugAgentId = agentId
+                debugAgentId = agentId,
+                debugRequestPacketJson = global::DogGame.LLM.LLMRequestSerializer.ToJson(request)
             };
 
             return PostJsonAsync(spec, cancellationToken, ParseGeminiGenerateContent);

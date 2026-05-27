@@ -6,6 +6,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using DogGame.LLM.Debugging;
+using DogGame.Settings;
 using UnityEngine;
 using UnityEngine.Networking;
 
@@ -22,6 +24,9 @@ namespace DogGame.LLM.Core
 
             if (!string.IsNullOrWhiteSpace(apiKeyEnvironmentVariable))
             {
+                if (SecretStore.TryGetSecret(apiKeyEnvironmentVariable, out string storedApiKey))
+                    return storedApiKey.Trim();
+
                 string? env = Environment.GetEnvironmentVariable(apiKeyEnvironmentVariable);
                 if (!string.IsNullOrWhiteSpace(env))
                     return env.Trim();
@@ -161,6 +166,7 @@ namespace DogGame.LLM.Core
             public Dictionary<string, string>? headers;
             public string debugRequestId = "";
             public string debugAgentId = "";
+            public string debugRequestPacketJson = "";
         }
 
         protected struct ParseResult
@@ -210,17 +216,12 @@ namespace DogGame.LLM.Core
                 ? spec.debugRequestId
                 : LLMRequestId.NewShortHex();
             var debugMonitor = Dir.Instance != null ? Dir.Instance.llmDebugMonitor : null;
+            string requestPacketJson = !string.IsNullOrWhiteSpace(spec.debugRequestPacketJson)
+                ? spec.debugRequestPacketJson
+                : payloadJson;
 
             ShowLlmActivityBanner(agentId, "sent LLM request to", Vendor, "LLM_Icons_A_0");
-
-            if (debugMonitor != null)
-            {
-                debugMonitor.DebugLLMRequest(
-                    payloadJson,
-                    agentId,
-                    requestId
-                );
-            }
+            LLMPacketLogger.LogRequest(agentId, requestId, Vendor, requestPacketJson);
 
             var tcs = new TaskCompletionSource<LLMResponse>(TaskCreationOptions.RunContinuationsAsynchronously);
 

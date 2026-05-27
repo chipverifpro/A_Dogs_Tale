@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
+using DogGame.Settings;
 
 public class MenuSettingsDialog : MonoBehaviour
 {
@@ -40,6 +41,10 @@ public class MenuSettingsDialog : MonoBehaviour
     private Toggle chatGptToggle;
     private Toggle geminiToggle;
     private Toggle ollamaToggle;
+    private InputField openAIApiKeyInput;
+    private InputField geminiApiKeyInput;
+    private Text openAIApiKeyStatusLabel;
+    private Text geminiApiKeyStatusLabel;
     private Toggle musicToggle;
     private Toggle sfxToggle;
     private Toggle uiToggle;
@@ -225,6 +230,8 @@ public class MenuSettingsDialog : MonoBehaviour
         chatGptToggle = CreateToggle(aiRow.transform, "ChatGPT", "ChatGptToggle");
         geminiToggle = CreateToggle(aiRow.transform, "Gemini", "GeminiToggle");
         ollamaToggle = CreateToggle(aiRow.transform, "Local / Ollama", "OllamaToggle");
+        CreateSecretStoreRow(content, "OPENAI_API_KEY", SecretStore.OpenAIApiKey, out openAIApiKeyInput, out openAIApiKeyStatusLabel);
+        CreateSecretStoreRow(content, "GEMINI_API_KEY", SecretStore.GeminiApiKey, out geminiApiKeyInput, out geminiApiKeyStatusLabel);
 
         CreateSectionHeader(content, "SCENT PHYSICS");
         CreateScentSliderRow(content);
@@ -559,6 +566,151 @@ public class MenuSettingsDialog : MonoBehaviour
         valueLayout.minWidth = 54f;
 
         return slider;
+    }
+
+    private void CreateSecretStoreRow(Transform parent, string labelText, string secretKey, out InputField inputField, out Text statusLabel)
+    {
+        GameObject row = CreateRow(parent, $"{labelText}Row", 42f);
+
+        Text label = CreateLabel(row.transform, labelText, 15, FontStyle.Bold, TextAnchor.MiddleLeft, 36f);
+        LayoutElement labelLayout = label.gameObject.GetComponent<LayoutElement>();
+        labelLayout.flexibleWidth = 0f;
+        labelLayout.preferredWidth = 150f;
+        labelLayout.minWidth = 138f;
+
+        inputField = CreateSecretInputField(row.transform, $"{labelText}Input");
+
+        Button saveButton = CreateButton(row.transform, "Save", $"{labelText}SaveButton");
+        ConfigureCompactButton(saveButton, 72f);
+
+        Button clearButton = CreateButton(row.transform, "Clear", $"{labelText}ClearButton");
+        ConfigureCompactButton(clearButton, 72f);
+
+        statusLabel = CreateLabel(parent, "", 13, FontStyle.Normal, TextAnchor.MiddleLeft, 22f, $"{labelText}StatusLabel");
+        statusLabel.color = new Color(textColor.r, textColor.g, textColor.b, 0.76f);
+        RefreshSecretStatusLabel(statusLabel, secretKey);
+
+        InputField capturedInput = inputField;
+        Text capturedStatus = statusLabel;
+        saveButton.onClick.AddListener(() => SaveSecretFromInput(capturedInput, capturedStatus, secretKey));
+        clearButton.onClick.AddListener(() => ClearSecret(capturedInput, capturedStatus, secretKey));
+    }
+
+    private InputField CreateSecretInputField(Transform parent, string objectName)
+    {
+        GameObject inputObject = DefaultControls.CreateInputField(new DefaultControls.Resources());
+        inputObject.name = objectName;
+        inputObject.transform.SetParent(parent, false);
+        SetLayerRecursive(inputObject, parent.gameObject.layer);
+
+        Image image = inputObject.GetComponent<Image>();
+        if (image != null)
+            image.color = new Color(1f, 0.94f, 0.78f, 0.82f);
+
+        InputField inputField = inputObject.GetComponent<InputField>();
+        inputField.contentType = InputField.ContentType.Password;
+        inputField.lineType = InputField.LineType.SingleLine;
+        inputField.asteriskChar = '*';
+        inputField.text = "";
+
+        Text text = inputField.textComponent;
+        if (text != null)
+        {
+            text.font = GetRuntimeFont();
+            text.color = textColor;
+            text.fontSize = 15;
+        }
+
+        Text placeholder = inputField.placeholder as Text;
+        if (placeholder != null)
+        {
+            placeholder.font = GetRuntimeFont();
+            placeholder.text = "API key";
+            placeholder.color = new Color(textColor.r, textColor.g, textColor.b, 0.42f);
+            placeholder.fontSize = 15;
+        }
+
+        LayoutElement layout = inputObject.AddComponent<LayoutElement>();
+        layout.flexibleWidth = 1f;
+        layout.minWidth = 160f;
+        layout.preferredHeight = 36f;
+        return inputField;
+    }
+
+    private static void ConfigureCompactButton(Button button, float width)
+    {
+        if (button == null)
+            return;
+
+        LayoutElement layout = button.GetComponent<LayoutElement>();
+        if (layout == null)
+            layout = button.gameObject.AddComponent<LayoutElement>();
+
+        layout.flexibleWidth = 0f;
+        layout.minWidth = width;
+        layout.preferredWidth = width;
+    }
+
+    private void SaveSecretFromInput(InputField inputField, Text statusLabel, string secretKey)
+    {
+        string value = inputField != null ? inputField.text : "";
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            SetSecretStatus(statusLabel, "Enter a value, then Save. Use Clear to remove a stored key.");
+            return;
+        }
+
+        if (SecretStore.TrySetSecret(secretKey, value, out string error))
+        {
+            if (inputField != null)
+                inputField.text = "";
+            RefreshSecretStatusLabel(statusLabel, secretKey);
+            return;
+        }
+
+        SetSecretStatus(statusLabel, $"Could not save: {error}");
+    }
+
+    private void ClearSecret(InputField inputField, Text statusLabel, string secretKey)
+    {
+        if (SecretStore.TryDeleteSecret(secretKey, out string error))
+        {
+            if (inputField != null)
+                inputField.text = "";
+            RefreshSecretStatusLabel(statusLabel, secretKey);
+            return;
+        }
+
+        SetSecretStatus(statusLabel, $"Could not clear: {error}");
+    }
+
+    private void ClearSecretInputs()
+    {
+        if (openAIApiKeyInput != null)
+            openAIApiKeyInput.text = "";
+        if (geminiApiKeyInput != null)
+            geminiApiKeyInput.text = "";
+    }
+
+    private void RefreshSecretStatusLabels()
+    {
+        RefreshSecretStatusLabel(openAIApiKeyStatusLabel, SecretStore.OpenAIApiKey);
+        RefreshSecretStatusLabel(geminiApiKeyStatusLabel, SecretStore.GeminiApiKey);
+    }
+
+    private void RefreshSecretStatusLabel(Text statusLabel, string secretKey)
+    {
+        string status = SecretStore.HasSecret(secretKey)
+            ? $"Stored encrypted locally in {SecretStore.Current.BackendName}"
+            : $"Not found in {SecretStore.Current.BackendName}";
+
+        SetSecretStatus(statusLabel, status);
+    }
+
+    private static void SetSecretStatus(Text statusLabel, string status)
+    {
+        if (statusLabel != null)
+            statusLabel.text = status;
     }
 
     private void CreateButtonSizeRow(Transform parent)
@@ -1127,6 +1279,8 @@ public class MenuSettingsDialog : MonoBehaviour
         chatGptToggle = CreateToggle(panel.transform, "ChatGPT", "ChatGptToggle");
         geminiToggle = CreateToggle(panel.transform, "Gemini", "GeminiToggle");
         ollamaToggle = CreateToggle(panel.transform, "Ollama", "OllamaToggle");
+        CreateSecretStoreRow(panel.transform, "OPENAI_API_KEY", SecretStore.OpenAIApiKey, out openAIApiKeyInput, out openAIApiKeyStatusLabel);
+        CreateSecretStoreRow(panel.transform, "GEMINI_API_KEY", SecretStore.GeminiApiKey, out geminiApiKeyInput, out geminiApiKeyStatusLabel);
         CreateScentSliderRow(panel.transform);
         CreateSectionHeader(panel.transform, "Graphics Level");
         CreateGraphicsQualityRow(panel.transform);
@@ -1275,6 +1429,8 @@ public class MenuSettingsDialog : MonoBehaviour
         chatGptToggle?.SetIsOnWithoutNotify(settings.chatGptEnabled);
         geminiToggle?.SetIsOnWithoutNotify(settings.geminiEnabled);
         ollamaToggle?.SetIsOnWithoutNotify(settings.ollamaEnabled);
+        ClearSecretInputs();
+        RefreshSecretStatusLabels();
         musicToggle?.SetIsOnWithoutNotify(settings.musicEnabled);
         sfxToggle?.SetIsOnWithoutNotify(settings.sfxEnabled);
         uiToggle?.SetIsOnWithoutNotify(settings.uiEnabled);

@@ -18,7 +18,6 @@ namespace DogGame.LLM.Providers
         public readonly string baseUrl = "https://api.openai.com/v1";
         public readonly string model = "gpt-4.1-mini";
         public readonly string apiKeyEnvironmentVariable = "OPENAI_API_KEY";
-        public readonly string apiKey = ""; // get from environment variable
         public readonly int timeoutSeconds = 60;
         public readonly float temperature = 0.2f;
         public readonly int maxOutputTokens = 1600;
@@ -27,8 +26,7 @@ namespace DogGame.LLM.Providers
         // constructor:
         public OpenAIClient(string model = "gpt-4.1-mini")
         {
-            apiKey = ResolveApiKey(apiKeyEnvironmentVariable, apiKey);
-            if (string.IsNullOrEmpty(apiKey))
+            if (string.IsNullOrEmpty(ResolveApiKey(apiKeyEnvironmentVariable, "")))
                 Debug.LogWarning($"{Vendor}Client apiKey empty. apiKeyEnvironmentVariable={apiKeyEnvironmentVariable}");
             this.model = model;
         }
@@ -63,6 +61,7 @@ namespace DogGame.LLM.Providers
                 }
             };
 
+            string apiKey = ResolveApiKey(apiKeyEnvironmentVariable, "");
             var headers = new Dictionary<string, string>();
             if (!string.IsNullOrWhiteSpace(apiKey))
                 headers["Authorization"] = $"Bearer {apiKey}";
@@ -74,7 +73,8 @@ namespace DogGame.LLM.Providers
                 timeoutSeconds = timeoutSeconds,
                 headers = headers,
                 debugRequestId = requestId,
-                debugAgentId = agentId
+                debugAgentId = agentId,
+                debugRequestPacketJson = global::DogGame.LLM.LLMRequestSerializer.ToJson(request)
             };
 
             return PostJsonAsync(spec, cancellationToken, ParseResponsesApi_OutputText);

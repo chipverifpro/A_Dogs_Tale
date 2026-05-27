@@ -258,9 +258,9 @@ public partial class TopPulldown : MonoBehaviour
         for (int i = 0; i < questDialogs.Length; i++)
             questDialogs[i]?.Hide();
 
-        PopupController[] popupControllers = FindObjectsByType<PopupController>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
-        for (int i = 0; i < popupControllers.Length; i++)
-            popupControllers[i]?.Close();
+//        PopupController[] popupControllers = FindObjectsByType<PopupController>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+//        for (int i = 0; i < popupControllers.Length; i++)
+//            popupControllers[i]?.Close();
     }
 
     private void OnEnable()

@@ -1,0 +1,69 @@
+{
+    "friendlyName": "ADT Test S24Ultra Phone 1440x3120",
+    "version": 1,
+    "screens": [
+        {
+            "width": 1440,
+            "height": 3120,
+            "navigationBarHeight": 120,
+            "dpi": 420.0,
+            "orientations": [
+                {
+                    "orientation": 1,
+                    "safeArea": {
+                        "serializedVersion": "2",
+                        "x": 0.0,
+                        "y": 120.0,
+                        "width": 1440.0,
+                        "height": 3000.0
+                    },
+                    "cutouts": [
+                        {
+                            "serializedVersion": "2",
+                            "x": 440.0,
+                            "y": 2304.0,
+                            "width":   0.0,
+                            "height":  0.0
+                        }
+                    ]
+                },
+                {
+                    "orientation": 3,
+                    "safeArea": {
+                        "serializedVersion": "2",
+                        "x":  0.0,
+                        "y": 0.0,
+                        "width": 3000.0,
+                        "height": 1440.0
+                    }
+                },
+                {
+                    "orientation": 4,
+                    "safeArea": {
+                        "serializedVersion": "2",
+                        "x":  0.0,
+                        "y": 0.0,
+                        "width": 1440.0,
+                        "height": 3000.0
+                    }
+                }
+            ]
+        }
+    ],
+    "systemInfo": {
+        "deviceModel": "ADT_S24Ultra_Phone_1440x3120",
+        "deviceType": 1,
+        "operatingSystem": "Android",
+        "operatingSystemFamily": 1,
+        "processorCount": 8,
+        "processorFrequency": 0,
+        "processorType": "ARM64",
+        "supportsAccelerometer": true,
+        "supportsAudio": true,
+        "supportsGyroscope": true,
+        "supportsLocationService": true,
+        "supportsVibration": true,
+        "systemMemorySize": 4096,
+        "unsupportedIdentifier": "n/a"
+    }
+}
