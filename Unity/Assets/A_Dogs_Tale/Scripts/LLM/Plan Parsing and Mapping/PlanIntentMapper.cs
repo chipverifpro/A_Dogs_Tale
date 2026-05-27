@@ -11,22 +11,31 @@ namespace DogGame.LLM
         // Reasonable default for LLM-generated "chosen behaviors"
         private const int DefaultLlmPriority = 60;
 
-        public static bool TryEnqueueTasksFromPlan(PlanResponseV1 plan, TaskQueue queue, out string? error)
+        public static bool TryEnqueueTasksFromPlan(
+            PlanResponseV1 plan,
+            TaskQueue queue,
+            out string? error,
+            System.Collections.Generic.List<string>? mappingNotes = null)
         {
             error = null;
 
             if (plan.Intentions == null || plan.Intentions.Count == 0)
             {
                 error = "Plan contains no intentions.";
+                mappingNotes?.Add("rejected: plan contains no intentions.");
                 return false;
             }
 
             int enqueuedCount = 0;
 
-            foreach (var intention in plan.Intentions)
+            for (int i = 0; i < plan.Intentions.Count; i++)
             {
+                var intention = plan.Intentions[i];
                 if (intention == null)
+                {
+                    mappingNotes?.Add($"intentions[{i}] rejected: intention is null.");
                     continue;
+                }
 
                 switch (intention.Type)
                 {
@@ -46,22 +55,27 @@ namespace DogGame.LLM
                                 tag: request.Tag,
                                 originRequestId: plan.RequestId));
                             enqueuedCount++;
+                            mappingNotes?.Add($"intentions[{i}] accepted: add_task id={intention.Id} task={task!.GetType().Name}.");
                         }
                         else
                         {
                             Debug.LogWarning($"add_task mapping rejected: {taskError}");
+                            mappingNotes?.Add($"intentions[{i}] rejected: add_task id={intention.Id} reason={taskError}");
                         }
                         break;
                     }
 
                     case PlanIntentionType.noop:
+                        mappingNotes?.Add($"intentions[{i}] ignored: noop id={intention.Id}.");
                         break;
 
                     case PlanIntentionType.set_goal:
                         // v1: ignore or log
+                        mappingNotes?.Add($"intentions[{i}] ignored: set_goal id={intention.Id} is not mapped to a task.");
                         break;
 
                     default:
+                        mappingNotes?.Add($"intentions[{i}] ignored: {intention.Type} id={intention.Id} is not mapped to a task.");
                         break;
                 }
             }
@@ -75,22 +89,31 @@ namespace DogGame.LLM
             return true;
         }
 
-        public static bool TryEnqueueTasksFromPlan(PlanResponseV3 plan, TaskQueue queue, out string? error)
+        public static bool TryEnqueueTasksFromPlan(
+            PlanResponseV3 plan,
+            TaskQueue queue,
+            out string? error,
+            System.Collections.Generic.List<string>? mappingNotes = null)
         {
             error = null;
 
             if (plan.Intentions == null || plan.Intentions.Count == 0)
             {
                 error = "Plan contains no intentions.";
+                mappingNotes?.Add("rejected: plan contains no intentions.");
                 return false;
             }
 
             int enqueuedCount = 0;
 
-            foreach (var intention in plan.Intentions)
+            for (int i = 0; i < plan.Intentions.Count; i++)
             {
+                var intention = plan.Intentions[i];
                 if (intention == null)
+                {
+                    mappingNotes?.Add($"intentions[{i}] rejected: intention is null.");
                     continue;
+                }
 
                 string action = intention.Value<string>("action") ?? "<missing>";
                 Debug.Log($"[PlanIntentMapper] Mapping action={action} requestId={plan.RequestId} params={SummarizeIntention(intention)}");
@@ -101,10 +124,12 @@ namespace DogGame.LLM
                     queue.Enqueue(request);
                     Debug.Log($"[PlanIntentMapper] Enqueued action={action} task={task!.GetType().Name} requestId={plan.RequestId}");
                     enqueuedCount++;
+                    mappingNotes?.Add($"intentions[{i}] accepted: action={action} task={task!.GetType().Name}.");
                 }
                 else
                 {
                     Debug.LogWarning($"PlanResponseV3 action rejected: {taskError}");
+                    mappingNotes?.Add($"intentions[{i}] rejected: action={action} reason={taskError}");
                 }
             }
 
@@ -202,6 +227,7 @@ namespace DogGame.LLM
             if (task is Task_BuryItem) return 55;
             if (task is Task_ScentFollow) return 60;
             if (task is Task_Sequence) return 60;
+            if (task is Task_GoThroughDoor) return 60;
             if (task is Task_PlaceholderAction) return 45;
 
             return DefaultLlmPriority;
@@ -353,6 +379,22 @@ namespace DogGame.LLM
                 case "go_through_door":
                 case "open_door":
                 case "close_door":
+                {
+                    if (TryBuildDoorTask(action.Trim(), intention, out task, out error))
+                        return true;
+
+                    if (!TryResolveTarget(intention, out var target, out var targetError))
+                    {
+                        error = error != null
+                            ? $"{error}; object fallback failed: {targetError}"
+                            : targetError;
+                        return false;
+                    }
+
+                    task = BuildTargetedPlaceholderSequence(action, intention, target!);
+                    return true;
+                }
+
                 case "interact_with_object":
                 case "join_pack":
                 case "start_follow_object":
@@ -463,6 +505,67 @@ namespace DogGame.LLM
             return true;
         }
 
+        private static bool TryBuildDoorTask(
+            string action,
+            JObject intention,
+            out IAgentTask? task,
+            out string? error)
+        {
+            task = null;
+            error = null;
+
+            string? targetIdRaw = intention.Value<string>("target_id");
+            if (!TryParseTargetId(targetIdRaw, out int doorId))
+            {
+                error = $"door target_id \"{targetIdRaw}\" is not a valid door id.";
+                return false;
+            }
+
+            if (!TryResolveDoor(doorId, out DoorLookupInfo doorInfo, out error))
+                return false;
+
+            if (string.Equals(action, "go_through_door", System.StringComparison.Ordinal))
+            {
+                task = new Task_GoThroughDoor(doorId);
+                return true;
+            }
+
+            task = BuildDoorPlaceholderSequence(action, intention, doorInfo);
+            return true;
+        }
+
+        private static bool TryResolveDoor(int doorId, out DoorLookupInfo doorInfo, out string? error)
+        {
+            doorInfo = default;
+            error = null;
+
+            if (Dir.Instance == null || Dir.Instance.gen == null || Dir.Instance.gen.rooms == null)
+            {
+                error = "door lookup failed because the dungeon generator is unavailable.";
+                return false;
+            }
+
+            if (!DoorIdUtility.TryGetDoorInfo(Dir.Instance.gen.rooms, doorId, out doorInfo))
+            {
+                error = $"doorId {doorId} matched no room doors.";
+                return false;
+            }
+
+            return true;
+        }
+
+        private static IAgentTask BuildDoorPlaceholderSequence(
+            string action,
+            JObject intention,
+            DoorLookupInfo doorInfo)
+        {
+            return new Task_Sequence(new IAgentTask[]
+            {
+                new Task_MoveToCell(doorInfo.cell.x, doorInfo.cell.y),
+                BuildDoorPlaceholderAction(action, intention, doorInfo)
+            });
+        }
+
         private static IAgentTask BuildTargetedPlaceholderSequence(
             string action,
             JObject intention,
@@ -474,6 +577,17 @@ namespace DogGame.LLM
                 new Task_MoveToObject(target),
                 BuildPlaceholderAction(action, intention, target, detail)
             });
+        }
+
+        private static Task_PlaceholderAction BuildDoorPlaceholderAction(
+            string action,
+            JObject intention,
+            DoorLookupInfo doorInfo)
+        {
+            string reasoning = intention.Value<string>("reasoning") ?? "No reasoning provided.";
+            string targetSummary =
+                $"doorId={doorInfo.doorId}, room={doorInfo.roomId}, cell=[{doorInfo.cell.x},{doorInfo.cell.y}], direction={DirFlagsEx.ToLongName(doorInfo.direction)}, throughCell=[{doorInfo.throughCell.x},{doorInfo.throughCell.y}], targetRoom={doorInfo.targetRoomId}";
+            return new Task_PlaceholderAction(action, reasoning, targetSummary, detail: "door");
         }
 
         private static Task_PlaceholderAction BuildPlaceholderAction(

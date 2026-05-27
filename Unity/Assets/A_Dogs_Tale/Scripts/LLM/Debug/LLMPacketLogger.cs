@@ -59,20 +59,39 @@ namespace DogGame.LLM.Debugging
                 payload: responseJson);
         }
 
+        public static void LogDecode(
+            string agentId,
+            string requestId,
+            string stage,
+            string report)
+        {
+            WritePacket(
+                agentId,
+                requestId,
+                stage,
+                kind: "decode",
+                payload: report,
+                extension: "txt");
+        }
+
         private static void WritePacket(
             string agentId,
             string requestId,
             string provider,
             string kind,
-            string payload)
+            string payload,
+            string extension = "json")
         {
             if (string.IsNullOrWhiteSpace(payload))
                 return;
 
             try
             {
-                string safeAgent = Sanitize(agentId);
-                string safeReq = Sanitize(requestId);
+                string safeAgent = Sanitize(string.IsNullOrWhiteSpace(agentId) ? "unknown-agent" : agentId);
+                string safeReq = Sanitize(string.IsNullOrWhiteSpace(requestId) ? "unknown" : requestId);
+                string safeProvider = Sanitize(string.IsNullOrWhiteSpace(provider) ? "unknown" : provider);
+                string safeKind = Sanitize(string.IsNullOrWhiteSpace(kind) ? "packet" : kind);
+                string safeExtension = Sanitize(string.IsNullOrWhiteSpace(extension) ? "txt" : extension.TrimStart('.'));
 
                 string dir = Path.Combine(
                     RootDir,
@@ -82,7 +101,7 @@ namespace DogGame.LLM.Debugging
                 System.IO.Directory.CreateDirectory(dir);
 
                 string timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss_fff");
-                string file = $"{timestamp}_{provider}_{kind}.json";
+                string file = $"{timestamp}_{safeProvider}_{safeKind}.{safeExtension}";
 
                 string path = Path.Combine(dir, file);
 
@@ -101,6 +120,9 @@ namespace DogGame.LLM.Debugging
         {
             foreach (char c in Path.GetInvalidFileNameChars())
                 value = value.Replace(c, '_');
+            value = value.Replace('\n', '_').Replace('\r', '_').Trim();
+            if (value.Length > 96)
+                value = value.Substring(0, 96);
             return value;
         }
     }

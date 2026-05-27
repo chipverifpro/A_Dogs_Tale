@@ -187,8 +187,9 @@ namespace DogGame.LLM.Core
             if (parse == null) throw new ArgumentNullException(nameof(parse));
             if (string.IsNullOrWhiteSpace(spec.url)) throw new ArgumentException("PostSpec.url is empty.");
 
-            // Capture session token at start; any later bump makes this response stale.
+            // Capture session tokens at start; any later bump makes this response stale.
             int tokenAtStart = CurrentSessionToken;
+            int globalTokenAtStart = LLMSessionToken.Current;
 
             byte[] bodyBytes = Encoding.UTF8.GetBytes(spec.payload.ToString());
 
@@ -237,7 +238,9 @@ namespace DogGame.LLM.Core
                     ctr.Dispose();
 
                     // Stale-session check at completion time
-                    bool stale = tokenAtStart != CurrentSessionToken;
+                    bool stale =
+                        tokenAtStart != CurrentSessionToken ||
+                        globalTokenAtStart != LLMSessionToken.Current;
 
                     string raw = unityRequest.downloadHandler?.text ?? "";
 

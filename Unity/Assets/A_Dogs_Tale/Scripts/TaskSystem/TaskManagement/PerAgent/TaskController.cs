@@ -3,7 +3,9 @@ using UnityEngine;
 using DogGame.Modules;
 using DogGame.Tasks;
 using System.Collections.Generic;
+using System.Text;
 using DogGame.LLM.Debugging;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace DogGame.LLM
@@ -78,8 +80,7 @@ namespace DogGame.LLM
 
             blackboard ??= new DogGame.Tasks.SimpleBlackboard();
 
-            // Use DisplayName as agent id by default
-            agentId = worldObject.DisplayName;
+            agentId = ResolveControllerAgentId();
 
             taskQueue ??= new TaskQueue();
             taskExecutor ??= new TaskExecutor(taskQueue);
@@ -92,6 +93,21 @@ namespace DogGame.LLM
             return true;
         }
 
+        private string ResolveControllerAgentId()
+        {
+            if (worldObject != null && worldObject.llmConfigModule != null)
+            {
+                string resolvedAgentId = worldObject.llmConfigModule.identity.ResolveAgentId(gameObject);
+                if (!string.IsNullOrWhiteSpace(resolvedAgentId))
+                    return resolvedAgentId;
+            }
+
+            if (worldObject != null && !string.IsNullOrWhiteSpace(worldObject.DisplayName))
+                return worldObject.DisplayName;
+
+            return string.IsNullOrWhiteSpace(gameObject.name) ? "player" : gameObject.name;
+        }
+
         public bool TryApplyPlanJson(string planResponseJson)
         {
             if (!EnsureRuntimeState())
@@ -101,6 +117,14 @@ namespace DogGame.LLM
             if (string.IsNullOrEmpty(planResponseJson))
             {
                 Debug.LogWarning("planResponseJson is null or empty.\n");
+                LogDecodeReport(
+                    loggerAgentId: agentId,
+                    requestId: "unknown",
+                    stage: "EmptyResponse",
+                    accepted: false,
+                    schema: null,
+                    responseAgentId: null,
+                    details: "No response text was provided to TaskController.TryApplyPlanJson.");
                 return false;
             }
 
@@ -108,6 +132,14 @@ namespace DogGame.LLM
             if (!DogGame.LLM.LLMResponseSanitizer.TryExtractJsonObject(planResponseJson, out string cleanJson, out string err))
             {
                 Debug.LogWarning($"PlanResponseV1 invalid: could not extract JSON object. {err}");
+                LogDecodeReport(
+                    loggerAgentId: agentId,
+                    requestId: "unknown",
+                    stage: "SanitizeFailed",
+                    accepted: false,
+                    schema: null,
+                    responseAgentId: null,
+                    details: "Could not extract a JSON object from the LLM response.\n" + err);
                 return false;
             }
 
@@ -135,6 +167,15 @@ namespace DogGame.LLM
                     loggedRequestId,
                     provider: "ParserError" + string.Join("\n", validation.Errors),
                     responseJson: planResponseJson!);
+
+                LogDecodeReport(
+                    loggerAgentId,
+                    loggedRequestId,
+                    stage: "ParseV1Failed",
+                    accepted: false,
+                    schema,
+                    responseAgentId: loggedAgentId,
+                    details: BuildValidationDetails("PlanResponseV1 validation failed.", validation.Errors));
                 
                 return false;
             }
@@ -142,6 +183,14 @@ namespace DogGame.LLM
             if (plan.AgentId != agentId)
             {
                 Debug.LogWarning($"Plan agent mismatch: plan.AgentId={plan.AgentId}, controller.AgentId={agentId}");
+                LogDecodeReport(
+                    loggerAgentId,
+                    plan.RequestId ?? loggedRequestId,
+                    stage: "AgentMismatch",
+                    accepted: false,
+                    schema: plan.Schema,
+                    responseAgentId: plan.AgentId,
+                    details: $"Plan was rejected because it targeted agentId={plan.AgentId}, but this controller is agentId={agentId}.");
                 return false;
             }
 
@@ -153,7 +202,8 @@ namespace DogGame.LLM
                 taskExecutor.ClearAll(taskContext);
             }
 
-            if (!PlanIntentMapper.TryEnqueueTasksFromPlan(plan, taskQueue, out var error))
+            var mappingNotes = new List<string>();
+            if (!PlanIntentMapper.TryEnqueueTasksFromPlan(plan, taskQueue, out var error, mappingNotes))
             {
                 Debug.LogWarning("Plan mapped to zero tasks: " + error);
                 LLMPacketLogger.LogResponse(
@@ -161,6 +211,14 @@ namespace DogGame.LLM
                     plan.RequestId ?? loggedRequestId,
                     provider: "PlanResponseV1_EnqueueRejected",
                     responseJson: cleanJson);
+                LogDecodeReport(
+                    loggerAgentId,
+                    plan.RequestId ?? loggedRequestId,
+                    stage: "MapV1Failed",
+                    accepted: false,
+                    schema: plan.Schema,
+                    responseAgentId: plan.AgentId,
+                    details: BuildMappingDetails("PlanResponseV1 parsed, but no tasks were accepted.", error, mappingNotes, BuildV1IntentionSummary(plan)));
                 return false;
             }
 
@@ -170,6 +228,14 @@ namespace DogGame.LLM
                 plan.RequestId ?? loggedRequestId,
                 provider: "PlanResponseV1_Applied",
                 responseJson: cleanJson);
+            LogDecodeReport(
+                loggerAgentId,
+                plan.RequestId ?? loggedRequestId,
+                stage: "AppliedV1",
+                accepted: true,
+                schema: plan.Schema,
+                responseAgentId: plan.AgentId,
+                details: BuildMappingDetails("PlanResponseV1 parsed and tasks were enqueued.", null, mappingNotes, BuildV1IntentionSummary(plan)));
 
             return true;
         }
@@ -188,12 +254,29 @@ namespace DogGame.LLM
                     provider: "ParserErrorV3 " + string.Join("\n", validation.Errors),
                     responseJson: originalPlanResponseJson);
 
+                LogDecodeReport(
+                    loggerAgentId,
+                    loggedRequestId,
+                    stage: "ParseV3Failed",
+                    accepted: false,
+                    schema: "PlanResponseV3",
+                    responseAgentId: null,
+                    details: BuildValidationDetails("PlanResponseV3 validation failed.", validation.Errors));
+
                 return false;
             }
 
             if (plan.AgentId != agentId)
             {
                 Debug.LogWarning($"Plan agent mismatch: plan.AgentId={plan.AgentId}, controller.AgentId={agentId}");
+                LogDecodeReport(
+                    loggerAgentId,
+                    plan.RequestId ?? loggedRequestId,
+                    stage: "AgentMismatch",
+                    accepted: false,
+                    schema: plan.Schema,
+                    responseAgentId: plan.AgentId,
+                    details: $"Plan was rejected because it targeted agentId={plan.AgentId}, but this controller is agentId={agentId}.");
                 return false;
             }
 
@@ -202,7 +285,8 @@ namespace DogGame.LLM
             if (clearQueueOnNewPlan)
                 taskExecutor.ClearAll(taskContext);
 
-            if (!PlanIntentMapper.TryEnqueueTasksFromPlan(plan, taskQueue, out var error))
+            var mappingNotes = new List<string>();
+            if (!PlanIntentMapper.TryEnqueueTasksFromPlan(plan, taskQueue, out var error, mappingNotes))
             {
                 Debug.LogWarning("PlanResponseV3 mapped to zero tasks: " + error);
                 LLMPacketLogger.LogResponse(
@@ -210,6 +294,14 @@ namespace DogGame.LLM
                     plan.RequestId ?? loggedRequestId,
                     provider: "PlanResponseV3_EnqueueRejected",
                     responseJson: cleanJson);
+                LogDecodeReport(
+                    loggerAgentId,
+                    plan.RequestId ?? loggedRequestId,
+                    stage: "MapV3Failed",
+                    accepted: false,
+                    schema: plan.Schema,
+                    responseAgentId: plan.AgentId,
+                    details: BuildMappingDetails("PlanResponseV3 parsed, but no tasks were accepted.", error, mappingNotes, BuildV3IntentionSummary(plan)));
                 return false;
             }
 
@@ -220,8 +312,138 @@ namespace DogGame.LLM
                 plan.RequestId ?? loggedRequestId,
                 provider: "PlanResponseV3_Applied",
                 responseJson: cleanJson);
+            LogDecodeReport(
+                loggerAgentId,
+                plan.RequestId ?? loggedRequestId,
+                stage: "AppliedV3",
+                accepted: true,
+                schema: plan.Schema,
+                responseAgentId: plan.AgentId,
+                details: BuildMappingDetails("PlanResponseV3 parsed and tasks were enqueued.", null, mappingNotes, BuildV3IntentionSummary(plan)));
 
             return true;
+        }
+
+        private void LogDecodeReport(
+            string loggerAgentId,
+            string requestId,
+            string stage,
+            bool accepted,
+            string? schema,
+            string? responseAgentId,
+            string details)
+        {
+            var report = new StringBuilder();
+            report.AppendLine($"stage: {stage}");
+            report.AppendLine($"accepted: {accepted}");
+            report.AppendLine($"schema: {schema ?? "<unknown>"}");
+            report.AppendLine($"requestId: {requestId}");
+            report.AppendLine($"responseAgentId: {responseAgentId ?? "<unknown>"}");
+            report.AppendLine($"controllerAgentId: {agentId}");
+            report.AppendLine();
+            report.AppendLine(details);
+
+            LLMPacketLogger.LogDecode(loggerAgentId, requestId, "Decode_" + stage, report.ToString());
+        }
+
+        private static string BuildValidationDetails(string title, IReadOnlyList<string> errors)
+        {
+            var details = new StringBuilder();
+            details.AppendLine(title);
+            details.AppendLine();
+            details.AppendLine("not understood:");
+
+            if (errors == null || errors.Count == 0)
+            {
+                details.AppendLine("- <no parser errors were reported>");
+                return details.ToString();
+            }
+
+            for (int i = 0; i < errors.Count; i++)
+                details.AppendLine($"- {errors[i]}");
+
+            return details.ToString();
+        }
+
+        private static string BuildMappingDetails(
+            string title,
+            string? error,
+            List<string> mappingNotes,
+            string intentionSummary)
+        {
+            var details = new StringBuilder();
+            details.AppendLine(title);
+
+            if (!string.IsNullOrWhiteSpace(error))
+                details.AppendLine($"mapperError: {error}");
+
+            details.AppendLine();
+            details.AppendLine("mapping results:");
+            if (mappingNotes == null || mappingNotes.Count == 0)
+            {
+                details.AppendLine("- <no mapper notes were produced>");
+            }
+            else
+            {
+                for (int i = 0; i < mappingNotes.Count; i++)
+                    details.AppendLine("- " + mappingNotes[i]);
+            }
+
+            details.AppendLine();
+            details.AppendLine("decoded intentions:");
+            details.Append(intentionSummary);
+
+            return details.ToString();
+        }
+
+        private static string BuildV1IntentionSummary(PlanResponseV1 plan)
+        {
+            var summary = new StringBuilder();
+
+            if (plan.Intentions == null || plan.Intentions.Count == 0)
+            {
+                summary.AppendLine("- <none>");
+                return summary.ToString();
+            }
+
+            for (int i = 0; i < plan.Intentions.Count; i++)
+            {
+                var intention = plan.Intentions[i];
+                if (intention == null)
+                {
+                    summary.AppendLine($"- intentions[{i}]: <null>");
+                    continue;
+                }
+
+                string parameters = intention.Parameters != null
+                    ? intention.Parameters.ToString(Formatting.None)
+                    : "{}";
+
+                summary.AppendLine($"- intentions[{i}]: id={intention.Id}, type={intention.Type}, priority={intention.Priority}, rationale={intention.Rationale ?? "<none>"}, parameters={parameters}");
+            }
+
+            return summary.ToString();
+        }
+
+        private static string BuildV3IntentionSummary(PlanResponseV3 plan)
+        {
+            var summary = new StringBuilder();
+
+            if (plan.Intentions == null || plan.Intentions.Count == 0)
+            {
+                summary.AppendLine("- <none>");
+                return summary.ToString();
+            }
+
+            for (int i = 0; i < plan.Intentions.Count; i++)
+            {
+                var intention = plan.Intentions[i];
+                string action = intention?.Value<string>("action") ?? "<missing>";
+                string json = intention != null ? intention.ToString(Formatting.None) : "<null>";
+                summary.AppendLine($"- intentions[{i}]: action={action}, json={json}");
+            }
+
+            return summary.ToString();
         }
 
         private static void ExtractPlanLogContext(string cleanJson, out string requestId, out string? schema, out string? loggedAgentId)
