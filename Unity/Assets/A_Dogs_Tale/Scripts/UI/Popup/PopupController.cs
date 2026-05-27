@@ -1,7 +1,7 @@
 /*using UnityEngine;
 using UnityEngine.UIElements;
 
-public class PopupController : MonoBehaviour
+public class PopupController_OBSOLETE : MonoBehaviour
 {
     [Header("Optional: assign in inspector (otherwise loaded via Resources)")]
     public VisualTreeAsset pageGame;
@@ -184,7 +184,7 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.UIElements;
 
-public class PopupController : MonoBehaviour
+public class PopupController_OBSOLETE : MonoBehaviour
 {
     [Header("Optional: assign in inspector (otherwise loaded via Resources)")]
     public VisualTreeAsset pageGame;
@@ -481,7 +481,7 @@ public class PopupController : MonoBehaviour
             var page = vta.CloneTree();
             content.Add(page);
 
-            var binder = GetComponent<PageBinder>();
+            var binder = GetComponent<PageBinder_OBSOLETE>();
             if (binder != null)
                 binder.TryBind(tab, page);
         }

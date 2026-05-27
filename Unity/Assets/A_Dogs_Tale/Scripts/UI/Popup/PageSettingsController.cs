@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.UIElements;
 
-public class PageSettingsController : MonoBehaviour
+public class PageSettingsController_OBSOLETE : MonoBehaviour
 {
     private const float ScentStepIncrement = 0.1f;
     private const string GraphicsQualitySpriteResourcePath = "Sprites/GraphicsQualitySprites_A";
@@ -13,14 +13,14 @@ public class PageSettingsController : MonoBehaviour
         PersistentGameSettings.GraphicsLevelHigh
     };
 
-    private PopupController popupController;
+    private PopupController_OBSOLETE popupController;
     private Sprite[] graphicsQualitySprites;
 
     public void Bind(VisualElement root)
     {
-        popupController ??= GetComponent<PopupController>();
+        popupController ??= GetComponent<PopupController_OBSOLETE>();
         if (popupController == null)
-            popupController = FindFirstObjectByType<PopupController>(FindObjectsInactive.Include);
+            popupController = FindFirstObjectByType<PopupController_OBSOLETE>(FindObjectsInactive.Include);
 
         Toggle chatGptToggle = root.Q<Toggle>("ChatGptToggle");
         Toggle geminiToggle = root.Q<Toggle>("GeminiToggle");

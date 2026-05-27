@@ -2,7 +2,7 @@ using UnityEngine;
 using UnityEngine.UIElements;
 using System.Collections.Generic;
 
-public class PagePackController : MonoBehaviour
+public class PagePackController_OBSOLETE : MonoBehaviour
 {
     public struct Dog { public string Name; public string Role; }
     List<Dog> sample = new()

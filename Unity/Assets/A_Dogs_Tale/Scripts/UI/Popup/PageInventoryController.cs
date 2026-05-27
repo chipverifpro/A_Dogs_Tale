@@ -1,7 +1,8 @@
 using UnityEngine;
 using UnityEngine.UIElements;
 
-public class PageInventoryController : MonoBehaviour
+public class PageInventoryController_OBSOLETE
+ : MonoBehaviour
 {
     public void Bind(VisualElement root)
     {

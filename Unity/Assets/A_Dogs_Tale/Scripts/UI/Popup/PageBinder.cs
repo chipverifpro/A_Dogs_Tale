@@ -1,12 +1,12 @@
 using UnityEngine;
 using UnityEngine.UIElements;
 
-public class PageBinder : MonoBehaviour
+public class PageBinder_OBSOLETE : MonoBehaviour
 {
-    public PageGameController gameController;
-    public PagePackController packController;
-    public PageInventoryController inventoryController;
-    public PageSettingsController settingsController;
+    public PageGameController_OBSOLETE gameController;
+    public PagePackController_OBSOLETE packController;
+    public PageInventoryController_OBSOLETE inventoryController;
+    public PageSettingsController_OBSOLETE settingsController;
 
     public void TryBind(string tab, VisualElement pageRoot)
     {

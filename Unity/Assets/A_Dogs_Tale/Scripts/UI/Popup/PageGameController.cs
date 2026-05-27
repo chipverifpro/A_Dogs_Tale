@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.UIElements;
 
-public class PageGameController : MonoBehaviour
+public class PageGameController_OBSOLETE : MonoBehaviour
 {
     public void Bind(VisualElement root)
     {
