@@ -111,16 +111,24 @@ namespace DogGame.LLM
             int subscriberCount = PlanJsonReceived?.GetInvocationList()?.Length ?? 0;
             Debug.Log($"[LLMThinkModule] PlanJsonReceived subscribers={subscriberCount} agent={gameObject.name}");
 
+            if (subscriberCount <= 0)
+                throw new InvalidOperationException($"No PlanJsonReceived subscribers for agent={gameObject.name}.");
+
             try
             {
                 if (planJson != null)
                 {
                     PlanJsonReceived?.Invoke(planJson);
                 }
+                else
+                {
+                    throw new InvalidOperationException("Scheduler delivered null plan JSON.");
+                }
             }
             catch (Exception ex)
             {
                 Debug.LogWarning($"[LLMThinkModule] PlanJsonReceived handler threw: {ex.GetType().Name}: {ex.Message}");
+                throw;
             }
         }
 

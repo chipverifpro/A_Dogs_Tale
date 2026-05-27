@@ -13,7 +13,7 @@ using InspectorTools;
 namespace DogGame.Modules
 {
     [RequireComponent(typeof(TaskController))]
-    [RequireComponent(typeof(LLMAgentFacade))]
+    //[RequireComponent(typeof(LLMAgentFacade))]
     [InspectorNote("AgentDecision_Modules/Player Decision Module", "Manual control of this Agent.")]
     [DisallowMultipleComponent]
     public class PlayerDecisionModule : AgentDecisionModuleBase
@@ -346,7 +346,7 @@ namespace DogGame.Modules
             if (string.IsNullOrEmpty(planJson))
             {
                 Debug.LogError("OnLLMResponseJson: planJson is null or empty.");
-                return;
+                throw new InvalidOperationException("LLM returned empty plan JSON.");
             }
 
             TryBindRuntimeReferences(logFailure: true);
@@ -354,12 +354,14 @@ namespace DogGame.Modules
             if (taskController == null)
             {
                 Debug.LogError($"[PlayerDecisionModule] No TaskController available for agent={worldObject?.DisplayName ?? gameObject.name}.");
-                return;
+                throw new InvalidOperationException($"No TaskController available for agent={worldObject?.DisplayName ?? gameObject.name}.");
             }
 
             Debug.Log($"[PlayerDecisionModule] Forwarding plan to TaskController agent={worldObject.DisplayName} chars={planJson!.Length}");
             bool applied = taskController.TryApplyPlanJson(planJson!);
             Debug.Log($"[PlayerDecisionModule] TaskController.TryApplyPlanJson returned {applied} for agent={worldObject.DisplayName}");
+            if (!applied)
+                throw new InvalidOperationException("LLM returned invalid plan JSON; TaskController rejected it.");
         }
 
         #endregion
@@ -796,9 +798,9 @@ namespace DogGame.Modules
 
 #nullable enable
         [Header("LLM")]
-        [SerializeField] private LLMAgentFacade? llmFacade;
+        //[SerializeField] private LLMAgentFacade? llmFacade;
 
-        [Header("Tasks")]
+        [Header("LLM Tasks")]
         [SerializeField] private MonoBehaviour? taskRunnerComponent; // should implement IAgentTaskRunner
 
         private System.Threading.CancellationTokenSource? planCts;
@@ -889,10 +891,10 @@ namespace DogGame.Modules
         //[SerializeField] private DogGame.LLM.Agent.LLMAgentFacade? llmFacade;
         //private CancellationTokenSource? planCts;
 
-        public async void RequestAndExecutePlan()
+/*        public async void RequestAndExecutePlan()
         {
-            if (llmFacade == null) llmFacade = GetComponent<DogGame.LLM.Agent.LLMAgentFacade>();
-            if (llmFacade == null) return;
+//            if (llmFacade == null) llmFacade = GetComponent<DogGame.LLM.Agent.LLMAgentFacade>();
+//            if (llmFacade == null) return;
 
             planCts?.Cancel();
             planCts?.Dispose();
@@ -914,6 +916,7 @@ namespace DogGame.Modules
 
             // Next step: parse/translate/instantiate and push to task runner (we already built this part earlier)
         }
+*/  
         #endregion
 
 /*

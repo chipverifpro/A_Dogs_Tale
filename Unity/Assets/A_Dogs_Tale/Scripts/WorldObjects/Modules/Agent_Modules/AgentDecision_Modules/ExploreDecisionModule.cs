@@ -19,7 +19,7 @@ namespace DogGame.Modules
         private static readonly ProfilerMarker ExploreLuaCallTickMarker = new("ExploreDecision.Lua.CallTick");
         private static readonly ProfilerMarker ExploreRefreshDoorsMarker = new("ExploreDecision.RefreshDoorsForRoom");
         private static readonly ProfilerMarker ExploreActivateDoorMarker = new("ExploreDecision.TryActivateNextDoor");
-        private const string ExplorationCompleteBannerMessage = "Nothing left to explore. Switching to Stay.";
+        private const string ExplorationCompleteBannerMessage = "nothing left to explore. Switching to Stay.";
 
 private const string DefaultLuaExploreScript = @"state = {
     roomPath = {},
@@ -718,9 +718,12 @@ end
             worldObject.agentMovementModule.ClearDesiredTarget();
             worldObject.agentMovementModule.ClearDesiredMove();
             MarkExplorationExhausted(roomIndex);
-            BottomBanner.Show(ExplorationCompleteBannerMessage);
+            string agentName = worldObject != null && !string.IsNullOrWhiteSpace(worldObject.DisplayName)
+                ? worldObject.DisplayName
+                : gameObject.name;
+            BottomBanner.Show($"{agentName} has {ExplorationCompleteBannerMessage}");
 
-            if (worldObject.agentModule != null)
+            if (worldObject != null && worldObject.agentModule != null)
                 worldObject.agentModule.SwitchDecisionModule(AgentDecisionType.Immobile);
         }
 

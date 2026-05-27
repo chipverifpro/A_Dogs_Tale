@@ -21,9 +21,9 @@ namespace DogGame.LLM
 
         Gemini_gemini_2_5_flash_lite = 1 << 10,
 
-        Ollama_Qwen3_4b = 1 << 20,
-        Ollama_Qwen3_8b = 1 << 21,
-        Ollama_Gemma3 = 1 << 22,
+        //Ollama_Qwen3_4b = 1 << 20,
+        //Ollama_Qwen3_8b = 1 << 21,
+        //Ollama_Gemma3 = 1 << 22,
         Ollama_Qwen2_5_1_5b = 1 << 23
     }
 
@@ -124,16 +124,16 @@ namespace DogGame.LLM
         */
 
         // --- runtime-only ---
-        [NonSerialized] private readonly Dictionary<string, float> requestStartTimes = new();
+        [NonSerialized] private Dictionary<string, float> requestStartTimes = new();
 
         public bool HasOpenSlot =>
-            currentRequests.Count < vendorMaxConcurrentRequests;
+            GetCurrentRequests().Count < vendorMaxConcurrentRequests;
 
         public void OnDispatchStart(string requestId)
         {
             totalRequests++;
-            currentRequests.Add(requestId);
-            requestStartTimes[requestId] = Time.realtimeSinceStartup;
+            GetCurrentRequests().Add(requestId);
+            GetRequestStartTimes()[requestId] = Time.realtimeSinceStartup;
         }
 
         public void OnDispatchSuccess(string requestId)
@@ -149,16 +149,29 @@ namespace DogGame.LLM
 
         private void FinishRequest(string requestId, bool success)
         {
-            currentRequests.Remove(requestId);
+            GetCurrentRequests().Remove(requestId);
 
-            if (requestStartTimes.TryGetValue(requestId, out float start))
+            Dictionary<string, float> startTimes = GetRequestStartTimes();
+            if (startTimes.TryGetValue(requestId, out float start))
             {
                 float duration = Time.realtimeSinceStartup - start;
                 UpdateTypicalResponseTime(duration);
-                requestStartTimes.Remove(requestId);
+                startTimes.Remove(requestId);
             }
 
             UpdateSuccessRate();
+        }
+
+        private List<string> GetCurrentRequests()
+        {
+            currentRequests ??= new List<string>();
+            return currentRequests;
+        }
+
+        private Dictionary<string, float> GetRequestStartTimes()
+        {
+            requestStartTimes ??= new Dictionary<string, float>();
+            return requestStartTimes;
         }
 
         private void UpdateTypicalResponseTime(float newSample)
@@ -201,9 +214,10 @@ public enum LLMVendor
 
 public enum RemoteLLMModel
 {
-    gpt_4_1_mini,
+    ChatGPT,
     Gemini,
-    Ollama,
+    Ollama_Qwen,
+    Ollama_Gemma,
     None
 }
 
@@ -253,24 +267,24 @@ public class LLMWorldScheduler : MonoBehaviour
             SuccessRate: 0.9f,
             TypicalCost: .01f,
             vendorMaxConcurrentRequests: 2),
-        new(LLMVendorAndModel.Ollama_Gemma3,
-            LLMVendor.Ollama,
-            "Gemma3",
-            false,
-            Sophistication.Medium,
-            TypicalResponseTime: 20f,
-            SuccessRate: 0.8f,
-            TypicalCost: 0f,
-            vendorMaxConcurrentRequests: 1),
-        new(LLMVendorAndModel.Ollama_Qwen3_4b,
-            LLMVendor.Ollama,
-            "Qwen3:4b",
-            false,
-            Sophistication.Low,
-            TypicalResponseTime: 70f,
-            SuccessRate: 0.5f,
-            TypicalCost: 0f,
-            vendorMaxConcurrentRequests: 1),
+//        new(LLMVendorAndModel.Ollama_Gemma3,
+//            LLMVendor.Ollama,
+//            "Gemma3",
+//            false,
+//            Sophistication.Medium,
+//            TypicalResponseTime: 20f,
+//            SuccessRate: 0.8f,
+//            TypicalCost: 0f,
+//            vendorMaxConcurrentRequests: 1),
+//        new(LLMVendorAndModel.Ollama_Qwen3_4b,
+//            LLMVendor.Ollama,
+//            "Qwen3:4b",
+//            false,
+//            Sophistication.Low,
+//            TypicalResponseTime: 70f,
+//            SuccessRate: 0.5f,
+//            TypicalCost: 0f,
+//            vendorMaxConcurrentRequests: 1),
         new(LLMVendorAndModel.Ollama_Qwen2_5_1_5b,
             LLMVendor.Ollama,
             "Qwen2.5:1.5b",
@@ -537,10 +551,12 @@ public class LLMWorldScheduler : MonoBehaviour
         LLMModelSelection selection,
         string agentName)
     {
+        string failureStage = "send";
         try
         {
             var response = await client.SendAsync(llmRequest, default);
             ReleaseInflightAgent(schedulerRequest.AgentId, schedulerRequest.RequestId);
+            failureStage = "handle response";
 
             if (response == null)
             {
@@ -578,18 +594,22 @@ public class LLMWorldScheduler : MonoBehaviour
                 return;
             }
 
-            selection.OnDispatchSuccess(schedulerRequest.RequestId);
-            ShowLlmReceivedBanner(agentName, selection.VendorName);
             UnityEngine.Debug.Log(
                 $"[LLM Scheduler] Delivering callback requestId={schedulerRequest.RequestId} agentId={schedulerRequest.AgentId} mode={llmRequest.commandMode} chars={callbackPayload.Length}");
+            failureStage = "response callback";
             schedulerRequest.OnResponseJson?.Invoke(callbackPayload);
+            selection.OnDispatchSuccess(schedulerRequest.RequestId);
+            ShowLlmReceivedBanner(agentName, selection.VendorName);
         }
         catch (Exception ex)
         {
             ReleaseInflightAgent(schedulerRequest.AgentId, schedulerRequest.RequestId);
             selection.OnDispatchFailure(schedulerRequest.RequestId);
-            ShowLlmFailureBanner(agentName, $"LLM failed: {ex.GetType().Name}: {ex.Message}");
-            UnityEngine.Debug.LogWarning($"[LLM Scheduler] Send failed vendor={selection.llmVendor} model={selection.llmModelString} requestId={schedulerRequest.RequestId}: {ex.GetType().Name}: {ex.Message}");
+            string failureMessage = failureStage == "send"
+                ? $"LLM failed: {ex.GetType().Name}: {ex.Message}"
+                : $"LLM {failureStage} failed: {ex.GetType().Name}: {ex.Message}";
+            ShowLlmFailureBanner(agentName, failureMessage);
+            UnityEngine.Debug.LogWarning($"[LLM Scheduler] {failureStage} failed vendor={selection.llmVendor} model={selection.llmModelString} requestId={schedulerRequest.RequestId}: {ex.GetType().Name}: {ex.Message}");
         }
     }
 

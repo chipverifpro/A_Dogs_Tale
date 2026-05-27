@@ -12,7 +12,7 @@ namespace DogGame.LLM.Agent
     /// Agent-level bridge: Build an LLMRequest via LLMConfigModule + LLMWorldStateModule,
     /// serialize it, and send it to the configured provider service.
     /// </summary>
-    public sealed class LLMAgentFacade : MonoBehaviour
+    public sealed class LLMAgentFacade_Obsolete : MonoBehaviour
     {
         [Header("Modules (on same agent)")]
         [SerializeField] private LLMConfigModule? config;
