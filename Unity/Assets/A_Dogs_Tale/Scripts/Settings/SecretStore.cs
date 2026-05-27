@@ -95,6 +95,8 @@ namespace DogGame.Settings
         {
 #if UNITY_STANDALONE_OSX || UNITY_EDITOR_OSX
             return new MacOSKeychainSecretStore();
+#elif UNITY_STANDALONE_WIN || UNITY_EDITOR_WIN
+            return new WindowsDpapiSecretStore();
 #else
             return new UnsupportedSecretStore();
 #endif
