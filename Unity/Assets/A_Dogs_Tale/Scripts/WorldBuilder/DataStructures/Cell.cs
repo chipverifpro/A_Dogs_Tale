@@ -84,13 +84,13 @@ public class Cell       // one cell in a Room
         if (walls.Count() != 2) return DiagonalOpenDirection.None; // must be exactly two walls to have a diagonal open
         if (doors != DirFlags.None) return DiagonalOpenDirection.None; // if doors present, no diagonal open
         if ((walls & (DirFlags.N | DirFlags.E)) == (DirFlags.N | DirFlags.E))
-            return DiagonalOpenDirection.NE;
-        if ((walls & (DirFlags.S | DirFlags.E)) == (DirFlags.S | DirFlags.E))
-            return DiagonalOpenDirection.SE;
-        if ((walls & (DirFlags.S | DirFlags.W)) == (DirFlags.S | DirFlags.W))
             return DiagonalOpenDirection.SW;
-        if ((walls & (DirFlags.N | DirFlags.W)) == (DirFlags.N | DirFlags.W))
+        if ((walls & (DirFlags.S | DirFlags.E)) == (DirFlags.S | DirFlags.E))
             return DiagonalOpenDirection.NW;
+        if ((walls & (DirFlags.S | DirFlags.W)) == (DirFlags.S | DirFlags.W))
+            return DiagonalOpenDirection.NE;
+        if ((walls & (DirFlags.N | DirFlags.W)) == (DirFlags.N | DirFlags.W))
+            return DiagonalOpenDirection.SE;
         return DiagonalOpenDirection.None;
     }
 

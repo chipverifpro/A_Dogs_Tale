@@ -43,6 +43,10 @@ public partial class DungeonGenerator
         if (numWalls != 2)
             return false;
 
+        DiagonalOpenDirection openDirection = cell.GetDiagonalOpenDirection();
+        if (openDirection == DiagonalOpenDirection.None)
+            return false;
+
         int x = cell.x;
         int z = cell.y;
         int ySteps = cell.height;
@@ -54,7 +58,7 @@ public partial class DungeonGenerator
         if (northWall && eastWall)
         {
             AddDiagonalWall(roomNumber, x, z, ySteps, world + CornerOffset(east: true, north: true, cellSize) + wallVerticalOffset, Yaw45, cellSize, wallHeight, diagonalLength, roomWallpaper, roomWallpaperMirror);
-            triangleFloorDirection = 0;
+            triangleFloorDirection = TriangleFloorDirectionForOpenSide(openDirection);
             if (cfg.skipOrthogonalWhenDiagonal) { suppressNorth = true; suppressEast = true; }
             return true;
         }
@@ -62,7 +66,7 @@ public partial class DungeonGenerator
         if (northWall && westWall)
         {
             AddDiagonalWall(roomNumber, x, z, ySteps, world + CornerOffset(east: false, north: true, cellSize) + wallVerticalOffset, Yaw315, cellSize, wallHeight, diagonalLength, roomWallpaper, roomWallpaperMirror);
-            triangleFloorDirection = 3;
+            triangleFloorDirection = TriangleFloorDirectionForOpenSide(openDirection);
             if (cfg.skipOrthogonalWhenDiagonal) { suppressNorth = true; suppressWest = true; }
             return true;
         }
@@ -70,7 +74,7 @@ public partial class DungeonGenerator
         if (southWall && eastWall)
         {
             AddDiagonalWall(roomNumber, x, z, ySteps, world + CornerOffset(east: true, north: false, cellSize) + wallVerticalOffset, Yaw135, cellSize, wallHeight, diagonalLength, roomWallpaper, roomWallpaperMirror);
-            triangleFloorDirection = 1;
+            triangleFloorDirection = TriangleFloorDirectionForOpenSide(openDirection);
             if (cfg.skipOrthogonalWhenDiagonal) { suppressSouth = true; suppressEast = true; }
             return true;
         }
@@ -78,12 +82,24 @@ public partial class DungeonGenerator
         if (southWall && westWall)
         {
             AddDiagonalWall(roomNumber, x, z, ySteps, world + CornerOffset(east: false, north: false, cellSize) + wallVerticalOffset, Yaw225, cellSize, wallHeight, diagonalLength, roomWallpaper, roomWallpaperMirror);
-            triangleFloorDirection = 2;
+            triangleFloorDirection = TriangleFloorDirectionForOpenSide(openDirection);
             if (cfg.skipOrthogonalWhenDiagonal) { suppressSouth = true; suppressWest = true; }
             return true;
         }
 
         return false;
+    }
+
+    private static int TriangleFloorDirectionForOpenSide(DiagonalOpenDirection openDirection)
+    {
+        return openDirection switch
+        {
+            DiagonalOpenDirection.NE => 0,
+            DiagonalOpenDirection.SE => 1,
+            DiagonalOpenDirection.SW => 2,
+            DiagonalOpenDirection.NW => 3,
+            _ => 0
+        };
     }
 
     void AddDiagonalWall(
