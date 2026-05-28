@@ -46,7 +46,7 @@ public partial class TopPulldown : MonoBehaviour
     [SerializeField] private string behaviorFrameResourcePath = "Sprites/Behavior_Frame_A";
     [SerializeField] private string gaitFrameResourcePath = "Sprites/Gait_Frame_AB";
     [SerializeField] private string emoteFrameResourcePath = "Sprites/Emotes_Frame_A";
-    [SerializeField] private string androidButtonSpriteResourcePath = "Sprites/AndroidButtonsAndQuests";
+    [SerializeField] private string androidButtonSpriteResourcePath = "Sprites/AndroidButtonsAndQuests_B";
     [SerializeField] private string targetIconSpriteResourcePath = "Sprites/TargetIcon_D";
     [FormerlySerializedAs("noseButtonMargin")]
     [SerializeField] private float topControlButtonMargin = 24f;
