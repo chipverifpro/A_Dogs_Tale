@@ -70,10 +70,12 @@ public class BottomBanner : MonoBehaviour
     [Header("Style")]
     [SerializeField] Color backgroundColor = new Color(0.9f, 0.9f, 0.9f, 0.75f);
     [SerializeField] Color textColor = new Color(0.13f, 0.13f, 0.13f, 1f);
-    [SerializeField] int fontSize = 22;
-    [SerializeField] float height = 172f;
+    [SerializeField] int fontSize = 44;
+    [SerializeField] float height = 128f;
     [SerializeField] float sidePadding = 16f;
     [SerializeField] bool useSafeArea = true;
+    [SerializeField] float backgroundTopOffset = 0f;
+    [SerializeField] float backgroundHeightMultiplier = 2f;
     [SerializeField] bool autoCollapseWhenMouseAway = true;
     [SerializeField] float collapsedHeightFraction = 0.33333334f;
     [SerializeField] float collapsedHeightExtraPixels = 3f;
@@ -81,9 +83,9 @@ public class BottomBanner : MonoBehaviour
 
     [Header("Message Log")]
     [SerializeField] int visibleLineCount = 3;
-    [SerializeField] float rowMinHeight = 42f;
+    [SerializeField] float rowMinHeight = 128f;
     [SerializeField] float rowSpacing = 4f;
-    [SerializeField] float iconSize = 28f;
+    [SerializeField] float iconSize = 128f;
     [SerializeField] bool smoothIconSampling = true;
     [SerializeField] int maxMessageLines = 2;
     [SerializeField] bool defaultDisplayUsesRichText = true;
@@ -98,6 +100,7 @@ public class BottomBanner : MonoBehaviour
 
     GameObject panel;
     RectTransform panelRT;
+    RectTransform backgroundRT;
     ScrollRect scrollRect;
     RectTransform viewportRT;
     RectTransform contentRT;
@@ -106,9 +109,12 @@ public class BottomBanner : MonoBehaviour
     float elapsedGameTimeSeconds;
     float currentPanelHeight;
     float panelHeightVelocity;
+    float backgroundAuthoredHeight;
+    float authoredPanelWidth;
     bool panelExpanded;
     bool legacyStyleMigrated;
     int lastPanelToggleFrame = -1;
+    bool missingUiWarningLogged;
 
     public IReadOnlyList<BannerMessageEntry> MessageHistory => messageHistory;
 
@@ -127,7 +133,7 @@ public class BottomBanner : MonoBehaviour
             return false;
         }
 
-        return RectTransformUtility.RectangleContainsScreenPoint(panelRT, screenPoint, null);
+        return IsScreenPointOverBanner(screenPoint);
     }
 
     void Awake()
@@ -180,291 +186,134 @@ public class BottomBanner : MonoBehaviour
             Transform existingCanvas = transform.Find("BottomBannerCanvas");
             if (existingCanvas != null)
             {
-                existingCanvas.gameObject.SetActive(true);
                 BottomBannerCanvas = existingCanvas.GetComponent<Canvas>();
-                if (BottomBannerCanvas == null)
-                    BottomBannerCanvas = existingCanvas.gameObject.AddComponent<Canvas>();
             }
 
             if (BottomBannerCanvas == null)
-            {
-                GameObject canvasGO = new GameObject("BottomBannerCanvas", typeof(Canvas), typeof(CanvasScaler), typeof(GraphicRaycaster));
-                canvasGO.transform.SetParent(transform, false);
-                BottomBannerCanvas = canvasGO.GetComponent<Canvas>();
-            }
+                BottomBannerCanvas = GetComponentInChildren<Canvas>(true);
+
+            if (BottomBannerCanvas == null)
+                BottomBannerCanvas = GetComponentInParent<Canvas>(true);
         }
 
-        EnsureRootOverlayCanvas();
-
-        BottomBannerCanvas.renderMode = RenderMode.ScreenSpaceOverlay;
-        BottomBannerCanvas.enabled = true;
-        BottomBannerCanvas.overrideSorting = true;
-        BottomBannerCanvas.sortingOrder = -1;
-
-        CanvasScaler scaler = BottomBannerCanvas.GetComponent<CanvasScaler>();
-        if (scaler == null)
-            scaler = BottomBannerCanvas.gameObject.AddComponent<CanvasScaler>();
-        scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-        scaler.referenceResolution = new Vector2(1920f, 1080f);
-        scaler.matchWidthOrHeight = 1f;
+        if (BottomBannerCanvas == null)
+        {
+            LogMissingSceneAuthoredUi("BottomBannerCanvas");
+            return;
+        }
 
         if (panel == null)
         {
-            panel = FindDirectChild(BottomBannerCanvas.transform, "BannerPanel");
-            if (panel != null)
-                panel.SetActive(true);
-            RemoveDuplicateDirectChildren(BottomBannerCanvas.transform, "BannerPanel", panel);
-
+            panel = FindDescendant(BottomBannerCanvas.transform, "BannerPanel");
             if (panel == null)
-            {
-                panel = new GameObject("BannerPanel", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
-                panel.transform.SetParent(BottomBannerCanvas.transform, false);
-            }
-
-            panelRT = panel.GetComponent<RectTransform>();
+                panel = FindDescendant(transform, "BannerPanel");
+            if (panel == null && GetComponentInChildren<ScrollRect>(true) != null)
+                panel = gameObject;
         }
-        else if (panelRT == null)
+
+        if (panel == null)
         {
-            panelRT = panel.GetComponent<RectTransform>();
+            LogMissingSceneAuthoredUi("BannerPanel");
+            return;
         }
 
-        RemoveDuplicateDirectChildren(BottomBannerCanvas.transform, "BannerPanel", panel);
-        panel.SetActive(true);
+        panelRT = panelRT != null ? panelRT : panel.GetComponent<RectTransform>();
+        if (panelRT != null && authoredPanelWidth <= 0f)
+            authoredPanelWidth = Mathf.Max(panelRT.rect.width, panelRT.sizeDelta.x);
 
-        if (panelRT == null)
+        if (backgroundRT == null)
         {
-            DestroyGeneratedObject(panel);
-            panel = new GameObject("BannerPanel", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
-            panel.transform.SetParent(BottomBannerCanvas.transform, false);
-            panelRT = panel.GetComponent<RectTransform>();
+            GameObject backgroundGO = FindDescendant(panel.transform, "Background");
+            backgroundRT = backgroundGO != null ? backgroundGO.GetComponent<RectTransform>() : null;
         }
-
-        Image panelImage = panel.GetComponent<Image>();
-        if (panelImage == null)
-            panelImage = panel.AddComponent<Image>();
-        panelImage.color = backgroundColor;
-
-        panelRT.anchorMin = new Vector2(0f, 0f);
-        panelRT.anchorMax = new Vector2(1f, 0f);
-        panelRT.pivot = new Vector2(0.5f, 0f);
-        panelRT.anchoredPosition = Vector2.zero;
-        if (currentPanelHeight <= 0f)
-            currentPanelHeight = GetTargetPanelHeight();
-        panelRT.sizeDelta = new Vector2(0f, currentPanelHeight);
 
         if (scrollRect == null)
         {
-            GameObject scrollGO = FindDirectChild(panel.transform, "MessageScrollView");
-            if (scrollGO != null)
-                scrollGO.SetActive(true);
-            if (scrollGO == null)
-            {
-                scrollGO = new GameObject("MessageScrollView", typeof(RectTransform), typeof(Image), typeof(ScrollRect));
-                scrollGO.transform.SetParent(panel.transform, false);
-            }
-
-            RemoveDuplicateDirectChildren(panel.transform, "MessageScrollView", scrollGO);
-
-            RectTransform scrollRT = scrollGO.GetComponent<RectTransform>();
-            if (scrollRT == null)
-            {
-                DestroyGeneratedObject(scrollGO);
-                scrollGO = new GameObject("MessageScrollView", typeof(RectTransform), typeof(Image), typeof(ScrollRect));
-                scrollGO.transform.SetParent(panel.transform, false);
-                scrollRT = scrollGO.GetComponent<RectTransform>();
-            }
-            scrollRT.anchorMin = Vector2.zero;
-            scrollRT.anchorMax = Vector2.one;
-            scrollRT.offsetMin = new Vector2(sidePadding, 10f);
-            scrollRT.offsetMax = new Vector2(-sidePadding, -10f);
-
-            Image scrollImage = scrollGO.GetComponent<Image>();
-            if (scrollImage == null)
-                scrollImage = scrollGO.AddComponent<Image>();
-            scrollImage.color = new Color(1f, 1f, 1f, 0f);
-            scrollRect = scrollGO.GetComponent<ScrollRect>();
-            if (scrollRect == null)
-                scrollRect = scrollGO.AddComponent<ScrollRect>();
-            scrollRect.horizontal = false;
-            scrollRect.movementType = ScrollRect.MovementType.Clamped;
-            scrollRect.scrollSensitivity = 24f;
-
-            GameObject viewportGO = FindDirectChild(scrollGO.transform, "Viewport");
-            if (viewportGO != null)
-                viewportGO.SetActive(true);
-            if (viewportGO == null)
-            {
-                viewportGO = new GameObject("Viewport", typeof(RectTransform), typeof(Image), typeof(RectMask2D));
-                viewportGO.transform.SetParent(scrollGO.transform, false);
-            }
-            viewportRT = viewportGO.GetComponent<RectTransform>();
-            if (viewportRT == null)
-            {
-                DestroyGeneratedObject(viewportGO);
-                viewportGO = new GameObject("Viewport", typeof(RectTransform), typeof(Image), typeof(RectMask2D));
-                viewportGO.transform.SetParent(scrollGO.transform, false);
-                viewportRT = viewportGO.GetComponent<RectTransform>();
-            }
-            viewportRT.anchorMin = Vector2.zero;
-            viewportRT.anchorMax = Vector2.one;
-            viewportRT.offsetMin = Vector2.zero;
-            viewportRT.offsetMax = new Vector2(-18f, 0f);
-            Image viewportImage = viewportGO.GetComponent<Image>();
-            if (viewportImage == null)
-                viewportImage = viewportGO.AddComponent<Image>();
-            viewportImage.color = new Color(1f, 1f, 1f, 0.025f);
-            if (viewportGO.GetComponent<RectMask2D>() == null)
-                viewportGO.AddComponent<RectMask2D>();
-
-            GameObject contentGO = FindDirectChild(viewportGO.transform, "Content");
-            if (contentGO != null)
-                contentGO.SetActive(true);
-            if (contentGO == null)
-            {
-                contentGO = new GameObject("Content", typeof(RectTransform), typeof(VerticalLayoutGroup), typeof(ContentSizeFitter));
-                contentGO.transform.SetParent(viewportGO.transform, false);
-            }
-            contentRT = contentGO.GetComponent<RectTransform>();
-            if (contentRT == null)
-            {
-                DestroyGeneratedObject(contentGO);
-                contentGO = new GameObject("Content", typeof(RectTransform), typeof(VerticalLayoutGroup), typeof(ContentSizeFitter));
-                contentGO.transform.SetParent(viewportGO.transform, false);
-                contentRT = contentGO.GetComponent<RectTransform>();
-            }
-            contentRT.anchorMin = new Vector2(0f, 1f);
-            contentRT.anchorMax = new Vector2(1f, 1f);
-            contentRT.pivot = new Vector2(0.5f, 1f);
-            contentRT.offsetMin = Vector2.zero;
-            contentRT.offsetMax = Vector2.zero;
-
-            VerticalLayoutGroup layout = contentGO.GetComponent<VerticalLayoutGroup>();
-            if (layout == null)
-                layout = contentGO.AddComponent<VerticalLayoutGroup>();
-            layout.padding = new RectOffset(0, 0, 0, 0);
-            layout.spacing = rowSpacing;
-            layout.childAlignment = TextAnchor.UpperLeft;
-            layout.childControlHeight = true;
-            layout.childControlWidth = true;
-            layout.childForceExpandHeight = false;
-            layout.childForceExpandWidth = true;
-
-            ContentSizeFitter fitter = contentGO.GetComponent<ContentSizeFitter>();
-            if (fitter == null)
-                fitter = contentGO.AddComponent<ContentSizeFitter>();
-            fitter.horizontalFit = ContentSizeFitter.FitMode.Unconstrained;
-            fitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
-
-            verticalScrollbar = scrollGO.GetComponentInChildren<Scrollbar>(true);
-            if (verticalScrollbar == null)
-                verticalScrollbar = CreateScrollbar(scrollGO.transform);
-            else
-                verticalScrollbar.gameObject.SetActive(true);
-            scrollRect.viewport = viewportRT;
-            scrollRect.content = contentRT;
-            scrollRect.verticalScrollbar = verticalScrollbar;
-            scrollRect.verticalScrollbarVisibility = ScrollRect.ScrollbarVisibility.Permanent;
-            scrollRect.verticalScrollbarSpacing = 4f;
+            GameObject scrollGO = FindDescendant(panel.transform, "MessageScrollView");
+            scrollRect = scrollGO != null
+                ? scrollGO.GetComponent<ScrollRect>()
+                : panel.GetComponentInChildren<ScrollRect>(true);
         }
 
-        ApplySafeArea();
+        if (scrollRect == null)
+        {
+            LogMissingSceneAuthoredUi("MessageScrollView ScrollRect");
+            return;
+        }
+
+        viewportRT = viewportRT != null ? viewportRT : scrollRect.viewport;
+        contentRT = contentRT != null ? contentRT : scrollRect.content;
+        verticalScrollbar = verticalScrollbar != null ? verticalScrollbar : scrollRect.verticalScrollbar;
+
+        if (viewportRT == null)
+        {
+            GameObject viewportGO = FindDescendant(scrollRect.transform, "Viewport");
+            viewportRT = viewportGO != null ? viewportGO.GetComponent<RectTransform>() : null;
+        }
+
+        if (contentRT == null)
+        {
+            GameObject contentGO = viewportRT != null
+                ? FindDescendant(viewportRT, "Content")
+                : FindDescendant(scrollRect.transform, "Content");
+            contentRT = contentGO != null ? contentGO.GetComponent<RectTransform>() : null;
+        }
+
+        if (verticalScrollbar == null)
+            verticalScrollbar = scrollRect.GetComponentInChildren<Scrollbar>(true);
+
+        if (contentRT == null)
+            LogMissingSceneAuthoredUi("Content RectTransform");
     }
 
-    static GameObject FindDirectChild(Transform parent, string childName)
+    static GameObject FindDescendant(Transform parent, string childName)
     {
         if (parent == null || string.IsNullOrWhiteSpace(childName))
             return null;
 
+        if (parent.name == childName)
+            return parent.gameObject;
+
         for (int i = 0; i < parent.childCount; i++)
         {
-            Transform child = parent.GetChild(i);
-            if (child != null && child.name == childName)
-                return child.gameObject;
+            GameObject found = FindDescendant(parent.GetChild(i), childName);
+            if (found != null)
+                return found;
         }
 
         return null;
     }
 
-    static void RemoveDuplicateDirectChildren(Transform parent, string childName, GameObject keep)
+    void LogMissingSceneAuthoredUi(string elementName)
     {
-        if (parent == null || string.IsNullOrWhiteSpace(childName) || keep == null)
+        if (missingUiWarningLogged)
             return;
 
-        for (int i = parent.childCount - 1; i >= 0; i--)
-        {
-            Transform child = parent.GetChild(i);
-            if (child == null || child.gameObject == keep || child.name != childName)
-                continue;
-
-            DestroyGeneratedObject(child.gameObject);
-        }
-    }
-
-    static void DestroyGeneratedObject(GameObject go)
-    {
-        if (go == null)
-            return;
-
-        if (Application.isPlaying)
-            Destroy(go);
-        else
-            DestroyImmediate(go);
-    }
-
-    void EnsureRootOverlayCanvas()
-    {
-        if (transform.parent != null)
-            transform.SetParent(null, false);
-
-        RectTransform canvasRT = BottomBannerCanvas.GetComponent<RectTransform>();
-        if (canvasRT == null)
-            return;
-
-        canvasRT.anchorMin = Vector2.zero;
-        canvasRT.anchorMax = Vector2.one;
-        canvasRT.pivot = new Vector2(0.5f, 0.5f);
-        canvasRT.anchoredPosition = Vector2.zero;
-        canvasRT.sizeDelta = Vector2.zero;
-        canvasRT.offsetMin = Vector2.zero;
-        canvasRT.offsetMax = Vector2.zero;
-        canvasRT.localScale = Vector3.one;
-        canvasRT.localRotation = Quaternion.identity;
+        missingUiWarningLogged = true;
+        Debug.LogWarning($"[BottomBanner] Scene-authored UI is missing '{elementName}'. BottomBanner will not create or modify UI hierarchy.", this);
     }
 
     void OnRectTransformDimensionsChange()
     {
-        if (useSafeArea && panelRT != null)
-            ApplySafeArea();
-    }
-
-    void ApplySafeArea()
-    {
-        if (panelRT == null)
-            return;
-
-        Rect safeArea;
-#if UNITY_EDITOR || UNITY_STANDALONE
-        safeArea = new Rect(0f, 0f, Screen.width, Screen.height);
-#else
-        safeArea = Screen.safeArea;
-#endif
-
-        float bottomInset = useSafeArea ? Mathf.Max(0f, safeArea.y) : 0f;
-        panelRT.anchoredPosition = new Vector2(0f, bottomInset);
+        if (panelRT != null)
+        {
+            currentPanelHeight = panelRT.rect.height;
+            ApplyResponsiveWidth();
+        }
     }
 
     void UpdateAutoCollapse()
     {
-        if (panelRT == null || panel == null || !panel.activeInHierarchy)
+        if (!autoCollapseWhenMouseAway || panelRT == null || panel == null || !panel.activeInHierarchy)
             return;
 
         float targetHeight = GetTargetPanelHeight();
-        bool isAutoCollapsed = autoCollapseWhenMouseAway && targetHeight < GetExpandedPanelHeight() - 0.01f;
+        if (currentPanelHeight <= 0f || float.IsNaN(currentPanelHeight))
+            currentPanelHeight = panelRT.rect.height;
 
-        if (!autoCollapseWhenMouseAway)
+        if (collapseSlideDuration <= 0f)
         {
             currentPanelHeight = targetHeight;
-            panelHeightVelocity = 0f;
         }
         else
         {
@@ -472,25 +321,84 @@ public class BottomBanner : MonoBehaviour
                 currentPanelHeight,
                 targetHeight,
                 ref panelHeightVelocity,
-                Mathf.Max(0.01f, collapseSlideDuration),
+                collapseSlideDuration,
                 Mathf.Infinity,
                 Time.unscaledDeltaTime);
 
-            if (Mathf.Abs(currentPanelHeight - targetHeight) < 0.01f)
+            if (Mathf.Abs(currentPanelHeight - targetHeight) < 0.5f)
             {
                 currentPanelHeight = targetHeight;
                 panelHeightVelocity = 0f;
             }
         }
 
-        panelRT.sizeDelta = new Vector2(panelRT.sizeDelta.x, currentPanelHeight);
-        ApplyTextLineLimit();
+        ApplyResponsiveWidth();
+        panelRT.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, currentPanelHeight);
+        UpdateBackgroundHeight(currentPanelHeight);
+    }
 
-        if (isAutoCollapsed && currentPanelHeight > targetHeight + 0.01f && scrollRect != null)
+    void ApplyResponsiveWidth()
+    {
+        if (panelRT == null)
+            return;
+
+        if (authoredPanelWidth <= 0f)
+            authoredPanelWidth = Mathf.Max(panelRT.rect.width, panelRT.sizeDelta.x);
+
+        float availableWidth = GetAvailableBannerWidth() - Mathf.Max(0f, sidePadding) * 2f;
+        if (availableWidth <= 0f || authoredPanelWidth <= 0f)
+            return;
+
+        float targetWidth = Mathf.Min(authoredPanelWidth, availableWidth);
+        panelRT.localScale = Vector3.one;
+        panelRT.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, targetWidth);
+
+        if (backgroundRT != null)
+            backgroundRT.localScale = Vector3.one;
+        if (scrollRect != null)
+            scrollRect.transform.localScale = Vector3.one;
+    }
+
+    float GetAvailableBannerWidth()
+    {
+        float availableWidth = float.PositiveInfinity;
+
+        if (panelRT.parent is RectTransform parentRT && parentRT.rect.width > 0f)
+            availableWidth = Mathf.Min(availableWidth, parentRT.rect.width);
+
+        RectTransform canvasRT = BottomBannerCanvas != null
+            ? BottomBannerCanvas.GetComponent<RectTransform>()
+            : null;
+        if (canvasRT != null && canvasRT.rect.width > 0f)
+            availableWidth = Mathf.Min(availableWidth, canvasRT.rect.width);
+
+        if (BottomBannerCanvas != null && BottomBannerCanvas.scaleFactor > 0f && Screen.width > 0)
+            availableWidth = Mathf.Min(availableWidth, Screen.width / BottomBannerCanvas.scaleFactor);
+
+        if (float.IsInfinity(availableWidth))
+            availableWidth = authoredPanelWidth;
+
+        return availableWidth;
+    }
+
+    void UpdateBackgroundHeight(float panelHeight)
+    {
+        if (backgroundRT == null)
+            return;
+
+        if (backgroundAuthoredHeight <= 0f)
         {
-            Canvas.ForceUpdateCanvases();
-            scrollRect.verticalNormalizedPosition = 0f;
+            backgroundAuthoredHeight = backgroundRT.rect.height;
+            if (backgroundAuthoredHeight <= 0f)
+                backgroundAuthoredHeight = backgroundRT.sizeDelta.y;
         }
+
+        float backgroundHeight = backgroundAuthoredHeight * Mathf.Max(1f, backgroundHeightMultiplier);
+        backgroundRT.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, backgroundHeight);
+
+        Vector2 anchoredPosition = backgroundRT.anchoredPosition;
+        anchoredPosition.y = panelHeight + backgroundTopOffset - backgroundHeight * (1f - backgroundRT.pivot.y);
+        backgroundRT.anchoredPosition = anchoredPosition;
     }
 
     void UpdatePanelClickToggle()
@@ -504,7 +412,7 @@ public class BottomBanner : MonoBehaviour
         if (!TryGetPrimaryPressScreenPoint(out Vector2 screenPoint))
             return;
 
-        if (!RectTransformUtility.RectangleContainsScreenPoint(panelRT, screenPoint, null))
+        if (!IsScreenPointOverBanner(screenPoint))
             return;
 
         if (lastPanelToggleFrame == Time.frameCount)
@@ -512,6 +420,16 @@ public class BottomBanner : MonoBehaviour
 
         lastPanelToggleFrame = Time.frameCount;
         panelExpanded = !panelExpanded;
+        if (!panelExpanded)
+            ScrollToNewestMessage();
+    }
+
+    bool IsScreenPointOverBanner(Vector2 screenPoint)
+    {
+        if (panelRT != null && RectTransformUtility.RectangleContainsScreenPoint(panelRT, screenPoint, null))
+            return true;
+
+        return backgroundRT != null && RectTransformUtility.RectangleContainsScreenPoint(backgroundRT, screenPoint, null);
     }
 
     static bool TryGetPrimaryPressScreenPoint(out Vector2 screenPoint)
@@ -534,13 +452,6 @@ public class BottomBanner : MonoBehaviour
 
     void ApplyTextLineLimit()
     {
-        int maxVisibleLines = Mathf.Max(1, maxMessageLines);
-        for (int i = 0; i < rowTextObjects.Count; i++)
-        {
-            TextMeshProUGUI text = rowTextObjects[i];
-            if (text != null)
-                text.maxVisibleLines = maxVisibleLines;
-        }
     }
 
     float GetTargetPanelHeight()
@@ -637,47 +548,7 @@ public class BottomBanner : MonoBehaviour
 
     Scrollbar CreateScrollbar(Transform parent)
     {
-        GameObject scrollbarGO = new GameObject("Scrollbar", typeof(RectTransform), typeof(Image), typeof(Scrollbar));
-        scrollbarGO.transform.SetParent(parent, false);
-
-        RectTransform scrollbarRT = scrollbarGO.GetComponent<RectTransform>();
-        scrollbarRT.anchorMin = new Vector2(1f, 0f);
-        scrollbarRT.anchorMax = new Vector2(1f, 1f);
-        scrollbarRT.pivot = new Vector2(1f, 1f);
-        scrollbarRT.offsetMin = new Vector2(-14f, 2f);
-        scrollbarRT.offsetMax = Vector2.zero;
-        scrollbarRT.sizeDelta = new Vector2(14f, 0f);
-
-        Image trackImage = scrollbarGO.GetComponent<Image>();
-        trackImage.color = new Color(0.65f, 0.65f, 0.65f, 0.45f);
-
-        GameObject slidingArea = new GameObject("Sliding Area", typeof(RectTransform));
-        slidingArea.transform.SetParent(scrollbarGO.transform, false);
-        RectTransform slidingRT = slidingArea.GetComponent<RectTransform>();
-        slidingRT.anchorMin = Vector2.zero;
-        slidingRT.anchorMax = Vector2.one;
-        slidingRT.offsetMin = new Vector2(2f, 2f);
-        slidingRT.offsetMax = new Vector2(-2f, -2f);
-
-        GameObject handle = new GameObject("Handle", typeof(RectTransform), typeof(Image));
-        handle.transform.SetParent(slidingArea.transform, false);
-        RectTransform handleRT = handle.GetComponent<RectTransform>();
-        handleRT.anchorMin = new Vector2(0f, 1f);
-        handleRT.anchorMax = new Vector2(1f, 1f);
-        handleRT.pivot = new Vector2(0.5f, 1f);
-        handleRT.sizeDelta = new Vector2(0f, 40f);
-
-        Image handleImage = handle.GetComponent<Image>();
-        handleImage.color = new Color(0.35f, 0.35f, 0.35f, 0.8f);
-
-        Scrollbar scrollbar = scrollbarGO.GetComponent<Scrollbar>();
-        scrollbar.direction = Scrollbar.Direction.BottomToTop;
-        scrollbar.handleRect = handleRT;
-        scrollbar.targetGraphic = handleImage;
-        scrollbar.size = 1f;
-        scrollbar.value = 0f;
-
-        return scrollbar;
+        return null;
     }
 
     static string EscapeTMP(string input)
@@ -851,12 +722,6 @@ public class BottomBanner : MonoBehaviour
 
     void ConfigureBannerIconSprite(Sprite sprite)
     {
-        if (!smoothIconSampling || sprite == null || sprite.texture == null)
-            return;
-
-        Texture texture = sprite.texture;
-        texture.filterMode = texture.mipmapCount > 1 ? FilterMode.Trilinear : FilterMode.Bilinear;
-        texture.anisoLevel = Mathf.Max(texture.anisoLevel, 1);
     }
 
     void AddMessageInternal(BannerSense sense, BannerLevel level, string message, bool includeGameTime, bool isRichText)
@@ -873,9 +738,10 @@ public class BottomBanner : MonoBehaviour
         }
 
         BuildUIIfNeeded();
+        if (contentRT == null)
+            return;
 
         bool scrollToNewest = ShouldScrollToNewestForNewMessage();
-        float previousContentY = contentRT != null ? contentRT.anchoredPosition.y : 0f;
 
         string renderedText = FormatMessageText(message, includeGameTime, isRichText);
         Sprite sprite = iconOverride != null ? iconOverride : GetSpriteFor(sense, level);
@@ -908,23 +774,8 @@ public class BottomBanner : MonoBehaviour
             }
         }
 
-        panel.SetActive(true);
-
-        if (!autoScrollToNewest)
-            return;
-
-        Canvas.ForceUpdateCanvases();
         if (scrollToNewest)
-        {
-            scrollRect.verticalNormalizedPosition = 0f;
-        }
-        else if (contentRT != null)
-        {
-            scrollRect.StopMovement();
-            Vector2 anchoredPosition = contentRT.anchoredPosition;
-            anchoredPosition.y = previousContentY;
-            contentRT.anchoredPosition = anchoredPosition;
-        }
+            ScrollToNewestMessage();
     }
 
     bool ShouldScrollToNewestForNewMessage()
@@ -936,6 +787,19 @@ public class BottomBanner : MonoBehaviour
             return true;
 
         return IsScrolledToBottom();
+    }
+
+    void ScrollToNewestMessage()
+    {
+        if (scrollRect == null || contentRT == null)
+            return;
+
+        Canvas.ForceUpdateCanvases();
+        LayoutRebuilder.ForceRebuildLayoutImmediate(contentRT);
+        Canvas.ForceUpdateCanvases();
+
+        scrollRect.StopMovement();
+        scrollRect.verticalNormalizedPosition = 0f;
     }
 
     bool IsCollapsedToSingleLine()
@@ -965,9 +829,6 @@ public class BottomBanner : MonoBehaviour
             StopCoroutine(hideRoutine);
             hideRoutine = null;
         }
-
-        if (panel != null)
-            panel.SetActive(false);
     }
 
     SaveData CaptureSaveDataInternal()
@@ -1058,16 +919,7 @@ public class BottomBanner : MonoBehaviour
             }
         }
 
-        if (panel != null)
-            panel.SetActive(messageHistory.Count > 0);
-        if (BottomBannerCanvas != null)
-            BottomBannerCanvas.enabled = data.canvasVisible;
-
-        if (autoScrollToNewest && scrollRect != null)
-        {
-            Canvas.ForceUpdateCanvases();
-            scrollRect.verticalNormalizedPosition = 0f;
-        }
+        ScrollToNewestMessage();
     }
 
     void ClearHistoryInternal()
@@ -1120,17 +972,9 @@ public class BottomBanner : MonoBehaviour
 #else
             Instance = FindFirstObjectByType<BottomBanner>();
 #endif
-            if (Instance == null)
-                CreateSingleton();
         }
 
         return Instance;
-    }
-
-    static void CreateSingleton()
-    {
-        GameObject go = new GameObject("BottomBanner");
-        go.AddComponent<BottomBanner>();
     }
 
     public static void Show(string message)
@@ -1149,6 +993,7 @@ public class BottomBanner : MonoBehaviour
             return;
 
         Instance.panelExpanded = false;
+        Instance.ScrollToNewestMessage();
     }
 
     public static void Show(BannerSense sense, BannerLevel level, string message, bool includeGameTime = false)
@@ -1189,10 +1034,8 @@ public class BottomBanner : MonoBehaviour
 
     void _SetVisible(bool visible)
     {
+        _ = visible;
         BuildUIIfNeeded();
-
-        if (BottomBannerCanvas != null)
-            BottomBannerCanvas.enabled = visible;
     }
 
     public static void ShowFor(string message, float seconds)
