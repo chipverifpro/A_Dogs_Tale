@@ -62,6 +62,8 @@ public class NewInputAdapter : MonoBehaviour
     [SerializeField] private bool showMobileJoystickInEditor = false;
     [SerializeField] private Vector2 mobileJoystickMarginPixels = new(36f, 36f);
     [SerializeField] private float mobileJoystickRadiusPixels = 88f;
+    [SerializeField] private bool mobileJoystickFloatsToPress = true;
+    [SerializeField] private float mobileJoystickDragActivationPixels = 18f;
     [SerializeField] private float mobileJoystickActivationWidthPercent = 0.45f;
     [SerializeField] private float mobileJoystickActivationHeightPercent = 0.55f;
     [SerializeField, Range(0f, 0.5f)] private float mobileJoystickDeadZone = 0.12f;
@@ -115,6 +117,8 @@ public class NewInputAdapter : MonoBehaviour
     private RectTransform mobileJoystickBase;
     private RectTransform mobileJoystickKnob;
     private int mobileJoystickPointerId = NoMobileJoystickPointer;
+    private int mobileJoystickCandidatePointerId = NoMobileJoystickPointer;
+    private Vector2 mobileJoystickCandidateStartScreen;
     private Vector2 mobileJoystickCenterScreen;
     private Vector2 mobileJoystickAxis;
 
@@ -859,16 +863,26 @@ public class NewInputAdapter : MonoBehaviour
             return Vector2.zero;
         }
 
-        mobileJoystickCenterScreen = GetMobileJoystickCenterScreen();
-        SetMobileJoystickBasePosition(mobileJoystickCenterScreen);
+        if (!mobileJoystickFloatsToPress)
+        {
+            mobileJoystickCenterScreen = GetMobileJoystickCenterScreen();
+            SetMobileJoystickBasePosition(mobileJoystickCenterScreen);
+        }
 
         if (TryUpdateMobileJoystickFromTouch(out Vector2 touchAxis))
+        {
+            UpdateMobileJoystickSharedState(visible);
             return touchAxis;
+        }
 
         if (TryUpdateMobileJoystickFromMouse(out Vector2 mouseAxis))
+        {
+            UpdateMobileJoystickSharedState(visible);
             return mouseAxis;
+        }
 
         ClearMobileJoystick();
+        UpdateMobileJoystickSharedState(visible);
         return Vector2.zero;
     }
 
@@ -892,7 +906,44 @@ public class NewInputAdapter : MonoBehaviour
             bool isPressed = touch.press.isPressed;
             bool releasedThisFrame = touch.press.wasReleasedThisFrame;
 
-            if (mobileJoystickPointerId == NoMobileJoystickPointer)
+            if (mobileJoystickFloatsToPress && mobileJoystickPointerId == NoMobileJoystickPointer)
+            {
+                if (mobileJoystickCandidatePointerId == NoMobileJoystickPointer)
+                {
+                    if (!pressedThisFrame || !IsInMobileJoystickActivationZone(position) || IsPointerOverUI(touchId, position))
+                        continue;
+
+                    mobileJoystickCandidatePointerId = touchId;
+                    mobileJoystickCandidateStartScreen = position;
+                    mobileJoystickCenterScreen = position;
+                    SetMobileJoystickBasePosition(mobileJoystickCenterScreen);
+                    SetMobileJoystickKnobOffset(Vector2.zero);
+                    SetMobileJoystickControlsVisible(true);
+                }
+
+                if (mobileJoystickCandidatePointerId != touchId)
+                    continue;
+
+                if (!isPressed || releasedThisFrame)
+                {
+                    ClearMobileJoystick();
+                    return false;
+                }
+
+                float activationPixels = Mathf.Max(0f, mobileJoystickDragActivationPixels);
+                if (Vector2.Distance(position, mobileJoystickCandidateStartScreen) < activationPixels)
+                {
+                    axis = Vector2.zero;
+                    return true;
+                }
+
+                mobileJoystickPointerId = touchId;
+                reservedMobileJoystickPointerId = touchId;
+                mobileJoystickCenterScreen = mobileJoystickCandidateStartScreen;
+                SetMobileJoystickBasePosition(mobileJoystickCenterScreen);
+                ClearTapTracking();
+            }
+            else if (mobileJoystickPointerId == NoMobileJoystickPointer)
             {
                 if (!pressedThisFrame || !IsInMobileJoystickActivationZone(position))
                     continue;
@@ -931,7 +982,44 @@ public class NewInputAdapter : MonoBehaviour
             return false;
 
         Vector2 position = mouse.position.ReadValue();
-        if (mobileJoystickPointerId == NoMobileJoystickPointer)
+        if (mobileJoystickFloatsToPress && mobileJoystickPointerId == NoMobileJoystickPointer)
+        {
+            if (mobileJoystickCandidatePointerId == NoMobileJoystickPointer)
+            {
+                if (!mouse.leftButton.wasPressedThisFrame || !IsInMobileJoystickActivationZone(position) || IsPointerOverUI(-1, position))
+                    return false;
+
+                mobileJoystickCandidatePointerId = -1;
+                mobileJoystickCandidateStartScreen = position;
+                mobileJoystickCenterScreen = position;
+                SetMobileJoystickBasePosition(mobileJoystickCenterScreen);
+                SetMobileJoystickKnobOffset(Vector2.zero);
+                SetMobileJoystickControlsVisible(true);
+            }
+
+            if (mobileJoystickCandidatePointerId != -1)
+                return false;
+
+            if (!mouse.leftButton.isPressed)
+            {
+                ClearMobileJoystick();
+                return false;
+            }
+
+            float activationPixels = Mathf.Max(0f, mobileJoystickDragActivationPixels);
+            if (Vector2.Distance(position, mobileJoystickCandidateStartScreen) < activationPixels)
+            {
+                axis = Vector2.zero;
+                return true;
+            }
+
+            mobileJoystickPointerId = -1;
+            reservedMobileJoystickPointerId = -1;
+            mobileJoystickCenterScreen = mobileJoystickCandidateStartScreen;
+            SetMobileJoystickBasePosition(mobileJoystickCenterScreen);
+            ClearTapTracking();
+        }
+        else if (mobileJoystickPointerId == NoMobileJoystickPointer)
         {
             if (!mouse.leftButton.wasPressedThisFrame || !IsInMobileJoystickActivationZone(position))
                 return false;
@@ -990,9 +1078,12 @@ public class NewInputAdapter : MonoBehaviour
     private void ClearMobileJoystick()
     {
         mobileJoystickPointerId = NoMobileJoystickPointer;
+        mobileJoystickCandidatePointerId = NoMobileJoystickPointer;
         reservedMobileJoystickPointerId = NoMobileJoystickPointer;
         mobileJoystickAxis = Vector2.zero;
         SetMobileJoystickKnobOffset(Vector2.zero);
+        if (mobileJoystickFloatsToPress)
+            SetMobileJoystickControlsVisible(false);
     }
 
     private bool ShouldShowMobileJoystick()
@@ -1037,6 +1128,12 @@ public class NewInputAdapter : MonoBehaviour
 
     private bool IsInMobileJoystickActivationZone(Vector2 screenPosition)
     {
+        if (mobileJoystickFloatsToPress)
+            return screenPosition.x >= 0f &&
+                   screenPosition.y >= 0f &&
+                   screenPosition.x <= Screen.width &&
+                   screenPosition.y <= Screen.height;
+
         return GetMobileJoystickActivationRect().Contains(screenPosition);
     }
 
@@ -1049,6 +1146,18 @@ public class NewInputAdapter : MonoBehaviour
 
     private void UpdateMobileJoystickSharedState(bool visible)
     {
+        if (mobileJoystickFloatsToPress)
+        {
+            bool hasFloatingJoystickTouch =
+                mobileJoystickPointerId != NoMobileJoystickPointer ||
+                mobileJoystickCandidatePointerId != NoMobileJoystickPointer;
+            mobileJoystickVisibleForOtherInput = visible && hasFloatingJoystickTouch;
+            mobileJoystickActivationRectForOtherInput = mobileJoystickVisibleForOtherInput
+                ? new Rect(0f, 0f, Screen.width, Screen.height)
+                : default;
+            return;
+        }
+
         mobileJoystickVisibleForOtherInput = visible;
         mobileJoystickActivationRectForOtherInput = visible ? GetMobileJoystickActivationRect() : default;
     }
@@ -1066,7 +1175,10 @@ public class NewInputAdapter : MonoBehaviour
 
         mobileJoystickBase = CreateMobileJoystickImage("JoystickBase", canvasObject.transform, mobileJoystickRadiusPixels * 2f, mobileJoystickBaseColor);
         mobileJoystickKnob = CreateMobileJoystickImage("JoystickKnob", mobileJoystickBase, mobileJoystickRadiusPixels * 0.88f, mobileJoystickKnobColor);
+        mobileJoystickKnob.anchorMin = new Vector2(0.5f, 0.5f);
+        mobileJoystickKnob.anchorMax = new Vector2(0.5f, 0.5f);
         SetMobileJoystickKnobOffset(Vector2.zero);
+        SetMobileJoystickControlsVisible(!mobileJoystickFloatsToPress);
     }
 
     private RectTransform CreateMobileJoystickImage(string objectName, Transform parent, float size, Color color)
@@ -1120,6 +1232,15 @@ public class NewInputAdapter : MonoBehaviour
     {
         if (mobileJoystickCanvas != null && mobileJoystickCanvas.gameObject.activeSelf != visible)
             mobileJoystickCanvas.gameObject.SetActive(visible);
+
+        if (visible && !mobileJoystickFloatsToPress)
+            SetMobileJoystickControlsVisible(true);
+    }
+
+    private void SetMobileJoystickControlsVisible(bool visible)
+    {
+        if (mobileJoystickBase != null && mobileJoystickBase.gameObject.activeSelf != visible)
+            mobileJoystickBase.gameObject.SetActive(visible);
     }
 
     private void SetMobileJoystickBasePosition(Vector2 screenPosition)
