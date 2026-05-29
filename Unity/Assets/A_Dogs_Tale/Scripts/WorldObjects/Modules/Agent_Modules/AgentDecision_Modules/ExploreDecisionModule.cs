@@ -19,7 +19,7 @@ namespace DogGame.Modules
         private static readonly ProfilerMarker ExploreLuaCallTickMarker = new("ExploreDecision.Lua.CallTick");
         private static readonly ProfilerMarker ExploreRefreshDoorsMarker = new("ExploreDecision.RefreshDoorsForRoom");
         private static readonly ProfilerMarker ExploreActivateDoorMarker = new("ExploreDecision.TryActivateNextDoor");
-        private const string ExplorationCompleteBannerMessage = "nothing left to explore. Switching to Stay.";
+        private const string ExplorationCompleteBannerMessage = "Nothing left to explore. Switching to Wander the halls.";
 
 private const string DefaultLuaExploreScript = @"state = {
     roomPath = {},
@@ -724,7 +724,17 @@ end
             BottomBanner.Show($"{agentName} has {ExplorationCompleteBannerMessage}");
 
             if (worldObject != null && worldObject.agentModule != null)
-                worldObject.agentModule.SwitchDecisionModule(AgentDecisionType.Immobile);
+                worldObject.agentModule.SwitchDecisionModule(AgentDecisionType.Wanderer);
+
+            if (worldObject != null && worldObject.locationModule.cell.room_number != 0)
+            {
+                // find a corridor location (room 0 is corridor if one is present)
+                int num_corridor_cells = worldObject.dir.gen.rooms[0].Size;
+                int target_cell = UnityEngine.Random.Range(0,worldObject.dir.gen.rooms[0].Size);
+                Vector3 corridorLocation = worldObject.dir.gen.rooms[0].cells[target_cell].pos3d_world;
+                worldObject.agentMovementModule.SetDesiredTargetLocation(corridorLocation);
+            }
+            
         }
 
         private bool HasReachedDoorStart(Cell currentCell, DoorGoal goal)

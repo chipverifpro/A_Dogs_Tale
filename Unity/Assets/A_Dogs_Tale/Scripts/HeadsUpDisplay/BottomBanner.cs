@@ -412,7 +412,7 @@ public class BottomBanner : MonoBehaviour
         if (!TryGetPrimaryPressScreenPoint(out Vector2 screenPoint))
             return;
 
-        if (!IsScreenPointOverBanner(screenPoint))
+        if (!IsScreenPointOverBannerFrame(screenPoint))
             return;
 
         if (lastPanelToggleFrame == Time.frameCount)
@@ -420,7 +420,9 @@ public class BottomBanner : MonoBehaviour
 
         lastPanelToggleFrame = Time.frameCount;
         panelExpanded = !panelExpanded;
-        if (!panelExpanded)
+        if (panelExpanded)
+            TopPulldown.CollapseOpenControls();
+        else
             ScrollToNewestMessage();
     }
 
@@ -429,6 +431,11 @@ public class BottomBanner : MonoBehaviour
         if (panelRT != null && RectTransformUtility.RectangleContainsScreenPoint(panelRT, screenPoint, null))
             return true;
 
+        return backgroundRT != null && RectTransformUtility.RectangleContainsScreenPoint(backgroundRT, screenPoint, null);
+    }
+
+    bool IsScreenPointOverBannerFrame(Vector2 screenPoint)
+    {
         return backgroundRT != null && RectTransformUtility.RectangleContainsScreenPoint(backgroundRT, screenPoint, null);
     }
 

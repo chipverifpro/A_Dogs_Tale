@@ -188,7 +188,11 @@ public partial class TopPulldown
         if (!uiBuilt)
             return;
 
-        bool targetControlsVisible = !autoHideTopControls || pulldownOpenedByTab || IsAnyTopPanelOpen();
+        bool topPulldownExplicitlyOpen = pulldownOpenedByTab || IsAnyTopPanelOpen();
+        if (topPulldownExplicitlyOpen)
+            BottomBanner.Collapse();
+
+        bool targetControlsVisible = !autoHideTopControls || topPulldownExplicitlyOpen;
         float targetVisibility = targetControlsVisible ? 1f : 0f;
 
         if (!autoHideTopControls)
@@ -342,6 +346,7 @@ public partial class TopPulldown
     {
         pulldownOpenedByTab = true;
         HideTooltip();
+        BottomBanner.Collapse();
 
         if (pulldownTabRect != null)
             pulldownTabRect.gameObject.SetActive(false);
@@ -355,6 +360,15 @@ public partial class TopPulldown
         CloseSpeedPanel();
         CloseEmoteDropdown();
         HideTooltip();
+    }
+
+    public static void CollapseOpenControls()
+    {
+        TopPulldown pulldown = FindFirstObjectByType<TopPulldown>();
+        if (pulldown == null)
+            return;
+
+        pulldown.CollapseTopControlsToTab();
     }
 
     private void UpdatePulldownTabVisibility()

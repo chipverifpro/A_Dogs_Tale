@@ -93,6 +93,9 @@ namespace DogGame.Modules
         [Header("Wall Clearance")]
         [SerializeField] private bool constrainToCellWalls = true;
         [SerializeField] private int wallConstraintIterations = 4;
+        [SerializeField] private bool recoverFromWallIntersections = true;
+        [SerializeField] private float wallRecoveryClearance = 0.30f;
+        [SerializeField] private int invalidCellRecoverySearchRadius = 12;
 
         public bool ConstrainToCellWalls
         {
@@ -337,6 +340,7 @@ namespace DogGame.Modules
             Vector3 constrainedPosition = ResolveConstrainedWorldPosition(startPosition, proposedPosition, applyLeashConstraints: true);
             constrainedPosition = PreventConstraintRebound(startPosition, proposedPosition, constrainedPosition);
             constrainedPosition = AdjustAgentHeightToFloor(constrainedPosition);
+            constrainedPosition = RecoverFromInvalidWallSpace(constrainedPosition);
 
             // --- 7. Commit
             Vector3 actualDelta = constrainedPosition - startPosition;
@@ -383,6 +387,7 @@ namespace DogGame.Modules
                 applyLeashConstraints);
             constrainedPosition = PreventConstraintRebound(startPosition, startPosition + desiredWorldDelta, constrainedPosition);
             constrainedPosition = AdjustAgentHeightToFloor(constrainedPosition);
+            constrainedPosition = RecoverFromInvalidWallSpace(constrainedPosition);
 
             Vector3 actualDelta = constrainedPosition - startPosition;
             bodyRoot.position = constrainedPosition;
@@ -479,6 +484,229 @@ namespace DogGame.Modules
                 return Mathf.Max(0f, worldObject.sizeRadius);
 
             return 0.30f;
+        }
+
+        private Vector3 RecoverFromInvalidWallSpace(Vector3 worldPosition)
+        {
+            if (!recoverFromWallIntersections ||
+                !constrainToCellWalls ||
+                !IsAgentMotionOwner() ||
+                worldObject == null ||
+                dir == null ||
+                dir.gen == null ||
+                dir.gen.cfg == null ||
+                !dir.gen.buildComplete ||
+                dir.gen.cellGrid == null)
+            {
+                return worldPosition;
+            }
+
+            float clearance = Mathf.Max(GetWallClearanceRadius(), wallRecoveryClearance);
+            if (clearance <= 0f)
+                return worldPosition;
+
+            Vector3 mapPosition = worldObject.WorldToMapPosition(worldPosition);
+            Vector2 map2 = new(mapPosition.x, mapPosition.z);
+
+            int cellX = Mathf.FloorToInt(map2.x);
+            int cellY = Mathf.FloorToInt(map2.y);
+
+            if (TryFindNearestLegalInRoomPoint(map2, cellX, cellY, clearance, out Vector2 recoveredPoint))
+            {
+                map2 = recoveredPoint;
+            }
+            else if (!TryGetValidAgentCell(cellX, cellY, out Cell cell))
+            {
+                if (!TryFindNearestValidCell(cellX, cellY, invalidCellRecoverySearchRadius, out cell))
+                    return worldPosition;
+
+                map2 = GetCellInteriorCenter(cell);
+            }
+
+            Vector3 recoveredMap = new(map2.x, mapPosition.y, map2.y);
+            return AdjustAgentHeightToFloor(worldObject.MapToWorldPosition(recoveredMap));
+        }
+
+        private bool TryGetValidAgentCell(int x, int y, out Cell cell)
+        {
+            cell = null;
+
+            if (!TryGetCell(x, y, out Cell candidate))
+                return false;
+
+            if (candidate.room_number < 0 ||
+                dir == null ||
+                dir.gen == null ||
+                dir.gen.rooms == null ||
+                candidate.room_number >= dir.gen.rooms.Count)
+            {
+                return false;
+            }
+
+            cell = candidate;
+            return true;
+        }
+
+        private bool TryFindNearestValidCell(int originX, int originY, int maxRadius, out Cell cell)
+        {
+            cell = null;
+
+            maxRadius = Mathf.Max(0, maxRadius);
+            for (int radius = 0; radius <= maxRadius; radius++)
+            {
+                for (int y = originY - radius; y <= originY + radius; y++)
+                {
+                    for (int x = originX - radius; x <= originX + radius; x++)
+                    {
+                        if (radius > 0 &&
+                            x > originX - radius &&
+                            x < originX + radius &&
+                            y > originY - radius &&
+                            y < originY + radius)
+                        {
+                            continue;
+                        }
+
+                        if (TryGetValidAgentCell(x, y, out cell))
+                            return true;
+                    }
+                }
+            }
+
+            return false;
+        }
+
+        private bool TryFindNearestLegalInRoomPoint(
+            Vector2 mapPosition,
+            int originX,
+            int originY,
+            float clearance,
+            out Vector2 legalPoint)
+        {
+            legalPoint = default;
+            float bestDistanceSqr = float.PositiveInfinity;
+            bool found = false;
+
+            int radius = Mathf.Max(1, Mathf.CeilToInt(clearance) + 1);
+            for (int y = originY - radius; y <= originY + radius; y++)
+            {
+                for (int x = originX - radius; x <= originX + radius; x++)
+                {
+                    if (!TryGetValidAgentCell(x, y, out Cell cell))
+                        continue;
+
+                    Vector2 candidate = ClosestLegalPointInCell(mapPosition, cell, clearance);
+                    float distanceSqr = (candidate - mapPosition).sqrMagnitude;
+                    if (distanceSqr >= bestDistanceSqr)
+                        continue;
+
+                    bestDistanceSqr = distanceSqr;
+                    legalPoint = candidate;
+                    found = true;
+                }
+            }
+
+            return found;
+        }
+
+        private Vector2 ClosestLegalPointInCell(Vector2 mapPosition, Cell cell, float clearance)
+        {
+            float minX = cell.pos.x + 0.001f;
+            float maxX = cell.pos.x + 0.999f;
+            float minY = cell.pos.y + 0.001f;
+            float maxY = cell.pos.y + 0.999f;
+
+            if (EdgeBlocked(GetCellInteriorCenter(cell), cell.pos.x, cell.pos.y, DirFlags.W, clearance))
+                minX = cell.pos.x + clearance;
+
+            if (EdgeBlocked(GetCellInteriorCenter(cell), cell.pos.x, cell.pos.y, DirFlags.E, clearance))
+                maxX = cell.pos.x + 1f - clearance;
+
+            if (EdgeBlocked(GetCellInteriorCenter(cell), cell.pos.x, cell.pos.y, DirFlags.S, clearance))
+                minY = cell.pos.y + clearance;
+
+            if (EdgeBlocked(GetCellInteriorCenter(cell), cell.pos.x, cell.pos.y, DirFlags.N, clearance))
+                maxY = cell.pos.y + 1f - clearance;
+
+            Vector2 candidate = new(
+                Mathf.Clamp(mapPosition.x, minX, maxX),
+                Mathf.Clamp(mapPosition.y, minY, maxY));
+
+            candidate = PushOutOfDiagonalWallSpace(candidate, cell, clearance);
+            return candidate;
+        }
+
+        private static Vector2 GetCellInteriorCenter(Cell cell)
+        {
+            return new Vector2(cell.pos.x + 0.5f, cell.pos.y + 0.5f);
+        }
+
+        private Vector2 PushOutOfBlockedWallClearance(Vector2 mapPosition, Cell cell, float clearance)
+        {
+            int x = cell.pos.x;
+            int y = cell.pos.y;
+
+            if (EdgeBlocked(mapPosition, x, y, DirFlags.W, clearance))
+                mapPosition.x = Mathf.Max(mapPosition.x, x + clearance);
+
+            if (EdgeBlocked(mapPosition, x, y, DirFlags.E, clearance))
+                mapPosition.x = Mathf.Min(mapPosition.x, x + 1f - clearance);
+
+            if (EdgeBlocked(mapPosition, x, y, DirFlags.S, clearance))
+                mapPosition.y = Mathf.Max(mapPosition.y, y + clearance);
+
+            if (EdgeBlocked(mapPosition, x, y, DirFlags.N, clearance))
+                mapPosition.y = Mathf.Min(mapPosition.y, y + 1f - clearance);
+
+            return mapPosition;
+        }
+
+        private Vector2 PushOutOfDiagonalWallSpace(Vector2 mapPosition, Cell cell, float clearance)
+        {
+            DiagonalOpenDirection diag = GetDiagonalOpenDirection(cell.walls, cell.doors);
+            if (diag == DiagonalOpenDirection.None)
+                return mapPosition;
+
+            Vector2 local = new(mapPosition.x - cell.pos.x, mapPosition.y - cell.pos.y);
+            float offset = clearance * 1.41421356f;
+
+            switch (diag)
+            {
+                case DiagonalOpenDirection.NE:
+                    if (local.x + local.y > 1f - offset)
+                        ProjectToLine(ref local, 1f, 1f, 1f - offset);
+                    break;
+
+                case DiagonalOpenDirection.SW:
+                    if (local.x + local.y < offset)
+                        ProjectToLine(ref local, 1f, 1f, offset);
+                    break;
+
+                case DiagonalOpenDirection.SE:
+                    if (local.x - local.y > offset)
+                        ProjectToLine(ref local, 1f, -1f, offset);
+                    break;
+
+                case DiagonalOpenDirection.NW:
+                    if (local.x - local.y < -(1f - offset))
+                        ProjectToLine(ref local, 1f, -1f, -(1f - offset));
+                    break;
+            }
+
+            local.x = Mathf.Clamp(local.x, 0.001f, 0.999f);
+            local.y = Mathf.Clamp(local.y, 0.001f, 0.999f);
+            return new Vector2(cell.pos.x + local.x, cell.pos.y + local.y);
+        }
+
+        private static void ProjectToLine(ref Vector2 point, float a, float b, float c)
+        {
+            float denom = (a * a) + (b * b);
+            if (denom <= 1e-6f)
+                return;
+
+            float distance = ((a * point.x) + (b * point.y) - c) / denom;
+            point.x -= a * distance;
+            point.y -= b * distance;
         }
 
         private Vector2 ResolveGridConstraints(Vector2 from, Vector2 to, float radius, int maxIters)

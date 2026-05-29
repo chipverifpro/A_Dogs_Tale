@@ -37,7 +37,7 @@ public static class DungeonBuildSettingsJson
             if (!path.EndsWith(".json", StringComparison.OrdinalIgnoreCase))
                 path += ".json";
 
-            if (!File.Exists(path)) { Debug.LogWarning($"Config not found: {path}"); return false; }
+            if (!File.Exists(path)) { Debug.Log($"Config not found: {path}"); return false; }
 
             string json = File.ReadAllText(path);
 
