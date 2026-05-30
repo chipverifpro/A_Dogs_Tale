@@ -104,6 +104,7 @@ public partial class TopPulldown
 
     private Sprite GetDigHoleButtonSprite()
     {
-        return SpriteServer.SpriteSheetLookup(digHoleSpriteResourcePath, 0);
+        return SpriteServer.SpriteLookup("DigHole")
+            ?? SpriteServer.SpriteSheetLookup(digHoleSpriteResourcePath, 0);
     }
 }

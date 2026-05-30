@@ -37,7 +37,8 @@ public partial class TopPulldown
         if (string.IsNullOrWhiteSpace(resourcePath))
             return null;
 
-        Sprite sprite = SpriteServer.SpriteResourceLookup(resourcePath);
+        Sprite sprite = SpriteServer.SpriteLookup(resourcePath)
+            ?? SpriteServer.SpriteResourceLookup(resourcePath);
         if (sprite != null)
             return sprite;
 
@@ -74,7 +75,10 @@ public partial class TopPulldown
         if (string.IsNullOrWhiteSpace(resourcePath))
             return null;
 
-        Sprite sprite = SpriteServer.SpriteResourceLookup(resourcePath, useTopHalf, PanelSpritePixelsPerUnit);
+        Sprite sprite = !useTopHalf
+            ? SpriteServer.SpriteLookup(resourcePath)
+            : null;
+        sprite ??= SpriteServer.SpriteResourceLookup(resourcePath, useTopHalf, PanelSpritePixelsPerUnit);
         if (sprite != null)
             return sprite;
 
@@ -99,7 +103,8 @@ public partial class TopPulldown
         if (string.IsNullOrWhiteSpace(pulldownTabResourcePath))
             return null;
 
-        Sprite sprite = SpriteServer.SpriteResourceLookup(pulldownTabResourcePath);
+        Sprite sprite = SpriteServer.SpriteLookup(pulldownTabResourcePath)
+            ?? SpriteServer.SpriteResourceLookup(pulldownTabResourcePath);
         if (sprite == null)
             Debug.LogWarning($"TopPulldown: could not load pulldown tab sprite at Resources/{pulldownTabResourcePath}.", this);
 

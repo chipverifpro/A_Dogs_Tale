@@ -575,7 +575,8 @@ public sealed class QuestJournalUI : MonoBehaviour
         if (string.IsNullOrWhiteSpace(resourcePath))
             return null;
 
-        Sprite sprite = SpriteServer.SpriteResourceLookup(resourcePath);
+        Sprite sprite = SpriteServer.SpriteLookup(resourcePath)
+            ?? SpriteServer.SpriteResourceLookup(resourcePath);
         if (sprite != null)
             return sprite;
 

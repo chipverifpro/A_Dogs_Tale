@@ -18,24 +18,141 @@ public static class SpriteServer
 
     static readonly Dictionary<string, string> spriteSheetResourcePaths = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
     {
-        { "Senses",                "Sprites/SensesSymbolsColor_v4" },
-        { "SensesSymbolsColor_v4", "Sprites/SensesSymbolsColor_v4" },
-        { "DogEmojiSheetA",        "Sprites/DogEmojiSheetA" },
-        { "DogEmojiSheetB",        "Sprites/DogEmojiSheetB" },
-        { "DogEmojiSheetC",        "Sprites/DogEmojiSheetC" },
-        { "InventoryActionsSheetA","Sprites/InventoryActionsSheetA" },
-        { "MapsSpriteSheet",       "Sprites/MapsSpriteSheet" },
-        { "ArrowsSpriteSheetA",    "Sprites/ArrowsSpriteSheetA" },
-        { "TakeItemSpriteSheetA",  "Sprites/TakeItemSpriteSheetA" },
-        { "SpriteSheet_Modes_V3",  "Sprites/SpriteSheet_Modes_V3" },
-        { "Speeds",                "Sprites/Speeds" },
-        { "PlayAndPause_Dual",     "Sprites/PlayAndPause_Dual" },
-        { "DigHoleSpriteA",        "Sprites/DigHoleSpriteA" },
-        { "TricksSpritesheet_B",   "Sprites/TricksSpritesheet_B" }
+        { "AndroidButtonsAndQuests_B", "Sprites/AndroidButtonsAndQuests_B" },
+        // Home, Quest, Camera, Scent, Blank
+        { "ArrowsSpriteSheetA",        "Sprites/ArrowsSpriteSheetA" },
+        // Arrow_Left, Arrow_Right, Arrow_Up, Arrow_Down, Arrow_Repeat,
+        //  Red_X, Green_PawPrint
+        { "BonesButtonsSprites_A",     "Sprites/BonesButtonsSprites_A" },
+        // ...9 colors, 3 sizes each...
+        { "DigHoleSpriteA",            "Sprites/DigHoleSpriteA" },
+        // Dig_Hole
+        { "DogActions_B",              "Sprites/DogActions_B" },
+        // Throw_Item, Fetch_Item, Jump, Hide, Open_Door, Close_Door, 
+        //  Open_Container, Close_Container
+        { "DogEmojiSheetA",            "Sprites/DogEmojiSheetA" },
+        //
+        { "DogEmojiSheetB",            "Sprites/DogEmojiSheetB" },
+        //
+        { "DogEmojiSheetC",            "Sprites/DogEmojiSheetC" },
+        //
+        { "GraphicsQualitySprites_A",  "Sprites/GraphicsQualitySprites_A" },
+        // Graphics_Low, Graphics_Medium, Graphics_High
+        //{ "InventoryActions_A",        "Sprites/InventoryActions_A" },
+        //{ "InventoryActions_B",        "Sprites/InventoryActions_B" },
+        { "InventoryActionsSheetA",    "Sprites/InventoryActionsSheetA" },
+        // Use_Item, Eat_Item, Give_Item, Trade_Item, Drop_Item, Pick_Up_Item
+        { "InventoryActionsSheetB",    "Sprites/InventoryActionsSheetB" },
+        // Paw_Square, Play_Square, GreenCheck_Square,
+        //  RaisePaw, Beg, RollOver, Give, Get, Trade
+        { "LeashHanging_A",            "Sprites/LeashHanging_A" },
+        // Leash_Shorter
+        { "LeashHanging_B",            "Sprites/LeashHanging_B" },
+        // Leash_Longer
+        { "LLM_Icons_A",               "Sprites/LLM_Icons_A" },
+        // LLM_Send_Letter, LLM_Receive_Package
+        { "MapsSpriteSheet",           "Sprites/MapsSpriteSheet" },
+        // Map, Blueprint, Dog_With_Map, Hardhat_With_Map, Blueprint_B, Map_With_Compass
+        { "Modes",                     "Sprites/SpriteSheet_Modes_V3" },
+        // PlayerControl, Follow, Explore, Stay, Wander, AIControl
+        { "PackFormationsSprites_C",   "Sprites/PackFormationsSprites_C" },
+        // JoinPack_Paw, JoinPack, LeavePack_Paw, LeavePack, PackLeader_Paw, PackLeader,
+        //  Formation_Abreast_Shadow, Formation_Abreast, Formation_Inline_Shadow, Formation_Inline,
+        //  Formation_2Columns_Shadow, Formation_2Columns, Formation_Wedge_Shadow, Formation_Wedge,
+        //  Formation_Circle_Shadow, Formation_Circle, Formation_Snake_Shadow, Formation_Snake
+        { "PlayAndPause_Dual",         "Sprites/PlayAndPause_Dual" },
+        // Paw_Play, Paw_Pause
+        { "Senses",                    "Sprites/SensesSymbolsColor_v4" },
+        { "SensesSymbolsColor_v4",     "Sprites/SensesSymbolsColor_v4" },
+        //
+        { "SettingsIcons_A",           "Sprites/SettingsIcons_A" },
+        // Gear, Shield_Question, Shield_Note, Alert_Paw, Hardhat, Crossed_Wrench_Hammer, Colar_Gear, Blueprint_Gear, Toolbox
+        //{ "SettingsIcons_B",           "Sprites/SettingsIcons_B" },
+        //{ "SettingsIcons_C",           "Sprites/SettingsIcons_C" },
+        { "SettingsIcons_D",           "Sprites/SettingsIcons_D" },
+        // ChatGPT, Gemini, Qwen, Ollama, OpenAI_API_KEY, Gemini_API_KEY,
+        //  HappyDog, HeadphonesDog, JoystickDog_A, JoystickDog_B, JoystickDog_C,
+        //  Documents, Gemma, Mistral, MetaAI, Mistral_API_KEY,
+        //  Ollama_Qwen, Ollama_Gemma, Ollama_Mistral
+        { "SettingsMapType",           "Sprites/SettingsMapType" },
+        // House_Dis, Yard_Dis, DogPark_Dis, Forest_Dis, Castle_Dis,
+        // House_En, Yard_En, DogPark_En, Forest_En, Castle_En
+        { "Speeds",                    "Sprites/Speeds" },
+        // Gait_Sneak, Gait_Walk, Gait_Run
+        { "SpriteSheet_Modes_V3",      "Sprites/SpriteSheet_Modes_V3" },
+        // Mode_PlayerControl, Mode_Follow, Mode_Explore, Mode_Pause, Mode_Wander, Mode_LLMControl
+        { "TakeItemSpriteSheetA",      "Sprites/TakeItemSpriteSheetA" },
+        // Trade_Item, Take_Item, Give_Item
+        { "TargetIcon_C",              "Sprites/TargetIcon_C" },
+        // Target_Scope_Paw
+        { "TargetIcon_D",              "Sprites/TargetIcon_D" },
+        // Target_Scope
+
+        { "TradeArrows_B",             "Sprites/TradeArrows_B" },
+        // Curved_Arrow_Give, Curved_Arrow_Swap, Curved_Arrow_Take
+        //{ "TricksSpritesheet_A",       "Sprites/TricksSpritesheet_A" },
+        { "TricksSpritesheet_B",       "Sprites/TricksSpritesheet_B" },
+        // Fetch, Stay, Come, DropIt, LeaveIt, Heel, Quiet, Bark, GoodDog, BadDog,
+        //  FindIt, RollOver, Sit, Down, Release
+
+        // === Frames ===
+        { "Behavior_Frame_A",          "Sprites/Behavior_Frame_A" },
+        { "Emotes_Frame_A",            "Sprites/Emotes_Frame_A" },
+        { "Gait_Frame_AB",             "Sprites/Gait_Frame_AB" },
+        // Gait_Frame_1row, Gait_Frame_2row
+        { "GenericBigBoneFrame",       "Sprites/GenericBigBoneFrame" },
+        { "GenericFrame_A",            "Sprites/GenericFrame_A" },
+        { "GenericNoTitleFrame_B",     "Sprites/GenericNoTitleFrame_B" },
+        { "InventoryBackground_B",     "Sprites/InventoryBackground_B" },
+        { "InventoryBackground_C",     "Sprites/InventoryBackground_C" },
+        { "PulldownFrame",             "Sprites/PulldownFrame" },
+        { "PulldownFrame_2row",        "Sprites/PulldownFrame_2x5" },
+        { "PulldownFrame_2x5",         "Sprites/PulldownFrame_2x5" },
+        { "PulldownFrame_2x7",         "Sprites/PulldownFrame_2x7" },
+        { "PulldownTab",               "Sprites/PulldownTab" },
+        { "PulldownTab_larger",        "Sprites/PulldownTab_larger" },
+        { "Quest_Frame_A",             "Sprites/Quest_Frame_A" },
+        { "Settings_Background",       "Sprites/Settings_Background" },
+        { "Settings_Background_Vert",  "Sprites/Settings_Background_Vert" },
+        { "Settings_Background_Vert_C","Sprites/Settings_Background_Vert_C" },
+
+        // === Misc ===
+        { "ColorRing1",                "Sprites/ColorRing1" },
+        { "ColorRing2",                "Sprites/ColorRing2" },
+        { "GameIcon_A",                "Sprites/GameIcon_A" },
+        { "Floor_square",              "Sprites/Floor_square" },
+        { "FloorGreen_square",         "Sprites/FloorGreen_square" },
+        { "TitleTextOnBlack",          "Sprites/TitleTextOnBlack" },
     };
 
     static readonly Dictionary<string, SpriteReference> knownSprites = new Dictionary<string, SpriteReference>(StringComparer.OrdinalIgnoreCase)
     {
+        { NormalizeLookupKey("Home"),       new SpriteReference("AndroidButtonsAndQuests_B", 0) },
+        { NormalizeLookupKey("Quest"),      new SpriteReference("AndroidButtonsAndQuests_B", 1) },
+        { NormalizeLookupKey("Camera"),     new SpriteReference("AndroidButtonsAndQuests_B", 2) },
+        { NormalizeLookupKey("Blank"),      new SpriteReference("AndroidButtonsAndQuests_B", 4) },
+
+        { NormalizeLookupKey("Arrow_Left"),      new SpriteReference("ArrowsSpriteSheetA", 0) },
+        { NormalizeLookupKey("Arrow_Right"),     new SpriteReference("ArrowsSpriteSheetA", 1) },
+        { NormalizeLookupKey("Arrow_Up"),        new SpriteReference("ArrowsSpriteSheetA", 2) },
+        { NormalizeLookupKey("Arrow_Down"),      new SpriteReference("ArrowsSpriteSheetA", 3) },
+        { NormalizeLookupKey("Arrow_Repeat"),    new SpriteReference("ArrowsSpriteSheetA", 4) },
+        { NormalizeLookupKey("Red_X"),           new SpriteReference("ArrowsSpriteSheetA", 5) },
+        { NormalizeLookupKey("Green_PawPrint"),  new SpriteReference("ArrowsSpriteSheetA", 6) },
+
+        { NormalizeLookupKey("Throw_Item"),      new SpriteReference("DogActions_B", 0) },
+        { NormalizeLookupKey("Fetch_Item"),      new SpriteReference("DogActions_B", 1) },
+        { NormalizeLookupKey("Jump"),            new SpriteReference("DogActions_B", 2) },
+        { NormalizeLookupKey("Hide"),            new SpriteReference("DogActions_B", 3) },
+        { NormalizeLookupKey("Open_Door"),       new SpriteReference("DogActions_B", 4) },
+        { NormalizeLookupKey("Close_Door"),      new SpriteReference("DogActions_B", 5) },
+        { NormalizeLookupKey("Open_Container"),  new SpriteReference("DogActions_B", 6) },
+        { NormalizeLookupKey("Close_Container"), new SpriteReference("DogActions_B", 7) },
+
+        { NormalizeLookupKey("Graphics_Low"),    new SpriteReference("GraphicsQualitySprites_A", 0) },
+        { NormalizeLookupKey("Graphics_Medium"), new SpriteReference("GraphicsQualitySprites_A", 1) },
+        { NormalizeLookupKey("Graphics_High"),   new SpriteReference("GraphicsQualitySprites_A", 2) },
+
         { NormalizeLookupKey("Inventory"),                new SpriteReference("InventoryActionsSheetA", 2) },
         { NormalizeLookupKey("InventoryButton"),          new SpriteReference("InventoryActionsSheetA", 2) },
         { NormalizeLookupKey("InventoryActionsSheetA_2"), new SpriteReference("InventoryActionsSheetA", 2) },
@@ -46,14 +163,54 @@ public static class SpriteServer
         { NormalizeLookupKey("DropItem"),   new SpriteReference("InventoryActionsSheetA", 4) },
         { NormalizeLookupKey("PickUpItem"), new SpriteReference("InventoryActionsSheetA", 5) },
 
+        { NormalizeLookupKey("Paw_Square"),        new SpriteReference("InventoryActionsSheetB", 0) },
+        { NormalizeLookupKey("Play_Square"),       new SpriteReference("InventoryActionsSheetB", 1) },
+        { NormalizeLookupKey("GreenCheck_Square"), new SpriteReference("InventoryActionsSheetB", 2) },
+        { NormalizeLookupKey("RaisePaw"),          new SpriteReference("InventoryActionsSheetB", 3) },
+        { NormalizeLookupKey("Beg"),               new SpriteReference("InventoryActionsSheetB", 4) },
+        { NormalizeLookupKey("Give"),              new SpriteReference("InventoryActionsSheetB", 6) },
+        { NormalizeLookupKey("Get"),               new SpriteReference("InventoryActionsSheetB", 7) },
+        { NormalizeLookupKey("Trade"),             new SpriteReference("InventoryActionsSheetB", 8) },
+
+        { NormalizeLookupKey("Leash_Shorter"), new SpriteReference("LeashHanging_A", 0) },
+        { NormalizeLookupKey("Leash_Longer"),  new SpriteReference("LeashHanging_B", 0) },
+
+        { NormalizeLookupKey("LLM_Send_Letter"),     new SpriteReference("LLM_Icons_A", 0) },
+        { NormalizeLookupKey("LLM_Receive_Package"), new SpriteReference("LLM_Icons_A", 1) },
+
         { NormalizeLookupKey("BuildProgress"),      new SpriteReference("MapsSpriteSheet", 1) },
         { NormalizeLookupKey("MapBuildProgress"),   new SpriteReference("MapsSpriteSheet", 1) },
+        { NormalizeLookupKey("Map"),                new SpriteReference("MapsSpriteSheet", 0) },
+        { NormalizeLookupKey("Blueprint"),          new SpriteReference("MapsSpriteSheet", 1) },
+        { NormalizeLookupKey("Dog_With_Map"),       new SpriteReference("MapsSpriteSheet", 2) },
+        { NormalizeLookupKey("Hardhat_With_Map"),   new SpriteReference("MapsSpriteSheet", 3) },
+        { NormalizeLookupKey("Blueprint_B"),        new SpriteReference("MapsSpriteSheet", 4) },
+        { NormalizeLookupKey("Map_With_Compass"),   new SpriteReference("MapsSpriteSheet", 5) },
         { NormalizeLookupKey("TreasureMap"),        new SpriteReference("MapsSpriteSheet", 0) },
         { NormalizeLookupKey("BlueprintsA"),        new SpriteReference("MapsSpriteSheet", 1) },
         { NormalizeLookupKey("TreasureMapReader"),  new SpriteReference("MapsSpriteSheet", 2) },
         { NormalizeLookupKey("TreasureMapHardHat"), new SpriteReference("MapsSpriteSheet", 3) },
         { NormalizeLookupKey("BlueprintsB"),        new SpriteReference("MapsSpriteSheet", 4) },
         { NormalizeLookupKey("TreasureMapCompass"), new SpriteReference("MapsSpriteSheet", 5) },
+
+        { NormalizeLookupKey("JoinPack_Paw"),              new SpriteReference("PackFormationsSprites_C", 0) },
+        { NormalizeLookupKey("JoinPack"),                  new SpriteReference("PackFormationsSprites_C", 1) },
+        { NormalizeLookupKey("LeavePack_Paw"),             new SpriteReference("PackFormationsSprites_C", 2) },
+        { NormalizeLookupKey("LeavePack"),                 new SpriteReference("PackFormationsSprites_C", 3) },
+        { NormalizeLookupKey("PackLeader_Paw"),            new SpriteReference("PackFormationsSprites_C", 4) },
+        { NormalizeLookupKey("PackLeader"),                new SpriteReference("PackFormationsSprites_C", 5) },
+        { NormalizeLookupKey("Formation_Abreast_Shadow"),  new SpriteReference("PackFormationsSprites_C", 6) },
+        { NormalizeLookupKey("Formation_Abreast"),         new SpriteReference("PackFormationsSprites_C", 7) },
+        { NormalizeLookupKey("Formation_Inline_Shadow"),   new SpriteReference("PackFormationsSprites_C", 8) },
+        { NormalizeLookupKey("Formation_Inline"),          new SpriteReference("PackFormationsSprites_C", 9) },
+        { NormalizeLookupKey("Formation_2Columns_Shadow"), new SpriteReference("PackFormationsSprites_C", 10) },
+        { NormalizeLookupKey("Formation_2Columns"),        new SpriteReference("PackFormationsSprites_C", 11) },
+        { NormalizeLookupKey("Formation_Wedge_Shadow"),    new SpriteReference("PackFormationsSprites_C", 12) },
+        { NormalizeLookupKey("Formation_Wedge"),           new SpriteReference("PackFormationsSprites_C", 13) },
+        { NormalizeLookupKey("Formation_Circle_Shadow"),   new SpriteReference("PackFormationsSprites_C", 14) },
+        { NormalizeLookupKey("Formation_Circle"),          new SpriteReference("PackFormationsSprites_C", 15) },
+        { NormalizeLookupKey("Formation_Snake_Shadow"),    new SpriteReference("PackFormationsSprites_C", 16) },
+        { NormalizeLookupKey("Formation_Snake"),           new SpriteReference("PackFormationsSprites_C", 17) },
 
         { NormalizeLookupKey("Scent"),   new SpriteReference("Senses", -1) },
         { NormalizeLookupKey("Smell"),   new SpriteReference("Senses", -1) },
@@ -74,13 +231,67 @@ public static class SpriteServer
         { NormalizeLookupKey("Smell1"),  new SpriteReference("Senses", 14) },
         { NormalizeLookupKey("Smell0"),  new SpriteReference("Senses", 15) },
         
+        { NormalizeLookupKey("Paw_Play"),  new SpriteReference("PlayAndPause_Dual", 0) },
+        { NormalizeLookupKey("Paw_Pause"), new SpriteReference("PlayAndPause_Dual", 1) },
         { NormalizeLookupKey("Play"),   new SpriteReference("PlayAndPause_Dual", 0) },
         { NormalizeLookupKey("Pause"),  new SpriteReference("PlayAndPause_Dual", 1) },
         
+        { NormalizeLookupKey("Gear"),                   new SpriteReference("SettingsIcons_A", 0) },
+        { NormalizeLookupKey("Shield_Question"),        new SpriteReference("SettingsIcons_A", 1) },
+        { NormalizeLookupKey("Shield_Note"),            new SpriteReference("SettingsIcons_A", 2) },
+        { NormalizeLookupKey("Alert_Paw"),              new SpriteReference("SettingsIcons_A", 3) },
+        { NormalizeLookupKey("Hardhat"),                new SpriteReference("SettingsIcons_A", 4) },
+        { NormalizeLookupKey("Crossed_Wrench_Hammer"),  new SpriteReference("SettingsIcons_A", 5) },
+        { NormalizeLookupKey("Colar_Gear"),             new SpriteReference("SettingsIcons_A", 6) },
+        { NormalizeLookupKey("Blueprint_Gear"),         new SpriteReference("SettingsIcons_A", 7) },
+        { NormalizeLookupKey("Toolbox"),                new SpriteReference("SettingsIcons_A", 8) },
+
+        { NormalizeLookupKey("ChatGPT"),        new SpriteReference("SettingsIcons_D", 0) },
+        { NormalizeLookupKey("Gemini"),         new SpriteReference("SettingsIcons_D", 1) },
+        { NormalizeLookupKey("Qwen"),           new SpriteReference("SettingsIcons_D", 2) },
+        { NormalizeLookupKey("Ollama"),         new SpriteReference("SettingsIcons_D", 3) },
+        { NormalizeLookupKey("OpenAI_API_KEY"), new SpriteReference("SettingsIcons_D", 4) },
+        { NormalizeLookupKey("Gemini_API_KEY"), new SpriteReference("SettingsIcons_D", 5) },
+        { NormalizeLookupKey("HappyDog"),       new SpriteReference("SettingsIcons_D", 6) },
+        { NormalizeLookupKey("HeadphonesDog"),  new SpriteReference("SettingsIcons_D", 7) },
+        { NormalizeLookupKey("JoystickDog_A"),  new SpriteReference("SettingsIcons_D", 8) },
+        { NormalizeLookupKey("JoystickDog_B"),  new SpriteReference("SettingsIcons_D", 9) },
+        { NormalizeLookupKey("JoystickDog_C"),  new SpriteReference("SettingsIcons_D", 10) },
+        { NormalizeLookupKey("Documents"),      new SpriteReference("SettingsIcons_D", 11) },
+        { NormalizeLookupKey("Gemma"),          new SpriteReference("SettingsIcons_D", 12) },
+        { NormalizeLookupKey("Mistral"),        new SpriteReference("SettingsIcons_D", 13) },
+        { NormalizeLookupKey("MetaAI"),         new SpriteReference("SettingsIcons_D", 14) },
+        { NormalizeLookupKey("Mistral_API_KEY"),new SpriteReference("SettingsIcons_D", 15) },
+        { NormalizeLookupKey("Ollama_Qwen"),    new SpriteReference("SettingsIcons_D", 16) },
+        { NormalizeLookupKey("Ollama_Gemma"),   new SpriteReference("SettingsIcons_D", 17) },
+        { NormalizeLookupKey("Ollama_Mistral"), new SpriteReference("SettingsIcons_D", 18) },
+
+        { NormalizeLookupKey("House_Dis"),   new SpriteReference("SettingsMapType", 0) },
+        { NormalizeLookupKey("Yard_Dis"),    new SpriteReference("SettingsMapType", 1) },
+        { NormalizeLookupKey("DogPark_Dis"), new SpriteReference("SettingsMapType", 2) },
+        { NormalizeLookupKey("Forest_Dis"),  new SpriteReference("SettingsMapType", 3) },
+        { NormalizeLookupKey("Castle_Dis"),  new SpriteReference("SettingsMapType", 4) },
+        { NormalizeLookupKey("House_En"),    new SpriteReference("SettingsMapType", 5) },
+        { NormalizeLookupKey("Yard_En"),     new SpriteReference("SettingsMapType", 6) },
+        { NormalizeLookupKey("DogPark_En"),  new SpriteReference("SettingsMapType", 7) },
+        { NormalizeLookupKey("Forest_En"),   new SpriteReference("SettingsMapType", 8) },
+        { NormalizeLookupKey("Castle_En"),   new SpriteReference("SettingsMapType", 9) },
+
+        { NormalizeLookupKey("Gait_Sneak"), new SpriteReference("Speeds", 0) },
+        { NormalizeLookupKey("Gait_Walk"),  new SpriteReference("Speeds", 1) },
+        { NormalizeLookupKey("Gait_Run"),   new SpriteReference("Speeds", 2) },
         { NormalizeLookupKey("Sneak"), new SpriteReference("Speeds", 0) },
         { NormalizeLookupKey("Walk"),  new SpriteReference("Speeds", 1) },
         { NormalizeLookupKey("Run"),   new SpriteReference("Speeds", 2) },
 
+        { NormalizeLookupKey("PlayerControl"),     new SpriteReference("Modes", 0) },
+        { NormalizeLookupKey("AIControl"),         new SpriteReference("Modes", 5) },
+        { NormalizeLookupKey("Mode_PlayerControl"),new SpriteReference("SpriteSheet_Modes_V3", 0) },
+        { NormalizeLookupKey("Mode_Follow"),       new SpriteReference("SpriteSheet_Modes_V3", 1) },
+        { NormalizeLookupKey("Mode_Explore"),      new SpriteReference("SpriteSheet_Modes_V3", 2) },
+        { NormalizeLookupKey("Mode_Pause"),        new SpriteReference("SpriteSheet_Modes_V3", 3) },
+        { NormalizeLookupKey("Mode_Wander"),       new SpriteReference("SpriteSheet_Modes_V3", 4) },
+        { NormalizeLookupKey("Mode_LLMControl"),   new SpriteReference("SpriteSheet_Modes_V3", 5) },
         { NormalizeLookupKey("Player"),        new SpriteReference("Modes", 0) },
         { NormalizeLookupKey("Follow"),        new SpriteReference("Modes", 1) },
         { NormalizeLookupKey("Explore"),       new SpriteReference("Modes", 2) },
@@ -90,6 +301,15 @@ public static class SpriteServer
         
         { NormalizeLookupKey("DigHole"),   new SpriteReference("DigHoleSpriteA", 0) },
         { NormalizeLookupKey("DigButton"), new SpriteReference("DigHoleSpriteA", 0) },
+
+        { NormalizeLookupKey("Take_Item"), new SpriteReference("TakeItemSpriteSheetA", 1) },
+
+        { NormalizeLookupKey("Target_Scope_Paw"), new SpriteReference("TargetIcon_C", 0) },
+        { NormalizeLookupKey("Target_Scope"),     new SpriteReference("TargetIcon_D", 0) },
+
+        { NormalizeLookupKey("Curved_Arrow_Give"), new SpriteReference("TradeArrows_B", 0) },
+        { NormalizeLookupKey("Curved_Arrow_Swap"), new SpriteReference("TradeArrows_B", 1) },
+        { NormalizeLookupKey("Curved_Arrow_Take"), new SpriteReference("TradeArrows_B", 2) },
         
         { NormalizeLookupKey("Fetch"),     new SpriteReference("TricksSpritesheet_B", 0) },
         { NormalizeLookupKey("Stay"),      new SpriteReference("TricksSpritesheet_B", 1) },
@@ -105,7 +325,10 @@ public static class SpriteServer
         { NormalizeLookupKey("RollOver"),  new SpriteReference("TricksSpritesheet_B", 11) },
         { NormalizeLookupKey("Sit"),       new SpriteReference("TricksSpritesheet_B", 12) },
         { NormalizeLookupKey("Down"),      new SpriteReference("TricksSpritesheet_B", 13) },
-        { NormalizeLookupKey("Release"),   new SpriteReference("TricksSpritesheet_B", 14) }
+        { NormalizeLookupKey("Release"),   new SpriteReference("TricksSpritesheet_B", 14) },
+
+        { NormalizeLookupKey("Gait_Frame_1row"), new SpriteReference("Gait_Frame_AB", 0) },
+        { NormalizeLookupKey("Gait_Frame_2row"), new SpriteReference("Gait_Frame_AB", 1) }
     };
 
     static readonly Dictionary<string, Dictionary<int, Sprite>> spritesBySheet = new Dictionary<string, Dictionary<int, Sprite>>(StringComparer.OrdinalIgnoreCase);
@@ -136,7 +359,19 @@ public static class SpriteServer
         if (trimmedName.StartsWith("Sense_", StringComparison.OrdinalIgnoreCase))
             return SpriteSheetLookupByName("Senses", trimmedName);
 
-        return SpriteSheetLookup(trimmedName);
+        Sprite sheetSprite = SpriteSheetLookup(trimmedName);
+        if (sheetSprite != null)
+            return sheetSprite;
+
+        string normalizedResourcePath = NormalizeResourcePath(trimmedName);
+        int slashIndex = normalizedResourcePath.LastIndexOf('/');
+        if (slashIndex >= 0 && slashIndex < normalizedResourcePath.Length - 1)
+        {
+            string fileName = normalizedResourcePath.Substring(slashIndex + 1);
+            return SpriteLookup(fileName) ?? SpriteResourceLookup(normalizedResourcePath);
+        }
+
+        return null;
     }
 
     public static Sprite SpriteSheetLookup(string spriteSheet, int index = -1)

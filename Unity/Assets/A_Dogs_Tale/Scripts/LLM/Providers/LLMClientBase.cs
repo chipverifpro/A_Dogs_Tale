@@ -221,7 +221,7 @@ namespace DogGame.LLM.Core
                 ? spec.debugRequestPacketJson
                 : payloadJson;
 
-            ShowLlmActivityBanner(agentId, "sent LLM request to", Vendor, "LLM_Icons_A_0");
+            ShowLlmActivityBanner(agentId, "sent LLM request to", Vendor, "LLM_Send_Letter");
             LLMPacketLogger.LogRequest(agentId, requestId, Vendor, requestPacketJson);
 
             var tcs = new TaskCompletionSource<LLMResponse>(TaskCreationOptions.RunContinuationsAsynchronously);

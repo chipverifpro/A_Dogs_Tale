@@ -11,6 +11,7 @@ public partial class TopPulldown
             parent,
             searchRoot,
             "HomeButton",
+            spriteName: "Home",
             spriteIndex: 0,
             slotFromRight: HomeButtonTopSlotFromRight,
             HandleHomeButtonPressed,
@@ -21,6 +22,7 @@ public partial class TopPulldown
             parent,
             searchRoot,
             "CameraModeButton",
+            spriteName: "Camera",
             spriteIndex: 2,
             slotFromRight: CameraModeButtonTopSlotFromRight,
             HandleCameraModeButtonPressed,
@@ -31,6 +33,7 @@ public partial class TopPulldown
             parent,
             searchRoot,
             "QuestButton",
+            spriteName: "Quest",
             spriteIndex: 1,
             slotFromRight: QuestButtonTopSlotFromRight,
             HandleQuestButtonPressed,
@@ -42,6 +45,7 @@ public partial class TopPulldown
         Transform parent,
         Transform searchRoot,
         string buttonName,
+        string spriteName,
         int spriteIndex,
         int slotFromRight,
         UnityAction clickHandler,
@@ -68,7 +72,7 @@ public partial class TopPulldown
         ConfigureTopControlRect(buttonRect, slotFromRight);
 
         buttonImage = GetOrAddComponent<Image>(buttonObject);
-        buttonImage.sprite = GetAndroidButtonSprite(spriteIndex);
+        buttonImage.sprite = GetAndroidButtonSprite(spriteName, spriteIndex);
         buttonImage.preserveAspect = true;
         buttonImage.color = Color.white;
         buttonImage.raycastTarget = true;
@@ -145,8 +149,9 @@ public partial class TopPulldown
         HideTooltip();
     }
 
-    private Sprite GetAndroidButtonSprite(int index)
+    private Sprite GetAndroidButtonSprite(string spriteName, int index)
     {
-        return SpriteServer.SpriteSheetLookup(androidButtonSpriteResourcePath, index);
+        return SpriteServer.SpriteLookup(spriteName)
+            ?? SpriteServer.SpriteSheetLookup(androidButtonSpriteResourcePath, index);
     }
 }

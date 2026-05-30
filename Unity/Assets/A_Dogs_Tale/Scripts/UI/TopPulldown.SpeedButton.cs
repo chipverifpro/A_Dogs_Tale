@@ -433,8 +433,25 @@ public partial class TopPulldown
 
     private Sprite GetSpeedModeSprite(WalkMode walkMode)
     {
-        return SpriteServer.SpriteSheetLookup(speedSpriteResourcePath, GetSpeedModeSpriteIndex(walkMode))
+        return SpriteServer.SpriteLookup(GetSpeedModeSpriteName(walkMode))
+            ?? SpriteServer.SpriteLookup("Walk")
+            ?? SpriteServer.SpriteSheetLookup(speedSpriteResourcePath, GetSpeedModeSpriteIndex(walkMode))
             ?? SpriteServer.SpriteSheetLookup(speedSpriteResourcePath, GetSpeedModeSpriteIndex(WalkMode.Walk));
+    }
+
+    private string GetSpeedModeSpriteName(WalkMode walkMode)
+    {
+        switch (walkMode)
+        {
+            case WalkMode.Sneak:
+                return "Sneak";
+            case WalkMode.Walk:
+                return "Walk";
+            case WalkMode.Run:
+                return "Run";
+            default:
+                return "Walk";
+        }
     }
 
     private int GetSpeedModeSpriteIndex(WalkMode walkMode)

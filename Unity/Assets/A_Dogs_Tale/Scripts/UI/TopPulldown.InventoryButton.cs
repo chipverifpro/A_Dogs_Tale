@@ -97,6 +97,7 @@ public partial class TopPulldown
 
     private Sprite GetInventoryButtonSprite()
     {
-        return SpriteServer.SpriteSheetLookup(inventoryActionSpriteResourcePath, 2);
+        return SpriteServer.SpriteLookup("Inventory")
+            ?? SpriteServer.SpriteSheetLookup(inventoryActionSpriteResourcePath, 2);
     }
 }

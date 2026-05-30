@@ -78,6 +78,7 @@ namespace DogGame.Modules
         public override float CountdownDurationSeconds => CurrentTimeoutSeconds;
         public override WorldObject QuestInteractionTarget => Requester;
         protected override WorldObject QuestIconTarget => Requester;
+        protected override string QuestIconSpriteName => "Fetch";
         protected override string QuestIconSpriteSheet => "TricksSpritesheet_B";
         protected override int QuestIconSpriteIndex => 0;
 

@@ -33,7 +33,7 @@ namespace DogGame.Modules
     {
         private static readonly QuestObjectiveSnapshot[] NoObjectives = Array.Empty<QuestObjectiveSnapshot>();
         private static readonly List<QuestModuleBase> KnownQuestModulesMutable = new();
-        private const string QuestBannerIconSpriteName = "AndroidButtonsAndQuests_1";
+        private const string QuestBannerIconSpriteName = "Quest";
         private const string QuestOverheadIconInstanceName = "QuestRequestIconVisual";
         private const float QuestOverheadIconSize = 0.45f;
         private const float QuestOverheadIconTopPadding = 0.12f;
@@ -73,6 +73,7 @@ namespace DogGame.Modules
         public virtual WorldObject QuestInteractionTarget => worldObject;
         public virtual bool CanStartFromQuestDialog => !IsRunning;
         protected virtual WorldObject QuestIconTarget => worldObject;
+        protected virtual string QuestIconSpriteName => "";
         protected virtual string QuestIconSpriteSheet => "";
         protected virtual int QuestIconSpriteIndex => -1;
 
@@ -244,10 +245,12 @@ namespace DogGame.Modules
         private void ShowQuestRequestIcon()
         {
             WorldObject target = QuestIconTarget;
-            if (target == null || QuestIconSpriteIndex < 0 || string.IsNullOrWhiteSpace(QuestIconSpriteSheet))
+            if (target == null)
                 return;
 
-            Sprite iconSprite = SpriteServer.SpriteSheetLookup(QuestIconSpriteSheet, QuestIconSpriteIndex);
+            Sprite iconSprite = SpriteServer.SpriteLookup(QuestIconSpriteName);
+            if (iconSprite == null && QuestIconSpriteIndex >= 0 && !string.IsNullOrWhiteSpace(QuestIconSpriteSheet))
+                iconSprite = SpriteServer.SpriteSheetLookup(QuestIconSpriteSheet, QuestIconSpriteIndex);
             if (iconSprite == null)
                 return;
 

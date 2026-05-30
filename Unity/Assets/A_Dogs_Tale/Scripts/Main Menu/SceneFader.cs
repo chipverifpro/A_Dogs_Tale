@@ -199,7 +199,8 @@ public class SceneFader : MonoBehaviour
     {
         Sprite[] sprites = SpriteServer.GetSpriteSheetSprites(resourcePath);
         if (sprites == null || sprites.Length == 0)
-            return SpriteServer.SpriteResourceLookup(resourcePath);
+            return SpriteServer.SpriteLookup(resourcePath)
+                ?? SpriteServer.SpriteResourceLookup(resourcePath);
 
         if (sprites.Length == 1)
             return sprites[0];
@@ -724,7 +725,8 @@ public class SceneFader : MonoBehaviour
         if (string.IsNullOrWhiteSpace(resourcePath))
             return null;
 
-        Sprite sprite = SpriteServer.SpriteResourceLookup(resourcePath);
+        Sprite sprite = SpriteServer.SpriteLookup(resourcePath)
+            ?? SpriteServer.SpriteResourceLookup(resourcePath);
         if (sprite != null)
             return sprite;
 

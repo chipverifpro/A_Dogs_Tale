@@ -134,7 +134,8 @@ public partial class TopPulldown
 
     private Sprite GetTargetCrosshairSprite()
     {
-        return SpriteServer.SpriteSheetLookup(targetIconSpriteResourcePath, 0)
+        return SpriteServer.SpriteLookup("Target_Scope")
+            ?? SpriteServer.SpriteSheetLookup(targetIconSpriteResourcePath, 0)
             ?? SpriteServer.SpriteLookup("TargetIcon_D_0");
     }
 

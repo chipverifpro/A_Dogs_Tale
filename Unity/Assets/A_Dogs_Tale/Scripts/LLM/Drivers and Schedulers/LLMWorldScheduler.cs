@@ -618,7 +618,7 @@ public class LLMWorldScheduler : MonoBehaviour
         ShowLlmBannerWithIcon(
             agentName,
             $"received LLM response from {FormatVendorForBanner(vendor)}",
-            "LLM_Icons_A_1");
+            "LLM_Receive_Package");
     }
 
     private static void ShowLlmFailureBanner(string agentName, string reason)

@@ -407,7 +407,7 @@ public sealed class InventoryDialogUI : MonoBehaviour
         tradePartnerLeftArrowButton = CreateSpriteButton(
             "PreviousTradeTargetButton",
             tradePartnerPane.transform,
-            arrowSprites.TryGetValue(0, out Sprite tradeLeftSprite) ? tradeLeftSprite : null,
+            GetArrowSprite(0),
             "<",
             OnPreviousTradeTargetClicked,
             "Previous trade target");
@@ -422,7 +422,7 @@ public sealed class InventoryDialogUI : MonoBehaviour
         tradePartnerRightArrowButton = CreateSpriteButton(
             "NextTradeTargetButton",
             tradePartnerPane.transform,
-            arrowSprites.TryGetValue(1, out Sprite tradeRightSprite) ? tradeRightSprite : null,
+            GetArrowSprite(1),
             ">",
             OnNextTradeTargetClicked,
             "Next trade target");
@@ -437,7 +437,7 @@ public sealed class InventoryDialogUI : MonoBehaviour
         leftArrowButton = CreateSpriteButton(
             "PreviousItemButton",
             heldItemPane.transform,
-            arrowSprites.TryGetValue(0, out Sprite leftSprite) ? leftSprite : null,
+            GetArrowSprite(0),
             "<",
             OnPreviousItemClicked,
             "Previous item");
@@ -452,7 +452,7 @@ public sealed class InventoryDialogUI : MonoBehaviour
         rightArrowButton = CreateSpriteButton(
             "NextItemButton",
             heldItemPane.transform,
-            arrowSprites.TryGetValue(1, out Sprite rightSprite) ? rightSprite : null,
+            GetArrowSprite(1),
             ">",
             OnNextItemClicked,
             "Next item");
@@ -586,7 +586,7 @@ public sealed class InventoryDialogUI : MonoBehaviour
     private void CreateActionButton(Transform parent, InventoryAction action, UnityEngine.Events.UnityAction clickHandler, float heightScale = 1f)
     {
         int index = (int)action;
-        Sprite sprite = actionSprites.TryGetValue(index, out Sprite foundSprite) ? foundSprite : null;
+        Sprite sprite = GetInventoryActionSprite(action, index);
         string actionText = GetActionFallbackText(action);
         Button button = CreateSpriteButton($"{action}Button", parent, sprite, actionText, clickHandler, actionText);
 
@@ -614,7 +614,7 @@ public sealed class InventoryDialogUI : MonoBehaviour
         string actionText,
         UnityEngine.Events.UnityAction clickHandler)
     {
-        Sprite sprite = tradeArrowSprites.TryGetValue(spriteIndex, out Sprite foundSprite) ? foundSprite : null;
+        Sprite sprite = GetTradeArrowSprite(spriteIndex);
         Button button = CreateSpriteButton(objectName, parent, sprite, actionText, clickHandler, actionText);
 
         float buttonHeight = tradeActionButtonHeight;
@@ -636,7 +636,8 @@ public sealed class InventoryDialogUI : MonoBehaviour
 
     private void CreateThrowActionButton(Transform parent, float heightScale = 1f)
     {
-        Sprite sprite = dogActionSprites.TryGetValue(0, out Sprite foundSprite) ? foundSprite : null;
+        Sprite sprite = SpriteServer.SpriteLookup("Throw_Item")
+            ?? (dogActionSprites.TryGetValue(0, out Sprite foundSprite) ? foundSprite : null);
         Button button = CreateSpriteButton("ThrowButton", parent, sprite, "THROW", OnThrowClicked, "THROW");
 
         float buttonHeight = actionButtonHeight * Mathf.Max(0.01f, heightScale);
@@ -654,6 +655,55 @@ public sealed class InventoryDialogUI : MonoBehaviour
         layoutElement.minHeight = buttonHeight;
 
         actionButtons.Add(button);
+    }
+
+    private Sprite GetArrowSprite(int index)
+    {
+        string spriteName = index switch
+        {
+            0 => "Arrow_Left",
+            1 => "Arrow_Right",
+            2 => "Arrow_Up",
+            3 => "Arrow_Down",
+            4 => "Arrow_Repeat",
+            5 => "Red_X",
+            6 => "Green_PawPrint",
+            _ => string.Empty
+        };
+
+        return SpriteServer.SpriteLookup(spriteName)
+            ?? (arrowSprites.TryGetValue(index, out Sprite sprite) ? sprite : null);
+    }
+
+    private Sprite GetInventoryActionSprite(InventoryAction action, int index)
+    {
+        string spriteName = action switch
+        {
+            InventoryAction.Use => "UseItem",
+            InventoryAction.Eat => "EatItem",
+            InventoryAction.Give => "GiveItem",
+            InventoryAction.Trade => "TradeItem",
+            InventoryAction.Drop => "DropItem",
+            InventoryAction.PickUp => "PickUpItem",
+            _ => string.Empty
+        };
+
+        return SpriteServer.SpriteLookup(spriteName)
+            ?? (actionSprites.TryGetValue(index, out Sprite sprite) ? sprite : null);
+    }
+
+    private Sprite GetTradeArrowSprite(int index)
+    {
+        string spriteName = index switch
+        {
+            0 => "Curved_Arrow_Give",
+            1 => "Curved_Arrow_Swap",
+            2 => "Curved_Arrow_Take",
+            _ => string.Empty
+        };
+
+        return SpriteServer.SpriteLookup(spriteName)
+            ?? (tradeArrowSprites.TryGetValue(index, out Sprite sprite) ? sprite : null);
     }
 
     private Button CreateSpriteButton(
@@ -1796,7 +1846,8 @@ public sealed class InventoryDialogUI : MonoBehaviour
 
     private void LoadSprites()
     {
-        inventoryBackgroundSprite = SpriteServer.SpriteResourceLookup(inventoryBackgroundSpriteResourcePath);
+        inventoryBackgroundSprite = SpriteServer.SpriteLookup(inventoryBackgroundSpriteResourcePath)
+            ?? SpriteServer.SpriteResourceLookup(inventoryBackgroundSpriteResourcePath);
         LoadSpriteSheet(arrowsSpriteResourcePath, arrowSprites);
         LoadSpriteSheet(inventoryActionsSpriteResourcePath, actionSprites);
         LoadSpriteSheet(dogActionsSpriteResourcePath, dogActionSprites);

@@ -149,7 +149,8 @@ public partial class TopPulldown
 
     private Sprite GetEmoteSprite(DogEmojiEntry entry)
     {
-        return SpriteServer.SpriteSheetLookup($"DogEmojiSheet{entry.SheetId}", entry.SpriteIndex);
+        return SpriteServer.SpriteLookup(entry.EntryId)
+            ?? SpriteServer.SpriteSheetLookup($"DogEmojiSheet{entry.SheetId}", entry.SpriteIndex);
     }
 
     private string GetEmoteButtonTooltipText()

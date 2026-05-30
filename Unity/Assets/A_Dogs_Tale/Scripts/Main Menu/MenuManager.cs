@@ -762,7 +762,9 @@ public class MenuManager : MonoBehaviour
         if (!btnSettings)
             return;
 
-        Sprite settingsSprite = SpriteServer.SpriteSheetLookupByName(settingsIconResourcePath, settingsIconSpriteName);
+        Sprite settingsSprite = SpriteServer.SpriteLookup("Blueprint_Gear")
+            ?? SpriteServer.SpriteLookup(settingsIconSpriteName)
+            ?? SpriteServer.SpriteSheetLookupByName(settingsIconResourcePath, settingsIconSpriteName);
         if (settingsSprite == null)
         {
             Debug.LogWarning($"[MenuManager] Could not find settings icon '{settingsIconSpriteName}' at Resources/{settingsIconResourcePath}.", this);
@@ -876,7 +878,8 @@ public class MenuManager : MonoBehaviour
         if (!button)
             return;
 
-        Sprite sprite = SpriteServer.SpriteSheetLookupByName(buttonSpriteResourcePath, spriteName);
+        Sprite sprite = SpriteServer.SpriteLookup(spriteName)
+            ?? SpriteServer.SpriteSheetLookupByName(buttonSpriteResourcePath, spriteName);
         if (sprite == null)
         {
             Debug.LogWarning($"[MenuManager] Could not find sprite '{spriteName}' in {buttonSpriteResourcePath}.", this);

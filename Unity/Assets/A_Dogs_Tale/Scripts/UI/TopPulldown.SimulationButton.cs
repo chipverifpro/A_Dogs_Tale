@@ -106,7 +106,8 @@ public partial class TopPulldown
     private Sprite GetSimulationControlSprite(bool isPaused)
     {
         int desiredIndex = isPaused ? 0 : 1;
-        return SpriteServer.SpriteSheetLookup(playPauseSpriteResourcePath, desiredIndex)
+        return SpriteServer.SpriteLookup(isPaused ? "Play" : "Pause")
+            ?? SpriteServer.SpriteSheetLookup(playPauseSpriteResourcePath, desiredIndex)
             ?? SpriteServer.SpriteSheetLookup(playPauseSpriteResourcePath, 1)
             ?? SpriteServer.SpriteSheetLookup(playPauseSpriteResourcePath, 0);
     }

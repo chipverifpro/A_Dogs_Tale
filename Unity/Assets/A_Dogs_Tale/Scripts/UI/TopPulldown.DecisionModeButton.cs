@@ -325,8 +325,31 @@ public partial class TopPulldown
 
     private Sprite GetDecisionModeSprite(AgentDecisionType decisionType)
     {
-        return SpriteServer.SpriteSheetLookup(modeSpriteResourcePath, GetDecisionModeSpriteIndex(decisionType))
+        return SpriteServer.SpriteLookup(GetDecisionModeSpriteName(decisionType))
+            ?? SpriteServer.SpriteLookup("Player")
+            ?? SpriteServer.SpriteSheetLookup(modeSpriteResourcePath, GetDecisionModeSpriteIndex(decisionType))
             ?? SpriteServer.SpriteSheetLookup(modeSpriteResourcePath, GetDecisionModeSpriteIndex(AgentDecisionType.Player));
+    }
+
+    private string GetDecisionModeSpriteName(AgentDecisionType decisionType)
+    {
+        switch (decisionType)
+        {
+            case AgentDecisionType.Player:
+                return "Player";
+            case AgentDecisionType.Follower:
+                return "Follow";
+            case AgentDecisionType.Explorer:
+                return "Explore";
+            case AgentDecisionType.Immobile:
+                return "Hold";
+            case AgentDecisionType.Wanderer:
+                return "Wander";
+            case AgentDecisionType.TaskFollower:
+                return "LLMControlled";
+            default:
+                return "Player";
+        }
     }
 
     private int GetDecisionModeSpriteIndex(AgentDecisionType decisionType)

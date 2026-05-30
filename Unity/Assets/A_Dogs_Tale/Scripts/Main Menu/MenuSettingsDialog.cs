@@ -410,7 +410,8 @@ public class MenuSettingsDialog : MonoBehaviour
         if (tallThemedBackgroundSprite != null)
             return tallThemedBackgroundSprite;
 
-        tallThemedBackgroundSprite = SpriteServer.SpriteResourceLookup(tallThemedBackgroundResourcePath);
+        tallThemedBackgroundSprite = SpriteServer.SpriteLookup(tallThemedBackgroundResourcePath)
+            ?? SpriteServer.SpriteResourceLookup(tallThemedBackgroundResourcePath);
         if (tallThemedBackgroundSprite != null)
             return tallThemedBackgroundSprite;
 
@@ -1010,8 +1011,19 @@ public class MenuSettingsDialog : MonoBehaviour
     private Sprite GetMapTypeSprite(int mapTypeIndex, bool selected)
     {
         int spriteIndex = mapTypeIndex + (selected ? 5 : 0);
+        string semanticName = mapTypeIndex switch
+        {
+            0 => selected ? "House_En" : "House_Dis",
+            1 => selected ? "Yard_En" : "Yard_Dis",
+            2 => selected ? "DogPark_En" : "DogPark_Dis",
+            3 => selected ? "Forest_En" : "Forest_Dis",
+            4 => selected ? "Castle_En" : "Castle_Dis",
+            _ => string.Empty
+        };
         string spriteName = $"SettingsMapType_{spriteIndex}";
-        return SpriteServer.SpriteSheetLookupByName(mapTypeSpriteResourcePath, spriteName);
+        return SpriteServer.SpriteLookup(semanticName)
+            ?? SpriteServer.SpriteLookup(spriteName)
+            ?? SpriteServer.SpriteSheetLookupByName(mapTypeSpriteResourcePath, spriteName);
     }
 
     private void RefreshGraphicsQualityButtonSprites()
@@ -1041,8 +1053,17 @@ public class MenuSettingsDialog : MonoBehaviour
 
     private Sprite GetGraphicsQualitySprite(int spriteIndex)
     {
+        string semanticName = spriteIndex switch
+        {
+            0 => "Graphics_Low",
+            1 => "Graphics_Medium",
+            2 => "Graphics_High",
+            _ => string.Empty
+        };
         string spriteName = $"GraphicsQualitySprites_A_{spriteIndex}";
-        return SpriteServer.SpriteSheetLookupByName(graphicsQualitySpriteResourcePath, spriteName)
+        return SpriteServer.SpriteLookup(semanticName)
+            ?? SpriteServer.SpriteLookup(spriteName)
+            ?? SpriteServer.SpriteSheetLookupByName(graphicsQualitySpriteResourcePath, spriteName)
             ?? SpriteServer.SpriteSheetLookup(graphicsQualitySpriteResourcePath, spriteIndex);
     }
 
@@ -1195,8 +1216,33 @@ public class MenuSettingsDialog : MonoBehaviour
 
     private Sprite GetSettingsIconSprite(int index)
     {
+        string semanticName = index switch
+        {
+            0 => "ChatGPT",
+            1 => "Gemini",
+            2 => "Qwen",
+            3 => "Ollama",
+            4 => "OpenAI_API_KEY",
+            5 => "Gemini_API_KEY",
+            6 => "HappyDog",
+            7 => "HeadphonesDog",
+            8 => "JoystickDog_A",
+            9 => "JoystickDog_B",
+            10 => "JoystickDog_C",
+            11 => "Documents",
+            12 => "Gemma",
+            13 => "Mistral",
+            14 => "MetaAI",
+            15 => "Mistral_API_KEY",
+            16 => "Ollama_Qwen",
+            17 => "Ollama_Gemma",
+            18 => "Ollama_Mistral",
+            _ => string.Empty
+        };
         string spriteName = $"SettingsIcons_B_{index}";
-        return SpriteServer.SpriteSheetLookupByName(settingsIconSpriteResourcePath, spriteName)
+        return SpriteServer.SpriteLookup(semanticName)
+            ?? SpriteServer.SpriteLookup(spriteName)
+            ?? SpriteServer.SpriteSheetLookupByName(settingsIconSpriteResourcePath, spriteName)
             ?? SpriteServer.SpriteSheetLookup(settingsIconSpriteResourcePath, index);
     }
 
@@ -1802,7 +1848,8 @@ public class MenuSettingsDialog : MonoBehaviour
                 continue;
 
             DogEmojiEntry entry = DogEmojiCatalog.Entries[index];
-            Sprite sprite = SpriteServer.SpriteSheetLookup($"DogEmojiSheet{entry.SheetId}", entry.SpriteIndex);
+            Sprite sprite = SpriteServer.SpriteLookup(entry.EntryId)
+                ?? SpriteServer.SpriteSheetLookup($"DogEmojiSheet{entry.SheetId}", entry.SpriteIndex);
             if (sprite == null)
                 continue;
 
