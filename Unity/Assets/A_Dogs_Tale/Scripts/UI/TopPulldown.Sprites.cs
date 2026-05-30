@@ -37,21 +37,9 @@ public partial class TopPulldown
         if (string.IsNullOrWhiteSpace(resourcePath))
             return null;
 
-        Sprite sprite = Resources.Load<Sprite>(resourcePath);
+        Sprite sprite = SpriteServer.SpriteResourceLookup(resourcePath);
         if (sprite != null)
             return sprite;
-
-        Texture2D texture = Resources.Load<Texture2D>(resourcePath);
-        if (texture != null)
-        {
-            Sprite generatedSprite = Sprite.Create(
-                texture,
-                new Rect(0f, 0f, texture.width, texture.height),
-                new Vector2(0.5f, 0.5f),
-                100f);
-            generatedSprite.name = texture.name;
-            return generatedSprite;
-        }
 
         Debug.LogWarning($"TopPulldown: could not load pulldown frame sprite at Resources/{resourcePath}.", this);
         return null;
@@ -86,28 +74,9 @@ public partial class TopPulldown
         if (string.IsNullOrWhiteSpace(resourcePath))
             return null;
 
-        if (!useTopHalf)
-        {
-            Sprite sprite = Resources.Load<Sprite>(resourcePath);
-            if (sprite != null)
-                return sprite;
-        }
-
-        Texture2D texture = Resources.Load<Texture2D>(resourcePath);
-        if (texture != null)
-        {
-            Rect spriteRect = useTopHalf
-                ? new Rect(0f, texture.height * 0.5f, texture.width, texture.height * 0.5f)
-                : new Rect(0f, 0f, texture.width, texture.height);
-
-            Sprite generatedSprite = Sprite.Create(
-                texture,
-                spriteRect,
-                new Vector2(0.5f, 0.5f),
-                PanelSpritePixelsPerUnit);
-            generatedSprite.name = useTopHalf ? $"{texture.name}_0" : texture.name;
-            return generatedSprite;
-        }
+        Sprite sprite = SpriteServer.SpriteResourceLookup(resourcePath, useTopHalf, PanelSpritePixelsPerUnit);
+        if (sprite != null)
+            return sprite;
 
         Debug.LogWarning($"TopPulldown: could not load panel frame sprite at Resources/{resourcePath}.", this);
         return null;
@@ -130,7 +99,7 @@ public partial class TopPulldown
         if (string.IsNullOrWhiteSpace(pulldownTabResourcePath))
             return null;
 
-        Sprite sprite = Resources.Load<Sprite>(pulldownTabResourcePath);
+        Sprite sprite = SpriteServer.SpriteResourceLookup(pulldownTabResourcePath);
         if (sprite == null)
             Debug.LogWarning($"TopPulldown: could not load pulldown tab sprite at Resources/{pulldownTabResourcePath}.", this);
 

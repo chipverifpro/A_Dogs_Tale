@@ -197,9 +197,9 @@ public class SceneFader : MonoBehaviour
 
     private Sprite LoadSplashSpriteForCurrentScreen(string resourcePath)
     {
-        Sprite[] sprites = Resources.LoadAll<Sprite>(resourcePath);
+        Sprite[] sprites = SpriteServer.GetSpriteSheetSprites(resourcePath);
         if (sprites == null || sprites.Length == 0)
-            return Resources.Load<Sprite>(resourcePath);
+            return SpriteServer.SpriteResourceLookup(resourcePath);
 
         if (sprites.Length == 1)
             return sprites[0];
@@ -724,22 +724,12 @@ public class SceneFader : MonoBehaviour
         if (string.IsNullOrWhiteSpace(resourcePath))
             return null;
 
-        Sprite sprite = Resources.Load<Sprite>(resourcePath);
+        Sprite sprite = SpriteServer.SpriteResourceLookup(resourcePath);
         if (sprite != null)
             return sprite;
 
-        Texture2D texture = Resources.Load<Texture2D>(resourcePath);
-        if (texture == null)
-        {
-            Debug.LogWarning($"[SceneFader] Could not load leash image at Resources/{resourcePath}.", this);
-            return null;
-        }
-
-        return Sprite.Create(
-            texture,
-            new Rect(0f, 0f, texture.width, texture.height),
-            new Vector2(0.5f, 0.5f),
-            100f);
+        Debug.LogWarning($"[SceneFader] Could not load leash image at Resources/{resourcePath}.", this);
+        return null;
     }
 
     void SetLeashSprite(Sprite sprite)

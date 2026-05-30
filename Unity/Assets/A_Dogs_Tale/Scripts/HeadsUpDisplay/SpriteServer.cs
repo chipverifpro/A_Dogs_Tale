@@ -110,6 +110,8 @@ public static class SpriteServer
 
     static readonly Dictionary<string, Dictionary<int, Sprite>> spritesBySheet = new Dictionary<string, Dictionary<int, Sprite>>(StringComparer.OrdinalIgnoreCase);
     static readonly Dictionary<string, Dictionary<string, Sprite>> spritesByNameBySheet = new Dictionary<string, Dictionary<string, Sprite>>(StringComparer.OrdinalIgnoreCase);
+    static readonly Dictionary<string, Sprite[]> spriteArraysBySheet = new Dictionary<string, Sprite[]>(StringComparer.OrdinalIgnoreCase);
+    static readonly Dictionary<string, Sprite> spritesByResourcePath = new Dictionary<string, Sprite>(StringComparer.OrdinalIgnoreCase);
 
     public static Sprite SpriteLookup(string spriteName)
     {
@@ -156,6 +158,58 @@ public static class SpriteServer
         return lookup.TryGetValue(index, out Sprite sprite) ? sprite : null;
     }
 
+    public static Sprite SpriteSheetLookupByName(string spriteSheet, string spriteName)
+    {
+        if (string.IsNullOrWhiteSpace(spriteSheet) || string.IsNullOrWhiteSpace(spriteName))
+            return null;
+
+        Dictionary<string, Sprite> lookup = GetSpritesByName(spriteSheet);
+        return lookup.TryGetValue(spriteName.Trim(), out Sprite sprite) ? sprite : null;
+    }
+
+    public static Sprite SpriteResourceLookup(string resourcePath, float pixelsPerUnit = 100f)
+    {
+        return SpriteResourceLookup(resourcePath, false, pixelsPerUnit);
+    }
+
+    public static Sprite SpriteResourceLookup(string resourcePath, bool useTopHalf, float pixelsPerUnit = 100f)
+    {
+        if (string.IsNullOrWhiteSpace(resourcePath))
+            return null;
+
+        string normalizedPath = NormalizeResourcePath(resourcePath);
+        string cacheKey = $"{normalizedPath}|topHalf:{useTopHalf}|ppu:{pixelsPerUnit}";
+        if (spritesByResourcePath.TryGetValue(cacheKey, out Sprite cachedSprite))
+            return cachedSprite;
+
+        Sprite sprite = null;
+        if (!useTopHalf)
+            sprite = Resources.Load<Sprite>(normalizedPath);
+
+        if (sprite == null)
+        {
+            Texture2D texture = Resources.Load<Texture2D>(normalizedPath);
+            if (texture != null)
+            {
+                Rect spriteRect = useTopHalf
+                    ? new Rect(0f, texture.height * 0.5f, texture.width, texture.height * 0.5f)
+                    : new Rect(0f, 0f, texture.width, texture.height);
+
+                sprite = Sprite.Create(
+                    texture,
+                    spriteRect,
+                    new Vector2(0.5f, 0.5f),
+                    pixelsPerUnit);
+                sprite.name = useTopHalf ? $"{texture.name}_0" : texture.name;
+            }
+        }
+
+        if (sprite != null)
+            spritesByResourcePath[cacheKey] = sprite;
+
+        return sprite;
+    }
+
     public static bool TryGetEmojiSprite(string emote, out Sprite sprite, out string displayName)
     {
         sprite = null;
@@ -172,6 +226,17 @@ public static class SpriteServer
     public static Dictionary<int, Sprite> GetSpriteSheet(string spriteSheet)
     {
         return new Dictionary<int, Sprite>(GetSpritesByIndex(spriteSheet));
+    }
+
+    public static Sprite[] GetSpriteSheetSprites(string spriteSheet)
+    {
+        string resourcePath = ResolveSpriteSheetResourcePath(spriteSheet);
+        if (!spriteArraysBySheet.ContainsKey(resourcePath))
+            LoadSpriteSheet(resourcePath);
+
+        return spriteArraysBySheet.TryGetValue(resourcePath, out Sprite[] sprites)
+            ? (Sprite[])sprites.Clone()
+            : Array.Empty<Sprite>();
     }
 
     public static int GetSpriteSheetIndex(string spriteName)
@@ -205,12 +270,6 @@ public static class SpriteServer
             resourcePath = resourcePath.Substring(resourcesIndex + resourcesToken.Length);
 
         return resourcePath.Trim('/');
-    }
-
-    static Sprite SpriteSheetLookupByName(string spriteSheet, string spriteName)
-    {
-        Dictionary<string, Sprite> lookup = GetSpritesByName(spriteSheet);
-        return lookup.TryGetValue(spriteName, out Sprite sprite) ? sprite : null;
     }
 
     static Dictionary<int, Sprite> GetSpritesByIndex(string spriteSheet)
@@ -266,6 +325,7 @@ public static class SpriteServer
 
         spritesBySheet[normalizedPath] = spritesByIndex;
         spritesByNameBySheet[normalizedPath] = spritesByName;
+        spriteArraysBySheet[normalizedPath] = sprites;
     }
 
     static string ResolveSpriteSheetResourcePath(string spriteSheet)

@@ -1796,7 +1796,7 @@ public sealed class InventoryDialogUI : MonoBehaviour
 
     private void LoadSprites()
     {
-        inventoryBackgroundSprite = Resources.Load<Sprite>(inventoryBackgroundSpriteResourcePath);
+        inventoryBackgroundSprite = SpriteServer.SpriteResourceLookup(inventoryBackgroundSpriteResourcePath);
         LoadSpriteSheet(arrowsSpriteResourcePath, arrowSprites);
         LoadSpriteSheet(inventoryActionsSpriteResourcePath, actionSprites);
         LoadSpriteSheet(dogActionsSpriteResourcePath, dogActionSprites);

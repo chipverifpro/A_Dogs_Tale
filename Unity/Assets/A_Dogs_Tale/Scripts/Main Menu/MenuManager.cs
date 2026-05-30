@@ -749,27 +749,12 @@ public class MenuManager : MonoBehaviour
 
     void ApplyMainMenuButtonSprites()
     {
-        Sprite[] loadedSprites = Resources.LoadAll<Sprite>(buttonSpriteResourcePath);
-        if (loadedSprites == null || loadedSprites.Length == 0)
-        {
-            Debug.LogWarning($"[MenuManager] Could not load menu button sprites at Resources/{buttonSpriteResourcePath}.", this);
-            return;
-        }
-
-        Dictionary<string, Sprite> spritesByName = new Dictionary<string, Sprite>(loadedSprites.Length);
-        for (int i = 0; i < loadedSprites.Length; i++)
-        {
-            Sprite sprite = loadedSprites[i];
-            if (sprite != null)
-                spritesByName[sprite.name] = sprite;
-        }
-
-        ApplyButtonBackground(btnSimulation, spritesByName, "BonesButtonsSprites_A_22");
-        ApplyButtonBackground(btnContinue, spritesByName, "BonesButtonsSprites_A_22");
-        ApplyButtonBackground(btnSave, spritesByName, "BonesButtonsSprites_A_1");
-        ApplyButtonBackground(btnLoad, spritesByName, "BonesButtonsSprites_A_7");
-//        ApplyButtonBackground(btnDocumentation, spritesByName, "BonesButtonsSprites_A_10");
-        ApplyButtonBackground(btnQuit, spritesByName, "BonesButtonsSprites_A_16");
+        ApplyButtonBackground(btnSimulation, "BonesButtonsSprites_A_22");
+        ApplyButtonBackground(btnContinue, "BonesButtonsSprites_A_22");
+        ApplyButtonBackground(btnSave, "BonesButtonsSprites_A_1");
+        ApplyButtonBackground(btnLoad, "BonesButtonsSprites_A_7");
+//        ApplyButtonBackground(btnDocumentation, "BonesButtonsSprites_A_10");
+        ApplyButtonBackground(btnQuit, "BonesButtonsSprites_A_16");
     }
 
     void ApplySettingsIconButton()
@@ -777,7 +762,7 @@ public class MenuManager : MonoBehaviour
         if (!btnSettings)
             return;
 
-        Sprite settingsSprite = LoadSpriteByName(settingsIconResourcePath, settingsIconSpriteName);
+        Sprite settingsSprite = SpriteServer.SpriteSheetLookupByName(settingsIconResourcePath, settingsIconSpriteName);
         if (settingsSprite == null)
         {
             Debug.LogWarning($"[MenuManager] Could not find settings icon '{settingsIconSpriteName}' at Resources/{settingsIconResourcePath}.", this);
@@ -886,28 +871,13 @@ public class MenuManager : MonoBehaviour
         return null;
     }
 
-    Sprite LoadSpriteByName(string resourcePath, string spriteName)
-    {
-        Sprite[] loadedSprites = Resources.LoadAll<Sprite>(resourcePath);
-        if (loadedSprites == null || loadedSprites.Length == 0)
-            return null;
-
-        for (int i = 0; i < loadedSprites.Length; i++)
-        {
-            Sprite sprite = loadedSprites[i];
-            if (sprite != null && sprite.name == spriteName)
-                return sprite;
-        }
-
-        return null;
-    }
-
-    void ApplyButtonBackground(Button button, Dictionary<string, Sprite> spritesByName, string spriteName)
+    void ApplyButtonBackground(Button button, string spriteName)
     {
         if (!button)
             return;
 
-        if (!spritesByName.TryGetValue(spriteName, out Sprite sprite) || sprite == null)
+        Sprite sprite = SpriteServer.SpriteSheetLookupByName(buttonSpriteResourcePath, spriteName);
+        if (sprite == null)
         {
             Debug.LogWarning($"[MenuManager] Could not find sprite '{spriteName}' in {buttonSpriteResourcePath}.", this);
             return;

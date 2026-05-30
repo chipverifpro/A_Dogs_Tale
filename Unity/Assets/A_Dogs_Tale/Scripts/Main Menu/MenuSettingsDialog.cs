@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using DogGame.Settings;
@@ -13,6 +15,7 @@ public class MenuSettingsDialog : MonoBehaviour
     [SerializeField] private string tallThemedBackgroundResourcePath = "Sprites/Settings_Background_Vert_C";
     [SerializeField] private string mapTypeSpriteResourcePath = "Sprites/SettingsMapType";
     [SerializeField] private string graphicsQualitySpriteResourcePath = "Sprites/GraphicsQualitySprites_A";
+    [SerializeField] private string settingsIconSpriteResourcePath = "Sprites/SettingsIcons_B";
     [SerializeField] private Vector2 scrollAnchorMin = new Vector2(0.08f, 0.12f);
     [SerializeField] private Vector2 scrollAnchorMax = new Vector2(0.92f, 0.72f);
     [SerializeField] private Vector2 tallScrollAnchorMin = new Vector2(0.12f, 0.13f);
@@ -75,8 +78,7 @@ public class MenuSettingsDialog : MonoBehaviour
     private Vector2 defaultThemedDialogSize;
     private Vector2 defaultThemedBackgroundSize;
     private bool hasDefaultThemedLayout;
-    private Sprite[] mapTypeSprites;
-    private Sprite[] graphicsQualitySprites;
+    private readonly List<SettingsIconBinding> settingsIconBindings = new List<SettingsIconBinding>();
     private PersistentGameSettings.MapType selectedMapType = PersistentGameSettings.MapType.House;
     private int selectedGraphicsLevel = PersistentGameSettings.GraphicsLevelHigh;
     private Font runtimeFont;
@@ -85,6 +87,17 @@ public class MenuSettingsDialog : MonoBehaviour
     private bool tallDisplayScaleEnabled;
     private float tallDisplayScaleMultiplier = 1f;
     private int lastButtonSizeSampleEmoteIndex = -1;
+
+    private sealed class SettingsIconBinding
+    {
+        public RectTransform rect;
+        public LayoutElement layout;
+        public Text shiftedText;
+        public float layoutWidthPadding;
+        public float absoluteLeft = -1f;
+        public float textGap;
+        public float textBaseOffsetMinX;
+    }
 
     public void Initialize(MenuManager owner)
     {
@@ -192,6 +205,8 @@ public class MenuSettingsDialog : MonoBehaviour
     {
         if (dialogRoot == null)
             return;
+
+        settingsIconBindings.Clear();
 
         Canvas canvas = ResolveMenuCanvas();
         Transform root = dialogRoot.transform;
@@ -395,24 +410,12 @@ public class MenuSettingsDialog : MonoBehaviour
         if (tallThemedBackgroundSprite != null)
             return tallThemedBackgroundSprite;
 
-        tallThemedBackgroundSprite = Resources.Load<Sprite>(tallThemedBackgroundResourcePath);
+        tallThemedBackgroundSprite = SpriteServer.SpriteResourceLookup(tallThemedBackgroundResourcePath);
         if (tallThemedBackgroundSprite != null)
             return tallThemedBackgroundSprite;
 
-        Texture2D texture = Resources.Load<Texture2D>(tallThemedBackgroundResourcePath);
-        if (texture == null)
-        {
-            Debug.LogWarning($"[MenuSettingsDialog] Could not load tall settings background at Resources/{tallThemedBackgroundResourcePath}.", this);
-            return null;
-        }
-
-        tallThemedBackgroundSprite = Sprite.Create(
-            texture,
-            new Rect(0f, 0f, texture.width, texture.height),
-            new Vector2(0.5f, 0.5f),
-            100f);
-        tallThemedBackgroundSprite.name = texture.name;
-        return tallThemedBackgroundSprite;
+        Debug.LogWarning($"[MenuSettingsDialog] Could not load tall settings background at Resources/{tallThemedBackgroundResourcePath}.", this);
+        return null;
     }
 
     private RectTransform EnsureViewport(Transform scrollView)
@@ -573,6 +576,7 @@ public class MenuSettingsDialog : MonoBehaviour
         GameObject row = CreateRow(parent, $"{labelText}Row", 42f);
 
         Text label = CreateLabel(row.transform, labelText, 15, FontStyle.Bold, TextAnchor.MiddleLeft, 36f);
+        ApplySecretStoreRowIcon(row.transform, labelText);
         LayoutElement labelLayout = label.gameObject.GetComponent<LayoutElement>();
         labelLayout.flexibleWidth = 0f;
         labelLayout.preferredWidth = 150f;
@@ -594,6 +598,46 @@ public class MenuSettingsDialog : MonoBehaviour
         Text capturedStatus = statusLabel;
         saveButton.onClick.AddListener(() => SaveSecretFromInput(capturedInput, capturedStatus, secretKey));
         clearButton.onClick.AddListener(() => ClearSecret(capturedInput, capturedStatus, secretKey));
+    }
+
+    private void ApplySecretStoreRowIcon(Transform rowTransform, string labelText)
+    {
+        int iconIndex = labelText switch
+        {
+            "OPENAI_API_KEY" => 4,
+            "GEMINI_API_KEY" => 5,
+            _ => -1
+        };
+
+        if (iconIndex < 0)
+            return;
+
+        Sprite icon = GetSettingsIconSprite(iconIndex);
+        if (icon == null)
+            return;
+
+        GameObject iconObject = new GameObject("SecretIcon", typeof(RectTransform), typeof(Image), typeof(LayoutElement));
+        iconObject.transform.SetParent(rowTransform, false);
+        SetLayerRecursive(iconObject, rowTransform.gameObject.layer);
+        iconObject.transform.SetSiblingIndex(0);
+
+        RectTransform iconRect = iconObject.GetComponent<RectTransform>();
+        iconRect.sizeDelta = new Vector2(30f, 30f);
+
+        LayoutElement layout = iconObject.GetComponent<LayoutElement>();
+        layout.minWidth = 34f;
+        layout.preferredWidth = 34f;
+        layout.minHeight = 30f;
+        layout.preferredHeight = 30f;
+        layout.flexibleWidth = 0f;
+
+        Image image = iconObject.GetComponent<Image>();
+        image.sprite = icon;
+        image.preserveAspect = true;
+        image.raycastTarget = false;
+        image.color = Color.white;
+
+        RegisterSettingsIcon(iconRect, layout, null, 4f, -1f, 0f);
     }
 
     private InputField CreateSecretInputField(Transform parent, string objectName)
@@ -836,7 +880,6 @@ public class MenuSettingsDialog : MonoBehaviour
 
     private void CreateMapTypeRow(Transform parent)
     {
-        EnsureMapTypeSpritesLoaded();
         mapTypeButtonImages = new Image[5];
 
         GameObject row = CreateRow(parent, "MapTypeRow", mapTypeButtonHeight);
@@ -859,7 +902,6 @@ public class MenuSettingsDialog : MonoBehaviour
 
     private void CreateGraphicsQualityRow(Transform parent)
     {
-        EnsureGraphicsQualitySpritesLoaded();
         graphicsQualityButtonImages = new Image[GraphicsQualityLevels.Length];
 
         GameObject row = CreateRow(parent, "GraphicsQualityRow", graphicsQualityButtonHeight);
@@ -967,19 +1009,9 @@ public class MenuSettingsDialog : MonoBehaviour
 
     private Sprite GetMapTypeSprite(int mapTypeIndex, bool selected)
     {
-        EnsureMapTypeSpritesLoaded();
-        if (mapTypeSprites == null)
-            return null;
-
         int spriteIndex = mapTypeIndex + (selected ? 5 : 0);
         string spriteName = $"SettingsMapType_{spriteIndex}";
-        for (int i = 0; i < mapTypeSprites.Length; i++)
-        {
-            if (mapTypeSprites[i] != null && mapTypeSprites[i].name == spriteName)
-                return mapTypeSprites[i];
-        }
-
-        return null;
+        return SpriteServer.SpriteSheetLookupByName(mapTypeSpriteResourcePath, spriteName);
     }
 
     private void RefreshGraphicsQualityButtonSprites()
@@ -1009,40 +1041,9 @@ public class MenuSettingsDialog : MonoBehaviour
 
     private Sprite GetGraphicsQualitySprite(int spriteIndex)
     {
-        EnsureGraphicsQualitySpritesLoaded();
-        if (graphicsQualitySprites == null)
-            return null;
-
         string spriteName = $"GraphicsQualitySprites_A_{spriteIndex}";
-        for (int i = 0; i < graphicsQualitySprites.Length; i++)
-        {
-            if (graphicsQualitySprites[i] != null && graphicsQualitySprites[i].name == spriteName)
-                return graphicsQualitySprites[i];
-        }
-
-        return spriteIndex >= 0 && spriteIndex < graphicsQualitySprites.Length
-            ? graphicsQualitySprites[spriteIndex]
-            : null;
-    }
-
-    private void EnsureMapTypeSpritesLoaded()
-    {
-        if (mapTypeSprites != null)
-            return;
-
-        mapTypeSprites = Resources.LoadAll<Sprite>(mapTypeSpriteResourcePath);
-        if (mapTypeSprites == null || mapTypeSprites.Length == 0)
-            Debug.LogWarning($"[MenuSettingsDialog] Could not load map type sprites from Resources/{mapTypeSpriteResourcePath}.", this);
-    }
-
-    private void EnsureGraphicsQualitySpritesLoaded()
-    {
-        if (graphicsQualitySprites != null)
-            return;
-
-        graphicsQualitySprites = Resources.LoadAll<Sprite>(graphicsQualitySpriteResourcePath);
-        if (graphicsQualitySprites == null || graphicsQualitySprites.Length == 0)
-            Debug.LogWarning($"[MenuSettingsDialog] Could not load graphics quality sprites from Resources/{graphicsQualitySpriteResourcePath}.", this);
+        return SpriteServer.SpriteSheetLookupByName(graphicsQualitySpriteResourcePath, spriteName)
+            ?? SpriteServer.SpriteSheetLookup(graphicsQualitySpriteResourcePath, spriteIndex);
     }
 
     private GameObject CreateRow(Transform parent, string name, float height)
@@ -1067,6 +1068,26 @@ public class MenuSettingsDialog : MonoBehaviour
 
     private void CreateSectionHeader(Transform parent, string labelText)
     {
+        if (string.Equals(labelText, "SOUND", StringComparison.OrdinalIgnoreCase))
+        {
+            GameObject headerRow = CreateRow(parent, "SoundSectionHeader", 30f);
+            HorizontalLayoutGroup layout = headerRow.GetComponent<HorizontalLayoutGroup>();
+            if (layout != null)
+            {
+                layout.spacing = 8f;
+                layout.childForceExpandWidth = false;
+            }
+
+            AddInlineSettingsIcon(headerRow.transform, 7, "SoundSectionIcon", 28f, 32f);
+            Text soundLabel = CreateLabel(headerRow.transform, labelText, 20, FontStyle.Bold, TextAnchor.MiddleLeft, 30f);
+            soundLabel.color = sectionColor;
+
+            LayoutElement soundLabelLayout = soundLabel.GetComponent<LayoutElement>();
+            if (soundLabelLayout != null)
+                soundLabelLayout.flexibleWidth = 1f;
+            return;
+        }
+
         Text label = CreateLabel(parent, labelText, 20, FontStyle.Bold, TextAnchor.MiddleLeft, 30f);
         label.color = sectionColor;
     }
@@ -1115,6 +1136,7 @@ public class MenuSettingsDialog : MonoBehaviour
 
         Toggle toggle = toggleObject.GetComponent<Toggle>();
         ConfigureToggleVisual(toggle);
+        ApplyProviderToggleIcon(toggleObject, toggleText, objectName);
         toggle.targetGraphic = rowImage;
         toggle.onValueChanged.AddListener(isOn => rowImage.color = isOn ? selectedControlColor : controlColor);
 
@@ -1123,6 +1145,88 @@ public class MenuSettingsDialog : MonoBehaviour
         layout.minWidth = 120f;
         layout.preferredHeight = 36f;
         return toggle;
+    }
+
+    private void ApplyProviderToggleIcon(GameObject toggleObject, Text toggleText, string objectName)
+    {
+        int iconIndex = objectName switch
+        {
+            "ChatGptToggle" => 0,
+            "GeminiToggle" => 1,
+            "OllamaToggle" => 3,
+            "TouchscreenJoystickToggle" => 9,
+            _ => -1
+        };
+
+        if (iconIndex < 0)
+            return;
+
+        Sprite icon = GetSettingsIconSprite(iconIndex);
+        if (icon == null)
+            return;
+
+        GameObject iconObject = new GameObject("ProviderIcon", typeof(RectTransform), typeof(Image));
+        iconObject.transform.SetParent(toggleObject.transform, false);
+        SetLayerRecursive(iconObject, toggleObject.layer);
+
+        RectTransform iconRect = iconObject.GetComponent<RectTransform>();
+        iconRect.anchorMin = new Vector2(0f, 0.5f);
+        iconRect.anchorMax = new Vector2(0f, 0.5f);
+        iconRect.pivot = new Vector2(0.5f, 0.5f);
+        iconRect.anchoredPosition = new Vector2(56f, 0f);
+        iconRect.sizeDelta = new Vector2(28f, 28f);
+
+        Image image = iconObject.GetComponent<Image>();
+        image.sprite = icon;
+        image.preserveAspect = true;
+        image.raycastTarget = false;
+        image.color = Color.white;
+
+        RegisterSettingsIcon(iconRect, null, toggleText, 0f, 42f, 8f);
+
+        if (toggleText != null)
+        {
+            RectTransform textRect = toggleText.rectTransform;
+            Vector2 offsetMin = textRect.offsetMin;
+            offsetMin.x = Mathf.Max(offsetMin.x, 78f);
+            textRect.offsetMin = offsetMin;
+        }
+    }
+
+    private Sprite GetSettingsIconSprite(int index)
+    {
+        string spriteName = $"SettingsIcons_B_{index}";
+        return SpriteServer.SpriteSheetLookupByName(settingsIconSpriteResourcePath, spriteName)
+            ?? SpriteServer.SpriteSheetLookup(settingsIconSpriteResourcePath, index);
+    }
+
+    private Image AddInlineSettingsIcon(Transform parent, int iconIndex, string objectName, float size, float width)
+    {
+        Sprite icon = GetSettingsIconSprite(iconIndex);
+        if (icon == null)
+            return null;
+
+        GameObject iconObject = new GameObject(objectName, typeof(RectTransform), typeof(Image), typeof(LayoutElement));
+        iconObject.transform.SetParent(parent, false);
+        SetLayerRecursive(iconObject, parent.gameObject.layer);
+
+        RectTransform iconRect = iconObject.GetComponent<RectTransform>();
+        iconRect.sizeDelta = new Vector2(size, size);
+
+        LayoutElement layout = iconObject.GetComponent<LayoutElement>();
+        layout.minWidth = width;
+        layout.preferredWidth = width;
+        layout.minHeight = size;
+        layout.preferredHeight = size;
+        layout.flexibleWidth = 0f;
+
+        Image image = iconObject.GetComponent<Image>();
+        image.sprite = icon;
+        image.preserveAspect = true;
+        image.raycastTarget = false;
+        image.color = Color.white;
+        RegisterSettingsIcon(iconRect, layout, null, width - size, -1f, 0f);
+        return image;
     }
 
     private Button CreateButton(Transform parent, string labelText, string objectName)
@@ -1150,9 +1254,53 @@ public class MenuSettingsDialog : MonoBehaviour
         layout.flexibleWidth = 1f;
         layout.minWidth = 140f;
         layout.preferredHeight = 38f;
+        ApplyButtonIcon(buttonObject, text, objectName);
         Button button = buttonObject.GetComponent<Button>();
         button.onClick.AddListener(AudioPlayer.PlayUiButtonClick);
         return button;
+    }
+
+    private void ApplyButtonIcon(GameObject buttonObject, Text buttonText, string objectName)
+    {
+        int iconIndex = objectName switch
+        {
+            "DocumentationButton" => 11,
+            _ => -1
+        };
+
+        if (iconIndex < 0)
+            return;
+
+        Sprite icon = GetSettingsIconSprite(iconIndex);
+        if (icon == null)
+            return;
+
+        GameObject iconObject = new GameObject("ButtonIcon", typeof(RectTransform), typeof(Image));
+        iconObject.transform.SetParent(buttonObject.transform, false);
+        SetLayerRecursive(iconObject, buttonObject.layer);
+
+        RectTransform iconRect = iconObject.GetComponent<RectTransform>();
+        iconRect.anchorMin = new Vector2(0f, 0.5f);
+        iconRect.anchorMax = new Vector2(0f, 0.5f);
+        iconRect.pivot = new Vector2(0.5f, 0.5f);
+        iconRect.anchoredPosition = new Vector2(24f, 0f);
+        iconRect.sizeDelta = new Vector2(24f, 24f);
+
+        Image image = iconObject.GetComponent<Image>();
+        image.sprite = icon;
+        image.preserveAspect = true;
+        image.raycastTarget = false;
+        image.color = Color.white;
+
+        RegisterSettingsIcon(iconRect, null, buttonText, 0f, 12f, 10f);
+
+        if (buttonText != null)
+        {
+            RectTransform textRect = buttonText.rectTransform;
+            Vector2 offsetMin = textRect.offsetMin;
+            offsetMin.x = Mathf.Max(offsetMin.x, 46f);
+            textRect.offsetMin = offsetMin;
+        }
     }
 
     private void CreateCloseButtonOverlay(Transform root, Canvas canvas)
@@ -1237,6 +1385,8 @@ public class MenuSettingsDialog : MonoBehaviour
 
     private void BuildFallbackDialog()
     {
+        settingsIconBindings.Clear();
+
         Canvas canvas = ResolveMenuCanvas();
         if (canvas == null)
         {
@@ -1561,6 +1711,82 @@ public class MenuSettingsDialog : MonoBehaviour
 
         if (buttonSizeSampleButtonRect != null)
             buttonSizeSampleButtonRect.sizeDelta = new Vector2(buttonSize, buttonSize);
+
+        UpdateSettingsIconSizes(buttonSize);
+    }
+
+    private void RegisterSettingsIcon(RectTransform rect, LayoutElement layout, Text shiftedText, float layoutWidthPadding, float absoluteLeft, float textGap)
+    {
+        if (rect == null)
+            return;
+
+        SettingsIconBinding binding = new SettingsIconBinding
+        {
+            rect = rect,
+            layout = layout,
+            shiftedText = shiftedText,
+            layoutWidthPadding = Mathf.Max(0f, layoutWidthPadding),
+            absoluteLeft = absoluteLeft,
+            textGap = Mathf.Max(0f, textGap),
+            textBaseOffsetMinX = shiftedText != null ? shiftedText.rectTransform.offsetMin.x : 0f
+        };
+
+        settingsIconBindings.Add(binding);
+        ApplySettingsIconSize(binding, GetCurrentSettingsIconSize());
+    }
+
+    private void UpdateSettingsIconSizes(float value)
+    {
+        float iconSize = PersistentGameSettings.SnapButtonSize(value);
+        for (int i = settingsIconBindings.Count - 1; i >= 0; i--)
+        {
+            SettingsIconBinding binding = settingsIconBindings[i];
+            if (binding == null || binding.rect == null)
+            {
+                settingsIconBindings.RemoveAt(i);
+                continue;
+            }
+
+            ApplySettingsIconSize(binding, iconSize);
+        }
+    }
+
+    private void ApplySettingsIconSize(SettingsIconBinding binding, float iconSize)
+    {
+        binding.rect.sizeDelta = new Vector2(iconSize, iconSize);
+
+        if (binding.absoluteLeft >= 0f)
+        {
+            Vector2 anchoredPosition = binding.rect.anchoredPosition;
+            anchoredPosition.x = binding.absoluteLeft + iconSize * 0.5f;
+            binding.rect.anchoredPosition = anchoredPosition;
+        }
+
+        if (binding.layout != null)
+        {
+            float layoutWidth = iconSize + binding.layoutWidthPadding;
+            binding.layout.minWidth = layoutWidth;
+            binding.layout.preferredWidth = layoutWidth;
+            binding.layout.minHeight = iconSize;
+            binding.layout.preferredHeight = iconSize;
+            binding.layout.flexibleWidth = 0f;
+        }
+
+        if (binding.shiftedText != null)
+        {
+            RectTransform textRect = binding.shiftedText.rectTransform;
+            Vector2 offsetMin = textRect.offsetMin;
+            offsetMin.x = Mathf.Max(binding.textBaseOffsetMinX, binding.absoluteLeft + iconSize + binding.textGap);
+            textRect.offsetMin = offsetMin;
+        }
+    }
+
+    private float GetCurrentSettingsIconSize()
+    {
+        if (buttonSizeSlider != null)
+            return PersistentGameSettings.SnapButtonSize(buttonSizeSlider.value);
+
+        return PersistentGameSettings.SnapButtonSize(PersistentGameSettings.GetCurrentOrSaved().buttonSize);
     }
 
     private void ShowRandomButtonSizeSampleEmote()

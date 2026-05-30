@@ -575,21 +575,9 @@ public sealed class QuestJournalUI : MonoBehaviour
         if (string.IsNullOrWhiteSpace(resourcePath))
             return null;
 
-        Sprite sprite = Resources.Load<Sprite>(resourcePath);
+        Sprite sprite = SpriteServer.SpriteResourceLookup(resourcePath);
         if (sprite != null)
             return sprite;
-
-        Texture2D texture = Resources.Load<Texture2D>(resourcePath);
-        if (texture != null)
-        {
-            Sprite generatedSprite = Sprite.Create(
-                texture,
-                new Rect(0f, 0f, texture.width, texture.height),
-                new Vector2(0.5f, 0.5f),
-                100f);
-            generatedSprite.name = texture.name;
-            return generatedSprite;
-        }
 
         Debug.LogWarning($"QuestJournalUI: could not load quest frame sprite at Resources/{resourcePath}.", this);
         return null;
