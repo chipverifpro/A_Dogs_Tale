@@ -115,6 +115,7 @@ public class BottomBanner : MonoBehaviour
     bool legacyStyleMigrated;
     int lastPanelToggleFrame = -1;
     bool missingUiWarningLogged;
+    bool requestedCanvasVisible = true;
 
     public IReadOnlyList<BannerMessageEntry> MessageHistory => messageHistory;
 
@@ -161,6 +162,7 @@ public class BottomBanner : MonoBehaviour
     void Update()
     {
         elapsedGameTimeSeconds += GameTime.DeltaTime;
+        ApplyBuildCompleteVisibility();
         UpdatePanelClickToggle();
         UpdateAutoCollapse();
     }
@@ -201,6 +203,8 @@ public class BottomBanner : MonoBehaviour
             LogMissingSceneAuthoredUi("BottomBannerCanvas");
             return;
         }
+
+        ApplyBuildCompleteVisibility();
 
         if (panel == null)
         {
@@ -264,6 +268,8 @@ public class BottomBanner : MonoBehaviour
 
         if (contentRT == null)
             LogMissingSceneAuthoredUi("Content RectTransform");
+
+        ApplyBuildCompleteVisibility();
     }
 
     static GameObject FindDescendant(Transform parent, string childName)
@@ -282,6 +288,20 @@ public class BottomBanner : MonoBehaviour
         }
 
         return null;
+    }
+
+    void ApplyBuildCompleteVisibility()
+    {
+        if (BottomBannerCanvas == null)
+            return;
+
+        BottomBannerCanvas.enabled = requestedCanvasVisible && IsBuildComplete();
+    }
+
+    static bool IsBuildComplete()
+    {
+        Dir dir = Dir.Instance;
+        return dir != null && dir.gen != null && dir.gen.buildComplete;
     }
 
     void LogMissingSceneAuthoredUi(string elementName)
@@ -745,6 +765,7 @@ public class BottomBanner : MonoBehaviour
         }
 
         BuildUIIfNeeded();
+        ApplyBuildCompleteVisibility();
         if (contentRT == null)
             return;
 
@@ -843,7 +864,7 @@ public class BottomBanner : MonoBehaviour
         SaveData data = new SaveData
         {
             elapsedGameTimeSeconds = elapsedGameTimeSeconds,
-            canvasVisible = BottomBannerCanvas == null || BottomBannerCanvas.enabled,
+            canvasVisible = requestedCanvasVisible,
             messages = new List<MessageSaveData>()
         };
 
@@ -877,7 +898,9 @@ public class BottomBanner : MonoBehaviour
             return;
 
         elapsedGameTimeSeconds = Mathf.Max(0f, data.elapsedGameTimeSeconds);
+        requestedCanvasVisible = data.canvasVisible;
         BuildUIIfNeeded();
+        ApplyBuildCompleteVisibility();
 
         if (data.messages != null)
         {
@@ -1041,8 +1064,9 @@ public class BottomBanner : MonoBehaviour
 
     void _SetVisible(bool visible)
     {
-        _ = visible;
+        requestedCanvasVisible = visible;
         BuildUIIfNeeded();
+        ApplyBuildCompleteVisibility();
     }
 
     public static void ShowFor(string message, float seconds)
