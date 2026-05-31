@@ -6,7 +6,7 @@ public static class TerrainDigService
     private const string FloorArchetypeId = "Floor";
     private const string HoleArchetypeId = "PF_Floor_Hole";
     private const string MoundArchetypeId = "PF_Floor_Mound";
-    private const float DigTileYOffset = 0.43f;
+    private const float FloorVisualYOffset = -0.5f;
 
     private static readonly Dictionary<BuriedObjectKey, WorldObject> buriedObjectsByCell = new();
 
@@ -41,8 +41,11 @@ public static class TerrainDigService
             return false;
         }
 
+        ElementLayer triangleFloorLayer = dir.elementStore.GetLayer(ElementLayerKind.TriangleFloor);
+
         if (!TryFindFloorInstance(floorLayer, cell, out int index, out ElementInstanceData floorInst, out int width, out int height))
         {
+            RemoveFloorSurfacesCoveringCell(triangleFloorLayer, ElementLayerKind.TriangleFloor, cell, dir);
             AddDigTile(floorLayer, cell, HoleArchetypeId, dir);
             dir.manufactureGO.BuildAll();
             return true;
@@ -52,24 +55,37 @@ public static class TerrainDigService
             ? MoundArchetypeId
             : HoleArchetypeId;
 
+        bool needsFullRebuild = true;
         if (width == 1 && height == 1 && floorInst.cellCoord == cellCoord)
         {
             floorInst.archetypeId = nextArchetype;
-            floorInst.position = DigTilePosition(dir, cell.pos, cell.height);
             floorInst.dirtyFlags = ElementUpdateFlags.All | ElementUpdateFlags.Color;
             floorLayer.instances[index] = floorInst;
+            dir.manufactureGO.RebuildInstance(ElementLayerKind.Floor, index);
+            dir.manufactureGO.SetManufacturedInstanceActive(
+                ElementLayerKind.Floor,
+                IsPlainFloorInstanceCoveringCell,
+                cell,
+                false);
+            RemoveFloorSurfacesCoveringCell(floorLayer, ElementLayerKind.Floor, cell, dir, preserveIndex: index);
+            needsFullRebuild = false;
         }
         else
         {
+            dir.manufactureGO.SetManufacturedInstanceActive(ElementLayerKind.Floor, index, false);
             SplitMergedFloorAroundCell(floorLayer, index, floorInst, width, height, cell, nextArchetype, dir);
         }
+
+        if (RemoveFloorSurfacesCoveringCell(triangleFloorLayer, ElementLayerKind.TriangleFloor, cell, dir))
+            needsFullRebuild = true;
 
         if (string.Equals(nextArchetype, MoundArchetypeId))
             TryBuryGroundObject(actor, cell);
         else if (string.Equals(nextArchetype, HoleArchetypeId))
             TryRevealBuriedObject(cell);
 
-        dir.manufactureGO.BuildAll();
+        if (needsFullRebuild)
+            dir.manufactureGO.BuildAll();
         return true;
     }
 
@@ -224,6 +240,51 @@ public static class TerrainDigService
         return cell.x >= min.x && cell.x <= max.x && cell.y >= min.y && cell.y <= max.y;
     }
 
+    private static bool IsPlainFloorInstanceCoveringCell(ElementInstanceData instance, Cell cell)
+    {
+        return instance != null &&
+               cell != null &&
+               string.Equals(instance.archetypeId, FloorArchetypeId) &&
+               CellIsCovered(instance, cell.pos, out _, out _);
+    }
+
+    private static bool RemoveFloorSurfacesCoveringCell(
+        ElementLayer layer,
+        ElementLayerKind kind,
+        Cell cell,
+        Dir dir,
+        int preserveIndex = -1)
+    {
+        if (layer == null || layer.instances == null || cell == null || dir == null || dir.manufactureGO == null)
+            return false;
+
+        bool removedAny = false;
+        for (int i = 0; i < layer.instances.Count; i++)
+        {
+            if (i == preserveIndex)
+                continue;
+
+            ElementInstanceData instance = layer.instances[i];
+            if (!IsFloorSurfaceInstanceCoveringCell(instance, cell))
+                continue;
+
+            layer.instances[i] = null;
+            dir.manufactureGO.SetManufacturedInstanceActive(kind, i, false);
+            removedAny = true;
+        }
+
+        return removedAny;
+    }
+
+    private static bool IsFloorSurfaceInstanceCoveringCell(ElementInstanceData instance, Cell cell)
+    {
+        return instance != null &&
+               cell != null &&
+               (string.Equals(instance.archetypeId, FloorArchetypeId) ||
+                string.Equals(instance.archetypeId, "TriangleFloor")) &&
+               CellIsCovered(instance, cell.pos, out _, out _);
+    }
+
     private static void SplitMergedFloorAroundCell(
         ElementLayer floorLayer,
         int sourceIndex,
@@ -264,6 +325,8 @@ public static class TerrainDigService
 
         Vector3 minPosition = TilePosition(dir, min, source.heightSteps);
         Vector3 maxPosition = TilePosition(dir, new Vector2Int(min.x + width - 1, min.y + height - 1), source.heightSteps);
+        minPosition.y = source.position.y;
+        maxPosition.y = source.position.y;
         Vector3 unitScale = new Vector3(
             source.scale.x / Mathf.Max(1, Mathf.RoundToInt(Mathf.Abs(source.scale.x))),
             source.scale.y,
@@ -297,9 +360,9 @@ public static class TerrainDigService
             roomIndex: source != null ? source.roomIndex : cell.room_number,
             cellCoord: cell.pos,
             heightSteps: cell.height,
-            position: DigTilePosition(dir, cell.pos, cell.height),
+            position: source != null ? DigTilePositionFromSource(source, cell.pos) : DigTilePosition(dir, cell.pos, cell.height),
             rotation: source != null ? source.rotation : cell.tiltFloor,
-            scale: Vector3.one,
+            scale: source != null ? SingleTileScaleFromSource(source) : Vector3.one,
             color: source != null ? source.color : cell.colorFloor,
             textureOverride: source?.textureOverride,
             customFlags: 0,
@@ -318,7 +381,30 @@ public static class TerrainDigService
 
     private static Vector3 DigTilePosition(Dir dir, Vector2Int coord, int heightSteps)
     {
-        return TilePosition(dir, coord, heightSteps) + new Vector3(0f, DigTileYOffset, 0f);
+        return TilePosition(dir, coord, heightSteps) + new Vector3(0f, FloorVisualYOffset, 0f);
+    }
+
+    private static Vector3 DigTilePositionFromSource(ElementInstanceData source, Vector2Int coord)
+    {
+        int width = Mathf.Max(1, Mathf.RoundToInt(Mathf.Abs(source.scale.x)));
+        int height = Mathf.Max(1, Mathf.RoundToInt(Mathf.Abs(source.scale.z)));
+        Vector2Int min = source.cellCoord;
+        float normalizedX = width > 1 ? (coord.x - min.x) / (float)(width - 1) : 0.5f;
+        float normalizedZ = height > 1 ? (coord.y - min.y) / (float)(height - 1) : 0.5f;
+
+        Vector3 minPosition = source.position - new Vector3((width - 1) * 0.5f, 0f, (height - 1) * 0.5f);
+        Vector3 maxPosition = source.position + new Vector3((width - 1) * 0.5f, 0f, (height - 1) * 0.5f);
+        return new Vector3(
+            Mathf.Lerp(minPosition.x, maxPosition.x, normalizedX),
+            source.position.y,
+            Mathf.Lerp(minPosition.z, maxPosition.z, normalizedZ));
+    }
+
+    private static Vector3 SingleTileScaleFromSource(ElementInstanceData source)
+    {
+        int width = Mathf.Max(1, Mathf.RoundToInt(Mathf.Abs(source.scale.x)));
+        int height = Mathf.Max(1, Mathf.RoundToInt(Mathf.Abs(source.scale.z)));
+        return new Vector3(source.scale.x / width, source.scale.y, source.scale.z / height);
     }
 
     private readonly struct BuriedObjectKey

@@ -52,6 +52,79 @@ public class ManufactureGO : MonoBehaviour
         StartCoroutine(BuildAllCoroutine());
     }
 
+    public void RebuildInstance(ElementLayerKind kind, int index)
+    {
+        if (elementStore == null || warehouse == null || elementStore.layers == null || index < 0)
+            return;
+
+        ElementLayer dataLayer = elementStore.layers.Find(l => l != null && l.kind == kind);
+        if (dataLayer == null || dataLayer.instances == null || index >= dataLayer.instances.Count)
+            return;
+
+        var bucket = warehouse.GetOrCreateLayer(kind);
+        while (bucket.objects.Count <= index)
+            bucket.objects.Add(null);
+
+        GameObject existing = bucket.objects[index];
+        if (existing != null)
+        {
+            existing.SetActive(false);
+            Destroy(existing);
+            bucket.objects[index] = null;
+        }
+
+        ElementInstanceData inst = dataLayer.instances[index];
+        if (inst == null)
+        {
+            warehouse.RegisterInstanceAt(kind, index, null);
+            return;
+        }
+
+        Transform baseParent = rootParentOverride != null ? rootParentOverride : warehouse.transform;
+        ManufactureInstance(inst, baseParent, index);
+    }
+
+    public void SetManufacturedInstanceActive(ElementLayerKind kind, int index, bool active)
+    {
+        if (warehouse == null || index < 0)
+            return;
+
+        var bucket = warehouse.GetLayerBucket(kind);
+        if (bucket == null || bucket.objects == null || index >= bucket.objects.Count)
+            return;
+
+        GameObject go = bucket.objects[index];
+        if (go != null)
+            go.SetActive(active);
+    }
+
+    public void SetManufacturedInstanceActive(
+        ElementLayerKind kind,
+        System.Func<ElementInstanceData, Cell, bool> match,
+        Cell cell,
+        bool active)
+    {
+        if (elementStore == null || warehouse == null || elementStore.layers == null || match == null || cell == null)
+            return;
+
+        ElementLayer dataLayer = elementStore.layers.Find(l => l != null && l.kind == kind);
+        var bucket = warehouse.GetLayerBucket(kind);
+        if (dataLayer == null || dataLayer.instances == null || bucket == null || bucket.objects == null)
+            return;
+
+        int count = Mathf.Min(dataLayer.instances.Count, bucket.objects.Count);
+        for (int i = 0; i < count; i++)
+        {
+            ElementInstanceData inst = dataLayer.instances[i];
+            if (inst == null || !match(inst, cell))
+                continue;
+
+            GameObject go = bucket.objects[i];
+            if (go != null)
+                go.SetActive(active);
+        }
+    }
+
     /// <summary>
     /// Coroutine that walks through the ElementStore and makes GameObjects.
     /// </summary>
