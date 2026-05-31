@@ -11491,6 +11491,9 @@ MonoBehaviour:
   maxFallSpeedMetersPerSecond: 50
   constrainToCellWalls: 1
   wallConstraintIterations: 4
+  recoverFromWallIntersections: 1
+  wallRecoveryClearance: 0.3
+  invalidCellRecoverySearchRadius: 12
   motionControlMode: 0
   isBackpedaling: 0
   facingMode: 0
@@ -23856,6 +23859,9 @@ MonoBehaviour:
   maxFallSpeedMetersPerSecond: 50
   constrainToCellWalls: 1
   wallConstraintIterations: 4
+  recoverFromWallIntersections: 1
+  wallRecoveryClearance: 0.3
+  invalidCellRecoverySearchRadius: 12
   motionControlMode: 0
   isBackpedaling: 0
   facingMode: 0
@@ -27142,6 +27148,9 @@ MonoBehaviour:
   maxFallSpeedMetersPerSecond: 50
   constrainToCellWalls: 1
   wallConstraintIterations: 4
+  recoverFromWallIntersections: 1
+  wallRecoveryClearance: 0.3
+  invalidCellRecoverySearchRadius: 12
   motionControlMode: 0
   isBackpedaling: 0
   facingMode: 0
@@ -38202,6 +38211,9 @@ MonoBehaviour:
   maxFallSpeedMetersPerSecond: 50
   constrainToCellWalls: 1
   wallConstraintIterations: 4
+  recoverFromWallIntersections: 1
+  wallRecoveryClearance: 0.3
+  invalidCellRecoverySearchRadius: 12
   motionControlMode: 0
   isBackpedaling: 0
   facingMode: 0
@@ -39200,6 +39212,9 @@ MonoBehaviour:
   maxFallSpeedMetersPerSecond: 50
   constrainToCellWalls: 1
   wallConstraintIterations: 4
+  recoverFromWallIntersections: 1
+  wallRecoveryClearance: 0.3
+  invalidCellRecoverySearchRadius: 12
   motionControlMode: 0
   isBackpedaling: 0
   facingMode: 0
@@ -52245,6 +52260,9 @@ MonoBehaviour:
   maxFallSpeedMetersPerSecond: 50
   constrainToCellWalls: 1
   wallConstraintIterations: 4
+  recoverFromWallIntersections: 1
+  wallRecoveryClearance: 0.3
+  invalidCellRecoverySearchRadius: 12
   motionControlMode: 0
   isBackpedaling: 0
   facingMode: 0
@@ -65926,7 +65944,7 @@ MonoBehaviour:
   stallPositionEpsilon: 0.01
   stallTurnGraceAngleDegrees: 18
   stallTurnGraceMinDesiredSpeed: 0.05
-  enableStallDebugLogging: 0
+  enableStallDebugLogging: 1
   accelerationMetersPerSecondSquared: 12
   decelerationMetersPerSecondSquared: 16
   enableDebugLogging: 0
@@ -65962,6 +65980,9 @@ MonoBehaviour:
   maxFallSpeedMetersPerSecond: 50
   constrainToCellWalls: 1
   wallConstraintIterations: 4
+  recoverFromWallIntersections: 1
+  wallRecoveryClearance: 0.3
+  invalidCellRecoverySearchRadius: 12
   motionControlMode: 0
   isBackpedaling: 0
   facingMode: 0
@@ -87137,7 +87158,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 0, y: -10}
-  m_SizeDelta: {x: 1457.6787, y: 1098.5356}
+  m_SizeDelta: {x: 1388.2703, y: 1169.6572}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &863588990
 MonoBehaviour:
@@ -95465,6 +95486,8 @@ MonoBehaviour:
   showMobileJoystickInEditor: 1
   mobileJoystickMarginPixels: {x: 36, y: 36}
   mobileJoystickRadiusPixels: 88
+  mobileJoystickFloatsToPress: 1
+  mobileJoystickDragActivationPixels: 18
   mobileJoystickActivationWidthPercent: 0.45
   mobileJoystickActivationHeightPercent: 0.55
   mobileJoystickDeadZone: 0.12
@@ -105838,6 +105861,9 @@ MonoBehaviour:
   maxFallSpeedMetersPerSecond: 50
   constrainToCellWalls: 1
   wallConstraintIterations: 4
+  recoverFromWallIntersections: 1
+  wallRecoveryClearance: 0.3
+  invalidCellRecoverySearchRadius: 12
   motionControlMode: 0
   isBackpedaling: 0
   facingMode: 0
@@ -107305,6 +107331,9 @@ MonoBehaviour:
   maxFallSpeedMetersPerSecond: 50
   constrainToCellWalls: 1
   wallConstraintIterations: 4
+  recoverFromWallIntersections: 1
+  wallRecoveryClearance: 0.3
+  invalidCellRecoverySearchRadius: 12
   motionControlMode: 0
   isBackpedaling: 0
   facingMode: 0
@@ -123779,6 +123808,9 @@ MonoBehaviour:
   maxFallSpeedMetersPerSecond: 50
   constrainToCellWalls: 0
   wallConstraintIterations: 4
+  recoverFromWallIntersections: 1
+  wallRecoveryClearance: 0.3
+  invalidCellRecoverySearchRadius: 12
   motionControlMode: 0
   isBackpedaling: 0
   facingMode: 0
@@ -123851,7 +123883,7 @@ MonoBehaviour:
   stallPositionEpsilon: 0.03
   stallTurnGraceAngleDegrees: 18
   stallTurnGraceMinDesiredSpeed: 0.05
-  enableStallDebugLogging: 0
+  enableStallDebugLogging: 1
   accelerationMetersPerSecondSquared: 12
   decelerationMetersPerSecondSquared: 16
   enableDebugLogging: 0
@@ -163416,6 +163448,9 @@ MonoBehaviour:
   maxFallSpeedMetersPerSecond: 50
   constrainToCellWalls: 0
   wallConstraintIterations: 4
+  recoverFromWallIntersections: 1
+  wallRecoveryClearance: 0.3
+  invalidCellRecoverySearchRadius: 12
   motionControlMode: 0
   isBackpedaling: 0
   facingMode: 0
@@ -187053,6 +187088,9 @@ MonoBehaviour:
   maxFallSpeedMetersPerSecond: 50
   constrainToCellWalls: 1
   wallConstraintIterations: 4
+  recoverFromWallIntersections: 1
+  wallRecoveryClearance: 0.3
+  invalidCellRecoverySearchRadius: 12
   motionControlMode: 0
   isBackpedaling: 0
   facingMode: 0
@@ -189597,6 +189635,9 @@ MonoBehaviour:
   maxFallSpeedMetersPerSecond: 50
   constrainToCellWalls: 1
   wallConstraintIterations: 4
+  recoverFromWallIntersections: 1
+  wallRecoveryClearance: 0.3
+  invalidCellRecoverySearchRadius: 12
   motionControlMode: 0
   isBackpedaling: 0
   facingMode: 0
@@ -190091,6 +190132,9 @@ MonoBehaviour:
   maxFallSpeedMetersPerSecond: 50
   constrainToCellWalls: 1
   wallConstraintIterations: 4
+  recoverFromWallIntersections: 1
+  wallRecoveryClearance: 0.3
+  invalidCellRecoverySearchRadius: 12
   motionControlMode: 0
   isBackpedaling: 0
   facingMode: 0
@@ -194016,7 +194060,7 @@ MonoBehaviour:
   stallPositionEpsilon: 0.01
   stallTurnGraceAngleDegrees: 18
   stallTurnGraceMinDesiredSpeed: 0.05
-  enableStallDebugLogging: 0
+  enableStallDebugLogging: 1
   accelerationMetersPerSecondSquared: 12
   decelerationMetersPerSecondSquared: 16
   enableDebugLogging: 0
@@ -194052,6 +194096,9 @@ MonoBehaviour:
   maxFallSpeedMetersPerSecond: 50
   constrainToCellWalls: 1
   wallConstraintIterations: 4
+  recoverFromWallIntersections: 1
+  wallRecoveryClearance: 0.3
+  invalidCellRecoverySearchRadius: 12
   motionControlMode: 0
   isBackpedaling: 0
   facingMode: 0
@@ -196649,6 +196696,9 @@ MonoBehaviour:
   maxFallSpeedMetersPerSecond: 50
   constrainToCellWalls: 1
   wallConstraintIterations: 4
+  recoverFromWallIntersections: 1
+  wallRecoveryClearance: 0.3
+  invalidCellRecoverySearchRadius: 12
   motionControlMode: 0
   isBackpedaling: 0
   facingMode: 0
@@ -206951,6 +207001,9 @@ MonoBehaviour:
   maxFallSpeedMetersPerSecond: 50
   constrainToCellWalls: 1
   wallConstraintIterations: 4
+  recoverFromWallIntersections: 1
+  wallRecoveryClearance: 0.3
+  invalidCellRecoverySearchRadius: 12
   motionControlMode: 0
   isBackpedaling: 0
   facingMode: 0
@@ -212151,6 +212204,9 @@ MonoBehaviour:
   maxFallSpeedMetersPerSecond: 50
   constrainToCellWalls: 1
   wallConstraintIterations: 4
+  recoverFromWallIntersections: 1
+  wallRecoveryClearance: 0.3
+  invalidCellRecoverySearchRadius: 12
   motionControlMode: 0
   isBackpedaling: 0
   facingMode: 0
@@ -212322,7 +212378,7 @@ MonoBehaviour:
   stallPositionEpsilon: 0.03
   stallTurnGraceAngleDegrees: 18
   stallTurnGraceMinDesiredSpeed: 0.05
-  enableStallDebugLogging: 0
+  enableStallDebugLogging: 1
   accelerationMetersPerSecondSquared: 12
   decelerationMetersPerSecondSquared: 16
   enableDebugLogging: 0
@@ -224532,6 +224588,9 @@ MonoBehaviour:
   maxFallSpeedMetersPerSecond: 50
   constrainToCellWalls: 0
   wallConstraintIterations: 4
+  recoverFromWallIntersections: 1
+  wallRecoveryClearance: 0.3
+  invalidCellRecoverySearchRadius: 12
   motionControlMode: 0
   isBackpedaling: 0
   facingMode: 0

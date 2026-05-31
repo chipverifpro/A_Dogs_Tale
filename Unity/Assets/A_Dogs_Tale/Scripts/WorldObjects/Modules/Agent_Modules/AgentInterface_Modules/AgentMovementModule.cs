@@ -761,7 +761,7 @@ namespace DogGame.Modules
                         } else {
                             if (enableStallDebugLogging)
                             {
-                                Debug.Log($"{worldObject.DisplayName}: NOT_RECOV  NOT_CLOSE   ({deltaDistanceSqr:0.000}>{stopDistanceSqr:0.000}) to target_noheight {targetLocationMap_noheight} at {pos3d_map_noheight}");
+                                //Debug.Log($"{worldObject.DisplayName}: NOT_RECOV  NOT_CLOSE   ({deltaDistanceSqr:0.000}>{stopDistanceSqr:0.000}) to target_noheight {targetLocationMap_noheight} at {pos3d_map_noheight}");
                             }
                             MoveToDestinationInProgress = true;
                         }
