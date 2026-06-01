@@ -49,6 +49,7 @@ public sealed class InventoryDialogUI : MonoBehaviour
     private readonly Dictionary<int, Sprite> dogActionSprites = new();
     private readonly Dictionary<int, Sprite> tradeArrowSprites = new();
     private readonly List<Button> actionButtons = new();
+    private readonly List<HeldItemOption> heldItemOptions = new();
     private readonly List<TradeTargetOption> tradeTargetOptions = new();
 
     private Sprite inventoryBackgroundSprite;
@@ -83,11 +84,14 @@ public sealed class InventoryDialogUI : MonoBehaviour
     private int selectedIndex;
     private int selectedTradeTargetIndex;
     private WorldObject previewedItem;
+    private WorldObject displayedHeldCarrier;
+    private WorldObject displayedHeldItem;
     private WorldObject displayedTradePartner;
     private WorldObject displayedTradePartnerItem;
     private WorldObject displayedTradePartnerPreviewObject;
     private ContainerModule displayedContainer;
     private bool isOpen;
+    private bool keepSelectedHeldItemIndex;
     private bool keepSelectedTradeTargetIndex;
 
     private enum InventoryAction
@@ -105,6 +109,21 @@ public sealed class InventoryDialogUI : MonoBehaviour
     {
         WorldObject,
         Ground
+    }
+
+    private readonly struct HeldItemOption
+    {
+        public HeldItemOption(WorldObject agent, ContainerModule container, WorldObject item)
+        {
+            Agent = agent;
+            Container = container;
+            Item = item;
+        }
+
+        public WorldObject Agent { get; }
+        public ContainerModule Container { get; }
+        public WorldObject Item { get; }
+        public WorldObject PreviewObject => Agent;
     }
 
     private bool HasThemedBackground => inventoryBackgroundSprite != null;
@@ -199,10 +218,13 @@ public sealed class InventoryDialogUI : MonoBehaviour
         selectedIndex = 0;
         selectedTradeTargetIndex = 0;
         previewedItem = null;
+        displayedHeldCarrier = null;
+        displayedHeldItem = null;
         displayedTradePartner = null;
         displayedTradePartnerItem = null;
         displayedTradePartnerPreviewObject = null;
         displayedContainer = null;
+        keepSelectedHeldItemIndex = false;
 
         if (dialogRoot != null)
             dialogRoot.SetActive(false);
@@ -387,7 +409,7 @@ public sealed class InventoryDialogUI : MonoBehaviour
         labelRect.offsetMax = new Vector2(-24f, 58f);
 
         itemNameLabel = labelObject.AddComponent<TextMeshProUGUI>();
-        itemNameLabel.fontSize = 28f;
+        itemNameLabel.fontSize = 24f;
         itemNameLabel.color = GetPreviewLabelColor();
         itemNameLabel.alignment = TextAlignmentOptions.Center;
 
@@ -440,7 +462,7 @@ public sealed class InventoryDialogUI : MonoBehaviour
             GetArrowSprite(0),
             "<",
             OnPreviousItemClicked,
-            "Previous item");
+            "Previous pack member or item");
 
         RectTransform leftRect = leftArrowButton.GetComponent<RectTransform>();
         leftRect.anchorMin = new Vector2(0f, 0.5f);
@@ -455,7 +477,7 @@ public sealed class InventoryDialogUI : MonoBehaviour
             GetArrowSprite(1),
             ">",
             OnNextItemClicked,
-            "Next item");
+            "Next pack member or item");
 
         RectTransform rightRect = rightArrowButton.GetComponent<RectTransform>();
         rightRect.anchorMin = new Vector2(1f, 0.5f);
@@ -843,38 +865,43 @@ public sealed class InventoryDialogUI : MonoBehaviour
 
     private void RefreshInventoryView(bool forcePreviewRefresh = false)
     {
-        ContainerModule container = GetCurrentContainer();
-        if (container != displayedContainer)
-        {
-            displayedContainer = container;
-            selectedIndex = 0;
-            forcePreviewRefresh = true;
-        }
-
-        RefreshTradePartnerView(forcePreviewRefresh);
-
-        int itemCount = container != null ? container.HeldItemCount : 0;
-        if (itemCount <= 0)
+        WorldObject previousCarrier = displayedHeldCarrier;
+        WorldObject previousItem = displayedHeldItem;
+        BuildHeldItemOptions();
+        if (heldItemOptions.Count == 0)
         {
             SetNoHeldItemState();
             return;
         }
 
-        selectedIndex = Mathf.Clamp(selectedIndex, 0, itemCount - 1);
-        WorldObject item = container.HeldItems[selectedIndex];
+        int matchedIndex = FindHeldItemOptionIndex(previousCarrier, previousItem);
+        if (!keepSelectedHeldItemIndex && matchedIndex >= 0)
+            selectedIndex = matchedIndex;
+        else
+            selectedIndex = Mathf.Clamp(selectedIndex, 0, heldItemOptions.Count - 1);
+        keepSelectedHeldItemIndex = false;
 
-        itemNameLabel.text = item != null ? item.DisplayName : "No item held";
-        bool hasMultipleItems = itemCount > 1;
+        HeldItemOption selectedOption = heldItemOptions[selectedIndex];
+        WorldObject selectedPreviewObject = selectedOption.PreviewObject;
+        bool selectedPreviewChanged = selectedPreviewObject != previewedItem;
+        displayedHeldCarrier = selectedOption.Agent;
+        displayedHeldItem = selectedOption.Item;
+        displayedContainer = selectedOption.Container;
+
+        RefreshTradePartnerView(forcePreviewRefresh);
+
+        itemNameLabel.text = BuildHeldItemLabel(selectedOption);
+        bool hasMultipleItems = heldItemOptions.Count > 1;
         leftArrowButton.gameObject.SetActive(hasMultipleItems);
         rightArrowButton.gameObject.SetActive(hasMultipleItems);
 
-        if (forcePreviewRefresh || item != previewedItem)
-            BuildPreviewClone(item);
+        if (forcePreviewRefresh || selectedPreviewChanged || (selectedPreviewObject != null && previewClone == null))
+            BuildPreviewClone(selectedPreviewObject);
     }
 
     private void SetNoHeldItemState()
     {
-        itemNameLabel.text = "No item held";
+        itemNameLabel.text = "No pack member";
         leftArrowButton.gameObject.SetActive(false);
         rightArrowButton.gameObject.SetActive(false);
 
@@ -884,6 +911,9 @@ public sealed class InventoryDialogUI : MonoBehaviour
             DestroyPreviewClone();
         }
 
+        displayedHeldCarrier = null;
+        displayedHeldItem = null;
+        displayedContainer = null;
         ClearPreviewTexture();
     }
 
@@ -958,16 +988,29 @@ public sealed class InventoryDialogUI : MonoBehaviour
         return $"{option.Agent.DisplayName}\nHolding nothing";
     }
 
+    private string BuildHeldItemLabel(HeldItemOption option)
+    {
+        if (option.Agent == null)
+            return "No pack member";
+
+        if (option.Item != null)
+            return $"{option.Agent.DisplayName}\nHolding {option.Item.DisplayName}";
+
+        return $"{option.Agent.DisplayName}\nHolding nothing";
+    }
+
     private ContainerModule GetCurrentContainer()
     {
-        WorldObject controlledObject = GetCurrentControlledWorldObject();
-        if (controlledObject == null)
+        WorldObject carrier = GetSelectedHeldCarrier();
+        if (carrier == null)
             return null;
 
-        if (controlledObject.containerModule == null)
-            controlledObject.CreateModulesIfNeeded(ModuleFlags.containerModule);
+        return GetOrCreateContainer(carrier);
+    }
 
-        return controlledObject.containerModule;
+    private WorldObject GetSelectedHeldCarrier()
+    {
+        return displayedHeldCarrier != null ? displayedHeldCarrier : GetCurrentControlledWorldObject();
     }
 
     private WorldObject GetCurrentControlledWorldObject()
@@ -976,11 +1019,46 @@ public sealed class InventoryDialogUI : MonoBehaviour
         return dir != null && dir.playerPack != null ? dir.playerPack.packLeader : null;
     }
 
+    private void BuildHeldItemOptions()
+    {
+        heldItemOptions.Clear();
+
+        Pack playerPack = Dir.Instance != null ? Dir.Instance.playerPack : null;
+        if (playerPack != null && playerPack.packAgentList != null)
+        {
+            for (int i = 0; i < playerPack.packAgentList.Count; i++)
+                AddHeldItemOptionsForAgent(playerPack.packAgentList[i]);
+        }
+
+        if (heldItemOptions.Count == 0)
+            AddHeldItemOptionsForAgent(GetCurrentControlledWorldObject());
+    }
+
+    private void AddHeldItemOptionsForAgent(WorldObject agent)
+    {
+        if (agent == null || !agent.gameObject.activeInHierarchy)
+            return;
+
+        ContainerModule container = GetOrCreateContainer(agent);
+        if (container == null || container.HeldItemCount == 0)
+        {
+            heldItemOptions.Add(new HeldItemOption(agent, container, null));
+            return;
+        }
+
+        for (int i = 0; i < container.HeldItemCount; i++)
+        {
+            WorldObject item = container.HeldItems[i];
+            if (item != null)
+                heldItemOptions.Add(new HeldItemOption(agent, container, item));
+        }
+    }
+
     private void BuildTradeTargetOptions()
     {
         tradeTargetOptions.Clear();
 
-        WorldObject controlledObject = GetCurrentControlledWorldObject();
+        WorldObject controlledObject = GetSelectedHeldCarrier();
         WorldObjectRegistry registry = WorldObjectRegistry.Instance;
         if (controlledObject == null)
             return;
@@ -1062,6 +1140,21 @@ public sealed class InventoryDialogUI : MonoBehaviour
         return parentWorldObject == null || parentWorldObject == candidate;
     }
 
+    private int FindHeldItemOptionIndex(WorldObject agent, WorldObject item)
+    {
+        if (agent == null)
+            return -1;
+
+        for (int i = 0; i < heldItemOptions.Count; i++)
+        {
+            HeldItemOption option = heldItemOptions[i];
+            if (option.Agent == agent && option.Item == item)
+                return i;
+        }
+
+        return -1;
+    }
+
     private int FindTradeTargetOptionIndex(WorldObject agent, WorldObject item)
     {
         if (agent == null && item == null)
@@ -1119,30 +1212,26 @@ public sealed class InventoryDialogUI : MonoBehaviour
 
     private WorldObject GetSelectedHeldItem()
     {
-        if (displayedContainer == null || displayedContainer.HeldItemCount <= 0)
-            return null;
-
-        selectedIndex = Mathf.Clamp(selectedIndex, 0, displayedContainer.HeldItemCount - 1);
-        return displayedContainer.HeldItems[selectedIndex];
+        return displayedHeldItem;
     }
 
     private void OnPreviousItemClicked()
     {
-        int itemCount = displayedContainer != null ? displayedContainer.HeldItemCount : 0;
-        if (itemCount <= 1)
+        if (heldItemOptions.Count <= 1)
             return;
 
-        selectedIndex = (selectedIndex - 1 + itemCount) % itemCount;
+        selectedIndex = (selectedIndex - 1 + heldItemOptions.Count) % heldItemOptions.Count;
+        keepSelectedHeldItemIndex = true;
         RefreshInventoryView(forcePreviewRefresh: true);
     }
 
     private void OnNextItemClicked()
     {
-        int itemCount = displayedContainer != null ? displayedContainer.HeldItemCount : 0;
-        if (itemCount <= 1)
+        if (heldItemOptions.Count <= 1)
             return;
 
-        selectedIndex = (selectedIndex + 1) % itemCount;
+        selectedIndex = (selectedIndex + 1) % heldItemOptions.Count;
+        keepSelectedHeldItemIndex = true;
         RefreshInventoryView(forcePreviewRefresh: true);
     }
 
@@ -1173,7 +1262,7 @@ public sealed class InventoryDialogUI : MonoBehaviour
 
     private void OnUseClicked()
     {
-        WorldObject user = GetCurrentControlledWorldObject();
+        WorldObject user = GetSelectedHeldCarrier();
         WorldObject item = GetSelectedHeldItem();
         if (user == null)
             return;
@@ -1206,9 +1295,6 @@ public sealed class InventoryDialogUI : MonoBehaviour
             }
 
             Destroy(item.gameObject);
-            selectedIndex = container != null && container.HeldItemCount > 0
-                ? Mathf.Clamp(selectedIndex, 0, container.HeldItemCount - 1)
-                : 0;
         }
 
         ShowInventoryMessage(success
@@ -1220,7 +1306,7 @@ public sealed class InventoryDialogUI : MonoBehaviour
 
     private void OnEatClicked()
     {
-        WorldObject eater = GetCurrentControlledWorldObject();
+        WorldObject eater = GetSelectedHeldCarrier();
         ContainerModule container = GetCurrentContainer();
         if (eater == null || container == null)
             return;
@@ -1242,15 +1328,12 @@ public sealed class InventoryDialogUI : MonoBehaviour
 
         Destroy(item.gameObject);
         ShowInventoryMessage($"{eater.DisplayName} ate {itemName}");
-        selectedIndex = container.HeldItemCount > 0
-            ? Mathf.Clamp(selectedIndex, 0, container.HeldItemCount - 1)
-            : 0;
         RefreshInventoryView(forcePreviewRefresh: true);
     }
 
     private void OnGiveClicked()
     {
-        WorldObject giver = GetCurrentControlledWorldObject();
+        WorldObject giver = GetSelectedHeldCarrier();
         WorldObject item = GetSelectedHeldItem();
         WorldObject recipient = displayedTradePartner;
         ContainerModule giverContainer = GetCurrentContainer();
@@ -1270,7 +1353,6 @@ public sealed class InventoryDialogUI : MonoBehaviour
             if (TryDropItemNearCarrier(giverContainer, giver, item, out string dropReason))
             {
                 ShowInventoryMessage($"{giver.DisplayName} dropped {item.DisplayName} on the ground");
-                selectedIndex = Mathf.Clamp(selectedIndex, 0, giverContainer.HeldItemCount - 1);
                 RefreshInventoryView(forcePreviewRefresh: true);
                 return;
             }
@@ -1299,7 +1381,7 @@ public sealed class InventoryDialogUI : MonoBehaviour
 
     private void OnTakeItemClicked()
     {
-        WorldObject taker = GetCurrentControlledWorldObject();
+        WorldObject taker = GetSelectedHeldCarrier();
         WorldObject giver = displayedTradePartner;
         WorldObject item = displayedTradePartnerItem;
         ContainerModule takerContainer = GetCurrentContainer();
@@ -1356,7 +1438,7 @@ public sealed class InventoryDialogUI : MonoBehaviour
 
     private void OnTradeClicked()
     {
-        WorldObject trader = GetCurrentControlledWorldObject();
+        WorldObject trader = GetSelectedHeldCarrier();
         WorldObject partner = displayedTradePartner;
         WorldObject traderItem = GetSelectedHeldItem();
         WorldObject partnerItem = displayedTradePartnerItem;
@@ -1386,7 +1468,6 @@ public sealed class InventoryDialogUI : MonoBehaviour
                 if (TryDropItemNearCarrier(traderContainer, trader, traderItem, out string dropReason))
                 {
                     ShowInventoryMessage($"{trader.DisplayName} dropped {traderItem.DisplayName} on the ground");
-                    selectedIndex = Mathf.Clamp(selectedIndex, 0, traderContainer.HeldItemCount - 1);
                     RefreshInventoryView(forcePreviewRefresh: true);
                     return;
                 }
@@ -1457,7 +1538,7 @@ public sealed class InventoryDialogUI : MonoBehaviour
             return;
 
         WorldObject item = GetSelectedHeldItem();
-        WorldObject carrier = GetCurrentControlledWorldObject();
+        WorldObject carrier = GetSelectedHeldCarrier();
         if (item == null || carrier == null)
             return;
 
@@ -1468,7 +1549,6 @@ public sealed class InventoryDialogUI : MonoBehaviour
         }
 
         ShowInventoryMessage($"{carrier.DisplayName} dropped {item.DisplayName}");
-        selectedIndex = Mathf.Clamp(selectedIndex, 0, displayedContainer.HeldItemCount - 1);
         RefreshInventoryView(forcePreviewRefresh: true);
     }
 
@@ -1478,7 +1558,7 @@ public sealed class InventoryDialogUI : MonoBehaviour
             return;
 
         WorldObject item = GetSelectedHeldItem();
-        WorldObject carrier = GetCurrentControlledWorldObject();
+        WorldObject carrier = GetSelectedHeldCarrier();
         if (item == null || carrier == null)
             return;
 
@@ -1490,13 +1570,12 @@ public sealed class InventoryDialogUI : MonoBehaviour
         }
 
         ShowInventoryMessage($"{carrier.DisplayName} threw {item.DisplayName}");
-        selectedIndex = Mathf.Clamp(selectedIndex, 0, displayedContainer.HeldItemCount - 1);
         RefreshInventoryView(forcePreviewRefresh: true);
     }
 
     private void OnPickUpClicked()
     {
-        WorldObject carrier = GetCurrentControlledWorldObject();
+        WorldObject carrier = GetSelectedHeldCarrier();
         ContainerModule container = GetCurrentContainer();
         if (carrier == null || container == null)
             return;
@@ -1508,28 +1587,22 @@ public sealed class InventoryDialogUI : MonoBehaviour
         }
 
         ShowInventoryMessage($"{carrier.DisplayName} picked up {pickedUpItem.DisplayName}");
-        for (int i = 0; i < container.HeldItemCount; i++)
-        {
-            if (container.HeldItems[i] == pickedUpItem)
-            {
-                selectedIndex = i;
-                break;
-            }
-        }
-
+        SelectHeldItem(pickedUpItem);
         RefreshInventoryView(forcePreviewRefresh: true);
     }
 
     private void SelectHeldItem(WorldObject item)
     {
-        if (item == null || displayedContainer == null)
+        if (item == null)
             return;
 
-        for (int i = 0; i < displayedContainer.HeldItemCount; i++)
+        BuildHeldItemOptions();
+        for (int i = 0; i < heldItemOptions.Count; i++)
         {
-            if (displayedContainer.HeldItems[i] == item)
+            if (heldItemOptions[i].Item == item)
             {
                 selectedIndex = i;
+                keepSelectedHeldItemIndex = true;
                 return;
             }
         }
