@@ -16,15 +16,19 @@ public sealed class InteractionDialogUI : MonoBehaviour
     private static readonly Vector3 TargetItemPreviewAnchorPosition = new(65000f, 60000f, 60000f);
 
     [Header("Resources")]
-    [SerializeField] private string interactionFrameSpriteResourcePath = "Sprites/Frames/Interaction_Frame_D";
+    [SerializeField] private string interactionFrameSpriteResourcePath = "Sprites/Frames/Interaction_Frame_F";
+    [SerializeField] private string circleSpriteResourcePath = "Sprites/Frames/Circle";
+    [SerializeField] private string circleWithArrowsSpriteResourcePath = "Sprites/Frames/CircleWithArrows";
+    [SerializeField] private string tradeArrowsSpriteResourcePath = "Sprites/Frames/TradeArrows_A";
+    [SerializeField] private string titleFontResourcePath = "TMP_Fonts/LuckiestGuy-Regular SDF";
 
     [Header("Layout")]
     [SerializeField] private int uiSortOrder = 5310;
     [SerializeField] private Vector2 referenceResolution = new(1920f, 1080f);
     [SerializeField] private Vector2 dialogSize = new(1536f, 1024f);
     [SerializeField, Range(0f, 75f)] private float dialogScaleReductionPercent = 25f;
-    [SerializeField] private Vector2 closeButtonAnchoredPosition = new(-150f, -125f);
-    [SerializeField] private Vector2 closeButtonSize = new(118f, 118f);
+    [SerializeField] private Vector2 closeButtonAnchoredPosition = new(-250f, -120f);
+    [SerializeField] private Vector2 closeButtonSize = new(120f, 120f);
     [SerializeField] private float previewSpinDegreesPerSecond = 24f;
     [SerializeField, Range(0f, 85f)] private float previewViewAngleDegrees = 30f;
     [SerializeField, Min(0f)] private float tradePartnerSearchRadiusTiles = 2f;
@@ -37,8 +41,14 @@ public sealed class InteractionDialogUI : MonoBehaviour
     private TextMeshProUGUI playerHeldItemLabel;
     private TextMeshProUGUI targetNameLabel;
     private TextMeshProUGUI targetHeldItemLabel;
-    private Sprite previousArrowSprite;
-    private Sprite nextArrowSprite;
+    private Button previousPlayerAgentButton;
+    private Button nextPlayerAgentButton;
+    private Button previousPlayerItemButton;
+    private Button nextPlayerItemButton;
+    private Button previousTargetAgentButton;
+    private Button nextTargetAgentButton;
+    private Button previousTargetItemButton;
+    private Button nextTargetItemButton;
     private PreviewSlot playerPreviewSlot;
     private PreviewSlot playerItemPreviewSlot;
     private PreviewSlot targetPreviewSlot;
@@ -56,9 +66,14 @@ public sealed class InteractionDialogUI : MonoBehaviour
     private WorldObject displayedTarget;
     private WorldObject displayedTargetItem;
     private bool isOpen;
+    private Sprite circleSprite;
+    private Sprite circleWithArrowsSprite;
+    private Sprite tradeArrowsSprite;
+    private TMP_FontAsset titleFont;
 
     private sealed class PreviewSlot
     {
+        public Image CircleImage;
         public RawImage Image;
         public RenderTexture Texture;
         public GameObject WorldRoot;
@@ -68,6 +83,8 @@ public sealed class InteractionDialogUI : MonoBehaviour
         public Vector3 AnchorPosition;
         public float FramingRadius = 1f;
         public float OrthographicPadding = 2.15f;
+        public Vector2 CircleSize;
+        public Vector2 CircleWithArrowsSize;
         public WorldObject DisplayedObject;
     }
 
@@ -151,8 +168,10 @@ public sealed class InteractionDialogUI : MonoBehaviour
     private void BuildUI()
     {
         interactionFrameSprite = Resources.Load<Sprite>(interactionFrameSpriteResourcePath);
-        previousArrowSprite = SpriteServer.SpriteLookup("Arrow_Left");
-        nextArrowSprite = SpriteServer.SpriteLookup("Arrow_Right");
+        circleSprite = Resources.Load<Sprite>(circleSpriteResourcePath);
+        circleWithArrowsSprite = Resources.Load<Sprite>(circleWithArrowsSpriteResourcePath);
+        tradeArrowsSprite = Resources.Load<Sprite>(tradeArrowsSpriteResourcePath);
+        titleFont = Resources.Load<TMP_FontAsset>(titleFontResourcePath);
         EnsureEventSystem();
 
         GameObject canvasObject = new("InteractionDialogCanvas", typeof(RectTransform), typeof(Canvas), typeof(CanvasScaler), typeof(GraphicRaycaster));
@@ -195,11 +214,13 @@ public sealed class InteractionDialogUI : MonoBehaviour
             dialogImage.color = new Color(0.08f, 0.075f, 0.055f, 0.94f);
         }
 
+        BuildPreviewSlots(dialogRoot.transform);
         BuildHeader(dialogRoot.transform);
         BuildTopInfo(dialogRoot.transform);
-        BuildPreviewSlots(dialogRoot.transform);
+        BuildTradeArrows(dialogRoot.transform);
         BuildTabLabels(dialogRoot.transform);
         BuildSelectionArrows(dialogRoot.transform);
+        BuildCloseHotspot(dialogRoot.transform);
     }
 
     private void ApplyDialogScaleAndPosition()
@@ -228,12 +249,18 @@ public sealed class InteractionDialogUI : MonoBehaviour
 
         TextMeshProUGUI titleLabel = titleObject.AddComponent<TextMeshProUGUI>();
         titleLabel.text = "INTERACTION";
+        if (titleFont != null)
+            titleLabel.font = titleFont;
         titleLabel.fontSize = 72f;
         titleLabel.fontStyle = FontStyles.Bold;
         titleLabel.color = new Color(0.29f, 0.18f, 0.09f, 1f);
         titleLabel.alignment = TextAlignmentOptions.Center;
         titleLabel.raycastTarget = false;
 
+    }
+
+    private void BuildCloseHotspot(Transform parent)
+    {
         Button closeButton = CreateInvisibleButton("CloseButton", parent, Hide);
         RectTransform closeRect = closeButton.GetComponent<RectTransform>();
         closeRect.anchorMin = new Vector2(1f, 1f);
@@ -274,6 +301,52 @@ public sealed class InteractionDialogUI : MonoBehaviour
         targetHeldItemLabel = CreateInfoLabel(parent, "TargetHeldItem", new Vector2(110f, -334f), new Vector2(300f, 58f), 38f, TextAlignmentOptions.Right);
     }
 
+    private void BuildTradeArrows(Transform parent)
+    {
+        GameObject arrowsObject = CreateUIObject("TradeArrows", parent);
+        RectTransform arrowsRect = arrowsObject.GetComponent<RectTransform>();
+        arrowsRect.anchorMin = new Vector2(0.5f, 1f);
+        arrowsRect.anchorMax = new Vector2(0.5f, 1f);
+        arrowsRect.pivot = new Vector2(0.5f, 0.5f);
+        arrowsRect.anchoredPosition = new Vector2(0f, -292f);
+        arrowsRect.sizeDelta = new Vector2(86f, 186f);
+
+        Image arrowsImage = arrowsObject.AddComponent<Image>();
+        arrowsImage.sprite = tradeArrowsSprite;
+        arrowsImage.preserveAspect = true;
+        arrowsImage.color = Color.white;
+        arrowsImage.raycastTarget = false;
+
+        CreateTradeHotspot(parent, "GiveHotspot", new Vector2(0f, -244f), OnGiveClicked);
+        CreateTradeHotspot(parent, "ExchangeHotspot", new Vector2(0f, -292f), OnTradeClicked);
+        CreateTradeHotspot(parent, "TakeHotspot", new Vector2(0f, -340f), OnTakeItemClicked);
+    }
+
+    private Button CreateTradeHotspot(
+        Transform parent,
+        string objectName,
+        Vector2 anchoredPosition,
+        UnityEngine.Events.UnityAction clickHandler)
+    {
+        GameObject buttonObject = CreateUIObject(objectName, parent);
+        RectTransform rect = buttonObject.GetComponent<RectTransform>();
+        rect.anchorMin = new Vector2(0.5f, 1f);
+        rect.anchorMax = new Vector2(0.5f, 1f);
+        rect.pivot = new Vector2(0.5f, 0.5f);
+        rect.anchoredPosition = anchoredPosition;
+        rect.sizeDelta = new Vector2(94f, 44f);
+
+        Image image = buttonObject.AddComponent<Image>();
+        image.color = Color.clear;
+        image.raycastTarget = true;
+
+        Button button = buttonObject.AddComponent<Button>();
+        button.targetGraphic = image;
+        button.onClick.AddListener(AudioPlayer.PlayUiButtonClick);
+        button.onClick.AddListener(clickHandler);
+        return button;
+    }
+
     private static TextMeshProUGUI CreateInfoLabel(
         Transform parent,
         string objectName,
@@ -302,21 +375,20 @@ public sealed class InteractionDialogUI : MonoBehaviour
 
     private void BuildSelectionArrows(Transform parent)
     {
-        CreateArrowButton(parent, "PreviousPlayerAgentButton", previousArrowSprite, new Vector2(-626f, -290f), OnPreviousPlayerAgentClicked);
-        CreateArrowButton(parent, "NextPlayerAgentButton", nextArrowSprite, new Vector2(-432f, -290f), OnNextPlayerAgentClicked);
-        CreateArrowButton(parent, "PreviousPlayerItemButton", previousArrowSprite, new Vector2(-452f, -320f), OnPreviousPlayerItemClicked, 32f);
-        CreateArrowButton(parent, "NextPlayerItemButton", nextArrowSprite, new Vector2(-296f, -320f), OnNextPlayerItemClicked, 32f);
+        previousPlayerAgentButton = CreateArrowButton(parent, "PreviousPlayerAgentButton", new Vector2(-593f, -290f), OnPreviousPlayerAgentClicked, 48f);
+        nextPlayerAgentButton = CreateArrowButton(parent, "NextPlayerAgentButton", new Vector2(-400f, -290f), OnNextPlayerAgentClicked, 48f);
+        previousPlayerItemButton = CreateArrowButton(parent, "PreviousPlayerItemButton", new Vector2(-419f, -320f), OnPreviousPlayerItemClicked, 32f);
+        nextPlayerItemButton = CreateArrowButton(parent, "NextPlayerItemButton", new Vector2(-288f, -320f), OnNextPlayerItemClicked, 32f);
 
-        CreateArrowButton(parent, "PreviousTargetItemButton", previousArrowSprite, new Vector2(276f, -320f), OnPreviousTargetItemClicked, 32f);
-        CreateArrowButton(parent, "NextTargetItemButton", nextArrowSprite, new Vector2(432f, -320f), OnNextTargetItemClicked, 32f);
-        CreateArrowButton(parent, "PreviousTargetAgentButton", previousArrowSprite, new Vector2(404f, -290f), OnPreviousTargetAgentClicked);
-        CreateArrowButton(parent, "NextTargetAgentButton", nextArrowSprite, new Vector2(598f, -290f), OnNextTargetAgentClicked);
+        previousTargetItemButton = CreateArrowButton(parent, "PreviousTargetItemButton", new Vector2(275f, -320f), OnPreviousTargetItemClicked, 32f);
+        nextTargetItemButton = CreateArrowButton(parent, "NextTargetItemButton", new Vector2(405f, -320f), OnNextTargetItemClicked, 32f);
+        previousTargetAgentButton = CreateArrowButton(parent, "PreviousTargetAgentButton", new Vector2(383f, -290f), OnPreviousTargetAgentClicked, 48f);
+        nextTargetAgentButton = CreateArrowButton(parent, "NextTargetAgentButton", new Vector2(576f, -290f), OnNextTargetAgentClicked, 48f);
     }
 
     private Button CreateArrowButton(
         Transform parent,
         string objectName,
-        Sprite sprite,
         Vector2 anchoredPosition,
         UnityEngine.Events.UnityAction clickHandler,
         float size = 41f)
@@ -330,54 +402,50 @@ public sealed class InteractionDialogUI : MonoBehaviour
         rect.sizeDelta = new Vector2(size, size);
 
         Image image = buttonObject.AddComponent<Image>();
-        image.sprite = sprite;
-        image.preserveAspect = true;
-        image.color = sprite != null ? Color.white : new Color(0.88f, 0.78f, 0.5f, 0.86f);
+        image.sprite = null;
+        image.color = Color.clear;
+        image.raycastTarget = true;
 
         Button button = buttonObject.AddComponent<Button>();
         button.targetGraphic = image;
         button.onClick.AddListener(AudioPlayer.PlayUiButtonClick);
         button.onClick.AddListener(clickHandler);
 
-        if (sprite == null)
-            AddFallbackArrowText(buttonObject.transform, objectName.Contains("Previous") ? "<" : ">");
-
         return button;
-    }
-
-    private static void AddFallbackArrowText(Transform parent, string text)
-    {
-        GameObject labelObject = CreateUIObject("FallbackLabel", parent);
-        RectTransform labelRect = labelObject.GetComponent<RectTransform>();
-        labelRect.anchorMin = Vector2.zero;
-        labelRect.anchorMax = Vector2.one;
-        labelRect.offsetMin = Vector2.zero;
-        labelRect.offsetMax = Vector2.zero;
-
-        TextMeshProUGUI label = labelObject.AddComponent<TextMeshProUGUI>();
-        label.text = text;
-        label.fontSize = 24f;
-        label.color = Color.black;
-        label.alignment = TextAlignmentOptions.Center;
-        label.raycastTarget = false;
     }
 
     private void BuildPreviewSlots(Transform parent)
     {
-        playerPreviewSlot = CreatePreviewSlot(parent, "PlayerPreview", PlayerPreviewAnchorPosition, new Vector2(-520f, -290f), new Vector2(150f, 150f), 1.325f);
-        playerItemPreviewSlot = CreatePreviewSlot(parent, "PlayerItemPreview", PlayerItemPreviewAnchorPosition, new Vector2(-374f, -320f), new Vector2(78f, 78f), 1.2f);
-        targetItemPreviewSlot = CreatePreviewSlot(parent, "TargetItemPreview", TargetItemPreviewAnchorPosition, new Vector2(354f, -320f), new Vector2(78f, 78f), 1.2f);
-        targetPreviewSlot = CreatePreviewSlot(parent, "TargetPreview", TargetPreviewAnchorPosition, new Vector2(493f, -290f), new Vector2(150f, 150f), 1.325f);
+        playerPreviewSlot = CreatePreviewSlot(parent, "PlayerPreview", PlayerPreviewAnchorPosition, new Vector2(-497f, -290f), new Vector2(150f, 150f), new Vector2(171f, 171f), new Vector2(238f, 238f), 1.325f);
+        playerItemPreviewSlot = CreatePreviewSlot(parent, "PlayerItemPreview", PlayerItemPreviewAnchorPosition, new Vector2(-354f, -320f), new Vector2(78f, 78f), new Vector2(96f, 96f), new Vector2(148f, 148f), 1.2f);
+        targetItemPreviewSlot = CreatePreviewSlot(parent, "TargetItemPreview", TargetItemPreviewAnchorPosition, new Vector2(340f, -320f), new Vector2(78f, 78f), new Vector2(96f, 96f), new Vector2(148f, 148f), 1.2f);
+        targetPreviewSlot = CreatePreviewSlot(parent, "TargetPreview", TargetPreviewAnchorPosition, new Vector2(480f, -290f), new Vector2(150f, 150f), new Vector2(171f, 171f), new Vector2(238f, 238f), 1.325f);
     }
 
-    private static PreviewSlot CreatePreviewSlot(
+    private PreviewSlot CreatePreviewSlot(
         Transform parent,
         string objectName,
         Vector3 anchorPosition,
         Vector2 anchoredPosition,
         Vector2 size,
+        Vector2 circleSize,
+        Vector2 circleWithArrowsSize,
         float orthographicPadding)
     {
+        GameObject circleObject = CreateUIObject($"{objectName}Circle", parent);
+        RectTransform circleRect = circleObject.GetComponent<RectTransform>();
+        circleRect.anchorMin = new Vector2(0.5f, 1f);
+        circleRect.anchorMax = new Vector2(0.5f, 1f);
+        circleRect.pivot = new Vector2(0.5f, 0.5f);
+        circleRect.anchoredPosition = anchoredPosition;
+        circleRect.sizeDelta = circleSize;
+
+        Image circleImage = circleObject.AddComponent<Image>();
+        circleImage.sprite = circleSprite;
+        circleImage.preserveAspect = true;
+        circleImage.color = Color.white;
+        circleImage.raycastTarget = false;
+
         GameObject previewObject = CreateUIObject(objectName, parent);
         RectTransform previewRect = previewObject.GetComponent<RectTransform>();
         previewRect.anchorMin = new Vector2(0.5f, 1f);
@@ -392,8 +460,11 @@ public sealed class InteractionDialogUI : MonoBehaviour
 
         return new PreviewSlot
         {
+            CircleImage = circleImage,
             Image = image,
             AnchorPosition = anchorPosition,
+            CircleSize = circleSize,
+            CircleWithArrowsSize = circleWithArrowsSize,
             OrthographicPadding = orthographicPadding
         };
     }
@@ -414,6 +485,11 @@ public sealed class InteractionDialogUI : MonoBehaviour
         KeepSelectedObject(targetItemOptions, previousTargetItem, ref selectedTargetItemIndex);
         WorldObject targetItem = GetSelectedFromList(targetItemOptions, ref selectedTargetItemIndex);
 
+        RefreshCircleAndHotspot(playerPreviewSlot, playerAgentOptions.Count, previousPlayerAgentButton, nextPlayerAgentButton);
+        RefreshCircleAndHotspot(playerItemPreviewSlot, playerItemOptions.Count, previousPlayerItemButton, nextPlayerItemButton);
+        RefreshCircleAndHotspot(targetPreviewSlot, targetAgentOptions.Count, previousTargetAgentButton, nextTargetAgentButton);
+        RefreshCircleAndHotspot(targetItemPreviewSlot, targetItemOptions.Count, previousTargetItemButton, nextTargetItemButton);
+
         SetLabelText(playerNameLabel, player != null ? player.DisplayName : string.Empty);
         SetLabelText(playerHeldItemLabel, playerItem != null ? playerItem.DisplayName : string.Empty);
         SetLabelText(targetNameLabel, target != null ? target.DisplayName : string.Empty);
@@ -432,6 +508,25 @@ public sealed class InteractionDialogUI : MonoBehaviour
         displayedPlayerItem = playerItem;
         displayedTarget = target;
         displayedTargetItem = targetItem;
+    }
+
+    private void RefreshCircleAndHotspot(PreviewSlot slot, int optionCount, Button previousButton, Button nextButton)
+    {
+        bool hasArrows = optionCount > 1;
+        if (slot != null && slot.CircleImage != null)
+        {
+            RectTransform circleRect = slot.CircleImage.rectTransform;
+            slot.CircleImage.sprite = hasArrows && circleWithArrowsSprite != null
+                ? circleWithArrowsSprite
+                : circleSprite;
+            slot.CircleImage.preserveAspect = true;
+            circleRect.sizeDelta = hasArrows ? slot.CircleWithArrowsSize : slot.CircleSize;
+        }
+
+        if (previousButton != null)
+            previousButton.gameObject.SetActive(hasArrows);
+        if (nextButton != null)
+            nextButton.gameObject.SetActive(hasArrows);
     }
 
     private static WorldObject GetSelectedFromList(List<WorldObject> options, ref int selectedIndex)
@@ -620,12 +715,235 @@ public sealed class InteractionDialogUI : MonoBehaviour
         RefreshInteractionView(forcePreviewRefresh: true);
     }
 
+    private void OnGiveClicked()
+    {
+        WorldObject giver = displayedPlayer;
+        WorldObject item = displayedPlayerItem;
+        WorldObject recipient = displayedTarget;
+        ContainerModule giverContainer = GetOrCreateContainer(giver);
+        ContainerModule recipientContainer = GetOrCreateContainer(recipient);
+
+        if (giver == null || giverContainer == null)
+            return;
+
+        if (item == null)
+        {
+            ShowInteractionMessage($"{giver.DisplayName} has no item to give");
+            return;
+        }
+
+        if (recipient == null || recipientContainer == null)
+        {
+            ShowInteractionMessage("No one nearby to give an item to");
+            return;
+        }
+
+        if (TransferItem(giverContainer, recipientContainer, item, out string reason))
+        {
+            ShowInteractionMessage($"{giver.DisplayName} gave {item.DisplayName} to {recipient.DisplayName}");
+            selectedPlayerItemIndex = 0;
+            selectedTargetItemIndex = 0;
+            RefreshInteractionView(forcePreviewRefresh: true);
+            return;
+        }
+
+        ShowInteractionMessage(reason);
+        Debug.LogWarning($"InteractionDialogUI: failed to give {item.DisplayName}: {reason}", this);
+    }
+
+    private void OnTakeItemClicked()
+    {
+        WorldObject taker = displayedPlayer;
+        WorldObject giver = displayedTarget;
+        WorldObject item = displayedTargetItem;
+        ContainerModule takerContainer = GetOrCreateContainer(taker);
+        ContainerModule giverContainer = GetOrCreateContainer(giver);
+
+        if (taker == null || takerContainer == null)
+            return;
+
+        if (giver == null || giverContainer == null)
+        {
+            ShowInteractionMessage("No one nearby to take an item from");
+            return;
+        }
+
+        if (item == null)
+        {
+            ShowInteractionMessage($"{giver.DisplayName} has no selected item to take");
+            return;
+        }
+
+        if (TransferItem(giverContainer, takerContainer, item, out string reason))
+        {
+            ShowInteractionMessage($"{taker.DisplayName} took {item.DisplayName} from {giver.DisplayName}");
+            selectedTargetItemIndex = 0;
+            selectedPlayerItemIndex = 0;
+            RefreshInteractionView(forcePreviewRefresh: true);
+            return;
+        }
+
+        ShowInteractionMessage(reason);
+        Debug.LogWarning($"InteractionDialogUI: failed to take {item.DisplayName}: {reason}", this);
+    }
+
+    private void OnTradeClicked()
+    {
+        WorldObject trader = displayedPlayer;
+        WorldObject partner = displayedTarget;
+        WorldObject traderItem = displayedPlayerItem;
+        WorldObject partnerItem = displayedTargetItem;
+        ContainerModule traderContainer = GetOrCreateContainer(trader);
+        ContainerModule partnerContainer = GetOrCreateContainer(partner);
+
+        if (trader == null || traderContainer == null)
+            return;
+
+        if (partner == null || partnerContainer == null)
+        {
+            ShowInteractionMessage("No one nearby to trade with");
+            return;
+        }
+
+        if (traderItem == null)
+        {
+            if (partnerItem != null)
+            {
+                OnTakeItemClicked();
+                return;
+            }
+
+            ShowInteractionMessage($"{trader.DisplayName} has no item to trade");
+            return;
+        }
+
+        if (partnerItem == null)
+        {
+            OnGiveClicked();
+            return;
+        }
+
+        if (SwapItems(traderContainer, partnerContainer, traderItem, partnerItem, out string reason))
+        {
+            ShowInteractionMessage($"{trader.DisplayName} traded {traderItem.DisplayName} to {partner.DisplayName} for {partnerItem.DisplayName}");
+            RefreshInteractionView(forcePreviewRefresh: true);
+            return;
+        }
+
+        ShowInteractionMessage(reason);
+        Debug.LogWarning($"InteractionDialogUI: failed to trade {traderItem.DisplayName} for {partnerItem.DisplayName}: {reason}", this);
+    }
+
     private static void CycleSelection(List<WorldObject> options, ref int selectedIndex, int direction)
     {
         if (options.Count <= 1)
             return;
 
         selectedIndex = (selectedIndex + direction + options.Count) % options.Count;
+    }
+
+    private static void ShowInteractionMessage(string message)
+    {
+        BottomBanner.LogInventoryMessage(message);
+    }
+
+    private static bool TransferItem(ContainerModule source, ContainerModule destination, WorldObject item, out string reason)
+    {
+        if (source == null)
+        {
+            reason = "Source inventory is unavailable.";
+            return false;
+        }
+
+        if (destination == null)
+        {
+            reason = "Destination inventory is unavailable.";
+            return false;
+        }
+
+        if (source == destination)
+        {
+            reason = "Cannot transfer an item to the same inventory.";
+            return false;
+        }
+
+        if (item == null)
+        {
+            reason = "No item selected.";
+            return false;
+        }
+
+        if (!source.ReleaseItem(item, out reason))
+            return false;
+
+        if (destination.ReceiveItem(item, false, out reason))
+            return true;
+
+        string receiveFailure = reason;
+        if (!source.ReceiveItem(item, false, out string rollbackReason))
+            reason = $"{receiveFailure} {item.DisplayName} could not be returned: {rollbackReason}";
+        else
+            reason = receiveFailure;
+
+        return false;
+    }
+
+    private static bool SwapItems(ContainerModule firstContainer, ContainerModule secondContainer, WorldObject firstItem, WorldObject secondItem, out string reason)
+    {
+        if (firstContainer == null || secondContainer == null)
+        {
+            reason = "One of the inventories is unavailable.";
+            return false;
+        }
+
+        if (firstContainer == secondContainer)
+        {
+            reason = "Cannot trade within the same inventory.";
+            return false;
+        }
+
+        if (firstItem == null || secondItem == null)
+        {
+            reason = "Both sides need an item selected to trade.";
+            return false;
+        }
+
+        if (!firstContainer.ReleaseItem(firstItem, out reason))
+            return false;
+
+        if (!secondContainer.ReleaseItem(secondItem, out string secondReleaseReason))
+        {
+            RestoreItem(firstContainer, firstItem);
+            reason = secondReleaseReason;
+            return false;
+        }
+
+        bool firstReceivedSecond = firstContainer.ReceiveItem(secondItem, false, out string firstReceiveReason);
+        bool secondReceivedFirst = secondContainer.ReceiveItem(firstItem, false, out string secondReceiveReason);
+
+        if (firstReceivedSecond && secondReceivedFirst)
+        {
+            reason = string.Empty;
+            return true;
+        }
+
+        if (firstReceivedSecond)
+            firstContainer.ReleaseItem(secondItem, out _);
+
+        if (secondReceivedFirst)
+            secondContainer.ReleaseItem(firstItem, out _);
+
+        RestoreItem(firstContainer, firstItem);
+        RestoreItem(secondContainer, secondItem);
+
+        reason = !firstReceivedSecond ? firstReceiveReason : secondReceiveReason;
+        return false;
+    }
+
+    private static void RestoreItem(ContainerModule container, WorldObject item)
+    {
+        if (container != null && item != null)
+            container.ReceiveItem(item, false, out _);
     }
 
     private static ContainerModule GetOrCreateContainer(WorldObject owner)
