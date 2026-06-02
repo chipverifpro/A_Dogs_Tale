@@ -163,6 +163,7 @@ public class SceneFader : MonoBehaviour
     [SerializeField] private Image splashImage;              // drag the Image component from SplashCanvas here
     [SerializeField] private GameObject buildingMessage;
     [SerializeField] private TMPro.TMP_Text buildingMessageText;
+    [SerializeField] private TMPro.TMP_Text buildingMessageOutlineText;
     [SerializeField] private string splashResourceFolder = "Images";
     [SerializeField] private int splashCount = 40;
     [Tooltip("Screen aspect ratios above this are horizontal, below its inverse are vertical, and between them are treated as square.")]
@@ -603,8 +604,11 @@ public class SceneFader : MonoBehaviour
 
         ResolveBuildingMessage();
 
+        string message = loadingMessages[Random.Range(0, loadingMessages.Length)];
         if (buildingMessageText != null)
-            buildingMessageText.text = loadingMessages[Random.Range(0, loadingMessages.Length)];
+            buildingMessageText.text = message;
+        if (buildingMessageOutlineText != null)
+            buildingMessageOutlineText.text = message;
     }
 
     void ResolveBuildingMessage()
@@ -613,7 +617,28 @@ public class SceneFader : MonoBehaviour
             buildingMessage = DungeonGenerator.FindInActiveScene("BuildingMessage");
 
         if (buildingMessageText == null && buildingMessage != null)
-            buildingMessageText = buildingMessage.GetComponent<TMPro.TMP_Text>();
+            buildingMessageText = FindTMPTextChild(buildingMessage.transform, "BuildingMessage Text");
+        if (buildingMessageOutlineText == null && buildingMessage != null)
+            buildingMessageOutlineText = FindTMPTextChild(buildingMessage.transform, "BuildingMessage Outline");
+    }
+
+    TMPro.TMP_Text FindTMPTextChild(Transform parent, string childName)
+    {
+        if (parent == null || string.IsNullOrWhiteSpace(childName))
+            return null;
+
+        for (int i = 0; i < parent.childCount; i++)
+        {
+            Transform child = parent.GetChild(i);
+            if (child.name == childName && child.TryGetComponent(out TMPro.TMP_Text text))
+                return text;
+
+            TMPro.TMP_Text nestedText = FindTMPTextChild(child, childName);
+            if (nestedText != null)
+                return nestedText;
+        }
+
+        return null;
     }
 
     void SetSplashMenuCameraEnabled(bool enabled)
