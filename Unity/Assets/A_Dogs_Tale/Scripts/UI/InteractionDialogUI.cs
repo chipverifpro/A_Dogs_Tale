@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using DogGame;
 using DogGame.Modules;
 using TMPro;
 using UnityEngine;
@@ -101,6 +102,7 @@ public sealed class InteractionDialogUI : MonoBehaviour
     private WorldObject pendingRightAgentSelection;
     private InteractionTab currentTab = InteractionTab.Items;
     private bool isOpen;
+    private bool pausedGameForDialog;
     private Sprite circleSprite;
     private Sprite circleWithArrowsSprite;
     private Sprite tradeArrowsSprite;
@@ -167,6 +169,7 @@ public sealed class InteractionDialogUI : MonoBehaviour
 
     private void OnDestroy()
     {
+        RestorePauseStateForDialog();
         ReleasePreviewSlot(playerPreviewSlot);
         ReleasePreviewSlot(playerItemPreviewSlot);
         ReleasePreviewSlot(targetPreviewSlot);
@@ -184,6 +187,9 @@ public sealed class InteractionDialogUI : MonoBehaviour
     public void Show()
     {
         EnsureEventSystem();
+        if (!isOpen)
+            ApplyPauseStateForDialog();
+
         isOpen = true;
 
         if (dialogRoot != null)
@@ -194,10 +200,36 @@ public sealed class InteractionDialogUI : MonoBehaviour
 
     public void Hide()
     {
+        bool wasOpen = isOpen;
+
         isOpen = false;
 
         if (dialogRoot != null)
             dialogRoot.SetActive(false);
+
+        if (wasOpen)
+            RestorePauseStateForDialog();
+    }
+
+    private void ApplyPauseStateForDialog()
+    {
+        if (GamePause.IsPaused)
+        {
+            pausedGameForDialog = false;
+            return;
+        }
+
+        GamePause.Pause();
+        pausedGameForDialog = true;
+    }
+
+    private void RestorePauseStateForDialog()
+    {
+        if (!pausedGameForDialog)
+            return;
+
+        pausedGameForDialog = false;
+        GamePause.Resume();
     }
 
     private bool WasInteractionTogglePressedThisFrame()

@@ -5,7 +5,7 @@ using UnityEngine.Rendering;
 public static class EmoteIconVisualFactory
 {
     const string InstanceName = "EmoteIconVisual";
-    const float DefaultSize = 0.45f;
+    const float DefaultSize = 0.9f;
     const float DefaultThickness = 0.04f;
     const float DefaultLifetimeSeconds = 10f;
 

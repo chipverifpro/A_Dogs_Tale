@@ -35,7 +35,10 @@ namespace DogGame.Modules
         private static readonly List<QuestModuleBase> KnownQuestModulesMutable = new();
         private const string QuestBannerIconSpriteName = "Quest";
         private const string QuestOverheadIconInstanceName = "QuestRequestIconVisual";
-        private const float QuestOverheadIconSize = 0.45f;
+        private const string QuestAvailableIconSpriteName = "Quest";
+        private const string QuestAvailableIconSpriteSheet = "Sprites/AndroidButtonsAndQuests_B";
+        private const int QuestAvailableIconSpriteIndex = 1;
+        private const float QuestOverheadIconSize = 0.9f;
         private const float QuestOverheadIconTopPadding = 0.12f;
 
         public static IReadOnlyList<QuestModuleBase> KnownQuestModules => KnownQuestModulesMutable;
@@ -76,6 +79,7 @@ namespace DogGame.Modules
         protected virtual string QuestIconSpriteName => "";
         protected virtual string QuestIconSpriteSheet => "";
         protected virtual int QuestIconSpriteIndex => -1;
+        protected virtual bool IsQuestAvailable => status == QuestRunStatus.Inactive && CanStartFromQuestDialog;
 
         protected string ObjectDisplayName => worldObject != null ? worldObject.DisplayName : name;
 
@@ -97,6 +101,10 @@ namespace DogGame.Modules
             if (IsRunning)
             {
                 QuestManager.RegisterActiveQuest(this);
+                ShowQuestRequestIcon();
+            }
+            else if (IsQuestAvailable)
+            {
                 ShowQuestRequestIcon();
             }
         }
@@ -248,9 +256,9 @@ namespace DogGame.Modules
             if (target == null)
                 return;
 
-            Sprite iconSprite = SpriteServer.SpriteLookup(QuestIconSpriteName);
-            if (iconSprite == null && QuestIconSpriteIndex >= 0 && !string.IsNullOrWhiteSpace(QuestIconSpriteSheet))
-                iconSprite = SpriteServer.SpriteSheetLookup(QuestIconSpriteSheet, QuestIconSpriteIndex);
+            Sprite iconSprite = IsRunning
+                ? GetRunningQuestIconSprite()
+                : GetAvailableQuestIconSprite();
             if (iconSprite == null)
                 return;
 
@@ -262,6 +270,21 @@ namespace DogGame.Modules
                 size: QuestOverheadIconSize,
                 lifetimeSeconds: 0f,
                 instanceName: QuestOverheadIconInstanceName);
+        }
+
+        private Sprite GetRunningQuestIconSprite()
+        {
+            Sprite iconSprite = SpriteServer.SpriteLookup(QuestIconSpriteName);
+            if (iconSprite == null && QuestIconSpriteIndex >= 0 && !string.IsNullOrWhiteSpace(QuestIconSpriteSheet))
+                iconSprite = SpriteServer.SpriteSheetLookup(QuestIconSpriteSheet, QuestIconSpriteIndex);
+
+            return iconSprite ?? GetAvailableQuestIconSprite();
+        }
+
+        private static Sprite GetAvailableQuestIconSprite()
+        {
+            return SpriteServer.SpriteLookup(QuestAvailableIconSpriteName)
+                ?? SpriteServer.SpriteSheetLookup(QuestAvailableIconSpriteSheet, QuestAvailableIconSpriteIndex);
         }
 
         private void HideQuestRequestIcon()
