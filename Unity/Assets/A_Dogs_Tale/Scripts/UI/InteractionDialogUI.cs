@@ -29,18 +29,27 @@ public sealed class InteractionDialogUI : MonoBehaviour
     [SerializeField, Range(0f, 75f)] private float dialogScaleReductionPercent = 25f;
     [SerializeField] private Vector2 closeButtonAnchoredPosition = new(-250f, -120f);
     [SerializeField] private Vector2 closeButtonSize = new(120f, 120f);
+    [SerializeField] private float actionButtonHeight = 112f;
     [SerializeField] private float previewSpinDegreesPerSecond = 24f;
     [SerializeField, Range(0f, 85f)] private float previewViewAngleDegrees = 30f;
     [SerializeField, Min(0f)] private float tradePartnerSearchRadiusTiles = 2f;
+    [SerializeField, Min(0f)] private float socialNearbyRadiusMultiplier = 2f;
+    [SerializeField, Min(0f)] private float throwForwardImpulse = 7f;
+    [SerializeField, Min(0f)] private float throwUpwardImpulse = 2f;
+    [SerializeField, Min(0f)] private float throwReleaseHeight = 0.5f;
 
     private Sprite interactionFrameSprite;
     private Canvas overlayCanvas;
     private RectTransform dialogRect;
     private GameObject dialogRoot;
+    private TextMeshProUGUI titleLabel;
     private TextMeshProUGUI playerNameLabel;
     private TextMeshProUGUI playerHeldItemLabel;
     private TextMeshProUGUI targetNameLabel;
     private TextMeshProUGUI targetHeldItemLabel;
+    private Image socialTabHighlight;
+    private Image packTabHighlight;
+    private Image itemsTabHighlight;
     private Button previousPlayerAgentButton;
     private Button nextPlayerAgentButton;
     private Button previousPlayerItemButton;
@@ -49,6 +58,14 @@ public sealed class InteractionDialogUI : MonoBehaviour
     private Button nextTargetAgentButton;
     private Button previousTargetItemButton;
     private Button nextTargetItemButton;
+    private Button socialTabButton;
+    private Button packTabButton;
+    private Button itemsTabButton;
+    private GameObject tradeArrowsObject;
+    private Button giveHotspotButton;
+    private Button exchangeHotspotButton;
+    private Button takeHotspotButton;
+    private GameObject actionPanelObject;
     private PreviewSlot playerPreviewSlot;
     private PreviewSlot playerItemPreviewSlot;
     private PreviewSlot targetPreviewSlot;
@@ -57,14 +74,26 @@ public sealed class InteractionDialogUI : MonoBehaviour
     private readonly List<WorldObject> playerItemOptions = new();
     private readonly List<WorldObject> targetAgentOptions = new();
     private readonly List<WorldObject> targetItemOptions = new();
+    private readonly List<WorldObject> packMemberOptions = new();
+    private readonly List<WorldObject> socialTargetOptions = new();
     private int selectedPlayerAgentIndex;
     private int selectedPlayerItemIndex;
     private int selectedTargetAgentIndex;
     private int selectedTargetItemIndex;
+    private int selectedPackLeftIndex;
+    private int selectedPackRightIndex = 1;
+    private int selectedSocialTargetIndex;
     private WorldObject displayedPlayer;
     private WorldObject displayedPlayerItem;
     private WorldObject displayedTarget;
     private WorldObject displayedTargetItem;
+    private WorldObject displayedPackLeft;
+    private WorldObject displayedPackRight;
+    private WorldObject displayedSocialLeft;
+    private WorldObject displayedSocialRight;
+    private WorldObject pendingLeftAgentSelection;
+    private WorldObject pendingRightAgentSelection;
+    private InteractionTab currentTab = InteractionTab.Items;
     private bool isOpen;
     private Sprite circleSprite;
     private Sprite circleWithArrowsSprite;
@@ -86,6 +115,21 @@ public sealed class InteractionDialogUI : MonoBehaviour
         public Vector2 CircleSize;
         public Vector2 CircleWithArrowsSize;
         public WorldObject DisplayedObject;
+    }
+
+    private enum InventoryAction
+    {
+        Use = 0,
+        Eat = 1,
+        Drop = 4,
+        PickUp = 5
+    }
+
+    private enum InteractionTab
+    {
+        Social,
+        Items,
+        Pack
     }
 
     private void Awake()
@@ -220,6 +264,7 @@ public sealed class InteractionDialogUI : MonoBehaviour
         BuildTradeArrows(dialogRoot.transform);
         BuildTabLabels(dialogRoot.transform);
         BuildSelectionArrows(dialogRoot.transform);
+        BuildActionButtons(dialogRoot.transform);
         BuildCloseHotspot(dialogRoot.transform);
     }
 
@@ -247,7 +292,7 @@ public sealed class InteractionDialogUI : MonoBehaviour
         titleRect.anchoredPosition = new Vector2(0f, -118f);
         titleRect.sizeDelta = new Vector2(720f, 120f);
 
-        TextMeshProUGUI titleLabel = titleObject.AddComponent<TextMeshProUGUI>();
+        titleLabel = titleObject.AddComponent<TextMeshProUGUI>();
         titleLabel.text = "INTERACTION";
         if (titleFont != null)
             titleLabel.font = titleFont;
@@ -272,13 +317,19 @@ public sealed class InteractionDialogUI : MonoBehaviour
 
     private void BuildTabLabels(Transform parent)
     {
+        socialTabHighlight = CreateTabHighlight(parent, "SocialTabHighlight", new Vector2(-404f, -428f), new Vector2(382f, 70f));
         CreateTabLabel(parent, "SocialTabLabel", "Social", new Vector2(-404f, -428f), new Vector2(260f, 74f));
+        packTabHighlight = CreateTabHighlight(parent, "PackTabHighlight", new Vector2(0f, -428f), new Vector2(382f, 70f));
         CreateTabLabel(parent, "PackTabLabel", "Pack", new Vector2(0f, -428f), new Vector2(260f, 74f));
-        CreateTabHighlight(parent, "ItemsTabHighlight", new Vector2(404f, -428f), new Vector2(382f, 70f));
+        itemsTabHighlight = CreateTabHighlight(parent, "ItemsTabHighlight", new Vector2(376f, -428f), new Vector2(438f, 70f));
         CreateTabLabel(parent, "ItemsTabLabel", "Items", new Vector2(404f, -428f), new Vector2(260f, 74f));
+        socialTabButton = CreateTabHotspot(parent, "SocialTabButton", new Vector2(-404f, -428f), OnSocialTabClicked);
+        packTabButton = CreateTabHotspot(parent, "PackTabButton", new Vector2(0f, -428f), OnPackTabClicked);
+        itemsTabButton = CreateTabHotspot(parent, "ItemsTabButton", new Vector2(404f, -428f), OnItemsTabClicked);
+        RefreshTabHighlights();
     }
 
-    private static void CreateTabHighlight(Transform parent, string objectName, Vector2 anchoredPosition, Vector2 size)
+    private static Image CreateTabHighlight(Transform parent, string objectName, Vector2 anchoredPosition, Vector2 size)
     {
         GameObject highlightObject = CreateUIObject(objectName, parent);
         RectTransform highlightRect = highlightObject.GetComponent<RectTransform>();
@@ -291,6 +342,32 @@ public sealed class InteractionDialogUI : MonoBehaviour
         Image highlight = highlightObject.AddComponent<Image>();
         highlight.color = new Color(1f, 0.62f, 0.08f, 0.24f);
         highlight.raycastTarget = false;
+        return highlight;
+    }
+
+    private Button CreateTabHotspot(
+        Transform parent,
+        string objectName,
+        Vector2 anchoredPosition,
+        UnityEngine.Events.UnityAction clickHandler)
+    {
+        GameObject buttonObject = CreateUIObject(objectName, parent);
+        RectTransform rect = buttonObject.GetComponent<RectTransform>();
+        rect.anchorMin = new Vector2(0.5f, 1f);
+        rect.anchorMax = new Vector2(0.5f, 1f);
+        rect.pivot = new Vector2(0.5f, 0.5f);
+        rect.anchoredPosition = anchoredPosition;
+        rect.sizeDelta = new Vector2(382f, 70f);
+
+        Image image = buttonObject.AddComponent<Image>();
+        image.color = Color.clear;
+        image.raycastTarget = true;
+
+        Button button = buttonObject.AddComponent<Button>();
+        button.targetGraphic = image;
+        button.onClick.AddListener(AudioPlayer.PlayUiButtonClick);
+        button.onClick.AddListener(clickHandler);
+        return button;
     }
 
     private void BuildTopInfo(Transform parent)
@@ -303,23 +380,23 @@ public sealed class InteractionDialogUI : MonoBehaviour
 
     private void BuildTradeArrows(Transform parent)
     {
-        GameObject arrowsObject = CreateUIObject("TradeArrows", parent);
-        RectTransform arrowsRect = arrowsObject.GetComponent<RectTransform>();
+        tradeArrowsObject = CreateUIObject("TradeArrows", parent);
+        RectTransform arrowsRect = tradeArrowsObject.GetComponent<RectTransform>();
         arrowsRect.anchorMin = new Vector2(0.5f, 1f);
         arrowsRect.anchorMax = new Vector2(0.5f, 1f);
         arrowsRect.pivot = new Vector2(0.5f, 0.5f);
         arrowsRect.anchoredPosition = new Vector2(0f, -292f);
         arrowsRect.sizeDelta = new Vector2(86f, 186f);
 
-        Image arrowsImage = arrowsObject.AddComponent<Image>();
+        Image arrowsImage = tradeArrowsObject.AddComponent<Image>();
         arrowsImage.sprite = tradeArrowsSprite;
         arrowsImage.preserveAspect = true;
         arrowsImage.color = Color.white;
         arrowsImage.raycastTarget = false;
 
-        CreateTradeHotspot(parent, "GiveHotspot", new Vector2(0f, -244f), OnGiveClicked);
-        CreateTradeHotspot(parent, "ExchangeHotspot", new Vector2(0f, -292f), OnTradeClicked);
-        CreateTradeHotspot(parent, "TakeHotspot", new Vector2(0f, -340f), OnTakeItemClicked);
+        giveHotspotButton = CreateTradeHotspot(parent, "GiveHotspot", new Vector2(0f, -244f), OnGiveClicked);
+        exchangeHotspotButton = CreateTradeHotspot(parent, "ExchangeHotspot", new Vector2(0f, -292f), OnTradeClicked);
+        takeHotspotButton = CreateTradeHotspot(parent, "TakeHotspot", new Vector2(0f, -340f), OnTakeItemClicked);
     }
 
     private Button CreateTradeHotspot(
@@ -345,6 +422,155 @@ public sealed class InteractionDialogUI : MonoBehaviour
         button.onClick.AddListener(AudioPlayer.PlayUiButtonClick);
         button.onClick.AddListener(clickHandler);
         return button;
+    }
+
+    private void BuildActionButtons(Transform parent)
+    {
+        actionPanelObject = CreateUIObject("ActionPanel", parent);
+        RectTransform actionPanelRect = actionPanelObject.GetComponent<RectTransform>();
+        actionPanelRect.anchorMin = new Vector2(0.5f, 1f);
+        actionPanelRect.anchorMax = new Vector2(0.5f, 1f);
+        actionPanelRect.pivot = new Vector2(0.5f, 0.5f);
+        actionPanelRect.anchoredPosition = new Vector2(0f, -680f);
+        actionPanelRect.sizeDelta = new Vector2(880f, 260f);
+
+        VerticalLayoutGroup layout = actionPanelObject.AddComponent<VerticalLayoutGroup>();
+        layout.childAlignment = TextAnchor.MiddleCenter;
+        layout.childControlWidth = false;
+        layout.childControlHeight = false;
+        layout.childForceExpandWidth = false;
+        layout.childForceExpandHeight = false;
+        layout.spacing = 8f;
+        layout.padding = new RectOffset(0, 0, 0, 0);
+
+        Transform topRow = CreateActionButtonRow("HeldItemActionRowTop", actionPanelObject.transform, actionButtonHeight);
+        Transform bottomRow = CreateActionButtonRow("HeldItemActionRowBottom", actionPanelObject.transform, actionButtonHeight * 0.86f);
+
+        CreateActionButton(topRow, InventoryAction.Use, OnUseClicked);
+        CreateActionButton(topRow, InventoryAction.Eat, OnEatClicked);
+        CreateActionButton(bottomRow, InventoryAction.Drop, OnDropClicked, 0.86f);
+        CreateThrowActionButton(bottomRow, 0.86f);
+        CreateActionButton(bottomRow, InventoryAction.PickUp, OnPickUpClicked, 0.86f);
+    }
+
+    private Transform CreateActionButtonRow(string rowName, Transform parent, float rowHeight)
+    {
+        GameObject rowObject = CreateUIObject(rowName, parent);
+
+        HorizontalLayoutGroup rowLayout = rowObject.AddComponent<HorizontalLayoutGroup>();
+        rowLayout.childAlignment = TextAnchor.MiddleCenter;
+        rowLayout.childControlWidth = false;
+        rowLayout.childControlHeight = false;
+        rowLayout.childForceExpandWidth = false;
+        rowLayout.childForceExpandHeight = false;
+        rowLayout.spacing = 8f;
+
+        LayoutElement layoutElement = rowObject.AddComponent<LayoutElement>();
+        layoutElement.preferredHeight = rowHeight;
+        layoutElement.minHeight = rowHeight;
+
+        return rowObject.transform;
+    }
+
+    private void CreateActionButton(Transform parent, InventoryAction action, UnityEngine.Events.UnityAction clickHandler, float heightScale = 1f)
+    {
+        Sprite sprite = GetInventoryActionSprite(action);
+        string fallbackText = GetActionFallbackText(action);
+        Button button = CreateSpriteButton($"{action}Button", parent, sprite, fallbackText, clickHandler);
+        ConfigureActionButtonSize(button, sprite, actionButtonHeight * Mathf.Max(0.01f, heightScale));
+    }
+
+    private void CreateThrowActionButton(Transform parent, float heightScale = 1f)
+    {
+        Sprite sprite = SpriteServer.SpriteLookup("Throw_Item")
+            ?? SpriteServer.SpriteSheetLookup("Sprites/DogActions_B", 0);
+        Button button = CreateSpriteButton("ThrowButton", parent, sprite, "THROW", OnThrowClicked);
+        ConfigureActionButtonSize(button, sprite, actionButtonHeight * Mathf.Max(0.01f, heightScale));
+    }
+
+    private static void ConfigureActionButtonSize(Button button, Sprite sprite, float buttonHeight)
+    {
+        float width = buttonHeight;
+        if (sprite != null && sprite.rect.height > 0f)
+            width = buttonHeight * (sprite.rect.width / sprite.rect.height);
+
+        RectTransform rect = button.GetComponent<RectTransform>();
+        rect.sizeDelta = new Vector2(width, buttonHeight);
+
+        LayoutElement layoutElement = button.gameObject.AddComponent<LayoutElement>();
+        layoutElement.preferredWidth = width;
+        layoutElement.preferredHeight = buttonHeight;
+        layoutElement.minWidth = width;
+        layoutElement.minHeight = buttonHeight;
+    }
+
+    private static Sprite GetInventoryActionSprite(InventoryAction action)
+    {
+        string spriteName = action switch
+        {
+            InventoryAction.Use => "UseItem",
+            InventoryAction.Eat => "EatItem",
+            InventoryAction.Drop => "DropItem",
+            InventoryAction.PickUp => "PickUpItem",
+            _ => string.Empty
+        };
+
+        return SpriteServer.SpriteLookup(spriteName);
+    }
+
+    private static string GetActionFallbackText(InventoryAction action)
+    {
+        return action switch
+        {
+            InventoryAction.Use => "USE",
+            InventoryAction.Eat => "EAT",
+            InventoryAction.Drop => "DROP",
+            InventoryAction.PickUp => "PICK UP",
+            _ => action.ToString()
+        };
+    }
+
+    private Button CreateSpriteButton(
+        string objectName,
+        Transform parent,
+        Sprite sprite,
+        string fallbackText,
+        UnityEngine.Events.UnityAction clickHandler)
+    {
+        GameObject buttonObject = CreateUIObject(objectName, parent);
+        Image image = buttonObject.AddComponent<Image>();
+        image.sprite = sprite;
+        image.preserveAspect = true;
+        image.color = sprite != null
+            ? Color.white
+            : new Color(0.88f, 0.78f, 0.5f, 0.86f);
+
+        Button button = buttonObject.AddComponent<Button>();
+        button.targetGraphic = image;
+        button.onClick.AddListener(AudioPlayer.PlayUiButtonClick);
+        button.onClick.AddListener(clickHandler);
+
+        if (sprite == null)
+            AddFallbackButtonText(buttonObject.transform, fallbackText);
+
+        return button;
+    }
+
+    private static void AddFallbackButtonText(Transform parent, string text)
+    {
+        GameObject labelObject = CreateUIObject("FallbackLabel", parent);
+        RectTransform labelRect = labelObject.GetComponent<RectTransform>();
+        labelRect.anchorMin = Vector2.zero;
+        labelRect.anchorMax = Vector2.one;
+        labelRect.offsetMin = Vector2.zero;
+        labelRect.offsetMax = Vector2.zero;
+
+        TextMeshProUGUI label = labelObject.AddComponent<TextMeshProUGUI>();
+        label.text = text;
+        label.fontSize = 20f;
+        label.color = Color.black;
+        label.alignment = TextAlignmentOptions.Center;
+        label.raycastTarget = false;
     }
 
     private static TextMeshProUGUI CreateInfoLabel(
@@ -471,7 +697,25 @@ public sealed class InteractionDialogUI : MonoBehaviour
 
     private void RefreshInteractionView(bool forcePreviewRefresh = false)
     {
+        RefreshTabHighlights();
+        if (currentTab == InteractionTab.Pack)
+        {
+            RefreshPackView(forcePreviewRefresh);
+            return;
+        }
+
+        if (currentTab == InteractionTab.Social)
+        {
+            RefreshSocialView(forcePreviewRefresh);
+            return;
+        }
+
+        SetItemsControlsActive(true);
+        SetPreviewSlotActive(playerItemPreviewSlot, true);
+        SetPreviewSlotActive(targetItemPreviewSlot, true);
+
         BuildPlayerAgentOptions();
+        ApplyPendingSelection(playerAgentOptions, pendingLeftAgentSelection, ref selectedPlayerAgentIndex);
         WorldObject player = GetSelectedFromList(playerAgentOptions, ref selectedPlayerAgentIndex);
         WorldObject previousPlayerItem = GetSelectedFromList(playerItemOptions, ref selectedPlayerItemIndex);
         BuildItemOptions(player, playerItemOptions);
@@ -479,6 +723,7 @@ public sealed class InteractionDialogUI : MonoBehaviour
         WorldObject playerItem = GetSelectedFromList(playerItemOptions, ref selectedPlayerItemIndex);
 
         BuildTargetAgentOptions(player);
+        ApplyPendingSelection(targetAgentOptions, pendingRightAgentSelection, ref selectedTargetAgentIndex);
         WorldObject target = GetSelectedFromList(targetAgentOptions, ref selectedTargetAgentIndex);
         WorldObject previousTargetItem = GetSelectedFromList(targetItemOptions, ref selectedTargetItemIndex);
         BuildItemOptions(target, targetItemOptions);
@@ -508,6 +753,179 @@ public sealed class InteractionDialogUI : MonoBehaviour
         displayedPlayerItem = playerItem;
         displayedTarget = target;
         displayedTargetItem = targetItem;
+        ClearPendingSelections();
+    }
+
+    private void RefreshSocialView(bool forcePreviewRefresh = false)
+    {
+        SetItemsControlsActive(false);
+        SetPreviewSlotActive(playerItemPreviewSlot, false);
+        SetPreviewSlotActive(targetItemPreviewSlot, false);
+
+        BuildPlayerAgentOptions();
+        ApplyPendingSelection(playerAgentOptions, pendingLeftAgentSelection, ref selectedPlayerAgentIndex);
+        WorldObject leftMember = GetSelectedFromList(playerAgentOptions, ref selectedPlayerAgentIndex);
+        BuildSocialTargetOptions(leftMember);
+        ApplyPendingSelection(socialTargetOptions, pendingRightAgentSelection, ref selectedSocialTargetIndex);
+        WorldObject rightMember = GetSelectedFromList(socialTargetOptions, ref selectedSocialTargetIndex);
+
+        RefreshCircleAndHotspot(playerPreviewSlot, playerAgentOptions.Count, previousPlayerAgentButton, nextPlayerAgentButton);
+        RefreshCircleAndHotspot(targetPreviewSlot, socialTargetOptions.Count, previousTargetAgentButton, nextTargetAgentButton);
+        RefreshCircleAndHotspot(playerItemPreviewSlot, 0, previousPlayerItemButton, nextPlayerItemButton);
+        RefreshCircleAndHotspot(targetItemPreviewSlot, 0, previousTargetItemButton, nextTargetItemButton);
+
+        SetLabelText(playerNameLabel, leftMember != null ? leftMember.DisplayName : string.Empty);
+        SetLabelText(playerHeldItemLabel, string.Empty);
+        SetLabelText(targetNameLabel, rightMember != null ? rightMember.DisplayName : string.Empty);
+        SetLabelText(targetHeldItemLabel, string.Empty);
+
+        if (forcePreviewRefresh || leftMember != displayedSocialLeft)
+            BuildPreviewClone(playerPreviewSlot, leftMember, "SocialLeft");
+        if (forcePreviewRefresh || rightMember != displayedSocialRight)
+            BuildPreviewClone(targetPreviewSlot, rightMember, "SocialRight");
+
+        BuildPreviewClone(playerItemPreviewSlot, null, "SocialLeftItem");
+        BuildPreviewClone(targetItemPreviewSlot, null, "SocialRightItem");
+
+        displayedSocialLeft = leftMember;
+        displayedSocialRight = rightMember;
+        displayedPlayer = leftMember;
+        displayedPlayerItem = null;
+        displayedTarget = rightMember;
+        displayedTargetItem = null;
+        ClearPendingSelections();
+    }
+
+    private void RefreshPackView(bool forcePreviewRefresh = false)
+    {
+        SetItemsControlsActive(false);
+        SetPreviewSlotActive(playerItemPreviewSlot, false);
+        SetPreviewSlotActive(targetItemPreviewSlot, false);
+
+        BuildPackMemberOptions();
+        ApplyPendingSelection(packMemberOptions, pendingLeftAgentSelection, ref selectedPackLeftIndex);
+        ApplyPendingSelection(packMemberOptions, pendingRightAgentSelection, ref selectedPackRightIndex);
+        WorldObject leftMember = GetSelectedFromList(packMemberOptions, ref selectedPackLeftIndex);
+        EnsurePackRightSelection(leftMember);
+        WorldObject rightMember = GetSelectedFromList(packMemberOptions, ref selectedPackRightIndex);
+        if (rightMember == leftMember)
+            rightMember = null;
+
+        RefreshCircleAndHotspot(playerPreviewSlot, packMemberOptions.Count, previousPlayerAgentButton, nextPlayerAgentButton);
+        RefreshCircleAndHotspot(targetPreviewSlot, Mathf.Max(0, packMemberOptions.Count - 1), previousTargetAgentButton, nextTargetAgentButton);
+        RefreshCircleAndHotspot(playerItemPreviewSlot, 0, previousPlayerItemButton, nextPlayerItemButton);
+        RefreshCircleAndHotspot(targetItemPreviewSlot, 0, previousTargetItemButton, nextTargetItemButton);
+
+        SetLabelText(playerNameLabel, leftMember != null ? leftMember.DisplayName : string.Empty);
+        SetLabelText(playerHeldItemLabel, string.Empty);
+        SetLabelText(targetNameLabel, rightMember != null ? rightMember.DisplayName : string.Empty);
+        SetLabelText(targetHeldItemLabel, string.Empty);
+
+        if (forcePreviewRefresh || leftMember != displayedPackLeft)
+            BuildPreviewClone(playerPreviewSlot, leftMember, "PackLeft");
+        if (forcePreviewRefresh || rightMember != displayedPackRight)
+            BuildPreviewClone(targetPreviewSlot, rightMember, "PackRight");
+
+        BuildPreviewClone(playerItemPreviewSlot, null, "PackLeftItem");
+        BuildPreviewClone(targetItemPreviewSlot, null, "PackRightItem");
+
+        displayedPackLeft = leftMember;
+        displayedPackRight = rightMember;
+        displayedPlayer = leftMember;
+        displayedPlayerItem = null;
+        displayedTarget = rightMember;
+        displayedTargetItem = null;
+        ClearPendingSelections();
+    }
+
+    private void SetItemsControlsActive(bool active)
+    {
+        if (tradeArrowsObject != null)
+            tradeArrowsObject.SetActive(active);
+        if (giveHotspotButton != null)
+            giveHotspotButton.gameObject.SetActive(active);
+        if (exchangeHotspotButton != null)
+            exchangeHotspotButton.gameObject.SetActive(active);
+        if (takeHotspotButton != null)
+            takeHotspotButton.gameObject.SetActive(active);
+        if (actionPanelObject != null)
+            actionPanelObject.SetActive(active);
+    }
+
+    private static void SetPreviewSlotActive(PreviewSlot slot, bool active)
+    {
+        if (slot == null)
+            return;
+
+        if (slot.CircleImage != null)
+            slot.CircleImage.gameObject.SetActive(active);
+        if (slot.Image != null)
+            slot.Image.gameObject.SetActive(active);
+    }
+
+    private void RefreshTabHighlights()
+    {
+        if (socialTabHighlight != null)
+            socialTabHighlight.gameObject.SetActive(currentTab == InteractionTab.Social);
+        if (packTabHighlight != null)
+            packTabHighlight.gameObject.SetActive(currentTab == InteractionTab.Pack);
+        if (itemsTabHighlight != null)
+            itemsTabHighlight.gameObject.SetActive(currentTab == InteractionTab.Items);
+        if (titleLabel != null)
+            titleLabel.text = currentTab.ToString().ToUpperInvariant();
+    }
+
+    private void OnSocialTabClicked()
+    {
+        if (currentTab == InteractionTab.Social)
+            return;
+
+        PreserveCurrentAgentsForTabSwitch();
+        currentTab = InteractionTab.Social;
+        displayedSocialLeft = null;
+        displayedSocialRight = null;
+        RefreshInteractionView(forcePreviewRefresh: true);
+    }
+
+    private void OnPackTabClicked()
+    {
+        if (currentTab == InteractionTab.Pack)
+            return;
+
+        PreserveCurrentAgentsForTabSwitch();
+        currentTab = InteractionTab.Pack;
+        displayedPackLeft = null;
+        displayedPackRight = null;
+        RefreshInteractionView(forcePreviewRefresh: true);
+    }
+
+    private void OnItemsTabClicked()
+    {
+        if (currentTab == InteractionTab.Items)
+            return;
+
+        PreserveCurrentAgentsForTabSwitch();
+        currentTab = InteractionTab.Items;
+        displayedPlayer = null;
+        displayedPlayerItem = null;
+        displayedTarget = null;
+        displayedTargetItem = null;
+        RefreshInteractionView(forcePreviewRefresh: true);
+    }
+
+    private void PreserveCurrentAgentsForTabSwitch()
+    {
+        WorldObject leftAgent = displayedPlayer ?? displayedPackLeft ?? displayedSocialLeft;
+        WorldObject rightAgent = displayedTarget ?? displayedPackRight ?? displayedSocialRight;
+
+        pendingLeftAgentSelection = leftAgent;
+        pendingRightAgentSelection = rightAgent;
+
+        RememberSelection(playerAgentOptions, leftAgent, ref selectedPlayerAgentIndex);
+        RememberSelection(packMemberOptions, leftAgent, ref selectedPackLeftIndex);
+        RememberSelection(targetAgentOptions, rightAgent, ref selectedTargetAgentIndex);
+        RememberSelection(socialTargetOptions, rightAgent, ref selectedSocialTargetIndex);
+        RememberSelection(packMemberOptions, rightAgent, ref selectedPackRightIndex);
     }
 
     private void RefreshCircleAndHotspot(PreviewSlot slot, int optionCount, Button previousButton, Button nextButton)
@@ -569,6 +987,67 @@ public sealed class InteractionDialogUI : MonoBehaviour
             playerAgentOptions.Add(packLeader);
 
         KeepSelectedObject(playerAgentOptions, previousSelection, ref selectedPlayerAgentIndex);
+    }
+
+    private void BuildPackMemberOptions()
+    {
+        WorldObject previousLeft = GetSelectedFromList(packMemberOptions, ref selectedPackLeftIndex);
+        WorldObject previousRight = GetSelectedFromList(packMemberOptions, ref selectedPackRightIndex);
+        packMemberOptions.Clear();
+
+        Pack playerPack = Dir.Instance != null ? Dir.Instance.playerPack : null;
+        if (playerPack != null && playerPack.packAgentList != null)
+        {
+            for (int i = 0; i < playerPack.packAgentList.Count; i++)
+            {
+                WorldObject agent = playerPack.packAgentList[i];
+                if (agent != null && agent.gameObject.activeInHierarchy)
+                    packMemberOptions.Add(agent);
+            }
+        }
+
+        Dir dir = Dir.Instance;
+        WorldObject packLeader = dir != null && dir.playerPack != null ? dir.playerPack.packLeader : null;
+        if (packMemberOptions.Count == 0 && packLeader != null)
+            packMemberOptions.Add(packLeader);
+
+        KeepSelectedObject(packMemberOptions, previousLeft, ref selectedPackLeftIndex);
+        KeepSelectedObject(packMemberOptions, previousRight, ref selectedPackRightIndex);
+    }
+
+    private void EnsurePackRightSelection(WorldObject leftMember)
+    {
+        if (packMemberOptions.Count <= 1)
+        {
+            selectedPackRightIndex = 0;
+            return;
+        }
+
+        selectedPackLeftIndex = Mathf.Clamp(selectedPackLeftIndex, 0, packMemberOptions.Count - 1);
+        selectedPackRightIndex = Mathf.Clamp(selectedPackRightIndex, 0, packMemberOptions.Count - 1);
+        if (GetSelectedFromList(packMemberOptions, ref selectedPackRightIndex) != leftMember)
+            return;
+
+        selectedPackRightIndex = FindNextPackMemberIndex(selectedPackRightIndex, 1, selectedPackLeftIndex);
+    }
+
+    private int FindNextPackMemberIndex(int currentIndex, int direction, int skipIndex)
+    {
+        if (packMemberOptions.Count <= 0)
+            return 0;
+
+        if (packMemberOptions.Count == 1)
+            return 0;
+
+        int nextIndex = currentIndex;
+        for (int i = 0; i < packMemberOptions.Count; i++)
+        {
+            nextIndex = (nextIndex + direction + packMemberOptions.Count) % packMemberOptions.Count;
+            if (nextIndex != skipIndex)
+                return nextIndex;
+        }
+
+        return currentIndex;
     }
 
     private static void BuildItemOptions(WorldObject carrier, List<WorldObject> options)
@@ -633,6 +1112,53 @@ public sealed class InteractionDialogUI : MonoBehaviour
         KeepSelectedObject(targetAgentOptions, previousSelection, ref selectedTargetAgentIndex);
     }
 
+    private void BuildSocialTargetOptions(WorldObject player)
+    {
+        WorldObject previousSelection = GetSelectedFromList(socialTargetOptions, ref selectedSocialTargetIndex);
+        socialTargetOptions.Clear();
+
+        WorldObjectRegistry registry = WorldObjectRegistry.Instance;
+        if (player == null || registry == null)
+        {
+            selectedSocialTargetIndex = 0;
+            return;
+        }
+
+        float radius = tradePartnerSearchRadiusTiles * socialNearbyRadiusMultiplier;
+        float radiusSqr = radius * radius;
+        Vector3 playerPosition = player.pos3d_map;
+
+        foreach (WorldObject candidate in registry.GetAllObjects())
+        {
+            if (candidate == null || candidate == player || !candidate.gameObject.activeInHierarchy)
+                continue;
+
+            if (!CanUseAsSocialTarget(candidate))
+                continue;
+
+            Vector3 delta = candidate.pos3d_map - playerPosition;
+            delta.y = 0f;
+            float distanceSqr = delta.sqrMagnitude;
+            if (distanceSqr > radiusSqr)
+                continue;
+
+            socialTargetOptions.Add(candidate);
+        }
+
+        socialTargetOptions.Sort((a, b) =>
+        {
+            float aDistanceSqr = GetPlanarDistanceSqr(playerPosition, a.pos3d_map);
+            float bDistanceSqr = GetPlanarDistanceSqr(playerPosition, b.pos3d_map);
+            int distanceComparison = aDistanceSqr.CompareTo(bDistanceSqr);
+            if (distanceComparison != 0)
+                return distanceComparison;
+
+            return string.Compare(a.DisplayName, b.DisplayName, System.StringComparison.OrdinalIgnoreCase);
+        });
+
+        KeepSelectedObject(socialTargetOptions, previousSelection, ref selectedSocialTargetIndex);
+    }
+
     private static float GetPlanarDistanceSqr(Vector3 first, Vector3 second)
     {
         Vector3 delta = second - first;
@@ -654,6 +1180,30 @@ public sealed class InteractionDialogUI : MonoBehaviour
             : Mathf.Clamp(selectedIndex, 0, Mathf.Max(0, options.Count - 1));
     }
 
+    private static void RememberSelection(List<WorldObject> options, WorldObject selection, ref int selectedIndex)
+    {
+        if (selection == null || options.Count <= 0)
+            return;
+
+        int foundIndex = options.IndexOf(selection);
+        if (foundIndex >= 0)
+            selectedIndex = foundIndex;
+    }
+
+    private static void ApplyPendingSelection(List<WorldObject> options, WorldObject selection, ref int selectedIndex)
+    {
+        if (selection == null)
+            return;
+
+        RememberSelection(options, selection, ref selectedIndex);
+    }
+
+    private void ClearPendingSelections()
+    {
+        pendingLeftAgentSelection = null;
+        pendingRightAgentSelection = null;
+    }
+
     private static bool CanUseAsTradeTarget(WorldObject candidate)
     {
         if (candidate == null)
@@ -663,8 +1213,30 @@ public sealed class InteractionDialogUI : MonoBehaviour
                candidate.containerModule.itemCapacity > 0;
     }
 
+    private static bool CanUseAsSocialTarget(WorldObject candidate)
+    {
+        if (candidate == null)
+            return false;
+
+        return candidate.Kind == WorldObjectKind.Agent ||
+               candidate.agentModule != null ||
+               candidate.GetComponent<AgentModule>() != null;
+    }
+
     private void OnPreviousPlayerAgentClicked()
     {
+        if (currentTab == InteractionTab.Pack)
+        {
+            CyclePackLeftSelection(-1);
+            return;
+        }
+
+        if (currentTab == InteractionTab.Social)
+        {
+            CycleSocialLeftSelection(-1);
+            return;
+        }
+
         CycleSelection(playerAgentOptions, ref selectedPlayerAgentIndex, -1);
         selectedPlayerItemIndex = 0;
         RefreshInteractionView(forcePreviewRefresh: true);
@@ -672,6 +1244,18 @@ public sealed class InteractionDialogUI : MonoBehaviour
 
     private void OnNextPlayerAgentClicked()
     {
+        if (currentTab == InteractionTab.Pack)
+        {
+            CyclePackLeftSelection(1);
+            return;
+        }
+
+        if (currentTab == InteractionTab.Social)
+        {
+            CycleSocialLeftSelection(1);
+            return;
+        }
+
         CycleSelection(playerAgentOptions, ref selectedPlayerAgentIndex, 1);
         selectedPlayerItemIndex = 0;
         RefreshInteractionView(forcePreviewRefresh: true);
@@ -691,6 +1275,18 @@ public sealed class InteractionDialogUI : MonoBehaviour
 
     private void OnPreviousTargetAgentClicked()
     {
+        if (currentTab == InteractionTab.Pack)
+        {
+            CyclePackRightSelection(-1);
+            return;
+        }
+
+        if (currentTab == InteractionTab.Social)
+        {
+            CycleSocialRightSelection(-1);
+            return;
+        }
+
         CycleSelection(targetAgentOptions, ref selectedTargetAgentIndex, -1);
         selectedTargetItemIndex = 0;
         RefreshInteractionView(forcePreviewRefresh: true);
@@ -698,6 +1294,18 @@ public sealed class InteractionDialogUI : MonoBehaviour
 
     private void OnNextTargetAgentClicked()
     {
+        if (currentTab == InteractionTab.Pack)
+        {
+            CyclePackRightSelection(1);
+            return;
+        }
+
+        if (currentTab == InteractionTab.Social)
+        {
+            CycleSocialRightSelection(1);
+            return;
+        }
+
         CycleSelection(targetAgentOptions, ref selectedTargetAgentIndex, 1);
         selectedTargetItemIndex = 0;
         RefreshInteractionView(forcePreviewRefresh: true);
@@ -712,6 +1320,180 @@ public sealed class InteractionDialogUI : MonoBehaviour
     private void OnNextTargetItemClicked()
     {
         CycleSelection(targetItemOptions, ref selectedTargetItemIndex, 1);
+        RefreshInteractionView(forcePreviewRefresh: true);
+    }
+
+    private void CyclePackLeftSelection(int direction)
+    {
+        BuildPackMemberOptions();
+        if (packMemberOptions.Count <= 1)
+            return;
+
+        int previousLeftIndex = Mathf.Clamp(selectedPackLeftIndex, 0, packMemberOptions.Count - 1);
+        selectedPackLeftIndex = FindNextPackMemberIndex(selectedPackLeftIndex, direction, -1);
+        selectedPackRightIndex = previousLeftIndex;
+        RefreshInteractionView(forcePreviewRefresh: true);
+    }
+
+    private void CyclePackRightSelection(int direction)
+    {
+        BuildPackMemberOptions();
+        if (packMemberOptions.Count <= 2)
+            return;
+
+        selectedPackRightIndex = FindNextPackMemberIndex(selectedPackRightIndex, direction, selectedPackLeftIndex);
+        RefreshInteractionView(forcePreviewRefresh: true);
+    }
+
+    private void CycleSocialLeftSelection(int direction)
+    {
+        BuildPlayerAgentOptions();
+        if (playerAgentOptions.Count <= 1)
+            return;
+
+        CycleSelection(playerAgentOptions, ref selectedPlayerAgentIndex, direction);
+        selectedSocialTargetIndex = 0;
+        RefreshInteractionView(forcePreviewRefresh: true);
+    }
+
+    private void CycleSocialRightSelection(int direction)
+    {
+        BuildPlayerAgentOptions();
+        WorldObject player = GetSelectedFromList(playerAgentOptions, ref selectedPlayerAgentIndex);
+        BuildSocialTargetOptions(player);
+        if (socialTargetOptions.Count <= 1)
+            return;
+
+        CycleSelection(socialTargetOptions, ref selectedSocialTargetIndex, direction);
+        RefreshInteractionView(forcePreviewRefresh: true);
+    }
+
+    private void OnUseClicked()
+    {
+        WorldObject user = displayedPlayer;
+        WorldObject item = displayedPlayerItem;
+        ContainerModule container = GetOrCreateContainer(user);
+        if (user == null)
+            return;
+
+        if (item == null)
+        {
+            ShowInteractionMessage($"{user.DisplayName} has no item to use");
+            return;
+        }
+
+        if (item.activatorModule == null)
+        {
+            ShowInteractionMessage($"{item.DisplayName} cannot be used");
+            return;
+        }
+
+        ActivatorModule activator = item.activatorModule;
+        string itemName = item.DisplayName;
+        bool success = activator.TryUseItem(user, displayedTarget);
+        if (success && activator.parameterDestruct)
+        {
+            if (container != null && !container.ReleaseItem(item, out string reason))
+            {
+                ShowInteractionMessage(reason);
+                Debug.LogWarning($"InteractionDialogUI: failed to destroy used item {itemName}: {reason}", this);
+                RefreshInteractionView(forcePreviewRefresh: true);
+                return;
+            }
+
+            Destroy(item.gameObject);
+        }
+
+        ShowInteractionMessage(success
+            ? $"{user.DisplayName} used {itemName}"
+            : $"{user.DisplayName} could not use {itemName}");
+
+        RefreshInteractionView(forcePreviewRefresh: true);
+    }
+
+    private void OnEatClicked()
+    {
+        WorldObject eater = displayedPlayer;
+        ContainerModule container = GetOrCreateContainer(eater);
+        if (eater == null || container == null)
+            return;
+
+        WorldObject item = displayedPlayerItem;
+        if (item == null)
+        {
+            ShowInteractionMessage($"{eater.DisplayName} has no item to eat");
+            return;
+        }
+
+        string itemName = item.DisplayName;
+        if (!container.ReleaseItem(item, out string reason))
+        {
+            ShowInteractionMessage(reason);
+            Debug.LogWarning($"InteractionDialogUI: failed to eat {itemName}: {reason}", this);
+            return;
+        }
+
+        Destroy(item.gameObject);
+        ShowInteractionMessage($"{eater.DisplayName} ate {itemName}");
+        selectedPlayerItemIndex = 0;
+        RefreshInteractionView(forcePreviewRefresh: true);
+    }
+
+    private void OnDropClicked()
+    {
+        WorldObject carrier = displayedPlayer;
+        WorldObject item = displayedPlayerItem;
+        ContainerModule container = GetOrCreateContainer(carrier);
+        if (carrier == null || item == null || container == null)
+            return;
+
+        if (!TryDropItemNearCarrier(container, carrier, item, out string reason))
+        {
+            ShowInteractionMessage(reason);
+            Debug.LogWarning($"InteractionDialogUI: failed to drop {item.DisplayName}: {reason}", this);
+            return;
+        }
+
+        ShowInteractionMessage($"{carrier.DisplayName} dropped {item.DisplayName}");
+        selectedPlayerItemIndex = 0;
+        RefreshInteractionView(forcePreviewRefresh: true);
+    }
+
+    private void OnThrowClicked()
+    {
+        WorldObject carrier = displayedPlayer;
+        WorldObject item = displayedPlayerItem;
+        ContainerModule container = GetOrCreateContainer(carrier);
+        if (carrier == null || item == null || container == null)
+            return;
+
+        if (!TryThrowItemFromCarrier(container, carrier, item, out string reason))
+        {
+            ShowInteractionMessage(reason);
+            Debug.LogWarning($"InteractionDialogUI: failed to throw {item.DisplayName}: {reason}", this);
+            return;
+        }
+
+        ShowInteractionMessage($"{carrier.DisplayName} threw {item.DisplayName}");
+        selectedPlayerItemIndex = 0;
+        RefreshInteractionView(forcePreviewRefresh: true);
+    }
+
+    private void OnPickUpClicked()
+    {
+        WorldObject carrier = displayedPlayer;
+        ContainerModule container = GetOrCreateContainer(carrier);
+        if (carrier == null || container == null)
+            return;
+
+        if (!container.TryPickupNearestItem(out WorldObject pickedUpItem, out string reason))
+        {
+            ShowInteractionMessage(reason);
+            return;
+        }
+
+        ShowInteractionMessage($"{carrier.DisplayName} picked up {pickedUpItem.DisplayName}");
+        selectedPlayerItemIndex = 0;
         RefreshInteractionView(forcePreviewRefresh: true);
     }
 
@@ -845,6 +1627,142 @@ public sealed class InteractionDialogUI : MonoBehaviour
     private static void ShowInteractionMessage(string message)
     {
         BottomBanner.LogInventoryMessage(message);
+    }
+
+    private static bool TryDropItemNearCarrier(ContainerModule source, WorldObject carrier, WorldObject item, out string reason)
+    {
+        if (source == null)
+        {
+            reason = "Source inventory is unavailable.";
+            return false;
+        }
+
+        if (carrier == null)
+        {
+            reason = "No carrier selected.";
+            return false;
+        }
+
+        if (item == null)
+        {
+            reason = "No item selected.";
+            return false;
+        }
+
+        return source.DropItemOnGround(item, GetDropPositionNearCarrier(carrier, item), out reason);
+    }
+
+    private static Vector3 GetDropPositionNearCarrier(WorldObject carrier, WorldObject item)
+    {
+        Vector3 dropDirection = carrier.transform.forward;
+        dropDirection.y = 0f;
+        if (dropDirection.sqrMagnitude < 0.001f)
+            dropDirection = Vector3.forward;
+        dropDirection.Normalize();
+
+        float itemRadius = item != null ? item.sizeRadius : 0f;
+        float dropDistance = Mathf.Max(0.65f, carrier.sizeRadius + itemRadius + 0.2f);
+        Vector3 dropPosition = carrier.transform.position + dropDirection * dropDistance;
+        dropPosition.y = carrier.transform.position.y;
+        return dropPosition;
+    }
+
+    private bool TryThrowItemFromCarrier(ContainerModule source, WorldObject carrier, WorldObject item, out string reason)
+    {
+        if (source == null)
+        {
+            reason = "Source inventory is unavailable.";
+            return false;
+        }
+
+        if (carrier == null)
+        {
+            reason = "No carrier selected.";
+            return false;
+        }
+
+        if (item == null)
+        {
+            reason = "No item selected.";
+            return false;
+        }
+
+        Vector3 direction = GetFacingDirection(carrier);
+        KineticModule kinetic = EnsureKineticModule(item);
+        if (kinetic == null)
+        {
+            reason = $"{item.DisplayName} could not add a KineticModule.";
+            return false;
+        }
+
+        Vector3 releasePosition = GetThrowReleasePosition(carrier, item, direction);
+        if (!source.DropItemOnGround(item, releasePosition, out reason))
+            return false;
+
+        kinetic.Stop();
+        kinetic.ApplyImpulse((direction * throwForwardImpulse) + (Vector3.up * throwUpwardImpulse));
+        NotifyFetchQuestModulesObjectThrown(item, carrier);
+        reason = string.Empty;
+        return true;
+    }
+
+    private static Vector3 GetFacingDirection(WorldObject carrier)
+    {
+        Vector3 direction = carrier.transform.forward;
+        direction.y = 0f;
+        if (direction.sqrMagnitude < 0.001f)
+            direction = Vector3.forward;
+
+        return direction.normalized;
+    }
+
+    private Vector3 GetThrowReleasePosition(WorldObject carrier, WorldObject item, Vector3 direction)
+    {
+        float itemRadius = item != null ? item.sizeRadius : 0f;
+        float releaseDistance = Mathf.Max(0.65f, carrier.sizeRadius + itemRadius + 0.2f);
+        Vector3 releasePosition = carrier.transform.position + direction * releaseDistance;
+        releasePosition.y = carrier.transform.position.y + throwReleaseHeight;
+        return releasePosition;
+    }
+
+    private static KineticModule EnsureKineticModule(WorldObject item)
+    {
+        if (item == null)
+            return null;
+
+        KineticModule kinetic = item.kineticModule != null
+            ? item.kineticModule
+            : item.GetComponent<KineticModule>();
+
+        if (kinetic != null)
+            return kinetic;
+
+        item.CreateModulesIfNeeded(ModuleFlags.kineticModule);
+        return item.kineticModule != null
+            ? item.kineticModule
+            : item.GetComponent<KineticModule>();
+    }
+
+    private static void NotifyFetchQuestModulesObjectThrown(WorldObject thrownItem, WorldObject thrower)
+    {
+        if (thrownItem == null)
+            return;
+
+        if (thrower != null && thrower.fetchQuestModule is FetchQuestModule throwerFetchQuest)
+            throwerFetchQuest.ObserveObjectThrown(thrownItem);
+
+        WorldObjectRegistry registry = WorldObjectRegistry.Instance;
+        if (registry == null)
+            return;
+
+        foreach (WorldObject candidate in registry.GetAllObjects())
+        {
+            if (candidate == null || candidate == thrower)
+                continue;
+
+            if (candidate.fetchQuestModule is FetchQuestModule fetchQuest && fetchQuest.IsRunning)
+                fetchQuest.ObserveObjectThrown(thrownItem);
+        }
     }
 
     private static bool TransferItem(ContainerModule source, ContainerModule destination, WorldObject item, out string reason)
