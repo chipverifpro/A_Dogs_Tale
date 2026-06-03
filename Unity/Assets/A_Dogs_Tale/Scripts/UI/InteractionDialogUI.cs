@@ -16,7 +16,7 @@ public sealed class InteractionDialogUI : MonoBehaviour
     private static readonly Vector3 TargetItemPreviewAnchorPosition = new(65000f, 60000f, 60000f);
 
     [Header("Resources")]
-    [SerializeField] private string interactionFrameSpriteResourcePath = "Sprites/Frames/Interaction_Frame_F";
+    [SerializeField] private string interactionFrameSpriteResourcePath = "Sprites/Frames/Interaction_Frame_G";
     [SerializeField] private string circleSpriteResourcePath = "Sprites/Frames/Circle";
     [SerializeField] private string circleWithArrowsSpriteResourcePath = "Sprites/Frames/CircleWithArrows";
     [SerializeField] private string tradeArrowsSpriteResourcePath = "Sprites/Frames/TradeArrows_A";
@@ -48,6 +48,7 @@ public sealed class InteractionDialogUI : MonoBehaviour
     private TextMeshProUGUI targetNameLabel;
     private TextMeshProUGUI targetHeldItemLabel;
     private Image socialTabHighlight;
+    private Image questsTabHighlight;
     private Image packTabHighlight;
     private Image itemsTabHighlight;
     private Button previousPlayerAgentButton;
@@ -59,6 +60,7 @@ public sealed class InteractionDialogUI : MonoBehaviour
     private Button previousTargetItemButton;
     private Button nextTargetItemButton;
     private Button socialTabButton;
+    private Button questsTabButton;
     private Button packTabButton;
     private Button itemsTabButton;
     private GameObject tradeArrowsObject;
@@ -76,6 +78,7 @@ public sealed class InteractionDialogUI : MonoBehaviour
     private readonly List<WorldObject> targetItemOptions = new();
     private readonly List<WorldObject> packMemberOptions = new();
     private readonly List<WorldObject> socialTargetOptions = new();
+    private readonly List<WorldObject> questTargetOptions = new();
     private int selectedPlayerAgentIndex;
     private int selectedPlayerItemIndex;
     private int selectedTargetAgentIndex;
@@ -83,6 +86,7 @@ public sealed class InteractionDialogUI : MonoBehaviour
     private int selectedPackLeftIndex;
     private int selectedPackRightIndex = 1;
     private int selectedSocialTargetIndex;
+    private int selectedQuestTargetIndex;
     private WorldObject displayedPlayer;
     private WorldObject displayedPlayerItem;
     private WorldObject displayedTarget;
@@ -91,6 +95,8 @@ public sealed class InteractionDialogUI : MonoBehaviour
     private WorldObject displayedPackRight;
     private WorldObject displayedSocialLeft;
     private WorldObject displayedSocialRight;
+    private WorldObject displayedQuestLeft;
+    private WorldObject displayedQuestRight;
     private WorldObject pendingLeftAgentSelection;
     private WorldObject pendingRightAgentSelection;
     private InteractionTab currentTab = InteractionTab.Items;
@@ -128,6 +134,7 @@ public sealed class InteractionDialogUI : MonoBehaviour
     private enum InteractionTab
     {
         Social,
+        Quests,
         Items,
         Pack
     }
@@ -317,15 +324,20 @@ public sealed class InteractionDialogUI : MonoBehaviour
 
     private void BuildTabLabels(Transform parent)
     {
-        socialTabHighlight = CreateTabHighlight(parent, "SocialTabHighlight", new Vector2(-404f, -428f), new Vector2(382f, 70f));
-        CreateTabLabel(parent, "SocialTabLabel", "Social", new Vector2(-404f, -428f), new Vector2(260f, 74f));
-        packTabHighlight = CreateTabHighlight(parent, "PackTabHighlight", new Vector2(0f, -428f), new Vector2(382f, 70f));
-        CreateTabLabel(parent, "PackTabLabel", "Pack", new Vector2(0f, -428f), new Vector2(260f, 74f));
-        itemsTabHighlight = CreateTabHighlight(parent, "ItemsTabHighlight", new Vector2(376f, -428f), new Vector2(438f, 70f));
-        CreateTabLabel(parent, "ItemsTabLabel", "Items", new Vector2(404f, -428f), new Vector2(260f, 74f));
-        socialTabButton = CreateTabHotspot(parent, "SocialTabButton", new Vector2(-404f, -428f), OnSocialTabClicked);
-        packTabButton = CreateTabHotspot(parent, "PackTabButton", new Vector2(0f, -428f), OnPackTabClicked);
-        itemsTabButton = CreateTabHotspot(parent, "ItemsTabButton", new Vector2(404f, -428f), OnItemsTabClicked);
+        Vector2 tabSize = new(300f, 70f);
+        Vector2 labelSize = new(230f, 74f);
+        socialTabHighlight = CreateTabHighlight(parent, "SocialTabHighlight", new Vector2(-454f, -428f), tabSize);
+        CreateTabLabel(parent, "SocialTabLabel", "Social", new Vector2(-454f, -428f), labelSize);
+        questsTabHighlight = CreateTabHighlight(parent, "QuestsTabHighlight", new Vector2(-151f, -428f), tabSize);
+        CreateTabLabel(parent, "QuestsTabLabel", "Quests", new Vector2(-151f, -428f), labelSize);
+        packTabHighlight = CreateTabHighlight(parent, "PackTabHighlight", new Vector2(151f, -428f), tabSize);
+        CreateTabLabel(parent, "PackTabLabel", "Pack", new Vector2(151f, -428f), labelSize);
+        itemsTabHighlight = CreateTabHighlight(parent, "ItemsTabHighlight", new Vector2(454f, -428f), tabSize);
+        CreateTabLabel(parent, "ItemsTabLabel", "Items", new Vector2(454f, -428f), labelSize);
+        socialTabButton = CreateTabHotspot(parent, "SocialTabButton", new Vector2(-454f, -428f), tabSize, OnSocialTabClicked);
+        questsTabButton = CreateTabHotspot(parent, "QuestsTabButton", new Vector2(-151f, -428f), tabSize, OnQuestsTabClicked);
+        packTabButton = CreateTabHotspot(parent, "PackTabButton", new Vector2(151f, -428f), tabSize, OnPackTabClicked);
+        itemsTabButton = CreateTabHotspot(parent, "ItemsTabButton", new Vector2(454f, -428f), tabSize, OnItemsTabClicked);
         RefreshTabHighlights();
     }
 
@@ -349,6 +361,7 @@ public sealed class InteractionDialogUI : MonoBehaviour
         Transform parent,
         string objectName,
         Vector2 anchoredPosition,
+        Vector2 size,
         UnityEngine.Events.UnityAction clickHandler)
     {
         GameObject buttonObject = CreateUIObject(objectName, parent);
@@ -357,7 +370,7 @@ public sealed class InteractionDialogUI : MonoBehaviour
         rect.anchorMax = new Vector2(0.5f, 1f);
         rect.pivot = new Vector2(0.5f, 0.5f);
         rect.anchoredPosition = anchoredPosition;
-        rect.sizeDelta = new Vector2(382f, 70f);
+        rect.sizeDelta = size;
 
         Image image = buttonObject.AddComponent<Image>();
         image.color = Color.clear;
@@ -710,6 +723,12 @@ public sealed class InteractionDialogUI : MonoBehaviour
             return;
         }
 
+        if (currentTab == InteractionTab.Quests)
+        {
+            RefreshQuestsView(forcePreviewRefresh);
+            return;
+        }
+
         SetItemsControlsActive(true);
         SetPreviewSlotActive(playerItemPreviewSlot, true);
         SetPreviewSlotActive(targetItemPreviewSlot, true);
@@ -753,6 +772,46 @@ public sealed class InteractionDialogUI : MonoBehaviour
         displayedPlayerItem = playerItem;
         displayedTarget = target;
         displayedTargetItem = targetItem;
+        ClearPendingSelections();
+    }
+
+    private void RefreshQuestsView(bool forcePreviewRefresh = false)
+    {
+        SetItemsControlsActive(false);
+        SetPreviewSlotActive(playerItemPreviewSlot, false);
+        SetPreviewSlotActive(targetItemPreviewSlot, false);
+
+        BuildPlayerAgentOptions();
+        ApplyPendingSelection(playerAgentOptions, pendingLeftAgentSelection, ref selectedPlayerAgentIndex);
+        WorldObject leftMember = GetSelectedFromList(playerAgentOptions, ref selectedPlayerAgentIndex);
+        BuildQuestTargetOptions(leftMember);
+        ApplyPendingSelection(questTargetOptions, pendingRightAgentSelection, ref selectedQuestTargetIndex);
+        WorldObject rightMember = GetSelectedFromList(questTargetOptions, ref selectedQuestTargetIndex);
+
+        RefreshCircleAndHotspot(playerPreviewSlot, playerAgentOptions.Count, previousPlayerAgentButton, nextPlayerAgentButton);
+        RefreshCircleAndHotspot(targetPreviewSlot, questTargetOptions.Count, previousTargetAgentButton, nextTargetAgentButton);
+        RefreshCircleAndHotspot(playerItemPreviewSlot, 0, previousPlayerItemButton, nextPlayerItemButton);
+        RefreshCircleAndHotspot(targetItemPreviewSlot, 0, previousTargetItemButton, nextTargetItemButton);
+
+        SetLabelText(playerNameLabel, leftMember != null ? leftMember.DisplayName : string.Empty);
+        SetLabelText(playerHeldItemLabel, string.Empty);
+        SetLabelText(targetNameLabel, rightMember != null ? rightMember.DisplayName : string.Empty);
+        SetLabelText(targetHeldItemLabel, string.Empty);
+
+        if (forcePreviewRefresh || leftMember != displayedQuestLeft)
+            BuildPreviewClone(playerPreviewSlot, leftMember, "QuestLeft");
+        if (forcePreviewRefresh || rightMember != displayedQuestRight)
+            BuildPreviewClone(targetPreviewSlot, rightMember, "QuestRight");
+
+        BuildPreviewClone(playerItemPreviewSlot, null, "QuestLeftItem");
+        BuildPreviewClone(targetItemPreviewSlot, null, "QuestRightItem");
+
+        displayedQuestLeft = leftMember;
+        displayedQuestRight = rightMember;
+        displayedPlayer = leftMember;
+        displayedPlayerItem = null;
+        displayedTarget = rightMember;
+        displayedTargetItem = null;
         ClearPendingSelections();
     }
 
@@ -867,6 +926,8 @@ public sealed class InteractionDialogUI : MonoBehaviour
     {
         if (socialTabHighlight != null)
             socialTabHighlight.gameObject.SetActive(currentTab == InteractionTab.Social);
+        if (questsTabHighlight != null)
+            questsTabHighlight.gameObject.SetActive(currentTab == InteractionTab.Quests);
         if (packTabHighlight != null)
             packTabHighlight.gameObject.SetActive(currentTab == InteractionTab.Pack);
         if (itemsTabHighlight != null)
@@ -884,6 +945,18 @@ public sealed class InteractionDialogUI : MonoBehaviour
         currentTab = InteractionTab.Social;
         displayedSocialLeft = null;
         displayedSocialRight = null;
+        RefreshInteractionView(forcePreviewRefresh: true);
+    }
+
+    private void OnQuestsTabClicked()
+    {
+        if (currentTab == InteractionTab.Quests)
+            return;
+
+        PreserveCurrentAgentsForTabSwitch();
+        currentTab = InteractionTab.Quests;
+        displayedQuestLeft = null;
+        displayedQuestRight = null;
         RefreshInteractionView(forcePreviewRefresh: true);
     }
 
@@ -915,8 +988,8 @@ public sealed class InteractionDialogUI : MonoBehaviour
 
     private void PreserveCurrentAgentsForTabSwitch()
     {
-        WorldObject leftAgent = displayedPlayer ?? displayedPackLeft ?? displayedSocialLeft;
-        WorldObject rightAgent = displayedTarget ?? displayedPackRight ?? displayedSocialRight;
+        WorldObject leftAgent = displayedPlayer ?? displayedPackLeft ?? displayedSocialLeft ?? displayedQuestLeft;
+        WorldObject rightAgent = displayedTarget ?? displayedPackRight ?? displayedSocialRight ?? displayedQuestRight;
 
         pendingLeftAgentSelection = leftAgent;
         pendingRightAgentSelection = rightAgent;
@@ -925,6 +998,7 @@ public sealed class InteractionDialogUI : MonoBehaviour
         RememberSelection(packMemberOptions, leftAgent, ref selectedPackLeftIndex);
         RememberSelection(targetAgentOptions, rightAgent, ref selectedTargetAgentIndex);
         RememberSelection(socialTargetOptions, rightAgent, ref selectedSocialTargetIndex);
+        RememberSelection(questTargetOptions, rightAgent, ref selectedQuestTargetIndex);
         RememberSelection(packMemberOptions, rightAgent, ref selectedPackRightIndex);
     }
 
@@ -1159,6 +1233,52 @@ public sealed class InteractionDialogUI : MonoBehaviour
         KeepSelectedObject(socialTargetOptions, previousSelection, ref selectedSocialTargetIndex);
     }
 
+    private void BuildQuestTargetOptions(WorldObject player)
+    {
+        WorldObject previousSelection = GetSelectedFromList(questTargetOptions, ref selectedQuestTargetIndex);
+        questTargetOptions.Clear();
+
+        WorldObjectRegistry registry = WorldObjectRegistry.Instance;
+        if (player == null || registry == null)
+        {
+            selectedQuestTargetIndex = 0;
+            return;
+        }
+
+        float radiusSqr = tradePartnerSearchRadiusTiles * tradePartnerSearchRadiusTiles;
+        Vector3 playerPosition = player.pos3d_map;
+
+        foreach (WorldObject candidate in registry.GetAllObjects())
+        {
+            if (candidate == null || candidate == player || !candidate.gameObject.activeInHierarchy)
+                continue;
+
+            if (!CanUseAsQuestTarget(candidate))
+                continue;
+
+            Vector3 delta = candidate.pos3d_map - playerPosition;
+            delta.y = 0f;
+            float distanceSqr = delta.sqrMagnitude;
+            if (distanceSqr > radiusSqr)
+                continue;
+
+            questTargetOptions.Add(candidate);
+        }
+
+        questTargetOptions.Sort((a, b) =>
+        {
+            float aDistanceSqr = GetPlanarDistanceSqr(playerPosition, a.pos3d_map);
+            float bDistanceSqr = GetPlanarDistanceSqr(playerPosition, b.pos3d_map);
+            int distanceComparison = aDistanceSqr.CompareTo(bDistanceSqr);
+            if (distanceComparison != 0)
+                return distanceComparison;
+
+            return string.Compare(a.DisplayName, b.DisplayName, System.StringComparison.OrdinalIgnoreCase);
+        });
+
+        KeepSelectedObject(questTargetOptions, previousSelection, ref selectedQuestTargetIndex);
+    }
+
     private static float GetPlanarDistanceSqr(Vector3 first, Vector3 second)
     {
         Vector3 delta = second - first;
@@ -1223,6 +1343,14 @@ public sealed class InteractionDialogUI : MonoBehaviour
                candidate.GetComponent<AgentModule>() != null;
     }
 
+    private static bool CanUseAsQuestTarget(WorldObject candidate)
+    {
+        if (candidate == null || !CanUseAsSocialTarget(candidate))
+            return false;
+
+        return candidate.hasAnyQuestModule();
+    }
+
     private void OnPreviousPlayerAgentClicked()
     {
         if (currentTab == InteractionTab.Pack)
@@ -1234,6 +1362,12 @@ public sealed class InteractionDialogUI : MonoBehaviour
         if (currentTab == InteractionTab.Social)
         {
             CycleSocialLeftSelection(-1);
+            return;
+        }
+
+        if (currentTab == InteractionTab.Quests)
+        {
+            CycleQuestLeftSelection(-1);
             return;
         }
 
@@ -1253,6 +1387,12 @@ public sealed class InteractionDialogUI : MonoBehaviour
         if (currentTab == InteractionTab.Social)
         {
             CycleSocialLeftSelection(1);
+            return;
+        }
+
+        if (currentTab == InteractionTab.Quests)
+        {
+            CycleQuestLeftSelection(1);
             return;
         }
 
@@ -1287,6 +1427,12 @@ public sealed class InteractionDialogUI : MonoBehaviour
             return;
         }
 
+        if (currentTab == InteractionTab.Quests)
+        {
+            CycleQuestRightSelection(-1);
+            return;
+        }
+
         CycleSelection(targetAgentOptions, ref selectedTargetAgentIndex, -1);
         selectedTargetItemIndex = 0;
         RefreshInteractionView(forcePreviewRefresh: true);
@@ -1303,6 +1449,12 @@ public sealed class InteractionDialogUI : MonoBehaviour
         if (currentTab == InteractionTab.Social)
         {
             CycleSocialRightSelection(1);
+            return;
+        }
+
+        if (currentTab == InteractionTab.Quests)
+        {
+            CycleQuestRightSelection(1);
             return;
         }
 
@@ -1365,6 +1517,29 @@ public sealed class InteractionDialogUI : MonoBehaviour
             return;
 
         CycleSelection(socialTargetOptions, ref selectedSocialTargetIndex, direction);
+        RefreshInteractionView(forcePreviewRefresh: true);
+    }
+
+    private void CycleQuestLeftSelection(int direction)
+    {
+        BuildPlayerAgentOptions();
+        if (playerAgentOptions.Count <= 1)
+            return;
+
+        CycleSelection(playerAgentOptions, ref selectedPlayerAgentIndex, direction);
+        selectedQuestTargetIndex = 0;
+        RefreshInteractionView(forcePreviewRefresh: true);
+    }
+
+    private void CycleQuestRightSelection(int direction)
+    {
+        BuildPlayerAgentOptions();
+        WorldObject player = GetSelectedFromList(playerAgentOptions, ref selectedPlayerAgentIndex);
+        BuildQuestTargetOptions(player);
+        if (questTargetOptions.Count <= 1)
+            return;
+
+        CycleSelection(questTargetOptions, ref selectedQuestTargetIndex, direction);
         RefreshInteractionView(forcePreviewRefresh: true);
     }
 
