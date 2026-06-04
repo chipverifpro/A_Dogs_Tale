@@ -41,6 +41,7 @@ public sealed class InteractionDialogUI : MonoBehaviour
 
     private Sprite interactionFrameSprite;
     private Canvas overlayCanvas;
+    private CanvasScaler overlayCanvasScaler;
     private RectTransform dialogRect;
     private GameObject dialogRoot;
     private TextMeshProUGUI titleLabel;
@@ -167,6 +168,7 @@ public sealed class InteractionDialogUI : MonoBehaviour
         if (!isOpen)
             return;
 
+        ApplyDialogScaleAndPosition();
         RefreshInteractionView();
         SpinPreview(playerPreviewSlot);
         SpinPreview(playerItemPreviewSlot);
@@ -278,10 +280,10 @@ public sealed class InteractionDialogUI : MonoBehaviour
         canvasRect.offsetMin = Vector2.zero;
         canvasRect.offsetMax = Vector2.zero;
 
-        CanvasScaler scaler = canvasObject.GetComponent<CanvasScaler>();
-        scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-        scaler.referenceResolution = referenceResolution;
-        scaler.matchWidthOrHeight = 1f;
+        overlayCanvasScaler = canvasObject.GetComponent<CanvasScaler>();
+        overlayCanvasScaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+        overlayCanvasScaler.referenceResolution = referenceResolution;
+        overlayCanvasScaler.matchWidthOrHeight = 1f;
 
         dialogRoot = CreateUIObject("InteractionDialog", canvasObject.transform);
         dialogRect = dialogRoot.GetComponent<RectTransform>();
@@ -320,12 +322,42 @@ public sealed class InteractionDialogUI : MonoBehaviour
             return;
 
         float reduction01 = Mathf.Clamp01(dialogScaleReductionPercent / 100f);
-        float scale = Mathf.Max(0.01f, 1f - reduction01);
+        float requestedScale = Mathf.Max(0.01f, 1f - reduction01);
+        float scale = Mathf.Min(requestedScale, GetMaxDialogScaleForScreenWidth());
         dialogRect.localScale = new Vector3(scale, scale, 1f);
 
         // The frame pivot/origin is top-center. Offset by half the scaled height so
         // the visible dialog remains centered on the screen.
         dialogRect.anchoredPosition = new Vector2(0f, dialogSize.y * scale * 0.5f);
+    }
+
+    private float GetMaxDialogScaleForScreenWidth()
+    {
+        if (dialogSize.x <= 0f || Screen.width <= 0)
+            return 1f;
+
+        float canvasScale = GetCanvasScaleFactorForScreen();
+        if (canvasScale <= 0f)
+            return 1f;
+
+        return Mathf.Max(0.01f, Screen.width / (dialogSize.x * canvasScale));
+    }
+
+    private float GetCanvasScaleFactorForScreen()
+    {
+        Vector2 resolution = overlayCanvasScaler != null
+            ? overlayCanvasScaler.referenceResolution
+            : referenceResolution;
+        if (resolution.x <= 0f || resolution.y <= 0f || Screen.width <= 0 || Screen.height <= 0)
+            return 1f;
+
+        float widthScale = Screen.width / resolution.x;
+        float heightScale = Screen.height / resolution.y;
+        float match = overlayCanvasScaler != null
+            ? overlayCanvasScaler.matchWidthOrHeight
+            : 1f;
+
+        return Mathf.Pow(widthScale, 1f - match) * Mathf.Pow(heightScale, match);
     }
 
     private void BuildHeader(Transform parent)
@@ -1499,8 +1531,7 @@ public sealed class InteractionDialogUI : MonoBehaviour
         if (candidate == null)
             return false;
 
-        return candidate.scentPerceptionModule != null ||
-               candidate.scentEmitterModule != null;
+        return candidate.scentEmitterModule != null;
     }
 
     private void OnPreviousPlayerAgentClicked()
@@ -2402,6 +2433,8 @@ public sealed class InteractionDialogUI : MonoBehaviour
     private static GameObject CreateVisualClone(GameObject sourceRoot)
     {
         Dictionary<Transform, Transform> transformMap = new();
+        HashSet<Transform> skippedTransforms = new();
+        WorldObject sourceRootWorldObject = sourceRoot.GetComponent<WorldObject>();
 
         GameObject cloneRoot = new(sourceRoot.name);
         CopyTransform(sourceRoot.transform, cloneRoot.transform);
@@ -2411,6 +2444,13 @@ public sealed class InteractionDialogUI : MonoBehaviour
         for (int i = 1; i < sourceTransforms.Length; i++)
         {
             Transform source = sourceTransforms[i];
+            if (ShouldSkipPreviewCloneTransform(source, sourceRoot.transform, sourceRootWorldObject) ||
+                skippedTransforms.Contains(source.parent))
+            {
+                skippedTransforms.Add(source);
+                continue;
+            }
+
             GameObject child = new(source.name);
             Transform childTransform = child.transform;
             childTransform.SetParent(transformMap[source.parent], false);
@@ -2421,7 +2461,8 @@ public sealed class InteractionDialogUI : MonoBehaviour
         for (int i = 0; i < sourceTransforms.Length; i++)
         {
             Transform source = sourceTransforms[i];
-            Transform destination = transformMap[source];
+            if (!transformMap.TryGetValue(source, out Transform destination))
+                continue;
 
             MeshFilter sourceMeshFilter = source.GetComponent<MeshFilter>();
             MeshRenderer sourceMeshRenderer = source.GetComponent<MeshRenderer>();
@@ -2442,6 +2483,28 @@ public sealed class InteractionDialogUI : MonoBehaviour
         }
 
         return cloneRoot;
+    }
+
+    private static bool ShouldSkipPreviewCloneTransform(
+        Transform source,
+        Transform sourceRoot,
+        WorldObject sourceRootWorldObject)
+    {
+        if (source == null || source == sourceRoot)
+            return false;
+
+        if (source.GetComponentInParent<EmoteIconSpinner>() != null)
+            return true;
+
+        WorldObject[] parentWorldObjects = source.GetComponentsInParent<WorldObject>(true);
+        for (int i = 0; i < parentWorldObjects.Length; i++)
+        {
+            WorldObject parentWorldObject = parentWorldObjects[i];
+            if (parentWorldObject != null && parentWorldObject != sourceRootWorldObject)
+                return true;
+        }
+
+        return false;
     }
 
     private static void CopyTransform(Transform source, Transform destination)
@@ -2492,6 +2555,9 @@ public sealed class InteractionDialogUI : MonoBehaviour
     {
         if (slot == null || slot.Clone == null)
             return;
+
+        slot.Clone.SetActive(false);
+        slot.Clone.transform.SetParent(null, false);
 
         if (Application.isPlaying)
             Destroy(slot.Clone);

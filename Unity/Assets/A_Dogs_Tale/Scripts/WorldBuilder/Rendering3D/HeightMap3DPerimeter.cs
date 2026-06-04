@@ -88,6 +88,10 @@ public partial class DungeonGenerator
         }
     }
 
+    bool isEastWestWall(Vector2Int direction)
+    {
+        return (direction.x != 0) ? true : false;
+    }
     void AddPerimeterWall(
         int roomNumber,
         int x,
@@ -114,7 +118,7 @@ public partial class DungeonGenerator
         Vector3 wallScale = new Vector3(cellSize.x, wallHeight, cellSize.y * 0.1f);
 
         bool mirrorWallpaper = !neighborIsDoor && (((x + z) % 2) == 0);
-        Texture2D wallWallpaper = mirrorWallpaper ? roomWallpaperMirror : roomWallpaper;
+        Texture2D wallWallpaper = mirrorWallpaper==isEastWestWall(direction) ? roomWallpaperMirror : roomWallpaper;
 
         int customFlags = neighborIsDoor ? 1 : 0; // 1 = door segment
         Color wallColor = neighborIsDoor ? Color.red : WallColorForRoom(roomNumber, wallWallpaper);
