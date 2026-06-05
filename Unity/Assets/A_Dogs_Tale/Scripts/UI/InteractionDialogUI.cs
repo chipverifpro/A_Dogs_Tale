@@ -69,6 +69,8 @@ public sealed class InteractionDialogUI : MonoBehaviour
     private Button nextTargetAgentButton;
     private Button previousTargetItemButton;
     private Button nextTargetItemButton;
+    private Button playerPackIndicatorButton;
+    private Button targetPackIndicatorButton;
     private Button socialTabButton;
     private Button questsTabButton;
     private Button packTabButton;
@@ -78,7 +80,11 @@ public sealed class InteractionDialogUI : MonoBehaviour
     private Button giveHotspotButton;
     private Button exchangeHotspotButton;
     private Button takeHotspotButton;
+    private Button setLeaderButton;
+    private Button joinPackButton;
+    private Button leavePackButton;
     private GameObject actionPanelObject;
+    private GameObject packActionPanelObject;
     private PreviewSlot playerPreviewSlot;
     private PreviewSlot playerItemPreviewSlot;
     private PreviewSlot targetPreviewSlot;
@@ -88,6 +94,7 @@ public sealed class InteractionDialogUI : MonoBehaviour
     private readonly List<WorldObject> targetAgentOptions = new();
     private readonly List<WorldObject> targetItemOptions = new();
     private readonly List<WorldObject> packMemberOptions = new();
+    private readonly List<WorldObject> packRightOptions = new();
     private readonly List<WorldObject> socialTargetOptions = new();
     private readonly List<WorldObject> questTargetOptions = new();
     private readonly List<WorldObject> scentTargetOptions = new();
@@ -154,6 +161,13 @@ public sealed class InteractionDialogUI : MonoBehaviour
         Items,
         Pack,
         Scent
+    }
+
+    private enum PackButtonKind
+    {
+        Behavior,
+        Membership,
+        Formation
     }
 
     private void Awake()
@@ -314,12 +328,14 @@ public sealed class InteractionDialogUI : MonoBehaviour
         }
 
         BuildPreviewSlots(dialogRoot.transform);
+        BuildPackIndicatorButtons(dialogRoot.transform);
         BuildHeader(dialogRoot.transform);
         BuildTopInfo(dialogRoot.transform);
         BuildTradeArrows(dialogRoot.transform);
         BuildTabLabels(dialogRoot.transform);
         BuildSelectionArrows(dialogRoot.transform);
         BuildActionButtons(dialogRoot.transform);
+        BuildPackActionButtons(dialogRoot.transform);
         BuildCloseHotspot(dialogRoot.transform);
     }
 
@@ -555,6 +571,80 @@ public sealed class InteractionDialogUI : MonoBehaviour
         CreateActionButton(bottomRow, InventoryAction.PickUp, OnPickUpClicked, 0.86f);
     }
 
+    private void BuildPackActionButtons(Transform parent)
+    {
+        packActionPanelObject = CreateUIObject("PackActionPanel", parent);
+        RectTransform actionPanelRect = packActionPanelObject.GetComponent<RectTransform>();
+        actionPanelRect.anchorMin = new Vector2(0.5f, 1f);
+        actionPanelRect.anchorMax = new Vector2(0.5f, 1f);
+        actionPanelRect.pivot = new Vector2(0.5f, 0.5f);
+        actionPanelRect.anchoredPosition = new Vector2(0f, -690f);
+        actionPanelRect.sizeDelta = new Vector2(1120f, 300f);
+
+        VerticalLayoutGroup layout = packActionPanelObject.AddComponent<VerticalLayoutGroup>();
+        layout.childAlignment = TextAnchor.MiddleCenter;
+        layout.childControlWidth = false;
+        layout.childControlHeight = false;
+        layout.childForceExpandWidth = false;
+        layout.childForceExpandHeight = false;
+        layout.spacing = 8f;
+        layout.padding = new RectOffset(0, 0, 0, 0);
+
+        Transform behaviorRow = CreateActionButtonRow("PackBehaviorActionRow", packActionPanelObject.transform, 86f);
+        Transform membershipRow = CreateActionButtonRow("PackMembershipActionRow", packActionPanelObject.transform, 86f);
+        Transform formationRow = CreateActionButtonRow("PackFormationActionRow", packActionPanelObject.transform, 86f);
+
+        CreatePackActionButton(behaviorRow, "TakeControlButton", PackButtonKind.Behavior, 0, "TAKE CONTROL", () => OnPackBehaviorClicked(AgentDecisionType.Player));
+        CreatePackActionButton(behaviorRow, "RegroupButton", PackButtonKind.Behavior, 1, "REGROUP", () => OnPackBehaviorClicked(AgentDecisionType.Follower));
+        CreatePackActionButton(behaviorRow, "WaitHereButton", PackButtonKind.Behavior, 3, "WAIT HERE", () => OnPackBehaviorClicked(AgentDecisionType.Immobile));
+        CreatePackActionButton(behaviorRow, "PatrolRoomButton", PackButtonKind.Behavior, 4, "PATROL ROOM", () => OnPackBehaviorClicked(AgentDecisionType.Wanderer));
+        CreatePackActionButton(behaviorRow, "ExploreButton", PackButtonKind.Behavior, 2, "EXPLORE", () => OnPackBehaviorClicked(AgentDecisionType.Explorer));
+        CreatePackActionButton(behaviorRow, "AIButton", PackButtonKind.Behavior, 5, "AI", () => OnPackBehaviorClicked(AgentDecisionType.TaskFollower));
+
+        setLeaderButton = CreatePackActionButton(membershipRow, "SetLeaderButton", PackButtonKind.Membership, 4, "SET LEADER", OnSetPackLeaderClicked);
+        joinPackButton = CreatePackActionButton(membershipRow, "JoinPackButton", PackButtonKind.Membership, 0, "JOIN", OnJoinPackClicked, false);
+        leavePackButton = CreatePackActionButton(membershipRow, "LeavePackButton", PackButtonKind.Membership, 2, "LEAVE", OnLeavePackClicked);
+
+        CreatePackActionButton(formationRow, "AbreastFormationButton", PackButtonKind.Formation, 6, "ABREAST", () => OnPackFormationClicked(FormationsEnum.LineAbreast));
+        CreatePackActionButton(formationRow, "TwoColumnsFormationButton", PackButtonKind.Formation, 10, "TWO COLUMNS", () => OnPackFormationClicked(FormationsEnum.TwoColums));
+        CreatePackActionButton(formationRow, "WedgeFormationButton", PackButtonKind.Formation, 12, "WEDGE", () => OnPackFormationClicked(FormationsEnum.Wedge));
+        CreatePackActionButton(formationRow, "CircleFormationButton", PackButtonKind.Formation, 14, "CIRCLE", () => OnPackFormationClicked(FormationsEnum.Circle));
+        CreatePackActionButton(formationRow, "FollowFormationButton", PackButtonKind.Formation, 16, "FOLLOW", () => OnPackFormationClicked(FormationsEnum.SingleFile));
+        CreatePackActionButton(formationRow, "ClusterFormationButton", PackButtonKind.Formation, -1, "CLUSTER", null, false);
+
+        packActionPanelObject.SetActive(false);
+    }
+
+    private Button CreatePackActionButton(
+        Transform parent,
+        string objectName,
+        PackButtonKind kind,
+        int spriteIndex,
+        string fallbackText,
+        UnityEngine.Events.UnityAction clickHandler,
+        bool implemented = true)
+    {
+        Sprite sprite = GetPackActionSprite(kind, spriteIndex);
+        Button button = CreateSpriteButton(objectName, parent, sprite, fallbackText, clickHandler ?? OnUnimplementedPackActionClicked);
+        ConfigureActionButtonSize(button, sprite, 78f);
+        button.interactable = implemented;
+
+        Image image = button.targetGraphic as Image;
+        if (image != null && !implemented)
+            image.color = new Color(image.color.r, image.color.g, image.color.b, 0.36f);
+
+        return button;
+    }
+
+    private static Sprite GetPackActionSprite(PackButtonKind kind, int spriteIndex)
+    {
+        string spriteSheet = kind == PackButtonKind.Behavior
+            ? "Sprites/MoveModes_B"
+            : "Sprites/PackFormationsSprites_C";
+
+        return SpriteServer.SpriteSheetLookup(spriteSheet, spriteIndex);
+    }
+
     private Transform CreateActionButtonRow(string rowName, Transform parent, float rowHeight)
     {
         GameObject rowObject = CreateUIObject(rowName, parent);
@@ -750,6 +840,29 @@ public sealed class InteractionDialogUI : MonoBehaviour
         targetPreviewSlot = CreatePreviewSlot(parent, "TargetPreview", TargetPreviewAnchorPosition, new Vector2(480f, -290f), new Vector2(150f, 150f), new Vector2(140f, 140f), new Vector2(239f, 140f), 1.325f);
     }
 
+    private void BuildPackIndicatorButtons(Transform parent)
+    {
+        playerPackIndicatorButton = CreatePackIndicatorButton(parent, "PlayerPackIndicatorButton", new Vector2(-334f, -320f), OnPlayerPackIndicatorClicked);
+        targetPackIndicatorButton = CreatePackIndicatorButton(parent, "TargetPackIndicatorButton", new Vector2(320f, -320f), OnTargetPackIndicatorClicked);
+        SetPackIndicatorButtonsActive(false);
+    }
+
+    private Button CreatePackIndicatorButton(
+        Transform parent,
+        string objectName,
+        Vector2 anchoredPosition,
+        UnityEngine.Events.UnityAction clickHandler)
+    {
+        Button button = CreateInvisibleButton(objectName, parent, clickHandler);
+        RectTransform rect = button.GetComponent<RectTransform>();
+        rect.anchorMin = new Vector2(0.5f, 1f);
+        rect.anchorMax = new Vector2(0.5f, 1f);
+        rect.pivot = new Vector2(0.5f, 0.5f);
+        rect.anchoredPosition = anchoredPosition;
+        rect.sizeDelta = new Vector2(84f, 84f);
+        return button;
+    }
+
     private PreviewSlot CreatePreviewSlot(
         Transform parent,
         string objectName,
@@ -824,6 +937,8 @@ public sealed class InteractionDialogUI : MonoBehaviour
             return;
         }
 
+        SetPackControlsActive(false);
+        SetPackIndicatorButtonsActive(false);
         SetItemsControlsActive(true);
         SetPreviewSlotActive(playerItemPreviewSlot, true);
         SetPreviewSlotActive(targetItemPreviewSlot, true);
@@ -873,6 +988,8 @@ public sealed class InteractionDialogUI : MonoBehaviour
 
     private void RefreshScentView(bool forcePreviewRefresh = false)
     {
+        SetPackControlsActive(false);
+        SetPackIndicatorButtonsActive(false);
         SetItemsControlsActive(false);
         SetPreviewSlotActive(playerItemPreviewSlot, false);
         SetPreviewSlotActive(targetItemPreviewSlot, false);
@@ -914,6 +1031,8 @@ public sealed class InteractionDialogUI : MonoBehaviour
 
     private void RefreshQuestsView(bool forcePreviewRefresh = false)
     {
+        SetPackControlsActive(false);
+        SetPackIndicatorButtonsActive(false);
         SetItemsControlsActive(false);
         SetPreviewSlotActive(playerItemPreviewSlot, false);
         SetPreviewSlotActive(targetItemPreviewSlot, false);
@@ -955,6 +1074,8 @@ public sealed class InteractionDialogUI : MonoBehaviour
 
     private void RefreshSocialView(bool forcePreviewRefresh = false)
     {
+        SetPackControlsActive(false);
+        SetPackIndicatorButtonsActive(false);
         SetItemsControlsActive(false);
         SetPreviewSlotActive(playerItemPreviewSlot, false);
         SetPreviewSlotActive(targetItemPreviewSlot, false);
@@ -997,23 +1118,26 @@ public sealed class InteractionDialogUI : MonoBehaviour
     private void RefreshPackView(bool forcePreviewRefresh = false)
     {
         SetItemsControlsActive(false);
-        SetPreviewSlotActive(playerItemPreviewSlot, false);
-        SetPreviewSlotActive(targetItemPreviewSlot, false);
+        SetPackControlsActive(true);
+        SetPackIndicatorButtonsActive(true);
         SetItemSelectionTypeLabelsActive(false);
 
         BuildPackMemberOptions();
         ApplyPendingSelection(packMemberOptions, pendingLeftAgentSelection, ref selectedPackLeftIndex);
-        ApplyPendingSelection(packMemberOptions, pendingRightAgentSelection, ref selectedPackRightIndex);
         WorldObject leftMember = GetSelectedFromList(packMemberOptions, ref selectedPackLeftIndex);
-        EnsurePackRightSelection(leftMember);
-        WorldObject rightMember = GetSelectedFromList(packMemberOptions, ref selectedPackRightIndex);
-        if (rightMember == leftMember)
-            rightMember = null;
+        BuildPackRightOptions(leftMember);
+        ApplyPendingSelection(packRightOptions, pendingRightAgentSelection, ref selectedPackRightIndex);
+        WorldObject rightMember = GetSelectedFromList(packRightOptions, ref selectedPackRightIndex);
 
         RefreshCircleAndHotspot(playerPreviewSlot, packMemberOptions.Count, previousPlayerAgentButton, nextPlayerAgentButton);
-        RefreshCircleAndHotspot(targetPreviewSlot, Mathf.Max(0, packMemberOptions.Count - 1), previousTargetAgentButton, nextTargetAgentButton);
+        RefreshCircleAndHotspot(targetPreviewSlot, packRightOptions.Count, previousTargetAgentButton, nextTargetAgentButton);
         RefreshCircleAndHotspot(playerItemPreviewSlot, 0, previousPlayerItemButton, nextPlayerItemButton);
         RefreshCircleAndHotspot(targetItemPreviewSlot, 0, previousTargetItemButton, nextTargetItemButton);
+        RefreshPackIndicatorSlot(playerItemPreviewSlot, leftMember);
+        RefreshPackIndicatorSlot(targetItemPreviewSlot, rightMember);
+        RefreshPackIndicatorButton(playerPackIndicatorButton, leftMember);
+        RefreshPackIndicatorButton(targetPackIndicatorButton, rightMember);
+        RefreshPackMembershipButtons(rightMember);
 
         SetLabelText(playerNameLabel, leftMember != null ? leftMember.DisplayName : string.Empty);
         SetLabelText(playerHeldItemLabel, string.Empty);
@@ -1049,6 +1173,83 @@ public sealed class InteractionDialogUI : MonoBehaviour
             takeHotspotButton.gameObject.SetActive(active);
         if (actionPanelObject != null)
             actionPanelObject.SetActive(active);
+    }
+
+    private void SetPackControlsActive(bool active)
+    {
+        if (packActionPanelObject != null)
+            packActionPanelObject.SetActive(active);
+    }
+
+    private void SetPackIndicatorButtonsActive(bool active)
+    {
+        if (playerPackIndicatorButton != null)
+            playerPackIndicatorButton.gameObject.SetActive(active);
+        if (targetPackIndicatorButton != null)
+            targetPackIndicatorButton.gameObject.SetActive(active);
+    }
+
+    private void RefreshPackIndicatorSlot(PreviewSlot slot, WorldObject member)
+    {
+        if (slot == null)
+            return;
+
+        if (slot.Image != null)
+            slot.Image.gameObject.SetActive(false);
+
+        if (slot.CircleImage == null)
+            return;
+
+        bool hasMember = member != null;
+        slot.CircleImage.gameObject.SetActive(hasMember);
+        if (!hasMember)
+            return;
+
+        slot.CircleImage.sprite = GetPackIndicatorSprite(member);
+        slot.CircleImage.preserveAspect = true;
+        slot.CircleImage.color = Color.white;
+        slot.CircleImage.rectTransform.sizeDelta = slot.CircleSize;
+    }
+
+    private static void RefreshPackIndicatorButton(Button button, WorldObject member)
+    {
+        if (button != null)
+            button.interactable = member != null && !IsPlayerPackLeader(member);
+    }
+
+    private void RefreshPackMembershipButtons(WorldObject member)
+    {
+        bool inPlayerPack = IsInPlayerPack(member);
+        bool isLeader = IsPlayerPackLeader(member);
+
+        SetPackActionButtonInteractable(setLeaderButton, inPlayerPack && !isLeader);
+        SetPackActionButtonInteractable(joinPackButton, member != null && !inPlayerPack);
+        SetPackActionButtonInteractable(leavePackButton, inPlayerPack);
+    }
+
+    private static void SetPackActionButtonInteractable(Button button, bool interactable)
+    {
+        if (button == null)
+            return;
+
+        button.interactable = interactable;
+
+        Image image = button.targetGraphic as Image;
+        if (image != null)
+            image.color = interactable ? Color.white : new Color(1f, 1f, 1f, 0.36f);
+    }
+
+    private static Sprite GetPackIndicatorSprite(WorldObject member)
+    {
+        int spriteIndex;
+        if (IsPlayerPackLeader(member))
+            spriteIndex = 18;
+        else if (IsInPlayerPack(member))
+            spriteIndex = 19;
+        else
+            spriteIndex = 20;
+
+        return SpriteServer.SpriteSheetLookup("Sprites/PackFormationsSprites_C", spriteIndex);
     }
 
     private void SetItemSelectionTypeLabelsActive(bool active)
@@ -1093,7 +1294,7 @@ public sealed class InteractionDialogUI : MonoBehaviour
         return currentTab switch
         {
             InteractionTab.Social => "Nearby Agent",
-            InteractionTab.Pack => "Pack Member",
+            InteractionTab.Pack => "Pack/Nearby",
             InteractionTab.Items => "Nearby Agent",
             InteractionTab.Quests => "Quest Giver",
             InteractionTab.Scent => "Scent Source",
@@ -1177,7 +1378,7 @@ public sealed class InteractionDialogUI : MonoBehaviour
         RememberSelection(socialTargetOptions, rightAgent, ref selectedSocialTargetIndex);
         RememberSelection(questTargetOptions, rightAgent, ref selectedQuestTargetIndex);
         RememberSelection(scentTargetOptions, rightAgent, ref selectedScentTargetIndex);
-        RememberSelection(packMemberOptions, rightAgent, ref selectedPackRightIndex);
+        RememberSelection(packRightOptions, rightAgent, ref selectedPackRightIndex);
     }
 
     private void RefreshCircleAndHotspot(PreviewSlot slot, int optionCount, Button previousButton, Button nextButton)
@@ -1244,7 +1445,6 @@ public sealed class InteractionDialogUI : MonoBehaviour
     private void BuildPackMemberOptions()
     {
         WorldObject previousLeft = GetSelectedFromList(packMemberOptions, ref selectedPackLeftIndex);
-        WorldObject previousRight = GetSelectedFromList(packMemberOptions, ref selectedPackRightIndex);
         packMemberOptions.Clear();
 
         Pack playerPack = Dir.Instance != null ? Dir.Instance.playerPack : null;
@@ -1264,7 +1464,74 @@ public sealed class InteractionDialogUI : MonoBehaviour
             packMemberOptions.Add(packLeader);
 
         KeepSelectedObject(packMemberOptions, previousLeft, ref selectedPackLeftIndex);
-        KeepSelectedObject(packMemberOptions, previousRight, ref selectedPackRightIndex);
+    }
+
+    private void BuildPackRightOptions(WorldObject leftMember)
+    {
+        WorldObject previousRight = GetSelectedFromList(packRightOptions, ref selectedPackRightIndex);
+        packRightOptions.Clear();
+
+        Pack playerPack = Dir.Instance != null ? Dir.Instance.playerPack : null;
+        if (playerPack != null && playerPack.packAgentList != null)
+        {
+            for (int i = 0; i < playerPack.packAgentList.Count; i++)
+            {
+                WorldObject agent = playerPack.packAgentList[i];
+                if (agent != null && agent != leftMember && agent.gameObject.activeInHierarchy)
+                    packRightOptions.Add(agent);
+            }
+        }
+
+        AddNearbyPackRightAgents(leftMember);
+        KeepSelectedObject(packRightOptions, previousRight, ref selectedPackRightIndex);
+    }
+
+    private void AddNearbyPackRightAgents(WorldObject leftMember)
+    {
+        WorldObjectRegistry registry = WorldObjectRegistry.Instance;
+        if (leftMember == null || registry == null)
+            return;
+
+        Pack playerPack = Dir.Instance != null ? Dir.Instance.playerPack : null;
+        float radius = tradePartnerSearchRadiusTiles * socialNearbyRadiusMultiplier;
+        float radiusSqr = radius * radius;
+        Vector3 leftPosition = leftMember.pos3d_map;
+
+        foreach (WorldObject candidate in registry.GetAllObjects())
+        {
+            if (candidate == null || candidate == leftMember || !candidate.gameObject.activeInHierarchy)
+                continue;
+
+            if (!CanUseAsSocialTarget(candidate))
+                continue;
+
+            if (candidate.packMemberModule != null && candidate.packMemberModule.currentPack == playerPack)
+                continue;
+
+            Vector3 delta = candidate.pos3d_map - leftPosition;
+            delta.y = 0f;
+            if (delta.sqrMagnitude > radiusSqr)
+                continue;
+
+            if (!packRightOptions.Contains(candidate))
+                packRightOptions.Add(candidate);
+        }
+
+        packRightOptions.Sort((a, b) =>
+        {
+            bool aInPlayerPack = IsInPlayerPack(a);
+            bool bInPlayerPack = IsInPlayerPack(b);
+            if (aInPlayerPack != bInPlayerPack)
+                return aInPlayerPack ? -1 : 1;
+
+            float aDistanceSqr = GetPlanarDistanceSqr(leftPosition, a.pos3d_map);
+            float bDistanceSqr = GetPlanarDistanceSqr(leftPosition, b.pos3d_map);
+            int distanceComparison = aDistanceSqr.CompareTo(bDistanceSqr);
+            if (distanceComparison != 0)
+                return distanceComparison;
+
+            return string.Compare(a.DisplayName, b.DisplayName, System.StringComparison.OrdinalIgnoreCase);
+        });
     }
 
     private void EnsurePackRightSelection(WorldObject leftMember)
@@ -1576,6 +1843,20 @@ public sealed class InteractionDialogUI : MonoBehaviour
         return candidate.scentEmitterModule != null;
     }
 
+    private static bool IsInPlayerPack(WorldObject candidate)
+    {
+        Pack playerPack = Dir.Instance != null ? Dir.Instance.playerPack : null;
+        return candidate != null &&
+               candidate.packMemberModule != null &&
+               candidate.packMemberModule.currentPack == playerPack;
+    }
+
+    private static bool IsPlayerPackLeader(WorldObject candidate)
+    {
+        Pack playerPack = Dir.Instance != null ? Dir.Instance.playerPack : null;
+        return candidate != null && playerPack != null && playerPack.packLeader == candidate;
+    }
+
     private void OnPreviousPlayerAgentClicked()
     {
         if (currentTab == InteractionTab.Pack)
@@ -1739,10 +2020,12 @@ public sealed class InteractionDialogUI : MonoBehaviour
     private void CyclePackRightSelection(int direction)
     {
         BuildPackMemberOptions();
-        if (packMemberOptions.Count <= 2)
+        WorldObject leftMember = GetSelectedFromList(packMemberOptions, ref selectedPackLeftIndex);
+        BuildPackRightOptions(leftMember);
+        if (packRightOptions.Count <= 1)
             return;
 
-        selectedPackRightIndex = FindNextPackMemberIndex(selectedPackRightIndex, direction, selectedPackLeftIndex);
+        CycleSelection(packRightOptions, ref selectedPackRightIndex, direction);
         RefreshInteractionView(forcePreviewRefresh: true);
     }
 
@@ -2061,6 +2344,307 @@ public sealed class InteractionDialogUI : MonoBehaviour
 
         ShowInteractionMessage(reason);
         Debug.LogWarning($"InteractionDialogUI: failed to trade {traderItem.DisplayName} for {partnerItem.DisplayName}: {reason}", this);
+    }
+
+    private void OnPackBehaviorClicked(AgentDecisionType decisionType)
+    {
+        WorldObject member = GetSelectedPackRightMember();
+        if (member == null)
+        {
+            ShowInteractionMessage("No agent selected");
+            return;
+        }
+
+        if (decisionType == AgentDecisionType.Player && !TrySelectPackMemberForPlayerControl(member))
+        {
+            ShowInteractionMessage($"{member.DisplayName} could not be controlled");
+            return;
+        }
+
+        if (member.agentModule == null)
+            member.CreateModulesIfNeeded(ModuleFlags.agentModule);
+
+        if (member.agentModule == null)
+        {
+            ShowInteractionMessage($"{member.DisplayName} cannot change behavior");
+            Debug.LogWarning($"InteractionDialogUI: {member.DisplayName} has no AgentModule for pack behavior {decisionType}.", member);
+            return;
+        }
+
+        member.agentModule.SwitchDecisionModule(decisionType);
+        ShowInteractionMessage($"{member.DisplayName} behavior set to {GetPackBehaviorDisplayName(decisionType)}");
+        RefreshInteractionView(forcePreviewRefresh: true);
+    }
+
+    private bool TrySelectPackMemberForPlayerControl(WorldObject member)
+    {
+        GameInputRouter router = Dir.Instance != null ? Dir.Instance.gameInputRouter : null;
+        if (router == null)
+            router = GameInputRouter.Instance;
+
+        if (router == null)
+            return false;
+
+        return router.TrySelectControlledAgent(member);
+    }
+
+    private void OnSetPackLeaderClicked()
+    {
+        WorldObject member = GetSelectedPackRightMember();
+        PromotePackIndicatorSelection(member);
+    }
+
+    private void OnPlayerPackIndicatorClicked()
+    {
+        PromotePackIndicatorSelection(GetSelectedPackLeftMember());
+    }
+
+    private void OnTargetPackIndicatorClicked()
+    {
+        WorldObject member = GetSelectedPackRightMember();
+        if (member != null && !IsInPlayerPack(member))
+        {
+            JoinPackFromIndicatorSelection(member);
+            return;
+        }
+
+        PromotePackIndicatorSelection(member);
+    }
+
+    private void OnJoinPackClicked()
+    {
+        JoinPackFromIndicatorSelection(GetSelectedPackRightMember());
+    }
+
+    private void JoinPackFromIndicatorSelection(WorldObject member)
+    {
+        if (member == null)
+        {
+            ShowInteractionMessage("No agent selected");
+            return;
+        }
+
+        if (!TryJoinPlayerPackTail(member, out string reason))
+        {
+            ShowInteractionMessage(reason);
+            Debug.LogWarning($"InteractionDialogUI: failed to add {member.DisplayName} to player pack: {reason}", member);
+            return;
+        }
+
+        ShowInteractionMessage($"{member.DisplayName} joined the pack");
+        RefreshInteractionView(forcePreviewRefresh: true);
+    }
+
+    private void PromotePackIndicatorSelection(WorldObject member)
+    {
+        if (member == null)
+        {
+            ShowInteractionMessage("No agent selected");
+            return;
+        }
+
+        if (IsPlayerPackLeader(member))
+        {
+            ShowInteractionMessage($"{member.DisplayName} is already pack leader");
+            return;
+        }
+
+        if (!TryPromoteToPlayerPackLeader(member, out string reason))
+        {
+            ShowInteractionMessage(reason);
+            Debug.LogWarning($"InteractionDialogUI: failed to promote {member.DisplayName} to player pack leader: {reason}", member);
+            return;
+        }
+
+        selectedPackLeftIndex = 0;
+        selectedPackRightIndex = 0;
+        ShowInteractionMessage($"{member.DisplayName} is pack leader");
+        RefreshInteractionView(forcePreviewRefresh: true);
+    }
+
+    private static bool TryPromoteToPlayerPackLeader(WorldObject member, out string reason)
+    {
+        reason = string.Empty;
+        Pack playerPack = Dir.Instance != null ? Dir.Instance.playerPack : null;
+        if (member == null)
+        {
+            reason = "No agent selected.";
+            return false;
+        }
+
+        if (playerPack == null)
+        {
+            reason = "No player pack available.";
+            return false;
+        }
+
+        if (member.agentModule == null || member.packMemberModule == null)
+            member.CreateModulesIfNeeded(ModuleFlagsTemplates.FullAgent);
+
+        if (member.packMemberModule == null)
+        {
+            reason = $"{member.DisplayName} cannot join a pack.";
+            return false;
+        }
+
+        Pack currentPack = member.packMemberModule.currentPack;
+        if (currentPack != null && currentPack != playerPack && !member.packMemberModule.LeaveCurrentPack())
+        {
+            reason = $"{member.DisplayName} could not leave {currentPack.packName}.";
+            return false;
+        }
+
+        bool changed = playerPack.AddMember(member, setAsLeader: true);
+        if (!changed && playerPack.packLeader != member)
+        {
+            reason = $"{member.DisplayName} could not become leader.";
+            return false;
+        }
+
+        if (playerPack.packLeader == member)
+            playerPack.SetPackFollowChain();
+
+        return playerPack.packLeader == member;
+    }
+
+    private static bool TryJoinPlayerPackTail(WorldObject member, out string reason)
+    {
+        reason = string.Empty;
+        Pack playerPack = Dir.Instance != null ? Dir.Instance.playerPack : null;
+        if (member == null)
+        {
+            reason = "No agent selected.";
+            return false;
+        }
+
+        if (playerPack == null)
+        {
+            reason = "No player pack available.";
+            return false;
+        }
+
+        if (member.agentModule == null || member.packMemberModule == null)
+            member.CreateModulesIfNeeded(ModuleFlagsTemplates.FullAgent);
+
+        if (member.packMemberModule == null)
+        {
+            reason = $"{member.DisplayName} cannot join a pack.";
+            return false;
+        }
+
+        Pack currentPack = member.packMemberModule.currentPack;
+        if (currentPack == playerPack)
+            return true;
+
+        if (currentPack != null && !member.packMemberModule.LeaveCurrentPack())
+        {
+            reason = $"{member.DisplayName} could not leave {currentPack.packName}.";
+            return false;
+        }
+
+        bool changed = playerPack.AddMember(member, setAsLeader: false);
+        if (!changed && !IsInPlayerPack(member))
+        {
+            reason = $"{member.DisplayName} could not join the pack.";
+            return false;
+        }
+
+        playerPack.SetPackFollowChain();
+        return IsInPlayerPack(member);
+    }
+
+    private void OnLeavePackClicked()
+    {
+        WorldObject member = GetSelectedPackRightMember();
+        PackMemberModule packMember = member != null ? member.packMemberModule : null;
+        if (member == null || packMember == null)
+        {
+            ShowInteractionMessage("No pack member selected");
+            return;
+        }
+
+        if (!IsInPlayerPack(member))
+        {
+            ShowInteractionMessage($"{member.DisplayName} is not in the pack");
+            return;
+        }
+
+        if (!packMember.LeaveCurrentPack())
+        {
+            ShowInteractionMessage($"{member.DisplayName} cannot leave the pack");
+            return;
+        }
+
+        ShowInteractionMessage($"{member.DisplayName} left the pack");
+        selectedPackLeftIndex = 0;
+        selectedPackRightIndex = 1;
+        RefreshInteractionView(forcePreviewRefresh: true);
+    }
+
+    private void OnPackFormationClicked(FormationsEnum formation)
+    {
+        Pack pack = Dir.Instance != null ? Dir.Instance.playerPack : null;
+        if (pack == null)
+        {
+            ShowInteractionMessage("No player pack available");
+            return;
+        }
+
+        pack.SetFormation(formation);
+        ShowInteractionMessage($"Pack formation set to {GetPackFormationDisplayName(formation)}");
+        RefreshInteractionView(forcePreviewRefresh: true);
+    }
+
+    private void OnUnimplementedPackActionClicked()
+    {
+        ShowInteractionMessage("That pack command is not implemented yet");
+    }
+
+    private WorldObject GetSelectedPackLeftMember()
+    {
+        if (displayedPackLeft != null)
+            return displayedPackLeft;
+
+        BuildPackMemberOptions();
+        return GetSelectedFromList(packMemberOptions, ref selectedPackLeftIndex);
+    }
+
+    private WorldObject GetSelectedPackRightMember()
+    {
+        if (displayedPackRight != null)
+            return displayedPackRight;
+
+        BuildPackMemberOptions();
+        WorldObject leftMember = GetSelectedFromList(packMemberOptions, ref selectedPackLeftIndex);
+        BuildPackRightOptions(leftMember);
+        return GetSelectedFromList(packRightOptions, ref selectedPackRightIndex);
+    }
+
+    private static string GetPackBehaviorDisplayName(AgentDecisionType decisionType)
+    {
+        return decisionType switch
+        {
+            AgentDecisionType.Player => "Take Control",
+            AgentDecisionType.Follower => "Regroup",
+            AgentDecisionType.Immobile => "Wait Here",
+            AgentDecisionType.Wanderer => "Patrol Room",
+            AgentDecisionType.Explorer => "Explore",
+            AgentDecisionType.TaskFollower => "AI",
+            _ => decisionType.ToString()
+        };
+    }
+
+    private static string GetPackFormationDisplayName(FormationsEnum formation)
+    {
+        return formation switch
+        {
+            FormationsEnum.LineAbreast => "Abreast",
+            FormationsEnum.TwoColums => "Two Columns",
+            FormationsEnum.Wedge => "Wedge",
+            FormationsEnum.Circle => "Circle",
+            FormationsEnum.SingleFile => "Follow",
+            _ => formation.ToString()
+        };
     }
 
     private static void CycleSelection(List<WorldObject> options, ref int selectedIndex, int direction)
