@@ -29,8 +29,8 @@ namespace DogGame.Modules
         [Header("Runtime Debug")]
         [SerializeField] private WanderState debugState;
         [SerializeField] private Vector3 debugDesiredTargetLocationMap;
-        [SerializeField] private bool debugHasDesiredTarget;
-        [SerializeField] private bool debugLastPickSucceeded;
+//        [SerializeField] private bool debugHasDesiredTarget;
+//        [SerializeField] private bool debugLastPickSucceeded;
         [SerializeField] private string debugLastPickFailureReason = "";
         [SerializeField] private int debugCurrentRoomIndex = -1;
         [SerializeField] private Vector2Int debugCurrentCell = new Vector2Int(-1, -1);
@@ -38,7 +38,7 @@ namespace DogGame.Modules
         [SerializeField] private int debugCandidateCount;
         [SerializeField] private int debugPickAttempts;
         [SerializeField] private float debugMoveTargetElapsedSeconds;
-        [SerializeField] private bool debugLastMoveTimedOut;
+        //[SerializeField] private bool debugLastMoveTimedOut;
 
         public override void Initialize(AgentModule agentController)
         {
@@ -85,7 +85,7 @@ namespace DogGame.Modules
                     debugMoveTargetElapsedSeconds = moveTargetElapsedSeconds;
                     if (moveTargetTimeoutSeconds > 0f && moveTargetElapsedSeconds >= moveTargetTimeoutSeconds)
                     {
-                        debugLastMoveTimedOut = true;
+                        //debugLastMoveTimedOut = true;
                         state = WanderState.PickTarget;
                         worldObject.agentMovementModule.ClearDesiredMove();
                         debugState = state;
@@ -120,13 +120,13 @@ namespace DogGame.Modules
 
         private bool PickNewTargetInCurrentRoom()
         {
-            debugLastPickSucceeded = false;
-            debugLastPickFailureReason = "";
+            //debugLastPickSucceeded = false;
+            //debugLastPickFailureReason = "";
             debugPickAttempts = 0;
             debugCandidateCount = 0;
             debugCurrentRoomIndex = -1;
             debugDesiredTargetCell = new Vector2Int(-1, -1);
-            debugLastMoveTimedOut = false;
+            //debugLastMoveTimedOut = false;
 
             Room room = GetCurrentRoom();
             if (room == null || room.cells == null || room.cells.Count == 0)
@@ -172,8 +172,8 @@ namespace DogGame.Modules
             debugMoveTargetElapsedSeconds = 0f;
             debugDesiredTargetLocationMap = currentWanderTargetMap;
             debugDesiredTargetCell = new Vector2Int(chosen.x, chosen.y);
-            debugHasDesiredTarget = true;
-            debugLastPickSucceeded = true;
+            //debugHasDesiredTarget = true;
+            //debugLastPickSucceeded = true;
             state = WanderState.MoveToTarget;
             worldObject.agentMovementModule.SetDesiredTargetLocationMap(
                 currentWanderTargetMap,
@@ -186,8 +186,8 @@ namespace DogGame.Modules
         private void ClearDebugTarget(string failureReason)
         {
             debugDesiredTargetLocationMap = Vector3.zero;
-            debugHasDesiredTarget = false;
-            debugLastPickSucceeded = false;
+            //debugHasDesiredTarget = false;
+            //debugLastPickSucceeded = false;
             debugLastPickFailureReason = failureReason;
             debugDesiredTargetCell = new Vector2Int(-1, -1);
         }
@@ -213,7 +213,7 @@ namespace DogGame.Modules
             dwellRemainingSeconds = 0f;
             moveTargetElapsedSeconds = 0f;
             debugMoveTargetElapsedSeconds = 0f;
-            debugLastMoveTimedOut = false;
+            //debugLastMoveTimedOut = false;
             ClearDebugTarget("");
         }
         public override void EndDecisionModule()

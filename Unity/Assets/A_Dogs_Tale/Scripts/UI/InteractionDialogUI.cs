@@ -11,6 +11,9 @@ using UnityEngine.UI;
 
 public sealed class InteractionDialogUI : MonoBehaviour
 {
+    private const int PreviewRenderLayer = 31;
+    private const string EmoteIconVisualInstanceName = "EmoteIconVisual";
+    private const string QuestIconVisualInstanceName = "QuestRequestIconVisual";
     private static readonly Vector3 PlayerPreviewAnchorPosition = new(62000f, 60000f, 60000f);
     private static readonly Vector3 PlayerItemPreviewAnchorPosition = new(63000f, 60000f, 60000f);
     private static readonly Vector3 TargetPreviewAnchorPosition = new(64000f, 60000f, 60000f);
@@ -18,8 +21,8 @@ public sealed class InteractionDialogUI : MonoBehaviour
 
     [Header("Resources")]
     [SerializeField] private string interactionFrameSpriteResourcePath = "Sprites/Frames/Interaction_5_Frame_B";
-    [SerializeField] private string circleSpriteResourcePath = "Sprites/Frames/Circle";
-    [SerializeField] private string circleWithArrowsSpriteResourcePath = "Sprites/Frames/CircleWithArrows";
+    [SerializeField] private string circleSpriteResourcePath = "Sprites/Frames/Circle_540_540";
+    [SerializeField] private string circleWithArrowsSpriteResourcePath = "Sprites/Frames/CircleWithArrows_921_540";
     [SerializeField] private string tradeArrowsSpriteResourcePath = "Sprites/Frames/TradeArrows_A";
     [SerializeField] private string titleFontResourcePath = "TMP_Fonts/LuckiestGuy-Regular SDF";
 
@@ -49,6 +52,10 @@ public sealed class InteractionDialogUI : MonoBehaviour
     private TextMeshProUGUI playerHeldItemLabel;
     private TextMeshProUGUI targetNameLabel;
     private TextMeshProUGUI targetHeldItemLabel;
+    private TextMeshProUGUI playerSelectionTypeLabel;
+    private TextMeshProUGUI targetSelectionTypeLabel;
+    private TextMeshProUGUI playerItemSelectionTypeLabel;
+    private TextMeshProUGUI targetItemSelectionTypeLabel;
     private Image socialTabHighlight;
     private Image questsTabHighlight;
     private Image packTabHighlight;
@@ -464,6 +471,13 @@ public sealed class InteractionDialogUI : MonoBehaviour
         playerHeldItemLabel = CreateInfoLabel(parent, "PlayerHeldItem", new Vector2(-110f, -334f), new Vector2(300f, 58f), 38f, TextAlignmentOptions.Left);
         targetNameLabel = CreateInfoLabel(parent, "TargetName", new Vector2(190f, -232f), new Vector2(360f, 70f), 44f, TextAlignmentOptions.Right);
         targetHeldItemLabel = CreateInfoLabel(parent, "TargetHeldItem", new Vector2(110f, -334f), new Vector2(300f, 58f), 38f, TextAlignmentOptions.Right);
+        playerSelectionTypeLabel = CreateInfoLabel(parent, "PlayerSelectionType", new Vector2(-497f, -371f), new Vector2(220f, 34f), 22f, TextAlignmentOptions.Center);
+        targetSelectionTypeLabel = CreateInfoLabel(parent, "TargetSelectionType", new Vector2(480f, -371f), new Vector2(220f, 34f), 22f, TextAlignmentOptions.Center);
+        playerItemSelectionTypeLabel = CreateInfoLabel(parent, "PlayerItemSelectionType", new Vector2(-334f, -371f), new Vector2(160f, 34f), 22f, TextAlignmentOptions.Center);
+        targetItemSelectionTypeLabel = CreateInfoLabel(parent, "TargetItemSelectionType", new Vector2(320f, -371f), new Vector2(160f, 34f), 22f, TextAlignmentOptions.Center);
+        SetLabelText(playerSelectionTypeLabel, "Pack Member");
+        SetLabelText(playerItemSelectionTypeLabel, "Held Item");
+        SetLabelText(targetItemSelectionTypeLabel, "Held Item");
     }
 
     private void BuildTradeArrows(Transform parent)
@@ -681,7 +695,7 @@ public sealed class InteractionDialogUI : MonoBehaviour
         label.fontSize = fontSize;
         label.color = new Color(0.29f, 0.18f, 0.09f, 1f);
         label.alignment = alignment;
-        label.enableWordWrapping = false;
+        label.textWrappingMode = TextWrappingModes.NoWrap;
         label.overflowMode = TextOverflowModes.Ellipsis;
         label.raycastTarget = false;
         return label;
@@ -691,11 +705,11 @@ public sealed class InteractionDialogUI : MonoBehaviour
     {
         previousPlayerAgentButton = CreateArrowButton(parent, "PreviousPlayerAgentButton", new Vector2(-593f, -290f), OnPreviousPlayerAgentClicked, 48f);
         nextPlayerAgentButton = CreateArrowButton(parent, "NextPlayerAgentButton", new Vector2(-400f, -290f), OnNextPlayerAgentClicked, 48f);
-        previousPlayerItemButton = CreateArrowButton(parent, "PreviousPlayerItemButton", new Vector2(-419f, -320f), OnPreviousPlayerItemClicked, 32f);
+        previousPlayerItemButton = CreateArrowButton(parent, "PreviousPlayerItemButton", new Vector2(-380f, -320f), OnPreviousPlayerItemClicked, 32f);
         nextPlayerItemButton = CreateArrowButton(parent, "NextPlayerItemButton", new Vector2(-288f, -320f), OnNextPlayerItemClicked, 32f);
 
         previousTargetItemButton = CreateArrowButton(parent, "PreviousTargetItemButton", new Vector2(275f, -320f), OnPreviousTargetItemClicked, 32f);
-        nextTargetItemButton = CreateArrowButton(parent, "NextTargetItemButton", new Vector2(405f, -320f), OnNextTargetItemClicked, 32f);
+        nextTargetItemButton = CreateArrowButton(parent, "NextTargetItemButton", new Vector2(365f, -320f), OnNextTargetItemClicked, 32f);
         previousTargetAgentButton = CreateArrowButton(parent, "PreviousTargetAgentButton", new Vector2(383f, -290f), OnPreviousTargetAgentClicked, 48f);
         nextTargetAgentButton = CreateArrowButton(parent, "NextTargetAgentButton", new Vector2(576f, -290f), OnNextTargetAgentClicked, 48f);
     }
@@ -730,10 +744,10 @@ public sealed class InteractionDialogUI : MonoBehaviour
 
     private void BuildPreviewSlots(Transform parent)
     {
-        playerPreviewSlot = CreatePreviewSlot(parent, "PlayerPreview", PlayerPreviewAnchorPosition, new Vector2(-497f, -290f), new Vector2(150f, 150f), new Vector2(171f, 171f), new Vector2(238f, 238f), 1.325f);
-        playerItemPreviewSlot = CreatePreviewSlot(parent, "PlayerItemPreview", PlayerItemPreviewAnchorPosition, new Vector2(-354f, -320f), new Vector2(78f, 78f), new Vector2(96f, 96f), new Vector2(148f, 148f), 1.2f);
-        targetItemPreviewSlot = CreatePreviewSlot(parent, "TargetItemPreview", TargetItemPreviewAnchorPosition, new Vector2(340f, -320f), new Vector2(78f, 78f), new Vector2(96f, 96f), new Vector2(148f, 148f), 1.2f);
-        targetPreviewSlot = CreatePreviewSlot(parent, "TargetPreview", TargetPreviewAnchorPosition, new Vector2(480f, -290f), new Vector2(150f, 150f), new Vector2(171f, 171f), new Vector2(238f, 238f), 1.325f);
+        playerPreviewSlot = CreatePreviewSlot(parent, "PlayerPreview", PlayerPreviewAnchorPosition, new Vector2(-497f, -290f), new Vector2(150f, 150f), new Vector2(140f, 140f), new Vector2(239f, 140f), 1.325f);
+        playerItemPreviewSlot = CreatePreviewSlot(parent, "PlayerItemPreview", PlayerItemPreviewAnchorPosition, new Vector2(-334f, -320f), new Vector2(78f, 78f), new Vector2(80f, 80f), new Vector2(137f, 80f), 1.2f);
+        targetItemPreviewSlot = CreatePreviewSlot(parent, "TargetItemPreview", TargetItemPreviewAnchorPosition, new Vector2(320f, -320f), new Vector2(78f, 78f), new Vector2(80f, 80f), new Vector2(137f, 80f), 1.2f);
+        targetPreviewSlot = CreatePreviewSlot(parent, "TargetPreview", TargetPreviewAnchorPosition, new Vector2(480f, -290f), new Vector2(150f, 150f), new Vector2(140f, 140f), new Vector2(239f, 140f), 1.325f);
     }
 
     private PreviewSlot CreatePreviewSlot(
@@ -813,6 +827,7 @@ public sealed class InteractionDialogUI : MonoBehaviour
         SetItemsControlsActive(true);
         SetPreviewSlotActive(playerItemPreviewSlot, true);
         SetPreviewSlotActive(targetItemPreviewSlot, true);
+        SetItemSelectionTypeLabelsActive(true);
 
         BuildPlayerAgentOptions();
         ApplyPendingSelection(playerAgentOptions, pendingLeftAgentSelection, ref selectedPlayerAgentIndex);
@@ -861,6 +876,7 @@ public sealed class InteractionDialogUI : MonoBehaviour
         SetItemsControlsActive(false);
         SetPreviewSlotActive(playerItemPreviewSlot, false);
         SetPreviewSlotActive(targetItemPreviewSlot, false);
+        SetItemSelectionTypeLabelsActive(false);
 
         BuildPlayerAgentOptions();
         ApplyPendingSelection(playerAgentOptions, pendingLeftAgentSelection, ref selectedPlayerAgentIndex);
@@ -901,6 +917,7 @@ public sealed class InteractionDialogUI : MonoBehaviour
         SetItemsControlsActive(false);
         SetPreviewSlotActive(playerItemPreviewSlot, false);
         SetPreviewSlotActive(targetItemPreviewSlot, false);
+        SetItemSelectionTypeLabelsActive(false);
 
         BuildPlayerAgentOptions();
         ApplyPendingSelection(playerAgentOptions, pendingLeftAgentSelection, ref selectedPlayerAgentIndex);
@@ -941,6 +958,7 @@ public sealed class InteractionDialogUI : MonoBehaviour
         SetItemsControlsActive(false);
         SetPreviewSlotActive(playerItemPreviewSlot, false);
         SetPreviewSlotActive(targetItemPreviewSlot, false);
+        SetItemSelectionTypeLabelsActive(false);
 
         BuildPlayerAgentOptions();
         ApplyPendingSelection(playerAgentOptions, pendingLeftAgentSelection, ref selectedPlayerAgentIndex);
@@ -981,6 +999,7 @@ public sealed class InteractionDialogUI : MonoBehaviour
         SetItemsControlsActive(false);
         SetPreviewSlotActive(playerItemPreviewSlot, false);
         SetPreviewSlotActive(targetItemPreviewSlot, false);
+        SetItemSelectionTypeLabelsActive(false);
 
         BuildPackMemberOptions();
         ApplyPendingSelection(packMemberOptions, pendingLeftAgentSelection, ref selectedPackLeftIndex);
@@ -1032,6 +1051,14 @@ public sealed class InteractionDialogUI : MonoBehaviour
             actionPanelObject.SetActive(active);
     }
 
+    private void SetItemSelectionTypeLabelsActive(bool active)
+    {
+        if (playerItemSelectionTypeLabel != null)
+            playerItemSelectionTypeLabel.gameObject.SetActive(active);
+        if (targetItemSelectionTypeLabel != null)
+            targetItemSelectionTypeLabel.gameObject.SetActive(active);
+    }
+
     private static void SetPreviewSlotActive(PreviewSlot slot, bool active)
     {
         if (slot == null)
@@ -1057,6 +1084,21 @@ public sealed class InteractionDialogUI : MonoBehaviour
             scentTabHighlight.gameObject.SetActive(currentTab == InteractionTab.Scent);
         if (titleLabel != null)
             titleLabel.text = currentTab.ToString().ToUpperInvariant();
+        if (targetSelectionTypeLabel != null)
+            targetSelectionTypeLabel.text = GetTargetSelectionTypeLabel();
+    }
+
+    private string GetTargetSelectionTypeLabel()
+    {
+        return currentTab switch
+        {
+            InteractionTab.Social => "Nearby Agent",
+            InteractionTab.Pack => "Pack Member",
+            InteractionTab.Items => "Nearby Agent",
+            InteractionTab.Quests => "Quest Giver",
+            InteractionTab.Scent => "Scent Source",
+            _ => string.Empty
+        };
     }
 
     private void OnSocialTabClicked()
@@ -2299,6 +2341,7 @@ public sealed class InteractionDialogUI : MonoBehaviour
         slot.Camera.orthographic = true;
         slot.Camera.nearClipPlane = 0.01f;
         slot.Camera.farClipPlane = 100f;
+        slot.Camera.cullingMask = 1 << PreviewRenderLayer;
         slot.Camera.allowHDR = false;
         slot.Camera.allowMSAA = false;
 
@@ -2310,6 +2353,7 @@ public sealed class InteractionDialogUI : MonoBehaviour
         slot.Light.intensity = 1.25f;
         slot.Light.color = Color.white;
         slot.Light.shadows = LightShadows.None;
+        slot.Light.cullingMask = 1 << PreviewRenderLayer;
         slot.Light.transform.rotation = Quaternion.Euler(35f, 135f, 0f);
 
         EnsurePreviewTexture(slot);
@@ -2337,6 +2381,7 @@ public sealed class InteractionDialogUI : MonoBehaviour
             return;
 
         DestroyPreviewClone(slot);
+        PurgePreviewWorldRenderables(slot);
         slot.DisplayedObject = worldObject;
 
         if (worldObject == null)
@@ -2363,6 +2408,7 @@ public sealed class InteractionDialogUI : MonoBehaviour
         slot.Clone.hideFlags = HideFlags.HideAndDontSave;
         slot.Clone.transform.SetParent(slot.WorldRoot.transform, false);
         slot.Clone.transform.position = slot.AnchorPosition;
+        SetLayerRecursive(slot.Clone, PreviewRenderLayer);
 
         CenterPreviewClone(slot);
         RenderPreview(slot);
@@ -2417,6 +2463,29 @@ public sealed class InteractionDialogUI : MonoBehaviour
         slot.Camera.orthographicSize = slot.FramingRadius * slot.OrthographicPadding;
         ClearPreviewTexture(slot);
         slot.Camera.Render();
+    }
+
+    private static void PurgePreviewWorldRenderables(PreviewSlot slot)
+    {
+        if (slot == null || slot.WorldRoot == null)
+            return;
+
+        for (int i = slot.WorldRoot.transform.childCount - 1; i >= 0; i--)
+        {
+            Transform child = slot.WorldRoot.transform.GetChild(i);
+            if (child == null ||
+                child == (slot.Camera != null ? slot.Camera.transform : null) ||
+                child == (slot.Light != null ? slot.Light.transform : null))
+            {
+                continue;
+            }
+
+            child.gameObject.SetActive(false);
+            if (Application.isPlaying)
+                Destroy(child.gameObject);
+            else
+                DestroyImmediate(child.gameObject);
+        }
     }
 
     private static void ClearPreviewTexture(PreviewSlot slot)
@@ -2485,6 +2554,17 @@ public sealed class InteractionDialogUI : MonoBehaviour
         return cloneRoot;
     }
 
+    private static void SetLayerRecursive(GameObject root, int layer)
+    {
+        if (root == null)
+            return;
+
+        root.layer = layer;
+        Transform rootTransform = root.transform;
+        for (int i = 0; i < rootTransform.childCount; i++)
+            SetLayerRecursive(rootTransform.GetChild(i).gameObject, layer);
+    }
+
     private static bool ShouldSkipPreviewCloneTransform(
         Transform source,
         Transform sourceRoot,
@@ -2495,6 +2575,13 @@ public sealed class InteractionDialogUI : MonoBehaviour
 
         if (source.GetComponentInParent<EmoteIconSpinner>() != null)
             return true;
+
+        for (Transform current = source; current != null && current != sourceRoot; current = current.parent)
+        {
+            string objectName = current.name;
+            if (objectName == EmoteIconVisualInstanceName || objectName == QuestIconVisualInstanceName)
+                return true;
+        }
 
         WorldObject[] parentWorldObjects = source.GetComponentsInParent<WorldObject>(true);
         for (int i = 0; i < parentWorldObjects.Length; i++)
@@ -2557,7 +2644,6 @@ public sealed class InteractionDialogUI : MonoBehaviour
             return;
 
         slot.Clone.SetActive(false);
-        slot.Clone.transform.SetParent(null, false);
 
         if (Application.isPlaying)
             Destroy(slot.Clone);

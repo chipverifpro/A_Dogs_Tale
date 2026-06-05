@@ -462,13 +462,21 @@ public class CameraModeSwitcher : MonoBehaviour
             return;
         }
 
-        // --- First Person: change FOV ---
+        // --- First Person / Nose cam: change FOV ---
         if (IsLive(vcamFP))
         {
             float fov = vcamFP.m_Lens.FieldOfView;
             fov = Mathf.Clamp(fov + delta, minFOV, maxFOV);
             vcamFP.m_Lens.FieldOfView = fov;
             Debug.Log($"First Person zoom fov = {fov:0.0}");
+        }
+
+        if (IsLive(vcamNose))
+        {
+            float fov = vcamNose.m_Lens.FieldOfView;
+            fov = Mathf.Clamp(fov + delta, minFOV, maxFOV);
+            vcamNose.m_Lens.FieldOfView = fov;
+            Debug.Log($"Nose cam zoom fov = {fov:0.0}");
         }
 
         // Top cam (Transposer): adjust FollowOffset.z for zoom effect

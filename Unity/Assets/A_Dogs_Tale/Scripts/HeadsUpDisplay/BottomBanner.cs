@@ -73,7 +73,7 @@ public class BottomBanner : MonoBehaviour
     [SerializeField] int fontSize = 44;
     [SerializeField] float height = 128f;
     [SerializeField] float sidePadding = 16f;
-    [SerializeField] bool useSafeArea = true;
+    //[SerializeField] bool useSafeArea = true;
     [SerializeField] float backgroundTopOffset = 0f;
     [SerializeField] float backgroundHeightMultiplier = 2f;
     [SerializeField] bool autoCollapseWhenMouseAway = true;
@@ -86,7 +86,7 @@ public class BottomBanner : MonoBehaviour
     [SerializeField] float rowMinHeight = 128f;
     [SerializeField] float rowSpacing = 4f;
     [SerializeField] float iconSize = 128f;
-    [SerializeField] bool smoothIconSampling = true;
+//    [SerializeField] bool smoothIconSampling = true;
     [SerializeField] int maxMessageLines = 2;
     [SerializeField] bool defaultDisplayUsesRichText = true;
     [SerializeField] bool autoScrollToNewest = true;
