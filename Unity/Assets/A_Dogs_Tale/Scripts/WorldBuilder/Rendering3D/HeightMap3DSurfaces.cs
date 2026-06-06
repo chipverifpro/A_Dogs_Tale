@@ -33,7 +33,8 @@ public partial class DungeonGenerator
 
             if (useTriangleFloor)
             {
-                Quaternion triangleFloorRotation = Quaternion.Euler(-90f, triangleFloorDirection * 90f, 90f);
+                int resolvedTriangleFloorDirection = ResolveTriangleFloorDirection(triangleFloorDirection);
+                Quaternion triangleFloorRotation = Quaternion.Euler(-90f, resolvedTriangleFloorDirection * 90f, 90f);
                 Quaternion finalRotation = tilt * triangleFloorRotation;
                 Vector3 triangleScale = finalScale * 50f; // keep your existing fudge factor for now
 
@@ -83,5 +84,15 @@ public partial class DungeonGenerator
                 color: rooms[roomNumber].colorCeiling
             );
         }
+    }
+
+    private int ResolveTriangleFloorDirection(int triangleFloorDirection)
+    {
+        triangleFloorDirection = ((triangleFloorDirection % 4) + 4) % 4;
+
+        if (cfg != null && (!cfg.enableTiltedTiles || cfg.tiltFloorTilesMaxAngle == 0))
+            return (triangleFloorDirection + 2) % 4;
+
+        return triangleFloorDirection;
     }
 }

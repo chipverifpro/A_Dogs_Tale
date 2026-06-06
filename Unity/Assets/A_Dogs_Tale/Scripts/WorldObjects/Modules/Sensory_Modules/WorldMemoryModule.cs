@@ -461,9 +461,17 @@ namespace DogGame.Modules
             Vector3 mapPos = target.pos3d_map;
             int mapX = Mathf.FloorToInt(mapPos.x);
             int mapY = Mathf.FloorToInt(mapPos.z);
-            int mapZ = Mathf.FloorToInt(mapPos.y);
+            int mapZ = MapHeightToHeightSteps(mapPos.y);
             Cell cellAtObject = dir.gen.GetCellFromHf(mapX, mapY, mapZ, 50);
             return cellAtObject != null ? cellAtObject.room_number : -1;
+        }
+
+        private int MapHeightToHeightSteps(float mapY)
+        {
+            float unitHeight = dir != null && dir.cfg != null
+                ? Mathf.Max(0.0001f, dir.cfg.unitHeight)
+                : 1f;
+            return Mathf.RoundToInt(mapY / unitHeight);
         }
 
         private static WorldObject ResolveHolder(WorldObject target)

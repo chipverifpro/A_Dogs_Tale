@@ -50,6 +50,7 @@ namespace DogGame.Modules
         public int y => Mathf.FloorToInt(y_f);
         public int z => Mathf.FloorToInt(z_f);
         public int height => z;
+        private int heightSteps => MapHeightToHeightSteps(z_f);
 
         public Vector3 pos3d_f => pos3d_map;
         public Vector3Int pos3d => new(x, z, y);
@@ -67,7 +68,7 @@ namespace DogGame.Modules
                 if (dir == null || dir.gen == null || !dir.gen.buildComplete || dir.gen.hf == null)
                     return null;
 
-                return dir.gen.GetCellFromHf(x, y, z, 50);
+                return dir.gen.GetCellFromHf(x, y, heightSteps, 50);
             }
         }
 
@@ -258,9 +259,17 @@ namespace DogGame.Modules
             Vector3 mapPos = candidate.pos3d_map;
             int mapX = Mathf.FloorToInt(mapPos.x);
             int mapY = Mathf.FloorToInt(mapPos.z);
-            int mapZ = Mathf.FloorToInt(mapPos.y);
+            int mapZ = MapHeightToHeightSteps(mapPos.y);
             Cell cellAtObject = dir.gen.GetCellFromHf(mapX, mapY, mapZ, 50);
             return cellAtObject != null ? cellAtObject.room_number : -1;
+        }
+
+        private int MapHeightToHeightSteps(float mapY)
+        {
+            float unitHeight = dir != null && dir.cfg != null
+                ? Mathf.Max(0.0001f, dir.cfg.unitHeight)
+                : 1f;
+            return Mathf.RoundToInt(mapY / unitHeight);
         }
 
         private static bool IsAgent(WorldObject obj)
