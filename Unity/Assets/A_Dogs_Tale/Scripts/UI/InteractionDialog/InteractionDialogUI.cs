@@ -41,12 +41,19 @@ public sealed class InteractionDialogUI : MonoBehaviour
     [SerializeField, Min(0f)] private float throwForwardImpulse = 7f;
     [SerializeField, Min(0f)] private float throwUpwardImpulse = 2f;
     [SerializeField, Min(0f)] private float throwReleaseHeight = 0.5f;
+    [SerializeField] private Vector2 tooltipScreenOffset = new(18f, -18f);
+    [SerializeField] private Vector2 tooltipPadding = new(12f, 8f);
+    [SerializeField, Min(80f)] private float tooltipMaxWidth = 300f;
+    [SerializeField, Min(8f)] private float tooltipFontSize = 20f;
 
     private Sprite interactionFrameSprite;
     private Canvas overlayCanvas;
     private CanvasScaler overlayCanvasScaler;
     private RectTransform dialogRect;
+    private RectTransform tooltipRect;
     private GameObject dialogRoot;
+    private TextMeshProUGUI tooltipLabel;
+    private InteractionDialogTooltipTrigger activeTooltipTrigger;
     private TextMeshProUGUI titleLabel;
     private TextMeshProUGUI playerNameLabel;
     private TextMeshProUGUI playerHeldItemLabel;
@@ -237,6 +244,8 @@ public sealed class InteractionDialogUI : MonoBehaviour
         if (dialogRoot != null)
             dialogRoot.SetActive(false);
 
+        HideTooltip();
+
         if (wasOpen)
             RestorePauseStateForDialog();
     }
@@ -337,6 +346,7 @@ public sealed class InteractionDialogUI : MonoBehaviour
         BuildActionButtons(dialogRoot.transform);
         BuildPackActionButtons(dialogRoot.transform);
         BuildCloseHotspot(dialogRoot.transform);
+        BuildTooltip(canvasObject.transform);
     }
 
     private void ApplyDialogScaleAndPosition()
@@ -416,6 +426,136 @@ public sealed class InteractionDialogUI : MonoBehaviour
         closeRect.sizeDelta = closeButtonSize;
     }
 
+    private void BuildTooltip(Transform parent)
+    {
+        GameObject tooltipObject = CreateUIObject("InteractionDialogTooltip", parent);
+        tooltipRect = tooltipObject.GetComponent<RectTransform>();
+        tooltipRect.anchorMin = new Vector2(0f, 1f);
+        tooltipRect.anchorMax = new Vector2(0f, 1f);
+        tooltipRect.pivot = new Vector2(0f, 1f);
+        tooltipRect.sizeDelta = new Vector2(160f, 44f);
+
+        Image background = tooltipObject.AddComponent<Image>();
+        background.color = new Color(0.08f, 0.06f, 0.035f, 0.92f);
+        background.raycastTarget = false;
+
+        GameObject labelObject = CreateUIObject("Label", tooltipObject.transform);
+        RectTransform labelRect = labelObject.GetComponent<RectTransform>();
+        labelRect.anchorMin = Vector2.zero;
+        labelRect.anchorMax = Vector2.one;
+        labelRect.offsetMin = tooltipPadding;
+        labelRect.offsetMax = -tooltipPadding;
+
+        tooltipLabel = labelObject.AddComponent<TextMeshProUGUI>();
+        tooltipLabel.fontSize = tooltipFontSize;
+        tooltipLabel.color = new Color(1f, 0.86f, 0.54f, 1f);
+        tooltipLabel.alignment = TextAlignmentOptions.Center;
+        tooltipLabel.textWrappingMode = TextWrappingModes.NoWrap;
+        tooltipLabel.overflowMode = TextOverflowModes.Overflow;
+        tooltipLabel.raycastTarget = false;
+        if (TMP_Settings.defaultFontAsset != null)
+            tooltipLabel.font = TMP_Settings.defaultFontAsset;
+
+        tooltipObject.SetActive(false);
+        BringTooltipToFront();
+    }
+
+    private void ConfigureTooltip(GameObject target, string tooltipText)
+    {
+        if (target == null || string.IsNullOrWhiteSpace(tooltipText))
+            return;
+
+        InteractionDialogTooltipTrigger trigger = target.GetComponent<InteractionDialogTooltipTrigger>();
+        if (trigger == null)
+            trigger = target.AddComponent<InteractionDialogTooltipTrigger>();
+
+        trigger.Initialize(this, tooltipText);
+    }
+
+    internal void ShowTooltip(InteractionDialogTooltipTrigger trigger, Vector2 screenPosition)
+    {
+        if (trigger == null || tooltipRect == null || tooltipLabel == null)
+            return;
+
+        string text = trigger.TooltipText;
+        if (string.IsNullOrWhiteSpace(text))
+            return;
+
+        activeTooltipTrigger = trigger;
+        tooltipRect.gameObject.SetActive(true);
+        UpdateTooltipText(text);
+        PositionTooltip(screenPosition);
+        BringTooltipToFront();
+    }
+
+    internal void MoveTooltip(InteractionDialogTooltipTrigger trigger, Vector2 screenPosition)
+    {
+        if (trigger == null || trigger != activeTooltipTrigger || tooltipRect == null || !tooltipRect.gameObject.activeSelf)
+            return;
+
+        PositionTooltip(screenPosition);
+    }
+
+    internal void HideTooltip(InteractionDialogTooltipTrigger trigger)
+    {
+        if (trigger != null && trigger != activeTooltipTrigger)
+            return;
+
+        HideTooltip();
+    }
+
+    private void HideTooltip()
+    {
+        activeTooltipTrigger = null;
+        if (tooltipRect != null)
+            tooltipRect.gameObject.SetActive(false);
+    }
+
+    private void UpdateTooltipText(string text)
+    {
+        tooltipLabel.text = text;
+        Vector2 preferred = tooltipLabel.GetPreferredValues(text, tooltipMaxWidth, 0f);
+        float width = Mathf.Min(tooltipMaxWidth, preferred.x) + tooltipPadding.x * 2f;
+        float height = preferred.y + tooltipPadding.y * 2f;
+        tooltipRect.sizeDelta = new Vector2(Mathf.Max(80f, width), Mathf.Max(38f, height));
+    }
+
+    private void PositionTooltip(Vector2 screenPosition)
+    {
+        RectTransform canvasRect = overlayCanvas != null ? overlayCanvas.transform as RectTransform : null;
+        if (canvasRect == null)
+            return;
+
+        Camera eventCamera = overlayCanvas.renderMode == RenderMode.ScreenSpaceOverlay
+            ? null
+            : overlayCanvas.worldCamera;
+
+        if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(canvasRect, screenPosition, eventCamera, out Vector2 localPoint))
+            return;
+
+        float canvasScale = overlayCanvas.scaleFactor > 0f ? overlayCanvas.scaleFactor : 1f;
+        Vector2 scaledOffset = tooltipScreenOffset / canvasScale;
+        Vector2 anchoredPosition = new(
+            localPoint.x + canvasRect.rect.width * 0.5f,
+            localPoint.y - canvasRect.rect.height * 0.5f);
+        anchoredPosition += scaledOffset;
+
+        float minX = 12f;
+        float maxX = canvasRect.rect.width - tooltipRect.sizeDelta.x - 12f;
+        float minY = -(canvasRect.rect.height - tooltipRect.sizeDelta.y - 12f);
+        float maxY = -12f;
+
+        anchoredPosition.x = Mathf.Clamp(anchoredPosition.x, minX, Mathf.Max(minX, maxX));
+        anchoredPosition.y = Mathf.Clamp(anchoredPosition.y, Mathf.Min(minY, maxY), Mathf.Max(minY, maxY));
+        tooltipRect.anchoredPosition = anchoredPosition;
+    }
+
+    private void BringTooltipToFront()
+    {
+        if (tooltipRect != null)
+            tooltipRect.SetAsLastSibling();
+    }
+
     private void BuildTabLabels(Transform parent)
     {
         Vector2 tabSize = new(240f, 70f);
@@ -478,6 +618,7 @@ public sealed class InteractionDialogUI : MonoBehaviour
         button.targetGraphic = image;
         button.onClick.AddListener(AudioPlayer.PlayUiButtonClick);
         button.onClick.AddListener(clickHandler);
+        ConfigureTooltip(buttonObject, GetInteractionButtonTooltipText(objectName));
         return button;
     }
 
@@ -539,6 +680,7 @@ public sealed class InteractionDialogUI : MonoBehaviour
         button.targetGraphic = image;
         button.onClick.AddListener(AudioPlayer.PlayUiButtonClick);
         button.onClick.AddListener(clickHandler);
+        ConfigureTooltip(buttonObject, GetInteractionButtonTooltipText(objectName));
         return button;
     }
 
@@ -745,6 +887,7 @@ public sealed class InteractionDialogUI : MonoBehaviour
         if (sprite == null)
             AddFallbackButtonText(buttonObject.transform, fallbackText);
 
+        ConfigureTooltip(buttonObject, FormatTooltipText(fallbackText));
         return button;
     }
 
@@ -828,6 +971,7 @@ public sealed class InteractionDialogUI : MonoBehaviour
         button.targetGraphic = image;
         button.onClick.AddListener(AudioPlayer.PlayUiButtonClick);
         button.onClick.AddListener(clickHandler);
+        ConfigureTooltip(buttonObject, GetInteractionButtonTooltipText(objectName));
 
         return button;
     }
@@ -3292,7 +3436,84 @@ public sealed class InteractionDialogUI : MonoBehaviour
         label.raycastTarget = false;
     }
 
-    private static Button CreateInvisibleButton(string objectName, Transform parent, UnityEngine.Events.UnityAction clickHandler)
+    private static string GetInteractionButtonTooltipText(string objectName)
+    {
+        return objectName switch
+        {
+            "CloseButton" => "Close",
+            "SocialTabButton" => "Social",
+            "PackTabButton" => "Pack",
+            "ItemsTabButton" => "Items",
+            "QuestsTabButton" => "Quests",
+            "ScentTabButton" => "Scent",
+            "GiveHotspot" => "Give Item",
+            "ExchangeHotspot" => "Trade Items",
+            "TakeHotspot" => "Take Item",
+            "PreviousPlayerAgentButton" => "Previous Left Agent",
+            "NextPlayerAgentButton" => "Next Left Agent",
+            "PreviousPlayerItemButton" => "Previous Left Item",
+            "NextPlayerItemButton" => "Next Left Item",
+            "PreviousTargetAgentButton" => "Previous Right Agent",
+            "NextTargetAgentButton" => "Next Right Agent",
+            "PreviousTargetItemButton" => "Previous Right Item",
+            "NextTargetItemButton" => "Next Right Item",
+            "PlayerPackIndicatorButton" => "Left Pack Status",
+            "TargetPackIndicatorButton" => "Right Pack Status",
+            _ => FormatTooltipText(objectName)
+        };
+    }
+
+    private static string FormatTooltipText(string text)
+    {
+        if (string.IsNullOrWhiteSpace(text))
+            return string.Empty;
+
+        string trimmed = text.Trim()
+            .Replace("_", " ")
+            .Replace("-", " ")
+            .Replace("Button", string.Empty)
+            .Replace("Hotspot", string.Empty);
+        if (trimmed == "AI")
+            return "AI";
+
+        System.Text.StringBuilder builder = new();
+        char previous = '\0';
+        for (int i = 0; i < trimmed.Length; i++)
+        {
+            char current = trimmed[i];
+            if (i > 0 &&
+                char.IsUpper(current) &&
+                previous != ' ' &&
+                !char.IsUpper(previous))
+            {
+                builder.Append(' ');
+            }
+
+            builder.Append(current);
+            previous = current;
+        }
+
+        string spaced = builder.ToString();
+        System.Text.StringBuilder title = new(spaced.Length);
+        bool capitalizeNext = true;
+        for (int i = 0; i < spaced.Length; i++)
+        {
+            char current = spaced[i];
+            if (char.IsWhiteSpace(current))
+            {
+                title.Append(' ');
+                capitalizeNext = true;
+                continue;
+            }
+
+            title.Append(capitalizeNext ? char.ToUpperInvariant(current) : char.ToLowerInvariant(current));
+            capitalizeNext = false;
+        }
+
+        return title.ToString().Trim();
+    }
+
+    private Button CreateInvisibleButton(string objectName, Transform parent, UnityEngine.Events.UnityAction clickHandler)
     {
         GameObject buttonObject = CreateUIObject(objectName, parent);
         Image image = buttonObject.AddComponent<Image>();
@@ -3303,6 +3524,7 @@ public sealed class InteractionDialogUI : MonoBehaviour
         button.targetGraphic = image;
         button.onClick.AddListener(AudioPlayer.PlayUiButtonClick);
         button.onClick.AddListener(clickHandler);
+        ConfigureTooltip(buttonObject, GetInteractionButtonTooltipText(objectName));
         return button;
     }
 
@@ -3332,5 +3554,38 @@ public static class InteractionDialogBootstrap
 
         GameObject interactionDialogObject = new("InteractionDialogUI");
         interactionDialogObject.AddComponent<InteractionDialogUI>();
+    }
+}
+
+sealed class InteractionDialogTooltipTrigger : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerMoveHandler
+{
+    private InteractionDialogUI owner;
+
+    public string TooltipText { get; private set; }
+
+    public void Initialize(InteractionDialogUI owner, string tooltipText)
+    {
+        this.owner = owner;
+        TooltipText = tooltipText;
+    }
+
+    public void OnPointerEnter(PointerEventData eventData)
+    {
+        owner?.ShowTooltip(this, eventData.position);
+    }
+
+    public void OnPointerMove(PointerEventData eventData)
+    {
+        owner?.MoveTooltip(this, eventData.position);
+    }
+
+    public void OnPointerExit(PointerEventData eventData)
+    {
+        owner?.HideTooltip(this);
+    }
+
+    private void OnDisable()
+    {
+        owner?.HideTooltip(this);
     }
 }
