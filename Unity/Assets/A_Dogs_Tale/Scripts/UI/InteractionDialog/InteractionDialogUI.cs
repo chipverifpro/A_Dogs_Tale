@@ -92,6 +92,9 @@ public sealed class InteractionDialogUI : MonoBehaviour
     private Button leavePackButton;
     private GameObject actionPanelObject;
     private GameObject packActionPanelObject;
+    private GameObject packMemberListObject;
+    private RectTransform packMemberListContentRect;
+    private ScrollRect packMemberScrollRect;
     private PreviewSlot playerPreviewSlot;
     private PreviewSlot playerItemPreviewSlot;
     private PreviewSlot targetPreviewSlot;
@@ -102,6 +105,7 @@ public sealed class InteractionDialogUI : MonoBehaviour
     private readonly List<WorldObject> targetItemOptions = new();
     private readonly List<WorldObject> packMemberOptions = new();
     private readonly List<WorldObject> packRightOptions = new();
+    private readonly List<Image> packMemberListBackgrounds = new();
     private readonly List<WorldObject> socialTargetOptions = new();
     private readonly List<WorldObject> questTargetOptions = new();
     private readonly List<WorldObject> scentTargetOptions = new();
@@ -344,6 +348,7 @@ public sealed class InteractionDialogUI : MonoBehaviour
         BuildTabLabels(dialogRoot.transform);
         BuildSelectionArrows(dialogRoot.transform);
         BuildActionButtons(dialogRoot.transform);
+        BuildPackMemberList(dialogRoot.transform);
         BuildPackActionButtons(dialogRoot.transform);
         BuildCloseHotspot(dialogRoot.transform);
         BuildTooltip(canvasObject.transform);
@@ -720,8 +725,8 @@ public sealed class InteractionDialogUI : MonoBehaviour
         actionPanelRect.anchorMin = new Vector2(0.5f, 1f);
         actionPanelRect.anchorMax = new Vector2(0.5f, 1f);
         actionPanelRect.pivot = new Vector2(0.5f, 0.5f);
-        actionPanelRect.anchoredPosition = new Vector2(0f, -690f);
-        actionPanelRect.sizeDelta = new Vector2(1120f, 300f);
+        actionPanelRect.anchoredPosition = new Vector2(270f, -690f);
+        actionPanelRect.sizeDelta = new Vector2(690f, 300f);
 
         VerticalLayoutGroup layout = packActionPanelObject.AddComponent<VerticalLayoutGroup>();
         layout.childAlignment = TextAnchor.MiddleCenter;
@@ -755,6 +760,64 @@ public sealed class InteractionDialogUI : MonoBehaviour
         CreatePackActionButton(formationRow, "ClusterFormationButton", PackButtonKind.Formation, -1, "CLUSTER", null, false);
 
         packActionPanelObject.SetActive(false);
+    }
+
+    private void BuildPackMemberList(Transform parent)
+    {
+        packMemberListObject = CreateUIObject("PackMemberList", parent);
+        RectTransform listRect = packMemberListObject.GetComponent<RectTransform>();
+        listRect.anchorMin = new Vector2(0.5f, 1f);
+        listRect.anchorMax = new Vector2(0.5f, 1f);
+        listRect.pivot = new Vector2(0.5f, 0.5f);
+        listRect.anchoredPosition = new Vector2(-425f, -690f);
+        listRect.sizeDelta = new Vector2(470f, 300f);
+
+        Image listBackground = packMemberListObject.AddComponent<Image>();
+        listBackground.color = new Color(0.09f, 0.065f, 0.035f, 0.58f);
+        listBackground.raycastTarget = false;
+
+        GameObject viewportObject = CreateUIObject("Viewport", packMemberListObject.transform);
+        RectTransform viewportRect = viewportObject.GetComponent<RectTransform>();
+        viewportRect.anchorMin = Vector2.zero;
+        viewportRect.anchorMax = Vector2.one;
+        viewportRect.offsetMin = new Vector2(10f, 10f);
+        viewportRect.offsetMax = new Vector2(-10f, -10f);
+
+        Image viewportImage = viewportObject.AddComponent<Image>();
+        viewportImage.color = new Color(1f, 1f, 1f, 0.01f);
+        viewportImage.raycastTarget = false;
+        viewportObject.AddComponent<RectMask2D>();
+
+        GameObject contentObject = CreateUIObject("Content", viewportObject.transform);
+        packMemberListContentRect = contentObject.GetComponent<RectTransform>();
+        packMemberListContentRect.anchorMin = new Vector2(0f, 1f);
+        packMemberListContentRect.anchorMax = new Vector2(1f, 1f);
+        packMemberListContentRect.pivot = new Vector2(0.5f, 1f);
+        packMemberListContentRect.anchoredPosition = Vector2.zero;
+        packMemberListContentRect.sizeDelta = new Vector2(0f, 0f);
+
+        VerticalLayoutGroup layout = contentObject.AddComponent<VerticalLayoutGroup>();
+        layout.childAlignment = TextAnchor.UpperCenter;
+        layout.childControlWidth = true;
+        layout.childControlHeight = false;
+        layout.childForceExpandWidth = true;
+        layout.childForceExpandHeight = false;
+        layout.spacing = 5f;
+        layout.padding = new RectOffset(4, 4, 4, 4);
+
+        ContentSizeFitter fitter = contentObject.AddComponent<ContentSizeFitter>();
+        fitter.horizontalFit = ContentSizeFitter.FitMode.Unconstrained;
+        fitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+
+        packMemberScrollRect = packMemberListObject.AddComponent<ScrollRect>();
+        packMemberScrollRect.content = packMemberListContentRect;
+        packMemberScrollRect.viewport = viewportRect;
+        packMemberScrollRect.horizontal = false;
+        packMemberScrollRect.vertical = true;
+        packMemberScrollRect.movementType = ScrollRect.MovementType.Clamped;
+        packMemberScrollRect.scrollSensitivity = 24f;
+
+        packMemberListObject.SetActive(false);
     }
 
     private Button CreatePackActionButton(
@@ -1269,6 +1332,7 @@ public sealed class InteractionDialogUI : MonoBehaviour
         BuildPackMemberOptions();
         ApplyPendingSelection(packMemberOptions, pendingLeftAgentSelection, ref selectedPackLeftIndex);
         WorldObject leftMember = GetSelectedFromList(packMemberOptions, ref selectedPackLeftIndex);
+        RefreshPackMemberList();
         BuildPackRightOptions(leftMember);
         ApplyPendingSelection(packRightOptions, pendingRightAgentSelection, ref selectedPackRightIndex);
         WorldObject rightMember = GetSelectedFromList(packRightOptions, ref selectedPackRightIndex);
@@ -1323,6 +1387,156 @@ public sealed class InteractionDialogUI : MonoBehaviour
     {
         if (packActionPanelObject != null)
             packActionPanelObject.SetActive(active);
+        if (packMemberListObject != null)
+            packMemberListObject.SetActive(active);
+    }
+
+    private void RefreshPackMemberList()
+    {
+        if (packMemberListContentRect == null)
+            return;
+
+        ClearPackMemberListRows();
+
+        if (packMemberOptions.Count <= 0)
+        {
+            CreatePackMemberListPlaceholder("No pack members");
+            return;
+        }
+
+        for (int i = 0; i < packMemberOptions.Count; i++)
+            CreatePackMemberListRow(packMemberOptions[i], i);
+
+        RefreshPackMemberListHighlights();
+        LayoutRebuilder.ForceRebuildLayoutImmediate(packMemberListContentRect);
+        ScrollPackMemberListToSelection();
+    }
+
+    private void ClearPackMemberListRows()
+    {
+        packMemberListBackgrounds.Clear();
+
+        if (packMemberListContentRect == null)
+            return;
+
+        for (int i = packMemberListContentRect.childCount - 1; i >= 0; i--)
+        {
+            Transform child = packMemberListContentRect.GetChild(i);
+            child.SetParent(null, false);
+            Destroy(child.gameObject);
+        }
+    }
+
+    private void CreatePackMemberListRow(WorldObject member, int index)
+    {
+        GameObject rowObject = CreateUIObject($"PackMemberRow_{index}", packMemberListContentRect);
+        RectTransform rowRect = rowObject.GetComponent<RectTransform>();
+        rowRect.anchorMin = new Vector2(0f, 1f);
+        rowRect.anchorMax = new Vector2(1f, 1f);
+        rowRect.pivot = new Vector2(0.5f, 1f);
+        rowRect.sizeDelta = new Vector2(0f, 42f);
+
+        LayoutElement layoutElement = rowObject.AddComponent<LayoutElement>();
+        layoutElement.preferredHeight = 42f;
+        layoutElement.minHeight = 42f;
+
+        Image background = rowObject.AddComponent<Image>();
+        background.color = GetPackMemberListRowColor(index == selectedPackLeftIndex);
+        background.raycastTarget = true;
+
+        Button button = rowObject.AddComponent<Button>();
+        button.targetGraphic = background;
+        button.transition = Selectable.Transition.None;
+        button.onClick.AddListener(AudioPlayer.PlayUiButtonClick);
+        int capturedIndex = index;
+        button.onClick.AddListener(() => OnPackMemberListRowClicked(capturedIndex));
+
+        GameObject labelObject = CreateUIObject("Label", rowObject.transform);
+        RectTransform labelRect = labelObject.GetComponent<RectTransform>();
+        labelRect.anchorMin = Vector2.zero;
+        labelRect.anchorMax = Vector2.one;
+        labelRect.offsetMin = new Vector2(12f, 2f);
+        labelRect.offsetMax = new Vector2(-12f, -2f);
+
+        TextMeshProUGUI label = labelObject.AddComponent<TextMeshProUGUI>();
+        label.text = GetPackMemberListLabelText(member);
+        label.fontSize = 22f;
+        label.color = new Color(1f, 0.88f, 0.58f, 1f);
+        label.alignment = TextAlignmentOptions.MidlineLeft;
+        label.textWrappingMode = TextWrappingModes.NoWrap;
+        label.overflowMode = TextOverflowModes.Ellipsis;
+        label.raycastTarget = false;
+        if (TMP_Settings.defaultFontAsset != null)
+            label.font = TMP_Settings.defaultFontAsset;
+
+        packMemberListBackgrounds.Add(background);
+        ConfigureTooltip(rowObject, $"Select {member.DisplayName}");
+    }
+
+    private void CreatePackMemberListPlaceholder(string text)
+    {
+        GameObject rowObject = CreateUIObject("PackMemberListPlaceholder", packMemberListContentRect);
+        LayoutElement layoutElement = rowObject.AddComponent<LayoutElement>();
+        layoutElement.preferredHeight = 42f;
+        layoutElement.minHeight = 42f;
+
+        TextMeshProUGUI label = rowObject.AddComponent<TextMeshProUGUI>();
+        label.text = text;
+        label.fontSize = 22f;
+        label.color = new Color(1f, 0.88f, 0.58f, 0.68f);
+        label.alignment = TextAlignmentOptions.Center;
+        label.raycastTarget = false;
+        if (TMP_Settings.defaultFontAsset != null)
+            label.font = TMP_Settings.defaultFontAsset;
+    }
+
+    private void RefreshPackMemberListHighlights()
+    {
+        for (int i = 0; i < packMemberListBackgrounds.Count; i++)
+            packMemberListBackgrounds[i].color = GetPackMemberListRowColor(i == selectedPackLeftIndex);
+    }
+
+    private static Color GetPackMemberListRowColor(bool selected)
+    {
+        return selected
+            ? new Color(0.95f, 0.54f, 0.12f, 0.86f)
+            : new Color(0.20f, 0.13f, 0.065f, 0.78f);
+    }
+
+    private static string GetPackMemberListLabelText(WorldObject member)
+    {
+        if (member == null)
+            return string.Empty;
+
+        return IsPlayerPackLeader(member)
+            ? $"{member.DisplayName}  Leader"
+            : member.DisplayName;
+    }
+
+    private void ScrollPackMemberListToSelection()
+    {
+        if (packMemberScrollRect == null)
+            return;
+
+        if (packMemberOptions.Count <= 1)
+        {
+            packMemberScrollRect.verticalNormalizedPosition = 1f;
+            return;
+        }
+
+        Canvas.ForceUpdateCanvases();
+        float normalized = 1f - Mathf.Clamp01(selectedPackLeftIndex / (float)(packMemberOptions.Count - 1));
+        packMemberScrollRect.verticalNormalizedPosition = normalized;
+    }
+
+    private void OnPackMemberListRowClicked(int index)
+    {
+        if (index < 0 || index >= packMemberOptions.Count)
+            return;
+
+        pendingLeftAgentSelection = packMemberOptions[index];
+        selectedPackLeftIndex = index;
+        RefreshInteractionView(forcePreviewRefresh: true);
     }
 
     private void SetPackIndicatorButtonsActive(bool active)
