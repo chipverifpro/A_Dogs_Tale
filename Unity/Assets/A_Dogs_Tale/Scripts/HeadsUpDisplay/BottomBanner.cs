@@ -432,6 +432,9 @@ public class BottomBanner : MonoBehaviour
         if (!TryGetPrimaryPressScreenPoint(out Vector2 screenPoint))
             return;
 
+        if (InteractionDialogUI.IsPointerBlockingBottomBanner(screenPoint))
+            return;
+
         if (!IsScreenPointOverBannerFrame(screenPoint))
             return;
 

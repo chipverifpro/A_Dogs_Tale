@@ -30,11 +30,11 @@ public static class SpriteServer
         { "DogActions_B",              "Sprites/DogActions_B" },
         // Throw_Item, Fetch_Item, Jump, Hide, Open_Door, Close_Door, 
         //  Open_Container, Close_Container
-        { "DogEmojiSheetA",            "Sprites/DogEmojiSheetA" },
+        { "DogEmojiSheetA",            "Sprites/Emotes/DogEmojiSheetA" },
         //
-        { "DogEmojiSheetB",            "Sprites/DogEmojiSheetB" },
+        { "DogEmojiSheetB",            "Sprites/Emotes/DogEmojiSheetB" },
         //
-        { "DogEmojiSheetC",            "Sprites/DogEmojiSheetC" },
+        { "DogEmojiSheetC",            "Sprites/Emotes/DogEmojiSheetC" },
         //
         { "GraphicsQualitySprites_A",  "Sprites/GraphicsQualitySprites_A" },
         // Graphics_Low, Graphics_Medium, Graphics_High
@@ -420,6 +420,13 @@ public static class SpriteServer
         Sprite sprite = null;
         if (!useTopHalf)
             sprite = Resources.Load<Sprite>(normalizedPath);
+
+        if (sprite == null && useTopHalf)
+        {
+            Sprite[] sprites = Resources.LoadAll<Sprite>(normalizedPath);
+            if (sprites != null && sprites.Length > 0)
+                sprite = sprites[0];
+        }
 
         if (sprite == null)
         {
