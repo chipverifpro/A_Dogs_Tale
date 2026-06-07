@@ -97,18 +97,22 @@ public sealed class InteractionDialogUI : MonoBehaviour
     private GameObject questListObject;
     private GameObject scentSourceListObject;
     private GameObject socialEmoteGridObject;
+    private GameObject packHeldItemListObject;
     private RectTransform packMemberListViewportRect;
     private RectTransform packMemberListContentRect;
     private RectTransform questListContentRect;
     private RectTransform scentSourceListRect;
     private RectTransform scentSourceListContentRect;
     private RectTransform socialEmoteGridContentRect;
+    private RectTransform packHeldItemListContentRect;
     private ScrollRect packMemberScrollRect;
     private ScrollRect questListScrollRect;
     private ScrollRect scentSourceListScrollRect;
     private ScrollRect socialEmoteGridScrollRect;
+    private ScrollRect packHeldItemListScrollRect;
     private TextMeshProUGUI questListEmptyLabel;
     private TextMeshProUGUI scentSourceListEmptyLabel;
+    private TextMeshProUGUI packHeldItemListEmptyLabel;
     private float packMemberListDragStartLocalY;
     private float packMemberListDragStartContentY;
     private float scentSourceListDragStartLocalY;
@@ -133,6 +137,8 @@ public sealed class InteractionDialogUI : MonoBehaviour
     private readonly List<Image> packMemberListBackgrounds = new();
     private readonly List<Image> scentSourceListBackgrounds = new();
     private readonly List<GameObject> socialEmoteGridTiles = new();
+    private readonly List<PackHeldItemOption> packHeldItemOptions = new();
+    private readonly List<Image> packHeldItemListBackgrounds = new();
     private readonly List<WorldObject> socialTargetOptions = new();
     private readonly List<WorldObject> questTargetOptions = new();
     private readonly List<WorldObject> scentTargetOptions = new();
@@ -174,6 +180,9 @@ public sealed class InteractionDialogUI : MonoBehaviour
     private bool interactionQuestListDirty = true;
     private bool displayedSocialEmoteGridUsesHuman;
     private bool displayedSocialEmoteGridInitialized;
+    private bool packHeldItemListDirty = true;
+    private WorldObject displayedPackHeldItemSelectedAgent;
+    private WorldObject displayedPackHeldItemSelectedItem;
     private Sprite circleSprite;
     private Sprite circleWithArrowsSprite;
     private Sprite tradeArrowsSprite;
@@ -194,6 +203,18 @@ public sealed class InteractionDialogUI : MonoBehaviour
         public Vector2 CircleSize;
         public Vector2 CircleWithArrowsSize;
         public WorldObject DisplayedObject;
+    }
+
+    private sealed class PackHeldItemOption
+    {
+        public PackHeldItemOption(WorldObject agent, WorldObject item)
+        {
+            Agent = agent;
+            Item = item;
+        }
+
+        public WorldObject Agent { get; }
+        public WorldObject Item { get; }
     }
 
     private enum InventoryAction
@@ -281,6 +302,7 @@ public sealed class InteractionDialogUI : MonoBehaviour
             dialogRoot.SetActive(true);
 
         interactionQuestListDirty = true;
+        packHeldItemListDirty = true;
         RefreshInteractionView(forcePreviewRefresh: true);
     }
 
@@ -409,6 +431,7 @@ public sealed class InteractionDialogUI : MonoBehaviour
         BuildTabLabels(dialogRoot.transform);
         BuildSelectionArrows(dialogRoot.transform);
         BuildActionButtons(dialogRoot.transform);
+        BuildPackHeldItemList(dialogRoot.transform);
         BuildPackMemberList(dialogRoot.transform);
         BuildInteractionQuestList(dialogRoot.transform);
         BuildScentSourceList(dialogRoot.transform);
@@ -760,8 +783,8 @@ public sealed class InteractionDialogUI : MonoBehaviour
         actionPanelRect.anchorMin = new Vector2(0.5f, 1f);
         actionPanelRect.anchorMax = new Vector2(0.5f, 1f);
         actionPanelRect.pivot = new Vector2(0.5f, 0.5f);
-        actionPanelRect.anchoredPosition = new Vector2(0f, -680f);
-        actionPanelRect.sizeDelta = new Vector2(880f, 260f);
+        actionPanelRect.anchoredPosition = new Vector2(270f, -690f);
+        actionPanelRect.sizeDelta = new Vector2(690f, 300f);
 
         VerticalLayoutGroup layout = actionPanelObject.AddComponent<VerticalLayoutGroup>();
         layout.childAlignment = TextAnchor.MiddleCenter;
@@ -824,6 +847,79 @@ public sealed class InteractionDialogUI : MonoBehaviour
         CreatePackActionButton(formationRow, "ClusterFormationButton", PackButtonKind.Formation, -1, "CLUSTER", null, false);
 
         packActionPanelObject.SetActive(false);
+    }
+
+    private void BuildPackHeldItemList(Transform parent)
+    {
+        packHeldItemListObject = CreateUIObject("PackHeldItemList", parent);
+        RectTransform listRect = packHeldItemListObject.GetComponent<RectTransform>();
+        listRect.anchorMin = new Vector2(0.5f, 1f);
+        listRect.anchorMax = new Vector2(0.5f, 1f);
+        listRect.pivot = new Vector2(0.5f, 0.5f);
+        listRect.anchoredPosition = new Vector2(-425f, -690f);
+        listRect.sizeDelta = new Vector2(470f, 300f);
+
+        Image listBackground = packHeldItemListObject.AddComponent<Image>();
+        listBackground.color = new Color(0.09f, 0.065f, 0.035f, 0.58f);
+        listBackground.raycastTarget = true;
+
+        packHeldItemListScrollRect = packHeldItemListObject.AddComponent<ScrollRect>();
+        packHeldItemListScrollRect.horizontal = false;
+        packHeldItemListScrollRect.vertical = true;
+        packHeldItemListScrollRect.movementType = ScrollRect.MovementType.Clamped;
+        packHeldItemListScrollRect.scrollSensitivity = 24f;
+
+        GameObject viewportObject = CreateUIObject("Viewport", packHeldItemListObject.transform);
+        RectTransform viewportRect = viewportObject.GetComponent<RectTransform>();
+        viewportRect.anchorMin = Vector2.zero;
+        viewportRect.anchorMax = Vector2.one;
+        viewportRect.offsetMin = new Vector2(10f, 10f);
+        viewportRect.offsetMax = new Vector2(-10f, -10f);
+
+        Image viewportImage = viewportObject.AddComponent<Image>();
+        viewportImage.color = new Color(0.055f, 0.047f, 0.036f, 0.45f);
+        viewportImage.raycastTarget = true;
+        viewportObject.AddComponent<RectMask2D>();
+
+        GameObject contentObject = CreateUIObject("Content", viewportObject.transform);
+        packHeldItemListContentRect = contentObject.GetComponent<RectTransform>();
+        packHeldItemListContentRect.anchorMin = new Vector2(0f, 1f);
+        packHeldItemListContentRect.anchorMax = new Vector2(1f, 1f);
+        packHeldItemListContentRect.pivot = new Vector2(0.5f, 1f);
+        packHeldItemListContentRect.anchoredPosition = Vector2.zero;
+        packHeldItemListContentRect.sizeDelta = Vector2.zero;
+
+        VerticalLayoutGroup layout = contentObject.AddComponent<VerticalLayoutGroup>();
+        layout.childAlignment = TextAnchor.UpperCenter;
+        layout.childControlWidth = true;
+        layout.childControlHeight = false;
+        layout.childForceExpandWidth = true;
+        layout.childForceExpandHeight = false;
+        layout.spacing = 5f;
+        layout.padding = new RectOffset(4, 4, 4, 4);
+
+        ContentSizeFitter fitter = contentObject.AddComponent<ContentSizeFitter>();
+        fitter.horizontalFit = ContentSizeFitter.FitMode.Unconstrained;
+        fitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+
+        packHeldItemListScrollRect.viewport = viewportRect;
+        packHeldItemListScrollRect.content = packHeldItemListContentRect;
+
+        GameObject emptyObject = CreateUIObject("EmptyLabel", packHeldItemListObject.transform);
+        RectTransform emptyRect = emptyObject.GetComponent<RectTransform>();
+        emptyRect.anchorMin = Vector2.zero;
+        emptyRect.anchorMax = Vector2.one;
+        emptyRect.offsetMin = new Vector2(24f, 24f);
+        emptyRect.offsetMax = new Vector2(-24f, -24f);
+
+        packHeldItemListEmptyLabel = emptyObject.AddComponent<TextMeshProUGUI>();
+        packHeldItemListEmptyLabel.text = "No pack held items";
+        packHeldItemListEmptyLabel.fontSize = 24f;
+        packHeldItemListEmptyLabel.color = new Color(0.86f, 0.8f, 0.66f, 0.78f);
+        packHeldItemListEmptyLabel.alignment = TextAlignmentOptions.Center;
+        packHeldItemListEmptyLabel.raycastTarget = false;
+
+        packHeldItemListObject.SetActive(false);
     }
 
     private void BuildPackMemberList(Transform parent)
@@ -1457,6 +1553,7 @@ public sealed class InteractionDialogUI : MonoBehaviour
         BuildItemOptions(player, playerItemOptions);
         KeepSelectedObject(playerItemOptions, previousPlayerItem, ref selectedPlayerItemIndex);
         WorldObject playerItem = GetSelectedFromList(playerItemOptions, ref selectedPlayerItemIndex);
+        RefreshPackHeldItemList(player, playerItem);
 
         BuildTargetAgentOptions(player);
         ApplyPendingSelection(targetAgentOptions, pendingRightAgentSelection, ref selectedTargetAgentIndex);
@@ -1695,6 +1792,12 @@ public sealed class InteractionDialogUI : MonoBehaviour
             takeHotspotButton.gameObject.SetActive(active);
         if (actionPanelObject != null)
             actionPanelObject.SetActive(active);
+        if (packHeldItemListObject != null)
+        {
+            packHeldItemListObject.SetActive(active);
+            if (active)
+                packHeldItemListObject.transform.SetAsLastSibling();
+        }
     }
 
     private void SetPackControlsActive(bool active)
@@ -1873,6 +1976,230 @@ public sealed class InteractionDialogUI : MonoBehaviour
     {
         return SpriteServer.SpriteSheetLookup("Sprites/Emotes/Human_Emoji_A", spriteIndex)
             ?? SpriteServer.SpriteSheetLookup("Human_Emoji_A", spriteIndex);
+    }
+
+    private void RefreshPackHeldItemList(WorldObject selectedAgent, WorldObject selectedItem)
+    {
+        if (packHeldItemListContentRect == null)
+            return;
+
+        List<PackHeldItemOption> currentOptions = BuildPackHeldItemOptions();
+        bool optionsChanged = packHeldItemListDirty || HasPackHeldItemOptionsChanged(currentOptions);
+        bool selectionChanged = displayedPackHeldItemSelectedAgent != selectedAgent ||
+                                displayedPackHeldItemSelectedItem != selectedItem;
+
+        if (optionsChanged)
+        {
+            packHeldItemOptions.Clear();
+            packHeldItemOptions.AddRange(currentOptions);
+            RebuildPackHeldItemListRows();
+            packHeldItemListDirty = false;
+        }
+
+        if (packHeldItemListEmptyLabel != null)
+            packHeldItemListEmptyLabel.gameObject.SetActive(packHeldItemOptions.Count <= 0);
+
+        RefreshPackHeldItemListHighlights(selectedAgent, selectedItem);
+        if (optionsChanged || selectionChanged)
+            ScrollPackHeldItemListToSelection(selectedAgent, selectedItem);
+
+        displayedPackHeldItemSelectedAgent = selectedAgent;
+        displayedPackHeldItemSelectedItem = selectedItem;
+    }
+
+    private List<PackHeldItemOption> BuildPackHeldItemOptions()
+    {
+        List<PackHeldItemOption> options = new();
+        Pack playerPack = Dir.Instance != null ? Dir.Instance.playerPack : null;
+        if (playerPack == null || playerPack.packAgentList == null)
+            return options;
+
+        for (int i = 0; i < playerPack.packAgentList.Count; i++)
+            AddPackHeldItemOptionsForAgent(options, playerPack.packAgentList[i]);
+
+        return options;
+    }
+
+    private static void AddPackHeldItemOptionsForAgent(List<PackHeldItemOption> options, WorldObject agent)
+    {
+        if (agent == null || !agent.gameObject.activeInHierarchy)
+            return;
+
+        ContainerModule container = GetOrCreateContainer(agent);
+        if (container == null || container.HeldItemCount <= 0)
+            return;
+
+        for (int i = 0; i < container.HeldItemCount; i++)
+        {
+            WorldObject item = container.HeldItems[i];
+            if (item != null)
+                options.Add(new PackHeldItemOption(agent, item));
+        }
+    }
+
+    private bool HasPackHeldItemOptionsChanged(List<PackHeldItemOption> currentOptions)
+    {
+        if (currentOptions.Count != packHeldItemOptions.Count)
+            return true;
+
+        for (int i = 0; i < currentOptions.Count; i++)
+        {
+            if (currentOptions[i].Agent != packHeldItemOptions[i].Agent ||
+                currentOptions[i].Item != packHeldItemOptions[i].Item)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private void RebuildPackHeldItemListRows()
+    {
+        ClearPackHeldItemListRows();
+
+        for (int i = 0; i < packHeldItemOptions.Count; i++)
+            CreatePackHeldItemListRow(packHeldItemOptions[i], i);
+
+        LayoutRebuilder.ForceRebuildLayoutImmediate(packHeldItemListContentRect);
+    }
+
+    private void ClearPackHeldItemListRows()
+    {
+        packHeldItemListBackgrounds.Clear();
+
+        if (packHeldItemListContentRect == null)
+            return;
+
+        for (int i = packHeldItemListContentRect.childCount - 1; i >= 0; i--)
+        {
+            Transform child = packHeldItemListContentRect.GetChild(i);
+            child.SetParent(null, false);
+            Destroy(child.gameObject);
+        }
+    }
+
+    private void CreatePackHeldItemListRow(PackHeldItemOption option, int index)
+    {
+        GameObject rowObject = CreateUIObject($"PackHeldItemRow_{index}", packHeldItemListContentRect);
+        RectTransform rowRect = rowObject.GetComponent<RectTransform>();
+        rowRect.anchorMin = new Vector2(0f, 1f);
+        rowRect.anchorMax = new Vector2(1f, 1f);
+        rowRect.pivot = new Vector2(0.5f, 1f);
+        rowRect.sizeDelta = new Vector2(0f, PackMemberListRowHeight);
+
+        LayoutElement layoutElement = rowObject.AddComponent<LayoutElement>();
+        layoutElement.preferredHeight = PackMemberListRowHeight;
+        layoutElement.minHeight = PackMemberListRowHeight;
+
+        Image background = rowObject.AddComponent<Image>();
+        background.color = GetPackHeldItemListRowColor(false);
+        background.raycastTarget = true;
+
+        Button button = rowObject.AddComponent<Button>();
+        button.targetGraphic = background;
+        button.onClick.AddListener(AudioPlayer.PlayUiButtonClick);
+        button.onClick.AddListener(() => SelectPackHeldItem(option));
+
+        GameObject labelObject = CreateUIObject("Label", rowObject.transform);
+        RectTransform labelRect = labelObject.GetComponent<RectTransform>();
+        labelRect.anchorMin = Vector2.zero;
+        labelRect.anchorMax = Vector2.one;
+        labelRect.offsetMin = new Vector2(12f, 2f);
+        labelRect.offsetMax = new Vector2(-12f, -2f);
+
+        TextMeshProUGUI label = labelObject.AddComponent<TextMeshProUGUI>();
+        label.text = FormatPackHeldItemListLabel(option);
+        label.fontSize = 22f;
+        label.color = new Color(1f, 0.88f, 0.58f, 1f);
+        label.alignment = TextAlignmentOptions.MidlineLeft;
+        label.textWrappingMode = TextWrappingModes.NoWrap;
+        label.overflowMode = TextOverflowModes.Ellipsis;
+        label.raycastTarget = false;
+        if (TMP_Settings.defaultFontAsset != null)
+            label.font = TMP_Settings.defaultFontAsset;
+
+        packHeldItemListBackgrounds.Add(background);
+        ConfigureTooltip(rowObject, $"Select {FormatPackHeldItemListLabel(option)}");
+    }
+
+    private void RefreshPackHeldItemListHighlights(WorldObject selectedAgent, WorldObject selectedItem)
+    {
+        for (int i = 0; i < packHeldItemListBackgrounds.Count; i++)
+        {
+            bool selected = i < packHeldItemOptions.Count &&
+                            packHeldItemOptions[i].Agent == selectedAgent &&
+                            packHeldItemOptions[i].Item == selectedItem;
+            packHeldItemListBackgrounds[i].color = GetPackHeldItemListRowColor(selected);
+        }
+    }
+
+    private void ScrollPackHeldItemListToSelection(WorldObject selectedAgent, WorldObject selectedItem)
+    {
+        if (packHeldItemListScrollRect == null || packHeldItemOptions.Count <= 0)
+            return;
+
+        int selectedIndex = FindPackHeldItemOptionIndex(selectedAgent, selectedItem);
+        if (selectedIndex < 0)
+            return;
+
+        int rowCount = packHeldItemOptions.Count;
+        int visibleRows = Mathf.Max(1, Mathf.FloorToInt(300f / (PackMemberListRowHeight + PackMemberListRowSpacing)));
+        if (rowCount <= visibleRows)
+        {
+            packHeldItemListScrollRect.verticalNormalizedPosition = 1f;
+            return;
+        }
+
+        float denominator = Mathf.Max(1, rowCount - visibleRows);
+        float normalized = 1f - Mathf.Clamp01(selectedIndex / denominator);
+        packHeldItemListScrollRect.verticalNormalizedPosition = normalized;
+    }
+
+    private int FindPackHeldItemOptionIndex(WorldObject agent, WorldObject item)
+    {
+        for (int i = 0; i < packHeldItemOptions.Count; i++)
+        {
+            if (packHeldItemOptions[i].Agent == agent && packHeldItemOptions[i].Item == item)
+                return i;
+        }
+
+        return -1;
+    }
+
+    private void SelectPackHeldItem(PackHeldItemOption option)
+    {
+        if (option == null || option.Agent == null || option.Item == null)
+            return;
+
+        BuildPlayerAgentOptions();
+        int agentIndex = playerAgentOptions.IndexOf(option.Agent);
+        if (agentIndex < 0)
+            return;
+
+        selectedPlayerAgentIndex = agentIndex;
+        BuildItemOptions(option.Agent, playerItemOptions);
+        int itemIndex = playerItemOptions.IndexOf(option.Item);
+        if (itemIndex < 0)
+            return;
+
+        selectedPlayerItemIndex = itemIndex;
+        packHeldItemListDirty = true;
+        RefreshInteractionView(forcePreviewRefresh: true);
+    }
+
+    private static string FormatPackHeldItemListLabel(PackHeldItemOption option)
+    {
+        string itemName = option != null && option.Item != null ? option.Item.DisplayName : "Item";
+        string agentName = option != null && option.Agent != null ? option.Agent.DisplayName : "Agent";
+        return $"{itemName} - {agentName}";
+    }
+
+    private static Color GetPackHeldItemListRowColor(bool selected)
+    {
+        return selected
+            ? new Color(0.28f, 0.2f, 0.07f, 0.96f)
+            : new Color(0.12f, 0.095f, 0.055f, 0.86f);
     }
 
     private void RefreshScentSourceList()
