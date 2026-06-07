@@ -96,14 +96,17 @@ public sealed class InteractionDialogUI : MonoBehaviour
     private GameObject packMemberListObject;
     private GameObject questListObject;
     private GameObject scentSourceListObject;
+    private GameObject socialEmoteGridObject;
     private RectTransform packMemberListViewportRect;
     private RectTransform packMemberListContentRect;
     private RectTransform questListContentRect;
     private RectTransform scentSourceListRect;
     private RectTransform scentSourceListContentRect;
+    private RectTransform socialEmoteGridContentRect;
     private ScrollRect packMemberScrollRect;
     private ScrollRect questListScrollRect;
     private ScrollRect scentSourceListScrollRect;
+    private ScrollRect socialEmoteGridScrollRect;
     private TextMeshProUGUI questListEmptyLabel;
     private TextMeshProUGUI scentSourceListEmptyLabel;
     private float packMemberListDragStartLocalY;
@@ -129,6 +132,7 @@ public sealed class InteractionDialogUI : MonoBehaviour
     private readonly List<WorldObject> packRightOptions = new();
     private readonly List<Image> packMemberListBackgrounds = new();
     private readonly List<Image> scentSourceListBackgrounds = new();
+    private readonly List<GameObject> socialEmoteGridTiles = new();
     private readonly List<WorldObject> socialTargetOptions = new();
     private readonly List<WorldObject> questTargetOptions = new();
     private readonly List<WorldObject> scentTargetOptions = new();
@@ -138,6 +142,9 @@ public sealed class InteractionDialogUI : MonoBehaviour
     private const float PackMemberListPadding = 4f;
     private const float PackMemberListRowHeight = 42f;
     private const float PackMemberListRowSpacing = 5f;
+    private const int HumanEmojiCount = 32;
+    private const int SocialEmoteGridColumns = 5;
+    private const float SocialEmoteTileSize = 72f;
     private int selectedPlayerAgentIndex;
     private int selectedPlayerItemIndex;
     private int selectedTargetAgentIndex;
@@ -165,6 +172,8 @@ public sealed class InteractionDialogUI : MonoBehaviour
     private bool isOpen;
     private bool pausedGameForDialog;
     private bool interactionQuestListDirty = true;
+    private bool displayedSocialEmoteGridUsesHuman;
+    private bool displayedSocialEmoteGridInitialized;
     private Sprite circleSprite;
     private Sprite circleWithArrowsSprite;
     private Sprite tradeArrowsSprite;
@@ -403,6 +412,7 @@ public sealed class InteractionDialogUI : MonoBehaviour
         BuildPackMemberList(dialogRoot.transform);
         BuildInteractionQuestList(dialogRoot.transform);
         BuildScentSourceList(dialogRoot.transform);
+        BuildSocialEmoteGrid(dialogRoot.transform);
         BuildPackActionButtons(dialogRoot.transform);
         BuildCloseHotspot(dialogRoot.transform);
         BuildTooltip(canvasObject.transform);
@@ -1049,6 +1059,63 @@ public sealed class InteractionDialogUI : MonoBehaviour
         scentSourceListObject.SetActive(false);
     }
 
+    private void BuildSocialEmoteGrid(Transform parent)
+    {
+        socialEmoteGridObject = CreateUIObject("SocialEmoteGrid", parent);
+        RectTransform gridRect = socialEmoteGridObject.GetComponent<RectTransform>();
+        gridRect.anchorMin = new Vector2(0.5f, 1f);
+        gridRect.anchorMax = new Vector2(0.5f, 1f);
+        gridRect.pivot = new Vector2(0.5f, 0.5f);
+        gridRect.anchoredPosition = new Vector2(-425f, -690f);
+        gridRect.sizeDelta = new Vector2(470f, 300f);
+
+        Image gridBackground = socialEmoteGridObject.AddComponent<Image>();
+        gridBackground.color = new Color(0.09f, 0.065f, 0.035f, 0.58f);
+        gridBackground.raycastTarget = true;
+
+        socialEmoteGridScrollRect = socialEmoteGridObject.AddComponent<ScrollRect>();
+        socialEmoteGridScrollRect.horizontal = false;
+        socialEmoteGridScrollRect.vertical = true;
+        socialEmoteGridScrollRect.movementType = ScrollRect.MovementType.Clamped;
+        socialEmoteGridScrollRect.scrollSensitivity = 24f;
+
+        GameObject viewportObject = CreateUIObject("Viewport", socialEmoteGridObject.transform);
+        RectTransform viewportRect = viewportObject.GetComponent<RectTransform>();
+        viewportRect.anchorMin = Vector2.zero;
+        viewportRect.anchorMax = Vector2.one;
+        viewportRect.offsetMin = new Vector2(10f, 10f);
+        viewportRect.offsetMax = new Vector2(-10f, -10f);
+
+        Image viewportImage = viewportObject.AddComponent<Image>();
+        viewportImage.color = new Color(0.055f, 0.047f, 0.036f, 0.45f);
+        viewportImage.raycastTarget = true;
+        viewportObject.AddComponent<RectMask2D>();
+
+        GameObject contentObject = CreateUIObject("Content", viewportObject.transform);
+        socialEmoteGridContentRect = contentObject.GetComponent<RectTransform>();
+        socialEmoteGridContentRect.anchorMin = new Vector2(0f, 1f);
+        socialEmoteGridContentRect.anchorMax = new Vector2(1f, 1f);
+        socialEmoteGridContentRect.pivot = new Vector2(0.5f, 1f);
+        socialEmoteGridContentRect.anchoredPosition = Vector2.zero;
+        socialEmoteGridContentRect.sizeDelta = Vector2.zero;
+
+        GridLayoutGroup layout = contentObject.AddComponent<GridLayoutGroup>();
+        layout.cellSize = new Vector2(SocialEmoteTileSize, SocialEmoteTileSize);
+        layout.spacing = new Vector2(8f, 8f);
+        layout.padding = new RectOffset(8, 8, 8, 8);
+        layout.childAlignment = TextAnchor.UpperLeft;
+        layout.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
+        layout.constraintCount = SocialEmoteGridColumns;
+
+        ContentSizeFitter fitter = contentObject.AddComponent<ContentSizeFitter>();
+        fitter.horizontalFit = ContentSizeFitter.FitMode.Unconstrained;
+        fitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+
+        socialEmoteGridScrollRect.viewport = viewportRect;
+        socialEmoteGridScrollRect.content = socialEmoteGridContentRect;
+        socialEmoteGridObject.SetActive(false);
+    }
+
     private Button CreatePackActionButton(
         Transform parent,
         string objectName,
@@ -1376,6 +1443,7 @@ public sealed class InteractionDialogUI : MonoBehaviour
         SetPackControlsActive(false);
         SetQuestControlsActive(false);
         SetScentControlsActive(false);
+        SetSocialControlsActive(false);
         SetPackIndicatorButtonsActive(false);
         SetItemsControlsActive(true);
         SetPreviewSlotActive(playerItemPreviewSlot, true);
@@ -1429,6 +1497,7 @@ public sealed class InteractionDialogUI : MonoBehaviour
         SetPackControlsActive(false);
         SetQuestControlsActive(false);
         SetScentControlsActive(true);
+        SetSocialControlsActive(false);
         SetPackIndicatorButtonsActive(false);
         SetItemsControlsActive(false);
         SetPreviewSlotActive(playerItemPreviewSlot, false);
@@ -1475,6 +1544,7 @@ public sealed class InteractionDialogUI : MonoBehaviour
         SetPackControlsActive(false);
         SetQuestControlsActive(true);
         SetScentControlsActive(false);
+        SetSocialControlsActive(false);
         SetPackIndicatorButtonsActive(false);
         SetItemsControlsActive(false);
         SetPreviewSlotActive(playerItemPreviewSlot, false);
@@ -1521,6 +1591,7 @@ public sealed class InteractionDialogUI : MonoBehaviour
         SetPackControlsActive(false);
         SetQuestControlsActive(false);
         SetScentControlsActive(false);
+        SetSocialControlsActive(true);
         SetPackIndicatorButtonsActive(false);
         SetItemsControlsActive(false);
         SetPreviewSlotActive(playerItemPreviewSlot, false);
@@ -1530,6 +1601,7 @@ public sealed class InteractionDialogUI : MonoBehaviour
         BuildPlayerAgentOptions();
         ApplyPendingSelection(playerAgentOptions, pendingLeftAgentSelection, ref selectedPlayerAgentIndex);
         WorldObject leftMember = GetSelectedFromList(playerAgentOptions, ref selectedPlayerAgentIndex);
+        RefreshSocialEmoteGrid(leftMember);
         BuildSocialTargetOptions(leftMember);
         ApplyPendingSelection(socialTargetOptions, pendingRightAgentSelection, ref selectedSocialTargetIndex);
         WorldObject rightMember = GetSelectedFromList(socialTargetOptions, ref selectedSocialTargetIndex);
@@ -1566,6 +1638,7 @@ public sealed class InteractionDialogUI : MonoBehaviour
         SetItemsControlsActive(false);
         SetQuestControlsActive(false);
         SetScentControlsActive(false);
+        SetSocialControlsActive(false);
         SetPackControlsActive(true);
         SetPackIndicatorButtonsActive(true);
         SetItemSelectionTypeLabelsActive(false);
@@ -1654,6 +1727,152 @@ public sealed class InteractionDialogUI : MonoBehaviour
             if (active)
                 scentSourceListObject.transform.SetAsLastSibling();
         }
+    }
+
+    private void SetSocialControlsActive(bool active)
+    {
+        if (socialEmoteGridObject != null)
+        {
+            socialEmoteGridObject.SetActive(active);
+            if (active)
+                socialEmoteGridObject.transform.SetAsLastSibling();
+        }
+    }
+
+    private void RefreshSocialEmoteGrid(WorldObject leftMember)
+    {
+        if (socialEmoteGridContentRect == null)
+            return;
+
+        bool useHumanSet = leftMember != null && leftMember.species == Species.Human;
+        if (displayedSocialEmoteGridInitialized && displayedSocialEmoteGridUsesHuman == useHumanSet)
+            return;
+
+        ClearSocialEmoteGridTiles();
+        displayedSocialEmoteGridUsesHuman = useHumanSet;
+        displayedSocialEmoteGridInitialized = true;
+
+        if (useHumanSet)
+        {
+            for (int i = 0; i < HumanEmojiCount; i++)
+            {
+                Sprite sprite = GetHumanEmoteSprite(i);
+                if (sprite != null)
+                    CreateSocialHumanEmoteTile(i, sprite);
+            }
+        }
+        else
+        {
+            for (int i = 0; i < DogEmojiCatalog.Entries.Length; i++)
+            {
+                DogEmojiEntry entry = DogEmojiCatalog.Entries[i];
+                Sprite sprite = GetDogEmoteSprite(entry);
+                if (sprite != null)
+                    CreateSocialDogEmoteTile(entry, sprite);
+            }
+        }
+
+        LayoutRebuilder.ForceRebuildLayoutImmediate(socialEmoteGridContentRect);
+        if (socialEmoteGridScrollRect != null)
+            socialEmoteGridScrollRect.verticalNormalizedPosition = 1f;
+    }
+
+    private void ClearSocialEmoteGridTiles()
+    {
+        socialEmoteGridTiles.Clear();
+
+        if (socialEmoteGridContentRect == null)
+            return;
+
+        for (int i = socialEmoteGridContentRect.childCount - 1; i >= 0; i--)
+        {
+            Transform child = socialEmoteGridContentRect.GetChild(i);
+            child.SetParent(null, false);
+            Destroy(child.gameObject);
+        }
+    }
+
+    private void CreateSocialDogEmoteTile(DogEmojiEntry entry, Sprite sprite)
+    {
+        GameObject tileObject = CreateSocialEmoteTile($"SocialDogEmote_{entry.EntryId}", sprite, entry.Name);
+        Button button = tileObject.GetComponent<Button>();
+        button.onClick.AddListener(() => HandleSocialDogEmoteClicked(entry));
+    }
+
+    private void CreateSocialHumanEmoteTile(int spriteIndex, Sprite sprite)
+    {
+        GameObject tileObject = CreateSocialEmoteTile($"SocialHumanEmote_{spriteIndex}", sprite, $"Human Emote {spriteIndex + 1}");
+        Button button = tileObject.GetComponent<Button>();
+        int capturedIndex = spriteIndex;
+        button.onClick.AddListener(() => HandleSocialHumanEmoteClicked(capturedIndex));
+    }
+
+    private GameObject CreateSocialEmoteTile(string objectName, Sprite sprite, string tooltipText)
+    {
+        GameObject tileObject = CreateUIObject(objectName, socialEmoteGridContentRect);
+        LayoutElement layout = tileObject.AddComponent<LayoutElement>();
+        layout.preferredWidth = SocialEmoteTileSize;
+        layout.preferredHeight = SocialEmoteTileSize;
+        layout.minWidth = SocialEmoteTileSize;
+        layout.minHeight = SocialEmoteTileSize;
+
+        Image background = tileObject.AddComponent<Image>();
+        background.color = new Color(0.2f, 0.15f, 0.08f, 0.9f);
+        background.raycastTarget = true;
+
+        Button button = tileObject.AddComponent<Button>();
+        button.targetGraphic = background;
+        button.onClick.AddListener(AudioPlayer.PlayUiButtonClick);
+
+        GameObject iconObject = CreateUIObject("Icon", tileObject.transform);
+        RectTransform iconRect = iconObject.GetComponent<RectTransform>();
+        iconRect.anchorMin = new Vector2(0.5f, 0.5f);
+        iconRect.anchorMax = new Vector2(0.5f, 0.5f);
+        iconRect.pivot = new Vector2(0.5f, 0.5f);
+        iconRect.anchoredPosition = Vector2.zero;
+        iconRect.sizeDelta = Vector2.one * (SocialEmoteTileSize - 16f);
+
+        Image iconImage = iconObject.AddComponent<Image>();
+        iconImage.sprite = sprite;
+        iconImage.preserveAspect = true;
+        iconImage.color = Color.white;
+        iconImage.raycastTarget = false;
+
+        ConfigureTooltip(tileObject, tooltipText);
+        socialEmoteGridTiles.Add(tileObject);
+        return tileObject;
+    }
+
+    private void HandleSocialDogEmoteClicked(DogEmojiEntry entry)
+    {
+        WorldObject actor = GetSelectedFromList(playerAgentOptions, ref selectedPlayerAgentIndex);
+        if (actor == null)
+            return;
+
+        BottomBanner.LogEmote(actor, entry.EntryId);
+    }
+
+    private void HandleSocialHumanEmoteClicked(int spriteIndex)
+    {
+        WorldObject actor = GetSelectedFromList(playerAgentOptions, ref selectedPlayerAgentIndex);
+        if (actor == null)
+            return;
+
+        Sprite sprite = GetHumanEmoteSprite(spriteIndex);
+        if (sprite != null)
+            EmoteIconVisualFactory.Show(actor, sprite);
+    }
+
+    private static Sprite GetDogEmoteSprite(DogEmojiEntry entry)
+    {
+        return SpriteServer.SpriteLookup(entry.EntryId)
+            ?? SpriteServer.SpriteSheetLookup($"DogEmojiSheet{entry.SheetId}", entry.SpriteIndex);
+    }
+
+    private static Sprite GetHumanEmoteSprite(int spriteIndex)
+    {
+        return SpriteServer.SpriteSheetLookup("Sprites/Emotes/Human_Emoji_A", spriteIndex)
+            ?? SpriteServer.SpriteSheetLookup("Human_Emoji_A", spriteIndex);
     }
 
     private void RefreshScentSourceList()
