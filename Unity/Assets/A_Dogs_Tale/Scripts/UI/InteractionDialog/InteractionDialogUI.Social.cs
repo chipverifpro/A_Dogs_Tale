@@ -13,8 +13,6 @@ public sealed partial class InteractionDialogUI : MonoBehaviour
 
     private ScrollRect socialEmoteGridScrollRect;
 
-    private const int HumanEmojiCount = 32;
-
     private const int SocialEmoteGridColumns = 5;
 
     private const float SocialEmoteTileSize = 72f;
@@ -95,7 +93,7 @@ public sealed partial class InteractionDialogUI : MonoBehaviour
 
     private void CreateSocialHumanEmoteTile(int spriteIndex, Sprite sprite)
     {
-        GameObject tileObject = CreateSocialEmoteTile($"SocialHumanEmote_{spriteIndex}", sprite, $"Human Emote {spriteIndex + 1}");
+        GameObject tileObject = CreateSocialEmoteTile($"SocialHumanEmote_{spriteIndex}", sprite, SpriteServer.GetHumanEmojiDisplayName(spriteIndex));
         Button button = tileObject.GetComponent<Button>();
         int capturedIndex = spriteIndex;
         button.onClick.AddListener(() => HandleSocialHumanEmoteClicked(capturedIndex));
@@ -213,7 +211,7 @@ public sealed partial class InteractionDialogUI : MonoBehaviour
 
         if (useHumanSet)
         {
-            for (int i = 0; i < HumanEmojiCount; i++)
+            for (int i = 0; i < SpriteServer.HumanEmojiCount; i++)
             {
                 Sprite sprite = GetHumanEmoteSprite(i);
                 if (sprite != null)
@@ -305,8 +303,7 @@ public sealed partial class InteractionDialogUI : MonoBehaviour
 
     private static Sprite GetHumanEmoteSprite(int spriteIndex)
     {
-        return SpriteServer.SpriteSheetLookup("Sprites/Emotes/Human_Emoji_A", spriteIndex)
-        ?? SpriteServer.SpriteSheetLookup("Human_Emoji_A", spriteIndex);
+        return SpriteServer.GetHumanEmojiSprite(spriteIndex);
     }
 
     private static bool CanUseAsSocialTarget(WorldObject candidate)
@@ -338,9 +335,7 @@ public sealed partial class InteractionDialogUI : MonoBehaviour
         if (actor == null)
             return;
 
-        Sprite sprite = GetHumanEmoteSprite(spriteIndex);
-        if (sprite != null)
-            EmoteIconVisualFactory.Show(actor, sprite);
+        BottomBanner.LogHumanEmote(actor, spriteIndex);
     }
 
     private void CycleSocialLeftSelection(int direction)

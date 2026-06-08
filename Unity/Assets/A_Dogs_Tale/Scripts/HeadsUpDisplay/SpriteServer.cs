@@ -36,6 +36,8 @@ public static class SpriteServer
         //
         { "DogEmojiSheetC",            "Sprites/Emotes/DogEmojiSheetC" },
         //
+        { "Human_Emoji_A",             "Sprites/Emotes/Human_Emoji_A" },
+        //
         { "GraphicsQualitySprites_A",  "Sprites/GraphicsQualitySprites_A" },
         // Graphics_Low, Graphics_Medium, Graphics_High
         //{ "InventoryActions_A",        "Sprites/InventoryActions_A" },
@@ -331,6 +333,42 @@ public static class SpriteServer
         { NormalizeLookupKey("Gait_Frame_2row"), new SpriteReference("Gait_Frame_AB", 1) }
     };
 
+    static readonly string[] humanEmojiNames =
+    {
+        "Happy",
+        "Excited",
+        "Warm/Affection",
+        "Loving",
+        "Calm",
+        "Neutral",
+        "Thinking",
+        "Surprised",
+        "Shocked",
+        "Worried",
+        "Afraid",
+        "Sad",
+        "Crying",
+        "Frustrated",
+        "Angry",
+        "Furious",
+        "Nervous Laugh",
+        "Tense/Awkward",
+        "Embarrassed",
+        "Annoyed",
+        "Tired",
+        "Hurt",
+        "Sick",
+        "Pleased / Treat",
+        "Admiring",
+        "Confident",
+        "Commanding",
+        "Quiet",
+        "Hiding / Peek",
+        "Pleading",
+        "Innocent",
+        "Mischievous"
+    };
+
     static readonly Dictionary<string, Dictionary<int, Sprite>> spritesBySheet = new Dictionary<string, Dictionary<int, Sprite>>(StringComparer.OrdinalIgnoreCase);
     static readonly Dictionary<string, Dictionary<string, Sprite>> spritesByNameBySheet = new Dictionary<string, Dictionary<string, Sprite>>(StringComparer.OrdinalIgnoreCase);
     static readonly Dictionary<string, Sprite[]> spriteArraysBySheet = new Dictionary<string, Sprite[]>(StringComparer.OrdinalIgnoreCase);
@@ -355,6 +393,9 @@ public static class SpriteServer
 
         if (TryGetEmojiSprite(trimmedName, out Sprite emojiSprite, out _))
             return emojiSprite;
+
+        if (TryGetHumanEmojiSprite(trimmedName, out Sprite humanEmojiSprite, out _))
+            return humanEmojiSprite;
 
         if (trimmedName.StartsWith("Sense_", StringComparison.OrdinalIgnoreCase))
             return SpriteSheetLookupByName("Senses", trimmedName);
@@ -464,6 +505,35 @@ public static class SpriteServer
         sprite = SpriteSheetLookup($"DogEmojiSheet{entry.SheetId}", entry.SpriteIndex);
         return sprite != null;
     }
+
+    public static bool TryGetHumanEmojiSprite(string emote, out Sprite sprite, out string displayName)
+    {
+        sprite = null;
+        displayName = FormatSpriteDisplayName(emote);
+
+        if (!TryResolveHumanEmojiIndex(emote, out int spriteIndex))
+            return false;
+
+        displayName = GetHumanEmojiDisplayName(spriteIndex);
+        sprite = GetHumanEmojiSprite(spriteIndex);
+        return sprite != null;
+    }
+
+    public static Sprite GetHumanEmojiSprite(int spriteIndex)
+    {
+        return spriteIndex >= 0 && spriteIndex < humanEmojiNames.Length
+            ? SpriteSheetLookup("Human_Emoji_A", spriteIndex)
+            : null;
+    }
+
+    public static string GetHumanEmojiDisplayName(int spriteIndex)
+    {
+        return spriteIndex >= 0 && spriteIndex < humanEmojiNames.Length
+            ? humanEmojiNames[spriteIndex]
+            : $"Human Emote {spriteIndex + 1}";
+    }
+
+    public static int HumanEmojiCount => humanEmojiNames.Length;
 
     public static Dictionary<int, Sprite> GetSpriteSheet(string spriteSheet)
     {
@@ -628,6 +698,63 @@ public static class SpriteServer
         return false;
     }
 
+    static bool TryResolveHumanEmojiIndex(string emote, out int spriteIndex)
+    {
+        spriteIndex = -1;
+
+        if (string.IsNullOrWhiteSpace(emote))
+            return false;
+
+        string trimmed = emote.Trim();
+        if (int.TryParse(trimmed, out int parsedIndex) &&
+            parsedIndex >= 0 &&
+            parsedIndex < humanEmojiNames.Length)
+        {
+            spriteIndex = parsedIndex;
+            return true;
+        }
+
+        string normalized = NormalizeHumanEmojiKey(trimmed);
+        if (normalized.StartsWith("humanemote", StringComparison.Ordinal))
+            normalized = normalized.Substring("humanemote".Length);
+        else if (normalized.StartsWith("humanemoji", StringComparison.Ordinal))
+            normalized = normalized.Substring("humanemoji".Length);
+        else if (normalized.StartsWith("human", StringComparison.Ordinal))
+            normalized = normalized.Substring("human".Length);
+        else
+            return false;
+
+        if (int.TryParse(normalized, out int zeroBasedIndex) &&
+            zeroBasedIndex >= 0 &&
+            zeroBasedIndex < humanEmojiNames.Length)
+        {
+            spriteIndex = zeroBasedIndex;
+            return true;
+        }
+
+        for (int i = 0; i < humanEmojiNames.Length; i++)
+        {
+            string humanEmojiName = humanEmojiNames[i];
+            if (NormalizeHumanEmojiKey(humanEmojiName) == normalized)
+            {
+                spriteIndex = i;
+                return true;
+            }
+
+            string[] aliases = humanEmojiName.Split('/');
+            for (int aliasIndex = 0; aliasIndex < aliases.Length; aliasIndex++)
+            {
+                if (NormalizeHumanEmojiKey(aliases[aliasIndex]) == normalized)
+                {
+                    spriteIndex = i;
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
     static string ResolveEmojiAlias(string normalized)
     {
         switch (normalized)
@@ -661,6 +788,24 @@ public static class SpriteServer
             .Replace(" ", string.Empty)
             .Replace("_", string.Empty)
             .Replace("-", string.Empty);
+    }
+
+    static string NormalizeHumanEmojiKey(string value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+            return string.Empty;
+
+        string trimmed = value.Trim().ToLowerInvariant();
+        char[] buffer = new char[trimmed.Length];
+        int length = 0;
+        for (int i = 0; i < trimmed.Length; i++)
+        {
+            char c = trimmed[i];
+            if (char.IsLetterOrDigit(c))
+                buffer[length++] = c;
+        }
+
+        return new string(buffer, 0, length);
     }
 
     static string FormatSpriteDisplayName(string spriteName)

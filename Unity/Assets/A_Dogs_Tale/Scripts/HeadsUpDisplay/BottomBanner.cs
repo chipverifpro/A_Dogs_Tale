@@ -630,7 +630,10 @@ public class BottomBanner : MonoBehaviour
 
     Sprite GetEmoteSprite(string emote, out string displayName)
     {
-        return SpriteServer.TryGetEmojiSprite(emote, out Sprite sprite, out displayName) ? sprite : null;
+        if (SpriteServer.TryGetEmojiSprite(emote, out Sprite sprite, out displayName))
+            return sprite;
+
+        return SpriteServer.TryGetHumanEmojiSprite(emote, out sprite, out displayName) ? sprite : null;
     }
 
     Sprite GetInventoryMessageSprite()
@@ -655,6 +658,11 @@ public class BottomBanner : MonoBehaviour
             includeGameTime,
             false,
             sprite);
+    }
+
+    void AddHumanEmoteInternal(WorldObject agent, int spriteIndex, bool includeGameTime)
+    {
+        AddEmoteInternal(agent, $"Human_{spriteIndex}", includeGameTime);
     }
 
     void AddInventoryInternal(string message, bool includeGameTime)
@@ -1053,6 +1061,11 @@ public class BottomBanner : MonoBehaviour
     public static void LogEmote(WorldObject agent, string emote, bool includeGameTime = false)
     {
         GetOrCreateInstance()?.AddEmoteInternal(agent, emote, includeGameTime);
+    }
+
+    public static void LogHumanEmote(WorldObject agent, int spriteIndex, bool includeGameTime = false)
+    {
+        GetOrCreateInstance()?.AddHumanEmoteInternal(agent, spriteIndex, includeGameTime);
     }
 
     public static void LogInventoryMessage(string message, bool includeGameTime = false)

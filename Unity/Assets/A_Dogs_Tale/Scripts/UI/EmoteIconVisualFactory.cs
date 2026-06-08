@@ -16,8 +16,12 @@ public static class EmoteIconVisualFactory
 
     public static GameObject Show(WorldObject agent, string emote)
     {
-        if (agent == null || !SpriteServer.TryGetEmojiSprite(emote, out Sprite sprite, out _))
+        if (agent == null ||
+            (!SpriteServer.TryGetEmojiSprite(emote, out Sprite sprite, out _) &&
+             !SpriteServer.TryGetHumanEmojiSprite(emote, out sprite, out _)))
+        {
             return null;
+        }
 
         return Show(agent.transform, sprite);
     }
