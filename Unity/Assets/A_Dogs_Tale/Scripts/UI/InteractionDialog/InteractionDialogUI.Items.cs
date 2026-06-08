@@ -26,24 +26,6 @@ public sealed partial class InteractionDialogUI : MonoBehaviour
 
     private TextMeshProUGUI packHeldItemListEmptyLabel;
 
-    private int selectedPlayerItemIndex;
-
-    private int selectedTargetAgentIndex;
-
-    private int selectedTargetItemIndex;
-
-    private WorldObject displayedPlayerItem;
-
-    private WorldObject displayedTarget;
-
-    private WorldObject displayedTargetItem;
-
-    private bool packHeldItemListDirty = true;
-
-    private WorldObject displayedPackHeldItemSelectedAgent;
-
-    private WorldObject displayedPackHeldItemSelectedItem;
-
     [SerializeField, Min(0f)] private float throwForwardImpulse = 7f;
 
     [SerializeField, Min(0f)] private float throwUpwardImpulse = 2f;
@@ -352,25 +334,25 @@ public sealed partial class InteractionDialogUI : MonoBehaviour
     private void RefreshInteractionView(bool forcePreviewRefresh = false)
     {
         RefreshTabHighlights();
-        if (currentTab == InteractionTab.Pack)
+        if (sharedState.CurrentTab == InteractionTab.Pack)
         {
             RefreshPackView(forcePreviewRefresh);
             return;
         }
 
-        if (currentTab == InteractionTab.Social)
+        if (sharedState.CurrentTab == InteractionTab.Social)
         {
             RefreshSocialView(forcePreviewRefresh);
             return;
         }
 
-        if (currentTab == InteractionTab.Quests)
+        if (sharedState.CurrentTab == InteractionTab.Quests)
         {
             RefreshQuestsView(forcePreviewRefresh);
             return;
         }
 
-        if (currentTab == InteractionTab.Scent)
+        if (sharedState.CurrentTab == InteractionTab.Scent)
         {
             RefreshScentView(forcePreviewRefresh);
             return;
@@ -387,21 +369,21 @@ public sealed partial class InteractionDialogUI : MonoBehaviour
         SetItemSelectionTypeLabelsActive(true);
 
         BuildPlayerAgentOptions();
-        ApplyPendingSelection(playerAgentOptions, pendingLeftAgentSelection, ref selectedPlayerAgentIndex);
-        WorldObject player = GetSelectedFromList(playerAgentOptions, ref selectedPlayerAgentIndex);
-        WorldObject previousPlayerItem = GetSelectedFromList(playerItemOptions, ref selectedPlayerItemIndex);
+        ApplyPendingSelection(playerAgentOptions, sharedState.PendingLeftAgentSelection, ref sharedState.SelectedPlayerAgentIndex);
+        WorldObject player = GetSelectedFromList(playerAgentOptions, ref sharedState.SelectedPlayerAgentIndex);
+        WorldObject previousPlayerItem = GetSelectedFromList(playerItemOptions, ref itemsState.SelectedPlayerItemIndex);
         BuildItemOptions(player, playerItemOptions);
-        KeepSelectedObject(playerItemOptions, previousPlayerItem, ref selectedPlayerItemIndex);
-        WorldObject playerItem = GetSelectedFromList(playerItemOptions, ref selectedPlayerItemIndex);
+        KeepSelectedObject(playerItemOptions, previousPlayerItem, ref itemsState.SelectedPlayerItemIndex);
+        WorldObject playerItem = GetSelectedFromList(playerItemOptions, ref itemsState.SelectedPlayerItemIndex);
         RefreshPackHeldItemList(player, playerItem);
 
         BuildTargetAgentOptions(player);
-        ApplyPendingSelection(targetAgentOptions, pendingRightAgentSelection, ref selectedTargetAgentIndex);
-        WorldObject target = GetSelectedFromList(targetAgentOptions, ref selectedTargetAgentIndex);
-        WorldObject previousTargetItem = GetSelectedFromList(targetItemOptions, ref selectedTargetItemIndex);
+        ApplyPendingSelection(targetAgentOptions, sharedState.PendingRightAgentSelection, ref itemsState.SelectedTargetAgentIndex);
+        WorldObject target = GetSelectedFromList(targetAgentOptions, ref itemsState.SelectedTargetAgentIndex);
+        WorldObject previousTargetItem = GetSelectedFromList(targetItemOptions, ref itemsState.SelectedTargetItemIndex);
         BuildItemOptions(target, targetItemOptions);
-        KeepSelectedObject(targetItemOptions, previousTargetItem, ref selectedTargetItemIndex);
-        WorldObject targetItem = GetSelectedFromList(targetItemOptions, ref selectedTargetItemIndex);
+        KeepSelectedObject(targetItemOptions, previousTargetItem, ref itemsState.SelectedTargetItemIndex);
+        WorldObject targetItem = GetSelectedFromList(targetItemOptions, ref itemsState.SelectedTargetItemIndex);
 
         RefreshCircleAndHotspot(playerPreviewSlot, playerAgentOptions.Count, previousPlayerAgentButton, nextPlayerAgentButton);
         RefreshCircleAndHotspot(playerItemPreviewSlot, playerItemOptions.Count, previousPlayerItemButton, nextPlayerItemButton);
@@ -413,19 +395,19 @@ public sealed partial class InteractionDialogUI : MonoBehaviour
         SetLabelText(targetNameLabel, target != null ? target.DisplayName : string.Empty);
         SetLabelText(targetHeldItemLabel, targetItem != null ? targetItem.DisplayName : string.Empty);
 
-        if (forcePreviewRefresh || player != displayedPlayer)
+        if (forcePreviewRefresh || player != sharedState.DisplayedPlayer)
             BuildPreviewClone(playerPreviewSlot, player, "Player");
-        if (forcePreviewRefresh || playerItem != displayedPlayerItem)
+        if (forcePreviewRefresh || playerItem != itemsState.DisplayedPlayerItem)
             BuildPreviewClone(playerItemPreviewSlot, playerItem, "PlayerItem");
-        if (forcePreviewRefresh || target != displayedTarget)
+        if (forcePreviewRefresh || target != itemsState.DisplayedTarget)
             BuildPreviewClone(targetPreviewSlot, target, "Target");
-        if (forcePreviewRefresh || targetItem != displayedTargetItem)
+        if (forcePreviewRefresh || targetItem != itemsState.DisplayedTargetItem)
             BuildPreviewClone(targetItemPreviewSlot, targetItem, "TargetItem");
 
-        displayedPlayer = player;
-        displayedPlayerItem = playerItem;
-        displayedTarget = target;
-        displayedTargetItem = targetItem;
+        sharedState.DisplayedPlayer = player;
+        itemsState.DisplayedPlayerItem = playerItem;
+        itemsState.DisplayedTarget = target;
+        itemsState.DisplayedTargetItem = targetItem;
         ClearPendingSelections();
     }
 
@@ -455,16 +437,16 @@ public sealed partial class InteractionDialogUI : MonoBehaviour
             return;
 
         List<PackHeldItemOption> currentOptions = BuildPackHeldItemOptions();
-        bool optionsChanged = packHeldItemListDirty || HasPackHeldItemOptionsChanged(currentOptions);
-        bool selectionChanged = displayedPackHeldItemSelectedAgent != selectedAgent ||
-        displayedPackHeldItemSelectedItem != selectedItem;
+        bool optionsChanged = itemsState.PackHeldItemListDirty || HasPackHeldItemOptionsChanged(currentOptions);
+        bool selectionChanged = itemsState.DisplayedPackHeldItemSelectedAgent != selectedAgent ||
+        itemsState.DisplayedPackHeldItemSelectedItem != selectedItem;
 
         if (optionsChanged)
         {
             packHeldItemOptions.Clear();
             packHeldItemOptions.AddRange(currentOptions);
             RebuildPackHeldItemListRows();
-            packHeldItemListDirty = false;
+            itemsState.PackHeldItemListDirty = false;
         }
 
         if (packHeldItemListEmptyLabel != null)
@@ -474,8 +456,8 @@ public sealed partial class InteractionDialogUI : MonoBehaviour
         if (optionsChanged || selectionChanged)
             ScrollPackHeldItemListToSelection(selectedAgent, selectedItem);
 
-        displayedPackHeldItemSelectedAgent = selectedAgent;
-        displayedPackHeldItemSelectedItem = selectedItem;
+        itemsState.DisplayedPackHeldItemSelectedAgent = selectedAgent;
+        itemsState.DisplayedPackHeldItemSelectedItem = selectedItem;
     }
 
     private bool HasPackHeldItemOptionsChanged(List<PackHeldItemOption> currentOptions)
@@ -551,13 +533,13 @@ public sealed partial class InteractionDialogUI : MonoBehaviour
 
     private void BuildTargetAgentOptions(WorldObject player)
     {
-        WorldObject previousSelection = GetSelectedFromList(targetAgentOptions, ref selectedTargetAgentIndex);
+        WorldObject previousSelection = GetSelectedFromList(targetAgentOptions, ref itemsState.SelectedTargetAgentIndex);
         targetAgentOptions.Clear();
 
         WorldObjectRegistry registry = WorldObjectRegistry.Instance;
         if (player == null || registry == null)
         {
-            selectedTargetAgentIndex = 0;
+            itemsState.SelectedTargetAgentIndex = 0;
             return;
         }
 
@@ -592,7 +574,7 @@ public sealed partial class InteractionDialogUI : MonoBehaviour
                 return string.Compare(a.DisplayName, b.DisplayName, System.StringComparison.OrdinalIgnoreCase);
         });
 
-        KeepSelectedObject(targetAgentOptions, previousSelection, ref selectedTargetAgentIndex);
+        KeepSelectedObject(targetAgentOptions, previousSelection, ref itemsState.SelectedTargetAgentIndex);
     }
 
     private static Sprite GetInventoryActionSprite(InventoryAction action)
@@ -714,45 +696,45 @@ public sealed partial class InteractionDialogUI : MonoBehaviour
         if (agentIndex < 0)
             return;
 
-        selectedPlayerAgentIndex = agentIndex;
+        sharedState.SelectedPlayerAgentIndex = agentIndex;
         BuildItemOptions(option.Agent, playerItemOptions);
         int itemIndex = playerItemOptions.IndexOf(option.Item);
         if (itemIndex < 0)
             return;
 
-        selectedPlayerItemIndex = itemIndex;
-        packHeldItemListDirty = true;
+        itemsState.SelectedPlayerItemIndex = itemIndex;
+        itemsState.PackHeldItemListDirty = true;
         RefreshInteractionView(forcePreviewRefresh: true);
     }
 
     private void OnPreviousPlayerItemClicked()
     {
-        CycleSelection(playerItemOptions, ref selectedPlayerItemIndex, -1);
+        CycleSelection(playerItemOptions, ref itemsState.SelectedPlayerItemIndex, -1);
         RefreshInteractionView(forcePreviewRefresh: true);
     }
 
     private void OnNextPlayerItemClicked()
     {
-        CycleSelection(playerItemOptions, ref selectedPlayerItemIndex, 1);
+        CycleSelection(playerItemOptions, ref itemsState.SelectedPlayerItemIndex, 1);
         RefreshInteractionView(forcePreviewRefresh: true);
     }
 
     private void OnPreviousTargetItemClicked()
     {
-        CycleSelection(targetItemOptions, ref selectedTargetItemIndex, -1);
+        CycleSelection(targetItemOptions, ref itemsState.SelectedTargetItemIndex, -1);
         RefreshInteractionView(forcePreviewRefresh: true);
     }
 
     private void OnNextTargetItemClicked()
     {
-        CycleSelection(targetItemOptions, ref selectedTargetItemIndex, 1);
+        CycleSelection(targetItemOptions, ref itemsState.SelectedTargetItemIndex, 1);
         RefreshInteractionView(forcePreviewRefresh: true);
     }
 
     private void OnUseClicked()
     {
-        WorldObject user = displayedPlayer;
-        WorldObject item = displayedPlayerItem;
+        WorldObject user = sharedState.DisplayedPlayer;
+        WorldObject item = itemsState.DisplayedPlayerItem;
         ContainerModule container = GetOrCreateContainer(user);
         if (user == null)
             return;
@@ -771,7 +753,7 @@ public sealed partial class InteractionDialogUI : MonoBehaviour
 
         ActivatorModule activator = item.activatorModule;
         string itemName = item.DisplayName;
-        bool success = activator.TryUseItem(user, displayedTarget);
+        bool success = activator.TryUseItem(user, itemsState.DisplayedTarget);
         if (success && activator.parameterDestruct)
         {
             if (container != null && !container.ReleaseItem(item, out string reason))
@@ -794,12 +776,12 @@ public sealed partial class InteractionDialogUI : MonoBehaviour
 
     private void OnEatClicked()
     {
-        WorldObject eater = displayedPlayer;
+        WorldObject eater = sharedState.DisplayedPlayer;
         ContainerModule container = GetOrCreateContainer(eater);
         if (eater == null || container == null)
             return;
 
-        WorldObject item = displayedPlayerItem;
+        WorldObject item = itemsState.DisplayedPlayerItem;
         if (item == null)
         {
             ShowInteractionMessage($"{eater.DisplayName} has no item to eat");
@@ -816,14 +798,14 @@ public sealed partial class InteractionDialogUI : MonoBehaviour
 
         Destroy(item.gameObject);
         ShowInteractionMessage($"{eater.DisplayName} ate {itemName}");
-        selectedPlayerItemIndex = 0;
+        itemsState.SelectedPlayerItemIndex = 0;
         RefreshInteractionView(forcePreviewRefresh: true);
     }
 
     private void OnDropClicked()
     {
-        WorldObject carrier = displayedPlayer;
-        WorldObject item = displayedPlayerItem;
+        WorldObject carrier = sharedState.DisplayedPlayer;
+        WorldObject item = itemsState.DisplayedPlayerItem;
         ContainerModule container = GetOrCreateContainer(carrier);
         if (carrier == null || item == null || container == null)
             return;
@@ -836,14 +818,14 @@ public sealed partial class InteractionDialogUI : MonoBehaviour
         }
 
         ShowInteractionMessage($"{carrier.DisplayName} dropped {item.DisplayName}");
-        selectedPlayerItemIndex = 0;
+        itemsState.SelectedPlayerItemIndex = 0;
         RefreshInteractionView(forcePreviewRefresh: true);
     }
 
     private void OnThrowClicked()
     {
-        WorldObject carrier = displayedPlayer;
-        WorldObject item = displayedPlayerItem;
+        WorldObject carrier = sharedState.DisplayedPlayer;
+        WorldObject item = itemsState.DisplayedPlayerItem;
         ContainerModule container = GetOrCreateContainer(carrier);
         if (carrier == null || item == null || container == null)
             return;
@@ -856,13 +838,13 @@ public sealed partial class InteractionDialogUI : MonoBehaviour
         }
 
         ShowInteractionMessage($"{carrier.DisplayName} threw {item.DisplayName}");
-        selectedPlayerItemIndex = 0;
+        itemsState.SelectedPlayerItemIndex = 0;
         RefreshInteractionView(forcePreviewRefresh: true);
     }
 
     private void OnPickUpClicked()
     {
-        WorldObject carrier = displayedPlayer;
+        WorldObject carrier = sharedState.DisplayedPlayer;
         ContainerModule container = GetOrCreateContainer(carrier);
         if (carrier == null || container == null)
             return;
@@ -874,15 +856,15 @@ public sealed partial class InteractionDialogUI : MonoBehaviour
         }
 
         ShowInteractionMessage($"{carrier.DisplayName} picked up {pickedUpItem.DisplayName}");
-        selectedPlayerItemIndex = 0;
+        itemsState.SelectedPlayerItemIndex = 0;
         RefreshInteractionView(forcePreviewRefresh: true);
     }
 
     private void OnGiveClicked()
     {
-        WorldObject giver = displayedPlayer;
-        WorldObject item = displayedPlayerItem;
-        WorldObject recipient = displayedTarget;
+        WorldObject giver = sharedState.DisplayedPlayer;
+        WorldObject item = itemsState.DisplayedPlayerItem;
+        WorldObject recipient = itemsState.DisplayedTarget;
         ContainerModule giverContainer = GetOrCreateContainer(giver);
         ContainerModule recipientContainer = GetOrCreateContainer(recipient);
 
@@ -904,8 +886,8 @@ public sealed partial class InteractionDialogUI : MonoBehaviour
         if (TransferItem(giverContainer, recipientContainer, item, out string reason))
         {
             ShowInteractionMessage($"{giver.DisplayName} gave {item.DisplayName} to {recipient.DisplayName}");
-            selectedPlayerItemIndex = 0;
-            selectedTargetItemIndex = 0;
+            itemsState.SelectedPlayerItemIndex = 0;
+            itemsState.SelectedTargetItemIndex = 0;
             RefreshInteractionView(forcePreviewRefresh: true);
             return;
         }
@@ -916,9 +898,9 @@ public sealed partial class InteractionDialogUI : MonoBehaviour
 
     private void OnTakeItemClicked()
     {
-        WorldObject taker = displayedPlayer;
-        WorldObject giver = displayedTarget;
-        WorldObject item = displayedTargetItem;
+        WorldObject taker = sharedState.DisplayedPlayer;
+        WorldObject giver = itemsState.DisplayedTarget;
+        WorldObject item = itemsState.DisplayedTargetItem;
         ContainerModule takerContainer = GetOrCreateContainer(taker);
         ContainerModule giverContainer = GetOrCreateContainer(giver);
 
@@ -940,8 +922,8 @@ public sealed partial class InteractionDialogUI : MonoBehaviour
         if (TransferItem(giverContainer, takerContainer, item, out string reason))
         {
             ShowInteractionMessage($"{taker.DisplayName} took {item.DisplayName} from {giver.DisplayName}");
-            selectedTargetItemIndex = 0;
-            selectedPlayerItemIndex = 0;
+            itemsState.SelectedTargetItemIndex = 0;
+            itemsState.SelectedPlayerItemIndex = 0;
             RefreshInteractionView(forcePreviewRefresh: true);
             return;
         }
@@ -952,10 +934,10 @@ public sealed partial class InteractionDialogUI : MonoBehaviour
 
     private void OnTradeClicked()
     {
-        WorldObject trader = displayedPlayer;
-        WorldObject partner = displayedTarget;
-        WorldObject traderItem = displayedPlayerItem;
-        WorldObject partnerItem = displayedTargetItem;
+        WorldObject trader = sharedState.DisplayedPlayer;
+        WorldObject partner = itemsState.DisplayedTarget;
+        WorldObject traderItem = itemsState.DisplayedPlayerItem;
+        WorldObject partnerItem = itemsState.DisplayedTargetItem;
         ContainerModule traderContainer = GetOrCreateContainer(trader);
         ContainerModule partnerContainer = GetOrCreateContainer(partner);
 

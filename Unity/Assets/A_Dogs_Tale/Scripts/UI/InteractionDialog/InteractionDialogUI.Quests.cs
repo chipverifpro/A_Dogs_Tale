@@ -16,14 +16,6 @@ public sealed partial class InteractionDialogUI : MonoBehaviour
 
     private TextMeshProUGUI questListEmptyLabel;
 
-    private int selectedQuestTargetIndex;
-
-    private WorldObject displayedQuestLeft;
-
-    private WorldObject displayedQuestRight;
-
-    private bool interactionQuestListDirty = true;
-
     private readonly List<WorldObject> questTargetOptions = new();
 
     private readonly List<QuestModuleBase> interactionQuestModules = new();
@@ -282,12 +274,12 @@ public sealed partial class InteractionDialogUI : MonoBehaviour
         SetItemSelectionTypeLabelsActive(false);
 
         BuildPlayerAgentOptions();
-        ApplyPendingSelection(playerAgentOptions, pendingLeftAgentSelection, ref selectedPlayerAgentIndex);
-        WorldObject leftMember = GetSelectedFromList(playerAgentOptions, ref selectedPlayerAgentIndex);
+        ApplyPendingSelection(playerAgentOptions, sharedState.PendingLeftAgentSelection, ref sharedState.SelectedPlayerAgentIndex);
+        WorldObject leftMember = GetSelectedFromList(playerAgentOptions, ref sharedState.SelectedPlayerAgentIndex);
         RefreshInteractionQuestList();
         BuildQuestTargetOptions(leftMember);
-        ApplyPendingSelection(questTargetOptions, pendingRightAgentSelection, ref selectedQuestTargetIndex);
-        WorldObject rightMember = GetSelectedFromList(questTargetOptions, ref selectedQuestTargetIndex);
+        ApplyPendingSelection(questTargetOptions, sharedState.PendingRightAgentSelection, ref questsState.SelectedTargetIndex);
+        WorldObject rightMember = GetSelectedFromList(questTargetOptions, ref questsState.SelectedTargetIndex);
 
         RefreshCircleAndHotspot(playerPreviewSlot, playerAgentOptions.Count, previousPlayerAgentButton, nextPlayerAgentButton);
         RefreshCircleAndHotspot(targetPreviewSlot, questTargetOptions.Count, previousTargetAgentButton, nextTargetAgentButton);
@@ -299,20 +291,20 @@ public sealed partial class InteractionDialogUI : MonoBehaviour
         SetLabelText(targetNameLabel, rightMember != null ? rightMember.DisplayName : string.Empty);
         SetLabelText(targetHeldItemLabel, string.Empty);
 
-        if (forcePreviewRefresh || leftMember != displayedQuestLeft)
+        if (forcePreviewRefresh || leftMember != questsState.DisplayedLeft)
             BuildPreviewClone(playerPreviewSlot, leftMember, "QuestLeft");
-        if (forcePreviewRefresh || rightMember != displayedQuestRight)
+        if (forcePreviewRefresh || rightMember != questsState.DisplayedRight)
             BuildPreviewClone(targetPreviewSlot, rightMember, "QuestRight");
 
         BuildPreviewClone(playerItemPreviewSlot, null, "QuestLeftItem");
         BuildPreviewClone(targetItemPreviewSlot, null, "QuestRightItem");
 
-        displayedQuestLeft = leftMember;
-        displayedQuestRight = rightMember;
-        displayedPlayer = leftMember;
-        displayedPlayerItem = null;
-        displayedTarget = rightMember;
-        displayedTargetItem = null;
+        questsState.DisplayedLeft = leftMember;
+        questsState.DisplayedRight = rightMember;
+        sharedState.DisplayedPlayer = leftMember;
+        itemsState.DisplayedPlayerItem = null;
+        itemsState.DisplayedTarget = rightMember;
+        itemsState.DisplayedTargetItem = null;
         ClearPendingSelections();
     }
 
@@ -331,7 +323,7 @@ public sealed partial class InteractionDialogUI : MonoBehaviour
         if (questListContentRect == null)
             return;
 
-        if (!interactionQuestListDirty)
+        if (!questsState.InteractionQuestListDirty)
         {
             UpdateInteractionQuestHeaderLabels();
             return;
@@ -359,7 +351,7 @@ public sealed partial class InteractionDialogUI : MonoBehaviour
         if (questListScrollRect != null)
             questListScrollRect.verticalNormalizedPosition = 1f;
 
-        interactionQuestListDirty = false;
+        questsState.InteractionQuestListDirty = false;
     }
 
     private void UpdateInteractionQuestHeaderLabels()
@@ -379,13 +371,13 @@ public sealed partial class InteractionDialogUI : MonoBehaviour
 
     private void BuildQuestTargetOptions(WorldObject player)
     {
-        WorldObject previousSelection = GetSelectedFromList(questTargetOptions, ref selectedQuestTargetIndex);
+        WorldObject previousSelection = GetSelectedFromList(questTargetOptions, ref questsState.SelectedTargetIndex);
         questTargetOptions.Clear();
 
         WorldObjectRegistry registry = WorldObjectRegistry.Instance;
         if (player == null || registry == null)
         {
-            selectedQuestTargetIndex = 0;
+            questsState.SelectedTargetIndex = 0;
             return;
         }
 
@@ -420,7 +412,7 @@ public sealed partial class InteractionDialogUI : MonoBehaviour
                 return string.Compare(a.DisplayName, b.DisplayName, System.StringComparison.OrdinalIgnoreCase);
         });
 
-        KeepSelectedObject(questTargetOptions, previousSelection, ref selectedQuestTargetIndex);
+        KeepSelectedObject(questTargetOptions, previousSelection, ref questsState.SelectedTargetIndex);
     }
 
     private static Color GetInteractionQuestRowColor(QuestRunStatus status)
@@ -467,7 +459,7 @@ public sealed partial class InteractionDialogUI : MonoBehaviour
 
     private bool TryGetInteractionQuestActorAndTarget(QuestModuleBase quest, out WorldObject actor, out WorldObject target)
     {
-        actor = GetSelectedFromList(playerAgentOptions, ref selectedPlayerAgentIndex) ?? GetCurrentControlledWorldObjectForInteractionQuest();
+        actor = GetSelectedFromList(playerAgentOptions, ref sharedState.SelectedPlayerAgentIndex) ?? GetCurrentControlledWorldObjectForInteractionQuest();
         target = quest != null ? quest.QuestInteractionTarget : null;
         return actor != null && target != null;
     }
@@ -532,7 +524,7 @@ public sealed partial class InteractionDialogUI : MonoBehaviour
         else
         expandedInteractionQuestModules.Add(quest);
 
-        interactionQuestListDirty = true;
+        questsState.InteractionQuestListDirty = true;
         RefreshInteractionQuestList();
     }
 
@@ -547,7 +539,7 @@ public sealed partial class InteractionDialogUI : MonoBehaviour
         if (!IsInteractionQuestGiverNearby(actor, target))
         {
             BottomBanner.Show($"{target.DisplayName} is too far away.");
-            interactionQuestListDirty = true;
+            questsState.InteractionQuestListDirty = true;
             RefreshInteractionQuestList();
             return;
         }
@@ -573,7 +565,7 @@ public sealed partial class InteractionDialogUI : MonoBehaviour
             BottomBanner.Show($"Quest not accepted: {result.message}");
         }
 
-        interactionQuestListDirty = true;
+        questsState.InteractionQuestListDirty = true;
         RefreshInteractionQuestList();
     }
 
@@ -583,20 +575,20 @@ public sealed partial class InteractionDialogUI : MonoBehaviour
         if (playerAgentOptions.Count <= 1)
             return;
 
-        CycleSelection(playerAgentOptions, ref selectedPlayerAgentIndex, direction);
-        selectedQuestTargetIndex = 0;
+        CycleSelection(playerAgentOptions, ref sharedState.SelectedPlayerAgentIndex, direction);
+        questsState.SelectedTargetIndex = 0;
         RefreshInteractionView(forcePreviewRefresh: true);
     }
 
     private void CycleQuestRightSelection(int direction)
     {
         BuildPlayerAgentOptions();
-        WorldObject player = GetSelectedFromList(playerAgentOptions, ref selectedPlayerAgentIndex);
+        WorldObject player = GetSelectedFromList(playerAgentOptions, ref sharedState.SelectedPlayerAgentIndex);
         BuildQuestTargetOptions(player);
         if (questTargetOptions.Count <= 1)
             return;
 
-        CycleSelection(questTargetOptions, ref selectedQuestTargetIndex, direction);
+        CycleSelection(questTargetOptions, ref questsState.SelectedTargetIndex, direction);
         RefreshInteractionView(forcePreviewRefresh: true);
     }
 

@@ -28,14 +28,6 @@ public sealed partial class InteractionDialogUI : MonoBehaviour
 
     private float packMemberListDragStartContentY;
 
-    private int selectedPackLeftIndex;
-
-    private int selectedPackRightIndex = 1;
-
-    private WorldObject displayedPackLeft;
-
-    private WorldObject displayedPackRight;
-
     private readonly List<WorldObject> packMemberOptions = new();
 
     private readonly List<WorldObject> packRightOptions = new();
@@ -232,7 +224,7 @@ public sealed partial class InteractionDialogUI : MonoBehaviour
         layoutElement.minHeight = PackMemberListRowHeight;
 
         Image background = rowObject.AddComponent<Image>();
-        background.color = GetPackMemberListRowColor(index == selectedPackLeftIndex);
+        background.color = GetPackMemberListRowColor(index == packState.SelectedLeftIndex);
         background.raycastTarget = true;
 
         int capturedIndex = index;
@@ -293,12 +285,12 @@ public sealed partial class InteractionDialogUI : MonoBehaviour
         SetItemSelectionTypeLabelsActive(false);
 
         BuildPackMemberOptions();
-        ApplyPendingSelection(packMemberOptions, pendingLeftAgentSelection, ref selectedPackLeftIndex);
-        WorldObject leftMember = GetSelectedFromList(packMemberOptions, ref selectedPackLeftIndex);
+        ApplyPendingSelection(packMemberOptions, sharedState.PendingLeftAgentSelection, ref packState.SelectedLeftIndex);
+        WorldObject leftMember = GetSelectedFromList(packMemberOptions, ref packState.SelectedLeftIndex);
         RefreshPackMemberList();
         BuildPackRightOptions(leftMember);
-        ApplyPendingSelection(packRightOptions, pendingRightAgentSelection, ref selectedPackRightIndex);
-        WorldObject rightMember = GetSelectedFromList(packRightOptions, ref selectedPackRightIndex);
+        ApplyPendingSelection(packRightOptions, sharedState.PendingRightAgentSelection, ref packState.SelectedRightIndex);
+        WorldObject rightMember = GetSelectedFromList(packRightOptions, ref packState.SelectedRightIndex);
 
         RefreshCircleAndHotspot(playerPreviewSlot, packMemberOptions.Count, previousPlayerAgentButton, nextPlayerAgentButton);
         RefreshCircleAndHotspot(targetPreviewSlot, packRightOptions.Count, previousTargetAgentButton, nextTargetAgentButton);
@@ -315,20 +307,20 @@ public sealed partial class InteractionDialogUI : MonoBehaviour
         SetLabelText(targetNameLabel, rightMember != null ? rightMember.DisplayName : string.Empty);
         SetLabelText(targetHeldItemLabel, string.Empty);
 
-        if (forcePreviewRefresh || leftMember != displayedPackLeft)
+        if (forcePreviewRefresh || leftMember != packState.DisplayedLeft)
             BuildPreviewClone(playerPreviewSlot, leftMember, "PackLeft");
-        if (forcePreviewRefresh || rightMember != displayedPackRight)
+        if (forcePreviewRefresh || rightMember != packState.DisplayedRight)
             BuildPreviewClone(targetPreviewSlot, rightMember, "PackRight");
 
         BuildPreviewClone(playerItemPreviewSlot, null, "PackLeftItem");
         BuildPreviewClone(targetItemPreviewSlot, null, "PackRightItem");
 
-        displayedPackLeft = leftMember;
-        displayedPackRight = rightMember;
-        displayedPlayer = leftMember;
-        displayedPlayerItem = null;
-        displayedTarget = rightMember;
-        displayedTargetItem = null;
+        packState.DisplayedLeft = leftMember;
+        packState.DisplayedRight = rightMember;
+        sharedState.DisplayedPlayer = leftMember;
+        itemsState.DisplayedPlayerItem = null;
+        itemsState.DisplayedTarget = rightMember;
+        itemsState.DisplayedTargetItem = null;
         ClearPendingSelections();
     }
 
@@ -374,12 +366,12 @@ public sealed partial class InteractionDialogUI : MonoBehaviour
     private void RefreshPackMemberListHighlights()
     {
         for (int i = 0; i < packMemberListBackgrounds.Count; i++)
-            packMemberListBackgrounds[i].color = GetPackMemberListRowColor(i == selectedPackLeftIndex);
+            packMemberListBackgrounds[i].color = GetPackMemberListRowColor(i == packState.SelectedLeftIndex);
     }
 
     private void ScrollPackMemberListToSelection()
     {
-        ScrollListToSelectionNormalized(packMemberScrollRect, selectedPackLeftIndex, packMemberOptions.Count);
+        ScrollListToSelectionNormalized(packMemberScrollRect, packState.SelectedLeftIndex, packMemberOptions.Count);
     }
 
     internal void ScrollPackMemberList(Vector2 scrollDelta)
@@ -465,7 +457,7 @@ public sealed partial class InteractionDialogUI : MonoBehaviour
 
     private void BuildPackMemberOptions()
     {
-        WorldObject previousLeft = GetSelectedFromList(packMemberOptions, ref selectedPackLeftIndex);
+        WorldObject previousLeft = GetSelectedFromList(packMemberOptions, ref packState.SelectedLeftIndex);
         packMemberOptions.Clear();
 
         Pack playerPack = Dir.Instance != null ? Dir.Instance.playerPack : null;
@@ -484,12 +476,12 @@ public sealed partial class InteractionDialogUI : MonoBehaviour
         if (packMemberOptions.Count == 0 && packLeader != null)
             packMemberOptions.Add(packLeader);
 
-        KeepSelectedObject(packMemberOptions, previousLeft, ref selectedPackLeftIndex);
+        KeepSelectedObject(packMemberOptions, previousLeft, ref packState.SelectedLeftIndex);
     }
 
     private void BuildPackRightOptions(WorldObject leftMember)
     {
-        WorldObject previousRight = GetSelectedFromList(packRightOptions, ref selectedPackRightIndex);
+        WorldObject previousRight = GetSelectedFromList(packRightOptions, ref packState.SelectedRightIndex);
         packRightOptions.Clear();
 
         Pack playerPack = Dir.Instance != null ? Dir.Instance.playerPack : null;
@@ -504,7 +496,7 @@ public sealed partial class InteractionDialogUI : MonoBehaviour
         }
 
         AddNearbyPackRightAgents(leftMember);
-        KeepSelectedObject(packRightOptions, previousRight, ref selectedPackRightIndex);
+        KeepSelectedObject(packRightOptions, previousRight, ref packState.SelectedRightIndex);
     }
 
     private static Sprite GetPackActionSprite(PackButtonKind kind, int spriteIndex)
@@ -618,16 +610,16 @@ public sealed partial class InteractionDialogUI : MonoBehaviour
     {
         if (packMemberOptions.Count <= 1)
         {
-            selectedPackRightIndex = 0;
+            packState.SelectedRightIndex = 0;
             return;
         }
 
-        selectedPackLeftIndex = Mathf.Clamp(selectedPackLeftIndex, 0, packMemberOptions.Count - 1);
-        selectedPackRightIndex = Mathf.Clamp(selectedPackRightIndex, 0, packMemberOptions.Count - 1);
-        if (GetSelectedFromList(packMemberOptions, ref selectedPackRightIndex) != leftMember)
+        packState.SelectedLeftIndex = Mathf.Clamp(packState.SelectedLeftIndex, 0, packMemberOptions.Count - 1);
+        packState.SelectedRightIndex = Mathf.Clamp(packState.SelectedRightIndex, 0, packMemberOptions.Count - 1);
+        if (GetSelectedFromList(packMemberOptions, ref packState.SelectedRightIndex) != leftMember)
             return;
 
-        selectedPackRightIndex = FindNextPackMemberIndex(selectedPackRightIndex, 1, selectedPackLeftIndex);
+        packState.SelectedRightIndex = FindNextPackMemberIndex(packState.SelectedRightIndex, 1, packState.SelectedLeftIndex);
     }
 
     private int FindNextPackMemberIndex(int currentIndex, int direction, int skipIndex)
@@ -665,22 +657,22 @@ public sealed partial class InteractionDialogUI : MonoBehaviour
 
     private WorldObject GetSelectedPackLeftMember()
     {
-        if (displayedPackLeft != null)
-            return displayedPackLeft;
+        if (packState.DisplayedLeft != null)
+            return packState.DisplayedLeft;
 
         BuildPackMemberOptions();
-        return GetSelectedFromList(packMemberOptions, ref selectedPackLeftIndex);
+        return GetSelectedFromList(packMemberOptions, ref packState.SelectedLeftIndex);
     }
 
     private WorldObject GetSelectedPackRightMember()
     {
-        if (displayedPackRight != null)
-            return displayedPackRight;
+        if (packState.DisplayedRight != null)
+            return packState.DisplayedRight;
 
         BuildPackMemberOptions();
-        WorldObject leftMember = GetSelectedFromList(packMemberOptions, ref selectedPackLeftIndex);
+        WorldObject leftMember = GetSelectedFromList(packMemberOptions, ref packState.SelectedLeftIndex);
         BuildPackRightOptions(leftMember);
-        return GetSelectedFromList(packRightOptions, ref selectedPackRightIndex);
+        return GetSelectedFromList(packRightOptions, ref packState.SelectedRightIndex);
     }
 
     private static string GetPackBehaviorDisplayName(AgentDecisionType decisionType)
@@ -720,8 +712,8 @@ public sealed partial class InteractionDialogUI : MonoBehaviour
             return;
 
         AudioPlayer.PlayUiButtonClick();
-        pendingLeftAgentSelection = packMemberOptions[index];
-        selectedPackLeftIndex = index;
+        sharedState.PendingLeftAgentSelection = packMemberOptions[index];
+        packState.SelectedLeftIndex = index;
         RefreshInteractionView(forcePreviewRefresh: true);
     }
 
@@ -758,21 +750,21 @@ public sealed partial class InteractionDialogUI : MonoBehaviour
         if (packMemberOptions.Count <= 1)
             return;
 
-        int previousLeftIndex = Mathf.Clamp(selectedPackLeftIndex, 0, packMemberOptions.Count - 1);
-        selectedPackLeftIndex = FindNextPackMemberIndex(selectedPackLeftIndex, direction, -1);
-        selectedPackRightIndex = previousLeftIndex;
+        int previousLeftIndex = Mathf.Clamp(packState.SelectedLeftIndex, 0, packMemberOptions.Count - 1);
+        packState.SelectedLeftIndex = FindNextPackMemberIndex(packState.SelectedLeftIndex, direction, -1);
+        packState.SelectedRightIndex = previousLeftIndex;
         RefreshInteractionView(forcePreviewRefresh: true);
     }
 
     private void CyclePackRightSelection(int direction)
     {
         BuildPackMemberOptions();
-        WorldObject leftMember = GetSelectedFromList(packMemberOptions, ref selectedPackLeftIndex);
+        WorldObject leftMember = GetSelectedFromList(packMemberOptions, ref packState.SelectedLeftIndex);
         BuildPackRightOptions(leftMember);
         if (packRightOptions.Count <= 1)
             return;
 
-        CycleSelection(packRightOptions, ref selectedPackRightIndex, direction);
+        CycleSelection(packRightOptions, ref packState.SelectedRightIndex, direction);
         RefreshInteractionView(forcePreviewRefresh: true);
     }
 
@@ -886,8 +878,8 @@ public sealed partial class InteractionDialogUI : MonoBehaviour
             return;
         }
 
-        selectedPackLeftIndex = 0;
-        selectedPackRightIndex = 0;
+        packState.SelectedLeftIndex = 0;
+        packState.SelectedRightIndex = 0;
         ShowInteractionMessage($"{member.DisplayName} is pack leader");
         RefreshInteractionView(forcePreviewRefresh: true);
     }
@@ -1006,8 +998,8 @@ public sealed partial class InteractionDialogUI : MonoBehaviour
         }
 
         ShowInteractionMessage($"{member.DisplayName} left the pack");
-        selectedPackLeftIndex = 0;
-        selectedPackRightIndex = 1;
+        packState.SelectedLeftIndex = 0;
+        packState.SelectedRightIndex = 1;
         RefreshInteractionView(forcePreviewRefresh: true);
     }
 

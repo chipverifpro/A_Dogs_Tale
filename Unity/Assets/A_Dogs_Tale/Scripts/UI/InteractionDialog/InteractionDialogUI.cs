@@ -114,16 +114,6 @@ public sealed partial class InteractionDialogUI : MonoBehaviour
 
     private const float PackMemberListRowSpacing = 5f;
 
-    private int selectedPlayerAgentIndex;
-
-    private WorldObject displayedPlayer;
-
-    private WorldObject pendingLeftAgentSelection;
-
-    private WorldObject pendingRightAgentSelection;
-
-    private InteractionTab currentTab = InteractionTab.Items;
-
     private bool isOpen;
 
     private bool pausedGameForDialog;
@@ -178,7 +168,7 @@ public sealed partial class InteractionDialogUI : MonoBehaviour
 
     #region Nested Types
 
-private enum InteractionTab
+    private enum InteractionTab
     {
         Social,
         Quests,
@@ -251,8 +241,8 @@ private enum InteractionTab
         if (dialogRoot != null)
             dialogRoot.SetActive(true);
 
-        interactionQuestListDirty = true;
-        packHeldItemListDirty = true;
+        questsState.InteractionQuestListDirty = true;
+        itemsState.PackHeldItemListDirty = true;
         RefreshInteractionView(forcePreviewRefresh: true);
     }
 
@@ -489,11 +479,11 @@ private enum InteractionTab
         CreateTabLabel(parent, "QuestsTabLabel", "Quests", new Vector2(240f, -428f) + labelOffset, labelSize);
         scentTabHighlight = CreateTabHighlight(parent, "ScentTabHighlight", new Vector2(480f, -428f), tabSize);
         CreateTabLabel(parent, "ScentTabLabel", "Scent", new Vector2(480f, -428f) + labelOffset, labelSize);
-        socialTabButton = CreateTabHotspot(parent, "SocialTabButton", new Vector2(-480f, -428f), tabSize, OnSocialTabClicked);
-        packTabButton = CreateTabHotspot(parent, "PackTabButton", new Vector2(-240f, -428f), tabSize, OnPackTabClicked);
-        itemsTabButton = CreateTabHotspot(parent, "ItemsTabButton", new Vector2(0f, -428f), tabSize, OnItemsTabClicked);
-        questsTabButton = CreateTabHotspot(parent, "QuestsTabButton", new Vector2(240f, -428f), tabSize, OnQuestsTabClicked);
-        scentTabButton = CreateTabHotspot(parent, "ScentTabButton", new Vector2(480f, -428f), tabSize, OnScentTabClicked);
+        socialTabButton = CreateTabHotspot(parent, "SocialTabButton", new Vector2(-480f, -428f), tabSize, () => SwitchToTab(InteractionTab.Social));
+        packTabButton = CreateTabHotspot(parent, "PackTabButton", new Vector2(-240f, -428f), tabSize, () => SwitchToTab(InteractionTab.Pack));
+        itemsTabButton = CreateTabHotspot(parent, "ItemsTabButton", new Vector2(0f, -428f), tabSize, () => SwitchToTab(InteractionTab.Items));
+        questsTabButton = CreateTabHotspot(parent, "QuestsTabButton", new Vector2(240f, -428f), tabSize, () => SwitchToTab(InteractionTab.Quests));
+        scentTabButton = CreateTabHotspot(parent, "ScentTabButton", new Vector2(480f, -428f), tabSize, () => SwitchToTab(InteractionTab.Scent));
         RefreshTabHighlights();
     }
 
@@ -805,17 +795,17 @@ private enum InteractionTab
     private void RefreshTabHighlights()
     {
         if (socialTabHighlight != null)
-            socialTabHighlight.gameObject.SetActive(currentTab == InteractionTab.Social);
+            socialTabHighlight.gameObject.SetActive(sharedState.CurrentTab == InteractionTab.Social);
         if (questsTabHighlight != null)
-            questsTabHighlight.gameObject.SetActive(currentTab == InteractionTab.Quests);
+            questsTabHighlight.gameObject.SetActive(sharedState.CurrentTab == InteractionTab.Quests);
         if (packTabHighlight != null)
-            packTabHighlight.gameObject.SetActive(currentTab == InteractionTab.Pack);
+            packTabHighlight.gameObject.SetActive(sharedState.CurrentTab == InteractionTab.Pack);
         if (itemsTabHighlight != null)
-            itemsTabHighlight.gameObject.SetActive(currentTab == InteractionTab.Items);
+            itemsTabHighlight.gameObject.SetActive(sharedState.CurrentTab == InteractionTab.Items);
         if (scentTabHighlight != null)
-            scentTabHighlight.gameObject.SetActive(currentTab == InteractionTab.Scent);
+            scentTabHighlight.gameObject.SetActive(sharedState.CurrentTab == InteractionTab.Scent);
         if (titleLabel != null)
-            titleLabel.text = currentTab.ToString().ToUpperInvariant();
+            titleLabel.text = sharedState.CurrentTab.ToString().ToUpperInvariant();
         if (targetSelectionTypeLabel != null)
             targetSelectionTypeLabel.text = GetTargetSelectionTypeLabel();
     }
@@ -851,7 +841,7 @@ private enum InteractionTab
 
     private void BuildPlayerAgentOptions()
     {
-        WorldObject previousSelection = GetSelectedFromList(playerAgentOptions, ref selectedPlayerAgentIndex);
+        WorldObject previousSelection = GetSelectedFromList(playerAgentOptions, ref sharedState.SelectedPlayerAgentIndex);
         playerAgentOptions.Clear();
 
         Pack playerPack = Dir.Instance != null ? Dir.Instance.playerPack : null;
@@ -870,13 +860,13 @@ private enum InteractionTab
         if (playerAgentOptions.Count == 0 && packLeader != null)
             playerAgentOptions.Add(packLeader);
 
-        KeepSelectedObject(playerAgentOptions, previousSelection, ref selectedPlayerAgentIndex);
+        KeepSelectedObject(playerAgentOptions, previousSelection, ref sharedState.SelectedPlayerAgentIndex);
     }
 
     private void ClearPendingSelections()
     {
-        pendingLeftAgentSelection = null;
-        pendingRightAgentSelection = null;
+        sharedState.PendingLeftAgentSelection = null;
+        sharedState.PendingRightAgentSelection = null;
     }
 
     private float GetMaxDialogScaleForScreenWidth()
@@ -910,7 +900,7 @@ private enum InteractionTab
 
     private string GetTargetSelectionTypeLabel()
     {
-        return currentTab switch
+        return sharedState.CurrentTab switch
         {
             InteractionTab.Social => "Nearby Agent",
             InteractionTab.Pack => "Pack/Nearby",
@@ -1053,190 +1043,168 @@ private enum InteractionTab
 
     #region Input And Actions
 
-    private void OnSocialTabClicked()
+    private void SwitchToTab(InteractionTab tab)
     {
-        if (currentTab == InteractionTab.Social)
+        if (sharedState.CurrentTab == tab)
             return;
 
         PreserveCurrentAgentsForTabSwitch();
-        currentTab = InteractionTab.Social;
-        displayedSocialLeft = null;
-        displayedSocialRight = null;
+        sharedState.CurrentTab = tab;
+        ResetDisplayedStateForTab(tab);
         RefreshInteractionView(forcePreviewRefresh: true);
     }
 
-    private void OnQuestsTabClicked()
+    private void ResetDisplayedStateForTab(InteractionTab tab)
     {
-        if (currentTab == InteractionTab.Quests)
-            return;
-
-        PreserveCurrentAgentsForTabSwitch();
-        currentTab = InteractionTab.Quests;
-        displayedQuestLeft = null;
-        displayedQuestRight = null;
-        interactionQuestListDirty = true;
-        RefreshInteractionView(forcePreviewRefresh: true);
-    }
-
-    private void OnPackTabClicked()
-    {
-        if (currentTab == InteractionTab.Pack)
-            return;
-
-        PreserveCurrentAgentsForTabSwitch();
-        currentTab = InteractionTab.Pack;
-        displayedPackLeft = null;
-        displayedPackRight = null;
-        RefreshInteractionView(forcePreviewRefresh: true);
-    }
-
-    private void OnItemsTabClicked()
-    {
-        if (currentTab == InteractionTab.Items)
-            return;
-
-        PreserveCurrentAgentsForTabSwitch();
-        currentTab = InteractionTab.Items;
-        displayedPlayer = null;
-        displayedPlayerItem = null;
-        displayedTarget = null;
-        displayedTargetItem = null;
-        RefreshInteractionView(forcePreviewRefresh: true);
-    }
-
-    private void OnScentTabClicked()
-    {
-        if (currentTab == InteractionTab.Scent)
-            return;
-
-        PreserveCurrentAgentsForTabSwitch();
-        currentTab = InteractionTab.Scent;
-        displayedScentLeft = null;
-        displayedScentRight = null;
-        RefreshInteractionView(forcePreviewRefresh: true);
+        switch (tab)
+        {
+            case InteractionTab.Social:
+                socialState.DisplayedLeft = null;
+                socialState.DisplayedRight = null;
+                break;
+            case InteractionTab.Quests:
+                questsState.DisplayedLeft = null;
+                questsState.DisplayedRight = null;
+                questsState.InteractionQuestListDirty = true;
+                break;
+            case InteractionTab.Pack:
+                packState.DisplayedLeft = null;
+                packState.DisplayedRight = null;
+                break;
+            case InteractionTab.Items:
+                sharedState.DisplayedPlayer = null;
+                itemsState.DisplayedPlayerItem = null;
+                itemsState.DisplayedTarget = null;
+                itemsState.DisplayedTargetItem = null;
+                break;
+            case InteractionTab.Scent:
+                scentState.DisplayedLeft = null;
+                scentState.DisplayedRight = null;
+                break;
+        }
     }
 
     private void OnPreviousPlayerAgentClicked()
     {
-        if (currentTab == InteractionTab.Pack)
+        if (sharedState.CurrentTab == InteractionTab.Pack)
         {
             CyclePackLeftSelection(-1);
             return;
         }
 
-        if (currentTab == InteractionTab.Social)
+        if (sharedState.CurrentTab == InteractionTab.Social)
         {
             CycleSocialLeftSelection(-1);
             return;
         }
 
-        if (currentTab == InteractionTab.Quests)
+        if (sharedState.CurrentTab == InteractionTab.Quests)
         {
             CycleQuestLeftSelection(-1);
             return;
         }
 
-        if (currentTab == InteractionTab.Scent)
+        if (sharedState.CurrentTab == InteractionTab.Scent)
         {
             CycleScentLeftSelection(-1);
             return;
         }
 
-        CycleSelection(playerAgentOptions, ref selectedPlayerAgentIndex, -1);
-        selectedPlayerItemIndex = 0;
+        CycleSelection(playerAgentOptions, ref sharedState.SelectedPlayerAgentIndex, -1);
+        itemsState.SelectedPlayerItemIndex = 0;
         RefreshInteractionView(forcePreviewRefresh: true);
     }
 
     private void OnNextPlayerAgentClicked()
     {
-        if (currentTab == InteractionTab.Pack)
+        if (sharedState.CurrentTab == InteractionTab.Pack)
         {
             CyclePackLeftSelection(1);
             return;
         }
 
-        if (currentTab == InteractionTab.Social)
+        if (sharedState.CurrentTab == InteractionTab.Social)
         {
             CycleSocialLeftSelection(1);
             return;
         }
 
-        if (currentTab == InteractionTab.Quests)
+        if (sharedState.CurrentTab == InteractionTab.Quests)
         {
             CycleQuestLeftSelection(1);
             return;
         }
 
-        if (currentTab == InteractionTab.Scent)
+        if (sharedState.CurrentTab == InteractionTab.Scent)
         {
             CycleScentLeftSelection(1);
             return;
         }
 
-        CycleSelection(playerAgentOptions, ref selectedPlayerAgentIndex, 1);
-        selectedPlayerItemIndex = 0;
+        CycleSelection(playerAgentOptions, ref sharedState.SelectedPlayerAgentIndex, 1);
+        itemsState.SelectedPlayerItemIndex = 0;
         RefreshInteractionView(forcePreviewRefresh: true);
     }
 
     private void OnPreviousTargetAgentClicked()
     {
-        if (currentTab == InteractionTab.Pack)
+        if (sharedState.CurrentTab == InteractionTab.Pack)
         {
             CyclePackRightSelection(-1);
             return;
         }
 
-        if (currentTab == InteractionTab.Social)
+        if (sharedState.CurrentTab == InteractionTab.Social)
         {
             CycleSocialRightSelection(-1);
             return;
         }
 
-        if (currentTab == InteractionTab.Quests)
+        if (sharedState.CurrentTab == InteractionTab.Quests)
         {
             CycleQuestRightSelection(-1);
             return;
         }
 
-        if (currentTab == InteractionTab.Scent)
+        if (sharedState.CurrentTab == InteractionTab.Scent)
         {
             CycleScentRightSelection(-1);
             return;
         }
 
-        CycleSelection(targetAgentOptions, ref selectedTargetAgentIndex, -1);
-        selectedTargetItemIndex = 0;
+        CycleSelection(targetAgentOptions, ref itemsState.SelectedTargetAgentIndex, -1);
+        itemsState.SelectedTargetItemIndex = 0;
         RefreshInteractionView(forcePreviewRefresh: true);
     }
 
     private void OnNextTargetAgentClicked()
     {
-        if (currentTab == InteractionTab.Pack)
+        if (sharedState.CurrentTab == InteractionTab.Pack)
         {
             CyclePackRightSelection(1);
             return;
         }
 
-        if (currentTab == InteractionTab.Social)
+        if (sharedState.CurrentTab == InteractionTab.Social)
         {
             CycleSocialRightSelection(1);
             return;
         }
 
-        if (currentTab == InteractionTab.Quests)
+        if (sharedState.CurrentTab == InteractionTab.Quests)
         {
             CycleQuestRightSelection(1);
             return;
         }
 
-        if (currentTab == InteractionTab.Scent)
+        if (sharedState.CurrentTab == InteractionTab.Scent)
         {
             CycleScentRightSelection(1);
             return;
         }
 
-        CycleSelection(targetAgentOptions, ref selectedTargetAgentIndex, 1);
-        selectedTargetItemIndex = 0;
+        CycleSelection(targetAgentOptions, ref itemsState.SelectedTargetAgentIndex, 1);
+        itemsState.SelectedTargetItemIndex = 0;
         RefreshInteractionView(forcePreviewRefresh: true);
     }
 
@@ -1517,210 +1485,20 @@ private enum InteractionTab
 
     private void PreserveCurrentAgentsForTabSwitch()
     {
-        WorldObject leftAgent = displayedPlayer ?? displayedPackLeft ?? displayedSocialLeft ?? displayedQuestLeft ?? displayedScentLeft;
-        WorldObject rightAgent = displayedTarget ?? displayedPackRight ?? displayedSocialRight ?? displayedQuestRight ?? displayedScentRight;
+        WorldObject leftAgent = sharedState.DisplayedPlayer ?? packState.DisplayedLeft ?? socialState.DisplayedLeft ?? questsState.DisplayedLeft ?? scentState.DisplayedLeft;
+        WorldObject rightAgent = itemsState.DisplayedTarget ?? packState.DisplayedRight ?? socialState.DisplayedRight ?? questsState.DisplayedRight ?? scentState.DisplayedRight;
 
-        pendingLeftAgentSelection = leftAgent;
-        pendingRightAgentSelection = rightAgent;
+        sharedState.PendingLeftAgentSelection = leftAgent;
+        sharedState.PendingRightAgentSelection = rightAgent;
 
-        RememberSelection(playerAgentOptions, leftAgent, ref selectedPlayerAgentIndex);
-        RememberSelection(packMemberOptions, leftAgent, ref selectedPackLeftIndex);
-        RememberSelection(targetAgentOptions, rightAgent, ref selectedTargetAgentIndex);
-        RememberSelection(socialTargetOptions, rightAgent, ref selectedSocialTargetIndex);
-        RememberSelection(questTargetOptions, rightAgent, ref selectedQuestTargetIndex);
-        RememberSelection(scentTargetOptions, rightAgent, ref selectedScentTargetIndex);
-        RememberSelection(packRightOptions, rightAgent, ref selectedPackRightIndex);
+        RememberSelection(playerAgentOptions, leftAgent, ref sharedState.SelectedPlayerAgentIndex);
+        RememberSelection(packMemberOptions, leftAgent, ref packState.SelectedLeftIndex);
+        RememberSelection(targetAgentOptions, rightAgent, ref itemsState.SelectedTargetAgentIndex);
+        RememberSelection(socialTargetOptions, rightAgent, ref socialState.SelectedTargetIndex);
+        RememberSelection(questTargetOptions, rightAgent, ref questsState.SelectedTargetIndex);
+        RememberSelection(scentTargetOptions, rightAgent, ref scentState.SelectedTargetIndex);
+        RememberSelection(packRightOptions, rightAgent, ref packState.SelectedRightIndex);
     }
 
     #endregion
-}
-public static class InteractionDialogBootstrap
-{
-    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
-    private static void EnsureInteractionDialogExists()
-    {
-        if (UnityEngine.Object.FindFirstObjectByType<InteractionDialogUI>() != null)
-            return;
-
-        GameObject interactionDialogObject = new("InteractionDialogUI");
-        interactionDialogObject.AddComponent<InteractionDialogUI>();
-    }
-}
-
-sealed class InteractionDialogTooltipTrigger : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerMoveHandler
-{
-    private InteractionDialogUI owner;
-
-    public string TooltipText { get; private set; }
-
-    public void Initialize(InteractionDialogUI owner, string tooltipText)
-    {
-        this.owner = owner;
-        TooltipText = tooltipText;
-    }
-
-    public void OnPointerEnter(PointerEventData eventData)
-    {
-        owner?.ShowTooltip(this, eventData.position);
-    }
-
-    public void OnPointerMove(PointerEventData eventData)
-    {
-        owner?.MoveTooltip(this, eventData.position);
-    }
-
-    public void OnPointerExit(PointerEventData eventData)
-    {
-        owner?.HideTooltip(this);
-    }
-
-    private void OnDisable()
-    {
-        owner?.HideTooltip(this);
-    }
-}
-
-sealed class InteractionDialogInputBlocker :
-MonoBehaviour,
-IPointerDownHandler,
-IPointerClickHandler,
-IBeginDragHandler,
-IDragHandler,
-IScrollHandler
-{
-    public void OnPointerDown(PointerEventData eventData)
-    {
-    }
-
-    public void OnPointerClick(PointerEventData eventData)
-    {
-    }
-
-    public void OnBeginDrag(PointerEventData eventData)
-    {
-    }
-
-    public void OnDrag(PointerEventData eventData)
-    {
-    }
-
-    public void OnScroll(PointerEventData eventData)
-    {
-    }
-}
-
-sealed class InteractionDialogPackMemberRowClickTrigger : MonoBehaviour, IPointerClickHandler
-{
-    private InteractionDialogUI owner;
-    private int rowIndex;
-
-    public void Initialize(InteractionDialogUI owner, int rowIndex)
-    {
-        this.owner = owner;
-        this.rowIndex = rowIndex;
-    }
-
-    public void OnPointerClick(PointerEventData eventData)
-    {
-        if (eventData != null && eventData.button != PointerEventData.InputButton.Left)
-            return;
-
-        owner?.OnPackMemberListRowClicked(rowIndex);
-    }
-}
-
-sealed class InteractionDialogPackMemberListHitArea :
-MonoBehaviour,
-IPointerClickHandler,
-IBeginDragHandler,
-IDragHandler,
-IEndDragHandler,
-IScrollHandler
-{
-    private InteractionDialogUI owner;
-    private bool suppressNextClick;
-
-    public void Initialize(InteractionDialogUI owner)
-    {
-        this.owner = owner;
-    }
-
-    public void OnPointerClick(PointerEventData eventData)
-    {
-        if (eventData == null ||
-            eventData.button != PointerEventData.InputButton.Left)
-        {
-            return;
-        }
-
-        if (suppressNextClick)
-        {
-            suppressNextClick = false;
-            return;
-        }
-
-        owner?.SelectPackMemberListRowAtScreenPosition(eventData.position, eventData.pressEventCamera);
-    }
-
-    public void OnBeginDrag(PointerEventData eventData)
-    {
-        if (eventData == null)
-            return;
-
-        owner?.BeginPackMemberListDrag(eventData.position, eventData.pressEventCamera);
-    }
-
-    public void OnDrag(PointerEventData eventData)
-    {
-        if (eventData == null)
-            return;
-
-        suppressNextClick = true;
-        owner?.DragPackMemberList(eventData.position, eventData.pressEventCamera);
-    }
-
-    public void OnEndDrag(PointerEventData eventData)
-    {
-    }
-
-    public void OnScroll(PointerEventData eventData)
-    {
-        if (eventData == null)
-            return;
-
-        owner?.ScrollPackMemberList(eventData.scrollDelta);
-    }
-}
-
-sealed class InteractionDialogScentSourceListHitArea :
-MonoBehaviour,
-IPointerClickHandler,
-IBeginDragHandler,
-IDragHandler,
-IEndDragHandler,
-IScrollHandler
-{
-    public void Initialize(InteractionDialogUI owner)
-    {
-    }
-
-    public void OnPointerClick(PointerEventData eventData)
-    {
-    }
-
-    public void OnBeginDrag(PointerEventData eventData)
-    {
-    }
-
-    public void OnDrag(PointerEventData eventData)
-    {
-    }
-
-    public void OnEndDrag(PointerEventData eventData)
-    {
-    }
-
-    public void OnScroll(PointerEventData eventData)
-    {
-    }
 }

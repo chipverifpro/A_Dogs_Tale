@@ -19,16 +19,6 @@ public sealed partial class InteractionDialogUI : MonoBehaviour
 
     private const float SocialEmoteTileSize = 72f;
 
-    private int selectedSocialTargetIndex;
-
-    private WorldObject displayedSocialLeft;
-
-    private WorldObject displayedSocialRight;
-
-    private bool displayedSocialEmoteGridUsesHuman;
-
-    private bool displayedSocialEmoteGridInitialized;
-
     [SerializeField, Min(0f)] private float socialNearbyRadiusMultiplier = 2f;
 
     private readonly List<GameObject> socialEmoteGridTiles = new();
@@ -164,12 +154,12 @@ public sealed partial class InteractionDialogUI : MonoBehaviour
         SetItemSelectionTypeLabelsActive(false);
 
         BuildPlayerAgentOptions();
-        ApplyPendingSelection(playerAgentOptions, pendingLeftAgentSelection, ref selectedPlayerAgentIndex);
-        WorldObject leftMember = GetSelectedFromList(playerAgentOptions, ref selectedPlayerAgentIndex);
+        ApplyPendingSelection(playerAgentOptions, sharedState.PendingLeftAgentSelection, ref sharedState.SelectedPlayerAgentIndex);
+        WorldObject leftMember = GetSelectedFromList(playerAgentOptions, ref sharedState.SelectedPlayerAgentIndex);
         RefreshSocialEmoteGrid(leftMember);
         BuildSocialTargetOptions(leftMember);
-        ApplyPendingSelection(socialTargetOptions, pendingRightAgentSelection, ref selectedSocialTargetIndex);
-        WorldObject rightMember = GetSelectedFromList(socialTargetOptions, ref selectedSocialTargetIndex);
+        ApplyPendingSelection(socialTargetOptions, sharedState.PendingRightAgentSelection, ref socialState.SelectedTargetIndex);
+        WorldObject rightMember = GetSelectedFromList(socialTargetOptions, ref socialState.SelectedTargetIndex);
 
         RefreshCircleAndHotspot(playerPreviewSlot, playerAgentOptions.Count, previousPlayerAgentButton, nextPlayerAgentButton);
         RefreshCircleAndHotspot(targetPreviewSlot, socialTargetOptions.Count, previousTargetAgentButton, nextTargetAgentButton);
@@ -181,20 +171,20 @@ public sealed partial class InteractionDialogUI : MonoBehaviour
         SetLabelText(targetNameLabel, rightMember != null ? rightMember.DisplayName : string.Empty);
         SetLabelText(targetHeldItemLabel, string.Empty);
 
-        if (forcePreviewRefresh || leftMember != displayedSocialLeft)
+        if (forcePreviewRefresh || leftMember != socialState.DisplayedLeft)
             BuildPreviewClone(playerPreviewSlot, leftMember, "SocialLeft");
-        if (forcePreviewRefresh || rightMember != displayedSocialRight)
+        if (forcePreviewRefresh || rightMember != socialState.DisplayedRight)
             BuildPreviewClone(targetPreviewSlot, rightMember, "SocialRight");
 
         BuildPreviewClone(playerItemPreviewSlot, null, "SocialLeftItem");
         BuildPreviewClone(targetItemPreviewSlot, null, "SocialRightItem");
 
-        displayedSocialLeft = leftMember;
-        displayedSocialRight = rightMember;
-        displayedPlayer = leftMember;
-        displayedPlayerItem = null;
-        displayedTarget = rightMember;
-        displayedTargetItem = null;
+        socialState.DisplayedLeft = leftMember;
+        socialState.DisplayedRight = rightMember;
+        sharedState.DisplayedPlayer = leftMember;
+        itemsState.DisplayedPlayerItem = null;
+        itemsState.DisplayedTarget = rightMember;
+        itemsState.DisplayedTargetItem = null;
         ClearPendingSelections();
     }
 
@@ -214,12 +204,12 @@ public sealed partial class InteractionDialogUI : MonoBehaviour
             return;
 
         bool useHumanSet = leftMember != null && leftMember.species == Species.Human;
-        if (displayedSocialEmoteGridInitialized && displayedSocialEmoteGridUsesHuman == useHumanSet)
+        if (socialState.DisplayedEmoteGridInitialized && socialState.DisplayedEmoteGridUsesHuman == useHumanSet)
             return;
 
         ClearSocialEmoteGridTiles();
-        displayedSocialEmoteGridUsesHuman = useHumanSet;
-        displayedSocialEmoteGridInitialized = true;
+        socialState.DisplayedEmoteGridUsesHuman = useHumanSet;
+        socialState.DisplayedEmoteGridInitialized = true;
 
         if (useHumanSet)
         {
@@ -262,13 +252,13 @@ public sealed partial class InteractionDialogUI : MonoBehaviour
 
     private void BuildSocialTargetOptions(WorldObject player)
     {
-        WorldObject previousSelection = GetSelectedFromList(socialTargetOptions, ref selectedSocialTargetIndex);
+        WorldObject previousSelection = GetSelectedFromList(socialTargetOptions, ref socialState.SelectedTargetIndex);
         socialTargetOptions.Clear();
 
         WorldObjectRegistry registry = WorldObjectRegistry.Instance;
         if (player == null || registry == null)
         {
-            selectedSocialTargetIndex = 0;
+            socialState.SelectedTargetIndex = 0;
             return;
         }
 
@@ -304,7 +294,7 @@ public sealed partial class InteractionDialogUI : MonoBehaviour
                 return string.Compare(a.DisplayName, b.DisplayName, System.StringComparison.OrdinalIgnoreCase);
         });
 
-        KeepSelectedObject(socialTargetOptions, previousSelection, ref selectedSocialTargetIndex);
+        KeepSelectedObject(socialTargetOptions, previousSelection, ref socialState.SelectedTargetIndex);
     }
 
     private static Sprite GetDogEmoteSprite(DogEmojiEntry entry)
@@ -335,7 +325,7 @@ public sealed partial class InteractionDialogUI : MonoBehaviour
 
     private void HandleSocialDogEmoteClicked(DogEmojiEntry entry)
     {
-        WorldObject actor = GetSelectedFromList(playerAgentOptions, ref selectedPlayerAgentIndex);
+        WorldObject actor = GetSelectedFromList(playerAgentOptions, ref sharedState.SelectedPlayerAgentIndex);
         if (actor == null)
             return;
 
@@ -344,7 +334,7 @@ public sealed partial class InteractionDialogUI : MonoBehaviour
 
     private void HandleSocialHumanEmoteClicked(int spriteIndex)
     {
-        WorldObject actor = GetSelectedFromList(playerAgentOptions, ref selectedPlayerAgentIndex);
+        WorldObject actor = GetSelectedFromList(playerAgentOptions, ref sharedState.SelectedPlayerAgentIndex);
         if (actor == null)
             return;
 
@@ -359,20 +349,20 @@ public sealed partial class InteractionDialogUI : MonoBehaviour
         if (playerAgentOptions.Count <= 1)
             return;
 
-        CycleSelection(playerAgentOptions, ref selectedPlayerAgentIndex, direction);
-        selectedSocialTargetIndex = 0;
+        CycleSelection(playerAgentOptions, ref sharedState.SelectedPlayerAgentIndex, direction);
+        socialState.SelectedTargetIndex = 0;
         RefreshInteractionView(forcePreviewRefresh: true);
     }
 
     private void CycleSocialRightSelection(int direction)
     {
         BuildPlayerAgentOptions();
-        WorldObject player = GetSelectedFromList(playerAgentOptions, ref selectedPlayerAgentIndex);
+        WorldObject player = GetSelectedFromList(playerAgentOptions, ref sharedState.SelectedPlayerAgentIndex);
         BuildSocialTargetOptions(player);
         if (socialTargetOptions.Count <= 1)
             return;
 
-        CycleSelection(socialTargetOptions, ref selectedSocialTargetIndex, direction);
+        CycleSelection(socialTargetOptions, ref socialState.SelectedTargetIndex, direction);
         RefreshInteractionView(forcePreviewRefresh: true);
     }
 

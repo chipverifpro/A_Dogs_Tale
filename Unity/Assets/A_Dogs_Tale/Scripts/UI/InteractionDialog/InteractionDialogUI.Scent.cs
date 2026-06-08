@@ -29,20 +29,6 @@ public sealed partial class InteractionDialogUI : MonoBehaviour
 
     private Vector2 scentSourceListPointerDownPosition;
 
-    private int displayedScentSourceListSelectedIndex = -1;
-
-    private int displayedScentSourceListOptionCount = -1;
-
-    private WorldObject displayedScentSourceListFirst;
-
-    private WorldObject displayedScentSourceListLast;
-
-    private int selectedScentTargetIndex;
-
-    private WorldObject displayedScentLeft;
-
-    private WorldObject displayedScentRight;
-
     private readonly List<Image> scentSourceListBackgrounds = new();
 
     private readonly List<WorldObject> scentTargetOptions = new();
@@ -152,7 +138,7 @@ public sealed partial class InteractionDialogUI : MonoBehaviour
         layoutElement.minHeight = PackMemberListRowHeight;
 
         Image background = rowObject.AddComponent<Image>();
-        background.color = GetScentSourceListRowColor(index == selectedScentTargetIndex);
+        background.color = GetScentSourceListRowColor(index == scentState.SelectedTargetIndex);
         background.raycastTarget = true;
 
         GameObject labelObject = CreateUIObject("Label", rowObject.transform);
@@ -195,11 +181,11 @@ public sealed partial class InteractionDialogUI : MonoBehaviour
         SetItemSelectionTypeLabelsActive(false);
 
         BuildPlayerAgentOptions();
-        ApplyPendingSelection(playerAgentOptions, pendingLeftAgentSelection, ref selectedPlayerAgentIndex);
-        WorldObject leftMember = GetSelectedFromList(playerAgentOptions, ref selectedPlayerAgentIndex);
+        ApplyPendingSelection(playerAgentOptions, sharedState.PendingLeftAgentSelection, ref sharedState.SelectedPlayerAgentIndex);
+        WorldObject leftMember = GetSelectedFromList(playerAgentOptions, ref sharedState.SelectedPlayerAgentIndex);
         BuildScentTargetOptions(leftMember);
-        ApplyPendingSelection(scentTargetOptions, pendingRightAgentSelection, ref selectedScentTargetIndex);
-        WorldObject rightMember = GetSelectedFromList(scentTargetOptions, ref selectedScentTargetIndex);
+        ApplyPendingSelection(scentTargetOptions, sharedState.PendingRightAgentSelection, ref scentState.SelectedTargetIndex);
+        WorldObject rightMember = GetSelectedFromList(scentTargetOptions, ref scentState.SelectedTargetIndex);
         RefreshScentSourceList();
 
         RefreshCircleAndHotspot(playerPreviewSlot, playerAgentOptions.Count, previousPlayerAgentButton, nextPlayerAgentButton);
@@ -212,20 +198,20 @@ public sealed partial class InteractionDialogUI : MonoBehaviour
         SetLabelText(targetNameLabel, rightMember != null ? rightMember.DisplayName : string.Empty);
         SetLabelText(targetHeldItemLabel, string.Empty);
 
-        if (forcePreviewRefresh || leftMember != displayedScentLeft)
+        if (forcePreviewRefresh || leftMember != scentState.DisplayedLeft)
             BuildPreviewClone(playerPreviewSlot, leftMember, "ScentLeft");
-        if (forcePreviewRefresh || rightMember != displayedScentRight)
+        if (forcePreviewRefresh || rightMember != scentState.DisplayedRight)
             BuildPreviewClone(targetPreviewSlot, rightMember, "ScentRight");
 
         BuildPreviewClone(playerItemPreviewSlot, null, "ScentLeftItem");
         BuildPreviewClone(targetItemPreviewSlot, null, "ScentRightItem");
 
-        displayedScentLeft = leftMember;
-        displayedScentRight = rightMember;
-        displayedPlayer = leftMember;
-        displayedPlayerItem = null;
-        displayedTarget = rightMember;
-        displayedTargetItem = null;
+        scentState.DisplayedLeft = leftMember;
+        scentState.DisplayedRight = rightMember;
+        sharedState.DisplayedPlayer = leftMember;
+        itemsState.DisplayedPlayerItem = null;
+        itemsState.DisplayedTarget = rightMember;
+        itemsState.DisplayedTargetItem = null;
         ClearPendingSelections();
     }
 
@@ -245,13 +231,13 @@ public sealed partial class InteractionDialogUI : MonoBehaviour
             return;
 
         bool listChanged = HasScentSourceListChanged();
-        bool selectionChanged = displayedScentSourceListSelectedIndex != selectedScentTargetIndex;
+        bool selectionChanged = scentState.DisplayedSourceListSelectedIndex != scentState.SelectedTargetIndex;
         if (!listChanged)
         {
             RefreshScentSourceListHighlights();
             if (selectionChanged)
                 ScrollScentSourceListToSelection();
-            displayedScentSourceListSelectedIndex = selectedScentTargetIndex;
+            scentState.DisplayedSourceListSelectedIndex = scentState.SelectedTargetIndex;
             return;
         }
 
@@ -279,18 +265,18 @@ public sealed partial class InteractionDialogUI : MonoBehaviour
     {
         WorldObject first = scentTargetOptions.Count > 0 ? scentTargetOptions[0] : null;
         WorldObject last = scentTargetOptions.Count > 0 ? scentTargetOptions[^1] : null;
-        return displayedScentSourceListOptionCount != scentTargetOptions.Count ||
-        displayedScentSourceListFirst != first ||
-        displayedScentSourceListLast != last ||
+        return scentState.DisplayedSourceListOptionCount != scentTargetOptions.Count ||
+        scentState.DisplayedSourceListFirst != first ||
+        scentState.DisplayedSourceListLast != last ||
         scentSourceListBackgrounds.Count != scentTargetOptions.Count;
     }
 
     private void RememberDisplayedScentSourceListState()
     {
-        displayedScentSourceListSelectedIndex = selectedScentTargetIndex;
-        displayedScentSourceListOptionCount = scentTargetOptions.Count;
-        displayedScentSourceListFirst = scentTargetOptions.Count > 0 ? scentTargetOptions[0] : null;
-        displayedScentSourceListLast = scentTargetOptions.Count > 0 ? scentTargetOptions[^1] : null;
+        scentState.DisplayedSourceListSelectedIndex = scentState.SelectedTargetIndex;
+        scentState.DisplayedSourceListOptionCount = scentTargetOptions.Count;
+        scentState.DisplayedSourceListFirst = scentTargetOptions.Count > 0 ? scentTargetOptions[0] : null;
+        scentState.DisplayedSourceListLast = scentTargetOptions.Count > 0 ? scentTargetOptions[^1] : null;
     }
 
     private void ClearScentSourceListRows()
@@ -302,7 +288,7 @@ public sealed partial class InteractionDialogUI : MonoBehaviour
     private void RefreshScentSourceListHighlights()
     {
         for (int i = 0; i < scentSourceListBackgrounds.Count; i++)
-            scentSourceListBackgrounds[i].color = GetScentSourceListRowColor(i == selectedScentTargetIndex);
+            scentSourceListBackgrounds[i].color = GetScentSourceListRowColor(i == scentState.SelectedTargetIndex);
     }
 
     private void ScrollScentSourceListToSelection()
@@ -311,7 +297,7 @@ public sealed partial class InteractionDialogUI : MonoBehaviour
             scentSourceListScrollRect,
             scentSourceListContentRect,
             scentSourceListScrollRect != null ? scentSourceListScrollRect.viewport : null,
-            selectedScentTargetIndex,
+            scentState.SelectedTargetIndex,
             scentTargetOptions.Count);
     }
 
@@ -340,13 +326,13 @@ public sealed partial class InteractionDialogUI : MonoBehaviour
 
     private void BuildScentTargetOptions(WorldObject player)
     {
-        WorldObject previousSelection = GetSelectedFromList(scentTargetOptions, ref selectedScentTargetIndex);
+        WorldObject previousSelection = GetSelectedFromList(scentTargetOptions, ref scentState.SelectedTargetIndex);
         scentTargetOptions.Clear();
 
         WorldObjectRegistry registry = WorldObjectRegistry.Instance;
         if (player == null || registry == null)
         {
-            selectedScentTargetIndex = 0;
+            scentState.SelectedTargetIndex = 0;
             return;
         }
 
@@ -374,7 +360,7 @@ public sealed partial class InteractionDialogUI : MonoBehaviour
                 return string.Compare(a.DisplayName, b.DisplayName, System.StringComparison.OrdinalIgnoreCase);
         });
 
-        KeepSelectedObject(scentTargetOptions, previousSelection, ref selectedScentTargetIndex);
+        KeepSelectedObject(scentTargetOptions, previousSelection, ref scentState.SelectedTargetIndex);
     }
 
     private static Color GetScentSourceListRowColor(bool selected)
@@ -452,14 +438,14 @@ public sealed partial class InteractionDialogUI : MonoBehaviour
             return;
 
         AudioPlayer.PlayUiButtonClick();
-        pendingRightAgentSelection = scentTargetOptions[index];
-        selectedScentTargetIndex = index;
+        sharedState.PendingRightAgentSelection = scentTargetOptions[index];
+        scentState.SelectedTargetIndex = index;
         RefreshInteractionView(forcePreviewRefresh: true);
     }
 
     private void HandleScentSourceListPointerInput()
     {
-        if (currentTab != InteractionTab.Scent ||
+        if (sharedState.CurrentTab != InteractionTab.Scent ||
             scentSourceListRect == null ||
             scentSourceListContentRect == null ||
             Mouse.current == null)
@@ -508,20 +494,20 @@ public sealed partial class InteractionDialogUI : MonoBehaviour
         if (playerAgentOptions.Count <= 1)
             return;
 
-        CycleSelection(playerAgentOptions, ref selectedPlayerAgentIndex, direction);
-        selectedScentTargetIndex = 0;
+        CycleSelection(playerAgentOptions, ref sharedState.SelectedPlayerAgentIndex, direction);
+        scentState.SelectedTargetIndex = 0;
         RefreshInteractionView(forcePreviewRefresh: true);
     }
 
     private void CycleScentRightSelection(int direction)
     {
         BuildPlayerAgentOptions();
-        WorldObject player = GetSelectedFromList(playerAgentOptions, ref selectedPlayerAgentIndex);
+        WorldObject player = GetSelectedFromList(playerAgentOptions, ref sharedState.SelectedPlayerAgentIndex);
         BuildScentTargetOptions(player);
         if (scentTargetOptions.Count <= 1)
             return;
 
-        CycleSelection(scentTargetOptions, ref selectedScentTargetIndex, direction);
+        CycleSelection(scentTargetOptions, ref scentState.SelectedTargetIndex, direction);
         RefreshInteractionView(forcePreviewRefresh: true);
     }
 
