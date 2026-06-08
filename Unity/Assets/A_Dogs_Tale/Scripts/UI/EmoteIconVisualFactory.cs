@@ -8,6 +8,7 @@ public static class EmoteIconVisualFactory
     const float DefaultSize = 0.9f;
     const float DefaultThickness = 0.04f;
     const float DefaultLifetimeSeconds = 10f;
+    const float DefaultTopPadding = 0.12f;
 
     static readonly Vector3 DefaultLocalOffset = new(0f, 1.35f, 0f);
     static readonly Vector3 DefaultSpinDegreesPerSecond = new(0f, 180f, 0f);
@@ -29,6 +30,19 @@ public static class EmoteIconVisualFactory
     public static GameObject Show(WorldObject agent, Sprite sprite)
     {
         return agent != null ? Show(agent.transform, sprite) : null;
+    }
+
+    public static GameObject ShowOverhead(WorldObject agent, Sprite sprite, float size = DefaultSize, string instanceName = InstanceName)
+    {
+        if (agent == null)
+            return null;
+
+        return Show(
+            agent.transform,
+            sprite,
+            localOffset: GetOverheadLocalOffset(agent, size),
+            size: size,
+            instanceName: instanceName);
     }
 
     public static GameObject Show(
@@ -74,6 +88,25 @@ public static class EmoteIconVisualFactory
         return iconObject;
     }
 
+    public static Vector3 GetOverheadLocalOffset(WorldObject target, float iconSize = DefaultSize, float topPadding = DefaultTopPadding)
+    {
+        if (target == null)
+            return DefaultLocalOffset;
+
+        if (!TryGetRenderableBounds(target, out Bounds bounds))
+            return DefaultLocalOffset;
+
+        float iconCenterY = bounds.max.y + (Mathf.Max(0.01f, iconSize) * 0.5f) + topPadding;
+        Vector3 localOffset = target.transform.InverseTransformPoint(new Vector3(
+            target.transform.position.x,
+            iconCenterY,
+            target.transform.position.z));
+
+        localOffset.x = 0f;
+        localOffset.z = 0f;
+        return localOffset;
+    }
+
     public static void Hide(Transform anchor, string instanceName = InstanceName)
     {
         if (anchor == null)
@@ -85,6 +118,35 @@ public static class EmoteIconVisualFactory
 
         existing.gameObject.SetActive(false);
         Object.Destroy(existing.gameObject);
+    }
+
+    static bool TryGetRenderableBounds(WorldObject target, out Bounds bounds)
+    {
+        bounds = default;
+        if (target == null)
+            return false;
+
+        Renderer[] renderers = target.GetComponentsInChildren<Renderer>(includeInactive: false);
+        bool hasBounds = false;
+
+        for (int i = 0; i < renderers.Length; i++)
+        {
+            Renderer renderer = renderers[i];
+            if (renderer == null || !renderer.enabled || renderer.GetComponentInParent<EmoteIconSpinner>() != null)
+                continue;
+
+            if (!hasBounds)
+            {
+                bounds = renderer.bounds;
+                hasBounds = true;
+            }
+            else
+            {
+                bounds.Encapsulate(renderer.bounds);
+            }
+        }
+
+        return hasBounds;
     }
 
     static Mesh CreateSquareCardMesh(Sprite sprite, float size, float thickness)

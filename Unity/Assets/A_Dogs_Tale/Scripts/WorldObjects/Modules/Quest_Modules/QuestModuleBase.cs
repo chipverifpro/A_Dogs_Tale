@@ -39,7 +39,6 @@ namespace DogGame.Modules
         private const string QuestAvailableIconSpriteSheet = "Sprites/AndroidButtonsAndQuests_B";
         private const int QuestAvailableIconSpriteIndex = 1;
         private const float QuestOverheadIconSize = 0.9f;
-        private const float QuestOverheadIconTopPadding = 0.12f;
 
         public static IReadOnlyList<QuestModuleBase> KnownQuestModules => KnownQuestModulesMutable;
 
@@ -298,50 +297,7 @@ namespace DogGame.Modules
 
         private static Vector3 GetQuestIconLocalOffset(WorldObject target)
         {
-            if (target == null)
-                return new Vector3(0f, 1.35f, 0f);
-
-            if (!TryGetRenderableBounds(target, out Bounds bounds))
-                return new Vector3(0f, 1.35f, 0f);
-
-            float iconCenterY = bounds.max.y + (QuestOverheadIconSize * 0.5f) + QuestOverheadIconTopPadding;
-            Vector3 localOffset = target.transform.InverseTransformPoint(new Vector3(
-                target.transform.position.x,
-                iconCenterY,
-                target.transform.position.z));
-
-            localOffset.x = 0f;
-            localOffset.z = 0f;
-            return localOffset;
-        }
-
-        private static bool TryGetRenderableBounds(WorldObject target, out Bounds bounds)
-        {
-            bounds = default;
-            if (target == null)
-                return false;
-
-            Renderer[] renderers = target.GetComponentsInChildren<Renderer>(includeInactive: false);
-            bool hasBounds = false;
-
-            for (int i = 0; i < renderers.Length; i++)
-            {
-                Renderer renderer = renderers[i];
-                if (renderer == null || !renderer.enabled || renderer.GetComponentInParent<EmoteIconSpinner>() != null)
-                    continue;
-
-                if (!hasBounds)
-                {
-                    bounds = renderer.bounds;
-                    hasBounds = true;
-                }
-                else
-                {
-                    bounds.Encapsulate(renderer.bounds);
-                }
-            }
-
-            return hasBounds;
+            return EmoteIconVisualFactory.GetOverheadLocalOffset(target, QuestOverheadIconSize);
         }
 
         private static string FormatQuestStateName(string stateName)
