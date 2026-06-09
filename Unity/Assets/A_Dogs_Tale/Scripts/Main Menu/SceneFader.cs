@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
@@ -44,14 +45,63 @@ public class SceneFader : MonoBehaviour
     bool isTitleOverlayVisible = true;
     bool isTransitioning;
     bool hasGameStarted;
+    bool isReviewingSplashScreens;
+    int currentSplashIndex = 1;
+    List<SplashAdjust> splashAdjustments;
+    RectTransform splashTitleLargeRect;
+    RectTransform splashTitleSmallRect;
+    readonly List<RectTransform> splashTitleLargeChildRects = new();
+    readonly List<RectTransform> splashTitleSmallChildRects = new();
+    RectTransform buildingMessageRect;
+    RectTransform buildingMessageTextRect;
+    RectTransform buildingMessageOutlineRect;
+    bool hasCapturedSplashAdjustmentDefaults;
+    RectTransformPositionState defaultSplashTitleLargeState;
+    RectTransformPositionState defaultSplashTitleSmallState;
+    readonly List<RectTransformPositionState> defaultSplashTitleLargeChildStates = new();
+    readonly List<RectTransformPositionState> defaultSplashTitleSmallChildStates = new();
+    RectTransformPositionState defaultBuildingMessageState;
+    RectTransformPositionState defaultBuildingMessageTextState;
+    RectTransformPositionState defaultBuildingMessageOutlineState;
 
     public bool IsTitleOverlayVisible => isTitleOverlayVisible;
+    public bool IsReviewingSplashScreens => isReviewingSplashScreens;
 
     private enum SplashOrientation
     {
         Horizontal,
         Vertical,
         Square
+    }
+
+    private sealed class SplashAdjust
+    {
+        public int imageNum;
+        public Vector2 titlePos = new(0.5f, 0.2f);
+        public Vector2 messagePos = new(0.5f, 0.85f);
+
+        public SplashAdjust(int imageNum)
+        {
+            this.imageNum = imageNum;
+        }
+
+        public SplashAdjust(int imageNum, Vector2 titlePos, Vector2 messagePos)
+        {
+            this.imageNum = imageNum;
+            this.titlePos = titlePos;
+            this.messagePos = messagePos;
+        }
+    }
+
+    private struct RectTransformPositionState
+    {
+        public Vector2 anchorMin;
+        public Vector2 anchorMax;
+        public Vector2 pivot;
+        public Vector2 anchoredPosition;
+        public Vector2 sizeDelta;
+        public Vector2 offsetMin;
+        public Vector2 offsetMax;
     }
 
     void Awake()
@@ -85,6 +135,16 @@ public class SceneFader : MonoBehaviour
             }
         }
 
+        splashAdjustments = new List<SplashAdjust>
+        {
+            // Example: duplicate this line and edit imageNum/titlePos/messagePos for each picture.
+            new SplashAdjust(imageNum: 1, titlePos: new Vector2(0.5f, 0.2f), messagePos: new Vector2(0.5f, 0.85f)),
+            new SplashAdjust(imageNum: 2, titlePos: new Vector2(0.5f, 0.85f), messagePos: new Vector2(0.5f, 0.5f)),
+            new SplashAdjust(imageNum: 3, titlePos: new Vector2(0.0f, 0.0f), messagePos: new Vector2(1f, 1f)),
+            new SplashAdjust(imageNum: 66, titlePos: new Vector2(0.5f, 0.5f), messagePos: new Vector2(0.5f, 0.75f)),
+            
+        };
+
         SetupTitleSFX();    // configure music and SFX
 
         StartCoroutine(ShowInitialMenu());
@@ -97,6 +157,12 @@ public class SceneFader : MonoBehaviour
 
     void Update()
     {
+        if (isReviewingSplashScreens)
+        {
+            UpdateSplashScreenReviewInput();
+            return;
+        }
+
         if (!hasGameStarted || isTransitioning || isTitleOverlayVisible)
             return;
 
@@ -168,9 +234,22 @@ public class SceneFader : MonoBehaviour
     [SerializeField] private int splashCount = 40;
     [Tooltip("Screen aspect ratios above this are horizontal, below its inverse are vertical, and between them are treated as square.")]
     [SerializeField] private float splashOrientationAspectThreshold = 1.2f;
+    [SerializeField] private Vector2 splashReviewIndexLabelOffset = new Vector2(16f, 12f);
+    [SerializeField] private int splashReviewIndexLabelFontSize = 18;
+    [SerializeField] private int splashMessageAssumedLineCount = 2;
+    [SerializeField] private float splashMessageLineHeightMultiplier = 1.25f;
+    [SerializeField] private float splashMessageEdgePadding = 8f;
+
+    private TMPro.TMP_Text splashReviewIndexLabel;
 
     // Call this right before you display the splash.
     private void SetRandomSplashSprite()
+    {
+        int chosenIndex = Random.Range(1, splashCount + 1); // inclusive 1..10
+        SetSplashSprite(chosenIndex);
+    }
+
+    private void SetSplashSprite(int index)
     {
         if (splashImage == null)
         {
@@ -178,8 +257,8 @@ public class SceneFader : MonoBehaviour
             return;
         }
 
-        int chosenIndex = Random.Range(1, splashCount + 1); // inclusive 1..10
-        string resourcePath = $"{splashResourceFolder}/SplashScreen{chosenIndex}";
+        currentSplashIndex = WrapSplashIndex(index);
+        string resourcePath = $"{splashResourceFolder}/SplashScreen{currentSplashIndex}";
 
         Sprite loadedSprite = LoadSplashSpriteForCurrentScreen(resourcePath);
         if (loadedSprite == null)
@@ -191,9 +270,21 @@ public class SceneFader : MonoBehaviour
 
         splashImage.sprite = loadedSprite;
         ApplySplashCoverLayout(loadedSprite);
+        ApplySplashAdjustmentForCurrentImage();
+        UpdateSplashReviewIndexLabel();
 
         // Optional: if you want the Image to match the sprite’s native size
         // splashImage.SetNativeSize();
+    }
+
+    private int WrapSplashIndex(int index)
+    {
+        int count = Mathf.Max(1, splashCount);
+        while (index < 1)
+            index += count;
+        while (index > count)
+            index -= count;
+        return index;
     }
 
     private Sprite LoadSplashSpriteForCurrentScreen(string resourcePath)
@@ -307,6 +398,342 @@ public class SceneFader : MonoBehaviour
         imageRect.sizeDelta = spriteAspect > parentAspect
             ? new Vector2(parentHeight * spriteAspect, parentHeight)
             : new Vector2(parentWidth, parentWidth / spriteAspect);
+    }
+
+    void ApplySplashAdjustmentForCurrentImage()
+    {
+        ResolveSplashAdjustmentTargets();
+        CaptureSplashAdjustmentDefaultsIfNeeded();
+
+        if (!TryGetSplashAdjustment(currentSplashIndex, out SplashAdjust adjustment))
+        {
+            RestoreSplashAdjustmentDefaults();
+            return;
+        }
+
+        ApplyTitleScreenPercentPosition(splashTitleLargeRect, splashTitleLargeChildRects, adjustment.titlePos);
+        ApplyTitleScreenPercentPosition(splashTitleSmallRect, splashTitleSmallChildRects, adjustment.titlePos);
+        ApplyMessageScreenPercentPosition(adjustment.messagePos);
+    }
+
+    bool TryGetSplashAdjustment(int imageNum, out SplashAdjust adjustment)
+    {
+        if (splashAdjustments != null)
+        {
+            for (int i = 0; i < splashAdjustments.Count; i++)
+            {
+                SplashAdjust candidate = splashAdjustments[i];
+                if (candidate != null && candidate.imageNum == imageNum)
+                {
+                    adjustment = candidate;
+                    return true;
+                }
+            }
+        }
+
+        adjustment = null;
+        return false;
+    }
+
+    void ResolveSplashAdjustmentTargets()
+    {
+        if (splashTitleLargeRect == null)
+        {
+            Transform titleTransform = splashCanvasGroup != null
+                ? splashCanvasGroup.transform.Find("GameTitle Large")
+                : null;
+            if (titleTransform != null)
+                splashTitleLargeRect = titleTransform.GetComponent<RectTransform>();
+        }
+
+        if (splashTitleSmallRect == null)
+        {
+            Transform titleTransform = splashCanvasGroup != null
+                ? splashCanvasGroup.transform.Find("GameTitle Small")
+                : null;
+            if (titleTransform != null)
+                splashTitleSmallRect = titleTransform.GetComponent<RectTransform>();
+        }
+        CacheDirectChildRectTransforms(splashTitleLargeRect, splashTitleLargeChildRects);
+        CacheDirectChildRectTransforms(splashTitleSmallRect, splashTitleSmallChildRects);
+
+        ResolveBuildingMessage();
+        if (buildingMessageRect == null && buildingMessage != null)
+            buildingMessageRect = buildingMessage.GetComponent<RectTransform>();
+        if (buildingMessageTextRect == null && buildingMessageText != null)
+            buildingMessageTextRect = buildingMessageText.rectTransform;
+        if (buildingMessageOutlineRect == null && buildingMessageOutlineText != null)
+            buildingMessageOutlineRect = buildingMessageOutlineText.rectTransform;
+    }
+
+    void CaptureSplashAdjustmentDefaultsIfNeeded()
+    {
+        if (hasCapturedSplashAdjustmentDefaults)
+            return;
+
+        defaultSplashTitleLargeState = CaptureRectTransformPositionState(splashTitleLargeRect);
+        defaultSplashTitleSmallState = CaptureRectTransformPositionState(splashTitleSmallRect);
+        CaptureRectTransformPositionStates(splashTitleLargeChildRects, defaultSplashTitleLargeChildStates);
+        CaptureRectTransformPositionStates(splashTitleSmallChildRects, defaultSplashTitleSmallChildStates);
+        defaultBuildingMessageState = CaptureRectTransformPositionState(buildingMessageRect);
+        defaultBuildingMessageTextState = CaptureRectTransformPositionState(buildingMessageTextRect);
+        defaultBuildingMessageOutlineState = CaptureRectTransformPositionState(buildingMessageOutlineRect);
+        hasCapturedSplashAdjustmentDefaults = true;
+    }
+
+    void RestoreSplashAdjustmentDefaults()
+    {
+        RestoreRectTransformPositionState(splashTitleLargeRect, defaultSplashTitleLargeState);
+        RestoreRectTransformPositionState(splashTitleSmallRect, defaultSplashTitleSmallState);
+        RestoreRectTransformPositionStates(splashTitleLargeChildRects, defaultSplashTitleLargeChildStates);
+        RestoreRectTransformPositionStates(splashTitleSmallChildRects, defaultSplashTitleSmallChildStates);
+        RestoreRectTransformPositionState(buildingMessageRect, defaultBuildingMessageState);
+        RestoreRectTransformPositionState(buildingMessageTextRect, defaultBuildingMessageTextState);
+        RestoreRectTransformPositionState(buildingMessageOutlineRect, defaultBuildingMessageOutlineState);
+    }
+
+    static RectTransformPositionState CaptureRectTransformPositionState(RectTransform rectTransform)
+    {
+        if (rectTransform == null)
+            return default;
+
+        return new RectTransformPositionState
+        {
+            anchorMin = rectTransform.anchorMin,
+            anchorMax = rectTransform.anchorMax,
+            pivot = rectTransform.pivot,
+            anchoredPosition = rectTransform.anchoredPosition,
+            sizeDelta = rectTransform.sizeDelta,
+            offsetMin = rectTransform.offsetMin,
+            offsetMax = rectTransform.offsetMax
+        };
+    }
+
+    static void RestoreRectTransformPositionState(RectTransform rectTransform, RectTransformPositionState state)
+    {
+        if (rectTransform == null)
+            return;
+
+        rectTransform.anchorMin = state.anchorMin;
+        rectTransform.anchorMax = state.anchorMax;
+        rectTransform.pivot = state.pivot;
+        rectTransform.anchoredPosition = state.anchoredPosition;
+        rectTransform.sizeDelta = state.sizeDelta;
+        rectTransform.offsetMin = state.offsetMin;
+        rectTransform.offsetMax = state.offsetMax;
+    }
+
+    static void CaptureRectTransformPositionStates(List<RectTransform> rectTransforms, List<RectTransformPositionState> states)
+    {
+        states.Clear();
+        for (int i = 0; i < rectTransforms.Count; i++)
+            states.Add(CaptureRectTransformPositionState(rectTransforms[i]));
+    }
+
+    static void RestoreRectTransformPositionStates(List<RectTransform> rectTransforms, List<RectTransformPositionState> states)
+    {
+        int count = Mathf.Min(rectTransforms.Count, states.Count);
+        for (int i = 0; i < count; i++)
+            RestoreRectTransformPositionState(rectTransforms[i], states[i]);
+    }
+
+    static void ApplyScreenPercentPosition(RectTransform rectTransform, Vector2 position)
+    {
+        if (rectTransform == null)
+            return;
+
+        Vector2 normalizedAnchor = new Vector2(
+            Mathf.Clamp01(position.x),
+            1f - Mathf.Clamp01(position.y));
+
+        rectTransform.anchorMin = normalizedAnchor;
+        rectTransform.anchorMax = normalizedAnchor;
+        rectTransform.pivot = normalizedAnchor;
+        rectTransform.anchoredPosition = Vector2.zero;
+    }
+
+    static void ApplyScreenPercentPosition(RectTransform rectTransform, Vector2 position, Vector2 normalizedEdgeInset)
+    {
+        if (rectTransform == null)
+            return;
+
+        Vector2 clampedPosition = new Vector2(Mathf.Clamp01(position.x), Mathf.Clamp01(position.y));
+        float anchorX = Mathf.Lerp(normalizedEdgeInset.x, 1f - normalizedEdgeInset.x, clampedPosition.x);
+        float anchorYFromTop = Mathf.Lerp(normalizedEdgeInset.y, 1f - normalizedEdgeInset.y, clampedPosition.y);
+        Vector2 normalizedAnchor = new Vector2(anchorX, 1f - anchorYFromTop);
+        Vector2 pivot = new Vector2(clampedPosition.x, 1f - clampedPosition.y);
+
+        rectTransform.anchorMin = normalizedAnchor;
+        rectTransform.anchorMax = normalizedAnchor;
+        rectTransform.pivot = pivot;
+        rectTransform.anchoredPosition = Vector2.zero;
+    }
+
+    void ApplyMessageScreenPercentPosition(Vector2 position)
+    {
+        StretchRectToParent(buildingMessageRect);
+        ApplyTwoLineMessageSize(buildingMessageTextRect, buildingMessageText);
+        ApplyTwoLineMessageSize(buildingMessageOutlineRect, buildingMessageOutlineText);
+
+        Vector2 normalizedEdgeInset = GetMessageNormalizedEdgeInset();
+        ApplyScreenPercentPosition(buildingMessageTextRect, position, normalizedEdgeInset);
+        ApplyScreenPercentPosition(buildingMessageOutlineRect, position, normalizedEdgeInset);
+    }
+
+    void ApplyTwoLineMessageSize(RectTransform rectTransform, TMPro.TMP_Text text)
+    {
+        if (rectTransform == null || text == null)
+            return;
+
+        float lineCount = Mathf.Max(1, splashMessageAssumedLineCount);
+        float textHeight = text.fontSize * splashMessageLineHeightMultiplier * lineCount;
+        float targetHeight = textHeight + splashMessageEdgePadding * 2f;
+        Vector2 sizeDelta = rectTransform.sizeDelta;
+        sizeDelta.y = Mathf.Max(sizeDelta.y, targetHeight);
+        rectTransform.sizeDelta = sizeDelta;
+    }
+
+    Vector2 GetMessageNormalizedEdgeInset()
+    {
+        RectTransform parentRect = buildingMessageRect != null ? buildingMessageRect : splashCanvasGroup?.transform as RectTransform;
+        Vector2 parentSize = parentRect != null ? parentRect.rect.size : new Vector2(Screen.width, Screen.height);
+        float lineCount = Mathf.Max(1, splashMessageAssumedLineCount);
+        float fontSize = buildingMessageText != null ? buildingMessageText.fontSize : 24f;
+        float textHeight = fontSize * splashMessageLineHeightMultiplier * lineCount;
+        float verticalInset = textHeight * 0.5f + splashMessageEdgePadding;
+
+        return new Vector2(
+            parentSize.x > 0f ? splashMessageEdgePadding / parentSize.x : 0f,
+            parentSize.y > 0f ? verticalInset / parentSize.y : 0f);
+    }
+
+    static void ApplyTitleScreenPercentPosition(RectTransform titleRect, List<RectTransform> childRects, Vector2 position)
+    {
+        StretchRectToParent(titleRect);
+
+        if (childRects.Count == 0)
+        {
+            ApplyScreenPercentPosition(titleRect, position);
+            return;
+        }
+
+        for (int i = 0; i < childRects.Count; i++)
+            ApplyScreenPercentPosition(childRects[i], position);
+    }
+
+    static void StretchRectToParent(RectTransform rectTransform)
+    {
+        if (rectTransform == null)
+            return;
+
+        rectTransform.anchorMin = Vector2.zero;
+        rectTransform.anchorMax = Vector2.one;
+        rectTransform.pivot = new Vector2(0.5f, 0.5f);
+        rectTransform.offsetMin = Vector2.zero;
+        rectTransform.offsetMax = Vector2.zero;
+    }
+
+    static void CacheDirectChildRectTransforms(RectTransform parent, List<RectTransform> childRects)
+    {
+        if (parent == null || childRects.Count > 0)
+            return;
+
+        for (int i = 0; i < parent.childCount; i++)
+        {
+            if (parent.GetChild(i).TryGetComponent(out RectTransform childRect))
+                childRects.Add(childRect);
+        }
+    }
+
+    public void StartSplashScreenReview()
+    {
+        if (isTransitioning)
+            return;
+
+        ResolveBuildingMessage();
+        EnsureSplashReviewIndexLabel();
+        SetSplashMenuCameraEnabled(true);
+        SetRandomBuildingMessage();
+        SetBuildingMessageVisible(true);
+        SetSplashSprite(currentSplashIndex);
+        SetCanvasGroupState(menuCanvasGroup, 0f, false);
+        SetCanvasGroupState(splashCanvasGroup, 1f, true);
+
+        if (splashReviewIndexLabel != null)
+            splashReviewIndexLabel.gameObject.SetActive(true);
+
+        isReviewingSplashScreens = true;
+    }
+
+    void StopSplashScreenReview()
+    {
+        if (!isReviewingSplashScreens)
+            return;
+
+        isReviewingSplashScreens = false;
+        if (splashReviewIndexLabel != null)
+            splashReviewIndexLabel.gameObject.SetActive(false);
+
+        SetBuildingMessageVisible(false);
+        SetCanvasGroupState(splashCanvasGroup, 0f, false);
+        SetCanvasGroupState(menuCanvasGroup, 1f, true);
+        RefreshTitleMenuButtons();
+    }
+
+    void UpdateSplashScreenReviewInput()
+    {
+        Keyboard keyboard = Keyboard.current;
+        if (keyboard == null)
+            return;
+
+        if (keyboard.leftArrowKey.wasPressedThisFrame)
+        {
+            SetSplashSprite(currentSplashIndex - 1);
+            return;
+        }
+
+        if (keyboard.rightArrowKey.wasPressedThisFrame)
+        {
+            SetSplashSprite(currentSplashIndex + 1);
+            return;
+        }
+
+        if (keyboard.escapeKey.wasPressedThisFrame)
+            StopSplashScreenReview();
+    }
+
+    void EnsureSplashReviewIndexLabel()
+    {
+        if (splashReviewIndexLabel != null)
+            return;
+
+        Transform parent = splashCanvasGroup != null ? splashCanvasGroup.transform : transform;
+        GameObject labelObject = new GameObject("SplashReviewIndexLabel", typeof(RectTransform), typeof(TMPro.TextMeshProUGUI));
+        labelObject.transform.SetParent(parent, false);
+
+        RectTransform rect = labelObject.GetComponent<RectTransform>();
+        rect.anchorMin = Vector2.zero;
+        rect.anchorMax = Vector2.zero;
+        rect.pivot = Vector2.zero;
+        rect.anchoredPosition = splashReviewIndexLabelOffset;
+        rect.sizeDelta = new Vector2(160f, 36f);
+
+        splashReviewIndexLabel = labelObject.GetComponent<TMPro.TextMeshProUGUI>();
+        splashReviewIndexLabel.fontSize = splashReviewIndexLabelFontSize;
+        splashReviewIndexLabel.alignment = TMPro.TextAlignmentOptions.BottomLeft;
+        splashReviewIndexLabel.color = new Color(1f, 1f, 1f, 0.9f);
+        splashReviewIndexLabel.raycastTarget = false;
+        splashReviewIndexLabel.gameObject.SetActive(false);
+        splashReviewIndexLabel.transform.SetAsLastSibling();
+    }
+
+    void UpdateSplashReviewIndexLabel()
+    {
+        if (splashReviewIndexLabel == null)
+            return;
+
+        splashReviewIndexLabel.text = $"{currentSplashIndex}/{Mathf.Max(1, splashCount)}";
+        splashReviewIndexLabel.transform.SetAsLastSibling();
     }
 
     private IEnumerator ShowInitialMenu()
@@ -632,10 +1059,6 @@ public class SceneFader : MonoBehaviour
             Transform child = parent.GetChild(i);
             if (child.name == childName && child.TryGetComponent(out TMPro.TMP_Text text))
                 return text;
-
-            TMPro.TMP_Text nestedText = FindTMPTextChild(child, childName);
-            if (nestedText != null)
-                return nestedText;
         }
 
         return null;

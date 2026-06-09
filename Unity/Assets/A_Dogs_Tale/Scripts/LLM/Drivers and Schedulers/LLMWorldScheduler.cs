@@ -20,11 +20,13 @@ namespace DogGame.LLM
         OpenAI_gpt_5_mini = 1 << 1,
 
         Gemini_gemini_2_5_flash_lite = 1 << 10,
+        Mistral_mistral_small_latest = 1 << 11,
 
         //Ollama_Qwen3_4b = 1 << 20,
         //Ollama_Qwen3_8b = 1 << 21,
-        //Ollama_Gemma3 = 1 << 22,
-        Ollama_Qwen2_5_1_5b = 1 << 23
+        Ollama_Gemma3 = 1 << 22,
+        Ollama_Qwen2_5_1_5b = 1 << 23,
+        Ollama_Mistral = 1 << 24
     }
 
     [Serializable]
@@ -208,6 +210,7 @@ public enum LLMVendor
 {
     OpenAI,
     Gemini,
+    Mistral,
     Ollama,
     None
 }

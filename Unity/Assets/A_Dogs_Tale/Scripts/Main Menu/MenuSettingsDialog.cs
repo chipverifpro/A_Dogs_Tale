@@ -6,6 +6,8 @@ using DogGame.Settings;
 
 public class MenuSettingsDialog : MonoBehaviour
 {
+    private const string StoredSecretMask = "********";
+
     [SerializeField] private MenuManager menuManager;
 
     [Header("Themed Dialog")]
@@ -43,11 +45,17 @@ public class MenuSettingsDialog : MonoBehaviour
     private RectTransform panelRect;
     private Toggle chatGptToggle;
     private Toggle geminiToggle;
+    private Toggle mistralToggle;
     private Toggle ollamaToggle;
+    private Toggle localQwenToggle;
+    private Toggle localGemmaToggle;
+    private Toggle localMistralToggle;
     private InputField openAIApiKeyInput;
     private InputField geminiApiKeyInput;
+    private InputField mistralApiKeyInput;
     private Text openAIApiKeyStatusLabel;
     private Text geminiApiKeyStatusLabel;
+    private Text mistralApiKeyStatusLabel;
     private Toggle musicToggle;
     private Toggle sfxToggle;
     private Toggle uiToggle;
@@ -240,13 +248,18 @@ public class MenuSettingsDialog : MonoBehaviour
         CreateSectionHeader(content, "MAP TYPE");
         CreateMapTypeRow(content);
 
-        CreateSectionHeader(content, "AI MODEL");
+        CreateSectionHeader(content, "AI MODELS");
         GameObject aiRow = CreateRow(content, "AIModelRow", 42f);
         chatGptToggle = CreateToggle(aiRow.transform, "ChatGPT", "ChatGptToggle");
         geminiToggle = CreateToggle(aiRow.transform, "Gemini", "GeminiToggle");
-        ollamaToggle = CreateToggle(aiRow.transform, "Local / Ollama", "OllamaToggle");
+        mistralToggle = CreateToggle(aiRow.transform, "Mistral", "MistralToggle");
+        GameObject localAiRow = CreateRow(content, "LocalAIModelRow", 64f);
+        localQwenToggle = CreateToggle(localAiRow.transform, "Local Kwen", "LocalQwenToggle");
+        localGemmaToggle = CreateToggle(localAiRow.transform, "Local Gemma", "LocalGemmaToggle");
+        localMistralToggle = CreateToggle(localAiRow.transform, "Local Mistral", "LocalMistralToggle");
         CreateSecretStoreRow(content, "OPENAI_API_KEY", SecretStore.OpenAIApiKey, out openAIApiKeyInput, out openAIApiKeyStatusLabel);
         CreateSecretStoreRow(content, "GEMINI_API_KEY", SecretStore.GeminiApiKey, out geminiApiKeyInput, out geminiApiKeyStatusLabel);
+        CreateSecretStoreRow(content, "MISTRAL_API_KEY", SecretStore.MistralApiKey, out mistralApiKeyInput, out mistralApiKeyStatusLabel);
 
         CreateSectionHeader(content, "SCENT PHYSICS");
         CreateScentSliderRow(content);
@@ -267,6 +280,8 @@ public class MenuSettingsDialog : MonoBehaviour
         GameObject linkRow = CreateRow(content, "LinksRow", 44f);
         Button docsButton = CreateButton(linkRow.transform, "Documentation", "DocumentationButton");
         docsButton.onClick.AddListener(() => menuManager?.OpenDocs());
+        Button splashReviewButton = CreateButton(linkRow.transform, "Review Splash Screens", "ReviewSplashScreensButton");
+        splashReviewButton.onClick.AddListener(() => menuManager?.ReviewSplashScreens());
         Button closeButton = CreateButton(linkRow.transform, "Close", "CloseButton");
         closeButton.onClick.AddListener(Close);
 
@@ -275,7 +290,10 @@ public class MenuSettingsDialog : MonoBehaviour
 
         chatGptToggle.onValueChanged.AddListener(_ => SaveFromControls());
         geminiToggle.onValueChanged.AddListener(_ => SaveFromControls());
-        ollamaToggle.onValueChanged.AddListener(_ => SaveFromControls());
+        mistralToggle.onValueChanged.AddListener(_ => SaveFromControls());
+        localQwenToggle.onValueChanged.AddListener(_ => SaveFromControls());
+        localGemmaToggle.onValueChanged.AddListener(_ => SaveFromControls());
+        localMistralToggle.onValueChanged.AddListener(_ => SaveFromControls());
         touchscreenJoystickToggle.onValueChanged.AddListener(_ => SaveFromControls());
         musicToggle.onValueChanged.AddListener(_ => SaveFromControls());
         sfxToggle.onValueChanged.AddListener(_ => SaveFromControls());
@@ -315,7 +333,7 @@ public class MenuSettingsDialog : MonoBehaviour
         scrollRect.horizontal = false;
         scrollRect.vertical = true;
         scrollRect.movementType = ScrollRect.MovementType.Clamped;
-        scrollRect.scrollSensitivity = 24f;
+        scrollRect.scrollSensitivity = 5f;
 
         RectTransform viewport = EnsureViewport(scrollObject.transform);
         RectTransform content = EnsureContent(viewport);
@@ -593,7 +611,7 @@ public class MenuSettingsDialog : MonoBehaviour
 
         statusLabel = CreateLabel(parent, "", 13, FontStyle.Normal, TextAnchor.MiddleLeft, 22f, $"{labelText}StatusLabel");
         statusLabel.color = new Color(textColor.r, textColor.g, textColor.b, 0.76f);
-        RefreshSecretStatusLabel(statusLabel, secretKey);
+        RefreshSecretRow(inputField, statusLabel, secretKey);
 
         InputField capturedInput = inputField;
         Text capturedStatus = statusLabel;
@@ -607,6 +625,7 @@ public class MenuSettingsDialog : MonoBehaviour
         {
             "OPENAI_API_KEY" => 4,
             "GEMINI_API_KEY" => 5,
+            "MISTRAL_API_KEY" => 15,
             _ => -1
         };
 
@@ -699,6 +718,12 @@ public class MenuSettingsDialog : MonoBehaviour
     private void SaveSecretFromInput(InputField inputField, Text statusLabel, string secretKey)
     {
         string value = inputField != null ? inputField.text : "";
+        if (value == StoredSecretMask && SecretStore.HasSecret(secretKey))
+        {
+            RefreshSecretRow(inputField, statusLabel, secretKey);
+            return;
+        }
+
         if (string.IsNullOrWhiteSpace(value))
         {
             SetSecretStatus(statusLabel, "Enter a value, then Save. Use Clear to remove a stored key.");
@@ -707,9 +732,7 @@ public class MenuSettingsDialog : MonoBehaviour
 
         if (SecretStore.TrySetSecret(secretKey, value, out string error))
         {
-            if (inputField != null)
-                inputField.text = "";
-            RefreshSecretStatusLabel(statusLabel, secretKey);
+            RefreshSecretRow(inputField, statusLabel, secretKey);
             return;
         }
 
@@ -720,32 +743,27 @@ public class MenuSettingsDialog : MonoBehaviour
     {
         if (SecretStore.TryDeleteSecret(secretKey, out string error))
         {
-            if (inputField != null)
-                inputField.text = "";
-            RefreshSecretStatusLabel(statusLabel, secretKey);
+            RefreshSecretRow(inputField, statusLabel, secretKey);
             return;
         }
 
         SetSecretStatus(statusLabel, $"Could not clear: {error}");
     }
 
-    private void ClearSecretInputs()
+    private void RefreshSecretRows()
     {
-        if (openAIApiKeyInput != null)
-            openAIApiKeyInput.text = "";
-        if (geminiApiKeyInput != null)
-            geminiApiKeyInput.text = "";
+        RefreshSecretRow(openAIApiKeyInput, openAIApiKeyStatusLabel, SecretStore.OpenAIApiKey);
+        RefreshSecretRow(geminiApiKeyInput, geminiApiKeyStatusLabel, SecretStore.GeminiApiKey);
+        RefreshSecretRow(mistralApiKeyInput, mistralApiKeyStatusLabel, SecretStore.MistralApiKey);
     }
 
-    private void RefreshSecretStatusLabels()
+    private void RefreshSecretRow(InputField inputField, Text statusLabel, string secretKey)
     {
-        RefreshSecretStatusLabel(openAIApiKeyStatusLabel, SecretStore.OpenAIApiKey);
-        RefreshSecretStatusLabel(geminiApiKeyStatusLabel, SecretStore.GeminiApiKey);
-    }
+        bool hasSecret = SecretStore.HasSecret(secretKey);
+        if (inputField != null)
+            inputField.text = hasSecret ? StoredSecretMask : "";
 
-    private void RefreshSecretStatusLabel(Text statusLabel, string secretKey)
-    {
-        string status = SecretStore.HasSecret(secretKey)
+        string status = hasSecret
             ? $"Stored encrypted locally in {SecretStore.Current.BackendName}"
             : $"Not found in {SecretStore.Current.BackendName}";
 
@@ -1149,10 +1167,14 @@ public class MenuSettingsDialog : MonoBehaviour
         if (toggleText != null)
         {
             toggleText.font = GetRuntimeFont();
-            toggleText.text = labelText;
+            toggleText.text = FormatToggleLabel(labelText, objectName);
             toggleText.color = textColor;
             toggleText.fontSize = 16;
             toggleText.fontStyle = FontStyle.Bold;
+            toggleText.horizontalOverflow = HorizontalWrapMode.Wrap;
+            toggleText.verticalOverflow = VerticalWrapMode.Truncate;
+            toggleText.alignment = TextAnchor.MiddleLeft;
+            toggleText.lineSpacing = 0.85f;
         }
 
         Toggle toggle = toggleObject.GetComponent<Toggle>();
@@ -1164,7 +1186,9 @@ public class MenuSettingsDialog : MonoBehaviour
         LayoutElement layout = toggleObject.AddComponent<LayoutElement>();
         layout.flexibleWidth = 1f;
         layout.minWidth = 120f;
-        layout.preferredHeight = 36f;
+        float toggleHeight = IsTwoLineToggle(objectName) ? 56f : 36f;
+        layout.minHeight = toggleHeight;
+        layout.preferredHeight = toggleHeight;
         return toggle;
     }
 
@@ -1174,7 +1198,11 @@ public class MenuSettingsDialog : MonoBehaviour
         {
             "ChatGptToggle" => 0,
             "GeminiToggle" => 1,
+            "MistralToggle" => 13,
             "OllamaToggle" => 3,
+            "LocalQwenToggle" => 16,
+            "LocalGemmaToggle" => 17,
+            "LocalMistralToggle" => 18,
             "TouchscreenJoystickToggle" => 9,
             _ => -1
         };
@@ -1208,10 +1236,34 @@ public class MenuSettingsDialog : MonoBehaviour
         if (toggleText != null)
         {
             RectTransform textRect = toggleText.rectTransform;
+            textRect.anchorMin = new Vector2(0f, 0f);
+            textRect.anchorMax = new Vector2(1f, 1f);
             Vector2 offsetMin = textRect.offsetMin;
             offsetMin.x = Mathf.Max(offsetMin.x, 78f);
+            offsetMin.y = 2f;
             textRect.offsetMin = offsetMin;
+            Vector2 offsetMax = textRect.offsetMax;
+            offsetMax.y = -2f;
+            textRect.offsetMax = offsetMax;
         }
+    }
+
+    private static string FormatToggleLabel(string labelText, string objectName)
+    {
+        return objectName switch
+        {
+            "LocalQwenToggle" => "Local\nKwen",
+            "LocalGemmaToggle" => "Local\nGemma",
+            "LocalMistralToggle" => "Local\nMistral",
+            _ => labelText
+        };
+    }
+
+    private static bool IsTwoLineToggle(string objectName)
+    {
+        return objectName == "LocalQwenToggle" ||
+               objectName == "LocalGemmaToggle" ||
+               objectName == "LocalMistralToggle";
     }
 
     private Sprite GetSettingsIconSprite(int index)
@@ -1274,6 +1326,7 @@ public class MenuSettingsDialog : MonoBehaviour
         RegisterSettingsIcon(iconRect, layout, null, width - size, -1f, 0f);
         return image;
     }
+
 
     private Button CreateButton(Transform parent, string labelText, string objectName)
     {
@@ -1474,9 +1527,14 @@ public class MenuSettingsDialog : MonoBehaviour
         CreateSectionHeader(panel.transform, "AI Models");
         chatGptToggle = CreateToggle(panel.transform, "ChatGPT", "ChatGptToggle");
         geminiToggle = CreateToggle(panel.transform, "Gemini", "GeminiToggle");
-        ollamaToggle = CreateToggle(panel.transform, "Ollama", "OllamaToggle");
+        mistralToggle = CreateToggle(panel.transform, "Mistral", "MistralToggle");
+        GameObject localAiRow = CreateRow(panel.transform, "LocalAIModelRow", 64f);
+        localQwenToggle = CreateToggle(localAiRow.transform, "Local Kwen", "LocalQwenToggle");
+        localGemmaToggle = CreateToggle(localAiRow.transform, "Local Gemma", "LocalGemmaToggle");
+        localMistralToggle = CreateToggle(localAiRow.transform, "Local Mistral", "LocalMistralToggle");
         CreateSecretStoreRow(panel.transform, "OPENAI_API_KEY", SecretStore.OpenAIApiKey, out openAIApiKeyInput, out openAIApiKeyStatusLabel);
         CreateSecretStoreRow(panel.transform, "GEMINI_API_KEY", SecretStore.GeminiApiKey, out geminiApiKeyInput, out geminiApiKeyStatusLabel);
+        CreateSecretStoreRow(panel.transform, "MISTRAL_API_KEY", SecretStore.MistralApiKey, out mistralApiKeyInput, out mistralApiKeyStatusLabel);
         CreateScentSliderRow(panel.transform);
         CreateSectionHeader(panel.transform, "Graphics Level");
         CreateGraphicsQualityRow(panel.transform);
@@ -1494,7 +1552,10 @@ public class MenuSettingsDialog : MonoBehaviour
 
         chatGptToggle.onValueChanged.AddListener(_ => SaveFromControls());
         geminiToggle.onValueChanged.AddListener(_ => SaveFromControls());
-        ollamaToggle.onValueChanged.AddListener(_ => SaveFromControls());
+        mistralToggle.onValueChanged.AddListener(_ => SaveFromControls());
+        localQwenToggle.onValueChanged.AddListener(_ => SaveFromControls());
+        localGemmaToggle.onValueChanged.AddListener(_ => SaveFromControls());
+        localMistralToggle.onValueChanged.AddListener(_ => SaveFromControls());
         touchscreenJoystickToggle.onValueChanged.AddListener(_ => SaveFromControls());
         musicToggle.onValueChanged.AddListener(_ => SaveFromControls());
         sfxToggle.onValueChanged.AddListener(_ => SaveFromControls());
@@ -1624,9 +1685,12 @@ public class MenuSettingsDialog : MonoBehaviour
         SelectGraphicsLevel(settings.graphicsLevel, save: false);
         chatGptToggle?.SetIsOnWithoutNotify(settings.chatGptEnabled);
         geminiToggle?.SetIsOnWithoutNotify(settings.geminiEnabled);
+        mistralToggle?.SetIsOnWithoutNotify(settings.mistralEnabled);
         ollamaToggle?.SetIsOnWithoutNotify(settings.ollamaEnabled);
-        ClearSecretInputs();
-        RefreshSecretStatusLabels();
+        localQwenToggle?.SetIsOnWithoutNotify(settings.localQwenEnabled);
+        localGemmaToggle?.SetIsOnWithoutNotify(settings.localGemmaEnabled);
+        localMistralToggle?.SetIsOnWithoutNotify(settings.localMistralEnabled);
+        RefreshSecretRows();
         musicToggle?.SetIsOnWithoutNotify(settings.musicEnabled);
         sfxToggle?.SetIsOnWithoutNotify(settings.sfxEnabled);
         uiToggle?.SetIsOnWithoutNotify(settings.uiEnabled);
@@ -1669,7 +1733,16 @@ public class MenuSettingsDialog : MonoBehaviour
             mapType = selectedMapType,
             chatGptEnabled = chatGptToggle != null ? chatGptToggle.isOn : current.chatGptEnabled,
             geminiEnabled = geminiToggle != null ? geminiToggle.isOn : current.geminiEnabled,
-            ollamaEnabled = ollamaToggle != null ? ollamaToggle.isOn : current.ollamaEnabled,
+            mistralEnabled = mistralToggle != null ? mistralToggle.isOn : current.mistralEnabled,
+            localQwenEnabled = localQwenToggle != null ? localQwenToggle.isOn : current.localQwenEnabled,
+            localGemmaEnabled = localGemmaToggle != null ? localGemmaToggle.isOn : current.localGemmaEnabled,
+            localMistralEnabled = localMistralToggle != null ? localMistralToggle.isOn : current.localMistralEnabled,
+            ollamaEnabled =
+                localQwenToggle != null || localGemmaToggle != null || localMistralToggle != null
+                    ? (localQwenToggle != null && localQwenToggle.isOn) ||
+                      (localGemmaToggle != null && localGemmaToggle.isOn) ||
+                      (localMistralToggle != null && localMistralToggle.isOn)
+                    : current.ollamaEnabled,
             musicEnabled = musicToggle != null ? musicToggle.isOn : current.musicEnabled,
             musicVolume = SnapVolume(musicVolumeSlider != null ? musicVolumeSlider.value : current.musicVolume),
             sfxEnabled = sfxToggle != null ? sfxToggle.isOn : current.sfxEnabled,
@@ -1966,7 +2039,11 @@ public class MenuSettingsDialog : MonoBehaviour
     {
         RefreshToggleVisual(chatGptToggle);
         RefreshToggleVisual(geminiToggle);
+        RefreshToggleVisual(mistralToggle);
         RefreshToggleVisual(ollamaToggle);
+        RefreshToggleVisual(localQwenToggle);
+        RefreshToggleVisual(localGemmaToggle);
+        RefreshToggleVisual(localMistralToggle);
         RefreshToggleVisual(musicToggle);
         RefreshToggleVisual(sfxToggle);
         RefreshToggleVisual(uiToggle);

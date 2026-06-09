@@ -68,24 +68,24 @@ public class BottomBanner : MonoBehaviour
     }
 
     [Header("Style")]
-    [SerializeField] Color backgroundColor = new Color(0.9f, 0.9f, 0.9f, 0.75f);
-    [SerializeField] Color textColor = new Color(0.13f, 0.13f, 0.13f, 1f);
-    [SerializeField] int fontSize = 44;
+    [SerializeField] Color backgroundColor = new Color(0f, 0f, 0f, 0.75f);
+    [SerializeField] Color textColor = Color.white;
+    [SerializeField] int fontSize = 34;
     [SerializeField] float height = 128f;
-    [SerializeField] float sidePadding = 16f;
+    [SerializeField] float sidePadding = 0f;
     //[SerializeField] bool useSafeArea = true;
     [SerializeField] float backgroundTopOffset = 0f;
-    [SerializeField] float backgroundHeightMultiplier = 2f;
+    [SerializeField] float backgroundHeightMultiplier = 1f;
     [SerializeField] bool autoCollapseWhenMouseAway = true;
-    [SerializeField] float collapsedHeightFraction = 0.33333334f;
-    [SerializeField] float collapsedHeightExtraPixels = 3f;
     [SerializeField] float collapseSlideDuration = 0.18f;
 
     [Header("Message Log")]
     [SerializeField] int visibleLineCount = 3;
-    [SerializeField] float rowMinHeight = 128f;
+    [SerializeField] int collapsedVisibleEntryCount = 1;
+    [SerializeField] float rowMinHeight = 84f;
     [SerializeField] float rowSpacing = 4f;
-    [SerializeField] float iconSize = 128f;
+    [SerializeField] float iconSize = 76f;
+    [SerializeField] float iconHitAreaInset = 0f;
 //    [SerializeField] bool smoothIconSampling = true;
     [SerializeField] int maxMessageLines = 2;
     [SerializeField] bool defaultDisplayUsesRichText = true;
@@ -116,6 +116,7 @@ public class BottomBanner : MonoBehaviour
     int lastPanelToggleFrame = -1;
     bool missingUiWarningLogged;
     bool requestedCanvasVisible = true;
+    bool applyingResponsiveWidth;
 
     public IReadOnlyList<BannerMessageEntry> MessageHistory => messageHistory;
 
@@ -134,7 +135,7 @@ public class BottomBanner : MonoBehaviour
             return false;
         }
 
-        return IsScreenPointOverBanner(screenPoint);
+        return IsScreenPointOverBannerToggleArea(screenPoint);
     }
 
     void Awake()
@@ -269,7 +270,66 @@ public class BottomBanner : MonoBehaviour
         if (contentRT == null)
             LogMissingSceneAuthoredUi("Content RectTransform");
 
+        ApplyBannerStyle();
+
         ApplyBuildCompleteVisibility();
+    }
+
+    void ApplyBannerStyle()
+    {
+        if (panelRT != null)
+        {
+            panelRT.anchorMin = new Vector2(0f, 0f);
+            panelRT.anchorMax = new Vector2(1f, 0f);
+            panelRT.pivot = new Vector2(0.5f, 0f);
+            panelRT.anchoredPosition = Vector2.zero;
+            panelRT.offsetMin = new Vector2(0f, panelRT.offsetMin.y);
+            panelRT.offsetMax = new Vector2(0f, panelRT.offsetMax.y);
+            panelRT.localScale = Vector3.one;
+        }
+
+        if (backgroundRT != null)
+        {
+            backgroundRT.anchorMin = new Vector2(0f, 0f);
+            backgroundRT.anchorMax = new Vector2(1f, 0f);
+            backgroundRT.pivot = new Vector2(0.5f, 0f);
+            backgroundRT.anchoredPosition = Vector2.zero;
+            backgroundRT.offsetMin = Vector2.zero;
+            backgroundRT.offsetMax = Vector2.zero;
+            backgroundRT.localScale = Vector3.one;
+
+            Image backgroundImage = backgroundRT.GetComponent<Image>();
+            if (backgroundImage != null)
+            {
+                backgroundImage.sprite = null;
+                backgroundImage.type = Image.Type.Simple;
+                backgroundImage.color = backgroundColor;
+            }
+        }
+
+        RectTransform scrollRT = scrollRect != null ? scrollRect.GetComponent<RectTransform>() : null;
+        if (scrollRT != null)
+        {
+            scrollRT.anchorMin = Vector2.zero;
+            scrollRT.anchorMax = Vector2.one;
+            scrollRT.offsetMin = Vector2.zero;
+            scrollRT.offsetMax = Vector2.zero;
+            scrollRT.localScale = Vector3.one;
+        }
+
+        if (viewportRT != null)
+        {
+            viewportRT.anchorMin = Vector2.zero;
+            viewportRT.anchorMax = Vector2.one;
+            viewportRT.offsetMin = new Vector2(8f, 0f);
+            viewportRT.offsetMax = new Vector2(-8f, 0f);
+        }
+
+        if (verticalScrollbar != null)
+            verticalScrollbar.gameObject.SetActive(panelExpanded);
+
+        if (scrollRect != null)
+            scrollRect.vertical = panelExpanded;
     }
 
     static GameObject FindDescendant(Transform parent, string childName)
@@ -315,6 +375,9 @@ public class BottomBanner : MonoBehaviour
 
     void OnRectTransformDimensionsChange()
     {
+        if (applyingResponsiveWidth)
+            return;
+
         if (panelRT != null)
         {
             currentPanelHeight = panelRT.rect.height;
@@ -355,6 +418,9 @@ public class BottomBanner : MonoBehaviour
         ApplyResponsiveWidth();
         panelRT.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, currentPanelHeight);
         UpdateBackgroundHeight(currentPanelHeight);
+
+        if (!panelExpanded)
+            ScrollToNewestMessage();
     }
 
     void ApplyResponsiveWidth()
@@ -362,21 +428,39 @@ public class BottomBanner : MonoBehaviour
         if (panelRT == null)
             return;
 
-        if (authoredPanelWidth <= 0f)
-            authoredPanelWidth = Mathf.Max(panelRT.rect.width, panelRT.sizeDelta.x);
-
-        float availableWidth = GetAvailableBannerWidth() - Mathf.Max(0f, sidePadding) * 2f;
-        if (availableWidth <= 0f || authoredPanelWidth <= 0f)
+        if (applyingResponsiveWidth)
             return;
 
-        float targetWidth = Mathf.Min(authoredPanelWidth, availableWidth);
-        panelRT.localScale = Vector3.one;
-        panelRT.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, targetWidth);
+        float targetWidth = GetAvailableBannerWidth() - Mathf.Max(0f, sidePadding) * 2f;
+        if (targetWidth <= 0f)
+            targetWidth = panelRT.rect.width;
 
-        if (backgroundRT != null)
-            backgroundRT.localScale = Vector3.one;
-        if (scrollRect != null)
-            scrollRect.transform.localScale = Vector3.one;
+        applyingResponsiveWidth = true;
+        try
+        {
+            SetVector2IfChanged(panelRT.anchorMin, new Vector2(0f, 0f), value => panelRT.anchorMin = value);
+            SetVector2IfChanged(panelRT.anchorMax, new Vector2(1f, 0f), value => panelRT.anchorMax = value);
+            SetVector2IfChanged(panelRT.pivot, new Vector2(0.5f, 0f), value => panelRT.pivot = value);
+            SetVector2IfChanged(panelRT.anchoredPosition, Vector2.zero, value => panelRT.anchoredPosition = value);
+            SetVector3IfChanged(panelRT.localScale, Vector3.one, value => panelRT.localScale = value);
+
+            if (!Mathf.Approximately(panelRT.rect.width, targetWidth))
+                panelRT.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, targetWidth);
+
+            Vector2 targetOffsetMin = new Vector2(Mathf.Max(0f, sidePadding), panelRT.offsetMin.y);
+            Vector2 targetOffsetMax = new Vector2(-Mathf.Max(0f, sidePadding), panelRT.offsetMax.y);
+            SetVector2IfChanged(panelRT.offsetMin, targetOffsetMin, value => panelRT.offsetMin = value);
+            SetVector2IfChanged(panelRT.offsetMax, targetOffsetMax, value => panelRT.offsetMax = value);
+
+            if (backgroundRT != null)
+                SetVector3IfChanged(backgroundRT.localScale, Vector3.one, value => backgroundRT.localScale = value);
+            if (scrollRect != null)
+                SetVector3IfChanged(scrollRect.transform.localScale, Vector3.one, value => scrollRect.transform.localScale = value);
+        }
+        finally
+        {
+            applyingResponsiveWidth = false;
+        }
     }
 
     float GetAvailableBannerWidth()
@@ -413,11 +497,11 @@ public class BottomBanner : MonoBehaviour
                 backgroundAuthoredHeight = backgroundRT.sizeDelta.y;
         }
 
-        float backgroundHeight = backgroundAuthoredHeight * Mathf.Max(1f, backgroundHeightMultiplier);
+        float backgroundHeight = panelHeight * Mathf.Max(1f, backgroundHeightMultiplier);
         backgroundRT.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, backgroundHeight);
 
         Vector2 anchoredPosition = backgroundRT.anchoredPosition;
-        anchoredPosition.y = panelHeight + backgroundTopOffset - backgroundHeight * (1f - backgroundRT.pivot.y);
+        anchoredPosition.y = backgroundTopOffset;
         backgroundRT.anchoredPosition = anchoredPosition;
     }
 
@@ -435,7 +519,7 @@ public class BottomBanner : MonoBehaviour
         if (InteractionDialogUI.IsPointerBlockingBottomBanner(screenPoint))
             return;
 
-        if (!IsScreenPointOverBannerFrame(screenPoint))
+        if (!IsScreenPointOverBannerToggleArea(screenPoint))
             return;
 
         if (lastPanelToggleFrame == Time.frameCount)
@@ -443,23 +527,34 @@ public class BottomBanner : MonoBehaviour
 
         lastPanelToggleFrame = Time.frameCount;
         panelExpanded = !panelExpanded;
+        ApplyBannerStyle();
         if (panelExpanded)
             TopPulldown.CollapseOpenControls();
         else
             ScrollToNewestMessage();
     }
 
-    bool IsScreenPointOverBanner(Vector2 screenPoint)
+    bool IsScreenPointOverBannerToggleArea(Vector2 screenPoint)
     {
-        if (panelRT != null && RectTransformUtility.RectangleContainsScreenPoint(panelRT, screenPoint, null))
-            return true;
+        RectTransform hitRoot = backgroundRT != null ? backgroundRT : panelRT;
+        if (hitRoot == null)
+            return false;
 
-        return backgroundRT != null && RectTransformUtility.RectangleContainsScreenPoint(backgroundRT, screenPoint, null);
+        if (!RectTransformUtility.RectangleContainsScreenPoint(hitRoot, screenPoint, null))
+            return false;
+
+        if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(hitRoot, screenPoint, null, out Vector2 localPoint))
+            return false;
+
+        Rect rect = hitRoot.rect;
+        float leftEdge = -hitRoot.pivot.x * rect.width;
+        float hitWidth = GetToggleHitAreaWidth();
+        return localPoint.x >= leftEdge && localPoint.x <= leftEdge + hitWidth;
     }
 
-    bool IsScreenPointOverBannerFrame(Vector2 screenPoint)
+    float GetToggleHitAreaWidth()
     {
-        return backgroundRT != null && RectTransformUtility.RectangleContainsScreenPoint(backgroundRT, screenPoint, null);
+        return Mathf.Max(1f, GetEffectiveIconSize() + Mathf.Max(0f, iconHitAreaInset));
     }
 
     static bool TryGetPrimaryPressScreenPoint(out Vector2 screenPoint)
@@ -496,21 +591,17 @@ public class BottomBanner : MonoBehaviour
 
     float GetExpandedPanelHeight()
     {
-        return Mathf.Max(height, GetMinimumPanelHeight());
+        return Mathf.Max(GetEntryPanelHeight(Mathf.Max(1, visibleLineCount)), GetMinimumPanelHeight());
     }
 
     float GetCollapsedPanelHeight(float expandedHeight)
     {
-        float fraction = Mathf.Clamp01(collapsedHeightFraction);
-        if (fraction <= 0f)
-            fraction = 0.33333334f;
-
-        return Mathf.Max(GetMinimumCollapsedPanelHeight(), expandedHeight * fraction) + collapsedHeightExtraPixels;
+        return Mathf.Min(expandedHeight, GetEntryPanelHeight(Mathf.Max(1, collapsedVisibleEntryCount)));
     }
 
     float GetMinimumCollapsedPanelHeight()
     {
-        return 20f + GetRowHeight();
+        return GetEntryPanelHeight(Mathf.Max(1, collapsedVisibleEntryCount));
     }
 
     float GetCanvasScaleFactor()
@@ -533,7 +624,12 @@ public class BottomBanner : MonoBehaviour
 
     float GetMinimumPanelHeight()
     {
-        return 20f + visibleLineCount * GetRowHeight() + Mathf.Max(0, visibleLineCount - 1) * rowSpacing;
+        return GetEntryPanelHeight(Mathf.Max(1, visibleLineCount));
+    }
+
+    float GetEntryPanelHeight(int entryCount)
+    {
+        return 8f + entryCount * GetRowHeight() + Mathf.Max(0, entryCount - 1) * rowSpacing;
     }
 
     float GetRowHeight()
@@ -541,8 +637,14 @@ public class BottomBanner : MonoBehaviour
         int lineCount = Mathf.Max(1, maxMessageLines);
         float estimatedTextHeight = fontSize * lineCount * 1.2f;
         float estimatedPadding = 12f;
-        float estimatedIconHeight = iconSize + 4f;
+        float estimatedIconHeight = GetEffectiveIconSize() + 4f;
         return Mathf.Max(rowMinHeight, estimatedTextHeight + estimatedPadding, estimatedIconHeight);
+    }
+
+    float GetEffectiveIconSize()
+    {
+        int lineCount = Mathf.Max(1, maxMessageLines);
+        return Mathf.Min(iconSize, fontSize * lineCount * 1.2f);
     }
 
     void MigrateLegacyStyleIfNeeded()
@@ -569,11 +671,11 @@ public class BottomBanner : MonoBehaviour
             return;
         }
 
-        backgroundColor = new Color(0.9f, 0.9f, 0.9f, 0.75f);
-        textColor = new Color(0.13f, 0.13f, 0.13f, 1f);
-        fontSize = 22;
+        backgroundColor = new Color(0f, 0f, 0f, 0.75f);
+        textColor = Color.white;
+        fontSize = 34;
         height = GetMinimumPanelHeight();
-        sidePadding = 16f;
+        sidePadding = 0f;
     }
 
     Scrollbar CreateScrollbar(Transform parent)
@@ -732,10 +834,11 @@ public class BottomBanner : MonoBehaviour
         iconImage.useSpriteMesh = false;
 
         LayoutElement iconLayout = iconGO.GetComponent<LayoutElement>();
-        iconLayout.minWidth = iconSize;
-        iconLayout.preferredWidth = iconSize;
-        iconLayout.minHeight = iconSize;
-        iconLayout.preferredHeight = iconSize;
+        float effectiveIconSize = GetEffectiveIconSize();
+        iconLayout.minWidth = effectiveIconSize;
+        iconLayout.preferredWidth = effectiveIconSize;
+        iconLayout.minHeight = effectiveIconSize;
+        iconLayout.preferredHeight = effectiveIconSize;
 
         GameObject textGO = new GameObject("MessageText", typeof(RectTransform), typeof(TextMeshProUGUI), typeof(LayoutElement));
         textGO.transform.SetParent(row.transform, false);
@@ -1188,5 +1291,21 @@ public class BottomBanner : MonoBehaviour
         }
 
         AddMessageInternal(sense, level, richMessage, includeGameTime, true);
+    }
+
+    static void SetVector2IfChanged(Vector2 current, Vector2 next, Action<Vector2> setter)
+    {
+        if ((current - next).sqrMagnitude <= 0.0001f)
+            return;
+
+        setter(next);
+    }
+
+    static void SetVector3IfChanged(Vector3 current, Vector3 next, Action<Vector3> setter)
+    {
+        if ((current - next).sqrMagnitude <= 0.0001f)
+            return;
+
+        setter(next);
     }
 }

@@ -84314,6 +84314,11 @@ MonoBehaviour:
   splashResourceFolder: Images
   splashCount: 67
   splashOrientationAspectThreshold: 1.2
+  splashReviewIndexLabelOffset: {x: 16, y: 12}
+  splashReviewIndexLabelFontSize: 18
+  splashMessageAssumedLineCount: 2
+  splashMessageLineHeightMultiplier: 1.25
+  splashMessageEdgePadding: 1
   loadingMessages:
   - Building the world...
   - Digging up a map...
@@ -87608,7 +87613,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 0, y: -10}
-  m_SizeDelta: {x: 1672.5704, y: 915.7684}
+  m_SizeDelta: {x: 1507.9811, y: 1051.0835}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &863588990
 MonoBehaviour:
@@ -87797,8 +87802,6 @@ MonoBehaviour:
   moveTargetTimeoutSeconds: 10
   debugState: 0
   debugDesiredTargetLocationMap: {x: 0, y: 0, z: 0}
-  debugHasDesiredTarget: 0
-  debugLastPickSucceeded: 0
   debugLastPickFailureReason: 
   debugCurrentRoomIndex: -1
   debugCurrentCell: {x: -1, y: -1}
@@ -87806,7 +87809,6 @@ MonoBehaviour:
   debugCandidateCount: 0
   debugPickAttempts: 0
   debugMoveTargetElapsedSeconds: 0
-  debugLastMoveTimedOut: 0
 --- !u!114 &865034066
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -124404,8 +124406,6 @@ MonoBehaviour:
   moveTargetTimeoutSeconds: 10
   debugState: 0
   debugDesiredTargetLocationMap: {x: 0, y: 0, z: 0}
-  debugHasDesiredTarget: 0
-  debugLastPickSucceeded: 0
   debugLastPickFailureReason: 
   debugCurrentRoomIndex: -1
   debugCurrentCell: {x: -1, y: -1}
@@ -124413,7 +124413,6 @@ MonoBehaviour:
   debugCandidateCount: 0
   debugPickAttempts: 0
   debugMoveTargetElapsedSeconds: 0
-  debugLastMoveTimedOut: 0
 --- !u!114 &1253610051
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -161088,24 +161087,22 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7133b2ac6532e496caf121c67d28b497, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BottomBanner
-  backgroundColor: {r: 0.9, g: 0.9, b: 0.9, a: 0.75}
-  textColor: {r: 0.13, g: 0.13, b: 0.13, a: 1}
-  fontSize: 44
-  height: 624
-  sidePadding: 16
-  useSafeArea: 1
-  backgroundTopOffset: 100
-  backgroundHeightMultiplier: 2
+  backgroundColor: {r: 0, g: 0, b: 0, a: 0.75}
+  textColor: {r: 1, g: 1, b: 1, a: 1}
+  fontSize: 34
+  height: 296.80002
+  sidePadding: 0
+  backgroundTopOffset: 0
+  backgroundHeightMultiplier: 1
   autoCollapseWhenMouseAway: 1
-  collapsedHeightFraction: 0.33333334
-  collapsedHeightExtraPixels: 3
   collapseSlideDuration: 0.18
   visibleLineCount: 3
-  rowMinHeight: 120
+  collapsedVisibleEntryCount: 1
+  rowMinHeight: 84
   rowSpacing: 4
-  iconSize: 128
-  smoothIconSampling: 1
-  maxMessageLines: 3
+  iconSize: 76
+  iconHitAreaInset: 0
+  maxMessageLines: 2
   defaultDisplayUsesRichText: 1
   autoScrollToNewest: 1
   maxHistoryEntries: 0
@@ -164262,8 +164259,6 @@ MonoBehaviour:
   moveTargetTimeoutSeconds: 10
   debugState: 0
   debugDesiredTargetLocationMap: {x: 0, y: 0, z: 0}
-  debugHasDesiredTarget: 0
-  debugLastPickSucceeded: 0
   debugLastPickFailureReason: 
   debugCurrentRoomIndex: -1
   debugCurrentCell: {x: -1, y: -1}
@@ -164271,7 +164266,6 @@ MonoBehaviour:
   debugCandidateCount: 0
   debugPickAttempts: 0
   debugMoveTargetElapsedSeconds: 0
-  debugLastMoveTimedOut: 0
 --- !u!114 &1651296789
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -213173,8 +213167,6 @@ MonoBehaviour:
   moveTargetTimeoutSeconds: 10
   debugState: 0
   debugDesiredTargetLocationMap: {x: 0, y: 0, z: 0}
-  debugHasDesiredTarget: 0
-  debugLastPickSucceeded: 0
   debugLastPickFailureReason: 
   debugCurrentRoomIndex: -1
   debugCurrentCell: {x: -1, y: -1}
@@ -213182,7 +213174,6 @@ MonoBehaviour:
   debugCandidateCount: 0
   debugPickAttempts: 0
   debugMoveTargetElapsedSeconds: 0
-  debugLastMoveTimedOut: 0
 --- !u!114 &2108676847
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -225626,8 +225617,6 @@ MonoBehaviour:
   moveTargetTimeoutSeconds: 10
   debugState: 0
   debugDesiredTargetLocationMap: {x: 0, y: 0, z: 0}
-  debugHasDesiredTarget: 0
-  debugLastPickSucceeded: 0
   debugLastPickFailureReason: 
   debugCurrentRoomIndex: -1
   debugCurrentCell: {x: -1, y: -1}
@@ -225635,7 +225624,6 @@ MonoBehaviour:
   debugCandidateCount: 0
   debugPickAttempts: 0
   debugMoveTargetElapsedSeconds: 0
-  debugLastMoveTimedOut: 0
 --- !u!114 &6544990386685219152
 MonoBehaviour:
   m_ObjectHideFlags: 0

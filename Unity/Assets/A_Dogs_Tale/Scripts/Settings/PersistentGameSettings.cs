@@ -19,6 +19,10 @@ public static class PersistentGameSettings
     private const string SfxVolumeJsonField = "\"sfxVolume\"";
     private const string UiEnabledJsonField = "\"uiEnabled\"";
     private const string UiVolumeJsonField = "\"uiVolume\"";
+    private const string MistralEnabledJsonField = "\"mistralEnabled\"";
+    private const string LocalQwenEnabledJsonField = "\"localQwenEnabled\"";
+    private const string LocalGemmaEnabledJsonField = "\"localGemmaEnabled\"";
+    private const string LocalMistralEnabledJsonField = "\"localMistralEnabled\"";
     private const float MinScentSimulationTimeStep = 0.1f;
     private const float MaxScentSimulationTimeStep = 1.0f;
     public const float MinButtonSize = 40f;
@@ -43,7 +47,11 @@ public static class PersistentGameSettings
         public MapType mapType = MapType.House;
         public bool chatGptEnabled = true;
         public bool geminiEnabled = true;
+        public bool mistralEnabled = false;
         public bool ollamaEnabled = true;
+        public bool localQwenEnabled = true;
+        public bool localGemmaEnabled = false;
+        public bool localMistralEnabled = false;
         public float scentSimulationTimeStep = MinScentSimulationTimeStep;
         public int graphicsLevel = GraphicsLevelHigh;
         public bool wallpaperEnabled = true;
@@ -318,6 +326,10 @@ public static class PersistentGameSettings
         bool hasSfxVolume = json.Contains(SfxVolumeJsonField, StringComparison.Ordinal);
         bool hasUiEnabled = json.Contains(UiEnabledJsonField, StringComparison.Ordinal);
         bool hasUiVolume = json.Contains(UiVolumeJsonField, StringComparison.Ordinal);
+        bool hasMistralEnabled = json.Contains(MistralEnabledJsonField, StringComparison.Ordinal);
+        bool hasLocalQwenEnabled = json.Contains(LocalQwenEnabledJsonField, StringComparison.Ordinal);
+        bool hasLocalGemmaEnabled = json.Contains(LocalGemmaEnabledJsonField, StringComparison.Ordinal);
+        bool hasLocalMistralEnabled = json.Contains(LocalMistralEnabledJsonField, StringComparison.Ordinal);
         data = JsonUtility.FromJson<Data>(json);
         if (data == null)
             return false;
@@ -340,6 +352,14 @@ public static class PersistentGameSettings
             data.uiEnabled = true;
         if (!hasUiVolume)
             data.uiVolume = 1f;
+        if (!hasMistralEnabled)
+            data.mistralEnabled = false;
+        if (!hasLocalQwenEnabled)
+            data.localQwenEnabled = data.ollamaEnabled;
+        if (!hasLocalGemmaEnabled)
+            data.localGemmaEnabled = false;
+        if (!hasLocalMistralEnabled)
+            data.localMistralEnabled = false;
 
         data = Normalize(data);
         return true;
@@ -354,7 +374,11 @@ public static class PersistentGameSettings
         {
             data.chatGptEnabled = HasAnyVendorEnabled(scheduler.llmVendorAndModel, LLMVendor.OpenAI);
             data.geminiEnabled = HasAnyVendorEnabled(scheduler.llmVendorAndModel, LLMVendor.Gemini);
-            data.ollamaEnabled = HasAnyVendorEnabled(scheduler.llmVendorAndModel, LLMVendor.Ollama);
+            data.mistralEnabled = HasModelEnabled(scheduler.llmVendorAndModel, LLMVendorAndModel.Mistral_mistral_small_latest);
+            data.localQwenEnabled = HasModelEnabled(scheduler.llmVendorAndModel, LLMVendorAndModel.Ollama_Qwen2_5_1_5b);
+            data.localGemmaEnabled = HasModelEnabled(scheduler.llmVendorAndModel, LLMVendorAndModel.Ollama_Gemma3);
+            data.localMistralEnabled = HasModelEnabled(scheduler.llmVendorAndModel, LLMVendorAndModel.Ollama_Mistral);
+            data.ollamaEnabled = data.localQwenEnabled || data.localGemmaEnabled || data.localMistralEnabled;
         }
 
         ScentAirGround scentAirGround = GetScentAirGround();
@@ -418,6 +442,7 @@ public static class PersistentGameSettings
         data.sfxVolume = Mathf.Clamp01(data.sfxVolume);
         data.uiVolume = Mathf.Clamp01(data.uiVolume);
         data.buttonSize = SnapButtonSize(data.buttonSize);
+        data.ollamaEnabled = data.localQwenEnabled || data.localGemmaEnabled || data.localMistralEnabled;
 
         return data;
     }
@@ -543,10 +568,21 @@ public static class PersistentGameSettings
             mask |= GetVendorMask(LLMVendor.OpenAI);
         if (data.geminiEnabled)
             mask |= GetVendorMask(LLMVendor.Gemini);
-        if (data.ollamaEnabled)
-            mask |= GetVendorMask(LLMVendor.Ollama);
+        if (data.mistralEnabled)
+            mask |= LLMVendorAndModel.Mistral_mistral_small_latest;
+        if (data.localQwenEnabled)
+            mask |= LLMVendorAndModel.Ollama_Qwen2_5_1_5b;
+        if (data.localGemmaEnabled)
+            mask |= LLMVendorAndModel.Ollama_Gemma3;
+        if (data.localMistralEnabled)
+            mask |= LLMVendorAndModel.Ollama_Mistral;
 
         return mask;
+    }
+
+    private static bool HasModelEnabled(LLMVendorAndModel mask, LLMVendorAndModel model)
+    {
+        return (mask & model) != LLMVendorAndModel.None;
     }
 
     private static LLMVendorAndModel GetVendorMask(LLMVendor vendor)
@@ -573,6 +609,8 @@ public static class PersistentGameSettings
             return LLMVendor.OpenAI;
         if (name.StartsWith("Gemini_", StringComparison.Ordinal))
             return LLMVendor.Gemini;
+        if (name.StartsWith("Mistral_", StringComparison.Ordinal))
+            return LLMVendor.Mistral;
         if (name.StartsWith("Ollama_", StringComparison.Ordinal))
             return LLMVendor.Ollama;
 

@@ -122,6 +122,9 @@ public class MenuManager : MonoBehaviour
 
     void Update()
     {
+        if (fader != null && fader.IsReviewingSplashScreens)
+            return;
+
         if (WasTitleContinuePressedThisFrame())
             OnContinue();
 
@@ -273,6 +276,19 @@ public class MenuManager : MonoBehaviour
         Application.OpenURL("https://github.com/chipverifpro/A_Dogs_Tale/wiki/How-to-play");
     }
 
+    public void ReviewSplashScreens()
+    {
+        PlayButtonClick();
+        settingsDialog?.Close();
+
+        if (fader == null && dir != null)
+            fader = dir.sceneFader;
+        if (fader == null)
+            fader = FindFirstObjectByType<SceneFader>();
+
+        fader?.StartSplashScreenReview();
+    }
+
     #endregion
 
     bool WasTitleContinuePressedThisFrame()
@@ -303,6 +319,9 @@ public class MenuManager : MonoBehaviour
         if (sceneFader != null)
         {
             fader = sceneFader;
+            if (sceneFader.IsReviewingSplashScreens)
+                return false;
+
             return sceneFader.IsTitleOverlayVisible;
         }
 

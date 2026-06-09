@@ -39,6 +39,8 @@ namespace DogGame.UI
         [SerializeField] private bool stretchMiddleWidth = true;
         [SerializeField] private float minimumMiddleHeight = 100f;
 
+        private bool applyingLayout;
+
         private void Reset()
         {
             middleRegion = GetComponent<RectTransform>();
@@ -67,6 +69,9 @@ namespace DogGame.UI
 
         private void ApplyLayout()
         {
+            if (applyingLayout)
+                return;
+
             if (canvasRect == null || topRegion == null || bottomRegion == null)
             {
                 Debug.LogError("UIMiddleRegionFitter has unassigned references",this);
@@ -105,29 +110,33 @@ namespace DogGame.UI
 
             float centerY = (availableTopY + availableBottomY) * 0.5f;
 
-            // Make Middle use the canvas center as its anchor reference.
-            middleRegion.anchorMin = new Vector2(0.5f, 0.5f);
-            middleRegion.anchorMax = new Vector2(0.5f, 0.5f);
-            middleRegion.pivot = new Vector2(0.5f, 0.5f);
-
-            Vector2 anchoredPosition = middleRegion.anchoredPosition;
-            anchoredPosition.x = 0f;
-            anchoredPosition.y = centerY;
-            middleRegion.anchoredPosition = anchoredPosition;
-
-            Vector2 sizeDelta = middleRegion.sizeDelta;
-
-            if (stretchMiddleWidth)
+            applyingLayout = true;
+            try
             {
-                sizeDelta.x = canvasRect.rect.width;
-            }
+                // Make Middle use the canvas center as its anchor reference.
+                SetVector2IfChanged(middleRegion.anchorMin, new Vector2(0.5f, 0.5f), value => middleRegion.anchorMin = value);
+                SetVector2IfChanged(middleRegion.anchorMax, new Vector2(0.5f, 0.5f), value => middleRegion.anchorMax = value);
+                SetVector2IfChanged(middleRegion.pivot, new Vector2(0.5f, 0.5f), value => middleRegion.pivot = value);
 
-            if (resizeMiddleHeight)
+                Vector2 anchoredPosition = middleRegion.anchoredPosition;
+                anchoredPosition.x = 0f;
+                anchoredPosition.y = centerY;
+                SetVector2IfChanged(middleRegion.anchoredPosition, anchoredPosition, value => middleRegion.anchoredPosition = value);
+
+                Vector2 sizeDelta = middleRegion.sizeDelta;
+
+                if (stretchMiddleWidth)
+                    sizeDelta.x = canvasRect.rect.width;
+
+                if (resizeMiddleHeight)
+                    sizeDelta.y = availableHeight;
+
+                SetVector2IfChanged(middleRegion.sizeDelta, sizeDelta, value => middleRegion.sizeDelta = value);
+            }
+            finally
             {
-                sizeDelta.y = availableHeight;
+                applyingLayout = false;
             }
-
-            middleRegion.sizeDelta = sizeDelta;
         }
 
         private float WorldYToCanvasLocalY(float worldY)
@@ -135,6 +144,14 @@ namespace DogGame.UI
             Vector3 worldPoint = new Vector3(0f, worldY, 0f);
             Vector3 canvasLocalPoint = canvasRect.InverseTransformPoint(worldPoint);
             return canvasLocalPoint.y;
+        }
+
+        private static void SetVector2IfChanged(Vector2 current, Vector2 next, System.Action<Vector2> setter)
+        {
+            if ((current - next).sqrMagnitude <= 0.0001f)
+                return;
+
+            setter(next);
         }
     }
 }

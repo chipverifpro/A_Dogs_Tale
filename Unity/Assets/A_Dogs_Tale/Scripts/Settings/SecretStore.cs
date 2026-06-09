@@ -8,6 +8,7 @@ namespace DogGame.Settings
     {
         public const string OpenAIApiKey = "OPENAI_API_KEY";
         public const string GeminiApiKey = "GEMINI_API_KEY";
+        public const string MistralApiKey = "MISTRAL_API_KEY";
 
         private static ISecretStore? current;
 
