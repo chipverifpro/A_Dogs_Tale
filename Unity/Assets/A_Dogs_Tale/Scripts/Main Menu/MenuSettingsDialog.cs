@@ -50,6 +50,12 @@ public class MenuSettingsDialog : MonoBehaviour
     private Toggle localQwenToggle;
     private Toggle localGemmaToggle;
     private Toggle localMistralToggle;
+    private InputField chatGptModelInput;
+    private InputField geminiModelInput;
+    private InputField mistralModelInput;
+    private InputField localQwenModelInput;
+    private InputField localGemmaModelInput;
+    private InputField localMistralModelInput;
     private InputField openAIApiKeyInput;
     private InputField geminiApiKeyInput;
     private InputField mistralApiKeyInput;
@@ -249,14 +255,7 @@ public class MenuSettingsDialog : MonoBehaviour
         CreateMapTypeRow(content);
 
         CreateSectionHeader(content, "AI MODELS");
-        GameObject aiRow = CreateRow(content, "AIModelRow", 42f);
-        chatGptToggle = CreateToggle(aiRow.transform, "ChatGPT", "ChatGptToggle");
-        geminiToggle = CreateToggle(aiRow.transform, "Gemini", "GeminiToggle");
-        mistralToggle = CreateToggle(aiRow.transform, "Mistral", "MistralToggle");
-        GameObject localAiRow = CreateRow(content, "LocalAIModelRow", 64f);
-        localQwenToggle = CreateToggle(localAiRow.transform, "Local Kwen", "LocalQwenToggle");
-        localGemmaToggle = CreateToggle(localAiRow.transform, "Local Gemma", "LocalGemmaToggle");
-        localMistralToggle = CreateToggle(localAiRow.transform, "Local Mistral", "LocalMistralToggle");
+        CreateAiModelRows(content);
         CreateSecretStoreRow(content, "OPENAI_API_KEY", SecretStore.OpenAIApiKey, out openAIApiKeyInput, out openAIApiKeyStatusLabel);
         CreateSecretStoreRow(content, "GEMINI_API_KEY", SecretStore.GeminiApiKey, out geminiApiKeyInput, out geminiApiKeyStatusLabel);
         CreateSecretStoreRow(content, "MISTRAL_API_KEY", SecretStore.MistralApiKey, out mistralApiKeyInput, out mistralApiKeyStatusLabel);
@@ -277,6 +276,9 @@ public class MenuSettingsDialog : MonoBehaviour
         CreateButtonSizeRow(content);
 
         CreateSectionHeader(content, "LINKS");
+        GameObject aiUpdatesRow = CreateRow(content, "AIModelUpdatesRow", 44f);
+        Button aiModelUpdatesButton = CreateButton(aiUpdatesRow.transform, "AI Model Updates", "AIModelUpdatesButton");
+        aiModelUpdatesButton.onClick.AddListener(() => menuManager?.OpenAiModelUpdates());
         GameObject linkRow = CreateRow(content, "LinksRow", 44f);
         Button docsButton = CreateButton(linkRow.transform, "Documentation", "DocumentationButton");
         docsButton.onClick.AddListener(() => menuManager?.OpenDocs());
@@ -288,12 +290,7 @@ public class MenuSettingsDialog : MonoBehaviour
         CreateVersionFooter(content);
         CreateCloseButtonOverlay(root, canvas);
 
-        chatGptToggle.onValueChanged.AddListener(_ => SaveFromControls());
-        geminiToggle.onValueChanged.AddListener(_ => SaveFromControls());
-        mistralToggle.onValueChanged.AddListener(_ => SaveFromControls());
-        localQwenToggle.onValueChanged.AddListener(_ => SaveFromControls());
-        localGemmaToggle.onValueChanged.AddListener(_ => SaveFromControls());
-        localMistralToggle.onValueChanged.AddListener(_ => SaveFromControls());
+        AddAiModelListeners();
         touchscreenJoystickToggle.onValueChanged.AddListener(_ => SaveFromControls());
         musicToggle.onValueChanged.AddListener(_ => SaveFromControls());
         sfxToggle.onValueChanged.AddListener(_ => SaveFromControls());
@@ -590,6 +587,91 @@ public class MenuSettingsDialog : MonoBehaviour
         return slider;
     }
 
+    private void CreateAiModelRows(Transform parent)
+    {
+        chatGptToggle = CreateAiModelRow(parent, "ChatGPT", "ChatGptToggle", "ChatGptModelInput", PersistentGameSettings.DefaultChatGptModelName, out chatGptModelInput);
+        geminiToggle = CreateAiModelRow(parent, "Gemini", "GeminiToggle", "GeminiModelInput", PersistentGameSettings.DefaultGeminiModelName, out geminiModelInput);
+        mistralToggle = CreateAiModelRow(parent, "Mistral", "MistralToggle", "MistralModelInput", PersistentGameSettings.DefaultMistralModelName, out mistralModelInput);
+        localQwenToggle = CreateAiModelRow(parent, "Local Qwen", "LocalQwenToggle", "LocalQwenModelInput", PersistentGameSettings.DefaultLocalQwenModelName, out localQwenModelInput);
+        localGemmaToggle = CreateAiModelRow(parent, "Local Gemma", "LocalGemmaToggle", "LocalGemmaModelInput", PersistentGameSettings.DefaultLocalGemmaModelName, out localGemmaModelInput);
+        localMistralToggle = CreateAiModelRow(parent, "Local Mistral", "LocalMistralToggle", "LocalMistralModelInput", PersistentGameSettings.DefaultLocalMistralModelName, out localMistralModelInput);
+    }
+
+    private Toggle CreateAiModelRow(Transform parent, string labelText, string toggleName, string inputName, string defaultModelName, out InputField modelInput)
+    {
+        GameObject row = CreateRow(parent, $"{inputName}Row", 42f);
+        Toggle toggle = CreateToggle(row.transform, labelText, toggleName);
+        ConfigureCompactToggle(toggle, 170f);
+
+        modelInput = CreateModelNameInputField(row.transform, inputName, defaultModelName);
+
+        Button resetButton = CreateButton(row.transform, "Reset", $"{inputName}ResetButton");
+        ConfigureCompactButton(resetButton, 72f);
+        InputField capturedInput = modelInput;
+        resetButton.onClick.AddListener(() => ResetModelInput(capturedInput, defaultModelName));
+
+        return toggle;
+    }
+
+    private InputField CreateModelNameInputField(Transform parent, string objectName, string defaultModelName)
+    {
+        GameObject inputObject = DefaultControls.CreateInputField(new DefaultControls.Resources());
+        inputObject.name = objectName;
+        inputObject.transform.SetParent(parent, false);
+        SetLayerRecursive(inputObject, parent.gameObject.layer);
+
+        Image image = inputObject.GetComponent<Image>();
+        if (image != null)
+            image.color = new Color(1f, 0.94f, 0.78f, 0.82f);
+
+        InputField inputField = inputObject.GetComponent<InputField>();
+        inputField.contentType = InputField.ContentType.Standard;
+        inputField.lineType = InputField.LineType.SingleLine;
+        inputField.text = defaultModelName;
+
+        Text text = inputField.textComponent;
+        if (text != null)
+        {
+            text.font = GetRuntimeFont();
+            text.color = textColor;
+            text.fontSize = 14;
+            text.horizontalOverflow = HorizontalWrapMode.Overflow;
+        }
+
+        Text placeholder = inputField.placeholder as Text;
+        if (placeholder != null)
+        {
+            placeholder.font = GetRuntimeFont();
+            placeholder.text = defaultModelName;
+            placeholder.color = new Color(textColor.r, textColor.g, textColor.b, 0.42f);
+            placeholder.fontSize = 14;
+            placeholder.horizontalOverflow = HorizontalWrapMode.Overflow;
+        }
+
+        LayoutElement layout = inputObject.AddComponent<LayoutElement>();
+        layout.flexibleWidth = 1f;
+        layout.minWidth = 220f;
+        layout.preferredHeight = 36f;
+        return inputField;
+    }
+
+    private void AddAiModelListeners()
+    {
+        chatGptToggle.onValueChanged.AddListener(_ => SaveFromControls());
+        geminiToggle.onValueChanged.AddListener(_ => SaveFromControls());
+        mistralToggle.onValueChanged.AddListener(_ => SaveFromControls());
+        localQwenToggle.onValueChanged.AddListener(_ => SaveFromControls());
+        localGemmaToggle.onValueChanged.AddListener(_ => SaveFromControls());
+        localMistralToggle.onValueChanged.AddListener(_ => SaveFromControls());
+
+        chatGptModelInput.onEndEdit.AddListener(_ => SaveFromControls());
+        geminiModelInput.onEndEdit.AddListener(_ => SaveFromControls());
+        mistralModelInput.onEndEdit.AddListener(_ => SaveFromControls());
+        localQwenModelInput.onEndEdit.AddListener(_ => SaveFromControls());
+        localGemmaModelInput.onEndEdit.AddListener(_ => SaveFromControls());
+        localMistralModelInput.onEndEdit.AddListener(_ => SaveFromControls());
+    }
+
     private void CreateSecretStoreRow(Transform parent, string labelText, string secretKey, out InputField inputField, out Text statusLabel)
     {
         GameObject row = CreateRow(parent, $"{labelText}Row", 42f);
@@ -713,6 +795,29 @@ public class MenuSettingsDialog : MonoBehaviour
         layout.flexibleWidth = 0f;
         layout.minWidth = width;
         layout.preferredWidth = width;
+    }
+
+    private static void ConfigureCompactToggle(Toggle toggle, float width)
+    {
+        if (toggle == null)
+            return;
+
+        LayoutElement layout = toggle.GetComponent<LayoutElement>();
+        if (layout == null)
+            layout = toggle.gameObject.AddComponent<LayoutElement>();
+
+        layout.flexibleWidth = 0f;
+        layout.minWidth = width;
+        layout.preferredWidth = width;
+    }
+
+    private void ResetModelInput(InputField inputField, string defaultModelName)
+    {
+        if (inputField == null)
+            return;
+
+        inputField.text = defaultModelName;
+        SaveFromControls();
     }
 
     private void SaveSecretFromInput(InputField inputField, Text statusLabel, string secretKey)
@@ -1250,20 +1355,12 @@ public class MenuSettingsDialog : MonoBehaviour
 
     private static string FormatToggleLabel(string labelText, string objectName)
     {
-        return objectName switch
-        {
-            "LocalQwenToggle" => "Local\nKwen",
-            "LocalGemmaToggle" => "Local\nGemma",
-            "LocalMistralToggle" => "Local\nMistral",
-            _ => labelText
-        };
+        return labelText;
     }
 
     private static bool IsTwoLineToggle(string objectName)
     {
-        return objectName == "LocalQwenToggle" ||
-               objectName == "LocalGemmaToggle" ||
-               objectName == "LocalMistralToggle";
+        return false;
     }
 
     private Sprite GetSettingsIconSprite(int index)
@@ -1525,13 +1622,7 @@ public class MenuSettingsDialog : MonoBehaviour
         CreateMapTypeRow(panel.transform);
 
         CreateSectionHeader(panel.transform, "AI Models");
-        chatGptToggle = CreateToggle(panel.transform, "ChatGPT", "ChatGptToggle");
-        geminiToggle = CreateToggle(panel.transform, "Gemini", "GeminiToggle");
-        mistralToggle = CreateToggle(panel.transform, "Mistral", "MistralToggle");
-        GameObject localAiRow = CreateRow(panel.transform, "LocalAIModelRow", 64f);
-        localQwenToggle = CreateToggle(localAiRow.transform, "Local Kwen", "LocalQwenToggle");
-        localGemmaToggle = CreateToggle(localAiRow.transform, "Local Gemma", "LocalGemmaToggle");
-        localMistralToggle = CreateToggle(localAiRow.transform, "Local Mistral", "LocalMistralToggle");
+        CreateAiModelRows(panel.transform);
         CreateSecretStoreRow(panel.transform, "OPENAI_API_KEY", SecretStore.OpenAIApiKey, out openAIApiKeyInput, out openAIApiKeyStatusLabel);
         CreateSecretStoreRow(panel.transform, "GEMINI_API_KEY", SecretStore.GeminiApiKey, out geminiApiKeyInput, out geminiApiKeyStatusLabel);
         CreateSecretStoreRow(panel.transform, "MISTRAL_API_KEY", SecretStore.MistralApiKey, out mistralApiKeyInput, out mistralApiKeyStatusLabel);
@@ -1550,12 +1641,7 @@ public class MenuSettingsDialog : MonoBehaviour
 
         CreateVersionFooter(panel.transform);
 
-        chatGptToggle.onValueChanged.AddListener(_ => SaveFromControls());
-        geminiToggle.onValueChanged.AddListener(_ => SaveFromControls());
-        mistralToggle.onValueChanged.AddListener(_ => SaveFromControls());
-        localQwenToggle.onValueChanged.AddListener(_ => SaveFromControls());
-        localGemmaToggle.onValueChanged.AddListener(_ => SaveFromControls());
-        localMistralToggle.onValueChanged.AddListener(_ => SaveFromControls());
+        AddAiModelListeners();
         touchscreenJoystickToggle.onValueChanged.AddListener(_ => SaveFromControls());
         musicToggle.onValueChanged.AddListener(_ => SaveFromControls());
         sfxToggle.onValueChanged.AddListener(_ => SaveFromControls());
@@ -1690,6 +1776,12 @@ public class MenuSettingsDialog : MonoBehaviour
         localQwenToggle?.SetIsOnWithoutNotify(settings.localQwenEnabled);
         localGemmaToggle?.SetIsOnWithoutNotify(settings.localGemmaEnabled);
         localMistralToggle?.SetIsOnWithoutNotify(settings.localMistralEnabled);
+        SetInputTextWithoutNotify(chatGptModelInput, settings.chatGptModelName);
+        SetInputTextWithoutNotify(geminiModelInput, settings.geminiModelName);
+        SetInputTextWithoutNotify(mistralModelInput, settings.mistralModelName);
+        SetInputTextWithoutNotify(localQwenModelInput, settings.localQwenModelName);
+        SetInputTextWithoutNotify(localGemmaModelInput, settings.localGemmaModelName);
+        SetInputTextWithoutNotify(localMistralModelInput, settings.localMistralModelName);
         RefreshSecretRows();
         musicToggle?.SetIsOnWithoutNotify(settings.musicEnabled);
         sfxToggle?.SetIsOnWithoutNotify(settings.sfxEnabled);
@@ -1737,6 +1829,12 @@ public class MenuSettingsDialog : MonoBehaviour
             localQwenEnabled = localQwenToggle != null ? localQwenToggle.isOn : current.localQwenEnabled,
             localGemmaEnabled = localGemmaToggle != null ? localGemmaToggle.isOn : current.localGemmaEnabled,
             localMistralEnabled = localMistralToggle != null ? localMistralToggle.isOn : current.localMistralEnabled,
+            chatGptModelName = GetModelInputValue(chatGptModelInput, current.chatGptModelName),
+            geminiModelName = GetModelInputValue(geminiModelInput, current.geminiModelName),
+            mistralModelName = GetModelInputValue(mistralModelInput, current.mistralModelName),
+            localQwenModelName = GetModelInputValue(localQwenModelInput, current.localQwenModelName),
+            localGemmaModelName = GetModelInputValue(localGemmaModelInput, current.localGemmaModelName),
+            localMistralModelName = GetModelInputValue(localMistralModelInput, current.localMistralModelName),
             ollamaEnabled =
                 localQwenToggle != null || localGemmaToggle != null || localMistralToggle != null
                     ? (localQwenToggle != null && localQwenToggle.isOn) ||
@@ -1755,6 +1853,22 @@ public class MenuSettingsDialog : MonoBehaviour
             buttonSize = PersistentGameSettings.SnapButtonSize(buttonSizeSlider != null ? buttonSizeSlider.value : current.buttonSize),
             androidFullscreenEnabled = androidFullscreenToggle != null ? androidFullscreenToggle.isOn : current.androidFullscreenEnabled
         });
+    }
+
+    private static void SetInputTextWithoutNotify(InputField inputField, string value)
+    {
+        if (inputField == null)
+            return;
+
+        inputField.SetTextWithoutNotify(value ?? string.Empty);
+    }
+
+    private static string GetModelInputValue(InputField inputField, string fallback)
+    {
+        if (inputField == null)
+            return fallback;
+
+        return string.IsNullOrWhiteSpace(inputField.text) ? fallback : inputField.text.Trim();
     }
 
     private void UpdateScentStepLabel(float value)

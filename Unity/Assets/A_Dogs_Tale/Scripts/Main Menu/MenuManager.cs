@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -274,6 +275,13 @@ public class MenuManager : MonoBehaviour
     public void OpenDocs()
     {
         Application.OpenURL("https://github.com/chipverifpro/A_Dogs_Tale/wiki/How-to-play");
+    }
+
+    public void OpenAiModelUpdates()
+    {
+        const string prompt = "Give me a list of each company's fastest AI models by Google (Gemini), OpenAI (ChatGPT), and Mistral.  I need 5K token size, JSON and MCP, but not very smart.  Second, give a list of three most appropriate models I can run locally with Ollama with the same requirements (from the companies Mistral, Alibaba (Qwen), and Google (Gemma)) but also runs in as small a memory footprint as possible (list amount of VRAM they need).  Keep the report on each model brief, but list the full model names as they would be used in the API or Ollama command line.";
+        string encodedPrompt = Uri.EscapeDataString(prompt);
+        Application.OpenURL($"https://gemini.google.com/app?prompt={encodedPrompt}");
     }
 
     public void ReviewSplashScreens()

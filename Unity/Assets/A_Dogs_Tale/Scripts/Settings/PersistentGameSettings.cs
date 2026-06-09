@@ -31,6 +31,12 @@ public static class PersistentGameSettings
     public const int GraphicsLevelLow = 1985;
     public const int GraphicsLevelMedium = 1990;
     public const int GraphicsLevelHigh = 1995;
+    public const string DefaultChatGptModelName = "gpt-4.1-nano";
+    public const string DefaultGeminiModelName = "gemini-3.1-flash-lite";
+    public const string DefaultMistralModelName = "ministral-3b-2512";
+    public const string DefaultLocalQwenModelName = "qwen3:0.6b";
+    public const string DefaultLocalGemmaModelName = "gemma3:270m";
+    public const string DefaultLocalMistralModelName = "ministral-3:3b-instruct-2512-q4_K_M";
 
     public enum MapType
     {
@@ -52,6 +58,12 @@ public static class PersistentGameSettings
         public bool localQwenEnabled = true;
         public bool localGemmaEnabled = false;
         public bool localMistralEnabled = false;
+        public string chatGptModelName = DefaultChatGptModelName;
+        public string geminiModelName = DefaultGeminiModelName;
+        public string mistralModelName = DefaultMistralModelName;
+        public string localQwenModelName = DefaultLocalQwenModelName;
+        public string localGemmaModelName = DefaultLocalGemmaModelName;
+        public string localMistralModelName = DefaultLocalMistralModelName;
         public float scentSimulationTimeStep = MinScentSimulationTimeStep;
         public int graphicsLevel = GraphicsLevelHigh;
         public bool wallpaperEnabled = true;
@@ -443,8 +455,19 @@ public static class PersistentGameSettings
         data.uiVolume = Mathf.Clamp01(data.uiVolume);
         data.buttonSize = SnapButtonSize(data.buttonSize);
         data.ollamaEnabled = data.localQwenEnabled || data.localGemmaEnabled || data.localMistralEnabled;
+        data.chatGptModelName = NormalizeModelName(data.chatGptModelName, DefaultChatGptModelName);
+        data.geminiModelName = NormalizeModelName(data.geminiModelName, DefaultGeminiModelName);
+        data.mistralModelName = NormalizeModelName(data.mistralModelName, DefaultMistralModelName);
+        data.localQwenModelName = NormalizeModelName(data.localQwenModelName, DefaultLocalQwenModelName);
+        data.localGemmaModelName = NormalizeModelName(data.localGemmaModelName, DefaultLocalGemmaModelName);
+        data.localMistralModelName = NormalizeModelName(data.localMistralModelName, DefaultLocalMistralModelName);
 
         return data;
+    }
+
+    private static string NormalizeModelName(string modelName, string defaultModelName)
+    {
+        return string.IsNullOrWhiteSpace(modelName) ? defaultModelName : modelName.Trim();
     }
 
     private static void ApplyAndroidDisplayMode(Data data)
