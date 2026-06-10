@@ -46,7 +46,6 @@ public class MenuSettingsDialog : MonoBehaviour
     private Toggle chatGptToggle;
     private Toggle geminiToggle;
     private Toggle mistralToggle;
-    private Toggle ollamaToggle;
     private Toggle localQwenToggle;
     private Toggle localGemmaToggle;
     private Toggle localMistralToggle;
@@ -1772,7 +1771,6 @@ public class MenuSettingsDialog : MonoBehaviour
         chatGptToggle?.SetIsOnWithoutNotify(settings.chatGptEnabled);
         geminiToggle?.SetIsOnWithoutNotify(settings.geminiEnabled);
         mistralToggle?.SetIsOnWithoutNotify(settings.mistralEnabled);
-        ollamaToggle?.SetIsOnWithoutNotify(settings.ollamaEnabled);
         localQwenToggle?.SetIsOnWithoutNotify(settings.localQwenEnabled);
         localGemmaToggle?.SetIsOnWithoutNotify(settings.localGemmaEnabled);
         localMistralToggle?.SetIsOnWithoutNotify(settings.localMistralEnabled);
@@ -2154,7 +2152,6 @@ public class MenuSettingsDialog : MonoBehaviour
         RefreshToggleVisual(chatGptToggle);
         RefreshToggleVisual(geminiToggle);
         RefreshToggleVisual(mistralToggle);
-        RefreshToggleVisual(ollamaToggle);
         RefreshToggleVisual(localQwenToggle);
         RefreshToggleVisual(localGemmaToggle);
         RefreshToggleVisual(localMistralToggle);

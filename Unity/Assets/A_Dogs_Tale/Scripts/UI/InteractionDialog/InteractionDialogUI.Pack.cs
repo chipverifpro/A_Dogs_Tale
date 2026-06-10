@@ -8,6 +8,10 @@ public sealed partial class InteractionDialogUI : MonoBehaviour
 {
     #region Fields
 
+    private static readonly Vector2 PackBottomActionPanelPosition = new(70f, -690f);
+
+    private static readonly Vector2 PackBottomMemberListPosition = new(-305f, -690f);
+
     private Button setLeaderButton;
 
     private Button joinPackButton;
@@ -56,7 +60,7 @@ public sealed partial class InteractionDialogUI : MonoBehaviour
         actionPanelRect.anchorMin = new Vector2(0.5f, 1f);
         actionPanelRect.anchorMax = new Vector2(0.5f, 1f);
         actionPanelRect.pivot = new Vector2(0.5f, 0.5f);
-        actionPanelRect.anchoredPosition = new Vector2(270f, -690f);
+        actionPanelRect.anchoredPosition = PackBottomActionPanelPosition;
         actionPanelRect.sizeDelta = new Vector2(690f, 300f);
 
         VerticalLayoutGroup layout = packActionPanelObject.AddComponent<VerticalLayoutGroup>();
@@ -100,7 +104,7 @@ public sealed partial class InteractionDialogUI : MonoBehaviour
         listRect.anchorMin = new Vector2(0.5f, 1f);
         listRect.anchorMax = new Vector2(0.5f, 1f);
         listRect.pivot = new Vector2(0.5f, 0.5f);
-        listRect.anchoredPosition = new Vector2(-425f, -690f);
+        listRect.anchoredPosition = PackBottomMemberListPosition;
         listRect.sizeDelta = new Vector2(470f, 300f);
 
         Image listBackground = packMemberListObject.AddComponent<Image>();
@@ -306,6 +310,7 @@ public sealed partial class InteractionDialogUI : MonoBehaviour
         SetLabelText(playerHeldItemLabel, string.Empty);
         SetLabelText(targetNameLabel, rightMember != null ? rightMember.DisplayName : string.Empty);
         SetLabelText(targetHeldItemLabel, string.Empty);
+        SetBottomTargetAgentLabel(rightMember);
 
         if (forcePreviewRefresh || leftMember != packState.DisplayedLeft)
             BuildPreviewClone(playerPreviewSlot, leftMember, "PackLeft");

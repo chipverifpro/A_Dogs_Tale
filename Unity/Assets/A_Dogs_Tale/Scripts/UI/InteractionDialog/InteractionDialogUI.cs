@@ -60,6 +60,8 @@ public sealed partial class InteractionDialogUI : MonoBehaviour
 
     private TextMeshProUGUI targetItemSelectionTypeLabel;
 
+    private TextMeshProUGUI bottomTargetAgentLabel;
+
     private Image socialTabHighlight;
 
     private Image questsTabHighlight;
@@ -377,6 +379,7 @@ public sealed partial class InteractionDialogUI : MonoBehaviour
         BuildPackIndicatorButtons(dialogRoot.transform);
         BuildHeader(dialogRoot.transform);
         BuildTopInfo(dialogRoot.transform);
+        BuildBottomTargetAgentLabel(dialogRoot.transform);
         BuildTradeArrows(dialogRoot.transform);
         BuildTabLabels(dialogRoot.transform);
         BuildSelectionArrows(dialogRoot.transform);
@@ -550,6 +553,12 @@ public sealed partial class InteractionDialogUI : MonoBehaviour
         SetLabelText(playerSelectionTypeLabel, "Pack Member");
         SetLabelText(playerItemSelectionTypeLabel, "Held Item");
         SetLabelText(targetItemSelectionTypeLabel, "Held Item");
+    }
+
+    private void BuildBottomTargetAgentLabel(Transform parent)
+    {
+        bottomTargetAgentLabel = CreateInfoLabel(parent, "BottomTargetAgent", new Vector2(70f, -512f), new Vector2(690f, 54f), 36f, TextAlignmentOptions.Center);
+        bottomTargetAgentLabel.fontStyle = FontStyles.Bold;
     }
 
     private Button CreateSpriteButton(
@@ -840,6 +849,11 @@ public sealed partial class InteractionDialogUI : MonoBehaviour
     {
         if (label != null)
             label.text = text ?? string.Empty;
+    }
+
+    private void SetBottomTargetAgentLabel(WorldObject agent)
+    {
+        SetLabelText(bottomTargetAgentLabel, agent != null ? agent.DisplayName : string.Empty);
     }
 
     #endregion

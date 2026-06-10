@@ -48,7 +48,7 @@ public sealed partial class InteractionDialogUI : MonoBehaviour
         scentSourceListRect.anchorMin = new Vector2(0.5f, 1f);
         scentSourceListRect.anchorMax = new Vector2(0.5f, 1f);
         scentSourceListRect.pivot = new Vector2(0.5f, 0.5f);
-        scentSourceListRect.anchoredPosition = new Vector2(425f, -690f);
+        scentSourceListRect.anchoredPosition = new Vector2(305f, -690f);
         scentSourceListRect.sizeDelta = new Vector2(470f, 300f);
 
         Image listBackground = scentSourceListObject.AddComponent<Image>();
@@ -221,6 +221,7 @@ public sealed partial class InteractionDialogUI : MonoBehaviour
         SetLabelText(playerHeldItemLabel, string.Empty);
         SetLabelText(targetNameLabel, rightMember != null ? rightMember.DisplayName : string.Empty);
         SetLabelText(targetHeldItemLabel, string.Empty);
+        SetBottomTargetAgentLabel(rightMember);
 
         if (forcePreviewRefresh || leftMember != scentState.DisplayedLeft)
             BuildPreviewClone(playerPreviewSlot, leftMember, "ScentLeft");

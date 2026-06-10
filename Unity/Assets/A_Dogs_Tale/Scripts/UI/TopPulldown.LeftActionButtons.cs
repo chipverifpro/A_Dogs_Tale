@@ -161,7 +161,6 @@ public partial class TopPulldown
     [Header("Corner Controls")]
     [SerializeField] private bool useCornerControls = true;
     [SerializeField] private float cornerControlMargin = 24f;
-    [SerializeField] private float bottomCornerControlClearance = 134f;
     [SerializeField] private float interactionPanelButtonScale = 0.58f;
     [SerializeField] private string interactionSideButtonsSpriteResourcePath = "Sprites/Frames/Interaction_Side_Buttons_A";
 
@@ -261,9 +260,10 @@ public partial class TopPulldown
         HidePulldownControlsReplacedByCorners();
 
         float topInset = GetTopSafeAreaInset();
+        float secondRowY = -(cornerControlMargin + topInset + topControlButtonSize + modeButtonSpacing);
         ConfigureCornerButton(homeButtonRect, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(cornerControlMargin, -(cornerControlMargin + topInset)));
         ConfigureCornerButton(cameraModeButtonRect, new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-cornerControlMargin, -(cornerControlMargin + topInset)));
-        ConfigureCornerButton(speedButtonRect, new Vector2(0f, 0f), new Vector2(0f, 0f), new Vector2(cornerControlMargin, bottomCornerControlClearance + topControlButtonSize + modeButtonSpacing));
+        ConfigureCornerButton(speedButtonRect, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(cornerControlMargin, secondRowY));
 
         ApplyTopControlButtonSize(homeButtonRect);
         ApplyTopControlButtonSize(cameraModeButtonRect);
@@ -302,11 +302,13 @@ public partial class TopPulldown
             interactionPanelImage.preserveAspect = true;
         }
 
-        interactionPanelRect.anchorMin = new Vector2(1f, 0.5f);
-        interactionPanelRect.anchorMax = new Vector2(1f, 0.5f);
-        interactionPanelRect.pivot = new Vector2(1f, 0.5f);
+        float topInset = GetTopSafeAreaInset();
+        float secondRowY = -(cornerControlMargin + topInset + topControlButtonSize + modeButtonSpacing);
+        interactionPanelRect.anchorMin = new Vector2(1f, 1f);
+        interactionPanelRect.anchorMax = new Vector2(1f, 1f);
+        interactionPanelRect.pivot = new Vector2(1f, 1f);
         interactionPanelRect.localScale = Vector3.one;
-        interactionPanelRect.anchoredPosition = new Vector2(-cornerControlMargin, 0f);
+        interactionPanelRect.anchoredPosition = new Vector2(-cornerControlMargin, secondRowY);
         interactionPanelRect.sizeDelta = new Vector2(panelWidth, panelHeight);
 
         for (int i = 0; i < interactionButtonRects.Length; i++)

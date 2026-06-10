@@ -34,7 +34,7 @@ public sealed partial class InteractionDialogUI : MonoBehaviour
         gridRect.anchorMin = new Vector2(0.5f, 1f);
         gridRect.anchorMax = new Vector2(0.5f, 1f);
         gridRect.pivot = new Vector2(0.5f, 0.5f);
-        gridRect.anchoredPosition = new Vector2(-425f, -690f);
+        gridRect.anchoredPosition = new Vector2(-305f, -690f);
         gridRect.sizeDelta = new Vector2(470f, 300f);
 
         Image gridBackground = socialEmoteGridObject.AddComponent<Image>();
@@ -168,6 +168,7 @@ public sealed partial class InteractionDialogUI : MonoBehaviour
         SetLabelText(playerHeldItemLabel, string.Empty);
         SetLabelText(targetNameLabel, rightMember != null ? rightMember.DisplayName : string.Empty);
         SetLabelText(targetHeldItemLabel, string.Empty);
+        SetBottomTargetAgentLabel(leftMember);
 
         if (forcePreviewRefresh || leftMember != socialState.DisplayedLeft)
             BuildPreviewClone(playerPreviewSlot, leftMember, "SocialLeft");

@@ -35,7 +35,7 @@ public sealed partial class InteractionDialogUI : MonoBehaviour
         listRect.anchorMin = new Vector2(0.5f, 1f);
         listRect.anchorMax = new Vector2(0.5f, 1f);
         listRect.pivot = new Vector2(0.5f, 0.5f);
-        listRect.anchoredPosition = new Vector2(-425f, -690f);
+        listRect.anchoredPosition = new Vector2(-305f, -690f);
         listRect.sizeDelta = new Vector2(470f, 300f);
 
         Image listBackground = questListObject.AddComponent<Image>();
@@ -290,6 +290,7 @@ public sealed partial class InteractionDialogUI : MonoBehaviour
         SetLabelText(playerHeldItemLabel, string.Empty);
         SetLabelText(targetNameLabel, rightMember != null ? rightMember.DisplayName : string.Empty);
         SetLabelText(targetHeldItemLabel, string.Empty);
+        SetBottomTargetAgentLabel(rightMember);
 
         if (forcePreviewRefresh || leftMember != questsState.DisplayedLeft)
             BuildPreviewClone(playerPreviewSlot, leftMember, "QuestLeft");

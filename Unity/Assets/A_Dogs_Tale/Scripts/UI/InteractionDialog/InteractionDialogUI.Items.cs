@@ -16,6 +16,12 @@ public sealed partial class InteractionDialogUI : MonoBehaviour
 
     private Button takeHotspotButton;
 
+    private Button autoPickupButton;
+
+    private Image autoPickupButtonBackground;
+
+    private Image autoPickupButtonIcon;
+
     private GameObject actionPanelObject;
 
     private GameObject packHeldItemListObject;
@@ -25,6 +31,14 @@ public sealed partial class InteractionDialogUI : MonoBehaviour
     private ScrollRect packHeldItemListScrollRect;
 
     private TextMeshProUGUI packHeldItemListEmptyLabel;
+
+    private Sprite[] autoPickupAnimationFrames;
+
+    private const float AutoPickupFrame0DurationSeconds = 1f;
+
+    private const float AutoPickupFrame1DurationSeconds = 0.1f;
+
+    private const float AutoPickupFrame2DurationSeconds = 1f;
 
     [SerializeField, Min(0f)] private float throwForwardImpulse = 7f;
 
@@ -127,23 +141,79 @@ public sealed partial class InteractionDialogUI : MonoBehaviour
         actionPanelRect.anchoredPosition = new Vector2(270f, -690f);
         actionPanelRect.sizeDelta = new Vector2(690f, 300f);
 
-        VerticalLayoutGroup layout = actionPanelObject.AddComponent<VerticalLayoutGroup>();
+        HorizontalLayoutGroup layout = actionPanelObject.AddComponent<HorizontalLayoutGroup>();
         layout.childAlignment = TextAnchor.MiddleCenter;
         layout.childControlWidth = false;
         layout.childControlHeight = false;
         layout.childForceExpandWidth = false;
         layout.childForceExpandHeight = false;
-        layout.spacing = 8f;
+        layout.spacing = 26f;
         layout.padding = new RectOffset(0, 0, 0, 0);
 
-        Transform topRow = CreateActionButtonRow("HeldItemActionRowTop", actionPanelObject.transform, actionButtonHeight);
-        Transform bottomRow = CreateActionButtonRow("HeldItemActionRowBottom", actionPanelObject.transform, actionButtonHeight * 0.86f);
+        CreateAutoPickupActionButton(actionPanelObject.transform);
+
+        GameObject rowsObject = CreateUIObject("HeldItemActionRows", actionPanelObject.transform);
+        VerticalLayoutGroup rowsLayout = rowsObject.AddComponent<VerticalLayoutGroup>();
+        rowsLayout.childAlignment = TextAnchor.MiddleCenter;
+        rowsLayout.childControlWidth = false;
+        rowsLayout.childControlHeight = false;
+        rowsLayout.childForceExpandWidth = false;
+        rowsLayout.childForceExpandHeight = false;
+        rowsLayout.spacing = 8f;
+        rowsLayout.padding = new RectOffset(0, 0, 0, 0);
+
+        LayoutElement rowsLayoutElement = rowsObject.AddComponent<LayoutElement>();
+        rowsLayoutElement.preferredWidth = 420f;
+        rowsLayoutElement.minWidth = 320f;
+        rowsLayoutElement.preferredHeight = 300f;
+        rowsLayoutElement.minHeight = 260f;
+
+        Transform topRow = CreateActionButtonRow("HeldItemActionRowTop", rowsObject.transform, actionButtonHeight);
+        Transform bottomRow = CreateActionButtonRow("HeldItemActionRowBottom", rowsObject.transform, actionButtonHeight * 0.86f);
 
         CreateActionButton(topRow, InventoryAction.Use, OnUseClicked);
         CreateActionButton(topRow, InventoryAction.Eat, OnEatClicked);
         CreateActionButton(bottomRow, InventoryAction.Drop, OnDropClicked, 0.86f);
         CreateThrowActionButton(bottomRow, 0.86f);
         CreateActionButton(bottomRow, InventoryAction.PickUp, OnPickUpClicked, 0.86f);
+    }
+
+    private void CreateAutoPickupActionButton(Transform parent)
+    {
+        GameObject buttonObject = CreateUIObject("AutoPickupButton", parent);
+        RectTransform rect = buttonObject.GetComponent<RectTransform>();
+        rect.sizeDelta = new Vector2(124f, 124f);
+
+        LayoutElement layoutElement = buttonObject.AddComponent<LayoutElement>();
+        layoutElement.preferredWidth = 124f;
+        layoutElement.preferredHeight = 124f;
+        layoutElement.minWidth = 124f;
+        layoutElement.minHeight = 124f;
+
+        autoPickupButtonBackground = buttonObject.AddComponent<Image>();
+        autoPickupButtonBackground.color = Color.clear;
+        autoPickupButtonBackground.raycastTarget = true;
+
+        autoPickupButton = buttonObject.AddComponent<Button>();
+        autoPickupButton.targetGraphic = autoPickupButtonBackground;
+        autoPickupButton.onClick.AddListener(AudioPlayer.PlayUiButtonClick);
+        autoPickupButton.onClick.AddListener(OnAutoPickupClicked);
+
+        GameObject iconObject = CreateUIObject("Icon", buttonObject.transform);
+        RectTransform iconRect = iconObject.GetComponent<RectTransform>();
+        iconRect.anchorMin = new Vector2(0.5f, 0.5f);
+        iconRect.anchorMax = new Vector2(0.5f, 0.5f);
+        iconRect.pivot = new Vector2(0.5f, 0.5f);
+        iconRect.anchoredPosition = Vector2.zero;
+        iconRect.sizeDelta = new Vector2(112f, 112f);
+
+        autoPickupButtonIcon = iconObject.AddComponent<Image>();
+        autoPickupButtonIcon.sprite = GetAutoPickupAnimationFrame(0);
+        autoPickupButtonIcon.preserveAspect = true;
+        autoPickupButtonIcon.color = Color.white;
+        autoPickupButtonIcon.raycastTarget = false;
+
+        ConfigureTooltip(buttonObject, "Auto Pick Up");
     }
 
     private void BuildPackHeldItemList(Transform parent)
@@ -153,7 +223,7 @@ public sealed partial class InteractionDialogUI : MonoBehaviour
         listRect.anchorMin = new Vector2(0.5f, 1f);
         listRect.anchorMax = new Vector2(0.5f, 1f);
         listRect.pivot = new Vector2(0.5f, 0.5f);
-        listRect.anchoredPosition = new Vector2(-425f, -690f);
+        listRect.anchoredPosition = new Vector2(-305f, -690f);
         listRect.sizeDelta = new Vector2(470f, 300f);
 
         Image listBackground = packHeldItemListObject.AddComponent<Image>();
@@ -376,6 +446,7 @@ public sealed partial class InteractionDialogUI : MonoBehaviour
         KeepSelectedObject(playerItemOptions, previousPlayerItem, ref itemsState.SelectedPlayerItemIndex);
         WorldObject playerItem = GetSelectedFromList(playerItemOptions, ref itemsState.SelectedPlayerItemIndex);
         RefreshPackHeldItemList(player, playerItem);
+        RefreshAutoPickupButton(player);
 
         BuildTargetAgentOptions(player);
         ApplyPendingSelection(targetAgentOptions, sharedState.PendingRightAgentSelection, ref itemsState.SelectedTargetAgentIndex);
@@ -394,6 +465,7 @@ public sealed partial class InteractionDialogUI : MonoBehaviour
         SetLabelText(playerHeldItemLabel, playerItem != null ? playerItem.DisplayName : string.Empty);
         SetLabelText(targetNameLabel, target != null ? target.DisplayName : string.Empty);
         SetLabelText(targetHeldItemLabel, targetItem != null ? targetItem.DisplayName : string.Empty);
+        SetBottomTargetAgentLabel(player);
 
         if (forcePreviewRefresh || player != sharedState.DisplayedPlayer)
             BuildPreviewClone(playerPreviewSlot, player, "Player");
@@ -428,6 +500,28 @@ public sealed partial class InteractionDialogUI : MonoBehaviour
             packHeldItemListObject.SetActive(active);
             if (active)
                 packHeldItemListObject.transform.SetAsLastSibling();
+        }
+    }
+
+    private void RefreshAutoPickupButton(WorldObject agent)
+    {
+        if (autoPickupButton == null)
+            return;
+
+        ContainerModule container = GetOrCreateContainer(agent);
+        bool hasContainer = container != null;
+        bool enabled = hasContainer && container.autoPickupNearbyItems;
+        autoPickupButton.interactable = hasContainer;
+
+        if (autoPickupButtonBackground != null)
+            autoPickupButtonBackground.color = enabled
+                ? new Color(1f, 0.62f, 0.08f, 0.34f)
+                : new Color(0.09f, 0.065f, 0.035f, 0.18f);
+
+        if (autoPickupButtonIcon != null)
+        {
+            autoPickupButtonIcon.sprite = GetCurrentAutoPickupAnimationFrame();
+            autoPickupButtonIcon.color = hasContainer ? Color.white : new Color(1f, 1f, 1f, 0.36f);
         }
     }
 
@@ -589,6 +683,45 @@ public sealed partial class InteractionDialogUI : MonoBehaviour
         };
 
         return SpriteServer.SpriteLookup(spriteName);
+    }
+
+    private Sprite GetCurrentAutoPickupAnimationFrame()
+    {
+        float cycleDuration = AutoPickupFrame0DurationSeconds + AutoPickupFrame1DurationSeconds + AutoPickupFrame2DurationSeconds;
+        float cycleTime = cycleDuration > 0f ? Mathf.Repeat(Time.unscaledTime, cycleDuration) : 0f;
+
+        if (cycleTime < AutoPickupFrame0DurationSeconds)
+            return GetAutoPickupAnimationFrame(0);
+
+        if (cycleTime < AutoPickupFrame0DurationSeconds + AutoPickupFrame1DurationSeconds)
+            return GetAutoPickupAnimationFrame(1);
+
+        return GetAutoPickupAnimationFrame(2);
+    }
+
+    private Sprite GetAutoPickupAnimationFrame(int index)
+    {
+        EnsureAutoPickupAnimationFrames();
+        if (autoPickupAnimationFrames == null || index < 0 || index >= autoPickupAnimationFrames.Length)
+            return null;
+
+        return autoPickupAnimationFrames[index];
+    }
+
+    private void EnsureAutoPickupAnimationFrames()
+    {
+        if (autoPickupAnimationFrames != null)
+            return;
+
+        autoPickupAnimationFrames = new Sprite[3];
+        for (int i = 0; i < autoPickupAnimationFrames.Length; i++)
+        {
+            string spriteName = $"AutoPickUp_RobotDog_B_{i}";
+            autoPickupAnimationFrames[i] =
+                SpriteServer.SpriteLookup(spriteName) ??
+                SpriteServer.SpriteSheetLookupByName("Sprites/AutoPickUp_RobotDog_B", spriteName) ??
+                SpriteServer.SpriteSheetLookup("Sprites/AutoPickUp_RobotDog_B", i);
+        }
     }
 
     private static Color GetPackHeldItemListRowColor(bool selected)
@@ -858,6 +991,18 @@ public sealed partial class InteractionDialogUI : MonoBehaviour
         ShowInteractionMessage(carrier, $"{carrier.DisplayName} picked up {pickedUpItem.DisplayName}");
         itemsState.SelectedPlayerItemIndex = 0;
         RefreshInteractionView(forcePreviewRefresh: true);
+    }
+
+    private void OnAutoPickupClicked()
+    {
+        WorldObject carrier = sharedState.DisplayedPlayer;
+        ContainerModule container = GetOrCreateContainer(carrier);
+        if (carrier == null || container == null)
+            return;
+
+        container.autoPickupNearbyItems = !container.autoPickupNearbyItems;
+        ShowInteractionMessage($"{carrier.DisplayName} auto pick up {(container.autoPickupNearbyItems ? "enabled" : "disabled")}");
+        RefreshInteractionView();
     }
 
     private void OnGiveClicked()
