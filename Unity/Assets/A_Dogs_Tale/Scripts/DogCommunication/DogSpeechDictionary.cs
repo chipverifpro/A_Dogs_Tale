@@ -75,7 +75,7 @@ namespace DogGame.Language
         public void Speak(WorldObject speaker, WorldObject listener, string message)
         {
             string richText = TranslateHumanToDogSimple(message);
-            BottomBanner.LogRichMessage(BannerSense.None, BannerLevel.None, richText);
+            BottomBanner.LogAgentRichMessage(speaker, BannerSense.None, BannerLevel.None, richText);
             Debug.Log($"Speech {message} -> {richText}");
             if (justLearnedWords != null && justLearnedWords.Count > 0)
             {

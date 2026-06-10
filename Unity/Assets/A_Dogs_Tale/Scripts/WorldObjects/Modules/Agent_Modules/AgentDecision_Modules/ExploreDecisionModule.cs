@@ -721,7 +721,7 @@ end
             string agentName = worldObject != null && !string.IsNullOrWhiteSpace(worldObject.DisplayName)
                 ? worldObject.DisplayName
                 : gameObject.name;
-            BottomBanner.Show($"{agentName} has {ExplorationCompleteBannerMessage}");
+            BottomBanner.LogAgentMessage(worldObject, BannerSense.None, BannerLevel.None, $"{agentName} has {ExplorationCompleteBannerMessage}");
 
             if (worldObject != null && worldObject.agentModule != null)
                 worldObject.agentModule.SwitchDecisionModule(AgentDecisionType.Wanderer);

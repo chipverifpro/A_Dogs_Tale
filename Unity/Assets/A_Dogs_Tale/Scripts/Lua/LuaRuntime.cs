@@ -53,7 +53,7 @@ namespace DogGame.Lua
             {
                 string prefix = BuildDebugPrefix();
                 UnityEngine.Debug.Log(prefix + " " + message);
-                BottomBanner.LogRichMessage(BannerSense.None,BannerLevel.None,"<i>" + prefix + "</i> " + message, includeGameTime:true);
+                BottomBanner.LogAgentRichMessage(debugAgentName, BannerSense.None, BannerLevel.None, "<i>" + prefix + "</i> " + message, includeGameTime:true);
             };
         }
 

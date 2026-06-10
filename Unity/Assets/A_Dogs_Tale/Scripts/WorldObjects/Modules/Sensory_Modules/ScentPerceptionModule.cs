@@ -214,7 +214,7 @@ namespace DogGame.Modules
                 $"interest={interest01:0.00} room={room}";
 
             Debug.Log(message, worldObject);
-            BottomBanner.LogMessage(BannerSense.Smell, BannerLevel.High, message, true);
+            BottomBanner.LogAgentMessage(worldObject, BannerSense.Smell, BannerLevel.High, message, true);
 
             strongScentLogMemory[scentKey] = new StrongScentLogState
             {

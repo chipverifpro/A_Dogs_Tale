@@ -855,7 +855,7 @@ public sealed partial class InteractionDialogUI : MonoBehaviour
             return;
         }
 
-        ShowInteractionMessage($"{carrier.DisplayName} picked up {pickedUpItem.DisplayName}");
+        ShowInteractionMessage(carrier, $"{carrier.DisplayName} picked up {pickedUpItem.DisplayName}");
         itemsState.SelectedPlayerItemIndex = 0;
         RefreshInteractionView(forcePreviewRefresh: true);
     }

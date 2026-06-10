@@ -3,6 +3,18 @@ using UnityEngine.InputSystem;
 
 public partial class TopPulldown
 {
+    public static void ToggleDogSight(string triggerSource = "DogSight")
+    {
+        TopPulldown pulldown = FindFirstObjectByType<TopPulldown>(FindObjectsInactive.Include);
+        if (pulldown == null)
+        {
+            Debug.LogWarning("TopPulldown: cannot toggle Dog Sight because no TopPulldown instance was found.");
+            return;
+        }
+
+        pulldown.ToggleSniffMode(triggerSource);
+    }
+
     private void EnsureSniffAction()
     {
         if (sniffAction != null)

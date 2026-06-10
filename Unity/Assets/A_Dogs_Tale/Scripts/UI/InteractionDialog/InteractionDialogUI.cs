@@ -385,6 +385,7 @@ public sealed partial class InteractionDialogUI : MonoBehaviour
         BuildPackMemberList(dialogRoot.transform);
         BuildInteractionQuestList(dialogRoot.transform);
         BuildScentSourceList(dialogRoot.transform);
+        BuildScentActionButtons(dialogRoot.transform);
         BuildSocialEmoteGrid(dialogRoot.transform);
         BuildPackActionButtons(dialogRoot.transform);
         BuildCloseHotspot(dialogRoot.transform);
@@ -1225,6 +1226,11 @@ public sealed partial class InteractionDialogUI : MonoBehaviour
     private static void ShowInteractionMessage(string message)
     {
         BottomBanner.LogInventoryMessage(message);
+    }
+
+    private static void ShowInteractionMessage(WorldObject agent, string message)
+    {
+        BottomBanner.LogAgentInventoryMessage(agent, message);
     }
 
     #endregion

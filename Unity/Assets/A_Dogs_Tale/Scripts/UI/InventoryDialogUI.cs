@@ -1402,7 +1402,7 @@ public sealed class InventoryDialogUI : MonoBehaviour
             string itemName = item.DisplayName;
             if (TryTakeGroundItem(takerContainer, item, out string pickupReason))
             {
-                ShowInventoryMessage($"{taker.DisplayName} picked up {itemName} from the ground");
+                ShowInventoryMessage(taker, $"{taker.DisplayName} picked up {itemName} from the ground");
                 SelectHeldItem(item);
                 RefreshInventoryView(forcePreviewRefresh: true);
                 return;
@@ -1586,7 +1586,7 @@ public sealed class InventoryDialogUI : MonoBehaviour
             return;
         }
 
-        ShowInventoryMessage($"{carrier.DisplayName} picked up {pickedUpItem.DisplayName}");
+        ShowInventoryMessage(carrier, $"{carrier.DisplayName} picked up {pickedUpItem.DisplayName}");
         SelectHeldItem(pickedUpItem);
         RefreshInventoryView(forcePreviewRefresh: true);
     }
@@ -1622,6 +1622,11 @@ public sealed class InventoryDialogUI : MonoBehaviour
     private static void ShowInventoryMessage(string message)
     {
         BottomBanner.LogInventoryMessage(message);
+    }
+
+    private static void ShowInventoryMessage(WorldObject agent, string message)
+    {
+        BottomBanner.LogAgentInventoryMessage(agent, message);
     }
 
     private static bool TryTakeGroundItem(ContainerModule destination, WorldObject item, out string reason)

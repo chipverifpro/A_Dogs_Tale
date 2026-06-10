@@ -78,6 +78,8 @@ public class BottomBanner : MonoBehaviour
     [SerializeField] float backgroundHeightMultiplier = 1f;
     [SerializeField] bool autoCollapseWhenMouseAway = true;
     [SerializeField] float collapseSlideDuration = 0.18f;
+    [Tooltip("Debug mode: keep showing banner messages from agents outside the player's pack.")]
+    [SerializeField] bool showNonPackAgentMessages = false;
 
     [Header("Message Log")]
     [SerializeField] int visibleLineCount = 3;
@@ -117,6 +119,9 @@ public class BottomBanner : MonoBehaviour
     bool missingUiWarningLogged;
     bool requestedCanvasVisible = true;
     bool applyingResponsiveWidth;
+    float lastResponsiveWidth = -1f;
+    int lastResponsiveScreenWidth = -1;
+    int lastResponsiveScreenHeight = -1;
 
     public IReadOnlyList<BannerMessageEntry> MessageHistory => messageHistory;
 
@@ -164,6 +169,7 @@ public class BottomBanner : MonoBehaviour
     {
         elapsedGameTimeSeconds += GameTime.DeltaTime;
         ApplyBuildCompleteVisibility();
+        RefreshResponsiveWidthForScreenChange();
         UpdatePanelClickToggle();
         UpdateAutoCollapse();
     }
@@ -279,12 +285,10 @@ public class BottomBanner : MonoBehaviour
     {
         if (panelRT != null)
         {
-            panelRT.anchorMin = new Vector2(0f, 0f);
-            panelRT.anchorMax = new Vector2(1f, 0f);
+            panelRT.anchorMin = new Vector2(0.5f, 0f);
+            panelRT.anchorMax = new Vector2(0.5f, 0f);
             panelRT.pivot = new Vector2(0.5f, 0f);
             panelRT.anchoredPosition = Vector2.zero;
-            panelRT.offsetMin = new Vector2(0f, panelRT.offsetMin.y);
-            panelRT.offsetMax = new Vector2(0f, panelRT.offsetMax.y);
             panelRT.localScale = Vector3.one;
         }
 
@@ -438,19 +442,18 @@ public class BottomBanner : MonoBehaviour
         applyingResponsiveWidth = true;
         try
         {
-            SetVector2IfChanged(panelRT.anchorMin, new Vector2(0f, 0f), value => panelRT.anchorMin = value);
-            SetVector2IfChanged(panelRT.anchorMax, new Vector2(1f, 0f), value => panelRT.anchorMax = value);
+            SetVector2IfChanged(panelRT.anchorMin, new Vector2(0.5f, 0f), value => panelRT.anchorMin = value);
+            SetVector2IfChanged(panelRT.anchorMax, new Vector2(0.5f, 0f), value => panelRT.anchorMax = value);
             SetVector2IfChanged(panelRT.pivot, new Vector2(0.5f, 0f), value => panelRT.pivot = value);
             SetVector2IfChanged(panelRT.anchoredPosition, Vector2.zero, value => panelRT.anchoredPosition = value);
             SetVector3IfChanged(panelRT.localScale, Vector3.one, value => panelRT.localScale = value);
 
-            if (!Mathf.Approximately(panelRT.rect.width, targetWidth))
+            if (!Mathf.Approximately(panelRT.rect.width, targetWidth) ||
+                !Mathf.Approximately(lastResponsiveWidth, targetWidth))
+            {
                 panelRT.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, targetWidth);
-
-            Vector2 targetOffsetMin = new Vector2(Mathf.Max(0f, sidePadding), panelRT.offsetMin.y);
-            Vector2 targetOffsetMax = new Vector2(-Mathf.Max(0f, sidePadding), panelRT.offsetMax.y);
-            SetVector2IfChanged(panelRT.offsetMin, targetOffsetMin, value => panelRT.offsetMin = value);
-            SetVector2IfChanged(panelRT.offsetMax, targetOffsetMax, value => panelRT.offsetMax = value);
+                lastResponsiveWidth = targetWidth;
+            }
 
             if (backgroundRT != null)
                 SetVector3IfChanged(backgroundRT.localScale, Vector3.one, value => backgroundRT.localScale = value);
@@ -461,6 +464,20 @@ public class BottomBanner : MonoBehaviour
         {
             applyingResponsiveWidth = false;
         }
+    }
+
+    void RefreshResponsiveWidthForScreenChange()
+    {
+        if (panelRT == null)
+            return;
+
+        if (lastResponsiveScreenWidth == Screen.width &&
+            lastResponsiveScreenHeight == Screen.height)
+            return;
+
+        lastResponsiveScreenWidth = Screen.width;
+        lastResponsiveScreenHeight = Screen.height;
+        ApplyResponsiveWidth();
     }
 
     float GetAvailableBannerWidth()
@@ -750,6 +767,9 @@ public class BottomBanner : MonoBehaviour
 
     void AddEmoteInternal(WorldObject agent, string emote, bool includeGameTime)
     {
+        if (!ShouldShowAgentMessage(agent))
+            return;
+
         string actorName = agent != null ? agent.DisplayName : "Unknown agent";
         Sprite sprite = GetEmoteSprite(emote, out string emoteName);
         EmoteIconVisualFactory.ShowOverhead(agent, sprite);
@@ -766,6 +786,79 @@ public class BottomBanner : MonoBehaviour
     void AddHumanEmoteInternal(WorldObject agent, int spriteIndex, bool includeGameTime)
     {
         AddEmoteInternal(agent, $"Human_{spriteIndex}", includeGameTime);
+    }
+
+    void AddAgentMessageInternal(WorldObject agent, BannerSense sense, BannerLevel level, string message, bool includeGameTime, bool isRichText, Sprite iconOverride = null)
+    {
+        if (!ShouldShowAgentMessage(agent))
+            return;
+
+        AddMessageInternal(sense, level, message, includeGameTime, isRichText, iconOverride);
+    }
+
+    void AddAgentMessageInternal(string agentIdentifier, BannerSense sense, BannerLevel level, string message, bool includeGameTime, bool isRichText, Sprite iconOverride = null)
+    {
+        if (!ShouldShowAgentMessage(agentIdentifier))
+            return;
+
+        AddMessageInternal(sense, level, message, includeGameTime, isRichText, iconOverride);
+    }
+
+    bool ShouldShowAgentMessage(WorldObject agent)
+    {
+        if (showNonPackAgentMessages)
+            return true;
+
+        return IsPlayerPackAgent(agent);
+    }
+
+    bool ShouldShowAgentMessage(string agentIdentifier)
+    {
+        if (showNonPackAgentMessages)
+            return true;
+
+        return TryResolveAgentIdentifier(agentIdentifier, out WorldObject agent) && IsPlayerPackAgent(agent);
+    }
+
+    static bool IsPlayerPackAgent(WorldObject agent)
+    {
+        if (agent == null)
+            return false;
+
+        Pack playerPack = Dir.Instance != null ? Dir.Instance.playerPack : null;
+        return playerPack != null &&
+               playerPack.packAgentList != null &&
+               playerPack.packAgentList.Contains(agent);
+    }
+
+    static bool TryResolveAgentIdentifier(string agentIdentifier, out WorldObject agent)
+    {
+        agent = null;
+        if (string.IsNullOrWhiteSpace(agentIdentifier))
+            return false;
+
+        string trimmed = agentIdentifier.Trim();
+
+        WorldObjectRegistry registry = WorldObjectRegistry.Instance;
+        if (registry != null && int.TryParse(trimmed, out int objectId) && registry.TryGet(objectId, out agent))
+            return agent != null;
+
+        WorldObject[] candidates = FindObjectsByType<WorldObject>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+        for (int i = 0; i < candidates.Length; i++)
+        {
+            WorldObject candidate = candidates[i];
+            if (candidate == null)
+                continue;
+
+            if (string.Equals(candidate.DisplayName, trimmed, StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(candidate.name, trimmed, StringComparison.OrdinalIgnoreCase))
+            {
+                agent = candidate;
+                return true;
+            }
+        }
+
+        return false;
     }
 
     void AddInventoryInternal(string message, bool includeGameTime)
@@ -1151,15 +1244,47 @@ public class BottomBanner : MonoBehaviour
         Show(sense, level, message, includeGameTime);
     }
 
+    public static void LogAgentMessage(WorldObject agent, BannerSense sense, BannerLevel level, string message, bool includeGameTime = false)
+    {
+        GetOrCreateInstance()?.AddAgentMessageInternal(agent, sense, level, message, includeGameTime, false);
+    }
+
+    public static void LogAgentMessage(string agentIdentifier, BannerSense sense, BannerLevel level, string message, bool includeGameTime = false)
+    {
+        GetOrCreateInstance()?.AddAgentMessageInternal(agentIdentifier, sense, level, message, includeGameTime, false);
+    }
+
     public static void LogMessageWithIcon(BannerSense sense, BannerLevel level, string message, string iconSpriteName, bool includeGameTime = false)
     {
         Sprite icon = SpriteServer.SpriteLookup(iconSpriteName);
         GetOrCreateInstance()?.AddMessageInternal(sense, level, message, includeGameTime, false, icon);
     }
 
+    public static void LogAgentMessageWithIcon(WorldObject agent, BannerSense sense, BannerLevel level, string message, string iconSpriteName, bool includeGameTime = false)
+    {
+        Sprite icon = SpriteServer.SpriteLookup(iconSpriteName);
+        GetOrCreateInstance()?.AddAgentMessageInternal(agent, sense, level, message, includeGameTime, false, icon);
+    }
+
+    public static void LogAgentMessageWithIcon(string agentIdentifier, BannerSense sense, BannerLevel level, string message, string iconSpriteName, bool includeGameTime = false)
+    {
+        Sprite icon = SpriteServer.SpriteLookup(iconSpriteName);
+        GetOrCreateInstance()?.AddAgentMessageInternal(agentIdentifier, sense, level, message, includeGameTime, false, icon);
+    }
+
     public static void LogRichMessage(BannerSense sense, BannerLevel level, string richMessage, bool includeGameTime = false)
     {
         GetOrCreateInstance()?.AddMessageInternal(sense, level, richMessage, includeGameTime, true);
+    }
+
+    public static void LogAgentRichMessage(WorldObject agent, BannerSense sense, BannerLevel level, string richMessage, bool includeGameTime = false)
+    {
+        GetOrCreateInstance()?.AddAgentMessageInternal(agent, sense, level, richMessage, includeGameTime, true);
+    }
+
+    public static void LogAgentRichMessage(string agentIdentifier, BannerSense sense, BannerLevel level, string richMessage, bool includeGameTime = false)
+    {
+        GetOrCreateInstance()?.AddAgentMessageInternal(agentIdentifier, sense, level, richMessage, includeGameTime, true);
     }
 
     public static void LogEmote(WorldObject agent, string emote, bool includeGameTime = false)
@@ -1175,6 +1300,19 @@ public class BottomBanner : MonoBehaviour
     public static void LogInventoryMessage(string message, bool includeGameTime = false)
     {
         GetOrCreateInstance()?.AddInventoryInternal(message, includeGameTime);
+    }
+
+    public static void LogAgentInventoryMessage(WorldObject agent, string message, bool includeGameTime = false)
+    {
+        BottomBanner instance = GetOrCreateInstance();
+        instance?.AddAgentMessageInternal(
+            agent,
+            BannerSense.None,
+            BannerLevel.None,
+            message,
+            includeGameTime,
+            false,
+            instance.GetInventoryMessageSprite());
     }
 
     public static void LogBuildProgress(string message, bool includeGameTime = false)

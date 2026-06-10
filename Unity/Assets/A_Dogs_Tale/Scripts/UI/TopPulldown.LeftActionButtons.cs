@@ -163,12 +163,8 @@ public partial class TopPulldown
     [SerializeField] private float cornerControlMargin = 24f;
     [SerializeField] private float bottomCornerControlClearance = 134f;
     [SerializeField] private float interactionPanelButtonScale = 0.58f;
-    [SerializeField] private string dialogMiscSpriteResourcePath = "Sprites/DialogMisc_C";
     [SerializeField] private string interactionSideButtonsSpriteResourcePath = "Sprites/Frames/Interaction_Side_Buttons_A";
 
-    private RectTransform dogSightButtonRect;
-    private Image dogSightButtonImage;
-    private Image dogSightIconImage;
     private RectTransform interactionPanelRect;
     private Image interactionPanelImage;
     private readonly RectTransform[] interactionButtonRects = new RectTransform[5];
@@ -178,81 +174,9 @@ public partial class TopPulldown
         if (!useCornerControls)
             return;
 
-        dogSightButtonRect = BuildCornerIconButton(
-            parent,
-            searchRoot,
-            "DogSightButton",
-            GetDogSightSprite(),
-            ToggleDogSightFromButton,
-            "Dog Sight",
-            out dogSightButtonImage,
-            out dogSightIconImage);
-
         BuildInteractionPanel(parent, searchRoot);
         HidePulldownControlsReplacedByCorners();
         ApplyCornerControlsLayout();
-    }
-
-    private RectTransform BuildCornerIconButton(
-        Transform parent,
-        Transform searchRoot,
-        string buttonName,
-        Sprite iconSprite,
-        UnityAction clickHandler,
-        string tooltipText,
-        out Image buttonImage,
-        out Image iconImage)
-    {
-        Transform existingButton = FindExistingUiElement(parent, searchRoot, buttonName);
-        GameObject buttonObject;
-        if (existingButton == null)
-        {
-            buttonObject = new GameObject(buttonName, typeof(RectTransform), typeof(Image), typeof(Button));
-            buttonObject.transform.SetParent(parent, false);
-        }
-        else
-        {
-            buttonObject = existingButton.gameObject;
-        }
-
-        RectTransform buttonRect = GetOrAddComponent<RectTransform>(buttonObject);
-
-        buttonImage = GetOrAddComponent<Image>(buttonObject);
-        buttonImage.color = topControlButtonColor;
-        buttonImage.raycastTarget = true;
-
-        Button button = GetOrAddComponent<Button>(buttonObject);
-        button.targetGraphic = buttonImage;
-        button.onClick.RemoveAllListeners();
-        button.onClick.AddListener(AudioPlayer.PlayUiButtonClick);
-        button.onClick.AddListener(clickHandler);
-
-        Transform existingIcon = buttonObject.transform.Find("Icon");
-        GameObject iconObject;
-        if (existingIcon == null)
-        {
-            iconObject = new GameObject("Icon", typeof(RectTransform), typeof(Image));
-            iconObject.transform.SetParent(buttonObject.transform, false);
-        }
-        else
-        {
-            iconObject = existingIcon.gameObject;
-        }
-
-        RectTransform iconRect = GetOrAddComponent<RectTransform>(iconObject);
-        iconRect.anchorMin = new Vector2(0.5f, 0.5f);
-        iconRect.anchorMax = new Vector2(0.5f, 0.5f);
-        iconRect.pivot = new Vector2(0.5f, 0.5f);
-        iconRect.anchoredPosition = Vector2.zero;
-
-        iconImage = GetOrAddComponent<Image>(iconObject);
-        iconImage.sprite = iconSprite;
-        iconImage.preserveAspect = true;
-        iconImage.color = Color.white;
-        iconImage.raycastTarget = false;
-
-        ConfigureTooltip(buttonObject, () => tooltipText);
-        return buttonRect;
     }
 
     private void BuildInteractionPanel(Transform parent, Transform searchRoot)
@@ -340,14 +264,11 @@ public partial class TopPulldown
         ConfigureCornerButton(homeButtonRect, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(cornerControlMargin, -(cornerControlMargin + topInset)));
         ConfigureCornerButton(cameraModeButtonRect, new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-cornerControlMargin, -(cornerControlMargin + topInset)));
         ConfigureCornerButton(speedButtonRect, new Vector2(0f, 0f), new Vector2(0f, 0f), new Vector2(cornerControlMargin, bottomCornerControlClearance + topControlButtonSize + modeButtonSpacing));
-        ConfigureCornerButton(dogSightButtonRect, new Vector2(0f, 0f), new Vector2(0f, 0f), new Vector2(cornerControlMargin, bottomCornerControlClearance));
 
         ApplyTopControlButtonSize(homeButtonRect);
         ApplyTopControlButtonSize(cameraModeButtonRect);
         ApplyTopControlButtonSize(speedButtonRect);
-        ApplyTopControlButtonSize(dogSightButtonRect);
         ConfigureTopControlIconRect(speedIconImage != null ? speedIconImage.rectTransform : null, 0.72f);
-        ConfigureTopControlIconRect(dogSightIconImage != null ? dogSightIconImage.rectTransform : null, 0.72f);
 
         ApplyInteractionPanelLayout();
     }
@@ -422,11 +343,6 @@ public partial class TopPulldown
             rectTransform.gameObject.SetActive(active);
     }
 
-    private void ToggleDogSightFromButton()
-    {
-        ToggleSniffMode("DogSightButton");
-    }
-
     private void OpenInteractionTab(InteractionDialogUI.InteractionTab tab)
     {
         CloseTopActionPanels();
@@ -439,14 +355,6 @@ public partial class TopPulldown
         }
 
         dialog.Show(tab);
-    }
-
-    private Sprite GetDogSightSprite()
-    {
-        return SpriteServer.SpriteLookup("DialogMisc_C_5")
-            ?? SpriteServer.SpriteSheetLookupByName(dialogMiscSpriteResourcePath, "DialogMisc_C_5")
-            ?? SpriteServer.SpriteSheetLookup("DialogMisc_C", 5)
-            ?? SpriteServer.SpriteLookup("Scent");
     }
 
     private Sprite GetInteractionSideButtonsSprite()

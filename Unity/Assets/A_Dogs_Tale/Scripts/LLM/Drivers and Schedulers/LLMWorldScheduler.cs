@@ -634,7 +634,8 @@ public class LLMWorldScheduler : MonoBehaviour
         try
         {
             string actor = string.IsNullOrWhiteSpace(agentName) ? "Unknown agent" : agentName.Trim();
-            BottomBanner.LogMessageWithIcon(
+            BottomBanner.LogAgentMessageWithIcon(
+                agentName,
                 BannerSense.None,
                 BannerLevel.None,
                 $"{actor} {message}",

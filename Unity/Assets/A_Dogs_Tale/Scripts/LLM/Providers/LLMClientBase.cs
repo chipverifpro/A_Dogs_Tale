@@ -327,7 +327,8 @@ namespace DogGame.LLM.Core
             {
                 string actor = string.IsNullOrWhiteSpace(agentId) ? "Unknown agent" : agentId.Trim();
                 string displayVendor = FormatVendorForBanner(vendor);
-                BottomBanner.LogMessageWithIcon(
+                BottomBanner.LogAgentMessageWithIcon(
+                    agentId,
                     BannerSense.None,
                     BannerLevel.None,
                     $"{actor} {action} {displayVendor}",

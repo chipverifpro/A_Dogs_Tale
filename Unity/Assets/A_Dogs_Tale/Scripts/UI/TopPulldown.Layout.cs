@@ -332,7 +332,6 @@ public partial class TopPulldown
         ApplyTopControlButtonSize(homeButtonRect);
         ApplyTopControlButtonSize(cameraModeButtonRect);
         ApplyTopControlButtonSize(questButtonRect);
-        ApplyTopControlButtonSize(dogSightButtonRect);
 
         ConfigureTopControlIconRect(targetButtonIconImage != null ? targetButtonIconImage.rectTransform : null, 0.68f);
         ConfigureTopControlIconRect(targetPreviewImage != null ? targetPreviewImage.rectTransform : null, 0.82f);
@@ -341,7 +340,6 @@ public partial class TopPulldown
         ConfigureTopControlIconRect(simulationIconImage != null ? simulationIconImage.rectTransform : null, 0.72f);
         ConfigureTopControlIconRect(emoteIconImage != null ? emoteIconImage.rectTransform : null, 0.72f);
         ConfigureTopControlIconRect(inventoryIconImage != null ? inventoryIconImage.rectTransform : null, 0.72f);
-        ConfigureTopControlIconRect(dogSightIconImage != null ? dogSightIconImage.rectTransform : null, 0.72f);
         SetDigIconSize(digIconImage != null ? digIconImage.rectTransform : null, digIconImage != null ? digIconImage.sprite : null);
         ApplyInteractionPanelLayout();
     }

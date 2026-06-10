@@ -11,6 +11,10 @@ public sealed partial class InteractionDialogUI : MonoBehaviour
 
     private GameObject scentSourceListObject;
 
+    private Button dogSightToggleButton;
+
+    [SerializeField] private string dogSightSpriteResourcePath = "Sprites/DialogMisc_C";
+
     private RectTransform scentSourceListRect;
 
     private RectTransform scentSourceListContentRect;
@@ -124,6 +128,26 @@ public sealed partial class InteractionDialogUI : MonoBehaviour
         scentSourceListObject.SetActive(false);
     }
 
+    private void BuildScentActionButtons(Transform parent)
+    {
+        Sprite dogSightSprite = GetDogSightSprite();
+        dogSightToggleButton = CreateSpriteButton(
+            "DogSightToggleButton",
+            parent,
+            dogSightSprite,
+            "Dog Sight",
+            OnDogSightToggleClicked);
+
+        RectTransform rect = dogSightToggleButton.GetComponent<RectTransform>();
+        rect.anchorMin = new Vector2(0.5f, 1f);
+        rect.anchorMax = new Vector2(0.5f, 1f);
+        rect.pivot = new Vector2(0.5f, 0.5f);
+        rect.anchoredPosition = new Vector2(-425f, -690f);
+        rect.sizeDelta = new Vector2(128f, 128f);
+
+        dogSightToggleButton.gameObject.SetActive(false);
+    }
+
     private void CreateScentSourceListRow(WorldObject source, int index)
     {
         GameObject rowObject = CreateUIObject($"ScentSourceRow_{index}", scentSourceListContentRect);
@@ -223,6 +247,22 @@ public sealed partial class InteractionDialogUI : MonoBehaviour
             if (active)
                 scentSourceListObject.transform.SetAsLastSibling();
         }
+
+        if (dogSightToggleButton != null)
+            dogSightToggleButton.gameObject.SetActive(active);
+    }
+
+    private void OnDogSightToggleClicked()
+    {
+        TopPulldown.ToggleDogSight("InteractionDialog.Scent.DogSightToggleButton");
+    }
+
+    private Sprite GetDogSightSprite()
+    {
+        return SpriteServer.SpriteLookup("DialogMisc_C_5")
+            ?? SpriteServer.SpriteSheetLookupByName(dogSightSpriteResourcePath, "DialogMisc_C_5")
+            ?? SpriteServer.SpriteSheetLookup("DialogMisc_C", 5)
+            ?? SpriteServer.SpriteLookup("Scent");
     }
 
     private void RefreshScentSourceList()
