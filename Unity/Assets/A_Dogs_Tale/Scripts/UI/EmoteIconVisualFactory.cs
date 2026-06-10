@@ -9,10 +9,12 @@ public static class EmoteIconVisualFactory
     const float DefaultThickness = 0.04f;
     const float DefaultLifetimeSeconds = 10f;
     const float DefaultTopPadding = 0.12f;
+    const float OverheadEmoteAlpha = 0.5f;
 
     static readonly Vector3 DefaultLocalOffset = new(0f, 1.35f, 0f);
     static readonly Vector3 DefaultSpinDegreesPerSecond = new(0f, 180f, 0f);
-    static readonly Dictionary<Texture, Material> materialsByTexture = new();
+    static readonly Quaternion OverheadEmoteVisualRotation = Quaternion.Euler(-90f, 0f, 0f);
+    static readonly Dictionary<string, Material> materialsByTextureAndAlpha = new();
     static readonly Dictionary<string, Mesh> meshesBySpriteAndShape = new();
 
     public static GameObject Show(WorldObject agent, string emote)
@@ -42,6 +44,8 @@ public static class EmoteIconVisualFactory
             sprite,
             localOffset: GetOverheadLocalOffset(agent, size),
             size: size,
+            alpha: OverheadEmoteAlpha,
+            visualLocalRotation: OverheadEmoteVisualRotation,
             instanceName: instanceName);
     }
 
@@ -53,6 +57,8 @@ public static class EmoteIconVisualFactory
         float thickness = DefaultThickness,
         float lifetimeSeconds = DefaultLifetimeSeconds,
         Vector3? spinDegreesPerSecond = null,
+        float alpha = 1f,
+        Quaternion? visualLocalRotation = null,
         string instanceName = InstanceName)
     {
         if (anchor == null || sprite == null || sprite.texture == null)
@@ -71,11 +77,17 @@ public static class EmoteIconVisualFactory
         iconObject.transform.localRotation = Quaternion.identity;
         iconObject.transform.localScale = Vector3.one;
 
-        MeshFilter meshFilter = iconObject.AddComponent<MeshFilter>();
+        GameObject visualObject = new GameObject("IconVisual");
+        visualObject.transform.SetParent(iconObject.transform, false);
+        visualObject.transform.localPosition = Vector3.zero;
+        visualObject.transform.localRotation = visualLocalRotation ?? Quaternion.identity;
+        visualObject.transform.localScale = Vector3.one;
+
+        MeshFilter meshFilter = visualObject.AddComponent<MeshFilter>();
         meshFilter.sharedMesh = CreateSquareCardMesh(sprite, size, thickness);
 
-        MeshRenderer meshRenderer = iconObject.AddComponent<MeshRenderer>();
-        meshRenderer.sharedMaterial = GetMaterial(sprite.texture);
+        MeshRenderer meshRenderer = visualObject.AddComponent<MeshRenderer>();
+        meshRenderer.sharedMaterial = GetMaterial(sprite.texture, alpha);
         meshRenderer.shadowCastingMode = ShadowCastingMode.Off;
         meshRenderer.receiveShadows = false;
 
@@ -256,9 +268,11 @@ public static class EmoteIconVisualFactory
         }
     }
 
-    static Material GetMaterial(Texture texture)
+    static Material GetMaterial(Texture texture, float alpha = 1f)
     {
-        if (materialsByTexture.TryGetValue(texture, out Material material))
+        alpha = Mathf.Clamp01(alpha);
+        string materialKey = $"{texture.GetInstanceID()}:{alpha:0.###}";
+        if (materialsByTextureAndAlpha.TryGetValue(materialKey, out Material material))
             return material;
 
         Shader shader = Shader.Find("Universal Render Pipeline/Unlit")
@@ -272,24 +286,25 @@ public static class EmoteIconVisualFactory
             hideFlags = HideFlags.DontSave
         };
 
-        SetTexture(material, texture);
+        SetTexture(material, texture, alpha);
         ConfigureTransparentMaterial(material);
-        materialsByTexture[texture] = material;
+        materialsByTextureAndAlpha[materialKey] = material;
         return material;
     }
 
-    static void SetTexture(Material material, Texture texture)
+    static void SetTexture(Material material, Texture texture, float alpha)
     {
         material.mainTexture = texture;
+        Color color = new(1f, 1f, 1f, Mathf.Clamp01(alpha));
 
         if (material.HasProperty("_BaseMap"))
             material.SetTexture("_BaseMap", texture);
 
         if (material.HasProperty("_Color"))
-            material.SetColor("_Color", Color.white);
+            material.SetColor("_Color", color);
 
         if (material.HasProperty("_BaseColor"))
-            material.SetColor("_BaseColor", Color.white);
+            material.SetColor("_BaseColor", color);
     }
 
     static void ConfigureTransparentMaterial(Material material)

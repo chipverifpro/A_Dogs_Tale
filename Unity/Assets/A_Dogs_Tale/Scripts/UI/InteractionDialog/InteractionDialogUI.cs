@@ -168,7 +168,7 @@ public sealed partial class InteractionDialogUI : MonoBehaviour
 
     #region Nested Types
 
-    private enum InteractionTab
+    public enum InteractionTab
     {
         Social,
         Quests,
@@ -244,6 +244,12 @@ public sealed partial class InteractionDialogUI : MonoBehaviour
         questsState.InteractionQuestListDirty = true;
         itemsState.PackHeldItemListDirty = true;
         RefreshInteractionView(forcePreviewRefresh: true);
+    }
+
+    public void Show(InteractionTab tab)
+    {
+        Show();
+        SwitchToTab(tab);
     }
 
     public static bool IsPointerBlockingBottomBanner(Vector2 screenPoint)

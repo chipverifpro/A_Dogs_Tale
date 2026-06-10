@@ -188,6 +188,16 @@ public partial class TopPulldown
         if (!uiBuilt)
             return;
 
+        if (useCornerControls)
+        {
+            topControlsVisibility = 1f;
+            topControlsSlideVelocity = 0f;
+            ApplyCornerControlsLayout();
+            if (IsAnyTopPanelOpen())
+                BottomBanner.Collapse();
+            return;
+        }
+
         bool topPulldownExplicitlyOpen = pulldownOpenedByTab || IsAnyTopPanelOpen();
         if (topPulldownExplicitlyOpen)
             BottomBanner.Collapse();
@@ -234,6 +244,13 @@ public partial class TopPulldown
 
     private void ApplyTopControlsSlidePosition()
     {
+        if (useCornerControls)
+        {
+            ApplyCornerControlsLayout();
+            ApplyTopPanelPositions();
+            return;
+        }
+
         float scale = GetTopControlsFitScale();
         float shownY = -((topControlsInset.y * scale) + GetTopSafeAreaInset());
         int rowCount = UseTwoRowTopControls() ? 2 : 1;
@@ -315,6 +332,7 @@ public partial class TopPulldown
         ApplyTopControlButtonSize(homeButtonRect);
         ApplyTopControlButtonSize(cameraModeButtonRect);
         ApplyTopControlButtonSize(questButtonRect);
+        ApplyTopControlButtonSize(dogSightButtonRect);
 
         ConfigureTopControlIconRect(targetButtonIconImage != null ? targetButtonIconImage.rectTransform : null, 0.68f);
         ConfigureTopControlIconRect(targetPreviewImage != null ? targetPreviewImage.rectTransform : null, 0.82f);
@@ -323,7 +341,9 @@ public partial class TopPulldown
         ConfigureTopControlIconRect(simulationIconImage != null ? simulationIconImage.rectTransform : null, 0.72f);
         ConfigureTopControlIconRect(emoteIconImage != null ? emoteIconImage.rectTransform : null, 0.72f);
         ConfigureTopControlIconRect(inventoryIconImage != null ? inventoryIconImage.rectTransform : null, 0.72f);
+        ConfigureTopControlIconRect(dogSightIconImage != null ? dogSightIconImage.rectTransform : null, 0.72f);
         SetDigIconSize(digIconImage != null ? digIconImage.rectTransform : null, digIconImage != null ? digIconImage.sprite : null);
+        ApplyInteractionPanelLayout();
     }
 
     private void ApplyTopControlButtonSize(RectTransform rectTransform)

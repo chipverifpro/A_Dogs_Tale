@@ -362,6 +362,7 @@ public partial class TopPulldown : MonoBehaviour
         BuildModePanel(decisionModeControlsTransform, canvasObject.transform);
         BuildSpeedPanel(speedControlsTransform, canvasObject.transform);
         BuildEmoteDropdown(emoteControlsTransform, canvasObject.transform);
+        BuildCornerControls(canvasObject.transform, canvasObject.transform);
         BuildTooltip(tooltipTransform, canvasObject.transform);
         if (!autoHideTopControls)
             topControlsVisibility = 1f;

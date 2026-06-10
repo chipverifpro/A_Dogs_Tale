@@ -63,6 +63,7 @@ public class SceneFader : MonoBehaviour
     RectTransformPositionState defaultBuildingMessageState;
     RectTransformPositionState defaultBuildingMessageTextState;
     RectTransformPositionState defaultBuildingMessageOutlineState;
+    int currentLoadingMessageIndex = -1;
 
     public bool IsTitleOverlayVisible => isTitleOverlayVisible;
     public bool IsReviewingSplashScreens => isReviewingSplashScreens;
@@ -138,10 +139,65 @@ public class SceneFader : MonoBehaviour
         splashAdjustments = new List<SplashAdjust>
         {
             // Example: duplicate this line and edit imageNum/titlePos/messagePos for each picture.
-            new SplashAdjust(imageNum: 1, titlePos: new Vector2(0.5f, 0.2f), messagePos: new Vector2(0.5f, 0.85f)),
-            new SplashAdjust(imageNum: 2, titlePos: new Vector2(0.5f, 0.85f), messagePos: new Vector2(0.5f, 0.5f)),
-            new SplashAdjust(imageNum: 3, titlePos: new Vector2(0.0f, 0.0f), messagePos: new Vector2(1f, 1f)),
+            //new SplashAdjust(imageNum: 1, titlePos: new Vector2(0.5f, 0.25f), messagePos: new Vector2(0.5f, 0.85f)),
             new SplashAdjust(imageNum: 66, titlePos: new Vector2(0.5f, 0.5f), messagePos: new Vector2(0.5f, 0.75f)),
+            new SplashAdjust(imageNum: 65, titlePos: new Vector2(0.5f, 0.25f), messagePos: new Vector2(0.8f, 0.8f)),
+            new SplashAdjust(imageNum: 64, titlePos: new Vector2(0.5f, 0.0f), messagePos: new Vector2(0.5f, 0.75f)),
+            new SplashAdjust(imageNum: 63, titlePos: new Vector2(0.1f, 0.05f), messagePos: new Vector2(0.5f, 0.75f)),
+            new SplashAdjust(imageNum: 62, titlePos: new Vector2(0.0f, 0.05f), messagePos: new Vector2(0.5f, 0.75f)),
+            new SplashAdjust(imageNum: 60, titlePos: new Vector2(0.1f, 0.35f), messagePos: new Vector2(0.5f, 0.9f)),
+            // split
+            new SplashAdjust(imageNum: 59, titlePos: new Vector2(0.5f, 0.5f), messagePos: new Vector2(0.5f, 0.75f)),
+            new SplashAdjust(imageNum: 58, titlePos: new Vector2(0.5f, 0.0f), messagePos: new Vector2(0.5f, 0.75f)),
+            new SplashAdjust(imageNum: 56, titlePos: new Vector2(0.0f, 0.25f), messagePos: new Vector2(0.75f, 0.75f)),
+            new SplashAdjust(imageNum: 55, titlePos: new Vector2(0.25f, 0.25f), messagePos: new Vector2(0.75f, 0.75f)),
+            new SplashAdjust(imageNum: 54, titlePos: new Vector2(0.0f, 0.0f), messagePos: new Vector2(0.5f, 0.75f)),
+            new SplashAdjust(imageNum: 53, titlePos: new Vector2(0.3f, 0.25f), messagePos: new Vector2(0.5f, 0.75f)),
+            new SplashAdjust(imageNum: 52, titlePos: new Vector2(0.4f, 0.5f), messagePos: new Vector2(0.75f, 0.75f)),
+            new SplashAdjust(imageNum: 51, titlePos: new Vector2(0.9f, 0.4f), messagePos: new Vector2(0.75f, 0.85f)),
+            new SplashAdjust(imageNum: 50, titlePos: new Vector2(0.5f, 0.0f), messagePos: new Vector2(0.55f, 0.75f)),
+            new SplashAdjust(imageNum: 49, titlePos: new Vector2(0.25f, 0.25f), messagePos: new Vector2(0.75f, 0.75f)),
+            new SplashAdjust(imageNum: 48, titlePos: new Vector2(0.5f, 0.5f), messagePos: new Vector2(0.5f, 0.75f)),
+            new SplashAdjust(imageNum: 47, titlePos: new Vector2(0.05f, 0.05f), messagePos: new Vector2(0.75f, 0.75f)),
+            new SplashAdjust(imageNum: 46, titlePos: new Vector2(0.1f, 0.25f), messagePos: new Vector2(0.75f, 0.75f)),
+            //split
+            new SplashAdjust(imageNum: 44, titlePos: new Vector2(0.5f, 0.1f), messagePos: new Vector2(0.5f, 0.75f)),
+            // split
+            new SplashAdjust(imageNum: 43, titlePos: new Vector2(0.1f, 0.0f), messagePos: new Vector2(0.5f, 0.75f)),
+            new SplashAdjust(imageNum: 42, titlePos: new Vector2(0.5f, 0.0f), messagePos: new Vector2(0.5f, 0.75f)),
+            new SplashAdjust(imageNum: 41, titlePos: new Vector2(0.5f, 0.5f), messagePos: new Vector2(0.5f, 0.75f)),
+            new SplashAdjust(imageNum: 40, titlePos: new Vector2(0.5f, 0.25f), messagePos: new Vector2(0.75f, 0.8f)),
+            new SplashAdjust(imageNum: 39, titlePos: new Vector2(0.5f, 0.05f), messagePos: new Vector2(0.5f, 0.75f)),
+            new SplashAdjust(imageNum: 35, titlePos: new Vector2(0.5f, 0.0f), messagePos: new Vector2(0.4f, 0.75f)),
+            new SplashAdjust(imageNum: 34, titlePos: new Vector2(0.5f, 0.25f), messagePos: new Vector2(0.9f, 0.8f)),
+
+            new SplashAdjust(imageNum: 31, titlePos: new Vector2(0.5f, 0.0f), messagePos: new Vector2(0.25f, 0.9f)),
+            new SplashAdjust(imageNum: 30, titlePos: new Vector2(0.75f, 0.25f), messagePos: new Vector2(0.25f, 0.75f)),
+            new SplashAdjust(imageNum: 28, titlePos: new Vector2(0.5f, 0.1f), messagePos: new Vector2(0.75f, 0.25f)),
+            
+            new SplashAdjust(imageNum: 27, titlePos: new Vector2(0.5f, 0.1f), messagePos: new Vector2(0.75f, 0.8f)),
+            new SplashAdjust(imageNum: 25, titlePos: new Vector2(0.5f, 0.2f), messagePos: new Vector2(0.5f, 0.4f)),
+            new SplashAdjust(imageNum: 24, titlePos: new Vector2(0.25f, 0.25f), messagePos: new Vector2(0.15f, 0.75f)),
+            // wrong rotate order
+            new SplashAdjust(imageNum: 23, titlePos: new Vector2(0.95f, 0.05f), messagePos: new Vector2(0.8f, 0.7f)),
+            new SplashAdjust(imageNum: 22, titlePos: new Vector2(0.5f, 0.6f), messagePos: new Vector2(0.5f, 0.8f)),
+            new SplashAdjust(imageNum: 21, titlePos: new Vector2(0.2f, 0.2f), messagePos: new Vector2(0.4f, 0.9f)),
+
+            new SplashAdjust(imageNum: 20, titlePos: new Vector2(0.1f, 0.1f), messagePos: new Vector2(0.1f, 0.3f)),
+            new SplashAdjust(imageNum: 19, titlePos: new Vector2(0.5f, 0.5f), messagePos: new Vector2(0.5f, 0.75f)),
+            new SplashAdjust(imageNum: 17, titlePos: new Vector2(0.5f, 0.6f), messagePos: new Vector2(0.5f, 0.8f)),
+            new SplashAdjust(imageNum: 16, titlePos: new Vector2(0.5f, 0.2f), messagePos: new Vector2(0.75f, 0.95f)),
+            // not split
+            new SplashAdjust(imageNum: 15, titlePos: new Vector2(0.5f, 0.5f), messagePos: new Vector2(0.5f, 0.75f)),
+            new SplashAdjust(imageNum: 11, titlePos: new Vector2(0.5f, 0.05f), messagePos: new Vector2(0.5f, 0.75f)),
+            new SplashAdjust(imageNum:  8, titlePos: new Vector2(0.5f, 0.0f), messagePos: new Vector2(0.5f, 0.75f)),
+            new SplashAdjust(imageNum:  7, titlePos: new Vector2(0.5f, 0.5f), messagePos: new Vector2(0.5f, 0.75f)),
+            new SplashAdjust(imageNum:  6, titlePos: new Vector2(0.5f, 0.15f), messagePos: new Vector2(0.5f, 0.9f)),
+            new SplashAdjust(imageNum:  5, titlePos: new Vector2(0.5f, 0.25f), messagePos: new Vector2(0.75f, 0.75f)),
+            new SplashAdjust(imageNum:  4, titlePos: new Vector2(1.0f, 0.1f), messagePos: new Vector2(0.5f, 0.9f)),
+            new SplashAdjust(imageNum:  3, titlePos: new Vector2(0.0f, 0.0f), messagePos: new Vector2(1.0f, 0.95f)),
+            new SplashAdjust(imageNum:  2, titlePos: new Vector2(0.0f, 0.0f), messagePos: new Vector2(0.4f, 0.9f)),
+            new SplashAdjust(imageNum:  1, titlePos: new Vector2(0.5f, 0.05f), messagePos: new Vector2(0.5f, 0.85f)),
             
         };
 
@@ -236,9 +292,6 @@ public class SceneFader : MonoBehaviour
     [SerializeField] private float splashOrientationAspectThreshold = 1.2f;
     [SerializeField] private Vector2 splashReviewIndexLabelOffset = new Vector2(16f, 12f);
     [SerializeField] private int splashReviewIndexLabelFontSize = 18;
-    [SerializeField] private int splashMessageAssumedLineCount = 2;
-    [SerializeField] private float splashMessageLineHeightMultiplier = 1.25f;
-    [SerializeField] private float splashMessageEdgePadding = 8f;
 
     private TMPro.TMP_Text splashReviewIndexLabel;
 
@@ -271,6 +324,8 @@ public class SceneFader : MonoBehaviour
         splashImage.sprite = loadedSprite;
         ApplySplashCoverLayout(loadedSprite);
         ApplySplashAdjustmentForCurrentImage();
+        if (isReviewingSplashScreens)
+            SetRandomBuildingMessage(avoidImmediateRepeat: true);
         UpdateSplashReviewIndexLabel();
 
         // Optional: if you want the Image to match the sprite’s native size
@@ -552,59 +607,12 @@ public class SceneFader : MonoBehaviour
         rectTransform.anchoredPosition = Vector2.zero;
     }
 
-    static void ApplyScreenPercentPosition(RectTransform rectTransform, Vector2 position, Vector2 normalizedEdgeInset)
-    {
-        if (rectTransform == null)
-            return;
-
-        Vector2 clampedPosition = new Vector2(Mathf.Clamp01(position.x), Mathf.Clamp01(position.y));
-        float anchorX = Mathf.Lerp(normalizedEdgeInset.x, 1f - normalizedEdgeInset.x, clampedPosition.x);
-        float anchorYFromTop = Mathf.Lerp(normalizedEdgeInset.y, 1f - normalizedEdgeInset.y, clampedPosition.y);
-        Vector2 normalizedAnchor = new Vector2(anchorX, 1f - anchorYFromTop);
-        Vector2 pivot = new Vector2(clampedPosition.x, 1f - clampedPosition.y);
-
-        rectTransform.anchorMin = normalizedAnchor;
-        rectTransform.anchorMax = normalizedAnchor;
-        rectTransform.pivot = pivot;
-        rectTransform.anchoredPosition = Vector2.zero;
-    }
-
     void ApplyMessageScreenPercentPosition(Vector2 position)
     {
         StretchRectToParent(buildingMessageRect);
-        ApplyTwoLineMessageSize(buildingMessageTextRect, buildingMessageText);
-        ApplyTwoLineMessageSize(buildingMessageOutlineRect, buildingMessageOutlineText);
 
-        Vector2 normalizedEdgeInset = GetMessageNormalizedEdgeInset();
-        ApplyScreenPercentPosition(buildingMessageTextRect, position, normalizedEdgeInset);
-        ApplyScreenPercentPosition(buildingMessageOutlineRect, position, normalizedEdgeInset);
-    }
-
-    void ApplyTwoLineMessageSize(RectTransform rectTransform, TMPro.TMP_Text text)
-    {
-        if (rectTransform == null || text == null)
-            return;
-
-        float lineCount = Mathf.Max(1, splashMessageAssumedLineCount);
-        float textHeight = text.fontSize * splashMessageLineHeightMultiplier * lineCount;
-        float targetHeight = textHeight + splashMessageEdgePadding * 2f;
-        Vector2 sizeDelta = rectTransform.sizeDelta;
-        sizeDelta.y = Mathf.Max(sizeDelta.y, targetHeight);
-        rectTransform.sizeDelta = sizeDelta;
-    }
-
-    Vector2 GetMessageNormalizedEdgeInset()
-    {
-        RectTransform parentRect = buildingMessageRect != null ? buildingMessageRect : splashCanvasGroup?.transform as RectTransform;
-        Vector2 parentSize = parentRect != null ? parentRect.rect.size : new Vector2(Screen.width, Screen.height);
-        float lineCount = Mathf.Max(1, splashMessageAssumedLineCount);
-        float fontSize = buildingMessageText != null ? buildingMessageText.fontSize : 24f;
-        float textHeight = fontSize * splashMessageLineHeightMultiplier * lineCount;
-        float verticalInset = textHeight * 0.5f + splashMessageEdgePadding;
-
-        return new Vector2(
-            parentSize.x > 0f ? splashMessageEdgePadding / parentSize.x : 0f,
-            parentSize.y > 0f ? verticalInset / parentSize.y : 0f);
+        ApplyScreenPercentPosition(buildingMessageTextRect, position);
+        ApplyScreenPercentPosition(buildingMessageOutlineRect, position);
     }
 
     static void ApplyTitleScreenPercentPosition(RectTransform titleRect, List<RectTransform> childRects, Vector2 position)
@@ -653,9 +661,7 @@ public class SceneFader : MonoBehaviour
         ResolveBuildingMessage();
         EnsureSplashReviewIndexLabel();
         SetSplashMenuCameraEnabled(true);
-        SetRandomBuildingMessage();
         SetBuildingMessageVisible(true);
-        SetSplashSprite(currentSplashIndex);
         SetCanvasGroupState(menuCanvasGroup, 0f, false);
         SetCanvasGroupState(splashCanvasGroup, 1f, true);
 
@@ -663,6 +669,7 @@ public class SceneFader : MonoBehaviour
             splashReviewIndexLabel.gameObject.SetActive(true);
 
         isReviewingSplashScreens = true;
+        SetSplashSprite(currentSplashIndex);
     }
 
     void StopSplashScreenReview()
@@ -732,7 +739,10 @@ public class SceneFader : MonoBehaviour
         if (splashReviewIndexLabel == null)
             return;
 
-        splashReviewIndexLabel.text = $"{currentSplashIndex}/{Mathf.Max(1, splashCount)}";
+        string quoteIndexText = currentLoadingMessageIndex >= 0 && loadingMessages != null && loadingMessages.Length > 0
+            ? $"  Quote {currentLoadingMessageIndex + 1}/{loadingMessages.Length}"
+            : string.Empty;
+        splashReviewIndexLabel.text = $"{currentSplashIndex}/{Mathf.Max(1, splashCount)}{quoteIndexText}";
         splashReviewIndexLabel.transform.SetAsLastSibling();
     }
 
@@ -1024,18 +1034,50 @@ public class SceneFader : MonoBehaviour
             buildingMessage.SetActive(visible);
     }
 
-    void SetRandomBuildingMessage()
+    void SetRandomBuildingMessage(bool avoidImmediateRepeat = false)
     {
         if (loadingMessages == null || loadingMessages.Length == 0)
             return;
 
         ResolveBuildingMessage();
 
-        string message = loadingMessages[Random.Range(0, loadingMessages.Length)];
+        int messageIndex = Random.Range(0, loadingMessages.Length);
+        if (avoidImmediateRepeat && loadingMessages.Length > 1 && messageIndex == currentLoadingMessageIndex)
+            messageIndex = (messageIndex + Random.Range(1, loadingMessages.Length)) % loadingMessages.Length;
+
+        currentLoadingMessageIndex = messageIndex;
+        string message = FormatSplashQuoteForDisplay(loadingMessages[messageIndex]);
         if (buildingMessageText != null)
             buildingMessageText.text = message;
         if (buildingMessageOutlineText != null)
             buildingMessageOutlineText.text = message;
+    }
+
+    static string FormatSplashQuoteForDisplay(string message)
+    {
+        if (string.IsNullOrWhiteSpace(message))
+            return message ?? string.Empty;
+
+        int middleIndex = message.Length / 2;
+        int bestSpaceIndex = -1;
+        int bestDistance = int.MaxValue;
+
+        for (int i = 0; i < message.Length; i++)
+        {
+            if (message[i] != ' ')
+                continue;
+
+            int distance = Mathf.Abs(i - middleIndex);
+            if (distance >= bestDistance)
+                continue;
+
+            bestDistance = distance;
+            bestSpaceIndex = i;
+        }
+
+        return bestSpaceIndex >= 0
+            ? message.Substring(0, bestSpaceIndex) + "\n" + message.Substring(bestSpaceIndex + 1)
+            : message;
     }
 
     void ResolveBuildingMessage()

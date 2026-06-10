@@ -155,3 +155,312 @@ public partial class TopPulldown
             ?? SpriteServer.SpriteSheetLookup(androidButtonSpriteResourcePath, index);
     }
 }
+
+public partial class TopPulldown
+{
+    [Header("Corner Controls")]
+    [SerializeField] private bool useCornerControls = true;
+    [SerializeField] private float cornerControlMargin = 24f;
+    [SerializeField] private float bottomCornerControlClearance = 134f;
+    [SerializeField] private float interactionPanelButtonScale = 0.58f;
+    [SerializeField] private string dialogMiscSpriteResourcePath = "Sprites/DialogMisc_C";
+    [SerializeField] private string interactionSideButtonsSpriteResourcePath = "Sprites/Frames/Interaction_Side_Buttons_A";
+
+    private RectTransform dogSightButtonRect;
+    private Image dogSightButtonImage;
+    private Image dogSightIconImage;
+    private RectTransform interactionPanelRect;
+    private Image interactionPanelImage;
+    private readonly RectTransform[] interactionButtonRects = new RectTransform[5];
+
+    private void BuildCornerControls(Transform parent, Transform searchRoot)
+    {
+        if (!useCornerControls)
+            return;
+
+        dogSightButtonRect = BuildCornerIconButton(
+            parent,
+            searchRoot,
+            "DogSightButton",
+            GetDogSightSprite(),
+            ToggleDogSightFromButton,
+            "Dog Sight",
+            out dogSightButtonImage,
+            out dogSightIconImage);
+
+        BuildInteractionPanel(parent, searchRoot);
+        HidePulldownControlsReplacedByCorners();
+        ApplyCornerControlsLayout();
+    }
+
+    private RectTransform BuildCornerIconButton(
+        Transform parent,
+        Transform searchRoot,
+        string buttonName,
+        Sprite iconSprite,
+        UnityAction clickHandler,
+        string tooltipText,
+        out Image buttonImage,
+        out Image iconImage)
+    {
+        Transform existingButton = FindExistingUiElement(parent, searchRoot, buttonName);
+        GameObject buttonObject;
+        if (existingButton == null)
+        {
+            buttonObject = new GameObject(buttonName, typeof(RectTransform), typeof(Image), typeof(Button));
+            buttonObject.transform.SetParent(parent, false);
+        }
+        else
+        {
+            buttonObject = existingButton.gameObject;
+        }
+
+        RectTransform buttonRect = GetOrAddComponent<RectTransform>(buttonObject);
+
+        buttonImage = GetOrAddComponent<Image>(buttonObject);
+        buttonImage.color = topControlButtonColor;
+        buttonImage.raycastTarget = true;
+
+        Button button = GetOrAddComponent<Button>(buttonObject);
+        button.targetGraphic = buttonImage;
+        button.onClick.RemoveAllListeners();
+        button.onClick.AddListener(AudioPlayer.PlayUiButtonClick);
+        button.onClick.AddListener(clickHandler);
+
+        Transform existingIcon = buttonObject.transform.Find("Icon");
+        GameObject iconObject;
+        if (existingIcon == null)
+        {
+            iconObject = new GameObject("Icon", typeof(RectTransform), typeof(Image));
+            iconObject.transform.SetParent(buttonObject.transform, false);
+        }
+        else
+        {
+            iconObject = existingIcon.gameObject;
+        }
+
+        RectTransform iconRect = GetOrAddComponent<RectTransform>(iconObject);
+        iconRect.anchorMin = new Vector2(0.5f, 0.5f);
+        iconRect.anchorMax = new Vector2(0.5f, 0.5f);
+        iconRect.pivot = new Vector2(0.5f, 0.5f);
+        iconRect.anchoredPosition = Vector2.zero;
+
+        iconImage = GetOrAddComponent<Image>(iconObject);
+        iconImage.sprite = iconSprite;
+        iconImage.preserveAspect = true;
+        iconImage.color = Color.white;
+        iconImage.raycastTarget = false;
+
+        ConfigureTooltip(buttonObject, () => tooltipText);
+        return buttonRect;
+    }
+
+    private void BuildInteractionPanel(Transform parent, Transform searchRoot)
+    {
+        Transform existingPanel = FindExistingUiElement(parent, searchRoot, "InteractionTabPanel");
+        GameObject panelObject;
+        if (existingPanel == null)
+        {
+            panelObject = new GameObject("InteractionTabPanel", typeof(RectTransform), typeof(Image), typeof(VerticalLayoutGroup));
+            panelObject.transform.SetParent(parent, false);
+        }
+        else
+        {
+            panelObject = existingPanel.gameObject;
+        }
+
+        interactionPanelRect = GetOrAddComponent<RectTransform>(panelObject);
+        interactionPanelImage = GetOrAddComponent<Image>(panelObject);
+        interactionPanelImage.sprite = GetInteractionSideButtonsSprite();
+        interactionPanelImage.color = Color.white;
+        interactionPanelImage.preserveAspect = true;
+        interactionPanelImage.raycastTarget = false;
+
+        VerticalLayoutGroup layout = GetOrAddComponent<VerticalLayoutGroup>(panelObject);
+        layout.spacing = 0f;
+        layout.padding = new RectOffset(0, 0, 0, 0);
+        layout.childAlignment = TextAnchor.MiddleCenter;
+        layout.childControlWidth = true;
+        layout.childControlHeight = true;
+        layout.childForceExpandWidth = false;
+        layout.childForceExpandHeight = false;
+
+        interactionButtonRects[0] = BuildInteractionTabButton(panelObject.transform, "InteractSocialButton", InteractionDialogUI.InteractionTab.Social, "Social");
+        interactionButtonRects[1] = BuildInteractionTabButton(panelObject.transform, "InteractPackButton", InteractionDialogUI.InteractionTab.Pack, "Pack");
+        interactionButtonRects[2] = BuildInteractionTabButton(panelObject.transform, "InteractItemsButton", InteractionDialogUI.InteractionTab.Items, "Items");
+        interactionButtonRects[3] = BuildInteractionTabButton(panelObject.transform, "InteractQuestsButton", InteractionDialogUI.InteractionTab.Quests, "Quests");
+        interactionButtonRects[4] = BuildInteractionTabButton(panelObject.transform, "InteractScentButton", InteractionDialogUI.InteractionTab.Scent, "Scent");
+    }
+
+    private RectTransform BuildInteractionTabButton(Transform parent, string buttonName, InteractionDialogUI.InteractionTab tab, string tooltipText)
+    {
+        Transform existingButton = parent.Find(buttonName);
+        GameObject buttonObject;
+        if (existingButton == null)
+        {
+            buttonObject = new GameObject(buttonName, typeof(RectTransform), typeof(Image), typeof(Button), typeof(LayoutElement));
+            buttonObject.transform.SetParent(parent, false);
+        }
+        else
+        {
+            buttonObject = existingButton.gameObject;
+        }
+
+        RectTransform rect = GetOrAddComponent<RectTransform>(buttonObject);
+        Image buttonImage = GetOrAddComponent<Image>(buttonObject);
+        buttonImage.color = Color.clear;
+        buttonImage.raycastTarget = true;
+
+        Button button = GetOrAddComponent<Button>(buttonObject);
+        button.targetGraphic = buttonImage;
+        button.onClick.RemoveAllListeners();
+        button.onClick.AddListener(AudioPlayer.PlayUiButtonClick);
+        button.onClick.AddListener(() => OpenInteractionTab(tab));
+
+        Transform oldIcon = buttonObject.transform.Find("Icon");
+        if (oldIcon != null)
+            oldIcon.gameObject.SetActive(false);
+
+        LayoutElement layout = GetOrAddComponent<LayoutElement>(buttonObject);
+        layout.flexibleWidth = 0f;
+        layout.flexibleHeight = 0f;
+
+        ConfigureTooltip(buttonObject, () => tooltipText);
+        return rect;
+    }
+
+    private void ApplyCornerControlsLayout()
+    {
+        if (!useCornerControls || !uiBuilt)
+            return;
+
+        HidePulldownControlsReplacedByCorners();
+
+        float topInset = GetTopSafeAreaInset();
+        ConfigureCornerButton(homeButtonRect, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(cornerControlMargin, -(cornerControlMargin + topInset)));
+        ConfigureCornerButton(cameraModeButtonRect, new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-cornerControlMargin, -(cornerControlMargin + topInset)));
+        ConfigureCornerButton(speedButtonRect, new Vector2(0f, 0f), new Vector2(0f, 0f), new Vector2(cornerControlMargin, bottomCornerControlClearance + topControlButtonSize + modeButtonSpacing));
+        ConfigureCornerButton(dogSightButtonRect, new Vector2(0f, 0f), new Vector2(0f, 0f), new Vector2(cornerControlMargin, bottomCornerControlClearance));
+
+        ApplyTopControlButtonSize(homeButtonRect);
+        ApplyTopControlButtonSize(cameraModeButtonRect);
+        ApplyTopControlButtonSize(speedButtonRect);
+        ApplyTopControlButtonSize(dogSightButtonRect);
+        ConfigureTopControlIconRect(speedIconImage != null ? speedIconImage.rectTransform : null, 0.72f);
+        ConfigureTopControlIconRect(dogSightIconImage != null ? dogSightIconImage.rectTransform : null, 0.72f);
+
+        ApplyInteractionPanelLayout();
+    }
+
+    private void ConfigureCornerButton(RectTransform rectTransform, Vector2 anchor, Vector2 pivot, Vector2 anchoredPosition)
+    {
+        if (rectTransform == null)
+            return;
+
+        rectTransform.gameObject.SetActive(true);
+        rectTransform.anchorMin = anchor;
+        rectTransform.anchorMax = anchor;
+        rectTransform.pivot = pivot;
+        rectTransform.localScale = Vector3.one;
+        rectTransform.anchoredPosition = anchoredPosition;
+    }
+
+    private void ApplyInteractionPanelLayout()
+    {
+        if (interactionPanelRect == null)
+            return;
+
+        float hotspotHeight = Mathf.Max(48f, topControlButtonSize * interactionPanelButtonScale);
+        float panelHeight = hotspotHeight * interactionButtonRects.Length;
+        float panelWidth = GetInteractionSideButtonsAspectRatio() * panelHeight;
+        interactionPanelRect.gameObject.SetActive(true);
+        if (interactionPanelImage != null)
+        {
+            interactionPanelImage.sprite = GetInteractionSideButtonsSprite();
+            interactionPanelImage.color = Color.white;
+            interactionPanelImage.preserveAspect = true;
+        }
+
+        interactionPanelRect.anchorMin = new Vector2(1f, 0.5f);
+        interactionPanelRect.anchorMax = new Vector2(1f, 0.5f);
+        interactionPanelRect.pivot = new Vector2(1f, 0.5f);
+        interactionPanelRect.localScale = Vector3.one;
+        interactionPanelRect.anchoredPosition = new Vector2(-cornerControlMargin, 0f);
+        interactionPanelRect.sizeDelta = new Vector2(panelWidth, panelHeight);
+
+        for (int i = 0; i < interactionButtonRects.Length; i++)
+        {
+            RectTransform rect = interactionButtonRects[i];
+            if (rect == null)
+                continue;
+
+            rect.sizeDelta = new Vector2(panelWidth, hotspotHeight);
+            LayoutElement layout = GetOrAddComponent<LayoutElement>(rect.gameObject);
+            layout.minWidth = panelWidth;
+            layout.preferredWidth = panelWidth;
+            layout.minHeight = hotspotHeight;
+            layout.preferredHeight = hotspotHeight;
+        }
+    }
+
+    private void HidePulldownControlsReplacedByCorners()
+    {
+        SetRectActive(pulldownFrameRect, false);
+        SetRectActive(pulldownTabRect, false);
+        SetRectActive(targetButtonRect, false);
+        SetRectActive(modeButtonRect, false);
+        SetRectActive(simulationButtonRect, false);
+        SetRectActive(emoteButtonRect, false);
+        SetRectActive(inventoryButtonRect, false);
+        SetRectActive(digButtonRect, false);
+        SetRectActive(questButtonRect, false);
+    }
+
+    private static void SetRectActive(RectTransform rectTransform, bool active)
+    {
+        if (rectTransform != null && rectTransform.gameObject.activeSelf != active)
+            rectTransform.gameObject.SetActive(active);
+    }
+
+    private void ToggleDogSightFromButton()
+    {
+        ToggleSniffMode("DogSightButton");
+    }
+
+    private void OpenInteractionTab(InteractionDialogUI.InteractionTab tab)
+    {
+        CloseTopActionPanels();
+
+        InteractionDialogUI dialog = FindFirstObjectByType<InteractionDialogUI>(FindObjectsInactive.Include);
+        if (dialog == null)
+        {
+            GameObject dialogObject = new("InteractionDialogUI");
+            dialog = dialogObject.AddComponent<InteractionDialogUI>();
+        }
+
+        dialog.Show(tab);
+    }
+
+    private Sprite GetDogSightSprite()
+    {
+        return SpriteServer.SpriteLookup("DialogMisc_C_5")
+            ?? SpriteServer.SpriteSheetLookupByName(dialogMiscSpriteResourcePath, "DialogMisc_C_5")
+            ?? SpriteServer.SpriteSheetLookup("DialogMisc_C", 5)
+            ?? SpriteServer.SpriteLookup("Scent");
+    }
+
+    private Sprite GetInteractionSideButtonsSprite()
+    {
+        return SpriteServer.SpriteLookup("Interaction_Side_Buttons_A")
+            ?? SpriteServer.SpriteResourceLookup(interactionSideButtonsSpriteResourcePath);
+    }
+
+    private float GetInteractionSideButtonsAspectRatio()
+    {
+        Sprite sprite = GetInteractionSideButtonsSprite();
+        if (sprite == null || sprite.rect.height <= 0f)
+            return 171f / 560f;
+
+        return sprite.rect.width / sprite.rect.height;
+    }
+}

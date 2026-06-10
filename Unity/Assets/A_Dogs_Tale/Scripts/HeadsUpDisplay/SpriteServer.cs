@@ -36,6 +36,8 @@ public static class SpriteServer
         //
         { "DogEmojiSheetC",            "Sprites/Emotes/DogEmojiSheetC" },
         //
+        { "DialogMisc_C",              "Sprites/DialogMisc_C" },
+        //
         { "Human_Emoji_A",             "Sprites/Emotes/Human_Emoji_A" },
         //
         { "GraphicsQualitySprites_A",  "Sprites/GraphicsQualitySprites_A" },
