@@ -4,6 +4,7 @@ public class PlayerInputState
 {
     public Vector2 moveAxis;                    // float vector direction and speed (-1.0 to 1.0)
     public float strafeAxis;                    // left or right strafing instead of turning.
+    public bool overheadWorldMoveFromMobileJoystick;
     // one-shot commands
     public bool barkPressed;
     public bool markTerritoryPressed;

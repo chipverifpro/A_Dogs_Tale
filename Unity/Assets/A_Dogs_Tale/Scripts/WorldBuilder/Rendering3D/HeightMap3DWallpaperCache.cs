@@ -14,6 +14,7 @@ public partial class DungeonGenerator
         cachedWallpaperTexturesByKey = null;
         cachedWallpaperTexturesMirrorByKey = null;
         cachedWallpaperSelectionKeys = null;
+        ConfigureWallpaperRoomRules();
     }
 
     private Texture2D[] GetAvailableWallpaperTextures(bool useMirror = false)

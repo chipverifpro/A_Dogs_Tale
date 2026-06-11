@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using DogGame;
 using UnityEngine;
 using UnityEngine.UI;
 using DogGame.Settings;
@@ -65,6 +66,7 @@ public class MenuSettingsDialog : MonoBehaviour
     private Toggle sfxToggle;
     private Toggle uiToggle;
     private Toggle touchscreenJoystickToggle;
+    private Toggle digitalJoystickToggle;
     private Toggle androidSafeAreaToggle;
     private Toggle androidFullscreenToggle;
     private Slider scentStepSlider;
@@ -88,6 +90,7 @@ public class MenuSettingsDialog : MonoBehaviour
     private Sprite defaultThemedBackgroundSprite;
     private Sprite tallThemedBackgroundSprite;
     private RectTransform closeButtonRect;
+    private bool pausedGameForDialog;
     private Vector2 defaultThemedDialogSize;
     private Vector2 defaultThemedBackgroundSize;
     private bool hasDefaultThemedLayout;
@@ -133,11 +136,19 @@ public class MenuSettingsDialog : MonoBehaviour
         }
     }
 
+    private void OnDestroy()
+    {
+        RestorePauseStateForDialog();
+    }
+
     public void Open()
     {
         EnsureBuilt();
         if (dialogRoot == null)
             return;
+
+        if (!IsOpen)
+            ApplyPauseStateForDialog();
 
         ApplyResponsiveThemedLayout();
         RefreshPanelSize();
@@ -149,8 +160,13 @@ public class MenuSettingsDialog : MonoBehaviour
 
     public void Close()
     {
+        bool wasOpen = IsOpen;
+
         if (dialogRoot != null)
             dialogRoot.SetActive(false);
+
+        if (wasOpen)
+            RestorePauseStateForDialog();
     }
 
     public void Toggle()
@@ -167,6 +183,27 @@ public class MenuSettingsDialog : MonoBehaviour
         tallDisplayScaleMultiplier = Mathf.Max(0.01f, scaleMultiplier);
         ApplyResponsiveThemedLayout();
         ApplyResponsiveScaleToBuiltDialog();
+    }
+
+    private void ApplyPauseStateForDialog()
+    {
+        if (GamePause.IsPaused)
+        {
+            pausedGameForDialog = false;
+            return;
+        }
+
+        GamePause.Pause();
+        pausedGameForDialog = true;
+    }
+
+    private void RestorePauseStateForDialog()
+    {
+        if (!pausedGameForDialog)
+            return;
+
+        pausedGameForDialog = false;
+        GamePause.Resume();
     }
 
     private void EnsureBuilt()
@@ -271,6 +308,7 @@ public class MenuSettingsDialog : MonoBehaviour
         CreateSectionHeader(content, "CONTROLS");
         GameObject controlsRow = CreateRow(content, "ControlsRow", 42f);
         touchscreenJoystickToggle = CreateToggle(controlsRow.transform, "Touchscreen joystick visible", "TouchscreenJoystickToggle");
+        digitalJoystickToggle = CreateToggle(controlsRow.transform, "Digital Joystick", "DigitalJoystickToggle");
         CreateAndroidDisplayModeRow(content);
         CreateButtonSizeRow(content);
 
@@ -291,6 +329,7 @@ public class MenuSettingsDialog : MonoBehaviour
 
         AddAiModelListeners();
         touchscreenJoystickToggle.onValueChanged.AddListener(_ => SaveFromControls());
+        digitalJoystickToggle.onValueChanged.AddListener(_ => SaveFromControls());
         musicToggle.onValueChanged.AddListener(_ => SaveFromControls());
         sfxToggle.onValueChanged.AddListener(_ => SaveFromControls());
         uiToggle.onValueChanged.AddListener(_ => SaveFromControls());
@@ -1632,6 +1671,7 @@ public class MenuSettingsDialog : MonoBehaviour
         CreateSoundSettingsRows(panel.transform);
         CreateSectionHeader(panel.transform, "Controls");
         touchscreenJoystickToggle = CreateToggle(panel.transform, "Touchscreen joystick visible", "TouchscreenJoystickToggle");
+        digitalJoystickToggle = CreateToggle(panel.transform, "Digital Joystick", "DigitalJoystickToggle");
         CreateAndroidDisplayModeRow(panel.transform);
         CreateButtonSizeRow(panel.transform);
 
@@ -1642,6 +1682,7 @@ public class MenuSettingsDialog : MonoBehaviour
 
         AddAiModelListeners();
         touchscreenJoystickToggle.onValueChanged.AddListener(_ => SaveFromControls());
+        digitalJoystickToggle.onValueChanged.AddListener(_ => SaveFromControls());
         musicToggle.onValueChanged.AddListener(_ => SaveFromControls());
         sfxToggle.onValueChanged.AddListener(_ => SaveFromControls());
         uiToggle.onValueChanged.AddListener(_ => SaveFromControls());
@@ -1785,6 +1826,7 @@ public class MenuSettingsDialog : MonoBehaviour
         sfxToggle?.SetIsOnWithoutNotify(settings.sfxEnabled);
         uiToggle?.SetIsOnWithoutNotify(settings.uiEnabled);
         touchscreenJoystickToggle?.SetIsOnWithoutNotify(settings.touchscreenJoystickVisible);
+        digitalJoystickToggle?.SetIsOnWithoutNotify(settings.digitalJoystick);
         SetAndroidDisplayMode(settings.androidFullscreenEnabled, save: false);
 
         float snappedValue = SnapScentStep(settings.scentSimulationTimeStep);
@@ -1846,6 +1888,7 @@ public class MenuSettingsDialog : MonoBehaviour
             uiEnabled = uiToggle != null ? uiToggle.isOn : current.uiEnabled,
             uiVolume = SnapVolume(uiVolumeSlider != null ? uiVolumeSlider.value : current.uiVolume),
             touchscreenJoystickVisible = touchscreenJoystickToggle != null ? touchscreenJoystickToggle.isOn : current.touchscreenJoystickVisible,
+            digitalJoystick = digitalJoystickToggle != null ? digitalJoystickToggle.isOn : current.digitalJoystick,
             graphicsLevel = selectedGraphicsLevel,
             scentSimulationTimeStep = SnapScentStep(scentStepSlider != null ? scentStepSlider.value : current.scentSimulationTimeStep),
             buttonSize = PersistentGameSettings.SnapButtonSize(buttonSizeSlider != null ? buttonSizeSlider.value : current.buttonSize),
@@ -2159,6 +2202,7 @@ public class MenuSettingsDialog : MonoBehaviour
         RefreshToggleVisual(sfxToggle);
         RefreshToggleVisual(uiToggle);
         RefreshToggleVisual(touchscreenJoystickToggle);
+        RefreshToggleVisual(digitalJoystickToggle);
         RefreshToggleVisual(androidSafeAreaToggle);
         RefreshToggleVisual(androidFullscreenToggle);
     }

@@ -416,11 +416,19 @@ namespace DogGame.Modules
                 currentDestinationPosition = null;  // stop heading to location
                 currentDestinationObject = null;    // stop heading to object
 
-                ApplyManualTurn(state.moveAxis.x, deltaTime);
-                desiredWorldDir = ConvertInputToWorldDirection(new Vector2(state.strafeAxis, state.moveAxis.y));
+                if (state.overheadWorldMoveFromMobileJoystick)
+                {
+                    desiredWorldDir = new Vector3(state.moveAxis.x, 0f, state.moveAxis.y);
+                    worldObject.motionModule.facingMode = FacingMode.FaceMovementDirection;
+                }
+                else
+                {
+                    ApplyManualTurn(state.moveAxis.x, deltaTime);
+                    desiredWorldDir = ConvertInputToWorldDirection(new Vector2(state.strafeAxis, state.moveAxis.y));
+                    worldObject.motionModule.facingMode = FacingMode.Manual;
+                }
                 //worldObject.navigationSource = NavigationSource.PlayerDirection;
                 worldObject.motionModule.motionControlMode = MotionControlMode.DirectInput;
-                worldObject.motionModule.facingMode = FacingMode.Manual;
                 
                 currentManualWorldMoveDir = desiredWorldDir;
                 MovementHeadToDestination();

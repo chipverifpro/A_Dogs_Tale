@@ -24,6 +24,11 @@ public enum PlacementRoomTypeFlags
     Wooded = 1 << 12,
     PicnicStructure = 1 << 13,
     Library = 1 << 14,
+    OUTDOOR = Outdoor | Grass | Garden | SportsField | PicnicStructure ,
+    INDOOR = Bedroom | Kitchen | Living | Bathroom | Hallway | Utility | 
+             Generic | Corridor | Library,
+    YARD = Garden | Grass,
+    FOREST = Outdoor | Garden,
     Any = ~0
 }
 

@@ -11,6 +11,7 @@ public static class PersistentGameSettings
 {
     private const string PlayerPrefsKey = "A_Dogs_Tale.PersistentGameSettings";
     private const string TouchscreenJoystickVisibleJsonField = "\"touchscreenJoystickVisible\"";
+    private const string DigitalJoystickJsonField = "\"digitalJoystick\"";
     private const string ButtonSizeJsonField = "\"buttonSize\"";
     private const string AndroidFullscreenJsonField = "\"androidFullscreenEnabled\"";
     private const string MusicEnabledJsonField = "\"musicEnabled\"";
@@ -74,6 +75,7 @@ public static class PersistentGameSettings
         public bool uiEnabled = true;
         public float uiVolume = 1f;
         public bool touchscreenJoystickVisible = true;
+        public bool digitalJoystick = false;
         public float buttonSize = DefaultButtonSize;
         public bool androidFullscreenEnabled = false;
     }
@@ -156,7 +158,10 @@ public static class PersistentGameSettings
         Data data = GetCurrentOrSaved();
 
         if (inputAdapter != null)
+        {
             inputAdapter.SetMobileJoystickVisiblePreference(data.touchscreenJoystickVisible);
+            inputAdapter.SetDigitalMobileJoystickPreference(data.digitalJoystick);
+        }
 
         ApplyAndroidDisplayMode(data);
     }
@@ -299,7 +304,10 @@ public static class PersistentGameSettings
 
         NewInputAdapter inputAdapter = GetInputAdapter();
         if (inputAdapter != null)
+        {
             inputAdapter.SetMobileJoystickVisiblePreference(normalized.touchscreenJoystickVisible);
+            inputAdapter.SetDigitalMobileJoystickPreference(normalized.digitalJoystick);
+        }
 
         AudioPlayer audioPlayer = GetAudioPlayer();
         if (audioPlayer != null)
@@ -330,6 +338,7 @@ public static class PersistentGameSettings
         }
 
         bool hasTouchscreenJoystickVisible = json.Contains(TouchscreenJoystickVisibleJsonField, StringComparison.Ordinal);
+        bool hasDigitalJoystick = json.Contains(DigitalJoystickJsonField, StringComparison.Ordinal);
         bool hasButtonSize = json.Contains(ButtonSizeJsonField, StringComparison.Ordinal);
         bool hasAndroidFullscreen = json.Contains(AndroidFullscreenJsonField, StringComparison.Ordinal);
         bool hasMusicEnabled = json.Contains(MusicEnabledJsonField, StringComparison.Ordinal);
@@ -348,6 +357,8 @@ public static class PersistentGameSettings
 
         if (!hasTouchscreenJoystickVisible)
             data.touchscreenJoystickVisible = true;
+        if (!hasDigitalJoystick)
+            data.digitalJoystick = false;
         if (!hasButtonSize)
             data.buttonSize = DefaultButtonSize;
         if (!hasAndroidFullscreen)
@@ -399,7 +410,10 @@ public static class PersistentGameSettings
 
         NewInputAdapter inputAdapter = GetInputAdapter();
         if (inputAdapter != null)
+        {
             data.touchscreenJoystickVisible = inputAdapter.MobileJoystickVisiblePreference;
+            data.digitalJoystick = inputAdapter.DigitalMobileJoystickPreference;
+        }
 
         DungeonGenerator dungeonGenerator = GetDungeonGenerator();
         if (dungeonGenerator != null)

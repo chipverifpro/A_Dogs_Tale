@@ -62,12 +62,14 @@ public class NewInputAdapter : MonoBehaviour
     [SerializeField] private bool showMobileJoystickInEditor = false;
     [SerializeField] private Vector2 mobileJoystickMarginPixels = new(36f, 36f);
     [SerializeField] private float mobileJoystickRadiusPixels = 88f;
+    [SerializeField, Min(0.1f)] private float mobileJoystickRadiusMultiplier = 3f;
     [SerializeField] private bool mobileJoystickFloatsToPress = true;
     [SerializeField] private float mobileJoystickDragActivationPixels = 18f;
     [SerializeField] private float mobileJoystickActivationWidthPercent = 0.45f;
     [SerializeField] private float mobileJoystickActivationHeightPercent = 0.55f;
     [SerializeField, Range(0f, 0.5f)] private float mobileJoystickDeadZone = 0.12f;
     [SerializeField, Range(0f, 1f)] private float mobileJoystickForwardTurnDeadZone = 0.22f;
+    [SerializeField] private bool digitalMobileJoystick = false;
     [SerializeField] private Color mobileJoystickBaseColor = new(1f, 1f, 1f, 0.20f);
     [SerializeField] private Color mobileJoystickKnobColor = new(1f, 1f, 1f, 0.45f);
 
@@ -137,6 +139,7 @@ public class NewInputAdapter : MonoBehaviour
     }
 
     public bool MobileJoystickVisiblePreference => enableMobileJoystick;
+    public bool DigitalMobileJoystickPreference => digitalMobileJoystick;
 
     public void SetMobileJoystickVisiblePreference(bool visible)
     {
@@ -147,6 +150,11 @@ public class NewInputAdapter : MonoBehaviour
         ClearMobileJoystick();
         SetMobileJoystickUiVisible(false);
         UpdateMobileJoystickSharedState(false);
+    }
+
+    public void SetDigitalMobileJoystickPreference(bool enabled)
+    {
+        digitalMobileJoystick = enabled;
     }
 
     private void Awake()
@@ -405,6 +413,7 @@ public class NewInputAdapter : MonoBehaviour
 
         var state = gameInputRouter.InputState;
         Vector2 joystickAxis = UpdateMobileJoystick();
+        state.overheadWorldMoveFromMobileJoystick = false;
 
 
         // --- Movement axis ---
@@ -414,7 +423,17 @@ public class NewInputAdapter : MonoBehaviour
 
         bool hasMobileJoystickInput = joystickAxis.sqrMagnitude > 0.0001f;
         if (hasMobileJoystickInput)
-            state.moveAxis = ApplyMobileJoystickForwardTurnDeadZone(joystickAxis);
+        {
+            if (ShouldUseOverheadWorldMobileJoystickMode())
+            {
+                state.moveAxis = joystickAxis;
+                state.overheadWorldMoveFromMobileJoystick = true;
+            }
+            else
+            {
+                state.moveAxis = ApplyMobileJoystickMode(joystickAxis);
+            }
+        }
 
         if (state.moveAxis != Vector2.zero)
         {
@@ -427,6 +446,8 @@ public class NewInputAdapter : MonoBehaviour
         state.strafeAxis = strafeAction != null
             ? strafeAction.ReadValue<float>()
             : 0f;
+        if (state.overheadWorldMoveFromMobileJoystick)
+            state.strafeAxis = 0f;
 
         if (state.strafeAxis != 0f)
         {
@@ -1048,7 +1069,7 @@ public class NewInputAdapter : MonoBehaviour
     private Vector2 CalculateMobileJoystickAxis(Vector2 pointerScreenPosition)
     {
         Vector2 delta = pointerScreenPosition - mobileJoystickCenterScreen;
-        float radius = Mathf.Max(1f, mobileJoystickRadiusPixels);
+        float radius = GetMobileJoystickRadiusPixels();
         Vector2 clamped = Vector2.ClampMagnitude(delta, radius);
         Vector2 rawAxis = clamped / radius;
 
@@ -1067,12 +1088,39 @@ public class NewInputAdapter : MonoBehaviour
         return mobileJoystickAxis;
     }
 
+    private Vector2 ApplyMobileJoystickMode(Vector2 axis)
+    {
+        return digitalMobileJoystick
+            ? QuantizeMobileJoystickAxis(axis)
+            : ApplyMobileJoystickForwardTurnDeadZone(axis);
+    }
+
+    private bool ShouldUseOverheadWorldMobileJoystickMode()
+    {
+        return dir != null &&
+               dir.cameraModeSwitcher != null &&
+               dir.cameraModeSwitcher.cameraMode == CameraModes.Overhead;
+    }
+
     private Vector2 ApplyMobileJoystickForwardTurnDeadZone(Vector2 axis)
     {
         if (axis.y > mobileJoystickDeadZone && Mathf.Abs(axis.x) <= mobileJoystickForwardTurnDeadZone)
             axis.x = 0f;
 
         return axis;
+    }
+
+    private static Vector2 QuantizeMobileJoystickAxis(Vector2 axis)
+    {
+        float magnitude = axis.magnitude;
+        if (magnitude <= 0f)
+            return Vector2.zero;
+
+        float angle = Mathf.Atan2(axis.y, axis.x) * Mathf.Rad2Deg;
+        int sector = Mathf.RoundToInt(angle / 45f);
+        float quantizedAngle = sector * 45f * Mathf.Deg2Rad;
+        Vector2 direction = new(Mathf.Cos(quantizedAngle), Mathf.Sin(quantizedAngle));
+        return direction.normalized * magnitude;
     }
 
     private void ClearMobileJoystick()
@@ -1120,10 +1168,15 @@ public class NewInputAdapter : MonoBehaviour
 
     private Vector2 GetMobileJoystickCenterScreen()
     {
-        float radius = Mathf.Max(1f, mobileJoystickRadiusPixels);
+        float radius = GetMobileJoystickRadiusPixels();
         return new Vector2(
             mobileJoystickMarginPixels.x + radius,
             mobileJoystickMarginPixels.y + radius);
+    }
+
+    private float GetMobileJoystickRadiusPixels()
+    {
+        return Mathf.Max(1f, mobileJoystickRadiusPixels * Mathf.Max(0.1f, mobileJoystickRadiusMultiplier));
     }
 
     private bool IsInMobileJoystickActivationZone(Vector2 screenPosition)
@@ -1173,8 +1226,9 @@ public class NewInputAdapter : MonoBehaviour
         mobileJoystickCanvas.sortingOrder = 500;
         canvasObject.AddComponent<CanvasScaler>();
 
-        mobileJoystickBase = CreateMobileJoystickImage("JoystickBase", canvasObject.transform, mobileJoystickRadiusPixels * 2f, mobileJoystickBaseColor);
-        mobileJoystickKnob = CreateMobileJoystickImage("JoystickKnob", mobileJoystickBase, mobileJoystickRadiusPixels * 0.88f, mobileJoystickKnobColor);
+        float radius = GetMobileJoystickRadiusPixels();
+        mobileJoystickBase = CreateMobileJoystickImage("JoystickBase", canvasObject.transform, radius * 2f, mobileJoystickBaseColor);
+        mobileJoystickKnob = CreateMobileJoystickImage("JoystickKnob", mobileJoystickBase, radius * 0.88f, mobileJoystickKnobColor);
         mobileJoystickKnob.anchorMin = new Vector2(0.5f, 0.5f);
         mobileJoystickKnob.anchorMax = new Vector2(0.5f, 0.5f);
         SetMobileJoystickKnobOffset(Vector2.zero);

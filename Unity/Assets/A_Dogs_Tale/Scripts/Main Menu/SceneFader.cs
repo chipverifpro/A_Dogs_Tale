@@ -292,8 +292,13 @@ public class SceneFader : MonoBehaviour
     [SerializeField] private float splashOrientationAspectThreshold = 1.2f;
     [SerializeField] private Vector2 splashReviewIndexLabelOffset = new Vector2(16f, 12f);
     [SerializeField] private int splashReviewIndexLabelFontSize = 18;
+    [SerializeField] private float splashReviewSwipeMinPixels = 80f;
+    [SerializeField] private float splashReviewSwipeMaxVerticalRatio = 0.75f;
 
     private TMPro.TMP_Text splashReviewIndexLabel;
+    private const int NoSplashReviewSwipePointer = int.MinValue;
+    private int splashReviewSwipePointerId = NoSplashReviewSwipePointer;
+    private Vector2 splashReviewSwipeStartScreen;
 
     // Call this right before you display the splash.
     private void SetRandomSplashSprite()
@@ -668,6 +673,7 @@ public class SceneFader : MonoBehaviour
         if (splashReviewIndexLabel != null)
             splashReviewIndexLabel.gameObject.SetActive(true);
 
+        ClearSplashReviewSwipeTracking();
         isReviewingSplashScreens = true;
         SetSplashSprite(currentSplashIndex);
     }
@@ -678,6 +684,7 @@ public class SceneFader : MonoBehaviour
             return;
 
         isReviewingSplashScreens = false;
+        ClearSplashReviewSwipeTracking();
         if (splashReviewIndexLabel != null)
             splashReviewIndexLabel.gameObject.SetActive(false);
 
@@ -690,23 +697,81 @@ public class SceneFader : MonoBehaviour
     void UpdateSplashScreenReviewInput()
     {
         Keyboard keyboard = Keyboard.current;
-        if (keyboard == null)
-            return;
-
-        if (keyboard.leftArrowKey.wasPressedThisFrame)
+        if (keyboard != null && keyboard.leftArrowKey.wasPressedThisFrame)
         {
             SetSplashSprite(currentSplashIndex - 1);
             return;
         }
 
-        if (keyboard.rightArrowKey.wasPressedThisFrame)
+        if (keyboard != null && keyboard.rightArrowKey.wasPressedThisFrame)
         {
             SetSplashSprite(currentSplashIndex + 1);
             return;
         }
 
-        if (keyboard.escapeKey.wasPressedThisFrame)
+        if (keyboard != null && keyboard.escapeKey.wasPressedThisFrame)
+        {
             StopSplashScreenReview();
+            return;
+        }
+
+        UpdateSplashScreenReviewSwipeInput();
+    }
+
+    void UpdateSplashScreenReviewSwipeInput()
+    {
+        if (Application.platform != RuntimePlatform.Android)
+            return;
+
+        Touchscreen touchscreen = Touchscreen.current;
+        if (touchscreen == null)
+            return;
+
+        for (int i = 0; i < touchscreen.touches.Count; i++)
+        {
+            var touch = touchscreen.touches[i];
+            if (touch == null)
+                continue;
+
+            int touchId = touch.touchId.ReadValue();
+            Vector2 position = touch.position.ReadValue();
+
+            if (splashReviewSwipePointerId == NoSplashReviewSwipePointer)
+            {
+                if (!touch.press.wasPressedThisFrame)
+                    continue;
+
+                splashReviewSwipePointerId = touchId;
+                splashReviewSwipeStartScreen = position;
+                return;
+            }
+
+            if (splashReviewSwipePointerId != touchId)
+                continue;
+
+            if (!touch.press.wasReleasedThisFrame)
+                return;
+
+            Vector2 delta = position - splashReviewSwipeStartScreen;
+            ClearSplashReviewSwipeTracking();
+
+            float minSwipePixels = Mathf.Max(1f, splashReviewSwipeMinPixels);
+            if (Mathf.Abs(delta.x) < minSwipePixels)
+                return;
+
+            float maxVerticalPixels = Mathf.Abs(delta.x) * Mathf.Max(0f, splashReviewSwipeMaxVerticalRatio);
+            if (Mathf.Abs(delta.y) > maxVerticalPixels)
+                return;
+
+            SetSplashSprite(delta.x < 0f ? currentSplashIndex + 1 : currentSplashIndex - 1);
+            return;
+        }
+    }
+
+    void ClearSplashReviewSwipeTracking()
+    {
+        splashReviewSwipePointerId = NoSplashReviewSwipePointer;
+        splashReviewSwipeStartScreen = Vector2.zero;
     }
 
     void EnsureSplashReviewIndexLabel()

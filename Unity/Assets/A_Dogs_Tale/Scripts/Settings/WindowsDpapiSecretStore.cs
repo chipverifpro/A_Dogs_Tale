@@ -2,7 +2,8 @@
 #if UNITY_STANDALONE_WIN || UNITY_EDITOR_WIN
 using System;
 using System.IO;
-using System.Security.Cryptography;
+using System.ComponentModel;
+using System.Runtime.InteropServices;
 using System.Text;
 
 namespace DogGame.Settings
@@ -24,12 +25,7 @@ namespace DogGame.Settings
             Directory.CreateDirectory(GetSecretsDirectory());
 
             byte[] plainBytes = Encoding.UTF8.GetBytes(value ?? "");
-            byte[] encryptedBytes = ProtectedData.Protect(
-                plainBytes,
-                Entropy,
-                DataProtectionScope.CurrentUser);
-
-            File.WriteAllBytes(GetSecretPath(key), encryptedBytes);
+            File.WriteAllBytes(GetSecretPath(key), Protect(plainBytes));
         }
 
         public bool TryGetSecret(string key, out string value)
@@ -46,11 +42,7 @@ namespace DogGame.Settings
             if (encryptedBytes.Length == 0)
                 return false;
 
-            byte[] plainBytes = ProtectedData.Unprotect(
-                encryptedBytes,
-                Entropy,
-                DataProtectionScope.CurrentUser);
-
+            byte[] plainBytes = Unprotect(encryptedBytes);
             value = Encoding.UTF8.GetString(plainBytes);
             return !string.IsNullOrWhiteSpace(value);
         }
@@ -83,6 +75,130 @@ namespace DogGame.Settings
 
             return value.Trim();
         }
+
+        private static byte[] Protect(byte[] plainBytes)
+        {
+            return WithBlob(plainBytes, plainBlob =>
+                WithBlob(Entropy, entropyBlob =>
+                {
+                    if (!CryptProtectData(
+                            ref plainBlob,
+                            null,
+                            ref entropyBlob,
+                            IntPtr.Zero,
+                            IntPtr.Zero,
+                            0,
+                            out DataBlob encryptedBlob))
+                    {
+                        throw CreateDpapiException("encrypt");
+                    }
+
+                    return CopyAndFreeBlob(encryptedBlob);
+                }));
+        }
+
+        private static byte[] Unprotect(byte[] encryptedBytes)
+        {
+            return WithBlob(encryptedBytes, encryptedBlob =>
+                WithBlob(Entropy, entropyBlob =>
+                {
+                    if (!CryptUnprotectData(
+                            ref encryptedBlob,
+                            null,
+                            ref entropyBlob,
+                            IntPtr.Zero,
+                            IntPtr.Zero,
+                            0,
+                            out DataBlob plainBlob))
+                    {
+                        throw CreateDpapiException("decrypt");
+                    }
+
+                    return CopyAndFreeBlob(plainBlob);
+                }));
+        }
+
+        private static byte[] WithBlob(byte[] bytes, Func<DataBlob, byte[]> action)
+        {
+            if (bytes == null)
+                bytes = Array.Empty<byte>();
+
+            IntPtr dataPtr = IntPtr.Zero;
+            try
+            {
+                if (bytes.Length > 0)
+                {
+                    dataPtr = Marshal.AllocHGlobal(bytes.Length);
+                    Marshal.Copy(bytes, 0, dataPtr, bytes.Length);
+                }
+
+                return action(new DataBlob
+                {
+                    DataSize = bytes.Length,
+                    DataPointer = dataPtr
+                });
+            }
+            finally
+            {
+                if (dataPtr != IntPtr.Zero)
+                    Marshal.FreeHGlobal(dataPtr);
+            }
+        }
+
+        private static byte[] CopyAndFreeBlob(DataBlob blob)
+        {
+            try
+            {
+                if (blob.DataPointer == IntPtr.Zero || blob.DataSize <= 0)
+                    return Array.Empty<byte>();
+
+                byte[] bytes = new byte[blob.DataSize];
+                Marshal.Copy(blob.DataPointer, bytes, 0, bytes.Length);
+                return bytes;
+            }
+            finally
+            {
+                if (blob.DataPointer != IntPtr.Zero)
+                    LocalFree(blob.DataPointer);
+            }
+        }
+
+        private static Exception CreateDpapiException(string operation)
+        {
+            return new InvalidOperationException(
+                $"Windows DPAPI failed to {operation} secret data.",
+                new Win32Exception(Marshal.GetLastWin32Error()));
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        private struct DataBlob
+        {
+            public int DataSize;
+            public IntPtr DataPointer;
+        }
+
+        [DllImport("crypt32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
+        private static extern bool CryptProtectData(
+            ref DataBlob dataIn,
+            string? dataDescription,
+            ref DataBlob optionalEntropy,
+            IntPtr reserved,
+            IntPtr promptStruct,
+            int flags,
+            out DataBlob dataOut);
+
+        [DllImport("crypt32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
+        private static extern bool CryptUnprotectData(
+            ref DataBlob dataIn,
+            string? dataDescription,
+            ref DataBlob optionalEntropy,
+            IntPtr reserved,
+            IntPtr promptStruct,
+            int flags,
+            out DataBlob dataOut);
+
+        [DllImport("kernel32.dll")]
+        private static extern IntPtr LocalFree(IntPtr memory);
     }
 }
 #endif
