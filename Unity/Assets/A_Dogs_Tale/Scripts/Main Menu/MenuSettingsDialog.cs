@@ -84,6 +84,7 @@ public class MenuSettingsDialog : MonoBehaviour
     private LayoutElement buttonSizeSampleButtonLayout;
     private Image[] mapTypeButtonImages;
     private Image[] graphicsQualityButtonImages;
+    private Image[] showCarriedModeButtonImages;
     private RectTransform themedScrollRect;
     private RectTransform themedBackgroundRect;
     private Image themedBackgroundImage;
@@ -97,6 +98,7 @@ public class MenuSettingsDialog : MonoBehaviour
     private readonly List<SettingsIconBinding> settingsIconBindings = new List<SettingsIconBinding>();
     private PersistentGameSettings.MapType selectedMapType = PersistentGameSettings.MapType.House;
     private int selectedGraphicsLevel = PersistentGameSettings.GraphicsLevelHigh;
+    private PersistentGameSettings.ShowCarriedMode selectedShowCarriedMode = PersistentGameSettings.ShowCarriedMode.All;
     private Font runtimeFont;
     private RectTransform defaultScaleTarget;
     private Vector3 defaultScale = Vector3.one;
@@ -301,6 +303,7 @@ public class MenuSettingsDialog : MonoBehaviour
 
         CreateSectionHeader(content, "GRAPHICS LEVEL");
         CreateGraphicsQualityRow(content);
+        CreateShowCarriedModeRow(content);
 
         CreateSectionHeader(content, "SOUND");
         CreateSoundSettingsRows(content);
@@ -1084,6 +1087,43 @@ public class MenuSettingsDialog : MonoBehaviour
         RefreshGraphicsQualityButtonSprites();
     }
 
+    private void CreateShowCarriedModeRow(Transform parent)
+    {
+        showCarriedModeButtonImages = new Image[3];
+
+        GameObject row = CreateRow(parent, "ShowCarriedModeRow", 46f);
+        HorizontalLayoutGroup layout = row.GetComponent<HorizontalLayoutGroup>();
+        if (layout != null)
+            layout.spacing = 8f;
+
+        Text label = CreateLabel(row.transform, "Show Carried", 17, FontStyle.Bold, TextAnchor.MiddleLeft, 100f);
+        LayoutElement labelLayout = label.gameObject.GetComponent<LayoutElement>();
+        labelLayout.preferredWidth = 130f;
+        labelLayout.minWidth = 120f;
+
+        AddShowCarriedModeButton(row.transform, PersistentGameSettings.ShowCarriedMode.All, 0, "All");
+        AddShowCarriedModeButton(row.transform, PersistentGameSettings.ShowCarriedMode.PackOnly, 1, "Pack Only");
+        AddShowCarriedModeButton(row.transform, PersistentGameSettings.ShowCarriedMode.None, 2, "None");
+
+        RefreshShowCarriedModeButtons();
+    }
+
+    private void AddShowCarriedModeButton(
+        Transform parent,
+        PersistentGameSettings.ShowCarriedMode mode,
+        int index,
+        string labelText)
+    {
+        Button button = CreateButton(parent, labelText, $"{mode}ShowCarriedButton");
+        ConfigureCompactButton(button, index == 1 ? 104f : 74f);
+
+        Image image = button.targetGraphic as Image;
+        if (showCarriedModeButtonImages != null && index >= 0 && index < showCarriedModeButtonImages.Length)
+            showCarriedModeButtonImages[index] = image;
+
+        button.onClick.AddListener(() => SelectShowCarriedMode(mode, save: true));
+    }
+
     private Button CreateMapTypeButton(Transform parent, PersistentGameSettings.MapType mapType)
     {
         GameObject buttonObject = new GameObject($"{mapType}MapTypeButton", typeof(RectTransform), typeof(Image), typeof(Button), typeof(LayoutElement));
@@ -1139,6 +1179,17 @@ public class MenuSettingsDialog : MonoBehaviour
     {
         selectedGraphicsLevel = PersistentGameSettings.SnapGraphicsLevel(graphicsLevel);
         RefreshGraphicsQualityButtonSprites();
+
+        if (save)
+            SaveFromControls();
+    }
+
+    private void SelectShowCarriedMode(PersistentGameSettings.ShowCarriedMode mode, bool save)
+    {
+        selectedShowCarriedMode = Enum.IsDefined(typeof(PersistentGameSettings.ShowCarriedMode), mode)
+            ? mode
+            : PersistentGameSettings.ShowCarriedMode.All;
+        RefreshShowCarriedModeButtons();
 
         if (save)
             SaveFromControls();
@@ -1209,6 +1260,22 @@ public class MenuSettingsDialog : MonoBehaviour
             {
                 image.color = selected ? selectedControlColor : controlColor;
             }
+        }
+    }
+
+    private void RefreshShowCarriedModeButtons()
+    {
+        if (showCarriedModeButtonImages == null)
+            return;
+
+        for (int i = 0; i < showCarriedModeButtonImages.Length; i++)
+        {
+            Image image = showCarriedModeButtonImages[i];
+            if (image == null)
+                continue;
+
+            bool selected = i == (int)selectedShowCarriedMode;
+            image.color = selected ? selectedControlColor : controlColor;
         }
     }
 
@@ -1667,6 +1734,7 @@ public class MenuSettingsDialog : MonoBehaviour
         CreateScentSliderRow(panel.transform);
         CreateSectionHeader(panel.transform, "Graphics Level");
         CreateGraphicsQualityRow(panel.transform);
+        CreateShowCarriedModeRow(panel.transform);
         CreateSectionHeader(panel.transform, "Sound");
         CreateSoundSettingsRows(panel.transform);
         CreateSectionHeader(panel.transform, "Controls");
@@ -1809,6 +1877,7 @@ public class MenuSettingsDialog : MonoBehaviour
 
         SelectMapType(settings.mapType, save: false);
         SelectGraphicsLevel(settings.graphicsLevel, save: false);
+        SelectShowCarriedMode(settings.showCarriedMode, save: false);
         chatGptToggle?.SetIsOnWithoutNotify(settings.chatGptEnabled);
         geminiToggle?.SetIsOnWithoutNotify(settings.geminiEnabled);
         mistralToggle?.SetIsOnWithoutNotify(settings.mistralEnabled);
@@ -1889,6 +1958,7 @@ public class MenuSettingsDialog : MonoBehaviour
             uiVolume = SnapVolume(uiVolumeSlider != null ? uiVolumeSlider.value : current.uiVolume),
             touchscreenJoystickVisible = touchscreenJoystickToggle != null ? touchscreenJoystickToggle.isOn : current.touchscreenJoystickVisible,
             digitalJoystick = digitalJoystickToggle != null ? digitalJoystickToggle.isOn : current.digitalJoystick,
+            showCarriedMode = selectedShowCarriedMode,
             graphicsLevel = selectedGraphicsLevel,
             scentSimulationTimeStep = SnapScentStep(scentStepSlider != null ? scentStepSlider.value : current.scentSimulationTimeStep),
             buttonSize = PersistentGameSettings.SnapButtonSize(buttonSizeSlider != null ? buttonSizeSlider.value : current.buttonSize),

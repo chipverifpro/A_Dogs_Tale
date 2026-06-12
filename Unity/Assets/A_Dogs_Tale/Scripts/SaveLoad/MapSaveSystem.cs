@@ -317,6 +317,11 @@ public partial class DungeonGenerator
         ApplySavedMessageQueueState(worldObject, savedObject.messageQueues);
         ApplySavedLLMState(worldObject, savedObject.llmState);
         ApplySavedTaskControllerState(worldObject, savedObject.taskController);
+        ItemPlacementOverrides.ApplyToInstance(
+            worldObject.gameObject,
+            savedObject.prefabId,
+            savedObject.prefabResourcesPath,
+            savedObject.prefabAssetPath);
 
         worldObject.agentMovementModule?.ClearDesiredMovement();
         worldObject.RegisterIfNeeded();

@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System;
 using UnityEngine;
 
 public partial class FurniturePlacer : MonoBehaviour
@@ -23,6 +24,7 @@ public partial class FurniturePlacer : MonoBehaviour
     public float baseYOffset = 0f;
 
     private Dir dir;
+    private readonly HashSet<string> placedPrefabKeys = new(StringComparer.OrdinalIgnoreCase);
 
     private void Awake()
     {
@@ -70,6 +72,8 @@ public partial class FurniturePlacer : MonoBehaviour
             return;
         }
 
+        placedPrefabKeys.Clear();
+
         foreach (var room in dir.gen.rooms)
         {
             if (room == null || room.cells == null || room.cells.Count == 0)
@@ -77,6 +81,8 @@ public partial class FurniturePlacer : MonoBehaviour
 
             PlaceFurnitureInRoom(room);
         }
+
+        PlaceRequiredFurniture();
     }
 
 }

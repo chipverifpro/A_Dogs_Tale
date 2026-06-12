@@ -449,7 +449,7 @@ namespace DogGame.Modules
 
             item.transform.SetParent(transform, false);
             item.transform.localPosition = Vector3.up * heldHeight;
-            SetItemVisible(item, heldItemsVisible);
+            SetItemVisible(item, ShouldShowHeldItems());
         }
 
         private void ReleaseHeldItemState(WorldObject item)
@@ -468,6 +468,11 @@ namespace DogGame.Modules
             Renderer[] renderers = item.GetComponentsInChildren<Renderer>(true);
             for (int i = 0; i < renderers.Length; i++)
                 renderers[i].enabled = visible;
+        }
+
+        private bool ShouldShowHeldItems()
+        {
+            return heldItemsVisible && PersistentGameSettings.ShouldShowCarriedItemsForCarrier(worldObject);
         }
 
         private static void SetItemCollidersEnabled(WorldObject item, bool enabled)

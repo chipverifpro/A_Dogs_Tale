@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using DogGame.LLM;
+using DogGame.Modules;
 using UnityEngine;
 using static DungeonSettings;
 
@@ -12,6 +13,7 @@ public static class PersistentGameSettings
     private const string PlayerPrefsKey = "A_Dogs_Tale.PersistentGameSettings";
     private const string TouchscreenJoystickVisibleJsonField = "\"touchscreenJoystickVisible\"";
     private const string DigitalJoystickJsonField = "\"digitalJoystick\"";
+    private const string ShowCarriedModeJsonField = "\"showCarriedMode\"";
     private const string ButtonSizeJsonField = "\"buttonSize\"";
     private const string AndroidFullscreenJsonField = "\"androidFullscreenEnabled\"";
     private const string MusicEnabledJsonField = "\"musicEnabled\"";
@@ -48,6 +50,13 @@ public static class PersistentGameSettings
         Castle = 4,
     }
 
+    public enum ShowCarriedMode
+    {
+        All = 0,
+        PackOnly = 1,
+        None = 2,
+    }
+
     [Serializable]
     public class Data
     {
@@ -76,6 +85,7 @@ public static class PersistentGameSettings
         public float uiVolume = 1f;
         public bool touchscreenJoystickVisible = true;
         public bool digitalJoystick = false;
+        public ShowCarriedMode showCarriedMode = ShowCarriedMode.All;
         public float buttonSize = DefaultButtonSize;
         public bool androidFullscreenEnabled = false;
     }
@@ -319,6 +329,7 @@ public static class PersistentGameSettings
                 normalized.uiEnabled,
                 normalized.uiVolume);
 
+        ApplyShowCarriedModeToContainers();
         ApplyAndroidDisplayMode(normalized);
     }
 
@@ -339,6 +350,7 @@ public static class PersistentGameSettings
 
         bool hasTouchscreenJoystickVisible = json.Contains(TouchscreenJoystickVisibleJsonField, StringComparison.Ordinal);
         bool hasDigitalJoystick = json.Contains(DigitalJoystickJsonField, StringComparison.Ordinal);
+        bool hasShowCarriedMode = json.Contains(ShowCarriedModeJsonField, StringComparison.Ordinal);
         bool hasButtonSize = json.Contains(ButtonSizeJsonField, StringComparison.Ordinal);
         bool hasAndroidFullscreen = json.Contains(AndroidFullscreenJsonField, StringComparison.Ordinal);
         bool hasMusicEnabled = json.Contains(MusicEnabledJsonField, StringComparison.Ordinal);
@@ -359,6 +371,8 @@ public static class PersistentGameSettings
             data.touchscreenJoystickVisible = true;
         if (!hasDigitalJoystick)
             data.digitalJoystick = false;
+        if (!hasShowCarriedMode)
+            data.showCarriedMode = ShowCarriedMode.All;
         if (!hasButtonSize)
             data.buttonSize = DefaultButtonSize;
         if (!hasAndroidFullscreen)
@@ -454,6 +468,9 @@ public static class PersistentGameSettings
         if (!Enum.IsDefined(typeof(MapType), data.mapType))
             data.mapType = MapType.House;
 
+        if (!Enum.IsDefined(typeof(ShowCarriedMode), data.showCarriedMode))
+            data.showCarriedMode = ShowCarriedMode.All;
+
         data.scentSimulationTimeStep = Mathf.Clamp(
             Mathf.Round(data.scentSimulationTimeStep * 10f) / 10f,
             MinScentSimulationTimeStep,
@@ -477,6 +494,48 @@ public static class PersistentGameSettings
         data.localMistralModelName = NormalizeModelName(data.localMistralModelName, DefaultLocalMistralModelName);
 
         return data;
+    }
+
+    public static bool ShouldShowCarriedItemsForCarrier(WorldObject carrier)
+    {
+        return ShouldShowCarriedItemsForCarrier(carrier, GetCurrentOrSaved().showCarriedMode);
+    }
+
+    public static bool ShouldShowCarriedItemsForCarrier(WorldObject carrier, ShowCarriedMode mode)
+    {
+        switch (mode)
+        {
+            case ShowCarriedMode.None:
+                return false;
+            case ShowCarriedMode.PackOnly:
+                return IsInPlayerPack(carrier);
+            case ShowCarriedMode.All:
+            default:
+                return true;
+        }
+    }
+
+    private static bool IsInPlayerPack(WorldObject carrier)
+    {
+        if (carrier == null || carrier.packMemberModule == null)
+            return false;
+
+        Dir dir = Dir.Instance;
+        Pack playerPack = dir != null ? dir.playerPack : null;
+        return playerPack != null && carrier.packMemberModule.currentPack == playerPack;
+    }
+
+    private static void ApplyShowCarriedModeToContainers()
+    {
+        WorldObjectRegistry registry = UnityEngine.Object.FindFirstObjectByType<WorldObjectRegistry>();
+        if (registry == null)
+            return;
+
+        foreach (WorldObject worldObject in registry.GetAllObjects())
+        {
+            if (worldObject != null && worldObject.containerModule != null)
+                worldObject.containerModule.RefreshHeldItems();
+        }
     }
 
     private static string NormalizeModelName(string modelName, string defaultModelName)

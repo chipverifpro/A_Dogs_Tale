@@ -380,6 +380,8 @@ public class WorldObject : MonoBehaviour
         if (string.IsNullOrEmpty(displayName))
             displayName = gameObject.name;
 
+        ItemPlacementOverrides.ApplyToInstance(gameObject);
+
         List<WorldModule> modules = new();
         // Find all attached modules
         modules.AddRange(GetComponents<WorldModule>());

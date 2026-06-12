@@ -22,6 +22,9 @@ public class WorldObjectRegistry : MonoBehaviour
     [Tooltip("If false, agents can be placed in corridor cells as well as rooms.")]
     [SerializeField] private bool excludeCorridorCells = true;
 
+    [Tooltip("Avoid initial random agent placement on diagonal-corner wall cells.")]
+    [SerializeField] private bool excludeDiagonalWallCells = true;
+
     [Tooltip("Randomize yaw after moving an agent to its initial cell.")]
     [SerializeField] private bool randomizeInitialAgentYaw = true;
 
@@ -426,11 +429,28 @@ public class WorldObjectRegistry : MonoBehaviour
                 if (excludeCorridorCells && cell.isCorridor)
                     continue;
 
+                if (IsExcludedInitialAgentPlacementCell(cell, generator))
+                    continue;
+
                 cells.Add(cell);
             }
         }
 
         return cells;
+    }
+
+    private bool IsExcludedInitialAgentPlacementCell(Cell cell, DungeonGenerator generator)
+    {
+        if (cell == null)
+            return true;
+
+        if (!excludeDiagonalWallCells)
+            return false;
+
+        if (generator == null || generator.cfg == null || !generator.cfg.useDiagonalCorners)
+            return false;
+
+        return cell.GetDiagonalOpenDirection() != DiagonalOpenDirection.None;
     }
 
     private bool TryPickRandomCell(List<Cell> cells, HashSet<Vector3Int> occupiedCells, out Cell chosenCell)

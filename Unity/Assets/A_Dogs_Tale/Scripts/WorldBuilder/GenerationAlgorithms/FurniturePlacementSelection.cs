@@ -15,7 +15,7 @@ public partial class FurniturePlacer
             var placement = prefab.GetComponentInChildren<PlacementModule>();
             if (placement == null) continue;
 
-            if (placement.AllowsRoom(room.placementTypes))
+            if (ItemPlacementOverrides.AllowsRoom(prefab, placement, room.placementTypes))
                 compatible.Add(prefab);
         }
 
@@ -58,10 +58,104 @@ public partial class FurniturePlacer
             if (instPlacement != null)
                 instPlacement.ApplyPlacement(cell, wallDir, baseYOffset);
 
+            RecordPlacedPrefab(prefab);
             return true;
         }
 
         return false;
+    }
+
+    private void PlaceRequiredFurniture()
+    {
+        foreach (KeyValuePair<string, ItemPlacementOverrides.ItemPlaceRule> entry in ItemPlacementOverrides.MustPlaceRules)
+        {
+            string prefabKey = entry.Key;
+            if (string.IsNullOrWhiteSpace(prefabKey) || placedPrefabKeys.Contains(prefabKey))
+                continue;
+
+            GameObject prefab = FindFurniturePrefabByKey(prefabKey);
+            if (prefab == null)
+            {
+                Debug.LogWarning($"FurniturePlacer: must-place prefab '{prefabKey}' is not in furniturePrefabs.", this);
+                continue;
+            }
+
+            PlacementModule placement = prefab.GetComponentInChildren<PlacementModule>();
+            if (placement == null)
+            {
+                Debug.LogWarning($"FurniturePlacer: must-place prefab '{prefabKey}' has no PlacementModule.", prefab);
+                continue;
+            }
+
+            if (TryPlaceRequiredFurnitureInAllowedRoom(prefab, placement))
+                continue;
+
+            if (TryPlaceRequiredFurnitureInAnyRoom(prefab, placement))
+                continue;
+
+            Debug.LogWarning($"FurniturePlacer: failed to place required prefab '{prefabKey}'.", this);
+        }
+    }
+
+    private bool TryPlaceRequiredFurnitureInAllowedRoom(GameObject prefab, PlacementModule placement)
+    {
+        foreach (Room room in dir.gen.rooms)
+        {
+            if (!IsUsablePlacementRoom(room))
+                continue;
+
+            if (!ItemPlacementOverrides.AllowsRoom(prefab, placement, room.placementTypes))
+                continue;
+
+            if (TryPlaceOne(room, prefab, placement))
+                return true;
+        }
+
+        return false;
+    }
+
+    private bool TryPlaceRequiredFurnitureInAnyRoom(GameObject prefab, PlacementModule placement)
+    {
+        foreach (Room room in dir.gen.rooms)
+        {
+            if (!IsUsablePlacementRoom(room))
+                continue;
+
+            if (TryPlaceOne(room, prefab, placement))
+                return true;
+        }
+
+        return false;
+    }
+
+    private static bool IsUsablePlacementRoom(Room room)
+    {
+        return room != null && room.cells != null && room.cells.Count > 0;
+    }
+
+    private GameObject FindFurniturePrefabByKey(string prefabKey)
+    {
+        if (furniturePrefabs == null)
+            return null;
+
+        for (int i = 0; i < furniturePrefabs.Count; i++)
+        {
+            GameObject prefab = furniturePrefabs[i];
+            if (prefab != null &&
+                string.Equals(ItemPlacementOverrides.GetPrefabKey(prefab), prefabKey, System.StringComparison.OrdinalIgnoreCase))
+            {
+                return prefab;
+            }
+        }
+
+        return null;
+    }
+
+    private void RecordPlacedPrefab(GameObject prefab)
+    {
+        string prefabKey = ItemPlacementOverrides.GetPrefabKey(prefab);
+        if (!string.IsNullOrWhiteSpace(prefabKey))
+            placedPrefabKeys.Add(prefabKey);
     }
 
     /// <summary>
