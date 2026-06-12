@@ -1,10 +1,10 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-// PackFormations is a MonoBheavior class that sits at the top,
+// PackFormations is a MonoBehaviour class that sits at the top,
 // and does formation to position translations.  You must pass in
 // all relevant data from your pack, as this has no local storage
-// for anything but arrangements of positions.
+// except cached random offsets for herd formation positions.
 
 public enum FormationsEnum
 {
@@ -13,65 +13,16 @@ public enum FormationsEnum
     TwoColums,
     Wedge,
     Circle,
-    Snake
+    Snake,
+    Herd
 }
 
 public class PackFormations : MonoBehaviour
 {
-    readonly List<Vector2> LineAbreastPos = new()
-    {
-        new Vector2(0,0),
-        new Vector2(-1,0),
-        new Vector2(1,0),
-        new Vector2(-2,0),
-        new Vector2(2,0)
-    };
-    readonly List<Vector2> SingleFilePos = new()
-    {
-        new Vector2(0,0),
-        new Vector2(0,-1),
-        new Vector2(0,-2),
-        new Vector2(0,-3),
-        new Vector2(0,-4)
-    };
-    readonly List<Vector2> TwoColumnsPos5 = new()
-    {
-        new Vector2(0,0),
-        new Vector2(-0.5f,-1),
-        new Vector2(0.5f,-1),
-        new Vector2(-0.5f,-2),
-        new Vector2(0.5f,-2)
-    };
-    readonly List<Vector2> TwoColumnsPos4 = new()
-    {
-        new Vector2(0,0),
-        new Vector2(-0.5f,-1),
-        new Vector2(0.5f,-1),
-        new Vector2(0,-2)
-    };
-    readonly List<Vector2> WedgePos = new()
-    {
-        new Vector2(0f,0f),
-        new Vector2(-.5f,-1f),
-        new Vector2(.5f,-1f),
-        new Vector2(-1f,-2f),
-        new Vector2(1f,-2f)
-    };
-    readonly List<Vector2> CirclePos5 = new()   // normalized later
-    {
-        new Vector2(0,0),
-        new Vector2(-1,1),
-        new Vector2(1,1),
-        new Vector2(1,-1),
-        new Vector2(-1,-1)
-    };
-    readonly List<Vector2> CirclePos4 = new()   // normalized later
-    {
-        new Vector2(0,0),
-        new Vector2(-1,1),
-        new Vector2(1,1),
-        new Vector2(0,-1)
-    };
+    private const float HerdMinOffsetDistance = 1f;
+    private const int HerdRandomPlacementAttempts = 512;
+    private readonly List<Vector2> herdOffsetsByPosition = new() { Vector2.zero };
+
     public Vector2 GetOffsetForFormation(FormationsEnum formation, int position_in_pack, int number_in_pack)
     {
         // return the offset vector for the given formation and position in pack.
@@ -85,36 +36,134 @@ public class PackFormations : MonoBehaviour
         switch (formation)
         {
             case FormationsEnum.LineAbreast:
-                if (position_in_pack < LineAbreastPos.Count)
-                    return LineAbreastPos[position_in_pack];
-                return new Vector2(position_in_pack % 2 == 0 ? position_in_pack / 2f : -((position_in_pack + 1) / 2f), 0f);
+                return GetLineAbreastOffset(position_in_pack);
             case FormationsEnum.SingleFile:
-                if (position_in_pack < SingleFilePos.Count)
-                    return SingleFilePos[position_in_pack];
-                return new Vector2(0f, -position_in_pack);
+                return GetSingleFileOffset(position_in_pack);
             case FormationsEnum.TwoColums:
-                if (safeNumberInPack == 4 && position_in_pack < TwoColumnsPos4.Count)
-                    return TwoColumnsPos4[position_in_pack];
-                if (position_in_pack < TwoColumnsPos5.Count)
-                    return TwoColumnsPos5[position_in_pack];
-                return new Vector2(position_in_pack % 2 == 0 ? 0.5f : -0.5f, -((position_in_pack + 1) / 2f));
+                return GetTwoColumnsOffset(position_in_pack, safeNumberInPack);
             case FormationsEnum.Wedge:
-                if (position_in_pack < WedgePos.Count)
-                    return WedgePos[position_in_pack];
-                float wedgeRow = (position_in_pack + 1) / 2f;
-                float wedgeSide = position_in_pack % 2 == 0 ? 1f : -1f;
-                return new Vector2(wedgeSide * 0.5f * wedgeRow, -wedgeRow);
+                return GetWedgeOffset(position_in_pack);
             case FormationsEnum.Circle:
-                if (safeNumberInPack == 4 && position_in_pack < CirclePos4.Count)
-                    return CirclePos4[position_in_pack].normalized;
-                if (position_in_pack < CirclePos5.Count)
-                    return CirclePos5[position_in_pack].normalized;
-                float angleRad = ((position_in_pack - 1) / Mathf.Max(1f, safeNumberInPack - 1f)) * Mathf.PI * 2f;
-                return new Vector2(Mathf.Cos(angleRad), Mathf.Sin(angleRad));
+                return GetCircleOffset(position_in_pack, safeNumberInPack);
+            case FormationsEnum.Herd:
+                return GetHerdOffset(position_in_pack, safeNumberInPack);
             default:
                 return new Vector2(0, 0);
         }
     }
+
+#region OffsetFunctions
+    private static Vector2 GetLineAbreastOffset(int positionInPack)
+    {
+        int column = (positionInPack + 1) / 2;
+        float side = positionInPack % 2 == 0 ? 1f : -1f;
+        return new Vector2(side * column, 0f);
+    }
+
+    private static Vector2 GetSingleFileOffset(int positionInPack)
+    {
+        return new Vector2(0f, -positionInPack);
+    }
+
+    private static Vector2 GetTwoColumnsOffset(int positionInPack, int numberInPack)
+    {
+        if (numberInPack == 4 && positionInPack == 3)
+            return new Vector2(0f, -2f);
+
+        int row = (positionInPack + 1) / 2;
+        float side = positionInPack % 2 == 0 ? 0.5f : -0.5f;
+        return new Vector2(side, -row);
+    }
+
+    private static Vector2 GetWedgeOffset(int positionInPack)
+    {
+        int row = (positionInPack + 1) / 2;
+        float side = positionInPack % 2 == 0 ? 1f : -1f;
+        return new Vector2(side * 0.5f * row, -row);
+    }
+
+    private static Vector2 GetCircleOffset(int positionInPack, int numberInPack)
+    {
+        if (numberInPack == 4)
+        {
+            if (positionInPack == 1)
+                return new Vector2(-1f, 1f).normalized;
+            if (positionInPack == 2)
+                return new Vector2(1f, 1f).normalized;
+            if (positionInPack == 3)
+                return Vector2.down;
+        }
+
+        float followerCount = Mathf.Max(1f, numberInPack - 1f);
+        float angleRad = Mathf.PI * 0.75f - ((positionInPack - 1) / followerCount) * Mathf.PI * 2f;
+        return new Vector2(Mathf.Cos(angleRad), Mathf.Sin(angleRad));
+    }
+#endregion
+
+#region Herd
+    private Vector2 GetHerdOffset(int positionInPack, int numberInPack)
+    {
+        EnsureHerdOffsetsThroughPosition(positionInPack, numberInPack);
+        return herdOffsetsByPosition[positionInPack];
+    }
+
+    private void EnsureHerdOffsetsThroughPosition(int positionInPack, int numberInPack)
+    {
+        float radius = GetHerdRadius(numberInPack);
+        while (herdOffsetsByPosition.Count <= positionInPack)
+            herdOffsetsByPosition.Add(GenerateHerdOffset(radius));
+    }
+
+    private static float GetHerdRadius(int numberInPack)
+    {
+        return 1f + Mathf.Max(1, numberInPack) / 4f;
+    }
+
+    private Vector2 GenerateHerdOffset(float radius)
+    {
+        for (int attempt = 0; attempt < HerdRandomPlacementAttempts; attempt++)
+        {
+            Vector2 candidate = Random.insideUnitCircle * radius;
+            if (IsAllowedHerdOffset(candidate))
+            {
+                Debug.Log($"Herd radius = {radius}, position = {candidate}");
+                return candidate;
+            }
+        }
+
+        const float radialStep = 0.25f;
+        const int angleSteps = 72;
+        for (float candidateRadius = HerdMinOffsetDistance; candidateRadius <= radius; candidateRadius += radialStep)
+        {
+            for (int angleIndex = 0; angleIndex < angleSteps; angleIndex++)
+            {
+                float angleRad = angleIndex * Mathf.PI * 2f / angleSteps;
+                Vector2 candidate = new(Mathf.Cos(angleRad) * candidateRadius, Mathf.Sin(angleRad) * candidateRadius);
+                if (IsAllowedHerdOffset(candidate))
+                    return candidate;
+            }
+        }
+
+        Debug.LogWarning($"PackFormations could not find a herd offset with radius {radius:0.00}; using edge fallback.", this);
+        float fallbackAngle = herdOffsetsByPosition.Count * 137.508f * Mathf.Deg2Rad;
+        return new Vector2(Mathf.Cos(fallbackAngle) * radius, Mathf.Sin(fallbackAngle) * radius);
+    }
+
+    private bool IsAllowedHerdOffset(Vector2 candidate)
+    {
+        if (candidate.sqrMagnitude < HerdMinOffsetDistance * HerdMinOffsetDistance)
+            return false;
+
+        float minDistanceSqr = HerdMinOffsetDistance * HerdMinOffsetDistance;
+        for (int i = 0; i < herdOffsetsByPosition.Count; i++)
+        {
+            if ((candidate - herdOffsetsByPosition[i]).sqrMagnitude < minDistanceSqr)
+                return false;
+        }
+
+        return true;
+    }
+#endregion
 
     public Vector2 RotateAndScaleOffset(Vector2 offset, float yawDeg, float scale)
     {

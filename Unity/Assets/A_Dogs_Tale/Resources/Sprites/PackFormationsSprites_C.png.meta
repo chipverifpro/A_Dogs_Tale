@@ -571,7 +571,7 @@ TextureImporter:
         width: 75
         height: 69
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -580,6 +580,28 @@ TextureImporter:
       bones: []
       spriteID: dd16726b5df094f3c9248630f64f4f6d
       internalID: 150920207
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: PackFormationsSprites_C_21
+      rect:
+        serializedVersion: 2
+        x: 1503
+        y: 130
+        width: 143
+        height: 160
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: e2d99601511bd4e6e88a393aa4f41c24
+      internalID: -279219809
       vertices: []
       indices: 
       edges: []
@@ -612,6 +634,7 @@ TextureImporter:
       PackFormationsSprites_C_19: -653537467
       PackFormationsSprites_C_2: 540769904
       PackFormationsSprites_C_20: 150920207
+      PackFormationsSprites_C_21: -279219809
       PackFormationsSprites_C_3: -2080958911
       PackFormationsSprites_C_4: 341928167
       PackFormationsSprites_C_5: 1558100233

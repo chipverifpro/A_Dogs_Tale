@@ -215,6 +215,7 @@ public static class SpriteServer
         { NormalizeLookupKey("Formation_Circle"),          new SpriteReference("PackFormationsSprites_C", 15) },
         { NormalizeLookupKey("Formation_Snake_Shadow"),    new SpriteReference("PackFormationsSprites_C", 16) },
         { NormalizeLookupKey("Formation_Snake"),           new SpriteReference("PackFormationsSprites_C", 17) },
+        { NormalizeLookupKey("Formation_Cluster"),         new SpriteReference("PackFormationsSprites_C", 21) },
 
         { NormalizeLookupKey("Scent"),   new SpriteReference("Senses", -1) },
         { NormalizeLookupKey("Smell"),   new SpriteReference("Senses", -1) },

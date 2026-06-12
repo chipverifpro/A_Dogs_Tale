@@ -92,7 +92,7 @@ public sealed partial class InteractionDialogUI : MonoBehaviour
         CreatePackActionButton(formationRow, "WedgeFormationButton", PackButtonKind.Formation, 12, "WEDGE", () => OnPackFormationClicked(FormationsEnum.Wedge));
         CreatePackActionButton(formationRow, "CircleFormationButton", PackButtonKind.Formation, 14, "CIRCLE", () => OnPackFormationClicked(FormationsEnum.Circle));
         CreatePackActionButton(formationRow, "FollowFormationButton", PackButtonKind.Formation, 16, "FOLLOW", () => OnPackFormationClicked(FormationsEnum.SingleFile));
-        CreatePackActionButton(formationRow, "ClusterFormationButton", PackButtonKind.Formation, -1, "CLUSTER", null, false);
+        CreatePackActionButton(formationRow, "ClusterFormationButton", PackButtonKind.Formation, 21, "CLUSTER", () => OnPackFormationClicked(FormationsEnum.Herd));
 
         packActionPanelObject.SetActive(false);
     }
