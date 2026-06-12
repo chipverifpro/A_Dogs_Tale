@@ -174,9 +174,6 @@ public sealed class InventoryDialogUI : MonoBehaviour
 
     private void Update()
     {
-        if (WasInventoryTogglePressedThisFrame())
-            Toggle();
-
         if (!isOpen)
             return;
 
@@ -232,22 +229,6 @@ public sealed class InventoryDialogUI : MonoBehaviour
         HideTooltip();
         DestroyPreviewClone();
         DestroyTradePartnerPreviewClone();
-    }
-
-    private bool WasInventoryTogglePressedThisFrame()
-    {
-        Keyboard keyboard = Keyboard.current;
-        if (keyboard == null || !keyboard.iKey.wasPressedThisFrame)
-            return false;
-
-        GameObject selectedObject = EventSystem.current != null ? EventSystem.current.currentSelectedGameObject : null;
-        if (selectedObject != null &&
-            (selectedObject.GetComponent<TMP_InputField>() != null || selectedObject.GetComponent<InputField>() != null))
-        {
-            return false;
-        }
-
-        return true;
     }
 
     private void BuildUI()

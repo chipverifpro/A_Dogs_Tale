@@ -308,7 +308,7 @@ public sealed partial class InteractionDialogUI : MonoBehaviour
     private bool WasInteractionTogglePressedThisFrame()
     {
         Keyboard keyboard = Keyboard.current;
-        if (keyboard == null || !keyboard.jKey.wasPressedThisFrame)
+        if (keyboard == null || !keyboard.iKey.wasPressedThisFrame)
             return false;
 
         GameObject selectedObject = EventSystem.current != null ? EventSystem.current.currentSelectedGameObject : null;

@@ -126,7 +126,7 @@ public class PackFormations : MonoBehaviour
             Vector2 candidate = Random.insideUnitCircle * radius;
             if (IsAllowedHerdOffset(candidate))
             {
-                Debug.Log($"Herd radius = {radius}, position = {candidate}");
+                Debug.Log($"Herd/Cluster radius = {radius}, position = {candidate}");
                 return candidate;
             }
         }
