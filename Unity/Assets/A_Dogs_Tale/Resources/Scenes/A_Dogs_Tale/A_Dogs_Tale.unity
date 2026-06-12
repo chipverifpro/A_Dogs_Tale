@@ -4658,6 +4658,11 @@ PrefabInstance:
       propertyPath: m_Name
       value: PF_block_dairy_cow
       objectReference: {fileID: 0}
+    - target: {fileID: 8402019406151978684, guid: f681e65d2c53a4c73b3188b15f0dc38a,
+        type: 3}
+      propertyPath: displayName
+      value: Dairy Cow Blocky
+      objectReference: {fileID: 0}
     - target: {fileID: 8551249928156740883, guid: f681e65d2c53a4c73b3188b15f0dc38a,
         type: 3}
       propertyPath: m_Mesh
@@ -11544,9 +11549,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::WorldObject
   objectId: -1
-  displayName: Deer_001
+  displayName: Deer
   kind: 2
-  species: 3
+  species: 6
   breed: Deer
   autoRegister: 1
   adjustMapToWorld: {x: -0.5, y: 0, z: -0.5}
@@ -11564,6 +11569,11 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 755659679}
     m_Modifications:
+    - target: {fileID: -7099136255629864690, guid: 11adcadc90efe42fc9167d6888414a7d,
+        type: 3}
+      propertyPath: displayName
+      value: Sheep
+      objectReference: {fileID: 0}
     - target: {fileID: 1634147831566527230, guid: 11adcadc90efe42fc9167d6888414a7d,
         type: 3}
       propertyPath: currentPack
@@ -24049,9 +24059,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::WorldObject
   objectId: -1
-  displayName: Kitty_001
+  displayName: Kitty
   kind: 2
-  species: 3
+  species: 5
   breed: Cat
   autoRegister: 1
   adjustMapToWorld: {x: -0.5, y: 0, z: -0.5}
@@ -27338,7 +27348,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::WorldObject
   objectId: -1
-  displayName: police_Female_A
+  displayName: Police Woman
   kind: 2
   species: 2
   breed: 
@@ -38675,7 +38685,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::WorldObject
   objectId: -1
-  displayName: Pinguin_001
+  displayName: Penguin
   kind: 2
   species: 3
   breed: Penguin
@@ -39676,9 +39686,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::WorldObject
   objectId: -1
-  displayName: Tiger_001
+  displayName: Tiger
   kind: 2
-  species: 3
+  species: 6
   breed: Tiger
   autoRegister: 1
   adjustMapToWorld: {x: -0.5, y: 0, z: -0.5}
@@ -52724,7 +52734,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::WorldObject
   objectId: -1
-  displayName: casual_Male_G
+  displayName: Male G
   kind: 2
   species: 2
   breed: 
@@ -53375,6 +53385,11 @@ PrefabInstance:
       propertyPath: currentPack
       value: 
       objectReference: {fileID: 755659682}
+    - target: {fileID: 2018488510026989347, guid: 0cd47bbe10129457c8fb291022f561d6,
+        type: 3}
+      propertyPath: displayName
+      value: Dairy Calf Blocky
+      objectReference: {fileID: 0}
     - target: {fileID: 2177138818738605196, guid: 0cd47bbe10129457c8fb291022f561d6,
         type: 3}
       propertyPath: m_Mesh
@@ -55274,6 +55289,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_ConstrainProportionsScale
       value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5698618253914847545, guid: 72580a8414a664e53846fc90aa8283a6,
+        type: 3}
+      propertyPath: displayName
+      value: Duckling 1
       objectReference: {fileID: 0}
     - target: {fileID: 5698618253914847545, guid: 72580a8414a664e53846fc90aa8283a6,
         type: 3}
@@ -66167,7 +66187,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::WorldObject
   objectId: -1
-  displayName: corgi
+  displayName: Corgi
   kind: 2
   species: 1
   breed: Corgi
@@ -67108,6 +67128,11 @@ PrefabInstance:
       propertyPath: maxSpeedsByMode.Array.data[2].maxSpeed
       value: 2
       objectReference: {fileID: 0}
+    - target: {fileID: 2559777177084452079, guid: 81f57b71fcca04137be31cab165ad147,
+        type: 3}
+      propertyPath: displayName
+      value: Lamb
+      objectReference: {fileID: 0}
     - target: {fileID: 2905176062339049247, guid: 81f57b71fcca04137be31cab165ad147,
         type: 3}
       propertyPath: currentPack
@@ -67986,6 +68011,11 @@ PrefabInstance:
       propertyPath: currentPack
       value: 
       objectReference: {fileID: 755659682}
+    - target: {fileID: 4460510155936592338, guid: 6faf501bd71834b7d83fc2128ab7fa1e,
+        type: 3}
+      propertyPath: displayName
+      value: Dairy Calf
+      objectReference: {fileID: 0}
     - target: {fileID: 8937684857691443343, guid: 6faf501bd71834b7d83fc2128ab7fa1e,
         type: 3}
       propertyPath: m_Name
@@ -78320,6 +78350,11 @@ PrefabInstance:
       propertyPath: currentPack
       value: 
       objectReference: {fileID: 755659682}
+    - target: {fileID: 1514126342172983698, guid: e1043d3c6201f4a6291e82963a3f5eb1,
+        type: 3}
+      propertyPath: displayName
+      value: Brown Calf
+      objectReference: {fileID: 0}
     - target: {fileID: 4326395508093983605, guid: e1043d3c6201f4a6291e82963a3f5eb1,
         type: 3}
       propertyPath: currentWalkMode
@@ -83189,6 +83224,21 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 2010406305086404830, guid: b9ba41217a22742a7b5bc486d1584fb8,
         type: 3}
+      propertyPath: m_LocalScale.x
+      value: 0.2
+      objectReference: {fileID: 0}
+    - target: {fileID: 2010406305086404830, guid: b9ba41217a22742a7b5bc486d1584fb8,
+        type: 3}
+      propertyPath: m_LocalScale.y
+      value: 0.2
+      objectReference: {fileID: 0}
+    - target: {fileID: 2010406305086404830, guid: b9ba41217a22742a7b5bc486d1584fb8,
+        type: 3}
+      propertyPath: m_LocalScale.z
+      value: 0.2
+      objectReference: {fileID: 0}
+    - target: {fileID: 2010406305086404830, guid: b9ba41217a22742a7b5bc486d1584fb8,
+        type: 3}
       propertyPath: m_LocalPosition.x
       value: 7
       objectReference: {fileID: 0}
@@ -83236,6 +83286,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2010406305086404830, guid: b9ba41217a22742a7b5bc486d1584fb8,
+        type: 3}
+      propertyPath: m_ConstrainProportionsScale
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 2012428540631894419, guid: b9ba41217a22742a7b5bc486d1584fb8,
         type: 3}
@@ -84316,6 +84371,8 @@ MonoBehaviour:
   splashOrientationAspectThreshold: 1.2
   splashReviewIndexLabelOffset: {x: 16, y: 12}
   splashReviewIndexLabelFontSize: 18
+  splashReviewSwipeMinPixels: 80
+  splashReviewSwipeMaxVerticalRatio: 0.75
   loadingMessages:
   - Building the world...
   - Digging up a map...
@@ -95948,12 +96005,14 @@ MonoBehaviour:
   showMobileJoystickInEditor: 1
   mobileJoystickMarginPixels: {x: 36, y: 36}
   mobileJoystickRadiusPixels: 88
+  mobileJoystickRadiusMultiplier: 3
   mobileJoystickFloatsToPress: 1
   mobileJoystickDragActivationPixels: 18
   mobileJoystickActivationWidthPercent: 0.45
   mobileJoystickActivationHeightPercent: 0.55
   mobileJoystickDeadZone: 0.12
   mobileJoystickForwardTurnDeadZone: 0.1
+  digitalMobileJoystick: 0
   mobileJoystickBaseColor: {r: 1, g: 1, b: 1, a: 0.2}
   mobileJoystickKnobColor: {r: 1, g: 1, b: 1, a: 0.45}
   enableMobilePinchZoom: 1
@@ -100031,6 +100090,11 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 755659679}
     m_Modifications:
+    - target: {fileID: -7960319148053849789, guid: 035b558c085754103a015515362d1d89,
+        type: 3}
+      propertyPath: displayName
+      value: Brown Bull Blocky
+      objectReference: {fileID: 0}
     - target: {fileID: -1850936565826693851, guid: 035b558c085754103a015515362d1d89,
         type: 3}
       propertyPath: currentWalkMode
@@ -102458,6 +102522,11 @@ PrefabInstance:
       propertyPath: currentPack
       value: 
       objectReference: {fileID: 755659682}
+    - target: {fileID: 682561226166027267, guid: 6803b47ee11834655bd0edbb252b827f,
+        type: 3}
+      propertyPath: displayName
+      value: Brown Calf Blocky
+      objectReference: {fileID: 0}
     - target: {fileID: 978543911886100206, guid: 6803b47ee11834655bd0edbb252b827f,
         type: 3}
       propertyPath: m_LocalRotation.x
@@ -106412,7 +106481,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::WorldObject
   objectId: -1
-  displayName: casual_Female_G
+  displayName: Female G
   kind: 2
   species: 2
   breed: 
@@ -107635,7 +107704,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::WorldObject
   objectId: -1
-  displayName: Chicken_001
+  displayName: Chicken
   kind: 2
   species: 3
   breed: Chicken
@@ -116226,6 +116295,11 @@ PrefabInstance:
       propertyPath: m_ConstrainProportionsScale
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 5698618253914847545, guid: 72580a8414a664e53846fc90aa8283a6,
+        type: 3}
+      propertyPath: displayName
+      value: Duckling 3
+      objectReference: {fileID: 0}
     - target: {fileID: 7583054104857252313, guid: 72580a8414a664e53846fc90aa8283a6,
         type: 3}
       propertyPath: followTarget
@@ -117994,6 +118068,11 @@ PrefabInstance:
         type: 3}
       propertyPath: species
       value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: -1740260722340342959, guid: bcc8732b8b44622449c23934f89e68c0,
+        type: 3}
+      propertyPath: displayName
+      value: Old Lady
       objectReference: {fileID: 0}
     - target: {fileID: -64353936898274739, guid: bcc8732b8b44622449c23934f89e68c0,
         type: 3}
@@ -124235,7 +124314,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::WorldObject
   objectId: -1
-  displayName: PlayerCrate
+  displayName: Flying Crate
   kind: 2
   species: 4
   breed: Flying Crate
@@ -126805,6 +126884,11 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1657477365}
     m_Modifications:
+    - target: {fileID: -312402643128375596, guid: af0785e4ff1d042b4856e46f930a8e11,
+        type: 3}
+      propertyPath: displayName
+      value: Goose Blocky
+      objectReference: {fileID: 0}
     - target: {fileID: 869822484135290809, guid: af0785e4ff1d042b4856e46f930a8e11,
         type: 3}
       propertyPath: m_Mesh
@@ -135135,6 +135219,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_ConstrainProportionsScale
       value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5698618253914847545, guid: 72580a8414a664e53846fc90aa8283a6,
+        type: 3}
+      propertyPath: displayName
+      value: Duckling 2
       objectReference: {fileID: 0}
     - target: {fileID: 7583054104857252313, guid: 72580a8414a664e53846fc90aa8283a6,
         type: 3}
@@ -146549,6 +146638,11 @@ PrefabInstance:
       propertyPath: initialDecisionType
       value: 8
       objectReference: {fileID: 0}
+    - target: {fileID: 7835489421519038443, guid: 8a714564d12c345fd845d4fca8ad7f71,
+        type: 3}
+      propertyPath: displayName
+      value: Sheep Blocky
+      objectReference: {fileID: 0}
     - target: {fileID: 8344392940575145824, guid: 8a714564d12c345fd845d4fca8ad7f71,
         type: 3}
       propertyPath: m_LocalPosition.x
@@ -157184,7 +157278,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::WorldObject
   objectId: -1
-  displayName: SingleDroppedSock_Normalized
+  displayName: Single Sock
   kind: 8
   species: 0
   breed: 
@@ -162005,6 +162099,11 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 3691327002903271976, guid: da6c0e0dd7c6e441dbf48fb0c07f93d8,
+        type: 3}
+      propertyPath: displayName
+      value: Lamb Blocky
+      objectReference: {fileID: 0}
     - target: {fileID: 8799929475095623062, guid: da6c0e0dd7c6e441dbf48fb0c07f93d8,
         type: 3}
       propertyPath: m_Name
@@ -163417,6 +163516,11 @@ PrefabInstance:
       propertyPath: initialDecisionType
       value: 8
       objectReference: {fileID: 0}
+    - target: {fileID: -559934483859003613, guid: a50b2d3904e734043a0a9acc49067be3,
+        type: 3}
+      propertyPath: displayName
+      value: Dairy Cow
+      objectReference: {fileID: 0}
     - target: {fileID: -285752429080554905, guid: a50b2d3904e734043a0a9acc49067be3,
         type: 3}
       propertyPath: currentPack
@@ -164335,7 +164439,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::WorldObject
   objectId: -1
-  displayName: cur
+  displayName: Cur
   kind: 2
   species: 1
   breed: Cur
@@ -187873,7 +187977,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::WorldObject
   objectId: -1
-  displayName: Dog_001
+  displayName: Dog
   kind: 2
   species: 1
   breed: 
@@ -190420,7 +190524,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::WorldObject
   objectId: -1
-  displayName: little_boy_B
+  displayName: Little Boy Blue
   kind: 2
   species: 2
   breed: 
@@ -190917,9 +191021,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::WorldObject
   objectId: -1
-  displayName: Horse_001
+  displayName: Horse
   kind: 2
-  species: 3
+  species: 6
   breed: Horse
   autoRegister: 1
   adjustMapToWorld: {x: -0.5, y: 0, z: -0.5}
@@ -194641,7 +194745,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::WorldObject
   objectId: -1
-  displayName: pug
+  displayName: Pug
   kind: 2
   species: 1
   breed: Pug
@@ -196826,6 +196930,11 @@ PrefabInstance:
       propertyPath: initialDecisionType
       value: 8
       objectReference: {fileID: 0}
+    - target: {fileID: -1506392485189074854, guid: a71054c06879b433abb2967215d27e91,
+        type: 3}
+      propertyPath: displayName
+      value: Brown Bull
+      objectReference: {fileID: 0}
     - target: {fileID: -71033752696897248, guid: a71054c06879b433abb2967215d27e91,
         type: 3}
       propertyPath: currentPack
@@ -197518,7 +197627,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::WorldObject
   objectId: -1
-  displayName: Doctor_Male_B
+  displayName: Doctor
   kind: 2
   species: 2
   breed: 
@@ -199726,6 +199835,11 @@ PrefabInstance:
         type: 3}
       propertyPath: initialDecisionType
       value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 7486412354033619262, guid: 04c5ea4f4815441fba800a01154b58de,
+        type: 3}
+      propertyPath: displayName
+      value: Momma Duck
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -207823,7 +207937,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::WorldObject
   objectId: -1
-  displayName: prostheticLeg_girl
+  displayName: Female With Prosthetic
   kind: 2
   species: 2
   breed: 
@@ -208858,6 +208972,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_ConstrainProportionsScale
       value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5698618253914847545, guid: 72580a8414a664e53846fc90aa8283a6,
+        type: 3}
+      propertyPath: displayName
+      value: Duckling 4
       objectReference: {fileID: 0}
     - target: {fileID: 7583054104857252313, guid: 72580a8414a664e53846fc90aa8283a6,
         type: 3}
@@ -213189,7 +213308,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::WorldObject
   objectId: -1
-  displayName: chihuahua
+  displayName: Chihuahua
   kind: 2
   species: 1
   breed: Chihuahua
@@ -221120,6 +221239,11 @@ PrefabInstance:
       propertyPath: m_Mesh
       value: 
       objectReference: {fileID: 1932231573}
+    - target: {fileID: 490718637875154697, guid: 9ee85b7f026544fcd9c2d6906865df66,
+        type: 3}
+      propertyPath: displayName
+      value: Quadcopter Drone
+      objectReference: {fileID: 0}
     - target: {fileID: 734677272872824152, guid: 9ee85b7f026544fcd9c2d6906865df66,
         type: 3}
       propertyPath: m_Mesh
@@ -222360,6 +222484,11 @@ PrefabInstance:
       propertyPath: m_VersionIndex
       value: 73
       objectReference: {fileID: 0}
+    - target: {fileID: 660587346038702964, guid: 8db277b2659dd4ba1b70947ac2e441dc,
+        type: 3}
+      propertyPath: displayName
+      value: Terrier Toy
+      objectReference: {fileID: 0}
     - target: {fileID: 794952402926099507, guid: 8db277b2659dd4ba1b70947ac2e441dc,
         type: 3}
       propertyPath: m_Mesh
@@ -223127,6 +223256,11 @@ PrefabInstance:
       propertyPath: m_Mesh
       value: 
       objectReference: {fileID: 704785132}
+    - target: {fileID: 4510728481744200895, guid: 4934ee278a5b442e5a67703b4ca53dde,
+        type: 3}
+      propertyPath: displayName
+      value: Squirrel Upright
+      objectReference: {fileID: 0}
     - target: {fileID: 4530833681614686645, guid: 4934ee278a5b442e5a67703b4ca53dde,
         type: 3}
       propertyPath: m_Mesh
@@ -224729,6 +224863,11 @@ PrefabInstance:
       propertyPath: m_VersionIndex
       value: 73
       objectReference: {fileID: 0}
+    - target: {fileID: 4887856087633963343, guid: 32e5d42ef040b4c948e19fc6d9f8627c,
+        type: 3}
+      propertyPath: displayName
+      value: Squirrel Down
+      objectReference: {fileID: 0}
     - target: {fileID: 4910165345074887749, guid: 32e5d42ef040b4c948e19fc6d9f8627c,
         type: 3}
       propertyPath: m_Mesh
@@ -225660,7 +225799,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::WorldObject
   objectId: -1
-  displayName: germanshepherd
+  displayName: German Shepherd
   kind: 2
   species: 1
   breed: German Shepherd
@@ -226307,6 +226446,11 @@ PrefabInstance:
       propertyPath: m_VersionIndex
       value: 82
       objectReference: {fileID: 0}
+    - target: {fileID: 933435910011918887, guid: 3acfb8c70dd4f45b0a2ab44bd476afa3,
+        type: 3}
+      propertyPath: displayName
+      value: Seagull Flying
+      objectReference: {fileID: 0}
     - target: {fileID: 1017245766570230045, guid: 3acfb8c70dd4f45b0a2ab44bd476afa3,
         type: 3}
       propertyPath: m_Mesh
@@ -226751,6 +226895,11 @@ PrefabInstance:
       propertyPath: m_Mesh
       value: 
       objectReference: {fileID: 1037567437}
+    - target: {fileID: 2571432071117901673, guid: 944de7e0ab10f49baa26a1db57c821a7,
+        type: 3}
+      propertyPath: displayName
+      value: Robot Toy
+      objectReference: {fileID: 0}
     - target: {fileID: 2664766732023040158, guid: 944de7e0ab10f49baa26a1db57c821a7,
         type: 3}
       propertyPath: m_Mesh
@@ -227259,6 +227408,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_VersionIndex
       value: 79
+      objectReference: {fileID: 0}
+    - target: {fileID: 1274220059462850497, guid: dfa45bab56eee41bc93ceebfcf4a7bb5,
+        type: 3}
+      propertyPath: displayName
+      value: Acorn
       objectReference: {fileID: 0}
     - target: {fileID: 1304872465175971621, guid: dfa45bab56eee41bc93ceebfcf4a7bb5,
         type: 3}
