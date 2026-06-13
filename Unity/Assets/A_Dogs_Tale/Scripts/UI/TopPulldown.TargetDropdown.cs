@@ -195,8 +195,6 @@ public partial class TopPulldown
                                  RectTransformUtility.RectangleContainsScreenPoint(speedPanelRect, screenPoint, null);
         bool clickedSpeedButton = speedButtonRect != null &&
                                   RectTransformUtility.RectangleContainsScreenPoint(speedButtonRect, screenPoint, null);
-        bool clickedSpeedCloseButton = speedPanelOpen && speedPanelCloseButtonRect != null &&
-                                       RectTransformUtility.RectangleContainsScreenPoint(speedPanelCloseButtonRect, screenPoint, null);
         bool clickedEmoteDropdown = emoteDropdownOpen &&
                                     RectTransformUtility.RectangleContainsScreenPoint(emoteDropdownRect, screenPoint, null);
         bool clickedEmoteButton = emoteButtonRect != null &&
@@ -208,9 +206,7 @@ public partial class TopPulldown
         if (modePanelOpen && !clickedModePanel && !clickedModeButton)
             CloseModePanel();
 
-        if (speedPanelOpen && clickedSpeedCloseButton)
-            CloseSpeedPanel();
-        else if (speedPanelOpen && !clickedSpeedPanel && !clickedSpeedButton)
+        if (speedPanelOpen && !clickedSpeedPanel && !clickedSpeedButton)
             CloseSpeedPanel();
 
         if (emoteDropdownOpen && !clickedEmoteDropdown && !clickedEmoteButton)

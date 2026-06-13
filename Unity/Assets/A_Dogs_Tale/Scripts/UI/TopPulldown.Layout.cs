@@ -501,14 +501,7 @@ public partial class TopPulldown
 
     private void ApplyCenteredSpeedPanelPosition()
     {
-        if (speedPanelRect == null)
-            return;
-
-        speedPanelRect.anchorMin = new Vector2(0.5f, 0.5f);
-        speedPanelRect.anchorMax = new Vector2(0.5f, 0.5f);
-        speedPanelRect.pivot = new Vector2(0.5f, 0.5f);
-        speedPanelRect.anchoredPosition = Vector2.zero;
-        PositionSpeedPanelCloseOverlay();
+        ApplyCompactSpeedPanelPosition();
     }
 
     private void ApplyCenteredEmoteDropdownPosition()

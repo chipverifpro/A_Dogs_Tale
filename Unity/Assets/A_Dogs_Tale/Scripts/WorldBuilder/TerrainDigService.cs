@@ -34,12 +34,13 @@ public static class TerrainDigService
         EnsureDigArchetype(dir.elementStore, HoleArchetypeId, "Prefabs/Terrain/PF_Floor_Hole");
         EnsureDigArchetype(dir.elementStore, MoundArchetypeId, "Prefabs/Terrain/PF_Floor_Mound");
 
-        ElementLayer floorLayer = dir.elementStore.GetLayer(ElementLayerKind.Floor);
+        ElementLayer floorLayer = GetOrCreateFloorLayer(dir.elementStore);
         if (floorLayer == null || floorLayer.instances == null)
         {
-            Debug.LogWarning("[TerrainDigService] No floor layer exists.");
+            Debug.LogWarning("[TerrainDigService] Could not create floor layer.");
             return false;
         }
+        bool floorLayerUsesFloorKind = floorLayer.kind == ElementLayerKind.Floor;
 
         ElementLayer triangleFloorLayer = dir.elementStore.GetLayer(ElementLayerKind.TriangleFloor);
 
@@ -61,18 +62,22 @@ public static class TerrainDigService
             floorInst.archetypeId = nextArchetype;
             floorInst.dirtyFlags = ElementUpdateFlags.All | ElementUpdateFlags.Color;
             floorLayer.instances[index] = floorInst;
-            dir.manufactureGO.RebuildInstance(ElementLayerKind.Floor, index);
-            dir.manufactureGO.SetManufacturedInstanceActive(
-                ElementLayerKind.Floor,
-                IsPlainFloorInstanceCoveringCell,
-                cell,
-                false);
+            if (floorLayerUsesFloorKind)
+            {
+                dir.manufactureGO.RebuildInstance(ElementLayerKind.Floor, index);
+                dir.manufactureGO.SetManufacturedInstanceActive(
+                    ElementLayerKind.Floor,
+                    IsPlainFloorInstanceCoveringCell,
+                    cell,
+                    false);
+                needsFullRebuild = false;
+            }
             RemoveFloorSurfacesCoveringCell(floorLayer, ElementLayerKind.Floor, cell, dir, preserveIndex: index);
-            needsFullRebuild = false;
         }
         else
         {
-            dir.manufactureGO.SetManufacturedInstanceActive(ElementLayerKind.Floor, index, false);
+            if (floorLayerUsesFloorKind)
+                dir.manufactureGO.SetManufacturedInstanceActive(ElementLayerKind.Floor, index, false);
             SplitMergedFloorAroundCell(floorLayer, index, floorInst, width, height, cell, nextArchetype, dir);
         }
 
@@ -87,6 +92,49 @@ public static class TerrainDigService
         if (needsFullRebuild)
             dir.manufactureGO.BuildAll();
         return true;
+    }
+
+    private static ElementLayer GetOrCreateFloorLayer(ElementStore store)
+    {
+        if (store == null)
+            return null;
+
+        ElementLayer layer = store.GetLayer(ElementLayerKind.Floor);
+        if (layer != null)
+        {
+            layer.instances ??= new List<ElementInstanceData>();
+            return layer;
+        }
+
+        if (store.layers != null)
+        {
+            for (int i = 0; i < store.layers.Count; i++)
+            {
+                ElementLayer candidateLayer = store.layers[i];
+                if (candidateLayer == null || candidateLayer.instances == null)
+                    continue;
+
+                for (int j = 0; j < candidateLayer.instances.Count; j++)
+                {
+                    ElementInstanceData instance = candidateLayer.instances[j];
+                    if (instance == null)
+                        continue;
+
+                    if (instance.layerKind == ElementLayerKind.Floor)
+                        return candidateLayer;
+                }
+            }
+        }
+
+        store.layers ??= new List<ElementLayer>();
+        layer = new ElementLayer
+        {
+            name = "FloorTile",
+            kind = ElementLayerKind.Floor,
+            instances = new List<ElementInstanceData>()
+        };
+        store.layers.Add(layer);
+        return layer;
     }
 
     private static bool TryBuryGroundObject(WorldObject actor, Cell cell)
@@ -214,6 +262,8 @@ public static class TerrainDigService
         {
             ElementInstanceData candidate = floorLayer.instances[i];
             if (candidate == null)
+                continue;
+            if (candidate.layerKind != ElementLayerKind.Floor)
                 continue;
             if (candidate.heightSteps != cell.height)
                 continue;

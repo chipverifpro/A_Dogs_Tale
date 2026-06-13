@@ -70,13 +70,13 @@ public partial class FurniturePlacer
         foreach (KeyValuePair<string, ItemPlacementOverrides.ItemPlaceRule> entry in ItemPlacementOverrides.MustPlaceRules)
         {
             string prefabKey = entry.Key;
-            if (string.IsNullOrWhiteSpace(prefabKey) || placedPrefabKeys.Contains(prefabKey))
+            if (string.IsNullOrWhiteSpace(prefabKey) || HasPlacedPrefab(prefabKey))
                 continue;
 
-            GameObject prefab = FindFurniturePrefabByKey(prefabKey);
+            GameObject prefab = FindPlacementPrefabByKey(prefabKey);
             if (prefab == null)
             {
-                Debug.LogWarning($"FurniturePlacer: must-place prefab '{prefabKey}' is not in furniturePrefabs.", this);
+                Debug.LogWarning($"FurniturePlacer: must-place prefab '{prefabKey}' could not be found in furniturePrefabs or item Resources.", this);
                 continue;
             }
 
@@ -133,6 +133,60 @@ public partial class FurniturePlacer
         return room != null && room.cells != null && room.cells.Count > 0;
     }
 
+    private bool HasPlacedPrefab(string prefabKey)
+    {
+        if (placedPrefabKeys.Contains(prefabKey))
+            return true;
+
+        WorldObjectRegistry registry = WorldObjectRegistry.Instance;
+        if (registry == null)
+            return false;
+
+        foreach (WorldObject worldObject in registry.GetAllObjects())
+        {
+            if (worldObject == null)
+                continue;
+
+            if (string.Equals(ItemPlacementOverrides.GetPrefabKey(worldObject.gameObject), prefabKey, System.StringComparison.OrdinalIgnoreCase))
+                return true;
+
+            SavePrefabId savePrefabId = worldObject.GetComponent<SavePrefabId>();
+            if (savePrefabId == null)
+                continue;
+
+            if (string.Equals(ItemPlacementOverrides.GetPrefabKey(savePrefabId.PrefabId), prefabKey, System.StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(ItemPlacementOverrides.GetPrefabKey(savePrefabId.ResourcesPath), prefabKey, System.StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(ItemPlacementOverrides.GetPrefabKey(savePrefabId.AssetPath), prefabKey, System.StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private GameObject FindPlacementPrefabByKey(string prefabKey)
+    {
+        GameObject prefab = FindFurniturePrefabByKey(prefabKey);
+        if (prefab != null)
+            return prefab;
+
+        prefab = Resources.Load<GameObject>($"Prefabs/Items/{prefabKey}");
+        if (prefab != null)
+            return prefab;
+
+        prefab = Resources.Load<GameObject>($"Prefabs/Items/HomeInterior/{prefabKey}");
+        if (prefab != null)
+            return prefab;
+
+        prefab = Resources.Load<GameObject>($"Prefabs/ChatGPT_Prefabs/ChatGPT_Items/{prefabKey}");
+        if (prefab != null)
+            return prefab;
+
+        return FindResourcePrefabByKey("Prefabs/Items", prefabKey)
+            ?? FindResourcePrefabByKey("Prefabs/ChatGPT_Prefabs/ChatGPT_Items", prefabKey);
+    }
+
     private GameObject FindFurniturePrefabByKey(string prefabKey)
     {
         if (furniturePrefabs == null)
@@ -141,6 +195,22 @@ public partial class FurniturePlacer
         for (int i = 0; i < furniturePrefabs.Count; i++)
         {
             GameObject prefab = furniturePrefabs[i];
+            if (prefab != null &&
+                string.Equals(ItemPlacementOverrides.GetPrefabKey(prefab), prefabKey, System.StringComparison.OrdinalIgnoreCase))
+            {
+                return prefab;
+            }
+        }
+
+        return null;
+    }
+
+    private static GameObject FindResourcePrefabByKey(string resourcesPath, string prefabKey)
+    {
+        GameObject[] prefabs = Resources.LoadAll<GameObject>(resourcesPath);
+        for (int i = 0; i < prefabs.Length; i++)
+        {
+            GameObject prefab = prefabs[i];
             if (prefab != null &&
                 string.Equals(ItemPlacementOverrides.GetPrefabKey(prefab), prefabKey, System.StringComparison.OrdinalIgnoreCase))
             {

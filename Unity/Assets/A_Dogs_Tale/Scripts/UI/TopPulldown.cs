@@ -184,9 +184,9 @@ public partial class TopPulldown : MonoBehaviour
 
     private readonly WalkMode[] selectableSpeedModes =
     {
-        WalkMode.Sneak,
+        WalkMode.Run,
         WalkMode.Walk,
-        WalkMode.Run
+        WalkMode.Sneak
     };
 
     private void Awake()

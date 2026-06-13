@@ -110,11 +110,20 @@ public class MenuSettingsDialog : MonoBehaviour
     {
         public RectTransform rect;
         public LayoutElement layout;
+        public LayoutElement controlLayout;
+        public LayoutElement rowLayout;
         public Text shiftedText;
         public float layoutWidthPadding;
         public float absoluteLeft = -1f;
         public float textGap;
         public float textBaseOffsetMinX;
+        public float baseIconSize;
+        public float baseControlMinWidth;
+        public float baseControlPreferredWidth;
+        public float baseControlMinHeight;
+        public float baseControlPreferredHeight;
+        public float baseRowMinHeight;
+        public float baseRowPreferredHeight;
     }
 
     public void Initialize(MenuManager owner)
@@ -2064,15 +2073,29 @@ public class MenuSettingsDialog : MonoBehaviour
         if (rect == null)
             return;
 
+        LayoutElement controlLayout = layout != null ? layout : rect.transform.parent?.GetComponent<LayoutElement>();
+        LayoutElement rowLayout = layout != null
+            ? rect.transform.parent?.GetComponent<LayoutElement>()
+            : rect.transform.parent?.parent?.GetComponent<LayoutElement>();
+
         SettingsIconBinding binding = new SettingsIconBinding
         {
             rect = rect,
             layout = layout,
+            controlLayout = controlLayout,
+            rowLayout = rowLayout,
             shiftedText = shiftedText,
             layoutWidthPadding = Mathf.Max(0f, layoutWidthPadding),
             absoluteLeft = absoluteLeft,
             textGap = Mathf.Max(0f, textGap),
-            textBaseOffsetMinX = shiftedText != null ? shiftedText.rectTransform.offsetMin.x : 0f
+            textBaseOffsetMinX = shiftedText != null ? shiftedText.rectTransform.offsetMin.x : 0f,
+            baseIconSize = Mathf.Max(rect.sizeDelta.x, rect.sizeDelta.y),
+            baseControlMinWidth = controlLayout != null ? controlLayout.minWidth : 0f,
+            baseControlPreferredWidth = controlLayout != null ? controlLayout.preferredWidth : 0f,
+            baseControlMinHeight = controlLayout != null ? controlLayout.minHeight : 0f,
+            baseControlPreferredHeight = controlLayout != null ? controlLayout.preferredHeight : 0f,
+            baseRowMinHeight = rowLayout != null ? rowLayout.minHeight : 0f,
+            baseRowPreferredHeight = rowLayout != null ? rowLayout.preferredHeight : 0f
         };
 
         settingsIconBindings.Add(binding);
@@ -2114,6 +2137,21 @@ public class MenuSettingsDialog : MonoBehaviour
             binding.layout.minHeight = iconSize;
             binding.layout.preferredHeight = iconSize;
             binding.layout.flexibleWidth = 0f;
+        }
+        else if (binding.controlLayout != null && binding.absoluteLeft >= 0f)
+        {
+            float iconGrowth = Mathf.Max(0f, iconSize - binding.baseIconSize);
+            binding.controlLayout.minWidth = Mathf.Max(binding.baseControlMinWidth, binding.baseControlMinWidth + iconGrowth);
+            binding.controlLayout.preferredWidth = Mathf.Max(binding.baseControlPreferredWidth, binding.baseControlPreferredWidth + iconGrowth);
+            binding.controlLayout.minHeight = Mathf.Max(binding.baseControlMinHeight, iconSize + 8f);
+            binding.controlLayout.preferredHeight = Mathf.Max(binding.baseControlPreferredHeight, iconSize + 8f);
+        }
+
+        if (binding.rowLayout != null)
+        {
+            float rowHeight = iconSize + 12f;
+            binding.rowLayout.minHeight = Mathf.Max(binding.baseRowMinHeight, rowHeight);
+            binding.rowLayout.preferredHeight = Mathf.Max(binding.baseRowPreferredHeight, rowHeight);
         }
 
         if (binding.shiftedText != null)

@@ -40,7 +40,10 @@ public static class ItemPlacementOverrides
         // Example:
         // AddItemPlace(Prefab: "Key", DisplayName: "Gold Key", AllowedRooms: PlacementRoomTypeFlags.Bathroom | PlacementRoomTypeFlags.Utility);
         AddItemPlace(Prefab: "Key", DisplayName: "Gold Key", AllowedRooms: PlacementRoomTypeFlags.Bathroom | PlacementRoomTypeFlags.Utility);
+        
+        // This would go under Quests to make sure necessary elements exist in world.
         // SetMustPlace(Prefab: "Key", MustPlace: true);
+        SetMustPlace(Prefab: "Key", MustPlace: true);
 
     }
 
@@ -175,6 +178,11 @@ public static class ItemPlacementOverrides
         return prefabOrInstance != null ? NormalizePrefabKey(prefabOrInstance.name) : string.Empty;
     }
 
+    public static string GetPrefabKey(string prefabName)
+    {
+        return NormalizePrefabKey(prefabName);
+    }
+
     private static string NormalizePrefabKey(string prefabName)
     {
         if (string.IsNullOrWhiteSpace(prefabName))
@@ -188,6 +196,10 @@ public static class ItemPlacementOverrides
         int slashIndex = key.LastIndexOf('/');
         if (slashIndex >= 0 && slashIndex < key.Length - 1)
             key = key.Substring(slashIndex + 1);
+
+        const string prefabExtension = ".prefab";
+        if (key.EndsWith(prefabExtension, StringComparison.OrdinalIgnoreCase))
+            key = key.Substring(0, key.Length - prefabExtension.Length);
 
         return key;
     }
