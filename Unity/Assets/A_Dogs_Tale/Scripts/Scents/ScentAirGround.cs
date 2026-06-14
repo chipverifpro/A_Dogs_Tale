@@ -9,6 +9,8 @@ using UnityEngine;
 /// </summary>
 public class ScentAirGround : MonoBehaviour
 {
+    public event Action<ScentAirGround> PhysicsCycleCompleted;
+
     [Header("External References")]
     public Dir dir;
     public DungeonGenerator gen;
@@ -385,6 +387,7 @@ public class ScentAirGround : MonoBehaviour
         {
             cellsContainingScents = new(); // create it empty.
             activeScentCellSet.Clear();
+            PhysicsCycleCompleted?.Invoke(this);
             return;
         }
         //Debug.Log($"StepOnce: cellsContainingScents has {cellsContainingScents.Count} entries.");
@@ -612,6 +615,7 @@ public class ScentAirGround : MonoBehaviour
         }
 
         PruneInactiveScentState();
+        PhysicsCycleCompleted?.Invoke(this);
         //float endTime = Time.realtimeSinceStartup;
         //Debug.Log($"ScentAirGround: ScentPhysicsStepOnce completed in {(endTime - startTime)*1000f} ms.");
     }

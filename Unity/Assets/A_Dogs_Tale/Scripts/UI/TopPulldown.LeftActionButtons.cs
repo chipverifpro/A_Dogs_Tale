@@ -317,6 +317,7 @@ public partial class TopPulldown
         ApplyTopControlButtonSize(speedButtonRect);
         ApplyTopControlButtonSize(sniffCommandButtonRect);
         ConfigureTopControlIconRect(speedIconImage != null ? speedIconImage.rectTransform : null, 0.72f);
+        ApplySniffResultsOverlayLayout();
 
         ApplyInteractionPanelLayout();
     }

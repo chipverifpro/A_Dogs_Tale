@@ -153,6 +153,16 @@ public partial class TopPulldown : MonoBehaviour
     private Image cameraModeButtonImage;
     private RectTransform questButtonRect;
     private Image questButtonImage;
+    private RectTransform sniffResultsOverlayRect;
+    private TextMeshProUGUI sniffResultsTitleLabel;
+    private Image sniffGroundBarFill;
+    private TextMeshProUGUI sniffGroundValueLabel;
+    private Image sniffAirBarFill;
+    private TextMeshProUGUI sniffAirValueLabel;
+    private ScentAirGround subscribedSniffOverlayScentSystem;
+    private WorldObject sniffOverlayAgent;
+    private Cell sniffOverlayCell;
+    private string sniffOverlayScentKey = string.Empty;
     private RectTransform emoteDropdownRect;
     private RectTransform emoteDropdownContentRect;
     private ScrollRect emoteDropdownScrollRect;
@@ -200,6 +210,8 @@ public partial class TopPulldown : MonoBehaviour
         EnsureSniffVisuals();
         BuildRuntimeUIIfNeeded();
         RefreshTargetButtonSelectionState();
+        EnsureSniffOverlaySubscription();
+        RefreshSniffResultsOverlay();
     }
 
     private void Update()
@@ -215,6 +227,7 @@ public partial class TopPulldown : MonoBehaviour
         RefreshTargetButtonPreview();
         SpinTargetButtonPreview();
         UpdateTopControlsAutoHide();
+        RefreshSniffOverlayForContextChanges();
 
         if (Keyboard.current != null && Keyboard.current.fKey.wasPressedThisFrame)
             ToggleSniffMode("Keyboard.fKey");
@@ -268,19 +281,22 @@ public partial class TopPulldown : MonoBehaviour
         EnsureSniffAction();
         sniffAction.performed += OnSniffToggle;
         sniffAction.Enable();
+        EnsureSniffOverlaySubscription();
     }
 
     private void OnDisable()
     {
-        if (sniffAction == null)
-            return;
-
-        sniffAction.performed -= OnSniffToggle;
-        sniffAction.Disable();
+        if (sniffAction != null)
+        {
+            sniffAction.performed -= OnSniffToggle;
+            sniffAction.Disable();
+        }
+        RemoveSniffOverlaySubscription();
     }
 
     private void OnDestroy()
     {
+        RemoveSniffOverlaySubscription();
         DestroyTargetPreviewClone();
         ReleaseTargetPreviewTexture();
         DestroyTargetPreviewWorld();
@@ -363,6 +379,7 @@ public partial class TopPulldown : MonoBehaviour
         BuildSpeedPanel(speedControlsTransform, canvasObject.transform);
         BuildEmoteDropdown(emoteControlsTransform, canvasObject.transform);
         BuildCornerControls(canvasObject.transform, canvasObject.transform);
+        BuildSniffResultsOverlay(canvasObject.transform, canvasObject.transform);
         BuildTooltip(tooltipTransform, canvasObject.transform);
         if (!autoHideTopControls)
             topControlsVisibility = 1f;
