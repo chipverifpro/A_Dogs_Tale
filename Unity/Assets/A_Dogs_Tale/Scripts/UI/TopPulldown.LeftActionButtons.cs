@@ -166,6 +166,8 @@ public partial class TopPulldown
 
     private RectTransform interactionPanelRect;
     private Image interactionPanelImage;
+    private RectTransform sniffCommandButtonRect;
+    private Image sniffCommandButtonImage;
     private readonly RectTransform[] interactionButtonRects = new RectTransform[5];
 
     private void BuildCornerControls(Transform parent, Transform searchRoot)
@@ -173,6 +175,7 @@ public partial class TopPulldown
         if (!useCornerControls)
             return;
 
+        BuildSniffCommandButton(parent, searchRoot);
         BuildInteractionPanel(parent, searchRoot);
         HidePulldownControlsReplacedByCorners();
         ApplyCornerControlsLayout();
@@ -213,6 +216,48 @@ public partial class TopPulldown
         interactionButtonRects[2] = BuildInteractionTabButton(panelObject.transform, "InteractItemsButton", InteractionDialogUI.InteractionTab.Items, "Items");
         interactionButtonRects[3] = BuildInteractionTabButton(panelObject.transform, "InteractQuestsButton", InteractionDialogUI.InteractionTab.Quests, "Quests");
         interactionButtonRects[4] = BuildInteractionTabButton(panelObject.transform, "InteractScentButton", InteractionDialogUI.InteractionTab.Scent, "Scent");
+    }
+
+    private void BuildSniffCommandButton(Transform parent, Transform searchRoot)
+    {
+        Transform existingButton = FindExistingUiElement(parent, searchRoot, "SniffCommandButton");
+        GameObject buttonObject;
+        if (existingButton == null)
+        {
+            buttonObject = new GameObject(
+                "SniffCommandButton",
+                typeof(RectTransform),
+                typeof(Image),
+                typeof(Button));
+            buttonObject.transform.SetParent(parent, false);
+        }
+        else
+        {
+            buttonObject = existingButton.gameObject;
+        }
+
+        sniffCommandButtonRect = GetOrAddComponent<RectTransform>(buttonObject);
+        sniffCommandButtonImage = GetOrAddComponent<Image>(buttonObject);
+        sniffCommandButtonImage.sprite = SpriteServer.SpriteLookup("AndroidButtonsAndQuests_3")
+            ?? SpriteServer.SpriteSheetLookup("Sprites/AndroidButtonsAndQuests", 3);
+        sniffCommandButtonImage.preserveAspect = true;
+        sniffCommandButtonImage.color = Color.white;
+        sniffCommandButtonImage.raycastTarget = true;
+
+        Button button = GetOrAddComponent<Button>(buttonObject);
+        button.targetGraphic = sniffCommandButtonImage;
+        button.onClick.RemoveListener(HandleSniffCommandButtonPressed);
+        button.onClick.RemoveListener(AudioPlayer.PlayUiButtonClick);
+        button.onClick.AddListener(AudioPlayer.PlayUiButtonClick);
+        button.onClick.AddListener(HandleSniffCommandButtonPressed);
+
+        ConfigureTooltip(buttonObject, () => "Sniff (N)");
+    }
+
+    private void HandleSniffCommandButtonPressed()
+    {
+        CloseTopActionPanels();
+        SniffInput.TryRunPlayerSniff("sniff_button");
     }
 
     private RectTransform BuildInteractionTabButton(Transform parent, string buttonName, InteractionDialogUI.InteractionTab tab, string tooltipText)
@@ -261,13 +306,16 @@ public partial class TopPulldown
 
         float topInset = GetTopSafeAreaInset();
         float secondRowY = -(cornerControlMargin + topInset + topControlButtonSize + modeButtonSpacing);
+        float thirdRowY = secondRowY - topControlButtonSize - modeButtonSpacing;
         ConfigureCornerButton(homeButtonRect, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(cornerControlMargin, -(cornerControlMargin + topInset)));
         ConfigureCornerButton(cameraModeButtonRect, new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-cornerControlMargin, -(cornerControlMargin + topInset)));
         ConfigureCornerButton(speedButtonRect, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(cornerControlMargin, secondRowY));
+        ConfigureCornerButton(sniffCommandButtonRect, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(cornerControlMargin, thirdRowY));
 
         ApplyTopControlButtonSize(homeButtonRect);
         ApplyTopControlButtonSize(cameraModeButtonRect);
         ApplyTopControlButtonSize(speedButtonRect);
+        ApplyTopControlButtonSize(sniffCommandButtonRect);
         ConfigureTopControlIconRect(speedIconImage != null ? speedIconImage.rectTransform : null, 0.72f);
 
         ApplyInteractionPanelLayout();

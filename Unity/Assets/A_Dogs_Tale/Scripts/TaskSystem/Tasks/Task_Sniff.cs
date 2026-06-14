@@ -1,295 +1,132 @@
 #nullable enable
 using System.Collections.Generic;
-using UnityEngine;
-using DogGame.Modules;
-using DogGame.LLM;
-using static DungeonGenerator;
 using System.Globalization;
+using System.Text;
+using DogGame.LLM;
+using DogGame.Modules;
+using UnityEngine;
 
 namespace DogGame.Tasks
 {
     /// <summary>
-    /// One-shot sniff task.
-    /// Gathers scents at the agent's current cell, filters ignored scents,
-    /// and reports air/ground scents sorted by strength.
+    /// One-shot command that samples the scent selected in ScentRegistry at the
+    /// sniffing agent's cell and in each traversable neighboring direction.
     /// </summary>
     public sealed class Task_Sniff : IAgentTask, ITaskWithReport
     {
+        private const float GroundWeight = 0.7f;
+        private const float AirWeight = 0.3f;
+        private const float ComparisonEpsilon = 0.000001f;
+
         public string DebugName => "Sniff";
-        public string Description = "Performs a one-shot sniff at the agent's current cell, collects air and ground scent results after filtering ignored or weak scents, and logs the strongest nearby scent directions.";
+        public string Description = "Samples the selected scent and reports its strength and uphill directions.";
 
-        private readonly HashSet<string> ignoreKeys;
-        private bool executed;
-
-        // Results (can be consumed by UI / follow-up tasks later)
+        // Retained for callers that consume the task's detected-scent results.
         public readonly List<DetectedScent> AirScents = new();
         public readonly List<DetectedScent> GroundScents = new();
+
+        private readonly HashSet<string> ignoreKeys;
+        private readonly ScentSource? requestedScent;
+        private bool executed;
+        private bool hasReport;
+        private string reportJson = string.Empty;
 
         public Task_Sniff(HashSet<string>? ignoreKeys = null)
         {
             this.ignoreKeys = ignoreKeys ?? new HashSet<string>();
         }
 
+        /// <summary>Use this overload when an AI is sniffing for a specific scent.</summary>
+        public Task_Sniff(ScentSource selectedScent, HashSet<string>? ignoreKeys)
+        {
+            requestedScent = selectedScent;
+            this.ignoreKeys = ignoreKeys ?? new HashSet<string>();
+        }
+
         public static void RunTask_Sniff(TaskContext context)
         {
-            Task_Sniff task = new();
-            task.executed = false;
-            Debug.Log($"TaskSniff.RunTask_Sniff [{context.Agent.DisplayName}]");
-            task.Tick(context, 0.0f);
+            var task = new Task_Sniff();
+            task.Start(context);
+            task.Tick(context, 0f);
+        }
+
+        public void Start(TaskContext context)
+        {
+            executed = false;
+            hasReport = false;
+            reportJson = string.Empty;
+            AirScents.Clear();
+            GroundScents.Clear();
         }
 
         public void Stop(TaskContext context)
         {
-            // No cleanup needed (one-shot task)
         }
 
-        // -------------------------------------------------------
-        // Internals
-        // -------------------------------------------------------
-
-        private void SniffAtCurrentCell(
-            TaskContext context,
-            ScentPerceptionModule scentModule)
+        public TaskTickResult Tick(TaskContext context, float deltaTimeSeconds)
         {
-            Cell cell = context.Agent.locationModule.cell;
-            var detections = scentModule.dir!.scentRegistry
-                .CollectScentsAtCell(cell, scentModule.scentSystem);
+            if (executed)
+                return TaskTickResult.Succeeded();
 
-            if (detections == null || detections.Count == 0)
-                return;
+            executed = true;
+            WorldObject? agent = context.Agent;
+            if (agent == null)
+                return TaskTickResult.Failed("missing_agent");
 
-            float timeNow = Time.time;
-            Vector2Int cellPos = cell.pos;
+            ScentPerceptionModule scentModule = agent.scentPerceptionModule;
+            if (scentModule == null)
+                return TaskTickResult.Failed("missing_scent_perception_module");
 
-            foreach (var det in detections)
+            if (agent.locationModule == null || agent.locationModule.cell == null)
+                return TaskTickResult.Failed("missing_location");
+
+            ScentRegistry? registry = scentModule.dir != null ? scentModule.dir.scentRegistry : null;
+            ScentSource? selectedScent = ResolveTargetScent(agent, scentModule, registry);
+            if (selectedScent == null)
             {
-                if (det.scentSource == null)
-                    continue;
-
-                float strength01 = Mathf.Clamp01(det.combinedStrength);
-                if (strength01 < scentModule.minStrength01)
-                    continue;
-
-                string scentKey = BuildScentKey(det.scentSource);
-                if (ignoreKeys.Contains(scentKey))
-                    continue;
-
-                // Split air / ground if available
-                float air01 = TryGetAirStrength01(det);
-                float ground01 = TryGetGroundStrength01(det);
-
-                // Fallback if system only provides combined
-                if (air01 <= 0f && ground01 <= 0f)
-                    air01 = strength01;
-
-                if (air01 > 0f)
-                {
-                    AirScents.Add(MakeDetected(
-                        det, scentKey, ScentMedium.Air, air01, cellPos, timeNow));
-                }
-
-                if (ground01 > 0f)
-                {
-                    GroundScents.Add(MakeDetected(
-                        det, scentKey, ScentMedium.Ground, ground01, cellPos, timeNow));
-                }
+                Debug.Log($"[Task_Sniff] agent={agent.DisplayName}: no scent detected", agent);
+                return TaskTickResult.Succeeded();
             }
 
-            AirScents.Sort((a, b) => b.strength01.CompareTo(a.strength01));
-            GroundScents.Sort((a, b) => b.strength01.CompareTo(a.strength01));
+            string scentKey = registry!.BuildScentKey(selectedScent);
+            if (ignoreKeys.Contains(scentKey))
+            {
+                Debug.Log($"[Task_Sniff] agent={agent.DisplayName}: selected scent {scentKey} is ignored", agent);
+                return TaskTickResult.Succeeded();
+            }
 
-            if (AirScents.Count == 0 && GroundScents.Count == 0)
-            {
-                Debug.Log("No unmasked scents detected.");
-                return;
-            }
-            if (AirScents.Count > 0)
-            {
-                DetectedScent strongestAir = AirScents[0];
-                DirFlags strongestAirDir = SniffNearbyCurrentCell(strongestAir.scentKey, cell.pos, cell.height, scentModule, sniffGround:false);
-                bestAir = new SniffNearbyResult
-                {
-                    ok = true,
-                    scentKey = strongestAir.scentKey,
-                    medium = strongestAir.medium,
-                    dir = strongestAirDir,
-                    intensity = strongestAir.strength01,
-                    cell = strongestAir.cell
-                };
-            }
-            if (GroundScents.Count > 0)
-            {
-                DetectedScent strongestGround = GroundScents[0];
-                DirFlags strongestGroundDir = SniffNearbyCurrentCell(strongestGround.scentKey, cell.pos, cell.height, scentModule, sniffGround:true);
-                bestGround = new SniffNearbyResult
-                {
-                    ok = true,
-                    scentKey = strongestGround.scentKey,
-                    medium = strongestGround.medium,
-                    dir = strongestGroundDir,
-                    intensity = strongestGround.strength01,
-                    cell = strongestGround.cell
-                };
-            }
+            SniffResult result = SampleSelectedScent(agent, scentModule, selectedScent, scentKey);
+            PopulateDetectedScents(result);
+            reportJson = BuildReportJson(context, result);
+            hasReport = true;
+            LogResult(agent, result);
+            return TaskTickResult.Succeeded();
         }
 
-        public struct RelPos
-        {
-            public Vector2Int pos;
-            public float airScent;
-            public float groundScent;
-        }
-
-        private DirFlags SniffNearbyCurrentCell(string agentId, Vector2Int centerPos, int height, ScentPerceptionModule scentModule, bool sniffGround)
-        {
-            //Cell cell = context.Agent.locationModule.cell;
-            //Vector2Int centerPos = cell.pos;
-            List<RelPos> relPosList = new();
-            Cell relCell;
-            NeighborMatch match;
-                float maxAir = 0f;
-                float maxGround = 0f;
-                Vector2Int maxAirPos = new(-1,-1);
-                Vector2Int maxGroundPos = new(-1,-1);
-                DirFlags maxAirDir = DirFlags.None;
-                DirFlags maxGroundDir = DirFlags.None; 
-            foreach (DirFlags direction in DirFlagsEx.All8)
-            {
-                Vector2Int relPosLoc = centerPos + direction.ToVector2Int();
-                Dir.Instance.gen.hf.TryQueryAt(relPosLoc.x, relPosLoc.y, height, 50, out match);
-                if (match.roomId<0 || match.cellId<0) continue; // no cell found
-                relCell = Dir.Instance.gen.rooms[match.roomId].cells[match.cellId];
-
-                foreach (ScentInCell scentInCell in relCell.scents)
-                {
-                    string scentKey = $"agent:{scentInCell.agentId}";
-                    Debug.Log($"scentInCell={scentKey} ?? agentId={agentId}");
-                    if (scentKey == agentId)
-                    {
-                        //RelPos relPos = new()
-                        //{
-                        //    pos = relPosLoc,
-                        //    airScent = scentInCell.airIntensity,
-                        //    groundScent = scentInCell.groundIntensity
-                        //};
-                        //relPosList.Add(relPos);
-                        if (maxAir < scentInCell.airIntensity)
-                        {
-                            maxAir = scentInCell.airIntensity;
-                            maxAirPos = relPosLoc;
-                            maxAirDir = direction;
-                        }
-                        if (maxGround < scentInCell.groundIntensity)
-                        {
-                            maxGround = scentInCell.groundIntensity;
-                            maxGroundPos = relPosLoc;
-                            maxGroundDir = direction;
-                        }
-                    }
-                }
-            }
-            Debug.Log($"Sniff: strongest air scent for {agentId} is {DirFlagsEx.ToLongName(maxAirDir)} at {maxAirPos} intensity={maxAir}");
-            Debug.Log($"Sniff: strongest ground scent for {agentId} is {DirFlagsEx.ToLongName(maxGroundDir)} at {maxGroundPos} intensity={maxGround}");
-        
-            if (sniffGround) return maxGroundDir;
-            return maxAirDir;
-        }
-
-        private static DetectedScent MakeDetected(
-            ScentDetection det,
-            string key,
-            ScentMedium medium,
-            float strength01,
-            Vector2Int cell,
-            float time)
-        {
-            return new DetectedScent
-            {
-                scentKey = key,
-                category = det.scentSource!.category,
-                scentName = det.scentSource.scentName ?? det.scentSource.category.ToString(),
-                medium = medium,
-                strength01 = strength01,
-                cell = cell,
-                time = time,
-                agentId = det.scentSource.agentId,
-                ignored = false
-            };
-        }
-
-        private static void BuildDefaultIgnoreKeys(
+        private ScentSource? ResolveTargetScent(
             WorldObject agent,
-            HashSet<string> ignore)
+            ScentPerceptionModule scentModule,
+            ScentRegistry? registry)
         {
-            // Ignore self
-            if (agent.ObjectId >= 0)
-                ignore.Add($"agent:{agent.ObjectId}");
+            if (requestedScent != null)
+                return requestedScent;
+            if (registry?.SelectedTargetScent != null)
+                return registry.SelectedTargetScent;
+            if (registry == null)
+                return null;
 
-            // Ignore pack members (if any)
-            var pack = agent.packMemberModule.currentPack;
-            if (pack?.packAgentList == null)
-                return;
-
-            foreach (var member in pack.packAgentList)
+            List<ScentDetection> detections = registry.CollectScentsAtCell(
+                agent.locationModule.cell,
+                scentModule.scentSystem);
+            for (int i = 0; i < detections.Count; i++)
             {
-                int id = member.ObjectId;
-                if (id >= 0)
-                    ignore.Add($"agent:{id}");
-            }
-        }
-
-        private static string BuildScentKey(ScentSource source)
-        {
-            if (source.agentId >= 0)
-                return $"agent:{source.agentId}";
-
-            string name = string.IsNullOrWhiteSpace(source.scentName)
-                ? "Unnamed"
-                : source.scentName.Trim();
-
-            return $"{source.category}:{name}";
-        }
-
-        private static float TryGetAirStrength01(ScentDetection det)
-        {
-            // TODO: replace with real field when confirmed
-            return det.airStrength;
-            //return 0.5f;    // dummy return value nonzero
-        }
-
-        private static float TryGetGroundStrength01(ScentDetection det)
-        {
-            // TODO: replace with real field when confirmed
-            return det.groundStrength;
-            //return 0.6f;    // dummy return value nonzero
-        }
-
-        private void DebugLogResults(WorldObject agent)
-        {
-            if (AirScents.Count == 0 && GroundScents.Count == 0)
-            {
-                Debug.Log($"[Task_Sniff] {agent.name}: no scents detected", agent);
-                return;
+                ScentSource source = detections[i].scentSource;
+                if (source != null && !ignoreKeys.Contains(registry.BuildScentKey(source)))
+                    return source;
             }
 
-            WorldObject agent_i;
-            Debug.Log(
-                $"[Task_Sniff] {agent.name}: air={AirScents.Count} ground={GroundScents.Count}",
-                agent);
-            for (int i=0; i<AirScents.Count; i++)
-            {
-                WorldObjectRegistry.Instance.TryGet(AirScents[i].agentId, out agent_i);
-                Debug.Log($"Air[{i}] = {AirScents[i].agentId}:{agent_i.DisplayName}, strength={AirScents[i].strength01}");
-            }
-            for (int i=0; i<GroundScents.Count; i++)
-            {
-                WorldObjectRegistry.Instance.TryGet(GroundScents[i].agentId, out agent_i);
-                Debug.Log($"Ground[{i}] = {GroundScents[i].agentId}:{agent_i.DisplayName}, strength={GroundScents[i].strength01}");
-            }
+            return null;
         }
-
-        private bool hasReport;
-        private string reportJson = "";
 
         public bool TryGetReportJson(out string reportJsonOut)
         {
@@ -297,113 +134,185 @@ namespace DogGame.Tasks
             return hasReport && !string.IsNullOrWhiteSpace(reportJsonOut);
         }
 
-        private struct SniffNearbyResult
+        private static SniffResult SampleSelectedScent(
+            WorldObject agent,
+            ScentPerceptionModule scentModule,
+            ScentSource selectedScent,
+            string scentKey)
         {
-            public bool ok;
-            public string scentKey;
-            public ScentMedium medium;
-            public DirFlags dir;
-            public float intensity;
-            public Vector2Int cell;
+            Vector2Int center = agent.locationModule.pos2;
+            int height = agent.locationModule.height;
+            SampleStrength(scentModule, scentKey, center, height, out float centerAir, out float centerGround);
+            float centerCombined = Combine(centerAir, centerGround);
+
+            var result = new SniffResult
+            {
+                scentKey = scentKey,
+                scentName = string.IsNullOrWhiteSpace(selectedScent.scentName) ? scentKey : selectedScent.scentName,
+                category = selectedScent.category,
+                sourceAgentId = selectedScent.agentId,
+                cell = center,
+                worldLocation = agent.locationModule.pos3d,
+                air = centerAir,
+                ground = centerGround,
+                combined = centerCombined,
+                isLocalMaximum = true,
+                strongestDirection = DirFlags.None,
+                strongestNeighborStrength = 0f
+            };
+
+            Pathfinding? pathfinding = scentModule.dir != null ? scentModule.dir.pathfinding : null;
+            foreach (DirFlags direction in DirFlagsEx.All8)
+            {
+                if (pathfinding == null || !pathfinding.IsStepTraversable(center, direction))
+                    continue;
+
+                Vector2Int neighbor = center + direction.ToVector2Int();
+                SampleStrength(scentModule, scentKey, neighbor, height, out float air, out float ground);
+                float combined = Combine(air, ground);
+                if (result.strongestDirection == DirFlags.None || combined > result.strongestNeighborStrength)
+                {
+                    result.strongestDirection = direction;
+                    result.strongestNeighborStrength = combined;
+                }
+
+                if (combined > centerCombined + ComparisonEpsilon)
+                {
+                    result.increasingDirections.Add(direction);
+                    result.isLocalMaximum = false;
+                }
+            }
+
+            return result;
         }
 
-        private SniffNearbyResult bestAir;
-        private SniffNearbyResult bestGround;
-
-        public void Start(TaskContext context)
+        private static void SampleStrength(
+            ScentPerceptionModule scentModule,
+            string scentKey,
+            Vector2Int position,
+            int height,
+            out float air,
+            out float ground)
         {
-            executed = false;
-            hasReport = false;
-            reportJson = "";
-            bestAir = default;
-            bestGround = default;
-
-            AirScents.Clear();
-            GroundScents.Clear();
-
-            if (ignoreKeys.Count == 0 && context.Agent != null)
-                BuildDefaultIgnoreKeys(context.Agent, ignoreKeys);
+            scentModule.TryGetScentStrengthAtCell(scentKey, position, height, ScentMedium.Air, out air);
+            scentModule.TryGetScentStrengthAtCell(scentKey, position, height, ScentMedium.Ground, out ground);
         }
 
-#region Tick
-        public TaskTickResult Tick(TaskContext context, float deltaTimeSeconds)
+        private static float Combine(float air, float ground)
         {
-            if (executed) return TaskTickResult.Succeeded();
-            executed = true;
-
-            if (context.Agent == null)
-                return TaskTickResult.Failed("missing_agent");
-
-            var scentModule = context.Agent.scentPerceptionModule;
-            if (scentModule == null)
-                return TaskTickResult.Failed("missing_scent_perception_module");
-
-            if (context.Agent.locationModule == null)
-                return TaskTickResult.Failed("missing_location_module");
-
-            // ---- Perform sniff ----
-            SniffAtCurrentCell(context, scentModule);
-
-            // Build a single-line JSON report for the LLM/tooling layer.
-            reportJson = BuildReportJson(context);
-            hasReport = !string.IsNullOrWhiteSpace(reportJson);
-
-            DebugLogResults(context.Agent);
-            return TaskTickResult.Succeeded();
+            return ground * GroundWeight + air * AirWeight;
         }
-#endregion
-#region BuildReportJson
-        private string BuildReportJson(TaskContext context)
+
+        private void PopulateDetectedScents(SniffResult result)
         {
-            // Single-line JSON. Keep it small and deterministic.
-            // If you later add a proper JSON writer, swap this.
-            string requestId = context.OriginRequestId ?? ""; // see below (TaskContext addition)
-            string agentId = context.Agent?.ObjectId.ToString(CultureInfo.InvariantCulture) ?? "-1";
+            float now = Time.time;
+            if (result.air > 0f)
+                AirScents.Add(MakeDetected(result, ScentMedium.Air, result.air, now));
+            if (result.ground > 0f)
+                GroundScents.Add(MakeDetected(result, ScentMedium.Ground, result.ground, now));
+        }
 
-            string bestAirDir = bestAir.ok ? DirFlagsEx.ToLongName(bestAir.dir) : "None";
-            string bestGroundDir = bestGround.ok ? DirFlagsEx.ToLongName(bestGround.dir) : "None";
+        private static DetectedScent MakeDetected(SniffResult result, ScentMedium medium, float strength, float time)
+        {
+            return new DetectedScent
+            {
+                scentKey = result.scentKey,
+                scentName = result.scentName,
+                category = result.category,
+                medium = medium,
+                strength01 = strength,
+                cell = result.cell,
+                time = time,
+                agentId = result.sourceAgentId,
+                ignored = false
+            };
+        }
 
-            // Top 3 each (keys + strength). Avoid newlines.
-            string airTop = MakeTopListJson(AirScents, 3);
-            string groundTop = MakeTopListJson(GroundScents, 3);
+        private static void LogResult(WorldObject agent, SniffResult result)
+        {
+            string increasing = JoinDirections(result.increasingDirections);
+            string strongest = result.strongestDirection == DirFlags.None
+                ? "None"
+                : DirFlagsEx.ToLongName(result.strongestDirection);
 
-            return
-                "{"
-                + "\"schema\":\"SniffReportV1\","
-                + "\"originRequestId\":\"" + EscapeJson(requestId) + "\","
-                + "\"agentObjectId\":" + agentId + ","
-                + "\"cell\":[" + context.Agent!.locationModule.cell.pos.x + "," + context.Agent.locationModule.cell.pos.y + "],"
-                + "\"bestAir\":{\"ok\":" + (bestAir.ok ? "true" : "false") + ",\"scentKey\":\"" + EscapeJson(bestAir.scentKey) + "\",\"dir\":\"" + EscapeJson(bestAirDir) + "\",\"intensity\":" + bestAir.intensity.ToString("0.###", CultureInfo.InvariantCulture) + "},"
-                + "\"bestGround\":{\"ok\":" + (bestGround.ok ? "true" : "false") + ",\"scentKey\":\"" + EscapeJson(bestGround.scentKey) + "\",\"dir\":\"" + EscapeJson(bestGroundDir) + "\",\"intensity\":" + bestGround.intensity.ToString("0.###", CultureInfo.InvariantCulture) + "},"
-                + "\"airTop\":" + airTop + ","
-                + "\"groundTop\":" + groundTop
+            Debug.Log(
+                $"[Task_Sniff] scent={result.scentName} ({result.scentKey}), " +
+                $"sniffingAgent={agent.DisplayName} ({agent.ObjectId}), " +
+                $"worldLocation=Vector3Int({result.worldLocation.x},{result.worldLocation.y},{result.worldLocation.z}), " +
+                $"cell=Vector2Int({result.cell.x},{result.cell.y}), " +
+                $"strengthAbsolute(combined={result.combined:0.######},air={result.air:0.######},ground={result.ground:0.######}), " +
+                $"increasingDirections=[{increasing}], localMaximum={result.isLocalMaximum}, " +
+                $"strongestDirection={strongest}, strongestNeighborStrength={result.strongestNeighborStrength:0.######}",
+                agent);
+        }
+
+        private static string BuildReportJson(TaskContext context, SniffResult result)
+        {
+            string strongest = result.strongestDirection == DirFlags.None
+                ? "None"
+                : DirFlagsEx.ToLongName(result.strongestDirection);
+
+            return "{"
+                + "\"schema\":\"SniffReportV2\","
+                + "\"originRequestId\":\"" + EscapeJson(context.OriginRequestId ?? string.Empty) + "\","
+                + "\"agentObjectId\":" + context.Agent!.ObjectId.ToString(CultureInfo.InvariantCulture) + ","
+                + "\"scentKey\":\"" + EscapeJson(result.scentKey) + "\","
+                + "\"scentName\":\"" + EscapeJson(result.scentName) + "\","
+                + "\"worldLocation\":[" + result.worldLocation.x + "," + result.worldLocation.y + "," + result.worldLocation.z + "],"
+                + "\"cell\":[" + result.cell.x + "," + result.cell.y + "],"
+                + "\"strengthUnit\":\"absolute\","
+                + "\"strength\":{\"combined\":" + Format(result.combined) + ",\"air\":" + Format(result.air) + ",\"ground\":" + Format(result.ground) + "},"
+                + "\"increasingDirections\":" + MakeDirectionsJson(result.increasingDirections) + ","
+                + "\"localMaximum\":" + (result.isLocalMaximum ? "true" : "false") + ","
+                + "\"strongestDirection\":\"" + strongest + "\","
+                + "\"strongestNeighborStrength\":" + Format(result.strongestNeighborStrength)
                 + "}";
         }
 
-        private static string MakeTopListJson(List<DetectedScent> list, int max)
+        private static string JoinDirections(List<DirFlags> directions)
         {
-            int count = Mathf.Min(max, list.Count);
-            if (count <= 0) return "[]";
-
-            // [{"key":"agent:12","s":0.77}, ...]
-            var parts = new System.Text.StringBuilder(128);
-            parts.Append('[');
-            for (int i = 0; i < count; i++)
+            var text = new StringBuilder();
+            for (int i = 0; i < directions.Count; i++)
             {
-                if (i > 0) parts.Append(',');
-                parts.Append("{\"key\":\"").Append(EscapeJson(list[i].scentKey)).Append("\",\"s\":")
-                    .Append(list[i].strength01.ToString("0.###", CultureInfo.InvariantCulture)).Append('}');
+                if (i > 0) text.Append(',');
+                text.Append(DirFlagsEx.ToLongName(directions[i]));
             }
-            parts.Append(']');
-            return parts.ToString();
+            return text.ToString();
         }
 
-        private static string EscapeJson(string s)
+        private static string MakeDirectionsJson(List<DirFlags> directions)
         {
-            if (string.IsNullOrEmpty(s)) return "";
-            return s.Replace("\\", "\\\\").Replace("\"", "\\\"");
+            var text = new StringBuilder("[");
+            for (int i = 0; i < directions.Count; i++)
+            {
+                if (i > 0) text.Append(',');
+                text.Append('\"').Append(DirFlagsEx.ToLongName(directions[i])).Append('\"');
+            }
+            return text.Append(']').ToString();
         }
-#endregion
-    }
 
+        private static string Format(float value) => value.ToString("0.######", CultureInfo.InvariantCulture);
+
+        private static string EscapeJson(string value)
+        {
+            return string.IsNullOrEmpty(value) ? string.Empty : value.Replace("\\", "\\\\").Replace("\"", "\\\"");
+        }
+
+        private sealed class SniffResult
+        {
+            public string scentKey = string.Empty;
+            public string scentName = string.Empty;
+            public ScentCategory category;
+            public int sourceAgentId;
+            public Vector2Int cell;
+            public Vector3Int worldLocation;
+            public float air;
+            public float ground;
+            public float combined;
+            public bool isLocalMaximum;
+            public DirFlags strongestDirection;
+            public float strongestNeighborStrength;
+            public readonly List<DirFlags> increasingDirections = new();
+        }
+    }
 }

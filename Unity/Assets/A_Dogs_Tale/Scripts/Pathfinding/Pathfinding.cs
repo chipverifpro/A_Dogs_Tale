@@ -276,6 +276,30 @@ public class Pathfinding : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Returns whether a single grid step is traversable using the same wall,
+    /// door, bounds, and diagonal-corner rules as A*.
+    /// </summary>
+    public bool IsStepTraversable(Vector2Int start, DirFlags direction, bool allowDoors = true)
+    {
+        Vector2Int offset = direction.ToVector2Int();
+        int directionIndex = offset.x switch
+        {
+            0 when offset.y == 1 => 0,
+            1 when offset.y == 1 => 1,
+            1 when offset.y == 0 => 2,
+            1 when offset.y == -1 => 3,
+            0 when offset.y == -1 => 4,
+            -1 when offset.y == -1 => 5,
+            -1 when offset.y == 0 => 6,
+            -1 when offset.y == 1 => 7,
+            _ => -1
+        };
+
+        return directionIndex >= 0 &&
+            DirectionMoveCost(start, offset, directionIndex, allowDoors) > 0f;
+    }
+
     float CardinalMoveCost(Vector2Int start, DirFlags edge, Vector2Int offset, bool allowDoors)
     {
         if (!EnsureRuntimeReferences())

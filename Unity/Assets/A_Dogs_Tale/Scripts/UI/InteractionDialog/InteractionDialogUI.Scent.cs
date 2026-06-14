@@ -210,6 +210,7 @@ public sealed partial class InteractionDialogUI : MonoBehaviour
         BuildScentTargetOptions(leftMember);
         ApplyPendingSelection(scentTargetOptions, sharedState.PendingRightAgentSelection, ref scentState.SelectedTargetIndex);
         WorldObject rightMember = GetSelectedFromList(scentTargetOptions, ref scentState.SelectedTargetIndex);
+        SyncSelectedScentTarget(rightMember);
         RefreshScentSourceList();
 
         RefreshCircleAndHotspot(playerPreviewSlot, playerAgentOptions.Count, previousPlayerAgentButton, nextPlayerAgentButton);
@@ -440,6 +441,17 @@ public sealed partial class InteractionDialogUI : MonoBehaviour
             return false;
 
         return candidate.scentEmitterModule != null;
+    }
+
+    private static void SyncSelectedScentTarget(WorldObject target)
+    {
+        ScentRegistry registry = Dir.Instance != null ? Dir.Instance.scentRegistry : null;
+        ScentSource source = target != null && target.scentEmitterModule != null
+            ? target.scentEmitterModule.normalScentSource
+            : null;
+
+        if (registry != null)
+            registry.SetSelectedTargetScent(source);
     }
 
     #endregion

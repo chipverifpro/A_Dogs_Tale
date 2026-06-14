@@ -1,5 +1,4 @@
 #nullable enable
-using System.Collections.Generic;
 using DogGame.LLM;
 using DogGame.Tasks;
 using UnityEngine;
@@ -9,11 +8,13 @@ namespace DogGame.Modules
 {
     public sealed class SniffInput : MonoBehaviour
     {
+        private const string DefaultSniffBinding = "<Keyboard>/n";
+
         [Tooltip("If null, we'll try GetComponentInParent<WorldObject>().")]
         [SerializeField] private WorldObject? observer;
 
         [Tooltip("Key binding for sniff.")]
-        [SerializeField] private string binding = "<Keyboard>/g";
+        [SerializeField] private string binding = DefaultSniffBinding;
 
         private InputAction? sniffAction;
 
@@ -26,7 +27,7 @@ namespace DogGame.Modules
             sniffAction = new InputAction(
                 name: "Sniff",
                 type: InputActionType.Button,
-                binding: binding
+                binding: string.IsNullOrWhiteSpace(binding) ? DefaultSniffBinding : binding
             );
         }
 
@@ -46,26 +47,31 @@ namespace DogGame.Modules
 
         private void OnSniffPerformed(InputAction.CallbackContext ctx)
         {
-            //if (observer == null)
-            //{
-            //    Debug.LogError($"SniffInput.OnSniffPerformed(ctx): observer is NULL.");
-            //    return;
-            //}
-            // One-shot manual sniff by player
-            //TaskContext sniffContext = new(Dir.Instance.playerPack.packLeader);
-            //Debug.Log($"SniffInput.OnSniffPerformed {sniffContext.Agent.DisplayName}");
-            //Task_Sniff.RunTask_Sniff(sniffContext);
+            TryRunPlayerSniff("sniff_key");
+        }
 
-            
-            WorldObject playerAgent = Dir.Instance.playerPack.packLeader;
-            HashSet<string> sniffContext = new(playerAgent.ObjectId);
+        public static bool TryRunPlayerSniff(string tag = "sniff_player")
+        {
+            Dir dir = Dir.Instance;
+            WorldObject? playerAgent = dir != null && dir.playerPack != null
+                ? dir.playerPack.packLeader
+                : null;
+            if (playerAgent == null || playerAgent.taskController == null)
+            {
+                Debug.LogWarning("[SniffInput] Missing player pack leader or task controller.");
+                BottomBanner.Show(BannerSense.Smell, BannerLevel.Low, "No dog is available to sniff.");
+                return false;
+            }
+
             playerAgent.taskController.EnqueueTask(
-                task: new Task_Sniff(sniffContext),
+                task: new Task_Sniff(),
                 priority: 60,
-                source: TaskSource.Player,  // or AI/LLM/etc
+                source: TaskSource.Player,
                 applyMode: LLMApplyMode.Interrupt,
-                tag: "sniff_key",
+                tag: tag,
                 front: true);
+
+            return true;
         }
     }
 }
