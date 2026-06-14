@@ -4057,6 +4057,9 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 3611425195055262532}
+  - component: {fileID: 2833312302189747804}
+  - component: {fileID: -6190121122075466493}
+  - component: {fileID: 1501240896213153321}
   m_Layer: 0
   m_Name: dog_agility_hoop_2
   m_TagString: Untagged
@@ -4101,6 +4104,67 @@ Transform:
   - {fileID: 8624110396178166608}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2833312302189747804
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3555769437967335788}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5b51eeefad7b498d956628ba6705f1ea, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SavePrefabId
+  prefabId: resources:Prefabs/ChatGPT_Prefabs/ChatGPT_Scenery/ChatGPT_Agility/dog_agility_hoop_2
+  resourcesPath: Prefabs/ChatGPT_Prefabs/ChatGPT_Scenery/ChatGPT_Agility/dog_agility_hoop_2
+  assetPath: Assets/A_Dogs_Tale/Resources/Prefabs/ChatGPT_Prefabs/ChatGPT_Scenery/ChatGPT_Agility/dog_agility_hoop_2.prefab
+--- !u!114 &-6190121122075466493
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3555769437967335788}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b112db3959c164550975dd26677f8e8e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::WorldObject
+  objectId: -1
+  displayName: dog_agility_hoop_2
+  kind: 3
+  species: 0
+  breed: 
+  autoRegister: 1
+  adjustMapToWorld: {x: -0.5, y: 0, z: -0.5}
+  sizeRadius: 0.3
+  weight: 1
+  immovable: 0
+  onActivate:
+    m_PersistentCalls:
+      m_Calls: []
+--- !u!114 &1501240896213153321
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3555769437967335788}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3f6cda250b193442c9f59a935c554f95, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.PlacementModule
+  allowedRooms: -1
+  autoSizeFromMesh: 1
+  sizeInCells: {x: 0, y: 0, z: 0}
+  cellSize: 1
+  edgeHint: 0
+  rotationRule: 1
+  minClearCellsAround: 0
+  mustTouchWall: 0
+  wallPadding: 0.05
 --- !u!1 &4124562186460378886
 GameObject:
   m_ObjectHideFlags: 0
