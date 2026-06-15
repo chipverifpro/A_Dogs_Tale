@@ -1,0 +1,50 @@
+# Materials for trail marker cone set
+
+newmtl orange_plastic
+Ka 1.000 0.260 0.000
+Kd 1.000 0.310 0.000
+Ks 0.350 0.250 0.180
+Ns 64
+illum 2
+
+newmtl reflective_white
+Ka 0.800 0.800 0.750
+Kd 0.900 0.890 0.820
+Ks 0.700 0.700 0.650
+Ns 96
+illum 2
+
+newmtl black_rubber
+Ka 0.015 0.015 0.014
+Kd 0.030 0.030 0.028
+Ks 0.080 0.080 0.075
+Ns 24
+illum 2
+
+newmtl pole_dark
+Ka 0.020 0.020 0.020
+Kd 0.060 0.060 0.055
+Ks 0.280 0.280 0.260
+Ns 48
+illum 2
+
+newmtl flag_green
+Ka 0.000 0.400 0.020
+Kd 0.000 0.690 0.040
+Ks 0.080 0.120 0.080
+Ns 18
+illum 2
+
+newmtl flag_white
+Ka 0.900 0.880 0.820
+Kd 0.980 0.960 0.900
+Ks 0.200 0.200 0.180
+Ns 28
+illum 2
+
+newmtl flag_red
+Ka 0.520 0.000 0.000
+Kd 0.950 0.020 0.015
+Ks 0.160 0.050 0.050
+Ns 22
+illum 2
