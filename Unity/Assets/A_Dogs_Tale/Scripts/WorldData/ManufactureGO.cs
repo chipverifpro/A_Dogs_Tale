@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Rendering;
 
@@ -332,6 +333,24 @@ public class ManufactureGO : MonoBehaviour
     /// </summary>
     public void ApplyPendingUpdates()
     {
+        ApplyPendingUpdatesInternal(null);
+    }
+
+    /// <summary>
+    /// Applies pending changes only for the requested layers. This avoids
+    /// unrelated dirty world geometry being scanned by high-frequency systems.
+    /// </summary>
+    public void ApplyPendingUpdates(params ElementLayerKind[] layerKinds)
+    {
+        HashSet<ElementLayerKind> includedLayers = null;
+        if (layerKinds != null && layerKinds.Length > 0)
+            includedLayers = new HashSet<ElementLayerKind>(layerKinds);
+
+        ApplyPendingUpdatesInternal(includedLayers);
+    }
+
+    private void ApplyPendingUpdatesInternal(HashSet<ElementLayerKind> includedLayers)
+    {
         float startTime = 0f;
         if (dir.activityStats.EnableStatistics) startTime = Time.realtimeSinceStartup;
         //Debug.Log("ManufactureGO: Applying pending updates to manufactured GameObjects.");
@@ -351,6 +370,9 @@ public class ManufactureGO : MonoBehaviour
         // For each layer in the data store
         foreach (var dataLayer in elementStore.layers)
         {
+            if (dataLayer != null && includedLayers != null && !includedLayers.Contains(dataLayer.kind))
+                continue;
+
             if (dataLayer == null || dataLayer.instances == null)
             {
                 Debug.LogWarning($"ManufactureGO: Skipping null dataLayer or instances for layer {dataLayer?.kind}.");

@@ -62,6 +62,7 @@ public class Pathfinding : MonoBehaviour
         Vector2Int start,
         Vector2Int goal,
         bool allowDoors = true,
+        bool allowDiagonal = true,
         int maxNodesExpanded = 10000)
     {
         var result = new List<Vector2Int>();
@@ -112,6 +113,9 @@ public class Pathfinding : MonoBehaviour
             // Explore 8 neighbors
             for (int d = 0; d < 8; d++)
             {
+                if (!allowDiagonal && (d & 1) != 0)
+                    continue;
+
                 var dir = (Dir8)d;
                 // Your function: returns >0 cost if the edge is traversable, else 0
                 float edgeCost = DirectionMoveCost(new Vector2Int(current.x, current.y), Offsets[d], d, allowDoors);
@@ -283,7 +287,50 @@ public class Pathfinding : MonoBehaviour
     public bool IsStepTraversable(Vector2Int start, DirFlags direction, bool allowDoors = true)
     {
         Vector2Int offset = direction.ToVector2Int();
-        int directionIndex = offset.x switch
+        int directionIndex = DirectionIndexForOffset(offset);
+
+        return directionIndex >= 0 &&
+            DirectionMoveCost(start, offset, directionIndex, allowDoors) > 0f;
+    }
+
+    /// <summary>
+    /// Validates every grid transition touched by a straight segment using the
+    /// same cell, wall, door, and diagonal rules as A*.
+    /// </summary>
+    public bool HasTraversableLine(Vector2Int start, Vector2Int goal, bool allowDoors = true)
+    {
+        if (!EnsureRuntimeReferences() || !dir.gen.In(start.x, start.y) || !dir.gen.In(goal.x, goal.y))
+            return false;
+        if (dir.gen.cellGrid[start.x, start.y] == null || dir.gen.cellGrid[goal.x, goal.y] == null)
+            return false;
+        if (start == goal)
+            return true;
+
+        Vector2Int previous = start;
+        bool first = true;
+        foreach (Vector2Int current in SupercoverLine(start.x, start.y, goal.x, goal.y))
+        {
+            if (first)
+            {
+                first = false;
+                previous = current;
+                continue;
+            }
+
+            Vector2Int offset = current - previous;
+            int directionIndex = DirectionIndexForOffset(offset);
+            if (directionIndex < 0 || DirectionMoveCost(previous, offset, directionIndex, allowDoors) <= 0f)
+                return false;
+
+            previous = current;
+        }
+
+        return previous == goal;
+    }
+
+    private static int DirectionIndexForOffset(Vector2Int offset)
+    {
+        return offset.x switch
         {
             0 when offset.y == 1 => 0,
             1 when offset.y == 1 => 1,
@@ -295,9 +342,6 @@ public class Pathfinding : MonoBehaviour
             -1 when offset.y == 1 => 7,
             _ => -1
         };
-
-        return directionIndex >= 0 &&
-            DirectionMoveCost(start, offset, directionIndex, allowDoors) > 0f;
     }
 
     float CardinalMoveCost(Vector2Int start, DirFlags edge, Vector2Int offset, bool allowDoors)
@@ -315,6 +359,10 @@ public class Pathfinding : MonoBehaviour
             return 0f;
 
         if (startCell.walls.HasFlag(edge) && !(allowDoors && startCell.doors.HasFlag(edge)))
+            return 0f;
+
+        DirFlags opposite = edge.Opposite();
+        if (destCell.walls.HasFlag(opposite) && !(allowDoors && destCell.doors.HasFlag(opposite)))
             return 0f;
 
         return 1f;

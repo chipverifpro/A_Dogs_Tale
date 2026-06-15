@@ -19796,6 +19796,9 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
+  - {fileID: 1195453575}
+  - {fileID: 2137875493}
+  - {fileID: 236307193}
   - {fileID: 439255723}
   m_Father: {fileID: 1767335688}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -24293,7 +24296,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 236307192}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -24306,7 +24309,7 @@ Transform:
   - {fileID: 1217355476}
   - {fileID: 429911631}
   - {fileID: 2073195334}
-  m_Father: {fileID: 2140542027}
+  m_Father: {fileID: 196505886}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &239760980
 GameObject:
@@ -99057,7 +99060,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.SniffInput
   observer: {fileID: 0}
-  binding: <Keyboard>/n
+  binding: <Keyboard>/g
 --- !u!114 &942637351
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -123869,7 +123872,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1195453575}
   m_Layer: 0
-  m_Name: ChatGPTScenery
+  m_Name: ChatGPTSceneryTest
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -123896,7 +123899,7 @@ Transform:
   - {fileID: 526638948}
   - {fileID: 19404383}
   - {fileID: 1524583118}
-  m_Father: {fileID: 2140542027}
+  m_Father: {fileID: 196505886}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1195776369
 GameObject:
@@ -225727,7 +225730,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2137875493}
   m_Layer: 0
-  m_Name: ChatGPTItems
+  m_Name: ChatGPTItemsTest
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -225750,7 +225753,7 @@ Transform:
   - {fileID: 915281443}
   - {fileID: 1037621367}
   - {fileID: 825058384}
-  m_Father: {fileID: 2140542027}
+  m_Father: {fileID: 196505886}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!43 &2137956483
 Mesh:
@@ -225965,9 +225968,6 @@ Transform:
   - {fileID: 563512873}
   - {fileID: 1657477365}
   - {fileID: 1418426032}
-  - {fileID: 2137875493}
-  - {fileID: 1195453575}
-  - {fileID: 236307193}
   m_Father: {fileID: 1767335688}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &2140542028

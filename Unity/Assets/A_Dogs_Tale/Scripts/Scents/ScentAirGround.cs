@@ -786,7 +786,9 @@ public class ScentAirGround : MonoBehaviour
         // Then apply all color changes (including newly created ones).
         if (anyScentAirChanged || anyScentGroundChanged || anyScentAirCreated || anyScentGroundCreated)
         {
-            dir.manufactureGO.ApplyPendingUpdates();    // applies all pending changes to all layers
+            dir.manufactureGO.ApplyPendingUpdates(
+                ElementLayerKind.ScentAir,
+                ElementLayerKind.ScentGround);
         }
 
         //Debug.Log($"ApplyScentUpdates completed. anyScentAir/GroundCreated={anyScentAirCreated}/{anyScentGroundCreated}, anyScentAir/GroundChanged={anyScentAirChanged}/{anyScentGroundChanged}");

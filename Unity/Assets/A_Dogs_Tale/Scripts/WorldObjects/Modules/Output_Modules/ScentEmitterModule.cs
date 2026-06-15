@@ -49,7 +49,10 @@ namespace DogGame.Modules
                 return; // map build must complete before scent physics runs.
             if (dir.gen.hf_valid == false || dir.gen.hf==null)
                 return;     // scent cannot be added before heightfield is created.
-            
+            if (worldObject.locationModule.cell == null)
+            {
+                Debug.Log($"ScentEmitterModule {worldObject.DisplayName}: cell at {worldObject.pos3d_map} is null");
+            }
             // deposit normal scent
             normalScentSource.Emit(worldObject.locationModule.cell, deltaTime, decayed: 1.0f);
 

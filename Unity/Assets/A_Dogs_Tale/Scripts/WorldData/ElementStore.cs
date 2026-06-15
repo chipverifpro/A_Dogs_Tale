@@ -321,8 +321,11 @@ public class ElementStore : ScriptableObject
         // Ensure layers list
         layers ??= new List<ElementLayer>();
 
-        // Find (prefer index-based so it works with class or struct)
-        int layerIdx = layers.FindIndex(l => l != null && l.name == layerName);
+        // Runtime indexing is per ElementLayerKind in WarehouseGO, so each kind
+        // must have one corresponding ElementStore layer. Display names are not
+        // stable identifiers (for example Floor and TriangleFloor used to share
+        // "FloorTile"), which caused their instance indices to become mixed.
+        int layerIdx = layers.FindIndex(l => l != null && l.kind == instance.layerKind);
         ElementLayer layer;
 
         if (layerIdx < 0)
@@ -334,12 +337,6 @@ public class ElementStore : ScriptableObject
         else
         {
             layer = layers[layerIdx];
-
-            if (layer.kind != instance.layerKind)
-            {
-                //Debug.LogWarning($"ElementStore: Layer '{layerName}' kind mismatch. Existing={layer.kind}, New={instance.layerKind}. Changing layer.kind to match");
-                layer.kind = instance.layerKind; // keep runtime data sane (fix bug somewhere else?)
-            }
         }
 
         if (TryTakeReusableIndex(instance.layerKind, layer, out int reuseIndex))
@@ -483,7 +480,7 @@ public class ElementStore : ScriptableObject
             customValue: 0f
         );
 
-        AddInstance("FloorTile", inst);
+        AddInstance(isTriangle ? "TriangleFloor" : "Floor", inst);
     }
 
     public void AddCeilingTile(
@@ -580,7 +577,7 @@ public class ElementStore : ScriptableObject
             customValue: 0f
         );
 
-        AddInstance("Wall", inst);
+        AddInstance(isDiagonal ? "DiagonalWall" : "Wall", inst);
     }
 
     public int AddScentAir(Cell cell, Color color)

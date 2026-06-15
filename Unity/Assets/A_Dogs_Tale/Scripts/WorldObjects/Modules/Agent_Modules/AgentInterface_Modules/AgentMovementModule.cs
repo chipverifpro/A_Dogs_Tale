@@ -86,6 +86,9 @@ namespace DogGame.Modules
         private Vector2Int lastKnownTargetObjectCell;
         private bool hasLastKnownTargetObjectCell = false;
         private bool allowPathThroughDoors = true;
+        private bool allowDiagonalPathSteps = true;
+        private bool allowPathSmoothing = true;
+        private bool allowDirectPathFallback = true;
         private bool requirePathOrLineOfSight = false;
         private Pathfinding pathfinding;
 
@@ -196,6 +199,9 @@ namespace DogGame.Modules
             this.keepFollowingTargetObject = keepFollowing;
             this.targetLocationMap = target != null ? target.pos3d_map : null;
             this.allowPathThroughDoors = true;
+            this.allowDiagonalPathSteps = true;
+            this.allowPathSmoothing = true;
+            this.allowDirectPathFallback = true;
             this.requirePathOrLineOfSight = false;
             pathSpeedFactor = 1.0f;
             MoveToDestinationInProgress = target != null;
@@ -372,7 +378,11 @@ namespace DogGame.Modules
                 lastPathRequestAllowDoors = allowPathThroughDoors;
                 hasLastPathRequest = true;
 
-                List<Vector2Int> path = pathfinding.FindPath(startCell, goalCell, allowDoors: allowPathThroughDoors);
+                List<Vector2Int> path = pathfinding.FindPath(
+                    startCell,
+                    goalCell,
+                    allowDoors: allowPathThroughDoors,
+                    allowDiagonal: allowDiagonalPathSteps);
                 ClearActivePath();
                 activePathGoalCell = goalCell;
 
@@ -386,7 +396,8 @@ namespace DogGame.Modules
                 activePathIndex = hasActivePath ? 0 : -1;
                 smoothingCooldownSeconds = 0f;
 
-                TrySmoothActivePath(force: true);
+                if (allowPathSmoothing)
+                    TrySmoothActivePath(force: true);
 
                 if (enablePathDebugLogging)
                     Debug.Log($"[AgentMovementModule] {worldObject.DisplayName} path cells={activePathCells.Count} start={startCell} goal={goalCell}", this);
@@ -405,7 +416,12 @@ namespace DogGame.Modules
             while (activePathIndex < activePathCells.Count)
             {
                 Vector3 waypoint = CellCenterMap(activePathCells[activePathIndex], worldObject.locationModule.height);
-                if (!PointTowardMapLocation(waypoint))
+                bool isFinalPathWaypoint = activePathIndex == activePathCells.Count - 1;
+                float waypointArrivalDistance = isFinalPathWaypoint ? StopDistance : 0.12f;
+                if (!PointTowardMapLocation(
+                        waypoint,
+                        waypointArrivalDistance,
+                        stopAtArrival: isFinalPathWaypoint))
                     return true;
 
                 activePathIndex++;
@@ -422,6 +438,9 @@ namespace DogGame.Modules
         {
             using (MovementSmoothPathMarker.Auto())
             {
+            if (!allowPathSmoothing)
+                return;
+
             if (!hasActivePath || activePathIndex < 0 || activePathIndex >= activePathCells.Count)
                 return;
 
@@ -439,12 +458,7 @@ namespace DogGame.Modules
             if (!TryGetGridCellData(currentCellPos, out Cell currentCell))
                 return;
 
-            int roomIndex = currentCell.room_number;
-            if (dir == null || dir.gen == null || dir.gen.rooms == null || roomIndex < 0 || roomIndex >= dir.gen.rooms.Count)
-                return;
-
-            Room room = dir.gen.rooms[roomIndex];
-            if (room == null)
+            if (pathfinding == null)
                 return;
 
             int furthestVisibleIndex = activePathIndex;
@@ -454,11 +468,21 @@ namespace DogGame.Modules
                 if (!TryGetGridCellData(candidatePos, out Cell candidateCell))
                     break;
 
-                if (candidateCell.room_number != roomIndex)
+                if (candidateCell.room_number != currentCell.room_number)
                     break;
 
-                if (!RoomLOS.HasLineOfSight(room, currentCellPos, candidatePos))
+                if (!pathfinding.HasTraversableLine(currentCellPos, candidatePos, allowPathThroughDoors))
                     break;
+
+                Vector3 candidateMap = CellCenterMap(candidatePos, worldObject.locationModule.height);
+                if (worldObject.motionModule == null ||
+                    !worldObject.motionModule.IsMapSegmentClear(
+                        worldObject.pos3d_map,
+                        candidateMap,
+                        allowDoors: allowPathThroughDoors))
+                {
+                    break;
+                }
 
                 furthestVisibleIndex = i;
             }
@@ -541,23 +565,24 @@ namespace DogGame.Modules
                 return false;
             }
 
-            int roomIndex = currentCell.room_number;
-            if (roomIndex != targetCell.room_number)
+            if (currentCell.room_number != targetCell.room_number)
                 return false;
 
-            if (dir == null || dir.gen == null || dir.gen.rooms == null || roomIndex < 0 || roomIndex >= dir.gen.rooms.Count)
-                return false;
-
-            Room room = dir.gen.rooms[roomIndex];
-            return room != null && RoomLOS.HasLineOfSight(room, currentCellPos, targetCellPos);
+            return pathfinding != null &&
+                pathfinding.HasTraversableLine(currentCellPos, targetCellPos, allowPathThroughDoors);
             }
         }
 
-        private bool PointTowardMapLocation(Vector3 targetLocation_map)
+        private bool PointTowardMapLocation(
+            Vector3 targetLocation_map,
+            float? arrivalDistanceOverride = null,
+            bool stopAtArrival = true)
         {
             using (MovementPointMapMarker.Auto())
             {
-            float arrivalDistance = StopDistance;
+            float arrivalDistance = arrivalDistanceOverride.HasValue
+                ? Mathf.Max(0.01f, arrivalDistanceOverride.Value)
+                : StopDistance;
             maxDistance = arrivalDistance;
 
             Vector3 desired_move = targetLocation_map - worldObject.pos3d_map;
@@ -567,13 +592,18 @@ namespace DogGame.Modules
             //    Debug.Log($"{worldObject.DisplayName} tgt={targetLocation_map}, pos={worldObject.pos3d_map} desiredMove={desired_move} distanceToTarget={distanceToTarget} arrivalDistance={arrivalDistance}");
             if (distanceToTarget <= arrivalDistance+0.05f)
             {
-                maxDistance = 0f;
-                desiredVelocity = Vector3.zero;
+                if (stopAtArrival)
+                {
+                    maxDistance = 0f;
+                    desiredVelocity = Vector3.zero;
+                }
                 return true;
             }
 
             float remainingDistance = Mathf.Max(0f, distanceToTarget - arrivalDistance);
-            maxDistance = Mathf.Clamp(Mathf.Min(remainingDistance, arrivalDistance), 0f, arrivalDistance);
+            maxDistance = stopAtArrival
+                ? Mathf.Clamp(Mathf.Min(remainingDistance, StopDistance), 0f, StopDistance)
+                : Mathf.Max(remainingDistance, StopDistance);
             SetDesiredMove(desired_move, maxDistance: maxDistance, speedFactor: pathSpeedFactor);
             return false;
             }
@@ -731,9 +761,11 @@ namespace DogGame.Modules
 
                     if (!FollowActivePath())
                     {
-                        if (requirePathOrLineOfSight &&
+                        bool canUseDirectFallback =
                             targetLocationMap.HasValue &&
-                            !HasDirectLineOfSightToMapTarget(targetLocationMap.Value))
+                            (allowDirectPathFallback || IsInTargetCell(targetLocationMap.Value)) &&
+                            HasDirectLineOfSightToMapTarget(targetLocationMap.Value);
+                        if (requirePathOrLineOfSight && !canUseDirectFallback)
                         {
                             desiredVelocity = Vector3.zero;
                             maxDistance = 0f;
@@ -837,19 +869,34 @@ namespace DogGame.Modules
             SetDesiredTargetLocationMap(targetLocation_map, mode, requestPathfinding, allowDoors: true, speedFactor: speedFactor, requirePathOrLineOfSight: requirePathOrLineOfSight);
         }
 
-        public void SetDesiredTargetLocationMap(Vector3 targetLocation_map, WalkMode mode, bool requestPathfinding, bool allowDoors, float speedFactor = 1.0f, bool requirePathOrLineOfSight = false)
+        public void SetDesiredTargetLocationMap(
+            Vector3 targetLocation_map,
+            WalkMode mode,
+            bool requestPathfinding,
+            bool allowDoors,
+            float speedFactor = 1.0f,
+            bool requirePathOrLineOfSight = false,
+            bool allowDiagonal = true,
+            bool smoothPath = true,
+            bool allowDirectFallback = true)
         {
             bool targetChanged =
                 targetObject != null ||
                 !targetLocationMap.HasValue ||
                 (targetLocationMap.Value - targetLocation_map).sqrMagnitude > 0.0001f ||
                 this.requirePathOrLineOfSight != requirePathOrLineOfSight ||
-                allowPathThroughDoors != allowDoors;
+                allowPathThroughDoors != allowDoors ||
+                allowDiagonalPathSteps != allowDiagonal ||
+                allowPathSmoothing != smoothPath ||
+                allowDirectPathFallback != allowDirectFallback;
 
             targetObject = null;
             targetLocationMap = targetLocation_map;
             SetPathSpeedFactor(speedFactor);
             this.requirePathOrLineOfSight = requirePathOrLineOfSight;
+            allowDiagonalPathSteps = allowDiagonal;
+            allowPathSmoothing = smoothPath;
+            allowDirectPathFallback = allowDirectFallback;
             if (mode != WalkMode.None)
                 SetWalkMode(mode);
             allowPathThroughDoors = allowDoors;
@@ -867,6 +914,13 @@ namespace DogGame.Modules
                 ClearActivePath();
                 InvalidateLastPathRequest();
             }
+        }
+
+        private bool IsInTargetCell(Vector3 targetMapPosition)
+        {
+            return TryGetGridCellFromMap(worldObject.pos3d_map, out Vector2Int currentCell) &&
+                TryGetGridCellFromMap(targetMapPosition, out Vector2Int targetCell) &&
+                currentCell == targetCell;
         }
 
         // function name is redundant to above function, but this one includes WalkMode.  Which is preferable to use?

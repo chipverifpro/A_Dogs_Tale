@@ -179,7 +179,11 @@ namespace DogGame.Modules
                 currentWanderTargetMap,
                 WalkMode.None,
                 requestPathfinding: true,
-                allowDoors: false);
+                allowDoors: false,
+                requirePathOrLineOfSight: true,
+                allowDiagonal: true,
+                smoothPath: true,
+                allowDirectFallback: false);
             return true;
         }
 

@@ -375,6 +375,165 @@ namespace DogGame.Modules
             return constrainedPosition;
         }
 
+        /// <summary>
+        /// Tests a map-space segment against the same radius-aware wall and
+        /// diagonal-wall constraints used by actual agent motion.
+        /// </summary>
+        public bool IsMapSegmentClear(
+            Vector3 fromMap,
+            Vector3 toMap,
+            bool allowDoors = true,
+            float sampleDistance = 0.20f)
+        {
+            if (!constrainToCellWalls || worldObject == null || dir == null || dir.gen == null || !dir.gen.buildComplete)
+                return true;
+
+            Vector3 delta = toMap - fromMap;
+            delta.y = 0f;
+            float distance = delta.magnitude;
+            if (distance <= 0.0001f)
+                return true;
+
+            Vector2 segmentStart = new(fromMap.x, fromMap.z);
+            Vector2 segmentEnd = new(toMap.x, toMap.z);
+            if (!HasSweptRadiusClearance(segmentStart, segmentEnd, GetWallClearanceRadius(), allowDoors))
+                return false;
+
+            int steps = Mathf.Max(1, Mathf.CeilToInt(distance / Mathf.Max(0.05f, sampleDistance)));
+            Vector3 previousMap = fromMap;
+            const float toleranceSqr = 0.0025f * 0.0025f;
+
+            for (int step = 1; step <= steps; step++)
+            {
+                Vector3 desiredMap = Vector3.Lerp(fromMap, toMap, step / (float)steps);
+                Vector3 fromWorld = worldObject.MapToWorldPosition(previousMap);
+                Vector3 desiredWorld = worldObject.MapToWorldPosition(desiredMap);
+                Vector3 constrainedWorld = ResolveConstrainedWorldPosition(
+                    fromWorld,
+                    desiredWorld,
+                    applyLeashConstraints: false);
+                Vector3 constrainedMap = worldObject.WorldToMapPosition(constrainedWorld);
+
+                Vector2 error = new(constrainedMap.x - desiredMap.x, constrainedMap.z - desiredMap.z);
+                if (error.sqrMagnitude > toleranceSqr)
+                    return false;
+
+                previousMap = desiredMap;
+            }
+
+            return true;
+        }
+
+        private bool HasSweptRadiusClearance(Vector2 start, Vector2 end, float radius, bool allowDoors)
+        {
+            float clearance = Mathf.Max(0.001f, radius);
+            int minX = Mathf.FloorToInt(Mathf.Min(start.x, end.x) - clearance) - 1;
+            int maxX = Mathf.FloorToInt(Mathf.Max(start.x, end.x) + clearance) + 1;
+            int minY = Mathf.FloorToInt(Mathf.Min(start.y, end.y) - clearance) - 1;
+            int maxY = Mathf.FloorToInt(Mathf.Max(start.y, end.y) + clearance) + 1;
+            float clearanceSqr = clearance * clearance;
+
+            for (int y = minY; y <= maxY; y++)
+            {
+                for (int x = minX; x <= maxX; x++)
+                {
+                    if (!TryGetCell(x, y, out Cell cell))
+                        continue;
+
+                    if (IsBlockingEdge(cell, x, y, DirFlags.W, allowDoors) &&
+                        SegmentDistanceSqr(start, end, new Vector2(x, y), new Vector2(x, y + 1f)) < clearanceSqr)
+                        return false;
+                    if (IsBlockingEdge(cell, x, y, DirFlags.S, allowDoors) &&
+                        SegmentDistanceSqr(start, end, new Vector2(x, y), new Vector2(x + 1f, y)) < clearanceSqr)
+                        return false;
+
+                    // East and north are needed only at the outer edge/void; shared
+                    // interior edges are covered once by the neighbor's west/south.
+                    if (!TryGetCell(x + 1, y, out _) &&
+                        SegmentDistanceSqr(start, end, new Vector2(x + 1f, y), new Vector2(x + 1f, y + 1f)) < clearanceSqr)
+                        return false;
+                    if (!TryGetCell(x, y + 1, out _) &&
+                        SegmentDistanceSqr(start, end, new Vector2(x, y + 1f), new Vector2(x + 1f, y + 1f)) < clearanceSqr)
+                        return false;
+
+                    DiagonalOpenDirection diagonal = GetDiagonalOpenDirection(cell.walls, cell.doors);
+                    if (diagonal != DiagonalOpenDirection.None)
+                    {
+                        Vector2 diagonalA;
+                        Vector2 diagonalB;
+                        if (diagonal == DiagonalOpenDirection.NE || diagonal == DiagonalOpenDirection.SW)
+                        {
+                            diagonalA = new Vector2(x, y + 1f);
+                            diagonalB = new Vector2(x + 1f, y);
+                        }
+                        else
+                        {
+                            diagonalA = new Vector2(x, y);
+                            diagonalB = new Vector2(x + 1f, y + 1f);
+                        }
+
+                        if (SegmentDistanceSqr(start, end, diagonalA, diagonalB) < clearanceSqr)
+                            return false;
+                    }
+                }
+            }
+
+            return true;
+        }
+
+        private bool IsBlockingEdge(Cell cell, int x, int y, DirFlags edge, bool allowDoors)
+        {
+            Vector2Int offset = edge.ToVector2Int();
+            TryGetCell(x + offset.x, y + offset.y, out Cell neighbor);
+            if (neighbor == null)
+                return true;
+
+            DirFlags opposite = edge.Opposite();
+            bool hasDoor = (cell.doors & edge) != 0 || (neighbor.doors & opposite) != 0;
+            if (allowDoors && hasDoor)
+                return false;
+
+            return (cell.walls & edge) != 0 ||
+                (neighbor.walls & opposite) != 0 ||
+                (!allowDoors && hasDoor);
+        }
+
+        private static float SegmentDistanceSqr(Vector2 a0, Vector2 a1, Vector2 b0, Vector2 b1)
+        {
+            if (SegmentsIntersect(a0, a1, b0, b1))
+                return 0f;
+
+            return Mathf.Min(
+                Mathf.Min(PointSegmentDistanceSqr(a0, b0, b1), PointSegmentDistanceSqr(a1, b0, b1)),
+                Mathf.Min(PointSegmentDistanceSqr(b0, a0, a1), PointSegmentDistanceSqr(b1, a0, a1)));
+        }
+
+        private static float PointSegmentDistanceSqr(Vector2 point, Vector2 segmentA, Vector2 segmentB)
+        {
+            Vector2 segment = segmentB - segmentA;
+            float lengthSqr = segment.sqrMagnitude;
+            if (lengthSqr <= 1e-8f)
+                return (point - segmentA).sqrMagnitude;
+
+            float t = Mathf.Clamp01(Vector2.Dot(point - segmentA, segment) / lengthSqr);
+            return (point - (segmentA + segment * t)).sqrMagnitude;
+        }
+
+        private static bool SegmentsIntersect(Vector2 a0, Vector2 a1, Vector2 b0, Vector2 b1)
+        {
+            float d1 = Cross(a1 - a0, b0 - a0);
+            float d2 = Cross(a1 - a0, b1 - a0);
+            float d3 = Cross(b1 - b0, a0 - b0);
+            float d4 = Cross(b1 - b0, a1 - b0);
+            return ((d1 <= 0f && d2 >= 0f) || (d1 >= 0f && d2 <= 0f)) &&
+                   ((d3 <= 0f && d4 >= 0f) || (d3 >= 0f && d4 <= 0f));
+        }
+
+        private static float Cross(Vector2 a, Vector2 b)
+        {
+            return a.x * b.y - a.y * b.x;
+        }
+
         public Vector3 ApplyExternalWorldDisplacement(Vector3 desiredWorldDelta, float deltaTime, bool applyLeashConstraints = true)
         {
             if (bodyRoot == null || desiredWorldDelta.sqrMagnitude <= 0f)
@@ -814,6 +973,9 @@ namespace DogGame.Modules
 
             Vector2Int step = dirFlag.ToVector2Int();
             TryGetCell(x + step.x, y + step.y, out Cell neighborCell);
+            if (neighborCell == null)
+                return true;
+
             DirFlags opposite = dirFlag.Opposite();
 
             bool sharedDoor =
