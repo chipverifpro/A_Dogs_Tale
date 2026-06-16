@@ -273,15 +273,27 @@ public partial class TopPulldown
         float fitScale = GetTopControlsFitScale();
         float spacing = Mathf.Max(6f, modeButtonSpacing * 0.5f);
         float buttonSize = GetCompactSpeedButtonSize();
+        speedPanelRect.sizeDelta = new Vector2(
+            buttonSize,
+            buttonSize * selectableSpeedModes.Length + spacing * (selectableSpeedModes.Length - 1));
+
+        if (useCornerControls)
+        {
+            speedPanelRect.anchorMin = speedButtonRect.anchorMin;
+            speedPanelRect.anchorMax = speedButtonRect.anchorMax;
+            speedPanelRect.pivot = new Vector2(0f, 1f);
+            speedPanelRect.localScale = Vector3.one;
+            speedPanelRect.anchoredPosition = speedButtonRect.anchoredPosition +
+                new Vector2(topControlButtonSize + spacing, 0f);
+            return;
+        }
+
         speedPanelRect.anchorMin = speedButtonRect.anchorMin;
         speedPanelRect.anchorMax = speedButtonRect.anchorMax;
         speedPanelRect.pivot = new Vector2(1f, 1f);
         speedPanelRect.localScale = Vector3.one * fitScale;
         speedPanelRect.anchoredPosition = speedButtonRect.anchoredPosition +
             new Vector2(-(topControlButtonSize + spacing) * fitScale, 0f);
-        speedPanelRect.sizeDelta = new Vector2(
-            buttonSize,
-            buttonSize * selectableSpeedModes.Length + spacing * (selectableSpeedModes.Length - 1));
     }
 
     private void HandleSpeedModeSelected(WalkMode walkMode)
