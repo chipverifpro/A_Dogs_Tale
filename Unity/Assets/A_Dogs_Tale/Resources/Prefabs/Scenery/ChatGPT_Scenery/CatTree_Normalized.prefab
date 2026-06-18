@@ -70315,6 +70315,8 @@ GameObject:
   m_Component:
   - component: {fileID: 4776076230889772478}
   - component: {fileID: 7222527125211837949}
+  - component: {fileID: 3113403506777817192}
+  - component: {fileID: 7902359735015803635}
   m_Layer: 0
   m_Name: CatTree_Normalized
   m_TagString: Untagged
@@ -70350,9 +70352,55 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5b51eeefad7b498d956628ba6705f1ea, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SavePrefabId
-  prefabId: resources:Prefabs/ChatGPT_Prefabs/ChatGPT_Scenery/CatTree_Normalized
-  resourcesPath: Prefabs/ChatGPT_Prefabs/ChatGPT_Scenery/CatTree_Normalized
-  assetPath: Assets/A_Dogs_Tale/Resources/Prefabs/ChatGPT_Prefabs/ChatGPT_Scenery/CatTree_Normalized.prefab
+  prefabId: resources:Prefabs/Scenery/ChatGPT_Scenery/CatTree_Normalized
+  resourcesPath: Prefabs/Scenery/ChatGPT_Scenery/CatTree_Normalized
+  assetPath: Assets/A_Dogs_Tale/Resources/Prefabs/Scenery/ChatGPT_Scenery/CatTree_Normalized.prefab
+--- !u!114 &3113403506777817192
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5261287015981207300}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b112db3959c164550975dd26677f8e8e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::WorldObject
+  objectId: -1
+  displayName: CatTree_Normalized
+  kind: 3
+  species: 0
+  breed: 
+  autoRegister: 1
+  adjustMapToWorld: {x: -0.5, y: 0, z: -0.5}
+  sizeRadius: 0.3
+  weight: 1
+  immovable: 0
+  onActivate:
+    m_PersistentCalls:
+      m_Calls: []
+--- !u!114 &7902359735015803635
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5261287015981207300}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3f6cda250b193442c9f59a935c554f95, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.PlacementModule
+  allowedRooms: 320
+  autoSizeFromMesh: 1
+  sizeInCells: {x: 0.41999996, y: 0.06999999, z: 0.9200001}
+  cellSize: 1
+  edgeHint: 0
+  rotationRule: 0
+  minClearCellsAround: 0
+  mustTouchWall: 0
+  wallPadding: 0.05
 --- !u!1 &5291800582474102968
 GameObject:
   m_ObjectHideFlags: 0

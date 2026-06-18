@@ -22711,6 +22711,7 @@ GameObject:
   - component: {fileID: 7234774313105797596}
   - component: {fileID: 6927444471707660530}
   - component: {fileID: 6778614648781432966}
+  - component: {fileID: 6670585107223085879}
   m_Layer: 0
   m_Name: DoghouseOpenInterior_Normalized
   m_TagString: Untagged
@@ -22774,6 +22775,27 @@ MonoBehaviour:
   prefabId: resources:Prefabs/ChatGPT_Prefabs/ChatGPT_Scenery/DoghouseOpenInterior_Normalized
   resourcesPath: Prefabs/ChatGPT_Prefabs/ChatGPT_Scenery/DoghouseOpenInterior_Normalized
   assetPath: Assets/A_Dogs_Tale/Resources/Prefabs/ChatGPT_Prefabs/ChatGPT_Scenery/DoghouseOpenInterior_Normalized.prefab
+--- !u!114 &6670585107223085879
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8010993636080282470}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3f6cda250b193442c9f59a935c554f95, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.PlacementModule
+  allowedRooms: -1
+  autoSizeFromMesh: 1
+  sizeInCells: {x: 0, y: 0, z: 0}
+  cellSize: 1
+  edgeHint: 0
+  rotationRule: 1
+  minClearCellsAround: 0
+  mustTouchWall: 0
+  wallPadding: 0.05
 --- !u!1 &8379889668623513728
 GameObject:
   m_ObjectHideFlags: 0

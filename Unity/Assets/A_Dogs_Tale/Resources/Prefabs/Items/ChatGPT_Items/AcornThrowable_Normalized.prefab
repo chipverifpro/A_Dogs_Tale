@@ -9133,6 +9133,7 @@ GameObject:
   - component: {fileID: 7301991624357273727}
   - component: {fileID: 1274220059462850497}
   - component: {fileID: 7594473120419780253}
+  - component: {fileID: 3510445899250515743}
   m_Layer: 0
   m_Name: AcornThrowable_Normalized
   m_TagString: Untagged
@@ -9169,7 +9170,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::WorldObject
   objectId: -1
-  displayName: throwable_acorn
+  displayName: Acorn
   kind: 8
   species: 0
   breed: Acorn
@@ -9196,6 +9197,27 @@ MonoBehaviour:
   prefabId: resources:Prefabs/ChatGPT_Prefabs/ChatGPT_Items/AcornThrowable_Normalized
   resourcesPath: Prefabs/ChatGPT_Prefabs/ChatGPT_Items/AcornThrowable_Normalized
   assetPath: Assets/A_Dogs_Tale/Resources/Prefabs/ChatGPT_Prefabs/ChatGPT_Items/AcornThrowable_Normalized.prefab
+--- !u!114 &3510445899250515743
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7934834694682655429}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3f6cda250b193442c9f59a935c554f95, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.PlacementModule
+  allowedRooms: 12032
+  autoSizeFromMesh: 1
+  sizeInCells: {x: 0, y: 0, z: 0}
+  cellSize: 1
+  edgeHint: 0
+  rotationRule: 1
+  minClearCellsAround: 0
+  mustTouchWall: 0
+  wallPadding: 0.05
 --- !u!1 &7977175953120762006
 GameObject:
   m_ObjectHideFlags: 0
