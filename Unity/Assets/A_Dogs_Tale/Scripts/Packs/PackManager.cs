@@ -15,30 +15,14 @@ public class PackManager : MonoBehaviour
     // initialize the packs array, and put playerPack in the first spot if we have one.
     void Start()
     {
-        packs = new();
-        if (playerPack == null)
-        {
-            playerPack = FindPackByName("Player Pack");
-            if (playerPack == null)
-            {
-                Debug.LogError($"PackManager Start() did not find Player Pack.");
-                return;
-            }
-        }
-        if (FreeAgentsParent == null)
-        {
-            FreeAgentsParent = GameObject.Find("FreeAgents");
-            if (FreeAgentsParent == null)
-            {
-                Debug.LogError($"PackManager Start() did not find FreeAgents.");
-            }
-        }
-
-        packs.Add(playerPack);
+        InitializeRuntimeReferences();
     }
 
     void Awake()
     {
+        if (dir == null)
+            dir = Dir.Instance;
+
         // --- Parent object for packs ---
         if (!PackParentObject)
         {
@@ -55,6 +39,35 @@ public class PackManager : MonoBehaviour
                 Debug.Log($"[Pack] Created PackParentObject: {PackParentObject.name}");
             }
         }
+
+        EnsureFreeAgentsParent();
+    }
+
+    public void InitializeRuntimeReferences()
+    {
+        if (dir == null)
+            dir = Dir.Instance;
+
+        if (packs == null)
+            packs = new();
+
+        if (playerPack == null)
+            playerPack = FindPackByName("Player Pack");
+
+        EnsureFreeAgentsParent();
+
+        if (playerPack != null && !packs.Contains(playerPack))
+            packs.Insert(0, playerPack);
+    }
+
+    private void EnsureFreeAgentsParent()
+    {
+        if (FreeAgentsParent != null)
+            return;
+
+        FreeAgentsParent = GameObject.Find("FreeAgents");
+        if (FreeAgentsParent == null)
+            FreeAgentsParent = new GameObject("FreeAgents");
     }
 
     public int GetPackNumber(Pack searchFor)
@@ -69,8 +82,8 @@ public class PackManager : MonoBehaviour
 
     public Pack FindPackByName(String targetPackName)
     {
-        // Search every Pack component in the scene (active or inactive).
-        //Pack[] allPacks = FindObjectsByType<Pack>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+        if (packs == null)
+            packs = new();
 
         Pack found = null;
 
@@ -93,7 +106,22 @@ public class PackManager : MonoBehaviour
 
         if (found == null)
         {
-            Debug.LogError(
+            Pack[] scenePacks = FindObjectsByType<Pack>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+            foreach (Pack p in scenePacks)
+            {
+                if (p != null && p.packName == targetPackName)
+                {
+                    found = p;
+                    if (!packs.Contains(p))
+                        packs.Add(p);
+                    break;
+                }
+            }
+        }
+
+        if (found == null)
+        {
+            Debug.LogWarning(
                 $"[PackManager] No pack found with packName '{targetPackName}'. " +
                 "Make sure the Pack GameObject exists in the scene.", this);
             return found;

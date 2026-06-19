@@ -307,7 +307,7 @@ public partial class DungeonGenerator
             savedObject.rotation.ToQuaternion());
         worldObject.transform.localScale = savedObject.localScale.ToVector3();
 
-        if (TryParseModuleFlags(savedObject.moduleFlagsRaw, out ModuleFlags moduleFlags))
+        if (TryParseModuleFlags(savedObject.moduleFlagsRaw, savedObject.moduleFlagsNames, out ModuleFlags moduleFlags))
             worldObject.CreateModulesIfNeeded(moduleFlags);
 
         ApplySavedAgentState(worldObject, savedObject.agent);
@@ -751,7 +751,7 @@ public partial class DungeonGenerator
         monitor.RestoreSaveData(llmDebug);
     }
 
-    private static bool TryParseModuleFlags(string raw, out ModuleFlags moduleFlags)
+    private static bool TryParseModuleFlags(string raw, string names, out ModuleFlags moduleFlags)
     {
         moduleFlags = ModuleFlags.none;
         if (string.IsNullOrWhiteSpace(raw))
@@ -761,7 +761,41 @@ public partial class DungeonGenerator
             return false;
 
         moduleFlags = (ModuleFlags)value;
+        moduleFlags = NormalizeLegacyModuleFlags(value, names, moduleFlags);
         return true;
+    }
+
+    private static ModuleFlags NormalizeLegacyModuleFlags(ulong rawValue, string names, ModuleFlags moduleFlags)
+    {
+        const ulong legacyLlmConfigModule = 1UL << 7;
+        const ulong legacyLlmWorldStateModule = 1UL << 8;
+        const ulong legacyContainerModule = 1UL << 17;
+        const ulong legacyPlacementModule = 1UL << 18;
+        const ulong legacyDoorModule = 1UL << 19;
+
+        if (HasLegacyModuleFlag(rawValue, names, legacyLlmConfigModule, nameof(ModuleFlags.llmConfigModule)))
+            moduleFlags |= ModuleFlags.llmConfigModule;
+        if (HasLegacyModuleFlag(rawValue, names, legacyLlmWorldStateModule, nameof(ModuleFlags.llmWorldStateModule)))
+            moduleFlags |= ModuleFlags.llmWorldStateModule;
+        if (HasLegacyModuleFlag(rawValue, names, legacyContainerModule, nameof(ModuleFlags.containerModule)))
+            moduleFlags |= ModuleFlags.containerModule;
+        if (HasLegacyModuleFlag(rawValue, names, legacyPlacementModule, nameof(ModuleFlags.placementModule)))
+            moduleFlags |= ModuleFlags.placementModule;
+        if (HasLegacyModuleFlag(rawValue, names, legacyDoorModule, nameof(ModuleFlags.doorModule)))
+            moduleFlags |= ModuleFlags.doorModule;
+
+        return moduleFlags;
+    }
+
+    private static bool HasLegacyModuleFlag(ulong rawValue, string names, ulong legacyValue, string moduleName)
+    {
+        if (!string.IsNullOrWhiteSpace(names) &&
+            names.IndexOf(moduleName, StringComparison.OrdinalIgnoreCase) >= 0)
+        {
+            return true;
+        }
+
+        return (rawValue & legacyValue) != 0UL;
     }
 
     [Serializable]

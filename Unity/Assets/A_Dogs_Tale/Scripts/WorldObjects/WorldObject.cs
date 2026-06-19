@@ -105,13 +105,13 @@ public enum ModuleFlags : ulong
     fetchQuestModule    = 1UL << 61,
 
     // --- LLM Planning ---
-    llmConfigModule     = 1UL << 71,
-    llmWorldStateModule = 1UL << 72,
+    llmConfigModule     = 1UL << 55,
+    llmWorldStateModule = 1UL << 56,
 
     // --- Thing ---
-    containerModule     = 1UL << 81,
-    placementModule     = 1UL << 82,
-    doorModule          = 1UL << 83,
+    containerModule     = 1UL << 57,
+    placementModule     = 1UL << 58,
+    doorModule          = 1UL << 59,
 }
 
 // The following templates can be used for configuring new WorldModule instantiations...
@@ -124,10 +124,6 @@ public static class ModuleFlagsTemplates  // extension functions for the ModuleF
             return all;
         }
     }
-    // Some examples of handy configurations...
-    public static readonly ModuleFlags FullAgent =  All
-                                                     & ~QuestModules
-                                                     & ~ModuleFlags.placementModule;
     public static readonly ModuleFlags QuestModules = ModuleFlags.fetchQuestModule;
     public static readonly ModuleFlags DecisionModules = ModuleFlags.playerDecisionModule
                                                        | ModuleFlags.followerDecisionModule
@@ -136,6 +132,30 @@ public static class ModuleFlagsTemplates  // extension functions for the ModuleF
                                                        | ModuleFlags.taskFollowerDecisionModule
                                                        | ModuleFlags.exploreDecisionModule
                                                        | ModuleFlags.herdDecisionModule;
+    // Some examples of handy configurations...
+    public static readonly ModuleFlags FullAgent = ModuleFlags.locationModule
+                                                 | ModuleFlags.hearingModule
+                                                 | ModuleFlags.scentPerceptionModule
+                                                 | ModuleFlags.visionPerceptionModule
+                                                 | ModuleFlags.worldMemoryModule
+                                                 | DecisionModules
+                                                 | ModuleFlags.agentModule
+                                                 | ModuleFlags.agentMovementModule
+                                                 | ModuleFlags.packMemberModule
+                                                 | ModuleFlags.llmThinkModule
+                                                 | ModuleFlags.reactionModule
+                                                 | ModuleFlags.motivationModule
+                                                 | ModuleFlags.activatorModule
+                                                 | ModuleFlags.interactionModule
+                                                 | ModuleFlags.motionModule
+                                                 | ModuleFlags.appearanceModule
+                                                 | ModuleFlags.noiseMakerModule
+                                                 | ModuleFlags.scentEmitterModule
+                                                 | ModuleFlags.blackboardModule
+                                                 | ModuleFlags.agentStateModule
+                                                 | ModuleFlags.taskListModule
+                                                 | ModuleFlags.llmConfigModule
+                                                 | ModuleFlags.llmWorldStateModule;
     public static readonly ModuleFlags ScatterTerrain = ModuleFlags.placementModule
                                                        | ModuleFlags.locationModule
                                                        | ModuleFlags.scentEmitterModule

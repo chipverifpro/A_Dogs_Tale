@@ -1,0 +1,451 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1001 &7267557724097389336
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: -8679921383154817045, guid: 5c84b49838c1acd4cbe63ecc028d64fe,
+        type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 15
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 5c84b49838c1acd4cbe63ecc028d64fe,
+        type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 5c84b49838c1acd4cbe63ecc028d64fe,
+        type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 14
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 5c84b49838c1acd4cbe63ecc028d64fe,
+        type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 5c84b49838c1acd4cbe63ecc028d64fe,
+        type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 5c84b49838c1acd4cbe63ecc028d64fe,
+        type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 5c84b49838c1acd4cbe63ecc028d64fe,
+        type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 5c84b49838c1acd4cbe63ecc028d64fe,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 5c84b49838c1acd4cbe63ecc028d64fe,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 5c84b49838c1acd4cbe63ecc028d64fe,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 5c84b49838c1acd4cbe63ecc028d64fe,
+        type: 3}
+      propertyPath: m_Name
+      value: prostheticLeg_girl
+      objectReference: {fileID: 0}
+    - target: {fileID: 5866666021909216657, guid: 5c84b49838c1acd4cbe63ecc028d64fe,
+        type: 3}
+      propertyPath: m_Controller
+      value: 
+      objectReference: {fileID: 9100000, guid: 34d4ca67ae6047348bb81e216d315b82, type: 2}
+    - target: {fileID: 5866666021909216657, guid: 5c84b49838c1acd4cbe63ecc028d64fe,
+        type: 3}
+      propertyPath: m_ApplyRootMotion
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 5c84b49838c1acd4cbe63ecc028d64fe,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 8025803343479204074}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 5c84b49838c1acd4cbe63ecc028d64fe,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 5894561206261573857}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 5c84b49838c1acd4cbe63ecc028d64fe,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 5948413083117178797}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 5c84b49838c1acd4cbe63ecc028d64fe,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 6921136273799147461}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 5c84b49838c1acd4cbe63ecc028d64fe,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 5438254477964976199}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 5c84b49838c1acd4cbe63ecc028d64fe,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 8307976734018970937}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 5c84b49838c1acd4cbe63ecc028d64fe,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 9143346461213094698}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 5c84b49838c1acd4cbe63ecc028d64fe,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2012691670584666816}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 5c84b49838c1acd4cbe63ecc028d64fe,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 4620619971405148520}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 5c84b49838c1acd4cbe63ecc028d64fe,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 7642591495024613331}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 5c84b49838c1acd4cbe63ecc028d64fe,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 5013721447346527868}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 5c84b49838c1acd4cbe63ecc028d64fe,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 4197768061491743963}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 5c84b49838c1acd4cbe63ecc028d64fe,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: -3397453254624264157}
+  m_SourcePrefab: {fileID: 100100000, guid: 5c84b49838c1acd4cbe63ecc028d64fe, type: 3}
+--- !u!1 &7501559845921070665 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 5c84b49838c1acd4cbe63ecc028d64fe,
+    type: 3}
+  m_PrefabInstance: {fileID: 7267557724097389336}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &8025803343479204074
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7501559845921070665}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5b51eeefad7b498d956628ba6705f1ea, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SavePrefabId
+  prefabId: asset:Assets/_ThirdParty/DenysAlmaral/CityPeople/Prefabs/disabilities/prostheticLeg_girl.prefab
+  resourcesPath: 
+  assetPath: Assets/_ThirdParty/DenysAlmaral/CityPeople/Prefabs/disabilities/prostheticLeg_girl.prefab
+--- !u!114 &5894561206261573857
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7501559845921070665}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b112db3959c164550975dd26677f8e8e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::WorldObject
+  objectId: -1
+  displayName: Female With Prosthetic
+  kind: 2
+  species: 2
+  breed: 
+  autoRegister: 1
+  adjustMapToWorld: {x: -0.5, y: 0, z: -0.5}
+  sizeRadius: 0.3
+  weight: 1
+  immovable: 0
+  onActivate:
+    m_PersistentCalls:
+      m_Calls: []
+--- !u!114 &5948413083117178797
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7501559845921070665}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2272e4992677c4977b85dbef83406534, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.LocationModule
+  DisplayRoomSnapshot: 0
+--- !u!114 &6921136273799147461
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7501559845921070665}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: adcf85cdcf1014fbd83a06406dd1f69a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.MotionModule
+  bodyRoot: {fileID: 0}
+  rotationSpeedDegreesPerSecond: 360
+  useGravity: 0
+  gravityMetersPerSecondSquared: -9.81
+  maxFallSpeedMetersPerSecond: 50
+  constrainToCellWalls: 1
+  wallConstraintIterations: 4
+  recoverFromWallIntersections: 1
+  wallRecoveryClearance: 0.3
+  invalidCellRecoverySearchRadius: 12
+  motionControlMode: 0
+  isBackpedaling: 0
+  facingMode: 0
+  facingTarget: {fileID: 0}
+  maxHorizontalAcceleration: 40
+  currentWalkMode: 1
+  maxSpeedsByMode:
+  - mode: 0
+    maxSpeed: 0
+  - mode: 1
+    maxSpeed: 2
+  - mode: 2
+    maxSpeed: 4.5
+  - mode: 3
+    maxSpeed: 1.3
+  - mode: 4
+    maxSpeed: 1
+  - mode: 5
+    maxSpeed: 0.8
+  - mode: 6
+    maxSpeed: 1.6
+  - mode: 7
+    maxSpeed: 1.8
+--- !u!114 &5438254477964976199
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7501559845921070665}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d0bb071cfa65b4c558ffceeb89516773, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.BlackboardModule
+--- !u!114 &8307976734018970937
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7501559845921070665}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: adf93bac058004cf3a0148ddf57312e4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.AgentMovementModule
+  next_actualCrumb:
+    valid: 0
+    pos2: {x: 0, y: 0}
+    height: 0
+    yawDeg: 0
+  next_formationCrumb:
+    valid: 0
+    pos2: {x: 0, y: 0}
+    height: 0
+    yawDeg: 0
+  targetObject: {fileID: 0}
+  keepFollowingTargetObject: 0
+  stopDistance: 0.2
+  useGridPathfinding: 1
+  pathSmoothingIntervalSeconds: 0.2
+  movingTargetRepathIntervalSeconds: 0.2
+  enablePathDebugLogging: 0
+  enableStallRecovery: 1
+  stallTicksBeforeRecover: 3
+  stallSecondsBeforeRecover: 1.25
+  stallPositionEpsilon: 0.01
+  stallTurnGraceAngleDegrees: 18
+  stallTurnGraceMinDesiredSpeed: 0.05
+  enableStallDebugLogging: 0
+  accelerationMetersPerSecondSquared: 12
+  decelerationMetersPerSecondSquared: 16
+  enableDebugLogging: 0
+  maxDistance: 1
+--- !u!114 &9143346461213094698
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7501559845921070665}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 591141ee4c2194d7cb0450a047c4dacd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.PackMemberModule
+  currentPack: {fileID: 0}
+  leashEndpoints: []
+--- !u!114 &2012691670584666816
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7501559845921070665}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dcf508356ad0d42d8a13c39a1beb322f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DogGame.AI.MotivationModule
+  packLoyaltyTuning: {fileID: 0}
+  showDebug: 0
+  trainingProfile:
+    obedience: 0
+    focus: 0
+    scentDiscipline: 0
+    noiseDiscipline: 0
+    bravery: 0
+--- !u!114 &4620619971405148520
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7501559845921070665}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ba2cf7359fae44b0a9386ea1703def7b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.AgentModule
+  initialDecisionType: 3
+  currentDecisionModule: {fileID: 0}
+--- !u!114 &7642591495024613331
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7501559845921070665}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b89d8ed18e1fb45f1bc9eb7a96a8b787, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.VisionPerceptionModule
+  viewRadius: 12
+  peripheralFovDeg: 160
+  eyeHeight: 0.6
+  targetAimHeight: 0.5
+  occluderMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  movingSpeedThreshold: 0.2
+  fastSpeedThreshold: 3.5
+  maxDetections: 12
+  maxEvents: 16
+  leaderNotVisibleCooldownSeconds: 2
+--- !u!114 &5013721447346527868
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7501559845921070665}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 27672672e8d6a41bdb530d870f01d309, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.ScentEmitterModule
+  normalScentSource:
+    agentId: -1
+    agent: {fileID: 0}
+    category: 0
+    scentName: 
+    categoryColor: {r: 0, g: 0, b: 0, a: 0}
+    sourceAirColor: {r: 0, g: 0, b: 0, a: 0}
+    sourceGroundColor: {r: 0, g: 0, b: 0, a: 0}
+    airDepositRate: 1
+    groundDepositRate: 0.1
+    familiarity: 0
+    sensitivityBoost: 1
+    persistentId: 
+  onDemandScentSource:
+    agentId: -1
+    agent: {fileID: 0}
+    category: 0
+    scentName: 
+    categoryColor: {r: 0, g: 0, b: 0, a: 0}
+    sourceAirColor: {r: 0, g: 0, b: 0, a: 0}
+    sourceGroundColor: {r: 0, g: 0, b: 0, a: 0}
+    airDepositRate: 1
+    groundDepositRate: 0.1
+    familiarity: 0
+    sensitivityBoost: 1
+    persistentId: 
+  durationScentSources: []
+  deposit_time_left: 0
+--- !u!114 &4197768061491743963
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7501559845921070665}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e486e0d84f00148db8eded1ca333c685, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.AppearanceModule
+  cameraFollowingMe: 0
+  head: {fileID: 0}
+  eyesForward: {fileID: 0}
+  camera_refresh_needed: 1
+  debugMode: 0
+  mainRenderer: {fileID: 0}
+  extraRenderers: []
+  animationVersion: 2
+  AutoPlayAnimations: 1
+  PaletteOverride: {fileID: 0}
+  myClips: []
+  idleClip: 1
+  walkClip: 0
+  jogClip: 0
+  animationCategory: 0
+  animationClip: {fileID: 0}
+  walkSpeed: 0.25
+  jogSpeed: 3.25
+--- !u!114 &-3397453254624264157
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7501559845921070665}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3f6cda250b193442c9f59a935c554f95, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.PlacementModule
+  allowedRooms: -1
+  autoSizeFromMesh: 1
+  sizeInCells: {x: 0.24120519, y: 0.29597792, z: 0.28077632}
+  cellSize: 1
+  edgeHint: 0
+  rotationRule: 1
+  minClearCellsAround: 0
+  mustTouchWall: 0
+  wallPadding: 0.05

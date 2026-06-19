@@ -156,9 +156,19 @@ public class CameraModeSwitcher : MonoBehaviour
             {
                 //playerModel.SetActive(true);
                 //player.agent.DogPrefab.SetActive(true);
-                dir.playerPack.packLeader.appearanceModule.SetVisible(true);
+                WorldObject leader = dir != null && dir.playerPack != null ? dir.playerPack.packLeader : null;
+                if (leader == null)
+                    return;
+
+                if (leader.appearanceModule == null)
+                    leader.CreateModulesIfNeeded(ModuleFlags.appearanceModule);
+
+                if (leader.appearanceModule != null)
+                    leader.appearanceModule.SetVisible(true);
+
                 var mainCam = Camera.main;
-                mainCam.cullingMask &= ~(1 << LayerMask.NameToLayer("Ceiling")); // hide ceiling in non-first person
+                if (mainCam != null)
+                    mainCam.cullingMask &= ~(1 << LayerMask.NameToLayer("Ceiling")); // hide ceiling in non-first person
             }
         //    target.appearanceModule.camera_refresh_needed = false;
         //}
@@ -190,56 +200,79 @@ public class CameraModeSwitcher : MonoBehaviour
         // set target to new WorldObject (player), update all vcams,
         // and let agent know it is being followed.
         target = cameraTarget;
-        
-        dir.vcamFP.Follow = target.appearanceModule.head.transform;
-        dir.vcamFP.LookAt = target.appearanceModule.eyesForward.transform;
-        
-        dir.vcamNose.Follow = target.appearanceModule.eyesForward.transform;
-        dir.vcamNose.LookAt = target.appearanceModule.head.transform;
 
-        dir.vcamOverhead.Follow = target.transform;
-        dir.vcamOverhead.LookAt = target.transform;
+        if (vcamFP != null)
+        {
+            vcamFP.Follow = target.appearanceModule.head.transform;
+            vcamFP.LookAt = target.appearanceModule.eyesForward.transform;
+        }
 
-        dir.vcamPerspective.Follow = target.transform;
-        dir.vcamPerspective.LookAt = target.transform;
+        if (vcamNose != null)
+        {
+            vcamNose.Follow = target.appearanceModule.eyesForward.transform;
+            vcamNose.LookAt = target.appearanceModule.head.transform;
+        }
+
+        if (vcamOverhead != null)
+        {
+            vcamOverhead.Follow = target.transform;
+            vcamOverhead.LookAt = target.transform;
+        }
+
+        if (vcamPerspective != null)
+        {
+            vcamPerspective.Follow = target.transform;
+            vcamPerspective.LookAt = target.transform;
+        }
 
         target.appearanceModule.cameraFollowingMe = !freeCameraActive;
     }
 
     public void SelectView(CameraModes newMode)
     {
+        WorldObject viewTarget = EnsureViewTarget();
+
         if ((newMode != cameraMode) && (newMode != CameraModes.Unchanged))
         {
             if (freeCameraActive)
                 DisableFreeCamera(restoreFollow: false);
 
             cameraMode = newMode;
-            vcamPerspective.Priority = 0;
-            vcamFP.Priority = 0;
-            vcamOverhead.Priority = 0;
-            vcamNose.Priority = 0;
+            if (vcamPerspective != null)
+                vcamPerspective.Priority = 0;
+            if (vcamFP != null)
+                vcamFP.Priority = 0;
+            if (vcamOverhead != null)
+                vcamOverhead.Priority = 0;
+            if (vcamNose != null)
+                vcamNose.Priority = 0;
             if (vcamFree != null)
                 vcamFree.Priority = 0;
             playerVisible = true;
-            target.appearanceModule.camera_refresh_needed = true;
+            if (viewTarget != null && viewTarget.appearanceModule != null)
+                viewTarget.appearanceModule.camera_refresh_needed = true;
 
             switch (cameraMode)
             {
                 case CameraModes.Perspective:
-                    vcamPerspective.Priority = 10;
+                    if (vcamPerspective != null)
+                        vcamPerspective.Priority = 10;
                     cameraMode = CameraModes.Perspective;
                     break;
                 case CameraModes.FP:
-                    vcamFP.Priority = 10;
+                    if (vcamFP != null)
+                        vcamFP.Priority = 10;
                     cameraMode = CameraModes.FP;
                     //playerVisible = false;   // hide player in first person mode
                     break;
                 case CameraModes.Overhead:
-                    vcamOverhead.Priority = 10;
+                    if (vcamOverhead != null)
+                        vcamOverhead.Priority = 10;
                     cameraMode = CameraModes.Overhead;
                     break;
                 case CameraModes.Nose:
-                    vcamNose.Priority = 10;
+                    if (vcamNose != null)
+                        vcamNose.Priority = 10;
                     cameraMode = CameraModes.Nose;
                     break;
             }
@@ -251,7 +284,7 @@ public class CameraModeSwitcher : MonoBehaviour
 
             playerVisible = (cameraMode == CameraModes.FP) ? false : true; // hide player in first person mode
 
-            if (!playerVisible)
+            if (!playerVisible && vcamFP != null)
             {
                 // Wait for camera to arrive at first person before disabling player visibility
                 waiter = StartCoroutine(WaitForArrival(vcamFP, onArrived: onArrivedAtFP));
@@ -260,13 +293,38 @@ public class CameraModeSwitcher : MonoBehaviour
             {
                 //playerModel.SetActive(true);
                 //player.agent.DogPrefab.SetActive(true);
-                target.appearanceModule.SetVisible(true);
+                if (viewTarget != null && viewTarget.appearanceModule != null)
+                    viewTarget.appearanceModule.SetVisible(true);
                 var mainCam = Camera.main;
-                mainCam.cullingMask &= ~(1 << LayerMask.NameToLayer("Ceiling")); // hide ceiling in non-first person
+                if (mainCam != null)
+                    mainCam.cullingMask &= ~(1 << LayerMask.NameToLayer("Ceiling")); // hide ceiling in non-first person
             }
-            target.appearanceModule.camera_refresh_needed = false;
+            if (viewTarget != null && viewTarget.appearanceModule != null)
+                viewTarget.appearanceModule.camera_refresh_needed = false;
         }
     }  
+
+    private WorldObject EnsureViewTarget()
+    {
+        WorldObject viewTarget = target;
+
+        if (viewTarget == null && dir != null && dir.playerPack != null)
+            viewTarget = dir.playerPack.packLeader;
+
+        if (viewTarget == null)
+            return null;
+
+        if (viewTarget.appearanceModule == null)
+            viewTarget.CreateModulesIfNeeded(ModuleFlags.appearanceModule);
+
+        if (viewTarget.appearanceModule == null)
+            return viewTarget;
+
+        if (target != viewTarget)
+            viewTarget.appearanceModule.SetCameraFollow();
+
+        return viewTarget;
+    }
 
     public void SelectNextView()
     {

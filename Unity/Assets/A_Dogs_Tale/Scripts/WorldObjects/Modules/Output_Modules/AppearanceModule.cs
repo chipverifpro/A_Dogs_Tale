@@ -331,7 +331,7 @@ namespace DogGame.Modules
         void Start()
         {
             animator = GetComponent<Animator>();
-            if (animator != null)
+            if (animator != null && animator.runtimeAnimatorController != null)
             {
                 myClips = animator.runtimeAnimatorController.animationClips;
             }
@@ -372,7 +372,9 @@ namespace DogGame.Modules
         {
             base.Update();
 
-            if (myClips?.Count()==0) return; // this has no defined animations.
+            if (animationVersion == AnimationVersion.none) return;
+            if (animator == null) return;
+            if (myClips == null || myClips.Length == 0) return; // this has no defined animations.
 
             float delta = Time.deltaTime;
             float moveSqr = ((transform.position - prev_pos3_world)/delta).sqrMagnitude;
@@ -440,4 +442,3 @@ namespace DogGame.Modules
         #endregion
     }
 }
-

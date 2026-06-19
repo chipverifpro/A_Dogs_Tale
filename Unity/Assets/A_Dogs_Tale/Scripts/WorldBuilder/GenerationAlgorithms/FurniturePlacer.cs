@@ -82,7 +82,7 @@ public partial class FurniturePlacer : MonoBehaviour
             PlaceFurnitureInRoom(room);
         }
 
-        PlaceRequiredFurniture();
+        // Required item placement is owned by ItemPlacer.
     }
 
 }

@@ -165,12 +165,20 @@ namespace DogGame.Modules
                 {
                     // cast the decision module
                     FollowerDecisionModule followerDecisionModule = (FollowerDecisionModule) currentDecisionModule;
-                    // find the leader
-                    WorldObject leader = worldObject.packMemberModule.currentPack.packLeader;
-                    // distance is set by number of pack members ahead of me.
-                    float distance = worldObject.packMemberModule.GetPositionInPack() * 1.5f;
-                    // set who to follow and how far.
-                    followerDecisionModule.SetFollowTarget(leader, distance);
+                    Pack currentPack = worldObject.packMemberModule != null
+                        ? worldObject.packMemberModule.currentPack
+                        : null;
+
+                    if (currentPack != null && currentPack.packLeader != null)
+                    {
+                        // Distance is set by number of pack members ahead of me.
+                        float distance = worldObject.packMemberModule.GetPositionInPack() * 1.5f;
+                        followerDecisionModule.SetFollowTarget(currentPack.packLeader, distance);
+                    }
+                    else
+                    {
+                        followerDecisionModule.ClearFollowTarget();
+                    }
                 }
 
                 if(currentDecisionModule.DecisionType == AgentDecisionType.Wanderer)
@@ -203,11 +211,6 @@ namespace DogGame.Modules
                     ImmobileDecisionModule immobileDecisionModule = (ImmobileDecisionModule) currentDecisionModule;
                 }
 
-                if(currentDecisionModule.DecisionType == AgentDecisionType.LLM)
-                {
-                    // cast the decision module
-                    ImmobileDecisionModule LLMDecisionModule = (ImmobileDecisionModule) currentDecisionModule;
-                }
             }
             else
             {

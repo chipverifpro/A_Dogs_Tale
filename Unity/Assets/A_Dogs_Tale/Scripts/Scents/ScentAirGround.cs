@@ -202,6 +202,16 @@ public class ScentAirGround : MonoBehaviour
         ClearAllScentVisuals();
 
         WorldObject agent = GetAgentFromAgentId(currentAgentId);
+        if (agent == null)
+        {
+            scentCamActive = false;
+            SetScentCameraEnabled(false);
+            previousAgentIdVisualized = currentAgentId;
+            airScentWasVisible = airScentVisible;
+            groundScentWasVisible = groundScentVisible;
+            return;
+        }
+
         // Switch the overlay to the new source for currentAgentId
         ScentSource scentSource = dir.scentRegistry.GetOrCreateScentSource(currentAgentId, agent:agent, ScentCategory.Dog);
         ActivateOverlayForSource(scentSource);
@@ -224,7 +234,7 @@ public class ScentAirGround : MonoBehaviour
         }
 
         if (resetOverlayAgent)
-            currentAgentId = 1;
+            currentAgentId = GetDefaultOverlayAgentId();
         nextScentDiagnosticsFrame = Time.frameCount + Mathf.Max(1, scentDiagnosticsEveryNFrames);
         Debug.Log($"StartScentSimulation");
         // Call this every time we change map structure (load/build complete): likely to start empty or nearly so before scents start appearing.
@@ -922,19 +932,28 @@ public class ScentAirGround : MonoBehaviour
         WorldObject agent;
         if ((dir.worldObjectRegistry == null) || (agentId<1))
         {
-            Debug.LogError($"AgentRegistry is null");
+            Debug.LogWarning($"AgentRegistry is unavailable or agentId is invalid.");
             return null;
         }
         if (agentId<1)
         {
-            Debug.LogError($"Invalid agentId lookup {agentId}");
+            Debug.LogWarning($"Invalid agentId lookup {agentId}");
             return null;
         }
         if (!dir.worldObjectRegistry.TryGet(agentId, out agent) || agent==null)
         {
-            Debug.LogError($"AgentRegistry lookup failed at agentId={agentId}");
+            Debug.LogWarning($"AgentRegistry lookup failed at agentId={agentId}");
         }
         return agent;
+    }
+
+    private int GetDefaultOverlayAgentId()
+    {
+        WorldObject leader = dir != null && dir.playerPack != null ? dir.playerPack.packLeader : null;
+        if (leader != null && leader.HasValidId)
+            return leader.ObjectId;
+
+        return -1;
     }
 
     // adds the cell to the current big scent list if it isn't already there.

@@ -40,10 +40,12 @@ public static class ItemPlacementOverrides
         // Example:
         // AddItemPlace(Prefab: "Key", DisplayName: "Gold Key", AllowedRooms: PlacementRoomTypeFlags.Bathroom | PlacementRoomTypeFlags.Utility);
         AddItemPlace(Prefab: "Key", DisplayName: "Gold Key", AllowedRooms: PlacementRoomTypeFlags.Bathroom | PlacementRoomTypeFlags.Utility);
+        AddItemPlace(Prefab: "Prop_Ball_01", DisplayName: "Ball", AllowedRooms: PlacementRoomTypeFlags.Living | PlacementRoomTypeFlags.Bedroom | PlacementRoomTypeFlags.Generic | PlacementRoomTypeFlags.Outdoor);
         
         // This would go under Quests to make sure necessary elements exist in world.
         // SetMustPlace(Prefab: "Key", MustPlace: true);
         SetMustPlace(Prefab: "Key", MustPlace: true);
+        SetMustPlace(Prefab: "Prop_Ball_01", MustPlace: true);
 
     }
 

@@ -86,8 +86,7 @@ public class Dir : MonoBehaviour
         if (!TryRegisterSingletonInstance())
             return;
 
-        if (gameInputRouter==null) gameInputRouter=FindFirstObjectByType<GameInputRouter>();
-        if (pathfinding == null) pathfinding = FindFirstObjectByType<Pathfinding>();
+        InitializeRuntimeReferences();
         pass_num = 0;
         AllReady = false;
         ValidateDirectory();
@@ -98,10 +97,7 @@ public class Dir : MonoBehaviour
         if (!TryRegisterSingletonInstance())
             return;
 
-        if (gameInputRouter == null)
-            gameInputRouter = FindFirstObjectByType<GameInputRouter>();
-        if (pathfinding == null)
-            pathfinding = FindFirstObjectByType<Pathfinding>();
+        InitializeRuntimeReferences();
     }
 
     private bool TryRegisterSingletonInstance()
@@ -121,6 +117,7 @@ public class Dir : MonoBehaviour
     void Start()
     {
         // verify that all required objects have been created and configured.
+        InitializeRuntimeReferences();
         ValidateDirectory();
     }
 
@@ -134,87 +131,125 @@ public class Dir : MonoBehaviour
     {
         if (AllReady) return;   // last time everything was good so don't go through it again.
 
+        InitializeRuntimeReferences();
         failures = 0;
         pass_num++;
-        //Debug.Log($"[Dir{pass_num}] Begin InitializeConnections");
+        //Debug.Log($"[Dir{pass_num}:{failures}] Begin InitializeConnections");
 
         // ===============================
         // World Builder Objects
         // ===============================
-        if (!cfg)                     Debug.LogError($"[Dir{pass_num}] DungeonSettings (cfg) not assigned.");
-        if (!gen)                     Debug.LogError($"[Dir{pass_num}] DungeonGenerator (gen) not assigned.");
-        if (!dungeonGUISelector)      Debug.LogError($"[Dir{pass_num}] DungeonGUISelector not assigned.");
-        if (!dungeonBuildSettingsUI)  Debug.LogError($"[Dir{pass_num}] DungeonBuildSettingsUI not assigned.");
+        if (!cfg)                     Debug.LogError($"[Dir{pass_num}:{++failures}] DungeonSettings (cfg) not assigned.");
+        if (!gen)                     Debug.LogError($"[Dir{pass_num}:{++failures}] DungeonGenerator (gen) not assigned.");
+        if (!dungeonGUISelector)      Debug.LogError($"[Dir{pass_num}:{++failures}] DungeonGUISelector not assigned.");
+        if (!dungeonBuildSettingsUI)  Debug.LogError($"[Dir{pass_num}:{++failures}] DungeonBuildSettingsUI not assigned.");
 
         // ===============================
         // Audio Objects
         // ===============================
-        if (!audioPlayer)             Debug.LogError($"[Dir{pass_num}] AudioPlayer not assigned.");
-        if (!audioCatalog)            Debug.LogError($"[Dir{pass_num}] AudioCatalog not assigned.");
-        if (!audioMixerGroups)        Debug.LogError($"[Dir{pass_num}] AudioMixerGroups not assigned.");
+        if (!audioPlayer)             Debug.LogError($"[Dir{pass_num}:{++failures}] AudioPlayer not assigned.");
+        if (!audioCatalog)            Debug.LogError($"[Dir{pass_num}:{++failures}] AudioCatalog not assigned.");
+        if (!audioMixerGroups)        Debug.LogError($"[Dir{pass_num}:{++failures}] AudioMixerGroups not assigned.");
 
         // ===============================
         // Game Objects
         // ===============================
-        if (!playerPack)              Debug.LogError($"[Dir{pass_num}] Player Pack not assigned.");
-        if (!packManager)             Debug.LogError($"[Dir{pass_num}] PackManager not assigned.");
-        //if (!player)                  Debug.LogError($"[Dir{pass_num}] Player not assigned.");
-        if (!packFormations)          Debug.LogError($"[Dir{pass_num}] PackFormations not assigned.");
-        if (!scents)                  Debug.LogError($"[Dir{pass_num}] ScentAirGround (scents) not assigned.");
-        if (!scentRegistry)           Debug.LogError($"[Dir{pass_num}] ScentRegistry not assigned.");
-        if (!convertScreenToWorld)    Debug.LogError($"[Dir{pass_num}] ConvertScreenToWorld not assigned.");
-        if (!dogSpeechDictionary)     Debug.LogError($"[Dir{pass_num}] DogSpeechDictionary not assigned.");
+        if (!playerPack)              Debug.LogError($"[Dir{pass_num}:{++failures}] Player Pack not assigned.");
+        if (!packManager)             Debug.LogError($"[Dir{pass_num}:{++failures}] PackManager not assigned.");
+        //if (!player)                  Debug.LogError($"[Dir{pass_num}:{++failures}] Player not assigned.");
+        if (!packFormations)          Debug.LogError($"[Dir{pass_num}:{++failures}] PackFormations not assigned.");
+        if (!scents)                  Debug.LogError($"[Dir{pass_num}:{++failures}] ScentAirGround (scents) not assigned.");
+        if (!scentRegistry)           Debug.LogError($"[Dir{pass_num}:{++failures}] ScentRegistry not assigned.");
+        if (!convertScreenToWorld)    Debug.LogError($"[Dir{pass_num}:{++failures}] ConvertScreenToWorld not assigned.");
+        if (!dogSpeechDictionary)     Debug.LogError($"[Dir{pass_num}:{++failures}] DogSpeechDictionary not assigned.");
 
         // ===============================
         // Game Cameras
         // ===============================
-        if (!brain)                   Debug.LogError($"[Dir{pass_num}] CinemachineBrain (brain) not assigned.");
-        if (!vcamFP)                  Debug.LogError($"[Dir{pass_num}] CinemachineVirtualCamera vcamFP not assigned.");
-        if (!vcamPerspective)         Debug.LogError($"[Dir{pass_num}] CinemachineVirtualCamera vcamPerspective not assigned.");
-        if (!vcamOverhead)            Debug.LogError($"[Dir{pass_num}] CinemachineVirtualCamera vcamOverhead not assigned.");
-        if (!scentCam)                Debug.LogError($"[Dir{pass_num}] Scent Camera not assigned.");
-        if (!cameraModeSwitcher)      Debug.LogError($"[Dir{pass_num}] CameraModeSwitcher not assigned.");
+        if (!brain)                   Debug.LogError($"[Dir{pass_num}:{++failures}] CinemachineBrain (brain) not assigned.");
+        if (!vcamFP)                  Debug.LogError($"[Dir{pass_num}:{++failures}] CinemachineVirtualCamera vcamFP not assigned.");
+        if (!vcamPerspective)         Debug.LogError($"[Dir{pass_num}:{++failures}] CinemachineVirtualCamera vcamPerspective not assigned.");
+        if (!vcamOverhead)            Debug.LogError($"[Dir{pass_num}:{++failures}] CinemachineVirtualCamera vcamOverhead not assigned.");
+        if (!scentCam)                Debug.LogError($"[Dir{pass_num}:{++failures}] Scent Camera not assigned.");
+        if (!cameraModeSwitcher)      Debug.LogError($"[Dir{pass_num}:{++failures}] CameraModeSwitcher not assigned.");
 
         // ===============================
         // Game User Interfaces
         // ===============================
-        if (!bottomBanner)            Debug.LogError($"[Dir{pass_num}] BottomBanner not assigned.");
+        if (!bottomBanner)            Debug.LogError($"[Dir{pass_num}:{++failures}] BottomBanner not assigned.");
 
         // ===============================
         // Splash Screen Objects
         // ===============================
-        if (!menuManager)             Debug.LogError($"[Dir{pass_num}] MenuManager not assigned.");
-        if (!sceneFader)              Debug.LogError($"[Dir{pass_num}] SceneFader not assigned.");
+        if (!menuManager)             Debug.LogError($"[Dir{pass_num}:{++failures}] MenuManager not assigned.");
+        if (!sceneFader)              Debug.LogError($"[Dir{pass_num}:{++failures}] SceneFader not assigned.");
 
         // ===============================
         // Rendering Objects
         // ===============================
-        if (!elementStore)            Debug.LogError($"[Dir{pass_num}] ElementStore not assigned.");
-        if (!warehouse)               Debug.LogError($"[Dir{pass_num}] WarehouseGO not assigned.");
-        if (!manufactureGO)           Debug.LogError($"[Dir{pass_num}] ManufactureGO not assigned.");
-        if (!scentAirGround)          Debug.LogError($"[Dir{pass_num}] ScentAirGround not assigned.");
+        if (!elementStore)            Debug.LogError($"[Dir{pass_num}:{++failures}] ElementStore not assigned.");
+        if (!warehouse)               Debug.LogError($"[Dir{pass_num}:{++failures}] WarehouseGO not assigned.");
+        if (!manufactureGO)           Debug.LogError($"[Dir{pass_num}:{++failures}] ManufactureGO not assigned.");
+        if (!scentAirGround)          Debug.LogError($"[Dir{pass_num}:{++failures}] ScentAirGround not assigned.");
 
         // ===============================
         // Communication
         // ===============================
-        if (!demo_Speech)             Debug.LogError($"[Dir{pass_num}] Demo_Speech not assigned.");
+        if (!demo_Speech)             Debug.LogError($"[Dir{pass_num}:{++failures}] Demo_Speech not assigned.");
 
         // ===============================
         // Statistics
         // ===============================
-        if (!activityStats)           Debug.LogError($"[Dir{pass_num}] ActivityStats not assigned.");
+        if (!activityStats)           Debug.LogError($"[Dir{pass_num}:{++failures}] ActivityStats not assigned.");
 
         // ------------------ 
         if (failures == 0)
         {
-            Debug.Log($"[Dir{pass_num}] Complete InitializeConnections. SUCCESS.");
+            Debug.Log($"[Dir{pass_num}:{failures}] Complete InitializeConnections. SUCCESS.");
             AllReady = true;
         }
         else
         {
-            //Debug.Log($"[Dir{pass_num}] Complete InitializeConnections. {failures} failures");
+            //Debug.Log($"[Dir{pass_num}:{failures}] Complete InitializeConnections. {failures} failures");
             AllReady = false;
         }
         
+    }
+
+    private void InitializeRuntimeReferences()
+    {
+        if (gameInputRouter == null)
+            gameInputRouter = FindFirstObjectByType<GameInputRouter>();
+        if (pathfinding == null)
+            pathfinding = FindFirstObjectByType<Pathfinding>();
+        if (packManager == null)
+            packManager = FindFirstObjectByType<PackManager>();
+        if (packManager != null && packManager.dir == null)
+            packManager.dir = this;
+        if (packManager != null)
+            packManager.InitializeRuntimeReferences();
+        if (playerPack == null)
+            playerPack = packManager != null && packManager.playerPack != null
+                ? packManager.playerPack
+                : FindPackByName("Player Pack");
+        if (packManager != null && packManager.playerPack == null)
+            packManager.playerPack = playerPack;
+        if (packFormations == null)
+            packFormations = FindFirstObjectByType<PackFormations>();
+    }
+
+    private static Pack FindPackByName(string packName)
+    {
+        if (string.IsNullOrWhiteSpace(packName))
+            return null;
+
+        Pack[] packs = FindObjectsByType<Pack>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+        foreach (Pack pack in packs)
+        {
+            if (pack != null && pack.packName == packName)
+                return pack;
+        }
+
+        return null;
     }
 }

@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using DogGame.LLM;
 using DogGame.Modules;
@@ -66,14 +67,17 @@ function react(event)
 end
 ";
 
-        private void Start()
+        private IEnumerator Start()
         {
             Debug.Log("[LuaAgentTest] Start");
 
+            yield return ResolveObserverWhenReady();
+
             if (observer == null)
             {
-                Debug.LogError("[LuaAgentTest] observer is null.");
-                return;
+                Debug.LogWarning("[LuaAgentTest] observer is null; disabling Lua agent test until an observer is assigned.");
+                enabled = false;
+                yield break;
             }
 
             luaRuntime = new LuaRuntime();
@@ -113,10 +117,33 @@ end
             if (!scriptLoaded)
             {
                 Debug.LogError("[LuaAgentTest] LoadScript failed; skipping react.");
-                return;
+                yield break;
             }
 
             Debug.Log("[LuaAgentTest] Ready (script loaded; waiting for perception events)");
+        }
+
+        private IEnumerator ResolveObserverWhenReady()
+        {
+            if (observer != null)
+                yield break;
+
+            Dir dir = Dir.Instance;
+            if (dir != null && dir.gen != null && !dir.gen.buildComplete)
+                yield return new WaitUntil(() => dir.gen == null || dir.gen.buildComplete);
+
+            const int maxFrames = 120;
+            for (int i = 0; i < maxFrames && observer == null; i++)
+            {
+                dir = Dir.Instance;
+                observer = dir != null && dir.playerPack != null ? dir.playerPack.packLeader : null;
+
+                if (observer == null)
+                    yield return null;
+            }
+
+            if (observer != null && taskController == null)
+                taskController = observer.taskController;
         }
 
         private void Update()
