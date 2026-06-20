@@ -142,4 +142,40 @@ public static class GeneratedObjectPlacementUtility
 
         return candidates[Random.Range(0, candidates.Count)];
     }
+
+    public static int MergePlaceableResourcePrefabs(List<GameObject> destination, IEnumerable<string> resourceFolders)
+    {
+        if (destination == null || resourceFolders == null)
+            return 0;
+
+        int addedCount = 0;
+        HashSet<GameObject> existingPrefabs = new();
+        foreach (GameObject existing in destination)
+        {
+            if (existing != null)
+                existingPrefabs.Add(existing);
+        }
+
+        foreach (string resourceFolder in resourceFolders)
+        {
+            if (string.IsNullOrWhiteSpace(resourceFolder))
+                continue;
+
+            GameObject[] loadedPrefabs = Resources.LoadAll<GameObject>(resourceFolder);
+            foreach (GameObject prefab in loadedPrefabs)
+            {
+                if (prefab == null ||
+                    prefab.GetComponentInChildren<PlacementModule>() == null ||
+                    !existingPrefabs.Add(prefab))
+                {
+                    continue;
+                }
+
+                destination.Add(prefab);
+                addedCount++;
+            }
+        }
+
+        return addedCount;
+    }
 }

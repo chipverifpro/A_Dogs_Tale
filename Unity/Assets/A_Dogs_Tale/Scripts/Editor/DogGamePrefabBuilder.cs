@@ -228,40 +228,155 @@ namespace DogGame.EditorTools
 
         private void BuildPrefab()
         {
-            if (selectedModelAssetOrInstance == null)
+            List<UnityEngine.Object> buildTargets = GetBuildTargets();
+            if (buildTargets.Count == 0)
             {
                 EditorUtility.DisplayDialog("DogGame Prefab Builder", "Select a model asset or scene instance first.", "OK");
                 return;
             }
 
-            if (string.IsNullOrWhiteSpace(prefabRootName))
+            bool isBatchBuild = buildTargets.Count > 1;
+            if (!isBatchBuild && string.IsNullOrWhiteSpace(prefabRootName))
             {
                 AutoFillNameFromSelection();
             }
 
-            if (string.IsNullOrWhiteSpace(prefabRootName))
+            if (!isBatchBuild && string.IsNullOrWhiteSpace(prefabRootName))
             {
                 EditorUtility.DisplayDialog("DogGame Prefab Builder", "Prefab root name is empty.", "OK");
                 return;
             }
 
+            Directory.CreateDirectory(prefabFolder);
+
+            List<UnityEngine.Object> savedPrefabs = new();
+            int failedCount = 0;
+
+            foreach (UnityEngine.Object target in buildTargets)
+            {
+                string targetPrefabRootName = isBatchBuild
+                    ? CreatePrefabRootName(target)
+                    : prefabRootName;
+
+                try
+                {
+                    GameObject savedPrefab = BuildPrefabForTarget(
+                        target,
+                        targetPrefabRootName,
+                        out string prefabPath,
+                        out int convertedColliderCount,
+                        out int convertedPointCount);
+
+                    if (savedPrefab != null)
+                    {
+                        savedPrefabs.Add(savedPrefab);
+                    }
+
+                    Debug.Log(
+                        $"[DogGamePrefabBuilder] Created prefab: {prefabPath}\n" +
+                        $"Converted guide colliders: {convertedColliderCount}\n" +
+                        $"Converted guide points: {convertedPointCount}",
+                        savedPrefab);
+                }
+                catch (Exception exception)
+                {
+                    failedCount++;
+                    Debug.LogException(exception);
+
+                    if (!isBatchBuild)
+                    {
+                        EditorUtility.DisplayDialog("DogGame Prefab Builder", exception.Message, "OK");
+                    }
+                }
+            }
+
+            AssetDatabase.SaveAssets();
+            AssetDatabase.Refresh();
+
+            if (selectPrefabAfterBuild && savedPrefabs.Count > 0)
+            {
+                Selection.objects = savedPrefabs.ToArray();
+                EditorGUIUtility.PingObject(savedPrefabs[savedPrefabs.Count - 1]);
+            }
+
+            if (!isBatchBuild && openPrefabAfterBuild && savedPrefabs.Count > 0)
+            {
+                AssetDatabase.OpenAsset(savedPrefabs[0]);
+            }
+
+            if (isBatchBuild)
+            {
+                EditorUtility.DisplayDialog(
+                    "DogGame Prefab Builder",
+                    $"Built {savedPrefabs.Count} prefab(s)." +
+                    (failedCount > 0 ? $" Failed: {failedCount}. See Console for details." : ""),
+                    "OK");
+            }
+        }
+
+        private List<UnityEngine.Object> GetBuildTargets()
+        {
+            UnityEngine.Object[] selectedObjects = Selection.objects;
+            if (selectedObjects != null && selectedObjects.Length > 1)
+            {
+                List<UnityEngine.Object> targets = new();
+                HashSet<int> seenInstanceIds = new();
+
+                foreach (UnityEngine.Object selectedObject in selectedObjects)
+                {
+                    if (selectedObject == null || !seenInstanceIds.Add(selectedObject.GetInstanceID()))
+                    {
+                        continue;
+                    }
+
+                    targets.Add(selectedObject);
+                }
+
+                return targets;
+            }
+
+            return selectedModelAssetOrInstance != null
+                ? new List<UnityEngine.Object> { selectedModelAssetOrInstance }
+                : new List<UnityEngine.Object>();
+        }
+
+        private static string CreatePrefabRootName(UnityEngine.Object source)
+        {
+            return "PF_" + SanitizeName(source != null ? source.name : "Unnamed");
+        }
+
+        private GameObject BuildPrefabForTarget(
+            UnityEngine.Object sourceObject,
+            string targetPrefabRootName,
+            out string prefabPath,
+            out int convertedColliderCount,
+            out int convertedPointCount)
+        {
+            if (sourceObject == null)
+            {
+                throw new InvalidOperationException("Source object is null.");
+            }
+
+            if (string.IsNullOrWhiteSpace(targetPrefabRootName))
+            {
+                targetPrefabRootName = CreatePrefabRootName(sourceObject);
+            }
+
             GameObject temporarySceneInstance = null;
+            GameObject prefabRoot = null;
+            prefabPath = "";
+            convertedColliderCount = 0;
+            convertedPointCount = 0;
 
             try
             {
-                GameObject sourceInstance = ResolveSourceInstance(selectedModelAssetOrInstance, out temporarySceneInstance);
+                GameObject sourceInstance = ResolveSourceInstance(sourceObject, out temporarySceneInstance);
                 if (sourceInstance == null)
                 {
-                    EditorUtility.DisplayDialog(
-                        "DogGame Prefab Builder",
-                        "Could not instantiate or resolve the selected object as a GameObject/model.",
-                        "OK");
-                    return;
+                    throw new InvalidOperationException($"Could not instantiate or resolve '{sourceObject.name}' as a GameObject/model.");
                 }
 
-                Directory.CreateDirectory(prefabFolder);
-
-                GameObject prefabRoot = new GameObject(prefabRootName);
+                prefabRoot = new GameObject(targetPrefabRootName);
                 Undo.RegisterCreatedObjectUndo(prefabRoot, "Create DogGame prefab root");
 
                 GameObject visualOffsetObject = new GameObject("VisualOffset");
@@ -284,7 +399,7 @@ namespace DogGame.EditorTools
                 hiddenGuidesRoot.SetActive(false);
 
                 GameObject importedModel = Instantiate(sourceInstance);
-                importedModel.name = selectedModelAssetOrInstance.name;
+                importedModel.name = sourceObject.name;
                 importedModel.transform.SetParent(visualOffsetObject.transform, false);
                 importedModel.transform.localPosition = Vector3.zero;
                 importedModel.transform.localRotation = Quaternion.identity;
@@ -294,11 +409,11 @@ namespace DogGame.EditorTools
 
                 List<Transform> guideTransforms = FindGuideTransforms(importedModel.transform);
 
-                int convertedColliderCount = convertGuideColliders
+                convertedColliderCount = convertGuideColliders
                     ? ConvertGuideColliders(guideTransforms, collidersRoot.transform)
                     : 0;
 
-                int convertedPointCount = convertGuidePoints
+                convertedPointCount = convertGuidePoints
                     ? ConvertGuidePoints(guideTransforms, interactionPointsRoot.transform, runtimePointsRoot.transform)
                     : 0;
 
@@ -313,39 +428,21 @@ namespace DogGame.EditorTools
                 ApplyPresetSpecificStructure(prefabRoot.transform, setupPreset);
                 ApplyPresetSpecificComponents(prefabRoot, setupPreset);
 
-                string prefabPath = AssetDatabase.GenerateUniqueAssetPath(
+                prefabPath = AssetDatabase.GenerateUniqueAssetPath(
                     Path.Combine(prefabFolder, prefabRoot.name + ".prefab").Replace("\\", "/"));
 
                 GameObject savedPrefab = PrefabUtility.SaveAsPrefabAsset(prefabRoot, prefabPath);
                 DestroyImmediate(prefabRoot);
-
-                AssetDatabase.SaveAssets();
-                AssetDatabase.Refresh();
-
-                if (selectPrefabAfterBuild && savedPrefab != null)
-                {
-                    Selection.activeObject = savedPrefab;
-                    EditorGUIUtility.PingObject(savedPrefab);
-                }
-
-                if (openPrefabAfterBuild && savedPrefab != null)
-                {
-                    AssetDatabase.OpenAsset(savedPrefab);
-                }
-
-                Debug.Log(
-                    $"[DogGamePrefabBuilder] Created prefab: {prefabPath}\n" +
-                    $"Converted guide colliders: {convertedColliderCount}\n" +
-                    $"Converted guide points: {convertedPointCount}",
-                    savedPrefab);
-            }
-            catch (Exception exception)
-            {
-                Debug.LogException(exception);
-                EditorUtility.DisplayDialog("DogGame Prefab Builder", exception.Message, "OK");
+                prefabRoot = null;
+                return savedPrefab;
             }
             finally
             {
+                if (prefabRoot != null)
+                {
+                    DestroyImmediate(prefabRoot);
+                }
+
                 if (temporarySceneInstance != null)
                 {
                     DestroyImmediate(temporarySceneInstance);

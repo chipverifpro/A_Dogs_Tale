@@ -76,7 +76,7 @@ public partial class FurniturePlacer
             GameObject prefab = FindPlacementPrefabByKey(prefabKey);
             if (prefab == null)
             {
-                Debug.LogWarning($"FurniturePlacer: must-place prefab '{prefabKey}' could not be found in furniturePrefabs or item Resources.", this);
+                Debug.LogWarning($"FurniturePlacer: must-place prefab '{prefabKey}' could not be found in furniturePrefabs or Resources.", this);
                 continue;
             }
 
@@ -179,11 +179,16 @@ public partial class FurniturePlacer
         if (prefab != null)
             return prefab;
 
+        prefab = Resources.Load<GameObject>($"Prefabs/Scenery/{prefabKey}");
+        if (prefab != null)
+            return prefab;
+
         prefab = Resources.Load<GameObject>($"Prefabs/ChatGPT_Prefabs/ChatGPT_Items/{prefabKey}");
         if (prefab != null)
             return prefab;
 
         return FindResourcePrefabByKey("Prefabs/Items", prefabKey)
+            ?? FindResourcePrefabByKey("Prefabs/Scenery", prefabKey)
             ?? FindResourcePrefabByKey("Prefabs/ChatGPT_Prefabs/ChatGPT_Items", prefabKey);
     }
 

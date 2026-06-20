@@ -781,9 +781,9 @@ public class ElementStore : ScriptableObject
         int count = layer.instances?.Count ?? 0;
         if (GOindex < 0 || GOindex >= count)
         {
-            Debug.LogError(
-                $"ChangeColor: kind={kind}, layerName='{layer.name}', GOindex={GOindex}, instanceCount={count}. Cell={cell.pos}");
-            DumpLayers();
+//            Debug.LogError(
+//                $"ChangeColor: kind={kind}, layerName='{layer.name}', GOindex={GOindex}, instanceCount={count}. Cell={cell.pos}");
+//            DumpLayers();
             return false;
         }
 

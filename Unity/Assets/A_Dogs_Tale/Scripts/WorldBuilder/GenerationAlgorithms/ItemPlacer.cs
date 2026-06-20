@@ -10,6 +10,13 @@ public class ItemPlacer : MonoBehaviour
     [Tooltip("Prefabs that have a PlacementModule and can be placed independently from furniture.")]
     public List<GameObject> itemPrefabs = new();
 
+    [Header("Auto-Loaded Resource Prefabs")]
+    [Tooltip("If enabled, all prefabs with PlacementModule under these Resources folders are merged into Item Prefabs before placement. Resources.LoadAll includes subfolders.")]
+    public bool autoLoadResourcePrefabs = true;
+
+    [Tooltip("Resources folders to scan for independently placeable item prefabs. Paths are relative to any Resources folder.")]
+    public List<string> resourcePrefabFolders = new() { "Prefabs/Items" };
+
     [Header("Per-Room Counts")]
     [Tooltip("Minimum number of items per room.")]
     public int minPerRoom = 0;
@@ -58,6 +65,7 @@ public class ItemPlacer : MonoBehaviour
         }
 
         placedPrefabKeys.Clear();
+        MergeResourcePrefabs();
 
         if (itemPrefabs != null && itemPrefabs.Count > 0)
         {
@@ -75,6 +83,22 @@ public class ItemPlacer : MonoBehaviour
         }
 
         PlaceRequiredItems();
+    }
+
+    private void MergeResourcePrefabs()
+    {
+        if (!autoLoadResourcePrefabs)
+            return;
+
+        if (itemPrefabs == null)
+            itemPrefabs = new();
+
+        int addedCount = GeneratedObjectPlacementUtility.MergePlaceableResourcePrefabs(
+            itemPrefabs,
+            resourcePrefabFolders);
+
+        if (addedCount > 0)
+            Debug.Log($"ItemPlacer: auto-loaded {addedCount} placeable prefab(s) from Resources.", this);
     }
 
     private void PlaceItemsInRoom(Room room)

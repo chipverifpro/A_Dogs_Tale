@@ -9,6 +9,13 @@ public partial class FurniturePlacer : MonoBehaviour
     [Tooltip("Prefabs that have a PlacementModule + WorldObject setup (or can have modules auto-added).")]
     public List<GameObject> furniturePrefabs = new();
 
+    [Header("Auto-Loaded Resource Prefabs")]
+    [Tooltip("If enabled, all prefabs with PlacementModule under these Resources folders are merged into Furniture Prefabs before placement. Resources.LoadAll includes subfolders.")]
+    public bool autoLoadResourcePrefabs = true;
+
+    [Tooltip("Resources folders to scan for static scenery prefabs. Paths are relative to any Resources folder.")]
+    public List<string> resourcePrefabFolders = new() { "Prefabs/Scenery" };
+
     [Header("Per-Room Counts")]
     [Tooltip("Minimum number of furniture items per room.")]
     public int minPerRoom = 0;
@@ -60,6 +67,8 @@ public partial class FurniturePlacer : MonoBehaviour
             return;
         }
 
+        MergeResourcePrefabs();
+
         if (furniturePrefabs == null || furniturePrefabs.Count == 0)
         {
             Debug.LogWarning("FurniturePlacer: No furniture prefabs assigned.");
@@ -83,6 +92,22 @@ public partial class FurniturePlacer : MonoBehaviour
         }
 
         // Required item placement is owned by ItemPlacer.
+    }
+
+    private void MergeResourcePrefabs()
+    {
+        if (!autoLoadResourcePrefabs)
+            return;
+
+        if (furniturePrefabs == null)
+            furniturePrefabs = new();
+
+        int addedCount = GeneratedObjectPlacementUtility.MergePlaceableResourcePrefabs(
+            furniturePrefabs,
+            resourcePrefabFolders);
+
+        if (addedCount > 0)
+            Debug.Log($"FurniturePlacer: auto-loaded {addedCount} placeable prefab(s) from Resources.", this);
     }
 
 }
