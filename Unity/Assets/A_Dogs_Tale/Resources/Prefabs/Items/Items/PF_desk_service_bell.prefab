@@ -4394,9 +4394,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5b51eeefad7b498d956628ba6705f1ea, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SavePrefabId
-  prefabId: resources:Prefabs/ChatGPT_Prefabs/ChatGPT_Items/PF_desk_service_bell
-  resourcesPath: Prefabs/ChatGPT_Prefabs/ChatGPT_Items/PF_desk_service_bell
-  assetPath: Assets/A_Dogs_Tale/Resources/Prefabs/ChatGPT_Prefabs/ChatGPT_Items/PF_desk_service_bell.prefab
+  prefabId: resources:Prefabs/Items/Items/PF_desk_service_bell
+  resourcesPath: Prefabs/Items/Items/PF_desk_service_bell
+  assetPath: Assets/A_Dogs_Tale/Resources/Prefabs/Items/Items/PF_desk_service_bell.prefab
 --- !u!1 &7278970927313655792
 GameObject:
   m_ObjectHideFlags: 0

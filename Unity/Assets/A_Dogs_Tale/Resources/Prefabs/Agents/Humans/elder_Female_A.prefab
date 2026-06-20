@@ -958,9 +958,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5b51eeefad7b498d956628ba6705f1ea, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SavePrefabId
-  prefabId: asset:Assets/_ThirdParty/DenysAlmaral/CityPeople/Prefabs/elder/elder_Female_A.prefab
-  resourcesPath: 
-  assetPath: Assets/_ThirdParty/DenysAlmaral/CityPeople/Prefabs/elder/elder_Female_A.prefab
+  prefabId: resources:Prefabs/Agents/Humans/elder_Female_A
+  resourcesPath: Prefabs/Agents/Humans/elder_Female_A
+  assetPath: Assets/A_Dogs_Tale/Resources/Prefabs/Agents/Humans/elder_Female_A.prefab
 --- !u!1 &226850885270714430
 GameObject:
   m_ObjectHideFlags: 0

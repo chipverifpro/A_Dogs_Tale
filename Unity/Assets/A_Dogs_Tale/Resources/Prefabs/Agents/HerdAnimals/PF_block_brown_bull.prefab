@@ -428,9 +428,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5b51eeefad7b498d956628ba6705f1ea, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SavePrefabId
-  prefabId: resources:Prefabs/ChatGPT_Prefabs/ChatGPT_Agents/PF_brown_bull
-  resourcesPath: Prefabs/ChatGPT_Prefabs/ChatGPT_Agents/PF_brown_bull
-  assetPath: Assets/A_Dogs_Tale/Resources/Prefabs/ChatGPT_Prefabs/ChatGPT_Agents/PF_brown_bull.prefab
+  prefabId: resources:Prefabs/Agents/HerdAnimals/PF_block_brown_bull
+  resourcesPath: Prefabs/Agents/HerdAnimals/PF_block_brown_bull
+  assetPath: Assets/A_Dogs_Tale/Resources/Prefabs/Agents/HerdAnimals/PF_block_brown_bull.prefab
 --- !u!114 &-4677021652342593018
 MonoBehaviour:
   m_ObjectHideFlags: 0

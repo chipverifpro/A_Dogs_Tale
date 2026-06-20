@@ -396,9 +396,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5b51eeefad7b498d956628ba6705f1ea, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SavePrefabId
-  prefabId: resources:Prefabs/ChatGPT_Prefabs/ChatGPT_Agents/PF_goose
-  resourcesPath: Prefabs/ChatGPT_Prefabs/ChatGPT_Agents/PF_goose
-  assetPath: Assets/A_Dogs_Tale/Resources/Prefabs/ChatGPT_Prefabs/ChatGPT_Agents/PF_goose.prefab
+  prefabId: resources:Prefabs/Agents/Animals/PF_block_goose
+  resourcesPath: Prefabs/Agents/Animals/PF_block_goose
+  assetPath: Assets/A_Dogs_Tale/Resources/Prefabs/Agents/Animals/PF_block_goose.prefab
 --- !u!114 &2391400667200747943
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -5677,9 +5677,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5b51eeefad7b498d956628ba6705f1ea, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SavePrefabId
-  prefabId: resources:Prefabs/ChatGPT_Prefabs/ChatGPT_Scenery/PF_hanging_bird_feeder_with_stand
-  resourcesPath: Prefabs/ChatGPT_Prefabs/ChatGPT_Scenery/PF_hanging_bird_feeder_with_stand
-  assetPath: Assets/A_Dogs_Tale/Resources/Prefabs/ChatGPT_Prefabs/ChatGPT_Scenery/PF_hanging_bird_feeder_with_stand.prefab
+  prefabId: resources:Prefabs/Scenery/ChatGPT_Scenery/PF_hanging_bird_feeder_with_stand
+  resourcesPath: Prefabs/Scenery/ChatGPT_Scenery/PF_hanging_bird_feeder_with_stand
+  assetPath: Assets/A_Dogs_Tale/Resources/Prefabs/Scenery/ChatGPT_Scenery/PF_hanging_bird_feeder_with_stand.prefab
 --- !u!1 &4797827741408751652
 GameObject:
   m_ObjectHideFlags: 0

@@ -88,10 +88,20 @@ PrefabInstance:
       propertyPath: m_Name
       value: PF_block_brown_bull_calf
       objectReference: {fileID: 0}
-    - target: {fileID: 6869947064549568941, guid: b95eaf88e32a74fdca52f9633cd5e07a,
+    - target: {fileID: 5496924281630018293, guid: b95eaf88e32a74fdca52f9633cd5e07a,
         type: 3}
-      propertyPath: m_Mesh
-      value: 
+      propertyPath: prefabId
+      value: resources:Prefabs/Agents/HerdAnimals/PF_block_brown_bull_calf
+      objectReference: {fileID: 0}
+    - target: {fileID: 5496924281630018293, guid: b95eaf88e32a74fdca52f9633cd5e07a,
+        type: 3}
+      propertyPath: assetPath
+      value: Assets/A_Dogs_Tale/Resources/Prefabs/Agents/HerdAnimals/PF_block_brown_bull_calf.prefab
+      objectReference: {fileID: 0}
+    - target: {fileID: 5496924281630018293, guid: b95eaf88e32a74fdca52f9633cd5e07a,
+        type: 3}
+      propertyPath: resourcesPath
+      value: Prefabs/Agents/HerdAnimals/PF_block_brown_bull_calf
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

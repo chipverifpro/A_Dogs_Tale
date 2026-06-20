@@ -7439,9 +7439,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5b51eeefad7b498d956628ba6705f1ea, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SavePrefabId
-  prefabId: resources:Prefabs/ChatGPT_Prefabs/ChatGPT_Scenery/PF_rotating_lawn_sprinkler_with_water_arc
-  resourcesPath: Prefabs/ChatGPT_Prefabs/ChatGPT_Scenery/PF_rotating_lawn_sprinkler_with_water_arc
-  assetPath: Assets/A_Dogs_Tale/Resources/Prefabs/ChatGPT_Prefabs/ChatGPT_Scenery/PF_rotating_lawn_sprinkler_with_water_arc.prefab
+  prefabId: resources:Prefabs/Scenery/ChatGPT_Scenery/PF_rotating_lawn_sprinkler_with_water_arc
+  resourcesPath: Prefabs/Scenery/ChatGPT_Scenery/PF_rotating_lawn_sprinkler_with_water_arc
+  assetPath: Assets/A_Dogs_Tale/Resources/Prefabs/Scenery/ChatGPT_Scenery/PF_rotating_lawn_sprinkler_with_water_arc.prefab
 --- !u!1 &4407690787360970182
 GameObject:
   m_ObjectHideFlags: 0

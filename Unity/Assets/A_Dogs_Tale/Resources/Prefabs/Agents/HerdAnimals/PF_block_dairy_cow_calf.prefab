@@ -83,10 +83,20 @@ PrefabInstance:
       propertyPath: m_Name
       value: PF_block_dairy_cow_calf
       objectReference: {fileID: 0}
-    - target: {fileID: 5509161485652827367, guid: 7b7b948fa37234b0bbf94c94c4c7cf93,
+    - target: {fileID: 4935245540037259681, guid: 7b7b948fa37234b0bbf94c94c4c7cf93,
         type: 3}
-      propertyPath: m_Mesh
-      value: 
+      propertyPath: prefabId
+      value: resources:Prefabs/Agents/HerdAnimals/PF_block_dairy_cow_calf
+      objectReference: {fileID: 0}
+    - target: {fileID: 4935245540037259681, guid: 7b7b948fa37234b0bbf94c94c4c7cf93,
+        type: 3}
+      propertyPath: assetPath
+      value: Assets/A_Dogs_Tale/Resources/Prefabs/Agents/HerdAnimals/PF_block_dairy_cow_calf.prefab
+      objectReference: {fileID: 0}
+    - target: {fileID: 4935245540037259681, guid: 7b7b948fa37234b0bbf94c94c4c7cf93,
+        type: 3}
+      propertyPath: resourcesPath
+      value: Prefabs/Agents/HerdAnimals/PF_block_dairy_cow_calf
       objectReference: {fileID: 0}
     - target: {fileID: 5814647210162143160, guid: 7b7b948fa37234b0bbf94c94c4c7cf93,
         type: 3}

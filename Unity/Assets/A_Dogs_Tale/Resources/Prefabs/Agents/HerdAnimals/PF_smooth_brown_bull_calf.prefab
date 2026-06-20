@@ -78,6 +78,21 @@ PrefabInstance:
       propertyPath: m_ConstrainProportionsScale
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 2572866798454997833, guid: ac478bdfee2f34596abf0f52a644666b,
+        type: 3}
+      propertyPath: prefabId
+      value: resources:Prefabs/Agents/HerdAnimals/PF_smooth_brown_bull_calf
+      objectReference: {fileID: 0}
+    - target: {fileID: 2572866798454997833, guid: ac478bdfee2f34596abf0f52a644666b,
+        type: 3}
+      propertyPath: assetPath
+      value: Assets/A_Dogs_Tale/Resources/Prefabs/Agents/HerdAnimals/PF_smooth_brown_bull_calf.prefab
+      objectReference: {fileID: 0}
+    - target: {fileID: 2572866798454997833, guid: ac478bdfee2f34596abf0f52a644666b,
+        type: 3}
+      propertyPath: resourcesPath
+      value: Prefabs/Agents/HerdAnimals/PF_smooth_brown_bull_calf
+      objectReference: {fileID: 0}
     - target: {fileID: 6699758966573045337, guid: ac478bdfee2f34596abf0f52a644666b,
         type: 3}
       propertyPath: m_Name

@@ -219,9 +219,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5b51eeefad7b498d956628ba6705f1ea, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SavePrefabId
-  prefabId: resources:Prefabs/Generated/PF_smooth_sheep
-  resourcesPath: Prefabs/Generated/PF_smooth_sheep
-  assetPath: Assets/A_Dogs_Tale/Resources/Prefabs/Generated/PF_smooth_sheep.prefab
+  prefabId: resources:Prefabs/Agents/HerdAnimals/PF_smooth_sheep
+  resourcesPath: Prefabs/Agents/HerdAnimals/PF_smooth_sheep
+  assetPath: Assets/A_Dogs_Tale/Resources/Prefabs/Agents/HerdAnimals/PF_smooth_sheep.prefab
 --- !u!114 &4117062599251147606
 MonoBehaviour:
   m_ObjectHideFlags: 0

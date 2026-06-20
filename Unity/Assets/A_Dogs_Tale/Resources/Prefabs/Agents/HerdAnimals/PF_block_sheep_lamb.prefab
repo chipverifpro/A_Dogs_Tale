@@ -8,11 +8,6 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: 2057610697103811076, guid: e9c2aa0991f524b75836c24406138828,
-        type: 3}
-      propertyPath: m_Mesh
-      value: 
-      objectReference: {fileID: 0}
     - target: {fileID: 2220827074033145189, guid: e9c2aa0991f524b75836c24406138828,
         type: 3}
       propertyPath: m_LocalScale.x
@@ -87,6 +82,21 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: PF_block_sheep_lamb
+      objectReference: {fileID: 0}
+    - target: {fileID: 3242187991621503595, guid: e9c2aa0991f524b75836c24406138828,
+        type: 3}
+      propertyPath: prefabId
+      value: resources:Prefabs/Agents/HerdAnimals/PF_block_sheep_lamb
+      objectReference: {fileID: 0}
+    - target: {fileID: 3242187991621503595, guid: e9c2aa0991f524b75836c24406138828,
+        type: 3}
+      propertyPath: assetPath
+      value: Assets/A_Dogs_Tale/Resources/Prefabs/Agents/HerdAnimals/PF_block_sheep_lamb.prefab
+      objectReference: {fileID: 0}
+    - target: {fileID: 3242187991621503595, guid: e9c2aa0991f524b75836c24406138828,
+        type: 3}
+      propertyPath: resourcesPath
+      value: Prefabs/Agents/HerdAnimals/PF_block_sheep_lamb
       objectReference: {fileID: 0}
     - target: {fileID: 3743614888567594302, guid: e9c2aa0991f524b75836c24406138828,
         type: 3}

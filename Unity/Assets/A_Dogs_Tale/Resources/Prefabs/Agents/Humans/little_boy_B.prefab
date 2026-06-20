@@ -463,9 +463,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5b51eeefad7b498d956628ba6705f1ea, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SavePrefabId
-  prefabId: asset:Assets/_ThirdParty/DenysAlmaral/CityPeople/Prefabs/little_kids/little_boy_B.prefab
-  resourcesPath: 
-  assetPath: Assets/_ThirdParty/DenysAlmaral/CityPeople/Prefabs/little_kids/little_boy_B.prefab
+  prefabId: resources:Prefabs/Agents/Humans/little_boy_B
+  resourcesPath: Prefabs/Agents/Humans/little_boy_B
+  assetPath: Assets/A_Dogs_Tale/Resources/Prefabs/Agents/Humans/little_boy_B.prefab
 --- !u!114 &6543065764913472987
 MonoBehaviour:
   m_ObjectHideFlags: 0

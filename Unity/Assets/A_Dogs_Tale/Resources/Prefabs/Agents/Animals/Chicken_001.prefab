@@ -113,9 +113,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5b51eeefad7b498d956628ba6705f1ea, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SavePrefabId
-  prefabId: asset:Assets/_ThirdParty/ithappy/Animals_FREE/Prefabs/Chicken_001.prefab
-  resourcesPath: 
-  assetPath: Assets/_ThirdParty/ithappy/Animals_FREE/Prefabs/Chicken_001.prefab
+  prefabId: resources:Prefabs/Agents/Animals/Chicken_001
+  resourcesPath: Prefabs/Agents/Animals/Chicken_001
+  assetPath: Assets/A_Dogs_Tale/Resources/Prefabs/Agents/Animals/Chicken_001.prefab
 --- !u!114 &7552544975121623230
 MonoBehaviour:
   m_ObjectHideFlags: 0

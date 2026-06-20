@@ -199,6 +199,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5b51eeefad7b498d956628ba6705f1ea, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SavePrefabId
-  prefabId: resources:Prefabs/Containers/HomeInterior/Crate
-  resourcesPath: Prefabs/Containers/HomeInterior/Crate
-  assetPath: Assets/A_Dogs_Tale/Resources/Prefabs/Containers/HomeInterior/Crate.prefab
+  prefabId: resources:Prefabs/Items/Containers/HomeInterior/Crate
+  resourcesPath: Prefabs/Items/Containers/HomeInterior/Crate
+  assetPath: Assets/A_Dogs_Tale/Resources/Prefabs/Items/Containers/HomeInterior/Crate.prefab

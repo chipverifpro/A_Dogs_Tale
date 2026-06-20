@@ -276,10 +276,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5b51eeefad7b498d956628ba6705f1ea, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SavePrefabId
-  prefabId: resources:Prefabs/Containers/HomeInterior/Wooden Container 1
-  resourcesPath: Prefabs/Containers/HomeInterior/Wooden Container 1
-  assetPath: Assets/A_Dogs_Tale/Resources/Prefabs/Containers/HomeInterior/Wooden
-    Container 1.prefab
+  prefabId: resources:Prefabs/Agents/ChatGPT_Agents/FlyingCrate
+  resourcesPath: Prefabs/Agents/ChatGPT_Agents/FlyingCrate
+  assetPath: Assets/A_Dogs_Tale/Resources/Prefabs/Agents/ChatGPT_Agents/FlyingCrate.prefab
 --- !u!114 &4119842963577201511
 MonoBehaviour:
   m_ObjectHideFlags: 0

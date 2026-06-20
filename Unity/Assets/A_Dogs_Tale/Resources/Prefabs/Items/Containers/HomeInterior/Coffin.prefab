@@ -200,9 +200,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5b51eeefad7b498d956628ba6705f1ea, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SavePrefabId
-  prefabId: resources:Prefabs/Containers/HomeInterior/Coffin
-  resourcesPath: Prefabs/Containers/HomeInterior/Coffin
-  assetPath: Assets/A_Dogs_Tale/Resources/Prefabs/Containers/HomeInterior/Coffin.prefab
+  prefabId: resources:Prefabs/Items/Containers/HomeInterior/Coffin
+  resourcesPath: Prefabs/Items/Containers/HomeInterior/Coffin
+  assetPath: Assets/A_Dogs_Tale/Resources/Prefabs/Items/Containers/HomeInterior/Coffin.prefab
 --- !u!1 &8554809186374680905
 GameObject:
   m_ObjectHideFlags: 0

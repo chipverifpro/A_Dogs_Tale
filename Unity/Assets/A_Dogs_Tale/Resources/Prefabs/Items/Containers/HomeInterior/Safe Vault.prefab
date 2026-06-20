@@ -266,9 +266,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5b51eeefad7b498d956628ba6705f1ea, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SavePrefabId
-  prefabId: resources:Prefabs/Containers/HomeInterior/Safe Vault
-  resourcesPath: Prefabs/Containers/HomeInterior/Safe Vault
-  assetPath: Assets/A_Dogs_Tale/Resources/Prefabs/Containers/HomeInterior/Safe Vault.prefab
+  prefabId: resources:Prefabs/Items/Containers/HomeInterior/Safe Vault
+  resourcesPath: Prefabs/Items/Containers/HomeInterior/Safe Vault
+  assetPath: Assets/A_Dogs_Tale/Resources/Prefabs/Items/Containers/HomeInterior/Safe
+    Vault.prefab
 --- !u!1 &8360012205710532663 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: -3559909895095799887, guid: 88bcf39fd271b874b8770d99a815892e,

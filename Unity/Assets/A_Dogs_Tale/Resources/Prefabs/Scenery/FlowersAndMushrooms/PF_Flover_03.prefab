@@ -257,6 +257,7 @@ GameObject:
   - component: {fileID: 6607265897072304939}
   - component: {fileID: 2303564422501518402}
   - component: {fileID: -8939053334143892244}
+  - component: {fileID: 1635654004456109229}
   m_Layer: 0
   m_Name: PF_Flover_03
   m_TagString: Untagged
@@ -330,3 +331,18 @@ MonoBehaviour:
   minClearCellsAround: 0
   mustTouchWall: 0
   wallPadding: 0.05
+--- !u!114 &1635654004456109229
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8547772534455417287}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5b51eeefad7b498d956628ba6705f1ea, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SavePrefabId
+  prefabId: resources:Prefabs/Scenery/FlowersAndMushrooms/PF_Flover_03
+  resourcesPath: Prefabs/Scenery/FlowersAndMushrooms/PF_Flover_03
+  assetPath: Assets/A_Dogs_Tale/Resources/Prefabs/Scenery/FlowersAndMushrooms/PF_Flover_03.prefab

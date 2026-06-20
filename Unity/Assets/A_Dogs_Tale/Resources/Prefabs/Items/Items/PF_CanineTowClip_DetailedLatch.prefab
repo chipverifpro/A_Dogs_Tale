@@ -213,9 +213,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5b51eeefad7b498d956628ba6705f1ea, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SavePrefabId
-  prefabId: resources:Prefabs/Generated/PF_CanineTowClip_DetailedLatch
-  resourcesPath: Prefabs/Generated/PF_CanineTowClip_DetailedLatch
-  assetPath: Assets/A_Dogs_Tale/Resources/Prefabs/Generated/PF_CanineTowClip_DetailedLatch.prefab
+  prefabId: resources:Prefabs/Items/Items/PF_CanineTowClip_DetailedLatch
+  resourcesPath: Prefabs/Items/Items/PF_CanineTowClip_DetailedLatch
+  assetPath: Assets/A_Dogs_Tale/Resources/Prefabs/Items/Items/PF_CanineTowClip_DetailedLatch.prefab
 --- !u!114 &2208276115989357415
 MonoBehaviour:
   m_ObjectHideFlags: 0

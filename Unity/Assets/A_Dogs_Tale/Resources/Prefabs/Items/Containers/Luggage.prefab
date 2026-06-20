@@ -307,9 +307,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5b51eeefad7b498d956628ba6705f1ea, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SavePrefabId
-  prefabId: resources:Prefabs/Items/Luggage
-  resourcesPath: Prefabs/Items/Luggage
-  assetPath: Assets/A_Dogs_Tale/Resources/Prefabs/Items/Luggage.prefab
+  prefabId: resources:Prefabs/Items/Containers/Luggage
+  resourcesPath: Prefabs/Items/Containers/Luggage
+  assetPath: Assets/A_Dogs_Tale/Resources/Prefabs/Items/Containers/Luggage.prefab
 --- !u!1 &2776241544300104781 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: -5221774388794299890, guid: de3847303c976aa43b1abf4fed7f4b88,

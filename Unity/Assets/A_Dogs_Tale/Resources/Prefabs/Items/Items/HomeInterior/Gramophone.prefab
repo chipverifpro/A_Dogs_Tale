@@ -233,9 +233,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5b51eeefad7b498d956628ba6705f1ea, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SavePrefabId
-  prefabId: resources:Prefabs/Items/HomeInterior/Gramophone
-  resourcesPath: Prefabs/Items/HomeInterior/Gramophone
-  assetPath: Assets/A_Dogs_Tale/Resources/Prefabs/Items/HomeInterior/Gramophone.prefab
+  prefabId: resources:Prefabs/Items/Items/HomeInterior/Gramophone
+  resourcesPath: Prefabs/Items/Items/HomeInterior/Gramophone
+  assetPath: Assets/A_Dogs_Tale/Resources/Prefabs/Items/Items/HomeInterior/Gramophone.prefab
 --- !u!1 &5493050697063027139 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: -3559909895095799887, guid: 30fc65c77504f8144aee8216be3d984c,

@@ -337,9 +337,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5b51eeefad7b498d956628ba6705f1ea, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SavePrefabId
-  prefabId: asset:Assets/_ThirdParty/DenysAlmaral/CityPeople/Prefabs/city/casual_Male_G.prefab
-  resourcesPath: 
-  assetPath: Assets/_ThirdParty/DenysAlmaral/CityPeople/Prefabs/city/casual_Male_G.prefab
+  prefabId: resources:Prefabs/Agents/Humans/casual_Male_G
+  resourcesPath: Prefabs/Agents/Humans/casual_Male_G
+  assetPath: Assets/A_Dogs_Tale/Resources/Prefabs/Agents/Humans/casual_Male_G.prefab
 --- !u!114 &2497129172771104582
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -107,9 +107,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5b51eeefad7b498d956628ba6705f1ea, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SavePrefabId
-  prefabId: resources:Prefabs/ChatGPT_Prefabs/ChatGPT_Scenery/ChatGPT_Agility/dog_weave_poles
-  resourcesPath: Prefabs/ChatGPT_Prefabs/ChatGPT_Scenery/ChatGPT_Agility/dog_weave_poles
-  assetPath: Assets/A_Dogs_Tale/Resources/Prefabs/ChatGPT_Prefabs/ChatGPT_Scenery/ChatGPT_Agility/dog_weave_poles.prefab
+  prefabId: resources:Prefabs/Scenery/ChatGPT_Agility/dog_weave_poles
+  resourcesPath: Prefabs/Scenery/ChatGPT_Agility/dog_weave_poles
+  assetPath: Assets/A_Dogs_Tale/Resources/Prefabs/Scenery/ChatGPT_Agility/dog_weave_poles.prefab
 --- !u!114 &-33787801368350659
 MonoBehaviour:
   m_ObjectHideFlags: 0

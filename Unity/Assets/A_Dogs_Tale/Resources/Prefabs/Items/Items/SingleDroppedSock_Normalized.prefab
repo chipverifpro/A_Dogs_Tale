@@ -7303,9 +7303,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5b51eeefad7b498d956628ba6705f1ea, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SavePrefabId
-  prefabId: resources:Prefabs/ChatGPT_Prefabs/SingleDroppedSock_Normalized
-  resourcesPath: Prefabs/ChatGPT_Prefabs/SingleDroppedSock_Normalized
-  assetPath: Assets/A_Dogs_Tale/Resources/Prefabs/ChatGPT_Prefabs/SingleDroppedSock_Normalized.prefab
+  prefabId: resources:Prefabs/Items/Items/SingleDroppedSock_Normalized
+  resourcesPath: Prefabs/Items/Items/SingleDroppedSock_Normalized
+  assetPath: Assets/A_Dogs_Tale/Resources/Prefabs/Items/Items/SingleDroppedSock_Normalized.prefab
 --- !u!1 &6682091010515572652
 GameObject:
   m_ObjectHideFlags: 0

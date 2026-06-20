@@ -2898,9 +2898,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5b51eeefad7b498d956628ba6705f1ea, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SavePrefabId
-  prefabId: resources:Prefabs/Generated/PF_garden_hose_between_tap_and_sprinkler
-  resourcesPath: Prefabs/Generated/PF_garden_hose_between_tap_and_sprinkler
-  assetPath: Assets/A_Dogs_Tale/Resources/Prefabs/Generated/PF_garden_hose_between_tap_and_sprinkler.prefab
+  prefabId: resources:Prefabs/Scenery/YardScenery/PF_garden_hose_between_tap_and_sprinkler
+  resourcesPath: Prefabs/Scenery/YardScenery/PF_garden_hose_between_tap_and_sprinkler
+  assetPath: Assets/A_Dogs_Tale/Resources/Prefabs/Scenery/YardScenery/PF_garden_hose_between_tap_and_sprinkler.prefab
 --- !u!1 &6922698974683724076
 GameObject:
   m_ObjectHideFlags: 0

@@ -748,9 +748,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5b51eeefad7b498d956628ba6705f1ea, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SavePrefabId
-  prefabId: asset:Assets/_ThirdParty/ithappy/Animals_FREE/Prefabs/Dog_001.prefab
-  resourcesPath: 
-  assetPath: Assets/_ThirdParty/ithappy/Animals_FREE/Prefabs/Dog_001.prefab
+  prefabId: resources:Prefabs/Agents/Animals/Dog_001
+  resourcesPath: Prefabs/Agents/Animals/Dog_001
+  assetPath: Assets/A_Dogs_Tale/Resources/Prefabs/Agents/Animals/Dog_001.prefab
 --- !u!114 &5484588124140969346
 MonoBehaviour:
   m_ObjectHideFlags: 0

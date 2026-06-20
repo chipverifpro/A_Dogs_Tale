@@ -482,9 +482,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5b51eeefad7b498d956628ba6705f1ea, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SavePrefabId
-  prefabId: resources:Prefabs/ChatGPT_Prefabs/ChatGPT_Items/PF_dog_food_bowl_full_with_spilled_kibble
-  resourcesPath: Prefabs/ChatGPT_Prefabs/ChatGPT_Items/PF_dog_food_bowl_full_with_spilled_kibble
-  assetPath: Assets/A_Dogs_Tale/Resources/Prefabs/ChatGPT_Prefabs/ChatGPT_Items/PF_dog_food_bowl_full_with_spilled_kibble.prefab
+  prefabId: resources:Prefabs/Items/Items/PF_dog_food_bowl_full_with_spilled_kibble
+  resourcesPath: Prefabs/Items/Items/PF_dog_food_bowl_full_with_spilled_kibble
+  assetPath: Assets/A_Dogs_Tale/Resources/Prefabs/Items/Items/PF_dog_food_bowl_full_with_spilled_kibble.prefab
 --- !u!1 &350010950202914225
 GameObject:
   m_ObjectHideFlags: 0

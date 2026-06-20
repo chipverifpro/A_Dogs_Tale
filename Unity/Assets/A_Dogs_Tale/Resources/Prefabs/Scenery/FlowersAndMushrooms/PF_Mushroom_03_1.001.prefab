@@ -226,6 +226,7 @@ GameObject:
   - component: {fileID: 6894316009589996400}
   - component: {fileID: 1676827050133762844}
   - component: {fileID: 9006523685904503748}
+  - component: {fileID: 7735529302235047126}
   m_Layer: 0
   m_Name: PF_Mushroom_03_1.001
   m_TagString: Untagged
@@ -299,6 +300,21 @@ MonoBehaviour:
   minClearCellsAround: 0
   mustTouchWall: 0
   wallPadding: 0.05
+--- !u!114 &7735529302235047126
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8374850276706464023}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5b51eeefad7b498d956628ba6705f1ea, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SavePrefabId
+  prefabId: resources:Prefabs/Scenery/FlowersAndMushrooms/PF_Mushroom_03_1.001
+  resourcesPath: Prefabs/Scenery/FlowersAndMushrooms/PF_Mushroom_03_1.001
+  assetPath: Assets/A_Dogs_Tale/Resources/Prefabs/Scenery/FlowersAndMushrooms/PF_Mushroom_03_1.001.prefab
 --- !u!1 &8992016383576925089
 GameObject:
   m_ObjectHideFlags: 0

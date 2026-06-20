@@ -5635,9 +5635,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5b51eeefad7b498d956628ba6705f1ea, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SavePrefabId
-  prefabId: resources:Prefabs/Generated/PF_modular_picket_fence_panel_open_gate
-  resourcesPath: Prefabs/Generated/PF_modular_picket_fence_panel_open_gate
-  assetPath: Assets/A_Dogs_Tale/Resources/Prefabs/Generated/PF_modular_picket_fence_panel_open_gate.prefab
+  prefabId: resources:Prefabs/Scenery/YardScenery/PF_modular_picket_fence_panel_open_gate
+  resourcesPath: Prefabs/Scenery/YardScenery/PF_modular_picket_fence_panel_open_gate
+  assetPath: Assets/A_Dogs_Tale/Resources/Prefabs/Scenery/YardScenery/PF_modular_picket_fence_panel_open_gate.prefab
 --- !u!1 &6414905921720133150
 GameObject:
   m_ObjectHideFlags: 0

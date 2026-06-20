@@ -1243,9 +1243,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5b51eeefad7b498d956628ba6705f1ea, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SavePrefabId
-  prefabId: resources:Prefabs/ChatGPT_Prefabs/ChatGPT_Agents/Older/SquirrelQuadruped_Normalized
-  resourcesPath: Prefabs/ChatGPT_Prefabs/ChatGPT_Agents/Older/SquirrelQuadruped_Normalized
-  assetPath: Assets/A_Dogs_Tale/Resources/Prefabs/ChatGPT_Prefabs/ChatGPT_Agents/Older/SquirrelQuadruped_Normalized.prefab
+  prefabId: resources:Prefabs/Agents/ChatGPT_Agents/SquirrelQuadruped_Normalized
+  resourcesPath: Prefabs/Agents/ChatGPT_Agents/SquirrelQuadruped_Normalized
+  assetPath: Assets/A_Dogs_Tale/Resources/Prefabs/Agents/ChatGPT_Agents/SquirrelQuadruped_Normalized.prefab
 --- !u!114 &4081345786629026132
 MonoBehaviour:
   m_ObjectHideFlags: 0

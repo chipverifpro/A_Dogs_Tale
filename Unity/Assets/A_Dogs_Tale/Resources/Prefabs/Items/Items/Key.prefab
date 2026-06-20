@@ -112,9 +112,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5b51eeefad7b498d956628ba6705f1ea, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SavePrefabId
-  prefabId: resources:Prefabs/Items/Key
-  resourcesPath: Prefabs/Items/Key
-  assetPath: Assets/A_Dogs_Tale/Resources/Prefabs/Items/Key.prefab
+  prefabId: resources:Prefabs/Items/Items/Key
+  resourcesPath: Prefabs/Items/Items/Key
+  assetPath: Assets/A_Dogs_Tale/Resources/Prefabs/Items/Items/Key.prefab
 --- !u!1 &4653928383533263939
 GameObject:
   m_ObjectHideFlags: 0

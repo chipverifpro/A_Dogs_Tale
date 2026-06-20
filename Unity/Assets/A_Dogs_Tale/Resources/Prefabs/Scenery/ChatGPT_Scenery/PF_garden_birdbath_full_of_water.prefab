@@ -1842,9 +1842,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5b51eeefad7b498d956628ba6705f1ea, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SavePrefabId
-  prefabId: resources:Prefabs/ChatGPT_Prefabs/ChatGPT_Scenery/PF_garden_birdbath_full_of_water
-  resourcesPath: Prefabs/ChatGPT_Prefabs/ChatGPT_Scenery/PF_garden_birdbath_full_of_water
-  assetPath: Assets/A_Dogs_Tale/Resources/Prefabs/ChatGPT_Prefabs/ChatGPT_Scenery/PF_garden_birdbath_full_of_water.prefab
+  prefabId: resources:Prefabs/Scenery/ChatGPT_Scenery/PF_garden_birdbath_full_of_water
+  resourcesPath: Prefabs/Scenery/ChatGPT_Scenery/PF_garden_birdbath_full_of_water
+  assetPath: Assets/A_Dogs_Tale/Resources/Prefabs/Scenery/ChatGPT_Scenery/PF_garden_birdbath_full_of_water.prefab
 --- !u!1 &6249877055959096205
 GameObject:
   m_ObjectHideFlags: 0

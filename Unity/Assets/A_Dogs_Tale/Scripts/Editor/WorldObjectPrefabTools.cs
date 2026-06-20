@@ -1,4 +1,5 @@
 #if UNITY_EDITOR
+using System.Collections.Generic;
 using System.Linq;
 using UnityEditor;
 using UnityEngine;
@@ -68,25 +69,85 @@ public static class WorldObjectPrefabTools
     [MenuItem("Tools/DogGame/Save Prefabs/Fill SavePrefabId On Selected Prefabs")]
     public static void FillSavePrefabIdOnSelectedPrefabs()
     {
-        FillSavePrefabIds(Selection.objects);
+        FillSavePrefabIds(GetPrefabPathsFromSelection(includeFolders: false));
+    }
+
+    [MenuItem("Tools/DogGame/Save Prefabs/Repair SavePrefabId On Selected Prefabs Or Folders")]
+    public static void RepairSavePrefabIdOnSelectedPrefabsOrFolders()
+    {
+        FillSavePrefabIds(GetPrefabPathsFromSelection(includeFolders: true));
+    }
+
+    [MenuItem("Tools/DogGame/Save Prefabs/Repair SavePrefabId On Resources Prefabs")]
+    public static void RepairSavePrefabIdOnResourcesPrefabs()
+    {
+        FillSavePrefabIds(GetPrefabPathsInFolders("Assets/A_Dogs_Tale/Resources/Prefabs"));
     }
 
     [MenuItem("Tools/DogGame/Save Prefabs/Fill SavePrefabId On All Project Prefabs")]
     public static void FillSavePrefabIdOnAllProjectPrefabs()
     {
         string[] prefabGuids = AssetDatabase.FindAssets("t:Prefab");
-        Object[] prefabs = prefabGuids
-            .Select(guid => AssetDatabase.LoadAssetAtPath<GameObject>(AssetDatabase.GUIDToAssetPath(guid)))
-            .Where(prefab => prefab != null)
-            .Cast<Object>()
-            .ToArray();
-
-        FillSavePrefabIds(prefabs);
+        FillSavePrefabIds(prefabGuids.Select(AssetDatabase.GUIDToAssetPath));
     }
 
-    private static void FillSavePrefabIds(Object[] prefabs)
+    private static string[] GetPrefabPathsFromSelection(bool includeFolders)
     {
-        if (prefabs == null || prefabs.Length == 0)
+        Object[] selected = Selection.objects;
+        if (selected == null || selected.Length == 0)
+            return System.Array.Empty<string>();
+
+        List<string> paths = new();
+        foreach (Object selectedObject in selected)
+        {
+            string path = AssetDatabase.GetAssetPath(selectedObject);
+            if (string.IsNullOrWhiteSpace(path))
+                continue;
+
+            if (includeFolders && AssetDatabase.IsValidFolder(path))
+            {
+                paths.AddRange(GetPrefabPathsInFolders(path));
+                continue;
+            }
+
+            if (path.EndsWith(".prefab", System.StringComparison.OrdinalIgnoreCase))
+                paths.Add(path);
+        }
+
+        return paths
+            .Where(path => !string.IsNullOrWhiteSpace(path))
+            .Distinct()
+            .ToArray();
+    }
+
+    private static string[] GetPrefabPathsInFolders(params string[] folderPaths)
+    {
+        if (folderPaths == null || folderPaths.Length == 0)
+            return System.Array.Empty<string>();
+
+        string[] validFolders = folderPaths
+            .Where(path => !string.IsNullOrWhiteSpace(path) && AssetDatabase.IsValidFolder(path))
+            .Distinct()
+            .ToArray();
+
+        if (validFolders.Length == 0)
+            return System.Array.Empty<string>();
+
+        return AssetDatabase.FindAssets("t:Prefab", validFolders)
+            .Select(AssetDatabase.GUIDToAssetPath)
+            .Where(path => !string.IsNullOrWhiteSpace(path) && path.EndsWith(".prefab", System.StringComparison.OrdinalIgnoreCase))
+            .Distinct()
+            .ToArray();
+    }
+
+    private static void FillSavePrefabIds(IEnumerable<string> prefabPaths)
+    {
+        string[] paths = prefabPaths?
+            .Where(path => !string.IsNullOrWhiteSpace(path) && path.EndsWith(".prefab", System.StringComparison.OrdinalIgnoreCase))
+            .Distinct()
+            .ToArray() ?? System.Array.Empty<string>();
+
+        if (paths.Length == 0)
         {
             Debug.LogWarning("WorldObjectPrefabTools: No prefabs selected.");
             return;
@@ -99,13 +160,13 @@ public static class WorldObjectPrefabTools
         {
             AssetDatabase.StartAssetEditing();
 
-            foreach (Object obj in prefabs)
+            foreach (string path in paths)
             {
-                string path = AssetDatabase.GetAssetPath(obj);
-                if (string.IsNullOrEmpty(path) || !path.EndsWith(".prefab"))
+                GameObject prefabAsset = AssetDatabase.LoadAssetAtPath<GameObject>(path);
+                if (prefabAsset == null)
                     continue;
 
-                if (PrefabUtility.GetPrefabAssetType(obj) == PrefabAssetType.NotAPrefab)
+                if (PrefabUtility.GetPrefabAssetType(prefabAsset) == PrefabAssetType.NotAPrefab)
                     continue;
 
                 processed++;

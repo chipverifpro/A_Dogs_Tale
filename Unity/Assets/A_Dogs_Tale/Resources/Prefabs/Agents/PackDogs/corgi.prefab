@@ -717,9 +717,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5b51eeefad7b498d956628ba6705f1ea, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SavePrefabId
-  prefabId: resources:Prefabs/PackDogs/corgi
-  resourcesPath: Prefabs/PackDogs/corgi
-  assetPath: Assets/A_Dogs_Tale/Resources/Prefabs/PackDogs/corgi.prefab
+  prefabId: resources:Prefabs/Agents/PackDogs/corgi
+  resourcesPath: Prefabs/Agents/PackDogs/corgi
+  assetPath: Assets/A_Dogs_Tale/Resources/Prefabs/Agents/PackDogs/corgi.prefab
 --- !u!114 &-640746912874407954
 MonoBehaviour:
   m_ObjectHideFlags: 0

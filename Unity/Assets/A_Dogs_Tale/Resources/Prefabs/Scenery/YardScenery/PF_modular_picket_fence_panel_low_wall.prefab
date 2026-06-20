@@ -3665,9 +3665,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5b51eeefad7b498d956628ba6705f1ea, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SavePrefabId
-  prefabId: resources:Prefabs/Generated/PF_modular_picket_fence_panel_low_wall
-  resourcesPath: Prefabs/Generated/PF_modular_picket_fence_panel_low_wall
-  assetPath: Assets/A_Dogs_Tale/Resources/Prefabs/Generated/PF_modular_picket_fence_panel_low_wall.prefab
+  prefabId: resources:Prefabs/Scenery/YardScenery/PF_modular_picket_fence_panel_low_wall
+  resourcesPath: Prefabs/Scenery/YardScenery/PF_modular_picket_fence_panel_low_wall
+  assetPath: Assets/A_Dogs_Tale/Resources/Prefabs/Scenery/YardScenery/PF_modular_picket_fence_panel_low_wall.prefab
 --- !u!1 &5265143015374133433
 GameObject:
   m_ObjectHideFlags: 0

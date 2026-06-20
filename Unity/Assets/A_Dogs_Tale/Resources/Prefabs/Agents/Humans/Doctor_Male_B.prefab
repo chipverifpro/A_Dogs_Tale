@@ -845,9 +845,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5b51eeefad7b498d956628ba6705f1ea, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SavePrefabId
-  prefabId: asset:Assets/_ThirdParty/DenysAlmaral/CityPeople/Prefabs/professions/Doctor_Male_B.prefab
-  resourcesPath: 
-  assetPath: Assets/_ThirdParty/DenysAlmaral/CityPeople/Prefabs/professions/Doctor_Male_B.prefab
+  prefabId: resources:Prefabs/Agents/Humans/Doctor_Male_B
+  resourcesPath: Prefabs/Agents/Humans/Doctor_Male_B
+  assetPath: Assets/A_Dogs_Tale/Resources/Prefabs/Agents/Humans/Doctor_Male_B.prefab
 --- !u!114 &6118504036288602365
 MonoBehaviour:
   m_ObjectHideFlags: 0

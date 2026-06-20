@@ -843,9 +843,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5b51eeefad7b498d956628ba6705f1ea, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SavePrefabId
-  prefabId: resources:Prefabs/Generated/PF_outdoor_water_tap_no_water
-  resourcesPath: Prefabs/Generated/PF_outdoor_water_tap_no_water
-  assetPath: Assets/A_Dogs_Tale/Resources/Prefabs/Generated/PF_outdoor_water_tap_no_water.prefab
+  prefabId: resources:Prefabs/Scenery/YardScenery/PF_outdoor_water_tap_no_water
+  resourcesPath: Prefabs/Scenery/YardScenery/PF_outdoor_water_tap_no_water
+  assetPath: Assets/A_Dogs_Tale/Resources/Prefabs/Scenery/YardScenery/PF_outdoor_water_tap_no_water.prefab
 --- !u!1 &2450480640842934085
 GameObject:
   m_ObjectHideFlags: 0

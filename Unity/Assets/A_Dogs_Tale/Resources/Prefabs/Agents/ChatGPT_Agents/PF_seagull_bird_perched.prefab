@@ -1308,6 +1308,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2272e4992677c4977b85dbef83406534, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.LocationModule
+  DisplayRoomSnapshot: 0
 --- !u!114 &-4317773340108074274
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1327,6 +1328,9 @@ MonoBehaviour:
   maxFallSpeedMetersPerSecond: 50
   constrainToCellWalls: 1
   wallConstraintIterations: 4
+  recoverFromWallIntersections: 1
+  wallRecoveryClearance: 0.3
+  invalidCellRecoverySearchRadius: 12
   motionControlMode: 0
   isBackpedaling: 0
   facingMode: 0
@@ -1393,7 +1397,10 @@ MonoBehaviour:
   enablePathDebugLogging: 0
   enableStallRecovery: 1
   stallTicksBeforeRecover: 3
+  stallSecondsBeforeRecover: 1.25
   stallPositionEpsilon: 0.01
+  stallTurnGraceAngleDegrees: 18
+  stallTurnGraceMinDesiredSpeed: 0.05
   enableStallDebugLogging: 0
   accelerationMetersPerSecondSquared: 12
   decelerationMetersPerSecondSquared: 16
@@ -1547,9 +1554,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5b51eeefad7b498d956628ba6705f1ea, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SavePrefabId
-  prefabId: resources:Prefabs/ChatGPT_Prefabs/ChatGPT_Agents/PF_seagull_bird_perched
-  resourcesPath: Prefabs/ChatGPT_Prefabs/ChatGPT_Agents/PF_seagull_bird_perched
-  assetPath: Assets/A_Dogs_Tale/Resources/Prefabs/ChatGPT_Prefabs/ChatGPT_Agents/PF_seagull_bird_perched.prefab
+  prefabId: resources:Prefabs/Agents/ChatGPT_Agents/PF_seagull_bird_perched
+  resourcesPath: Prefabs/Agents/ChatGPT_Agents/PF_seagull_bird_perched
+  assetPath: Assets/A_Dogs_Tale/Resources/Prefabs/Agents/ChatGPT_Agents/PF_seagull_bird_perched.prefab
 --- !u!1 &763492188215870261
 GameObject:
   m_ObjectHideFlags: 0

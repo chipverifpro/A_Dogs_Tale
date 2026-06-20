@@ -18861,9 +18861,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5b51eeefad7b498d956628ba6705f1ea, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SavePrefabId
-  prefabId: resources:Prefabs/ChatGPT_Prefabs/ChatGPT_Agents/Older/SeagullBirdInFlight_Normalized
-  resourcesPath: Prefabs/ChatGPT_Prefabs/ChatGPT_Agents/Older/SeagullBirdInFlight_Normalized
-  assetPath: Assets/A_Dogs_Tale/Resources/Prefabs/ChatGPT_Prefabs/ChatGPT_Agents/Older/SeagullBirdInFlight_Normalized.prefab
+  prefabId: resources:Prefabs/Agents/ChatGPT_Agents/SeagullBirdInFlight_Normalized
+  resourcesPath: Prefabs/Agents/ChatGPT_Agents/SeagullBirdInFlight_Normalized
+  assetPath: Assets/A_Dogs_Tale/Resources/Prefabs/Agents/ChatGPT_Agents/SeagullBirdInFlight_Normalized.prefab
 --- !u!114 &7655379030171908713
 MonoBehaviour:
   m_ObjectHideFlags: 0

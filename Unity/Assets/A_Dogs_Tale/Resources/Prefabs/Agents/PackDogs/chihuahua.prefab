@@ -4418,9 +4418,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5b51eeefad7b498d956628ba6705f1ea, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SavePrefabId
-  prefabId: resources:Prefabs/PackDogs/chihuahua
-  resourcesPath: Prefabs/PackDogs/chihuahua
-  assetPath: Assets/A_Dogs_Tale/Resources/Prefabs/PackDogs/chihuahua.prefab
+  prefabId: resources:Prefabs/Agents/PackDogs/chihuahua
+  resourcesPath: Prefabs/Agents/PackDogs/chihuahua
+  assetPath: Assets/A_Dogs_Tale/Resources/Prefabs/Agents/PackDogs/chihuahua.prefab
 --- !u!114 &8332688724343357361
 MonoBehaviour:
   m_ObjectHideFlags: 0

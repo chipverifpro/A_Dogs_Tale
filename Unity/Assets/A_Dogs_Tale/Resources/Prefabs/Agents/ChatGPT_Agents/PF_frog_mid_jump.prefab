@@ -2218,9 +2218,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5b51eeefad7b498d956628ba6705f1ea, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SavePrefabId
-  prefabId: resources:Prefabs/ChatGPT_Prefabs/ChatGPT_Agents/PF_frog_mid_jump
-  resourcesPath: Prefabs/ChatGPT_Prefabs/ChatGPT_Agents/PF_frog_mid_jump
-  assetPath: Assets/A_Dogs_Tale/Resources/Prefabs/ChatGPT_Prefabs/ChatGPT_Agents/PF_frog_mid_jump.prefab
+  prefabId: resources:Prefabs/Agents/ChatGPT_Agents/PF_frog_mid_jump
+  resourcesPath: Prefabs/Agents/ChatGPT_Agents/PF_frog_mid_jump
+  assetPath: Assets/A_Dogs_Tale/Resources/Prefabs/Agents/ChatGPT_Agents/PF_frog_mid_jump.prefab
 --- !u!114 &7688001951860627378
 MonoBehaviour:
   m_ObjectHideFlags: 0

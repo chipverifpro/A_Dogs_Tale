@@ -1558,9 +1558,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5b51eeefad7b498d956628ba6705f1ea, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SavePrefabId
-  prefabId: resources:Prefabs/ChatGPT_Prefabs/ChatGPT_Agents/PF_duck
-  resourcesPath: Prefabs/ChatGPT_Prefabs/ChatGPT_Agents/PF_duck
-  assetPath: Assets/A_Dogs_Tale/Resources/Prefabs/ChatGPT_Prefabs/ChatGPT_Agents/PF_duck.prefab
+  prefabId: resources:Prefabs/Agents/Ducks/PF_adult_duck
+  resourcesPath: Prefabs/Agents/Ducks/PF_adult_duck
+  assetPath: Assets/A_Dogs_Tale/Resources/Prefabs/Agents/Ducks/PF_adult_duck.prefab
 --- !u!114 &3726867194988788162
 MonoBehaviour:
   m_ObjectHideFlags: 0

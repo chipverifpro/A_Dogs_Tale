@@ -1119,9 +1119,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5b51eeefad7b498d956628ba6705f1ea, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SavePrefabId
-  prefabId: resources:Prefabs/ChatGPT_Prefabs/ChatGPT_Items/PF_dog_water_bowl_full_with_droplets
-  resourcesPath: Prefabs/ChatGPT_Prefabs/ChatGPT_Items/PF_dog_water_bowl_full_with_droplets
-  assetPath: Assets/A_Dogs_Tale/Resources/Prefabs/ChatGPT_Prefabs/ChatGPT_Items/PF_dog_water_bowl_full_with_droplets.prefab
+  prefabId: resources:Prefabs/Items/Items/PF_dog_water_bowl_full_with_droplets
+  resourcesPath: Prefabs/Items/Items/PF_dog_water_bowl_full_with_droplets
+  assetPath: Assets/A_Dogs_Tale/Resources/Prefabs/Items/Items/PF_dog_water_bowl_full_with_droplets.prefab
 --- !u!1 &2540152477531075585
 GameObject:
   m_ObjectHideFlags: 0
