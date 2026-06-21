@@ -7268,6 +7268,9 @@ GameObject:
   m_Component:
   - component: {fileID: 6296428228981393926}
   - component: {fileID: 3457526704062325474}
+  - component: {fileID: -5874006418747695433}
+  - component: {fileID: -3566453049467416178}
+  - component: {fileID: -8820842578079359927}
   m_Layer: 0
   m_Name: SingleDroppedSock_Normalized
   m_TagString: Untagged
@@ -7306,6 +7309,92 @@ MonoBehaviour:
   prefabId: resources:Prefabs/Items/Items/SingleDroppedSock_Normalized
   resourcesPath: Prefabs/Items/Items/SingleDroppedSock_Normalized
   assetPath: Assets/A_Dogs_Tale/Resources/Prefabs/Items/Items/SingleDroppedSock_Normalized.prefab
+--- !u!114 &-5874006418747695433
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6641323674561269948}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b112db3959c164550975dd26677f8e8e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::WorldObject
+  objectId: -1
+  displayName: SingleDroppedSock_Normalized
+  kind: 8
+  species: 0
+  breed: 
+  autoRegister: 1
+  adjustMapToWorld: {x: -0.5, y: 0, z: -0.5}
+  sizeRadius: 0.3
+  weight: 1
+  immovable: 0
+  onActivate:
+    m_PersistentCalls:
+      m_Calls: []
+--- !u!114 &-3566453049467416178
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6641323674561269948}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3f6cda250b193442c9f59a935c554f95, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.PlacementModule
+  allowedRooms: -1
+  autoSizeFromMesh: 1
+  sizeInCells: {x: 0, y: 0, z: 0}
+  cellSize: 1
+  edgeHint: 0
+  rotationRule: 1
+  minClearCellsAround: 0
+  mustTouchWall: 0
+  wallPadding: 0.05
+--- !u!114 &-8820842578079359927
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6641323674561269948}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 27672672e8d6a41bdb530d870f01d309, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.ScentEmitterModule
+  normalScentSource:
+    agentId: -1
+    agent: {fileID: 0}
+    category: 3
+    scentName: Stinky Sock
+    categoryColor: {r: 0, g: 0, b: 0, a: 0}
+    sourceAirColor: {r: 0, g: 0, b: 0, a: 0}
+    sourceGroundColor: {r: 0, g: 0, b: 0, a: 0}
+    airDepositRate: 1
+    groundDepositRate: 0.1
+    familiarity: 0
+    sensitivityBoost: 1
+    persistentId: 
+  onDemandScentSource:
+    agentId: -1
+    agent: {fileID: 0}
+    category: 0
+    scentName: 
+    categoryColor: {r: 0, g: 0, b: 0, a: 0}
+    sourceAirColor: {r: 0, g: 0, b: 0, a: 0}
+    sourceGroundColor: {r: 0, g: 0, b: 0, a: 0}
+    airDepositRate: 1
+    groundDepositRate: 0.1
+    familiarity: 0
+    sensitivityBoost: 1
+    persistentId: 
+  durationScentSources: []
+  deposit_time_left: 0
 --- !u!1 &6682091010515572652
 GameObject:
   m_ObjectHideFlags: 0

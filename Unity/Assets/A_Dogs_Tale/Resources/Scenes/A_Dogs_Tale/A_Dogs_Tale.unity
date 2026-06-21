@@ -11820,7 +11820,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 0, y: -10}
-  m_SizeDelta: {x: 1718.1167, y: 882.9027}
+  m_SizeDelta: {x: 1721.2407, y: 880.71246}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &863588990
 MonoBehaviour:
@@ -19731,6 +19731,9 @@ MonoBehaviour:
   - {fileID: 1622993265718310924, guid: 5fce4fec82c074111a702e8b8625bc32, type: 3}
   - {fileID: 2562653811143570361, guid: 92b8f4cb149834cacac56a1b366a052f, type: 3}
   - {fileID: 4130395131049904637, guid: 56606a6b9bc6c464089c6a6b93948b9e, type: 3}
+  autoLoadResourcePrefabs: 1
+  resourcePrefabFolders:
+  - Prefabs/Scenery
   minPerRoom: 0
   maxPerRoom: 3
   maxAttemptsPerItem: 20
@@ -20942,6 +20945,9 @@ MonoBehaviour:
   - {fileID: 3074796942900118957, guid: a0732160706074ac3b083371fa1ad9c3, type: 3}
   - {fileID: 7964599488659186546, guid: 80107c1fbd6704d6daea3528840fd18e, type: 3}
   - {fileID: 8678427077619614033, guid: 982c61f3774a3440fb8df523df87fedb, type: 3}
+  autoLoadResourcePrefabs: 1
+  resourcePrefabFolders:
+  - Prefabs/Items
   minPerRoom: 0
   maxPerRoom: 2
   maxAttemptsPerItem: 20

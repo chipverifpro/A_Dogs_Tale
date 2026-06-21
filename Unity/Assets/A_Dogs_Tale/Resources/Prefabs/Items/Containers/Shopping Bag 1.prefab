@@ -87,6 +87,10 @@ PrefabInstance:
         type: 3}
       insertIndex: -1
       addedObject: {fileID: 8382659468960425937}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: ae0deb15fce0fe341b9bb63b470049ac,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 8666505258993156095}
     - targetCorrespondingSourceObject: {fileID: -3559909895095799887, guid: ae0deb15fce0fe341b9bb63b470049ac,
         type: 3}
       insertIndex: -1
@@ -159,7 +163,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::WorldObject
   objectId: -1
   displayName: Shopping Bag 1
-  kind: 8
+  kind: 13
   species: 0
   breed: 
   autoRegister: 1
@@ -206,6 +210,30 @@ MonoBehaviour:
   prefabId: resources:Prefabs/Items/Containers/Shopping Bag 1
   resourcesPath: Prefabs/Items/Containers/Shopping Bag 1
   assetPath: Assets/A_Dogs_Tale/Resources/Prefabs/Items/Containers/Shopping Bag 1.prefab
+--- !u!114 &8666505258993156095
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3518637033822993679}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fcb9092686ac74c2b91fa33260000122, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.ContainerModule
+  itemCapacity: 1
+  maxWeight: 10
+  heldItemsVisible: 1
+  heldHeight: 0
+  isLocked: 0
+  isClosed: 0
+  heldItems: []
+  autoPickupNearbyItems: 1
+  pickupRadiusTiles: 1
+  autoConfigureAgentCapacity: 1
+  dogItemCapacity: 1
+  humanItemCapacity: 2
 --- !u!1 &4793227960355046124 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 9120118014617731762, guid: ae0deb15fce0fe341b9bb63b470049ac,

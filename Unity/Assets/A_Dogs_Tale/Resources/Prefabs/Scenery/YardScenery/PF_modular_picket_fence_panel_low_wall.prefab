@@ -3621,7 +3621,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::WorldObject
   objectId: -1
   displayName: PF_modular_picket_fence_panel_low_wall
-  kind: 7
+  kind: 3
   species: 0
   breed: 
   autoRegister: 1
@@ -3644,7 +3644,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3f6cda250b193442c9f59a935c554f95, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.PlacementModule
-  allowedRooms: -1
+  allowedRooms: 12032
   autoSizeFromMesh: 1
   sizeInCells: {x: 2.88, y: 0.055, z: 0.06999999}
   cellSize: 1
