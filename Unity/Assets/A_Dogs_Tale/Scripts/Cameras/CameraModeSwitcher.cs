@@ -491,7 +491,7 @@ public class CameraModeSwitcher : MonoBehaviour
 
     public void ApplyZoomDelta(float delta)
     {
-        Debug.Log($"ApplyZoomDelta({delta}) cameraMode={cameraMode}");
+        //Debug.Log($"ApplyZoomDelta({delta}) cameraMode={cameraMode}");
 
         delta *= zoomStep;  // scales zoom speed
 
@@ -526,7 +526,7 @@ public class CameraModeSwitcher : MonoBehaviour
             float fov = vcamFP.m_Lens.FieldOfView;
             fov = Mathf.Clamp(fov + delta, minFOV, maxFOV);
             vcamFP.m_Lens.FieldOfView = fov;
-            Debug.Log($"First Person zoom fov = {fov:0.0}");
+        //    Debug.Log($"First Person zoom fov = {fov:0.0}");
         }
 
         if (IsLive(vcamNose))
@@ -534,7 +534,7 @@ public class CameraModeSwitcher : MonoBehaviour
             float fov = vcamNose.m_Lens.FieldOfView;
             fov = Mathf.Clamp(fov + delta, minFOV, maxFOV);
             vcamNose.m_Lens.FieldOfView = fov;
-            Debug.Log($"Nose cam zoom fov = {fov:0.0}");
+        //    Debug.Log($"Nose cam zoom fov = {fov:0.0}");
         }
 
         // Top cam (Transposer): adjust FollowOffset.z for zoom effect
@@ -552,7 +552,7 @@ public class CameraModeSwitcher : MonoBehaviour
                 var off = transposer.m_FollowOffset;
                 off.y = Mathf.Clamp(off.y + delta, minZoom, maxZoom);
                 transposer.m_FollowOffset = off;
-                Debug.Log($"Overhead zoom transposer.y = {off.y:0.0}");
+        //        Debug.Log($"Overhead zoom transposer.y = {off.y:0.0}");
             }
         }
     }
@@ -646,7 +646,7 @@ public class CameraModeSwitcher : MonoBehaviour
         Vector3 off = transposer.m_FollowOffset;
         SetPerspectiveZoomZ(transposer, off.z + delta);
         off = transposer.m_FollowOffset;
-        Debug.Log($"Perspective zoom transposer.z = {off.z:0.0} transposer.y = {off.y:0.0}");
+        //Debug.Log($"Perspective zoom transposer.z = {off.z:0.0} transposer.y = {off.y:0.0}");
     }
 
     private bool TryGetPerspectiveTransposer(out CinemachineTransposer transposer)

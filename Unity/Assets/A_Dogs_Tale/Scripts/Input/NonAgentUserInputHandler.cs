@@ -79,7 +79,7 @@ public class NonAgentUserInputHandler : MonoBehaviour
                 bool pointerOverBottomBanner = BottomBanner.Instance != null && BottomBanner.Instance.IsPointerOverPanel();
                 if (!pointerOverBottomBanner)
                 {
-                    Debug.Log($"ApplyZoomDelta: {state.zoomDelta}");
+                //    Debug.Log($"ApplyZoomDelta: {state.zoomDelta}");
                     dir.cameraModeSwitcher.ApplyZoomDelta(state.zoomDelta);
                 }
             }

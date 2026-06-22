@@ -244,8 +244,8 @@ namespace DogGame.Modules
                     $"room={sourceRoomName} " +
                     $"{(string.IsNullOrEmpty(h.notesShort) ? "" : $"notes={h.notesShort}")}";
                 
-                if (DisplayHearingSummary)
-                    Debug.Log(hearingEventString);
+                //if (DisplayHearingSummary)
+                //    Debug.Log(hearingEventString);
                 //BottomBanner.LogMessage(BannerSense.Hearing, BannerLevel.High, hearingEventString, true);
             }            
             //if (summarizedForLLM.Count > 0)
