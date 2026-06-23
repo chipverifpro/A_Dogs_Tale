@@ -21,7 +21,8 @@ namespace DogGame.Tasks
 
         public Vector3 CellToWorld(int cellX, int cellY)
         {
-            return new Vector3(cellX+0.5f, worldObject.locationModule.height, cellY+0.5f);
+            Vector3 mapPosition = new(cellX + 0.5f, worldObject.locationModule.height, cellY + 0.5f);
+            return worldObject.MapToWorldPosition(mapPosition);
         }
 
         public bool SetMoveTarget(Vector3 worldPosition)

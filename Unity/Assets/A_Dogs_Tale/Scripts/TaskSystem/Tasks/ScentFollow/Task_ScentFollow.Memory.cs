@@ -18,6 +18,8 @@ namespace DogGame.Tasks
         private const float AcquireAirWeight = 0.45f;
         private const float FollowGroundWeight = 0.75f;
         private const float FollowAirWeight = 0.25f;
+        private const float BacktrackGroundWeight = 0.65f;
+        private const float BacktrackAirWeight = 0.35f;
         private const float CastGroundWeight = 0.45f;
         private const float CastAirWeight = 0.55f;
         private const float AbsoluteIncreaseThreshold = 0.05f;
@@ -264,6 +266,9 @@ namespace DogGame.Tasks
 
                 case ScentFollowState.FollowTrail:
                     return groundScent * FollowGroundWeight + airScent * FollowAirWeight;
+
+                case ScentFollowState.Backtrack:
+                    return groundScent * BacktrackGroundWeight + airScent * BacktrackAirWeight;
 
                 case ScentFollowState.CastSearch:
                     return groundScent * CastGroundWeight + airScent * CastAirWeight;

@@ -54,6 +54,7 @@ namespace DogGame.Tasks
             if (!couldMove)
                 return TaskTickResult.Failed("Movement adapter refused move target (blocked/unavailable).");
 
+            //Debug.Log($"{DebugName} running from {context.Agent.pos3d_world} to {destinationWorld}");
             return TaskTickResult.Running();
         }
 
@@ -66,7 +67,7 @@ namespace DogGame.Tasks
         {
             if (context.Agent == null || context.Agent.locationModule == null)
                 return false;
-
+            //Debug.Log($"context.Agent.locationModuleX,Y = {context.Agent.locationModule.x},{context.Agent.locationModule.y}; cellX,Y = {cellX},{cellY}");
             return context.Agent.locationModule.x == cellX &&
                    context.Agent.locationModule.y == cellY;
         }

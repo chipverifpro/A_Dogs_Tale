@@ -11,6 +11,7 @@ namespace DogGame.Tasks
         Idle,
         AcquireScent,
         FollowTrail,
+        Backtrack,
         CastSearch,
         TargetFound,
         Failed,
@@ -75,12 +76,15 @@ namespace DogGame.Tasks
         private Vector2Int? lastStrongScentLocation;
         private float lastStrongScentValue;
         private float lastStrongScentTime;
+        private float trailConfidence;
+        private Vector2Int? activeBacktrackTarget;
         private Vector2Int castSearchAnchor;
         private int currentCastRadius;
 
         private readonly float trailFollowThreshold01 = 0.15f;
         private readonly float lostScentThreshold01 = 0.08f;
         private readonly float strongScentThreshold01 = 0.40f;
+        private readonly float lowTrailConfidenceThreshold01 = 0.25f;
         private readonly int maxCastRadius = 5;
 
         public DirFlags lastBestDir = DirFlags.None;
@@ -128,6 +132,8 @@ namespace DogGame.Tasks
             lastStrongScentLocation = null;
             lastStrongScentValue = 0f;
             lastStrongScentTime = -1f;
+            trailConfidence = 0.35f;
+            activeBacktrackTarget = null;
             castSearchAnchor = default;
             currentCastRadius = 1;
 
@@ -195,6 +201,9 @@ namespace DogGame.Tasks
                 case ScentFollowState.FollowTrail:
                     return TickFollowTrail(context, scentModule, centerPos, height, exploring);
 
+                case ScentFollowState.Backtrack:
+                    return TickBacktrack(context, scentModule, centerPos, height);
+
                 case ScentFollowState.CastSearch:
                     return TickCastSearch(context, scentModule, centerPos, height);
 
@@ -235,8 +244,7 @@ namespace DogGame.Tasks
             {
                 castSearchAnchor = lastStrongScentLocation ?? centerPos;
                 currentCastRadius = 1;
-                EnterState(ScentFollowState.CastSearch, "no_acquired_scent");
-                return TaskTickResult.Running();
+                return EnterBacktrackOrCastSearch(scentModule, centerPos, height, "no_acquired_scent");
             }
 
             EnterState(chosenStrength >= trailFollowThreshold01 ? ScentFollowState.FollowTrail : ScentFollowState.AcquireScent, "candidate_acquired");
@@ -254,31 +262,62 @@ namespace DogGame.Tasks
                 return TaskTickResult.Succeeded();
 
             float currentStrength = GetLastStrength(centerPos);
-            if (currentStrength > 0f && currentStrength < lostScentThreshold01)
+            if ((currentStrength > 0f && currentStrength < lostScentThreshold01) ||
+                trailConfidence <= lowTrailConfidenceThreshold01)
             {
-                castSearchAnchor = lastStrongScentLocation ?? centerPos;
-                currentCastRadius = 1;
-                EnterState(ScentFollowState.CastSearch, "current_scent_lost");
-                return TaskTickResult.Running();
+                return EnterBacktrackOrCastSearch(scentModule, centerPos, height, "current_scent_lost");
             }
 
             if (!TryPickNextStep(scentModule, centerPos, height, exploring, out DirFlags chosenDir, out Vector2Int chosenPos, out float chosenStrength, out float chosenScore))
             {
-                castSearchAnchor = lastStrongScentLocation ?? centerPos;
-                currentCastRadius = 1;
-                EnterState(ScentFollowState.CastSearch, "no_follow_candidate");
-                return TaskTickResult.Running();
+                return EnterBacktrackOrCastSearch(scentModule, centerPos, height, "no_follow_candidate");
             }
 
             if (chosenStrength < minStrengthToContinue01)
             {
-                castSearchAnchor = lastStrongScentLocation ?? centerPos;
-                currentCastRadius = 1;
-                EnterState(ScentFollowState.CastSearch, "candidate_too_weak");
-                return TaskTickResult.Running();
+                return EnterBacktrackOrCastSearch(scentModule, centerPos, height, "candidate_too_weak");
             }
 
             return CommitChosenMove(context, centerPos, chosenDir, chosenPos, chosenStrength, chosenScore);
+        }
+
+        private TaskTickResult TickBacktrack(
+            TaskContext context,
+            ScentPerceptionModule scentModule,
+            Vector2Int centerPos,
+            int height)
+        {
+            if (ConfirmTargetFound(context, centerPos))
+                return TaskTickResult.Succeeded();
+
+            float currentStrength = GetLastStrength(centerPos);
+            if (currentStrength >= trailFollowThreshold01)
+            {
+                activeBacktrackTarget = null;
+                RewardTrailProgress(currentStrength, improved: true);
+                EnterState(ScentFollowState.FollowTrail, "trail_reacquired_during_backtrack");
+                return TaskTickResult.Running();
+            }
+
+            if (!activeBacktrackTarget.HasValue ||
+                activeBacktrackTarget.Value == centerPos ||
+                IsDeadEnd(activeBacktrackTarget.Value))
+            {
+                if (!TryFindBestFrontier(scentModule, centerPos, height, out Vector2Int frontier, out float frontierScore))
+                {
+                    activeBacktrackTarget = null;
+                    castSearchAnchor = lastStrongScentLocation ?? centerPos;
+                    currentCastRadius = 1;
+                    EnterState(ScentFollowState.CastSearch, "no_frontier_for_backtrack");
+                    return TaskTickResult.Running();
+                }
+
+                activeBacktrackTarget = frontier;
+                Debug.Log($"[ScentFollow] Backtracking to frontier {frontier} score={frontierScore:0.000}");
+            }
+
+            SetCameFrom(activeBacktrackTarget.Value, centerPos);
+            return BeginMove(context, activeBacktrackTarget.Value);
         }
 
         private TaskTickResult TickCastSearch(
@@ -434,7 +473,8 @@ namespace DogGame.Tasks
             lastBestPos = chosenPos;
             lastBestStrength = chosenStrength;
 
-            if (chosenScore <= lastChosenScore + improvementEpsilon)
+            bool improved = chosenScore > lastChosenScore + improvementEpsilon;
+            if (!improved)
                 stuckCounter++;
             else
                 stuckCounter = 0;
@@ -442,6 +482,7 @@ namespace DogGame.Tasks
             lastChosenScore = chosenScore;
             previousMoveDirection = ClampStep(chosenPos - fromPos);
             SetCameFrom(chosenPos, fromPos);
+            RewardTrailProgress(chosenStrength, improved);
 
             return BeginMove(context, chosenPos);
         }
