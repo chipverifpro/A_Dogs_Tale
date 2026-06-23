@@ -292,12 +292,15 @@ public class ScentRegistry : MonoBehaviour
         if (scentSource == null)
             return null;
 
+        EnsureScentSourceDefaults(scentSource);
+
         if (scentSource.agent != null && string.IsNullOrWhiteSpace(scentSource.scentName))
             scentSource.scentName = scentSource.agent.DisplayName;
 
         if (scentSource.agentId >= 0 && _byAgentId.TryGetValue(scentSource.agentId, out ScentSource existing))
         {
             MergeScentSource(existing, scentSource);
+            EnsureScentSourceDefaults(existing);
             return existing;
         }
 
@@ -313,6 +316,7 @@ public class ScentRegistry : MonoBehaviour
                     continue;
 
                 MergeScentSource(existingSource, scentSource);
+                EnsureScentSourceDefaults(existingSource);
                 _byAgentId[scentSource.agentId] = existingSource;
                 return existingSource;
             }
@@ -325,6 +329,48 @@ public class ScentRegistry : MonoBehaviour
             _byAgentId[scentSource.agentId] = scentSource;
 
         return scentSource;
+    }
+
+    private void EnsureScentSourceDefaults(ScentSource scentSource)
+    {
+        if (scentSource == null)
+            return;
+
+        if (scentSource.agent == null &&
+            scentSource.agentId >= 0 &&
+            dir != null &&
+            dir.scents != null)
+        {
+            scentSource.agent = dir.scents.GetAgentFromAgentId(scentSource.agentId);
+        }
+
+        if (scentSource.category == ScentCategory.Unknown && scentSource.agent != null)
+            scentSource.category = InferCategoryFromAgent(scentSource.agent);
+
+        if (string.IsNullOrWhiteSpace(scentSource.scentName))
+        {
+            if (scentSource.agent != null && !string.IsNullOrWhiteSpace(scentSource.agent.DisplayName))
+                scentSource.scentName = scentSource.agent.DisplayName;
+            else
+                scentSource.scentName = scentSource.category.ToString();
+        }
+
+        if (!IsVisibleColor(scentSource.categoryColor))
+            scentSource.categoryColor = GetCategoryBaseColor(scentSource.category);
+
+        if (!IsVisibleColor(scentSource.sourceAirColor))
+            scentSource.sourceAirColor = GenerateSourceColor(scentSource.categoryColor);
+
+        if (!IsVisibleColor(scentSource.sourceGroundColor))
+            scentSource.sourceGroundColor = GenerateSourceColor(scentSource.categoryColor);
+
+        if (string.IsNullOrWhiteSpace(scentSource.persistentId) && scentSource.agentId >= 0)
+            scentSource.persistentId = $"agent_{scentSource.category}_{scentSource.agentId}";
+    }
+
+    private static bool IsVisibleColor(Color color)
+    {
+        return color.a > 0f;
     }
 
     private void MergeScentSource(ScentSource target, ScentSource source)

@@ -212,8 +212,13 @@ public class ScentAirGround : MonoBehaviour
             return;
         }
 
-        // Switch the overlay to the new source for currentAgentId
-        ScentSource scentSource = dir.scentRegistry.GetOrCreateScentSource(currentAgentId, agent:agent, ScentCategory.Dog);
+        // Switch the overlay to the source selected for currentAgentId.
+        ScentSource scentSource = dir.scentRegistry.GetScentSource(currentAgentId) ??
+            dir.scentRegistry.GetOrCreateScentSource(
+                currentAgentId,
+                agent: agent,
+                ScentCategory.Unknown,
+                defaultName: agent.DisplayName);
         ActivateOverlayForSource(scentSource);
 
         // Draw the current state for this agent with current visibility flags
@@ -1213,8 +1218,15 @@ public class ScentAirGround : MonoBehaviour
             currentAgentId = scentSource.agentId;
 
             // 3) Set base colors for this scent
-            airBaseColor    = scentSource.sourceAirColor;
-            groundBaseColor = scentSource.sourceGroundColor;
+            Color fallbackColor = scentSource.categoryColor.a > 0f
+                ? scentSource.categoryColor
+                : Color.white;
+            airBaseColor = scentSource.sourceAirColor.a > 0f
+                ? scentSource.sourceAirColor
+                : fallbackColor;
+            groundBaseColor = scentSource.sourceGroundColor.a > 0f
+                ? scentSource.sourceGroundColor
+                : fallbackColor;
 
             //groundScentVisible = true;
             //airScentVisible = true;

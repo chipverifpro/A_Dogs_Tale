@@ -450,8 +450,13 @@ public sealed partial class InteractionDialogUI : MonoBehaviour
             ? target.scentEmitterModule.normalScentSource
             : null;
 
-        if (registry != null)
-            registry.SetSelectedTargetScent(source);
+        if (registry == null)
+            return;
+
+        ScentSource selectedSource = registry.SetSelectedTargetScent(source);
+        ScentAirGround scentSystem = Dir.Instance != null ? Dir.Instance.scents : null;
+        if (scentSystem != null && scentSystem.IsScentCameraActive)
+            registry.ActivateScentOverlay(selectedSource);
     }
 
     #endregion
