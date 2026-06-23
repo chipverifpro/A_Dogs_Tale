@@ -45,16 +45,22 @@ namespace DogGame.Modules
 
             //Debug.Log($"ScentEmitterModule {worldObject.DisplayName}: Tick {deltaTime}");
 
+            if (dir == null || dir.gen == null)
+                return;
             if (!dir.gen.buildComplete)
                 return; // map build must complete before scent physics runs.
             if (dir.gen.hf_valid == false || dir.gen.hf==null)
                 return;     // scent cannot be added before heightfield is created.
-            if (worldObject.locationModule.cell == null)
+            if (worldObject == null || worldObject.locationModule == null || worldObject.locationModule.cell == null)
             {
-                Debug.Log($"ScentEmitterModule {worldObject.DisplayName}: cell at {worldObject.pos3d_map} is null");
+                Debug.Log($"ScentEmitterModule {worldObject?.DisplayName ?? name}: location cell is unavailable.");
+                return;
             }
+
+            Cell currentCell = worldObject.locationModule.cell;
+
             // deposit normal scent
-            normalScentSource.Emit(worldObject.locationModule.cell, deltaTime, decayed: 1.0f);
+            normalScentSource.Emit(currentCell, deltaTime, decayed: 1.0f);
 
             // emit all temporary scents
             DurationScentSource dss;
@@ -65,8 +71,9 @@ namespace DogGame.Modules
             {
                 dss = durationScentSources[dss_index];
                 if (dss == null) continue; // should never happen
+                if (dss.scentSource == null) continue;
                 float decayed = dss.time_remaining / dss.duration; // scent decays over time
-                dss.scentSource.Emit(worldObject.locationModule.cell, deltaTime, decayed: decayed);
+                dss.scentSource.Emit(currentCell, deltaTime, decayed: decayed);
                 dss.time_remaining -= deltaTime;
                 if (dss.duration <= dss.time_remaining) // faded away
                 {
@@ -76,7 +83,7 @@ namespace DogGame.Modules
 
             if ((onDemandScentSource != null) && (deposit_time_left > 0f))
             {
-                onDemandScentSource.Emit(worldObject.locationModule.cell, deltaTime, decayed: 1.0f);
+                onDemandScentSource.Emit(currentCell, deltaTime, decayed: 1.0f);
             }
         }
 

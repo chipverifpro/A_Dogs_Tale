@@ -14,8 +14,15 @@ namespace DogGame.Tasks
         private const float DefaultAirWeight = 0.25f;
         private const float AirTrackingGroundWeight = 0.45f;
         private const float AirTrackingAirWeight = 0.55f;
+        private const float AcquireGroundWeight = 0.55f;
+        private const float AcquireAirWeight = 0.45f;
+        private const float FollowGroundWeight = 0.75f;
+        private const float FollowAirWeight = 0.25f;
+        private const float CastGroundWeight = 0.45f;
+        private const float CastAirWeight = 0.55f;
         private const float AbsoluteIncreaseThreshold = 0.05f;
         private const float RelativeIncreaseMultiplier = 1.15f;
+        private const float IncreasedMemoryDurationSeconds = 5f;
 
         private struct ScentMemory
         {
@@ -175,6 +182,8 @@ namespace DogGame.Tasks
             info.visitCount += 1;
             info.lastVisitTime = now;
             memory[pos] = info;
+
+            RememberRecentCell(pos);
         }
 
         private void MarkTargetDetected(Vector2Int pos)
@@ -248,6 +257,18 @@ namespace DogGame.Tasks
 
         private float CombineScent(float airScent, float groundScent)
         {
+            switch (currentState)
+            {
+                case ScentFollowState.AcquireScent:
+                    return groundScent * AcquireGroundWeight + airScent * AcquireAirWeight;
+
+                case ScentFollowState.FollowTrail:
+                    return groundScent * FollowGroundWeight + airScent * FollowAirWeight;
+
+                case ScentFollowState.CastSearch:
+                    return groundScent * CastGroundWeight + airScent * CastAirWeight;
+            }
+
             if (medium == ScentMedium.Air)
                 return groundScent * AirTrackingGroundWeight + airScent * AirTrackingAirWeight;
 
@@ -302,6 +323,84 @@ namespace DogGame.Tasks
         private float GetSeenAgeSeconds(Vector2Int pos)
         {
             return memory.TryGetValue(pos, out var info) ? Time.time - info.timeChecked : 999f;
+        }
+
+        private bool WasRecentlyIncreased(Vector2Int pos)
+        {
+            return memory.TryGetValue(pos, out var info) &&
+                   Time.time - info.timeLastIncreased <= IncreasedMemoryDurationSeconds;
+        }
+
+        private bool IsExplored(Vector2Int pos)
+        {
+            return memory.TryGetValue(pos, out var info) && info.explored;
+        }
+
+        private bool IsDeadEnd(Vector2Int pos)
+        {
+            return memory.TryGetValue(pos, out var info) && info.deadEnd;
+        }
+
+        private bool IsBlocked(Vector2Int pos)
+        {
+            return memory.TryGetValue(pos, out var info) && info.blocked;
+        }
+
+        private void MarkExplored(Vector2Int pos)
+        {
+            if (!memory.TryGetValue(pos, out ScentMemory info))
+                return;
+
+            info.explored = true;
+            memory[pos] = info;
+        }
+
+        private void MarkDeadEnd(Vector2Int pos)
+        {
+            if (!memory.TryGetValue(pos, out ScentMemory info))
+                return;
+
+            info.deadEnd = true;
+            memory[pos] = info;
+        }
+
+        private void MarkBlocked(Vector2Int pos)
+        {
+            if (!memory.TryGetValue(pos, out ScentMemory info))
+            {
+                info = new ScentMemory
+                {
+                    location = pos,
+                    scentKey = scentKey,
+                    timeChecked = Time.time,
+                    timeLastIncreased = -999f,
+                    lastVisitTime = -1f,
+                    cameFrom = pos,
+                    hasCameFrom = false
+                };
+            }
+
+            info.blocked = true;
+            memory[pos] = info;
+        }
+
+        private void SetCameFrom(Vector2Int pos, Vector2Int fromPos)
+        {
+            if (!memory.TryGetValue(pos, out ScentMemory info))
+            {
+                info = new ScentMemory
+                {
+                    location = pos,
+                    scentKey = scentKey,
+                    timeChecked = Time.time,
+                    timeLastIncreased = -999f,
+                    lastVisitTime = -1f
+                };
+            }
+
+            info.cameFrom = fromPos;
+            info.hasCameFrom = true;
+            memory[pos] = info;
         }
     }
 }

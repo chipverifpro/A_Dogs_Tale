@@ -1,4 +1,5 @@
 #nullable enable
+using System.Collections.Generic;
 using DogGame.LLM;
 using DogGame.Modules;
 using UnityEngine;
@@ -36,12 +37,20 @@ namespace DogGame.Tasks
 
         // ---- Scoring weights ----
         private float wStrength = 1.00f;
-        private float wVisitPenalty = 0.35f;
-        private float wRecentVisitPenalty = 0.45f;
+        private float wImprovement = 1.50f;
+        private float wIncreaseBonus = 0.25f;
+        private float wDirection = 0.10f;
+        private float wExploredPenalty = 0.20f;
+        private float wVisitPenalty = 0.10f;
+        private float wRecentVisitPenalty = 0.35f;
         private float wStalePenalty = 0.25f;
-        private float immediateBacktrackPenalty = 0.60f;
+        private float immediateBacktrackPenalty = 0.50f;
+        private float wTurnPenalty = 0.10f;
+        private float wDeadEndPenalty = 0.75f;
         private float wRiseBonus = 0.06f;
         private float riseScale = 0.02f;
+        private float minDetectableScent01 = 0.05f;
+        private float smallImprovementThreshold01 = 0.03f;
 
         // Time constants.
         private float recentVisitWindowSeconds = 2.0f;
@@ -55,9 +64,12 @@ namespace DogGame.Tasks
 
         private Vector2Int lastCellPos;
         private Vector2Int prevCellPos;
+        private Vector2Int? previousMoveDirection;
         private float lastChosenScore;
         private int stuckCounter;
         private bool prevExploring;
+        private readonly Queue<Vector2Int> recentCells = new();
+        private readonly int recentCellsCapacity = 6;
 
         private ScentFollowState currentState = ScentFollowState.Idle;
         private Vector2Int? lastStrongScentLocation;
@@ -110,6 +122,8 @@ namespace DogGame.Tasks
             lastChosenScore = float.NegativeInfinity;
             stuckCounter = 0;
             prevExploring = false;
+            previousMoveDirection = null;
+            recentCells.Clear();
             currentState = ScentFollowState.Idle;
             lastStrongScentLocation = null;
             lastStrongScentValue = 0f;
@@ -226,7 +240,7 @@ namespace DogGame.Tasks
             }
 
             EnterState(chosenStrength >= trailFollowThreshold01 ? ScentFollowState.FollowTrail : ScentFollowState.AcquireScent, "candidate_acquired");
-            return CommitChosenMove(context, chosenDir, chosenPos, chosenStrength, chosenScore);
+            return CommitChosenMove(context, centerPos, chosenDir, chosenPos, chosenStrength, chosenScore);
         }
 
         private TaskTickResult TickFollowTrail(
@@ -264,7 +278,7 @@ namespace DogGame.Tasks
                 return TaskTickResult.Running();
             }
 
-            return CommitChosenMove(context, chosenDir, chosenPos, chosenStrength, chosenScore);
+            return CommitChosenMove(context, centerPos, chosenDir, chosenPos, chosenStrength, chosenScore);
         }
 
         private TaskTickResult TickCastSearch(
@@ -295,13 +309,14 @@ namespace DogGame.Tasks
                     EnterState(ScentFollowState.FollowTrail, "trail_reacquired_by_candidate");
 
                 AdvanceCastRadiusIfNeeded(chosenPos);
-                return CommitChosenMove(context, chosenDir, chosenPos, chosenStrength, chosenScore);
+                return CommitChosenMove(context, centerPos, chosenDir, chosenPos, chosenStrength, chosenScore);
             }
 
             Vector2Int rememberedBest = JumpToHighestScore(centerPos);
             if (rememberedBest != centerPos && IsWithinCastRadius(rememberedBest))
             {
                 AdvanceCastRadiusIfNeeded(rememberedBest);
+                SetCameFrom(rememberedBest, centerPos);
                 return BeginMove(context, rememberedBest);
             }
 
@@ -409,6 +424,7 @@ namespace DogGame.Tasks
 
         private TaskTickResult CommitChosenMove(
             TaskContext context,
+            Vector2Int fromPos,
             DirFlags chosenDir,
             Vector2Int chosenPos,
             float chosenStrength,
@@ -424,6 +440,8 @@ namespace DogGame.Tasks
                 stuckCounter = 0;
 
             lastChosenScore = chosenScore;
+            previousMoveDirection = ClampStep(chosenPos - fromPos);
+            SetCameFrom(chosenPos, fromPos);
 
             return BeginMove(context, chosenPos);
         }
@@ -484,6 +502,30 @@ namespace DogGame.Tasks
             int chebyshev = Mathf.Max(Mathf.Abs(chosenPos.x - castSearchAnchor.x), Mathf.Abs(chosenPos.y - castSearchAnchor.y));
             if (chebyshev >= currentCastRadius)
                 currentCastRadius = Mathf.Min(currentCastRadius + 1, maxCastRadius + 1);
+        }
+
+        private void RememberRecentCell(Vector2Int pos)
+        {
+            recentCells.Enqueue(pos);
+
+            while (recentCells.Count > recentCellsCapacity)
+                recentCells.Dequeue();
+        }
+
+        private bool IsRecentCell(Vector2Int pos)
+        {
+            foreach (Vector2Int recentCell in recentCells)
+            {
+                if (recentCell == pos)
+                    return true;
+            }
+
+            return false;
+        }
+
+        private static Vector2Int ClampStep(Vector2Int delta)
+        {
+            return new Vector2Int(Mathf.Clamp(delta.x, -1, 1), Mathf.Clamp(delta.y, -1, 1));
         }
     }
 }

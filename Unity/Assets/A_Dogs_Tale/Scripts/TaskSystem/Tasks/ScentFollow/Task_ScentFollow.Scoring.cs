@@ -8,6 +8,35 @@ namespace DogGame.Tasks
 {
     public sealed partial class Task_ScentFollow
     {
+        private readonly struct ScentMoveCandidate
+        {
+            public ScentMoveCandidate(
+                DirFlags directionFlag,
+                Vector2Int pos,
+                Vector2Int direction,
+                float strength01,
+                float trustedStrength01,
+                float improvement01,
+                float seenAgeSeconds)
+            {
+                DirectionFlag = directionFlag;
+                Pos = pos;
+                Direction = direction;
+                Strength01 = strength01;
+                TrustedStrength01 = trustedStrength01;
+                Improvement01 = improvement01;
+                SeenAgeSeconds = seenAgeSeconds;
+            }
+
+            public readonly DirFlags DirectionFlag;
+            public readonly Vector2Int Pos;
+            public readonly Vector2Int Direction;
+            public readonly float Strength01;
+            public readonly float TrustedStrength01;
+            public readonly float Improvement01;
+            public readonly float SeenAgeSeconds;
+        }
+
         private bool TryPickNextStep(
             ScentPerceptionModule scentModule,
             Vector2Int centerPos,
@@ -23,57 +52,126 @@ namespace DogGame.Tasks
             bestStrength = 0f;
             bestScore = float.NegativeInfinity;
 
-            float currentStrength = GetKnownStrength(centerPos);
+            float currentStrength = GetLastStrength(centerPos);
+            bool foundCandidate = false;
 
             foreach (DirFlags dir in DirFlagsEx.All8)
             {
-                Vector2Int pos = centerPos + dir.ToVector2Int();
-                bool isImmediateBacktrack = pos == prevCellPos;
-
-                float strength01 = GetLastStrength(pos);
-
-                if (strength01 <= 0f && scentModule.TryGetScentStrengthAtCell(scentKey, pos, height, medium, out float liveStrength))
-                    strength01 = liveStrength;
-
-                if (strength01 <= 0f)
+                if (!TryBuildCandidate(scentModule, centerPos, height, dir, currentStrength, out ScentMoveCandidate candidate))
                     continue;
 
+                bool isImmediateBacktrack = candidate.Pos == prevCellPos;
                 if (!exploring)
                 {
                     const float downhillTolerance = 0.02f;
-                    if (strength01 + downhillTolerance < currentStrength && isImmediateBacktrack)
+                    if (candidate.TrustedStrength01 + downhillTolerance < currentStrength && isImmediateBacktrack)
                         continue;
                 }
 
-                float delta01 = GetRiseDelta(pos);
-                float score = ScoreNeighbor(pos, strength01, isImmediateBacktrack, exploring, delta01);
+                float score = ScoreCandidate(candidate, currentStrength, isImmediateBacktrack, exploring);
+                foundCandidate = true;
 
                 if (score > bestScore)
                 {
                     bestScore = score;
-                    bestDir = dir;
-                    bestPos = pos;
-                    bestStrength = strength01;
+                    bestDir = candidate.DirectionFlag;
+                    bestPos = candidate.Pos;
+                    bestStrength = candidate.Strength01;
                 }
             }
+
+            MarkExplored(centerPos);
+            if (!foundCandidate)
+                MarkDeadEnd(centerPos);
 
             return bestDir != DirFlags.None;
         }
 
-        private float ScoreNeighbor(Vector2Int pos, float strength01, bool isImmediateBacktrack, bool exploring, float delta01)
+        private bool TryBuildCandidate(
+            ScentPerceptionModule scentModule,
+            Vector2Int centerPos,
+            int height,
+            DirFlags directionFlag,
+            float currentStrength01,
+            out ScentMoveCandidate candidate)
         {
-            float score = wStrength * strength01;
+            Vector2Int direction = directionFlag.ToVector2Int();
+            Vector2Int pos = centerPos + direction;
+            candidate = default;
 
-            const float maxRiseBonus = 0.25f;
-            const float localRiseScale = 0.15f;
-            if (delta01 > 0f)
-                score += Mathf.Clamp(delta01 / localRiseScale, 0f, 1f) * maxRiseBonus;
+            if (IsBlocked(pos))
+                return false;
 
-            int visits = GetVisitCount(pos);
-            float visitPenalty = Mathf.Log(1f + visits);
-            score -= wVisitPenalty * visitPenalty;
+            if (!TryIsValidMoveCandidate(scentModule, centerPos, pos, height, directionFlag))
+            {
+                MarkBlocked(pos);
+                return false;
+            }
 
-            float lastVisit = GetLastVisitTime(pos);
+            float strength01 = GetLastStrength(pos);
+            if (strength01 <= 0f && scentModule.TryGetScentStrengthAtCell(scentKey, pos, height, medium, out float liveStrength))
+                strength01 = liveStrength;
+
+            if (strength01 < minDetectableScent01)
+                return false;
+
+            float seenAgeSeconds = GetSeenAgeSeconds(pos);
+            float trustedStrength01 = strength01 * FreshnessFactor01(seenAgeSeconds);
+            float improvement01 = trustedStrength01 - currentStrength01;
+
+            candidate = new ScentMoveCandidate(
+                directionFlag,
+                pos,
+                direction,
+                strength01,
+                trustedStrength01,
+                improvement01,
+                seenAgeSeconds);
+            return true;
+        }
+
+        private bool TryIsValidMoveCandidate(
+            ScentPerceptionModule scentModule,
+            Vector2Int centerPos,
+            Vector2Int candidatePos,
+            int height,
+            DirFlags directionFlag)
+        {
+            if (!TryIsValidCellAt(scentModule, candidatePos, height))
+                return false;
+
+            if (!directionFlag.IsDiagonal())
+                return true;
+
+            Vector2Int step = directionFlag.ToVector2Int();
+            Vector2Int horizontalPos = new(centerPos.x + step.x, centerPos.y);
+            Vector2Int verticalPos = new(centerPos.x, centerPos.y + step.y);
+
+            bool horizontalOpen = TryIsValidCellAt(scentModule, horizontalPos, height);
+            bool verticalOpen = TryIsValidCellAt(scentModule, verticalPos, height);
+
+            return horizontalOpen || verticalOpen;
+        }
+
+        private float ScoreCandidate(ScentMoveCandidate candidate, float currentStrength01, bool isImmediateBacktrack, bool exploring)
+        {
+            float score = wStrength * candidate.TrustedStrength01;
+
+            if (candidate.Improvement01 > smallImprovementThreshold01)
+                score += candidate.Improvement01 * wImprovement;
+
+            if (WasRecentlyIncreased(candidate.Pos))
+                score += wIncreaseBonus;
+
+            score += DirectionBonus(candidate.Direction);
+
+            if (IsExplored(candidate.Pos))
+                score -= wExploredPenalty;
+
+            int visits = GetVisitCount(candidate.Pos);
+            score -= visits * wVisitPenalty;
+
+            float lastVisit = GetLastVisitTime(candidate.Pos);
             float dtVisit = Time.time - lastVisit;
             if (dtVisit >= 0f && dtVisit < recentVisitWindowSeconds)
             {
@@ -81,8 +179,16 @@ namespace DogGame.Tasks
                 score -= wRecentVisitPenalty * t;
             }
 
+            if (IsRecentCell(candidate.Pos))
+                score -= wRecentVisitPenalty;
+
             if (isImmediateBacktrack)
-                score -= immediateBacktrackPenalty;
+                score -= exploring ? immediateBacktrackPenalty * 0.25f : immediateBacktrackPenalty;
+
+            score -= TurnPenalty(candidate.Direction, candidate.Strength01, currentStrength01);
+
+            if (IsDeadEnd(candidate.Pos) && !WasRecentlyIncreased(candidate.Pos))
+                score -= wDeadEndPenalty;
 
             if (exploring)
             {
@@ -93,15 +199,14 @@ namespace DogGame.Tasks
                 score += noveltyBonus;
             }
 
-            float seenAge = GetSeenAgeSeconds(pos);
-            if (seenAge > staleMemorySeconds)
+            if (candidate.SeenAgeSeconds > staleMemorySeconds)
             {
-                float extra = (seenAge - staleMemorySeconds) / staleMemorySeconds;
+                float extra = (candidate.SeenAgeSeconds - staleMemorySeconds) / staleMemorySeconds;
                 score -= wStalePenalty * Mathf.Clamp01(extra);
             }
 
-            if (seenAge < 2.0f)
-                score += RiseBonus01(delta01);
+            if (candidate.SeenAgeSeconds < 2.0f)
+                score += RiseBonus01(GetRiseDelta(candidate.Pos));
 
             return score;
         }
@@ -110,26 +215,32 @@ namespace DogGame.Tasks
         {
             float hiScore = float.NegativeInfinity;
             Vector2Int bestPos = currentPos;
+            float currentStrength = GetLastStrength(currentPos);
 
             foreach (var kvp in memory)
             {
                 Vector2Int pos = kvp.Key;
                 ScentMemory info = kvp.Value;
 
-                float strength01 = info.peakCombinedScent;
-                if (strength01 <= 0f)
+                if (info.blocked || info.deadEnd)
                     continue;
 
-                float delta01 = GetStrengthDelta(pos, strength01);
-                float score = ScoreNeighbor(pos, strength01, isImmediateBacktrack: false, exploring: true, delta01);
+                float strength01 = info.peakCombinedScent;
+                if (strength01 < minDetectableScent01)
+                    continue;
 
                 float seenAge = Time.time - info.timeChecked;
-                if (seenAge > staleMemorySeconds)
-                {
-                    float extra = (seenAge - staleMemorySeconds) / staleMemorySeconds;
-                    score -= wStalePenalty * Mathf.Clamp01(extra);
-                }
+                Vector2Int direction = ClampStep(pos - currentPos);
+                ScentMoveCandidate candidate = new(
+                    DirFlagsEx.FromVector2Int(direction),
+                    pos,
+                    direction,
+                    strength01,
+                    strength01 * FreshnessFactor01(seenAge),
+                    strength01 - currentStrength,
+                    seenAge);
 
+                float score = ScoreCandidate(candidate, currentStrength, isImmediateBacktrack: false, exploring: true);
                 int manhattan = Mathf.Abs(pos.x - currentPos.x) + Mathf.Abs(pos.y - currentPos.y);
                 score -= 0.01f * manhattan;
 
@@ -141,6 +252,53 @@ namespace DogGame.Tasks
             }
 
             return bestPos;
+        }
+
+        private float FreshnessFactor01(float seenAgeSeconds)
+        {
+            if (seenAgeSeconds <= 0f)
+                return 1f;
+
+            float staleTime = Mathf.Max(1f, staleMemorySeconds);
+            float t = Mathf.Clamp01(seenAgeSeconds / staleTime);
+            return Mathf.Lerp(1f, 0.4f, t);
+        }
+
+        private float DirectionBonus(Vector2Int candidateDirection)
+        {
+            if (!previousMoveDirection.HasValue)
+                return 0f;
+
+            Vector2 previous = previousMoveDirection.Value;
+            Vector2 candidate = candidateDirection;
+            if (previous.sqrMagnitude <= 0.0001f || candidate.sqrMagnitude <= 0.0001f)
+                return 0f;
+
+            previous.Normalize();
+            candidate.Normalize();
+            return Vector2.Dot(previous, candidate) * wDirection;
+        }
+
+        private float TurnPenalty(Vector2Int candidateDirection, float candidateStrength01, float currentStrength01)
+        {
+            if (!previousMoveDirection.HasValue)
+                return 0f;
+
+            Vector2 previous = previousMoveDirection.Value;
+            Vector2 candidate = candidateDirection;
+            if (previous.sqrMagnitude <= 0.0001f || candidate.sqrMagnitude <= 0.0001f)
+                return 0f;
+
+            previous.Normalize();
+            candidate.Normalize();
+            float alignment = Vector2.Dot(previous, candidate);
+            if (alignment >= 0.5f)
+                return 0f;
+
+            float scentDifference = Mathf.Abs(candidateStrength01 - currentStrength01);
+            float similarScentFactor = 1f - Mathf.Clamp01(scentDifference / smallImprovementThreshold01);
+            float turnSharpness = alignment < 0f ? 1f : 0.5f;
+            return wTurnPenalty * turnSharpness * similarScentFactor;
         }
 
         private float RiseBonus01(float delta01)
