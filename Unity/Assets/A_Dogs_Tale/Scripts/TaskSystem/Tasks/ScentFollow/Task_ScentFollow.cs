@@ -18,7 +18,7 @@ namespace DogGame.Tasks
         Cancelled
     }
 
-    public sealed partial class Task_ScentFollow : IAgentTask
+    public sealed partial class Task_ScentFollow : IAgentTask, ITaskWithReport
     {
         public string DebugName => $"ScentFollow({scentKey},{medium})";
         public string Description = "Tracks a specific scent across nearby cells by maintaining local scent memory, choosing promising next steps, and moving cell by cell until the trail is found, exhausted, or graceful limits are reached.";
@@ -71,6 +71,10 @@ namespace DogGame.Tasks
         private bool prevExploring;
         private readonly Queue<Vector2Int> recentCells = new();
         private readonly int recentCellsCapacity = 6;
+        private string reportStatus = "running";
+        private string reportReason = "";
+        private Vector2Int reportCell;
+        private float reportStrength;
 
         private ScentFollowState currentState = ScentFollowState.Idle;
         private Vector2Int? lastStrongScentLocation;
@@ -128,6 +132,10 @@ namespace DogGame.Tasks
             prevExploring = false;
             previousMoveDirection = null;
             recentCells.Clear();
+            reportStatus = "running";
+            reportReason = "";
+            reportCell = default;
+            reportStrength = 0f;
             currentState = ScentFollowState.Idle;
             lastStrongScentLocation = null;
             lastStrongScentValue = 0f;
@@ -211,10 +219,10 @@ namespace DogGame.Tasks
                     return TaskTickResult.Succeeded();
 
                 case ScentFollowState.Failed:
-                    return TaskTickResult.Failed("scent_follow_failed");
+                    return FailScentFollow("scent_follow_failed", centerPos);
 
                 case ScentFollowState.Cancelled:
-                    return TaskTickResult.Failed("scent_follow_cancelled");
+                    return FailScentFollow("scent_follow_cancelled", centerPos);
 
                 case ScentFollowState.Idle:
                 default:
@@ -317,6 +325,7 @@ namespace DogGame.Tasks
             }
 
             SetCameFrom(activeBacktrackTarget.Value, centerPos);
+            DebugPrintScentFollowSnapshot(centerPos);
             return BeginMove(context, activeBacktrackTarget.Value);
         }
 
@@ -338,7 +347,7 @@ namespace DogGame.Tasks
             if (currentCastRadius > maxCastRadius)
             {
                 EnterState(ScentFollowState.Failed, "cast_radius_exhausted");
-                return TaskTickResult.Failed("scent_cast_search_exhausted");
+                return FailScentFollow("scent_cast_search_exhausted", centerPos);
             }
 
             if (TryPickNextStep(scentModule, centerPos, height, exploring: true, out DirFlags chosenDir, out Vector2Int chosenPos, out float chosenStrength, out float chosenScore) &&
@@ -380,7 +389,7 @@ namespace DogGame.Tasks
             {
                 moveToCell = null;
                 EnterState(ScentFollowState.Failed, moveResult.FailureReason ?? "move_failed");
-                return moveResult;
+                return FailScentFollow(moveResult.FailureReason ?? "move_failed", lastCellPos);
             }
 
             moveToCell = null;
@@ -405,7 +414,7 @@ namespace DogGame.Tasks
             if (context.Agent == null)
             {
                 EnterState(ScentFollowState.Failed, "missing_agent");
-                failureResult = TaskTickResult.Failed("missing_agent");
+                failureResult = FailScentFollow("missing_agent", lastCellPos);
                 return false;
             }
 
@@ -413,14 +422,14 @@ namespace DogGame.Tasks
             if (scentModule == null)
             {
                 EnterState(ScentFollowState.Failed, "missing_scent_perception_module");
-                failureResult = TaskTickResult.Failed("missing_scent_perception_module");
+                failureResult = FailScentFollow("missing_scent_perception_module", lastCellPos);
                 return false;
             }
 
             if (context.Agent.locationModule == null)
             {
                 EnterState(ScentFollowState.Failed, "missing_location_module");
-                failureResult = TaskTickResult.Failed("missing_location_module");
+                failureResult = FailScentFollow("missing_location_module", lastCellPos);
                 return false;
             }
 
@@ -435,14 +444,14 @@ namespace DogGame.Tasks
             {
                 Debug.Log($"[ScentFollow] Timed out after {elapsed:0.00}s.");
                 EnterState(ScentFollowState.Failed, "timeout");
-                return TaskTickResult.Failed("scent_follow_timeout");
+                return FailScentFollow("scent_follow_timeout", lastCellPos);
             }
 
             if (stepsTaken >= maxSteps)
             {
                 Debug.Log($"[ScentFollow] Step limit reached ({stepsTaken}).");
                 EnterState(ScentFollowState.Failed, "step_limit");
-                return TaskTickResult.Failed("scent_follow_step_limit");
+                return FailScentFollow("scent_follow_step_limit", lastCellPos);
             }
 
             return null;
@@ -483,6 +492,7 @@ namespace DogGame.Tasks
             previousMoveDirection = ClampStep(chosenPos - fromPos);
             SetCameFrom(chosenPos, fromPos);
             RewardTrailProgress(chosenStrength, improved);
+            DebugPrintScentFollowSnapshot(fromPos);
 
             return BeginMove(context, chosenPos);
         }
@@ -501,9 +511,24 @@ namespace DogGame.Tasks
                 return false;
 
             MarkTargetDetected(pos);
+            RecordScentFollowOutcome("success", "target_found", pos);
             EnterState(ScentFollowState.TargetFound, "target_confirmed");
             Debug.Log($"[ScentFollow] Found target for {scentKey}");
             return true;
+        }
+
+        private TaskTickResult FailScentFollow(string reason, Vector2Int pos)
+        {
+            RecordScentFollowOutcome("failed", reason, pos);
+            return TaskTickResult.Failed(reason);
+        }
+
+        private void RecordScentFollowOutcome(string status, string reason, Vector2Int pos)
+        {
+            reportStatus = status;
+            reportReason = reason;
+            reportCell = pos;
+            reportStrength = GetLastStrength(pos);
         }
 
         private void UpdateLastStrongScent(Vector2Int pos)

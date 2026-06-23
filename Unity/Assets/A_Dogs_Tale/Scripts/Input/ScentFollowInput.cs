@@ -12,7 +12,7 @@ namespace DogGame.Modules
         [SerializeField] private WorldObject? observer;
 
         [Tooltip("Key binding for Scent Follow.")]
-        [SerializeField] private string binding = "<Keyboard>/h";
+        [SerializeField] private string binding = "<Keyboard>/m";
 
         private InputAction? scentFollowAction;
 

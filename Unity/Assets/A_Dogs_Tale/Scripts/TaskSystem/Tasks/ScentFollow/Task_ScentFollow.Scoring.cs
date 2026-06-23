@@ -54,6 +54,7 @@ namespace DogGame.Tasks
 
             float currentStrength = GetLastStrength(centerPos);
             bool foundCandidate = false;
+            BeginCandidateDebug(centerPos);
 
             foreach (DirFlags dir in DirFlagsEx.All8)
             {
@@ -69,6 +70,7 @@ namespace DogGame.Tasks
                 }
 
                 float score = ScoreCandidate(candidate, currentStrength, isImmediateBacktrack, exploring);
+                RecordCandidateDebug(candidate.Pos, candidate.Strength01, candidate.TrustedStrength01, candidate.Improvement01, score);
                 foundCandidate = true;
 
                 if (score > bestScore)
