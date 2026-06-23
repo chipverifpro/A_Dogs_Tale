@@ -36,8 +36,19 @@ namespace DogGame.Tasks
             debugDoubleTick = Time.frameCount;
 
             //Debug.Log ($"Task_MoveToCell.Tick ({context.Agent.DisplayName}, {deltaTimeSeconds})");
-            if (context.Motion.IsAt(destinationWorld))
+            if (IsInDestinationCell(context))
+            {
+                Debug.Log($"{DebugName} succeeded by cell.");
+                context.Motion.StopMoving();
                 return TaskTickResult.Succeeded();
+            }
+
+            if (context.Motion.IsAt(destinationWorld))
+            {
+                Debug.Log($"{DebugName} succeeded.");
+                context.Motion.StopMoving();
+                return TaskTickResult.Succeeded();
+            }
 
             bool couldMove = context.Motion.SetMoveTarget(destinationWorld);
             if (!couldMove)
@@ -49,6 +60,15 @@ namespace DogGame.Tasks
         public void Stop(TaskContext context)
         {
             // executor stops movement for us
+        }
+
+        private bool IsInDestinationCell(TaskContext context)
+        {
+            if (context.Agent == null || context.Agent.locationModule == null)
+                return false;
+
+            return context.Agent.locationModule.x == cellX &&
+                   context.Agent.locationModule.y == cellY;
         }
     }
 }
