@@ -3,7 +3,6 @@ using DogGame;
 using DogGame.Modules;
 using TMPro;
 using UnityEngine;
-using UnityEngine.InputSystem;
 using UnityEngine.UI;
 public sealed partial class InteractionDialogUI : MonoBehaviour
 {
@@ -12,6 +11,8 @@ public sealed partial class InteractionDialogUI : MonoBehaviour
     private GameObject scentSourceListObject;
 
     private Button dogSightToggleButton;
+
+    private Button scentFollowButton;
 
     [SerializeField] private string dogSightSpriteResourcePath = "Sprites/DialogMisc_C";
 
@@ -26,12 +27,6 @@ public sealed partial class InteractionDialogUI : MonoBehaviour
     private float scentSourceListDragStartLocalY;
 
     private float scentSourceListDragStartContentY;
-
-    private bool scentSourceListPointerDown;
-
-    private bool scentSourceListPointerDragged;
-
-    private Vector2 scentSourceListPointerDownPosition;
 
     private readonly List<Image> scentSourceListBackgrounds = new();
 
@@ -146,6 +141,23 @@ public sealed partial class InteractionDialogUI : MonoBehaviour
         rect.sizeDelta = new Vector2(128f, 128f);
 
         dogSightToggleButton.gameObject.SetActive(false);
+
+        Sprite scentFollowSprite = GetScentFollowSprite();
+        scentFollowButton = CreateSpriteButton(
+            "ScentFollowButton",
+            parent,
+            scentFollowSprite,
+            "Follow Scent",
+            OnScentFollowClicked);
+
+        RectTransform followRect = scentFollowButton.GetComponent<RectTransform>();
+        followRect.anchorMin = new Vector2(0.5f, 1f);
+        followRect.anchorMax = new Vector2(0.5f, 1f);
+        followRect.pivot = new Vector2(0.5f, 0.5f);
+        followRect.anchoredPosition = new Vector2(-275f, -690f);
+        followRect.sizeDelta = new Vector2(128f, 128f);
+
+        scentFollowButton.gameObject.SetActive(false);
     }
 
     private void CreateScentSourceListRow(WorldObject source, int index)
@@ -252,11 +264,19 @@ public sealed partial class InteractionDialogUI : MonoBehaviour
 
         if (dogSightToggleButton != null)
             dogSightToggleButton.gameObject.SetActive(active);
+
+        if (scentFollowButton != null)
+            scentFollowButton.gameObject.SetActive(active);
     }
 
     private void OnDogSightToggleClicked()
     {
         TopPulldown.ToggleDogSight("InteractionDialog.Scent.DogSightToggleButton");
+    }
+
+    private void OnScentFollowClicked()
+    {
+        ScentFollowInput.TryRunPlayerScentFollow("interaction_dialog_scent_follow_button");
     }
 
     private Sprite GetDogSightSprite()
@@ -265,6 +285,12 @@ public sealed partial class InteractionDialogUI : MonoBehaviour
             ?? SpriteServer.SpriteSheetLookupByName(dogSightSpriteResourcePath, "DialogMisc_C_5")
             ?? SpriteServer.SpriteSheetLookup("DialogMisc_C", 5)
             ?? SpriteServer.SpriteLookup("Scent");
+    }
+
+    private static Sprite GetScentFollowSprite()
+    {
+        return SpriteServer.SpriteLookup("AndroidButtonsAndQuests_3")
+            ?? SpriteServer.SpriteSheetLookup("Sprites/AndroidButtonsAndQuests", 3);
     }
 
     private void RefreshScentSourceList()
@@ -378,8 +404,6 @@ public sealed partial class InteractionDialogUI : MonoBehaviour
             return;
         }
 
-        Vector3 playerPosition = player.pos3d_map;
-
         foreach (WorldObject candidate in registry.GetAllObjects())
         {
             if (candidate == null || candidate == player || !candidate.gameObject.activeInHierarchy)
@@ -393,13 +417,11 @@ public sealed partial class InteractionDialogUI : MonoBehaviour
 
         scentTargetOptions.Sort((a, b) =>
         {
-                float aDistanceSqr = GetPlanarDistanceSqr(playerPosition, a.pos3d_map);
-                float bDistanceSqr = GetPlanarDistanceSqr(playerPosition, b.pos3d_map);
-                int distanceComparison = aDistanceSqr.CompareTo(bDistanceSqr);
-                if (distanceComparison != 0)
-                return distanceComparison;
+            int nameComparison = string.Compare(a.DisplayName, b.DisplayName, System.StringComparison.OrdinalIgnoreCase);
+            if (nameComparison != 0)
+                return nameComparison;
 
-                return string.Compare(a.DisplayName, b.DisplayName, System.StringComparison.OrdinalIgnoreCase);
+            return a.GetInstanceID().CompareTo(b.GetInstanceID());
         });
 
         KeepSelectedObject(scentTargetOptions, previousSelection, ref scentState.SelectedTargetIndex);
@@ -499,51 +521,6 @@ public sealed partial class InteractionDialogUI : MonoBehaviour
         sharedState.PendingRightAgentSelection = scentTargetOptions[index];
         scentState.SelectedTargetIndex = index;
         RefreshInteractionView(forcePreviewRefresh: true);
-    }
-
-    private void HandleScentSourceListPointerInput()
-    {
-        if (sharedState.CurrentTab != InteractionTab.Scent ||
-            scentSourceListRect == null ||
-            scentSourceListContentRect == null ||
-            Mouse.current == null)
-        {
-            scentSourceListPointerDown = false;
-            return;
-        }
-
-        Vector2 screenPosition = Mouse.current.position.ReadValue();
-        bool pointerOverList = RectTransformUtility.RectangleContainsScreenPoint(scentSourceListRect, screenPosition, null);
-        Vector2 scrollDelta = Mouse.current.scroll.ReadValue();
-        if (pointerOverList && Mathf.Abs(scrollDelta.y) > 0.01f)
-            ScrollScentSourceList(scrollDelta);
-
-        if (Mouse.current.leftButton.wasPressedThisFrame)
-        {
-            scentSourceListPointerDown = pointerOverList;
-            scentSourceListPointerDragged = false;
-            scentSourceListPointerDownPosition = screenPosition;
-            if (scentSourceListPointerDown)
-                BeginScentSourceListDrag(screenPosition, null);
-        }
-
-        if (scentSourceListPointerDown && Mouse.current.leftButton.isPressed)
-        {
-            if ((screenPosition - scentSourceListPointerDownPosition).sqrMagnitude > 9f)
-                scentSourceListPointerDragged = true;
-
-            if (scentSourceListPointerDragged)
-                DragScentSourceList(screenPosition, null);
-        }
-
-        if (scentSourceListPointerDown && Mouse.current.leftButton.wasReleasedThisFrame)
-        {
-            if (!scentSourceListPointerDragged && pointerOverList)
-                SelectScentSourceListRowAtScreenPosition(screenPosition, null);
-
-            scentSourceListPointerDown = false;
-            scentSourceListPointerDragged = false;
-        }
     }
 
     private void CycleScentLeftSelection(int direction)

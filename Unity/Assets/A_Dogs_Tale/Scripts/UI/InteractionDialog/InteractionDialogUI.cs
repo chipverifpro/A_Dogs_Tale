@@ -205,7 +205,6 @@ public sealed partial class InteractionDialogUI : MonoBehaviour
 
         ApplyDialogScaleAndPosition();
         RefreshInteractionView();
-        HandleScentSourceListPointerInput();
         SpinPreview(playerPreviewSlot);
         SpinPreview(playerItemPreviewSlot);
         SpinPreview(targetPreviewSlot);
@@ -267,6 +266,27 @@ public sealed partial class InteractionDialogUI : MonoBehaviour
         }
 
         return RectTransformUtility.RectangleContainsScreenPoint(instance.dialogRect, screenPoint, null);
+    }
+
+    public static bool IsPointerOverScrollableList(Vector2 screenPoint)
+    {
+        InteractionDialogUI instance = activeInstance;
+        return instance != null &&
+            instance.isOpen &&
+            (instance.IsPointerOverActiveRect(instance.socialEmoteGridObject, screenPoint) ||
+             instance.IsPointerOverActiveRect(instance.packMemberListObject, screenPoint) ||
+             instance.IsPointerOverActiveRect(instance.packHeldItemListObject, screenPoint) ||
+             instance.IsPointerOverActiveRect(instance.questListObject, screenPoint) ||
+             instance.IsPointerOverActiveRect(instance.scentSourceListObject, screenPoint));
+    }
+
+    private bool IsPointerOverActiveRect(GameObject uiObject, Vector2 screenPoint)
+    {
+        if (uiObject == null || !uiObject.activeInHierarchy)
+            return false;
+
+        RectTransform rect = uiObject.GetComponent<RectTransform>();
+        return rect != null && RectTransformUtility.RectangleContainsScreenPoint(rect, screenPoint, null);
     }
 
     public void Hide()

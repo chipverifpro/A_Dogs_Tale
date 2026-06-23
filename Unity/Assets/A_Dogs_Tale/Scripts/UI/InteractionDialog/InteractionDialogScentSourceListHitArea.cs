@@ -9,20 +9,46 @@ sealed class InteractionDialogScentSourceListHitArea :
     IEndDragHandler,
     IScrollHandler
 {
+    private InteractionDialogUI owner;
+    private bool suppressNextClick;
+
     public void Initialize(InteractionDialogUI owner)
     {
+        this.owner = owner;
     }
 
     public void OnPointerClick(PointerEventData eventData)
     {
+        if (eventData == null ||
+            eventData.button != PointerEventData.InputButton.Left)
+        {
+            return;
+        }
+
+        if (suppressNextClick)
+        {
+            suppressNextClick = false;
+            return;
+        }
+
+        owner?.SelectScentSourceListRowAtScreenPosition(eventData.position, eventData.pressEventCamera);
     }
 
     public void OnBeginDrag(PointerEventData eventData)
     {
+        if (eventData == null)
+            return;
+
+        owner?.BeginScentSourceListDrag(eventData.position, eventData.pressEventCamera);
     }
 
     public void OnDrag(PointerEventData eventData)
     {
+        if (eventData == null)
+            return;
+
+        suppressNextClick = true;
+        owner?.DragScentSourceList(eventData.position, eventData.pressEventCamera);
     }
 
     public void OnEndDrag(PointerEventData eventData)
@@ -31,5 +57,9 @@ sealed class InteractionDialogScentSourceListHitArea :
 
     public void OnScroll(PointerEventData eventData)
     {
+        if (eventData == null)
+            return;
+
+        owner?.ScrollScentSourceList(eventData.scrollDelta);
     }
 }

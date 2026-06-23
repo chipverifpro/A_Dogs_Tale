@@ -477,6 +477,8 @@ public class NewInputAdapter : MonoBehaviour
                 ? zoomAction.ReadValue<float>()
                 : 0f;
             state.zoomDelta += GetMobilePinchZoomDelta();
+            if (IsMousePointerOverInteractionDialogScrollableList())
+                state.zoomDelta = 0f;
         }
         else
         {
@@ -1386,6 +1388,13 @@ public class NewInputAdapter : MonoBehaviour
         // In a build, the only window is the game itself
         return (Application.isFocused && !IsPointerOverUI());
     #endif
+    }
+
+    private static bool IsMousePointerOverInteractionDialogScrollableList()
+    {
+        Mouse mouse = Mouse.current;
+        return mouse != null &&
+            InteractionDialogUI.IsPointerOverScrollableList(mouse.position.ReadValue());
     }
 
 

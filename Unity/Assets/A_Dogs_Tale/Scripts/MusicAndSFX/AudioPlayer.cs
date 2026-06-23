@@ -42,6 +42,7 @@ public partial class AudioPlayer : MonoBehaviour
 
     public static AudioPlayer Instance { get; private set; }
     private string lastRequestedMusicClipName;
+    private const float TimedClipFadeOutSeconds = 0.1f;
 
     public static void PlayUiButtonClick()
     {
@@ -64,7 +65,7 @@ public partial class AudioPlayer : MonoBehaviour
         if (dir == null) dir = FindFirstObjectByType<Dir>(FindObjectsInactive.Include);
         if (dir == null)
         {
-            Debug.LogError($"AudioCatalog: ObjectDirectory not found");
+            Debug.LogError($"AudioCatalog: Directory not found");
             return;
         }
         if (audioCatalog == null) audioCatalog = dir.audioCatalog;
@@ -88,7 +89,7 @@ public partial class AudioPlayer : MonoBehaviour
     //  a list of currently playing copies so they can be ended
     //  anytime needed.
     // Can add a percentage volume to indicate source volume or distance.
-    public bool PlayClip(string name, float volumePct=1.0f)
+    public bool PlayClip(string name, float volumePct=1.0f, float startTime = 0f, float duration = -1f)
     {
         //Debug.Log($"[PlayClip] '{name}' requested.");
             
@@ -189,7 +190,7 @@ public partial class AudioPlayer : MonoBehaviour
         // 7. Play once or looped
         // Use this same coroutine for looping with fixed/random intervals, or one-time playback
         Coroutine co;
-        co = AudioPlayer.Instance.StartCoroutine(PlayWithInterval(src, clipCfg, taskInfo));
+        co = AudioPlayer.Instance.StartCoroutine(PlayWithInterval(src, clipCfg, taskInfo, startTime, duration));
         taskInfo.loopCo = co; // save coroutine ID for manual kills
 
         return true;    // successfully started playing.
@@ -291,7 +292,7 @@ public partial class AudioPlayer : MonoBehaviour
     //   repeat forever with fixed or random pauses between.
     // A TaskInfo structure is maintained so that tasks and audio 
     //   can be stopped if needed (ie. scene change, sound source disappears, etc)
-    IEnumerator PlayWithInterval(AudioSource src, AudioClipCfg clipCfg, AudioPlayTracking taskInfo)
+    IEnumerator PlayWithInterval(AudioSource src, AudioClipCfg clipCfg, AudioPlayTracking taskInfo, float startTime, float duration)
     {
         yield return null;  // avoid race condition with caller function
         int timesPlayed = 0;
@@ -303,11 +304,16 @@ public partial class AudioPlayer : MonoBehaviour
             if ((timesPlayed != 0) || (clipCfg.startAfterInterval == false)) // skip playing before waiting interval if requested.
             {
                 // Play the sound
+                float clipStartTime = Mathf.Clamp(startTime, 0f, clipCfg.clip.length);
+                if (clipStartTime >= clipCfg.clip.length)
+                    break;
+
+                src.time = clipStartTime;
                 src.Play();
                 taskInfo.isPlaying = true;
                 //Debug.Log($"[PlayWithInterval] '{clipCfg.name}' started playing.");
 
-                if (src.loop)
+                if (src.loop && duration <= 0f)
                 {
                     // a continuously looping track will never end,
                     //  so go ahead and exit this task.  The taskInfo
@@ -317,13 +323,24 @@ public partial class AudioPlayer : MonoBehaviour
                     yield break;    // exit coroutine without doing cleanup
                 }
                 // Wait for the clip to end
-                float clipLength = clipCfg.clip.length / Mathf.Abs(src.pitch);
-                yield return new WaitForSeconds(clipLength);
+                float pitchMagnitude = Mathf.Max(0.0001f, Mathf.Abs(src.pitch));
+                float remainingClipSeconds = (clipCfg.clip.length - clipStartTime) / pitchMagnitude;
+                if (duration > 0f && (src.loop || duration < remainingClipSeconds))
+                {
+                    yield return new WaitForSeconds(duration);
+                    yield return FadeOutAndStopTimedClip(src, taskInfo, TimedClipFadeOutSeconds);
+                    break;
+                }
+
+                yield return new WaitForSeconds(remainingClipSeconds);
 
                 // done playing
                 src.Stop();     // probably not necessary, it should already stop itself.
                 taskInfo.isPlaying = false;
                 //Debug.Log($"[PlayWithInterval] '{clipCfg.name}' finished playing.");
+
+                if (duration > 0f)
+                    break;
             }
 
             timesPlayed++;
@@ -363,6 +380,31 @@ public partial class AudioPlayer : MonoBehaviour
         // remove us from the running_Tasks list
         taskInfo.loopCo = null; // We are exiting, so don't need to keep this coroutine id anymore.  Not necessary, whole structure will be released on the next line.
         clipCfg.running_Tasks.Remove(taskInfo);
+    }
+
+    private IEnumerator FadeOutAndStopTimedClip(AudioSource src, AudioPlayTracking taskInfo, float fadeOutSeconds)
+    {
+        if (src == null)
+            yield break;
+
+        float startVolume = src.volume;
+        float elapsed = 0f;
+        float fadeDuration = Mathf.Max(0.0001f, fadeOutSeconds);
+        while (elapsed < fadeDuration && src != null)
+        {
+            elapsed += Time.deltaTime;
+            src.volume = Mathf.Lerp(startVolume, 0f, elapsed / fadeDuration);
+            yield return null;
+        }
+
+        if (src != null)
+        {
+            src.volume = 0f;
+            src.Stop();
+        }
+
+        if (taskInfo != null)
+            taskInfo.isPlaying = false;
     }
 
     // -------------------------------- STOP CLIPS -------------------------------
