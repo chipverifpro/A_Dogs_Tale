@@ -177,6 +177,26 @@ namespace DogGame.Tasks
             memory[pos] = info;
         }
 
+        private void MarkTargetDetected(Vector2Int pos)
+        {
+            if (!memory.TryGetValue(pos, out ScentMemory info))
+            {
+                info = new ScentMemory
+                {
+                    location = pos,
+                    scentKey = scentKey,
+                    timeChecked = Time.time,
+                    timeLastIncreased = -999f,
+                    lastVisitTime = -1f,
+                    cameFrom = pos,
+                    hasCameFrom = false
+                };
+            }
+
+            info.targetDetected = true;
+            memory[pos] = info;
+        }
+
         private static bool TryIsValidCellAt(ScentPerceptionModule scentModule, Vector2Int pos, int height)
         {
             var dir = scentModule.dir;

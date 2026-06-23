@@ -5,6 +5,17 @@ using UnityEngine;
 
 namespace DogGame.Tasks
 {
+    public enum ScentFollowState
+    {
+        Idle,
+        AcquireScent,
+        FollowTrail,
+        CastSearch,
+        TargetFound,
+        Failed,
+        Cancelled
+    }
+
     public sealed partial class Task_ScentFollow : IAgentTask
     {
         public string DebugName => $"ScentFollow({scentKey},{medium})";
@@ -48,11 +59,24 @@ namespace DogGame.Tasks
         private int stuckCounter;
         private bool prevExploring;
 
+        private ScentFollowState currentState = ScentFollowState.Idle;
+        private Vector2Int? lastStrongScentLocation;
+        private float lastStrongScentValue;
+        private float lastStrongScentTime;
+        private Vector2Int castSearchAnchor;
+        private int currentCastRadius;
+
+        private readonly float trailFollowThreshold01 = 0.15f;
+        private readonly float lostScentThreshold01 = 0.08f;
+        private readonly float strongScentThreshold01 = 0.40f;
+        private readonly int maxCastRadius = 5;
+
         public DirFlags lastBestDir = DirFlags.None;
         public Vector2Int lastBestPos;
         public float lastBestStrength;
 
         public Task_MoveToCell? moveToCell;
+        public ScentFollowState CurrentState => currentState;
 
         private Dir dir => Dir.Instance;
 
@@ -86,6 +110,12 @@ namespace DogGame.Tasks
             lastChosenScore = float.NegativeInfinity;
             stuckCounter = 0;
             prevExploring = false;
+            currentState = ScentFollowState.Idle;
+            lastStrongScentLocation = null;
+            lastStrongScentValue = 0f;
+            lastStrongScentTime = -1f;
+            castSearchAnchor = default;
+            currentCastRadius = 1;
 
             ClearScentMemory();
 
@@ -96,6 +126,7 @@ namespace DogGame.Tasks
 
                 NoteVisit(lastCellPos);
                 TryNoteScentAt(context, lastCellPos);
+                UpdateLastStrongScent(lastCellPos);
 
                 WorldObject otherAgent = context.Agent;
                 context.Agent.scentPerceptionModule?.IdentifyScent(
@@ -104,6 +135,7 @@ namespace DogGame.Tasks
                     agentId: otherAgent.ObjectId);
             }
 
+            EnterState(ScentFollowState.AcquireScent, "start");
             Debug.Log("Task_ScentFollow.Start");
         }
 
@@ -112,82 +144,28 @@ namespace DogGame.Tasks
             if (!started)
                 Start(context);
 
-            // 0) If we are already moving, keep driving that task.
-            if (moveToCell != null)
-            {
-                var moveResult = moveToCell.Tick(context, deltaTimeSeconds);
-                if (moveResult.Status == TaskStatus.Running ||
-                    moveResult.Status == TaskStatus.Failed ||
-                    moveResult.Status == TaskStatus.NotStarted)
-                {
-                    return moveResult;
-                }
+            TaskTickResult? moveTick = TickCurrentMove(context, deltaTimeSeconds);
+            if (moveTick.HasValue)
+                return moveTick.Value;
 
-                if (moveResult.Status == TaskStatus.Succeeded)
-                {
-                    moveToCell = null;
+            if (!TryGetReadyContext(context, out ScentPerceptionModule scentModule, out Cell cell, out TaskTickResult notReadyResult))
+                return notReadyResult;
 
-                    if (context.Agent?.locationModule != null)
-                    {
-                        prevCellPos = lastCellPos;
-                        lastCellPos = context.Agent.locationModule.cell.pos;
-                        NoteVisit(lastCellPos);
-                        TryNoteScentAt(context, lastCellPos);
-
-                        DebugPrintScentMemory();
-                    }
-
-                    if (IsTargetReached(context))
-                    {
-                        Debug.Log($"[ScentFollow] Found target for {scentKey}");
-                        return TaskTickResult.Succeeded();
-                    }
-
-                    if (IsHeuristicFound(lastCellPos))
-                    {
-                        Debug.Log($"[ScentFollow] Found target using IsHeuristicFound for {scentKey}");
-                        return TaskTickResult.Succeeded();
-                    }
-                }
-            }
-
-            if (context.Agent == null)
-                return TaskTickResult.Failed("missing_agent");
-
-            var scentModule = context.Agent.scentPerceptionModule;
-            if (scentModule == null)
-                return TaskTickResult.Failed("missing_scent_perception_module");
-
-            if (context.Agent.locationModule == null)
-                return TaskTickResult.Failed("missing_location_module");
-
-            // 1) Global stop conditions.
-            float elapsed = Time.time - startedTime;
-            if (elapsed > maxSeconds)
-            {
-                Debug.Log($"Timed out gracefully ({elapsed:0.00}s).");
-                return TaskTickResult.Succeeded();
-            }
-
-            if (stepsTaken >= maxSteps)
-            {
-                Debug.Log($"Step limit reached gracefully ({stepsTaken}).");
-                return TaskTickResult.Succeeded();
-            }
+            TaskTickResult? stopResult = CheckStopLimits();
+            if (stopResult.HasValue)
+                return stopResult.Value;
 
             if (Time.time < nextStepTime)
                 return TaskTickResult.Running();
 
             nextStepTime = Time.time + stepCooldownSeconds;
 
-            // 2) Sniff current + neighbors -> update memory.
-            Cell cell = context.Agent.locationModule.cell;
             Vector2Int centerPos = cell.pos;
             int height = cell.height;
 
             UpdateMemoryFromLocalSniff(context, scentModule, centerPos, height);
+            UpdateLastStrongScent(centerPos);
 
-            // 3) Choose next step using memory + explore logic.
             bool exploring = stuckCounter >= stuckStepsToExplore;
             if (exploring != prevExploring)
             {
@@ -195,42 +173,251 @@ namespace DogGame.Tasks
                 prevExploring = exploring;
             }
 
-            if (!TryPickNextStep(
-                    scentModule: scentModule,
-                    centerPos: centerPos,
-                    height: height,
-                    exploring: exploring,
-                    out DirFlags chosenDir,
-                    out Vector2Int chosenPos,
-                    out float chosenStrength,
-                    out float chosenScore))
+            switch (currentState)
             {
-                Debug.Log("No viable next step (likely boxed in or no scent).");
-                chosenPos = JumpToHighestScore(centerPos);
-                Debug.Log($"JumpToHighestScore {chosenPos}");
-                if (centerPos == chosenPos)
-                {
-                    Debug.Log("Already at best score.");
-                    return TaskTickResult.Succeeded();
-                }
+                case ScentFollowState.AcquireScent:
+                    return TickAcquireScent(context, scentModule, centerPos, height, exploring);
 
-                moveToCell = new Task_MoveToCell(chosenPos.x, chosenPos.y, 0.25f);
-                moveToCell.Start(context);
-                stepsTaken++;
+                case ScentFollowState.FollowTrail:
+                    return TickFollowTrail(context, scentModule, centerPos, height, exploring);
+
+                case ScentFollowState.CastSearch:
+                    return TickCastSearch(context, scentModule, centerPos, height);
+
+                case ScentFollowState.TargetFound:
+                    return TaskTickResult.Succeeded();
+
+                case ScentFollowState.Failed:
+                    return TaskTickResult.Failed("scent_follow_failed");
+
+                case ScentFollowState.Cancelled:
+                    return TaskTickResult.Failed("scent_follow_cancelled");
+
+                case ScentFollowState.Idle:
+                default:
+                    EnterState(ScentFollowState.AcquireScent, "tick_from_idle");
+                    return TaskTickResult.Running();
+            }
+        }
+
+        public void Stop(TaskContext context)
+        {
+            moveToCell = null;
+            EnterState(ScentFollowState.Cancelled, "stop");
+        }
+
+        private TaskTickResult TickAcquireScent(
+            TaskContext context,
+            ScentPerceptionModule scentModule,
+            Vector2Int centerPos,
+            int height,
+            bool exploring)
+        {
+            if (ConfirmTargetFound(context, centerPos))
+                return TaskTickResult.Succeeded();
+
+            if (!TryPickNextStep(scentModule, centerPos, height, exploring, out DirFlags chosenDir, out Vector2Int chosenPos, out float chosenStrength, out float chosenScore) ||
+                chosenStrength < minStrengthToContinue01)
+            {
+                castSearchAnchor = lastStrongScentLocation ?? centerPos;
+                currentCastRadius = 1;
+                EnterState(ScentFollowState.CastSearch, "no_acquired_scent");
                 return TaskTickResult.Running();
             }
 
+            EnterState(chosenStrength >= trailFollowThreshold01 ? ScentFollowState.FollowTrail : ScentFollowState.AcquireScent, "candidate_acquired");
+            return CommitChosenMove(context, chosenDir, chosenPos, chosenStrength, chosenScore);
+        }
+
+        private TaskTickResult TickFollowTrail(
+            TaskContext context,
+            ScentPerceptionModule scentModule,
+            Vector2Int centerPos,
+            int height,
+            bool exploring)
+        {
+            if (ConfirmTargetFound(context, centerPos))
+                return TaskTickResult.Succeeded();
+
+            float currentStrength = GetLastStrength(centerPos);
+            if (currentStrength > 0f && currentStrength < lostScentThreshold01)
+            {
+                castSearchAnchor = lastStrongScentLocation ?? centerPos;
+                currentCastRadius = 1;
+                EnterState(ScentFollowState.CastSearch, "current_scent_lost");
+                return TaskTickResult.Running();
+            }
+
+            if (!TryPickNextStep(scentModule, centerPos, height, exploring, out DirFlags chosenDir, out Vector2Int chosenPos, out float chosenStrength, out float chosenScore))
+            {
+                castSearchAnchor = lastStrongScentLocation ?? centerPos;
+                currentCastRadius = 1;
+                EnterState(ScentFollowState.CastSearch, "no_follow_candidate");
+                return TaskTickResult.Running();
+            }
+
+            if (chosenStrength < minStrengthToContinue01)
+            {
+                castSearchAnchor = lastStrongScentLocation ?? centerPos;
+                currentCastRadius = 1;
+                EnterState(ScentFollowState.CastSearch, "candidate_too_weak");
+                return TaskTickResult.Running();
+            }
+
+            return CommitChosenMove(context, chosenDir, chosenPos, chosenStrength, chosenScore);
+        }
+
+        private TaskTickResult TickCastSearch(
+            TaskContext context,
+            ScentPerceptionModule scentModule,
+            Vector2Int centerPos,
+            int height)
+        {
+            if (ConfirmTargetFound(context, centerPos))
+                return TaskTickResult.Succeeded();
+
+            if (GetLastStrength(centerPos) >= trailFollowThreshold01)
+            {
+                EnterState(ScentFollowState.FollowTrail, "trail_reacquired_at_current_cell");
+                return TaskTickResult.Running();
+            }
+
+            if (currentCastRadius > maxCastRadius)
+            {
+                EnterState(ScentFollowState.Failed, "cast_radius_exhausted");
+                return TaskTickResult.Failed("scent_cast_search_exhausted");
+            }
+
+            if (TryPickNextStep(scentModule, centerPos, height, exploring: true, out DirFlags chosenDir, out Vector2Int chosenPos, out float chosenStrength, out float chosenScore) &&
+                IsWithinCastRadius(chosenPos))
+            {
+                if (chosenStrength >= trailFollowThreshold01)
+                    EnterState(ScentFollowState.FollowTrail, "trail_reacquired_by_candidate");
+
+                AdvanceCastRadiusIfNeeded(chosenPos);
+                return CommitChosenMove(context, chosenDir, chosenPos, chosenStrength, chosenScore);
+            }
+
+            Vector2Int rememberedBest = JumpToHighestScore(centerPos);
+            if (rememberedBest != centerPos && IsWithinCastRadius(rememberedBest))
+            {
+                AdvanceCastRadiusIfNeeded(rememberedBest);
+                return BeginMove(context, rememberedBest);
+            }
+
+            currentCastRadius++;
+            Debug.Log($"[ScentFollow] Expanding cast search to radius {currentCastRadius} around {castSearchAnchor}");
+            return TaskTickResult.Running();
+        }
+
+        private TaskTickResult? TickCurrentMove(TaskContext context, float deltaTimeSeconds)
+        {
+            if (moveToCell == null)
+                return null;
+
+            var moveResult = moveToCell.Tick(context, deltaTimeSeconds);
+            if (moveResult.Status == TaskStatus.Running ||
+                moveResult.Status == TaskStatus.NotStarted)
+            {
+                return moveResult;
+            }
+
+            if (moveResult.Status == TaskStatus.Failed)
+            {
+                moveToCell = null;
+                EnterState(ScentFollowState.Failed, moveResult.FailureReason ?? "move_failed");
+                return moveResult;
+            }
+
+            moveToCell = null;
+            NoteArrival(context);
+
+            if (ConfirmTargetFound(context, lastCellPos))
+                return TaskTickResult.Succeeded();
+
+            return null;
+        }
+
+        private bool TryGetReadyContext(
+            TaskContext context,
+            out ScentPerceptionModule scentModule,
+            out Cell cell,
+            out TaskTickResult failureResult)
+        {
+            scentModule = null!;
+            cell = null!;
+            failureResult = TaskTickResult.Running();
+
+            if (context.Agent == null)
+            {
+                EnterState(ScentFollowState.Failed, "missing_agent");
+                failureResult = TaskTickResult.Failed("missing_agent");
+                return false;
+            }
+
+            scentModule = context.Agent.scentPerceptionModule;
+            if (scentModule == null)
+            {
+                EnterState(ScentFollowState.Failed, "missing_scent_perception_module");
+                failureResult = TaskTickResult.Failed("missing_scent_perception_module");
+                return false;
+            }
+
+            if (context.Agent.locationModule == null)
+            {
+                EnterState(ScentFollowState.Failed, "missing_location_module");
+                failureResult = TaskTickResult.Failed("missing_location_module");
+                return false;
+            }
+
+            cell = context.Agent.locationModule.cell;
+            return true;
+        }
+
+        private TaskTickResult? CheckStopLimits()
+        {
+            float elapsed = Time.time - startedTime;
+            if (elapsed > maxSeconds)
+            {
+                Debug.Log($"[ScentFollow] Timed out after {elapsed:0.00}s.");
+                EnterState(ScentFollowState.Failed, "timeout");
+                return TaskTickResult.Failed("scent_follow_timeout");
+            }
+
+            if (stepsTaken >= maxSteps)
+            {
+                Debug.Log($"[ScentFollow] Step limit reached ({stepsTaken}).");
+                EnterState(ScentFollowState.Failed, "step_limit");
+                return TaskTickResult.Failed("scent_follow_step_limit");
+            }
+
+            return null;
+        }
+
+        private void NoteArrival(TaskContext context)
+        {
+            if (context.Agent?.locationModule == null)
+                return;
+
+            prevCellPos = lastCellPos;
+            lastCellPos = context.Agent.locationModule.cell.pos;
+            NoteVisit(lastCellPos);
+            TryNoteScentAt(context, lastCellPos);
+            UpdateLastStrongScent(lastCellPos);
+            DebugPrintScentMemory();
+        }
+
+        private TaskTickResult CommitChosenMove(
+            TaskContext context,
+            DirFlags chosenDir,
+            Vector2Int chosenPos,
+            float chosenStrength,
+            float chosenScore)
+        {
             lastBestDir = chosenDir;
             lastBestPos = chosenPos;
             lastBestStrength = chosenStrength;
 
-            if (chosenStrength < minStrengthToContinue01)
-            {
-                Debug.Log("Scent too weak to continue.");
-                return TaskTickResult.Succeeded();
-            }
-
-            // 4) Stuck detection: if we are not improving, start exploring.
             if (chosenScore <= lastChosenScore + improvementEpsilon)
                 stuckCounter++;
             else
@@ -238,16 +425,65 @@ namespace DogGame.Tasks
 
             lastChosenScore = chosenScore;
 
-            // 5) Issue move one step.
-            moveToCell = new Task_MoveToCell(chosenPos.x, chosenPos.y, 0.25f);
-            moveToCell.Start(context);
+            return BeginMove(context, chosenPos);
+        }
 
+        private TaskTickResult BeginMove(TaskContext context, Vector2Int targetPos)
+        {
+            moveToCell = new Task_MoveToCell(targetPos.x, targetPos.y, 0.25f);
+            moveToCell.Start(context);
             stepsTaken++;
             return TaskTickResult.Running();
         }
 
-        public void Stop(TaskContext context)
+        private bool ConfirmTargetFound(TaskContext context, Vector2Int pos)
         {
+            if (!IsTargetReached(context) && !IsHeuristicFound(pos))
+                return false;
+
+            MarkTargetDetected(pos);
+            EnterState(ScentFollowState.TargetFound, "target_confirmed");
+            Debug.Log($"[ScentFollow] Found target for {scentKey}");
+            return true;
+        }
+
+        private void UpdateLastStrongScent(Vector2Int pos)
+        {
+            float strength = GetLastStrength(pos);
+            if (strength <= 0f)
+                return;
+
+            if (strength < strongScentThreshold01 && strength <= lastStrongScentValue)
+                return;
+
+            lastStrongScentLocation = pos;
+            lastStrongScentValue = strength;
+            lastStrongScentTime = Time.time;
+
+            if (currentState == ScentFollowState.CastSearch)
+                castSearchAnchor = pos;
+        }
+
+        private void EnterState(ScentFollowState nextState, string reason)
+        {
+            if (currentState == nextState)
+                return;
+
+            Debug.Log($"[ScentFollow] State {currentState} -> {nextState} ({reason})");
+            currentState = nextState;
+        }
+
+        private bool IsWithinCastRadius(Vector2Int pos)
+        {
+            int chebyshev = Mathf.Max(Mathf.Abs(pos.x - castSearchAnchor.x), Mathf.Abs(pos.y - castSearchAnchor.y));
+            return chebyshev <= currentCastRadius;
+        }
+
+        private void AdvanceCastRadiusIfNeeded(Vector2Int chosenPos)
+        {
+            int chebyshev = Mathf.Max(Mathf.Abs(chosenPos.x - castSearchAnchor.x), Mathf.Abs(chosenPos.y - castSearchAnchor.y));
+            if (chebyshev >= currentCastRadius)
+                currentCastRadius = Mathf.Min(currentCastRadius + 1, maxCastRadius + 1);
         }
     }
 }
