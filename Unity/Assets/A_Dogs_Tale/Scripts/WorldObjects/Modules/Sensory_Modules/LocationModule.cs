@@ -168,6 +168,8 @@ namespace DogGame.Modules
             string agentName = worldObject != null ? worldObject.DisplayName : name;
             string roomName = ResolveRoomName(roomId);
             RoomSnapshot snapshot = BuildRoomSnapshot(roomId);
+            if (action == "Entered")
+                LogRoomEntryBanner(roomId);
 //            BottomBanner.LogMessageWithIcon(
 //                BannerSense.Vision,
 //                BannerLevel.Low,
@@ -176,6 +178,38 @@ namespace DogGame.Modules
 //                true);
             if (DisplayRoomSnapshot)
                 Debug.Log($"[{agentName}] {action} {roomName}. {snapshot.ToLogText()}");
+        }
+
+        private void LogRoomEntryBanner(int roomId)
+        {
+            if (!IsCurrentControlledAgent())
+                return;
+
+            string roomType = ResolveRoomTypePhrase(roomId);
+            if (string.IsNullOrWhiteSpace(roomType))
+                return;
+
+            BottomBanner.LogAgentMessage(
+                worldObject,
+                BannerSense.Vision,
+                BannerLevel.Low,
+                $"You have entered {roomType}");
+        }
+
+        private bool IsCurrentControlledAgent()
+        {
+            if (worldObject == null)
+                return false;
+
+            GameInputRouter router = dir != null ? dir.gameInputRouter : null;
+            if (router == null)
+                router = GameInputRouter.Instance;
+
+            WorldObject controlled = router != null ? router.currentControlledWorldObject : null;
+            if (controlled == null && dir != null && dir.playerPack != null)
+                controlled = dir.playerPack.packLeader;
+
+            return controlled == worldObject;
         }
 
         #endregion
@@ -452,6 +486,36 @@ namespace DogGame.Modules
                 return room.name.Trim();
 
             return ResolveSemanticRoomName(dir.gen.rooms, roomId);
+        }
+
+        private string ResolveRoomTypePhrase(int roomId)
+        {
+            if (roomId < 0 || dir == null || dir.gen == null || dir.gen.rooms == null || roomId >= dir.gen.rooms.Count)
+                return "a room";
+
+            Room room = dir.gen.rooms[roomId];
+            if (room == null)
+                return "a room";
+
+            DungeonSettings settings = dir.cfg != null ? dir.cfg : dir.gen.cfg;
+            string label = RoomUseAssigner.GetRoomLabel(room, settings);
+            if (string.IsNullOrWhiteSpace(label))
+                return "a room";
+
+            string normalized = label.Trim();
+            switch (normalized)
+            {
+                case "Outdoor":
+                    return "outdoors";
+                case "Room":
+                    return "a room";
+                case "Utility":
+                    return "the utility room";
+                case "Wooded":
+                    return "the woods";
+                default:
+                    return $"the {normalized.ToLowerInvariant()}";
+            }
         }
 
         private string ResolveSemanticRoomName(List<Room> rooms, int roomId)
