@@ -141,9 +141,14 @@ namespace DogGame.Modules
 
         public float GetMaxSpeedByCurrentWalkMode()
         {
+            return GetMaxSpeedByWalkMode(currentWalkMode);
+        }
+
+        public float GetMaxSpeedByWalkMode(WalkMode walkMode)
+        {
             for (int i = 0; i < maxSpeedsByMode.Count; i++)
             {
-                if (maxSpeedsByMode[i].mode == currentWalkMode)
+                if (maxSpeedsByMode[i].mode == walkMode)
                     return maxSpeedsByMode[i].maxSpeed;
             }
 

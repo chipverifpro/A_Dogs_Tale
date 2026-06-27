@@ -79,62 +79,23 @@ public static class DogInputActionsGenerator
         var trackedDevicePositionAction = AddPassThrough(ui, "TrackedDevicePosition", "Vector3");
         var trackedDeviceOrientationAction = AddPassThrough(ui, "TrackedDeviceOrientation", "Quaternion");
 
-        var wasd = moveAction.AddCompositeBinding("2DVector");
-        wasd.With("Up",    "<Keyboard>/w");
-        wasd.With("Down",  "<Keyboard>/s");
-        wasd.With("Left",  "<Keyboard>/a");
-        wasd.With("Right", "<Keyboard>/d");
-
-        var arrows = moveAction.AddCompositeBinding("2DVector");
-        arrows.With("Up",    "<Keyboard>/upArrow");
-        arrows.With("Down",  "<Keyboard>/downArrow");
-        arrows.With("Left",  "<Keyboard>/leftArrow");
-        arrows.With("Right", "<Keyboard>/rightArrow");
         moveAction.AddBinding("<Gamepad>/leftStick");
-        jumpAction.AddBinding("<Keyboard>/space");
         jumpAction.AddBinding("<Gamepad>/buttonSouth");
-        interactAction.AddBinding("<Keyboard>/e");
         interactAction.AddBinding("<Gamepad>/buttonWest");
-        barkAction.AddBinding("<Keyboard>/q");
         barkAction.AddBinding("<Gamepad>/rightShoulder");
-        sprintAction.AddBinding("<Keyboard>/leftShift");
         sprintAction.AddBinding("<Gamepad>/leftStickPress");
-        pauseAction.AddBinding("<Keyboard>/escape");
         pauseAction.AddBinding("<Gamepad>/start");
-        cameraViewAction.AddBinding("<Keyboard>/tab");
         cameraViewAction.AddBinding("<Gamepad>/buttonNorth");
-        markTerritoryAction.AddBinding("<Keyboard>/r");
         markTerritoryAction.AddBinding("<Gamepad>/rightTrigger");
-        digAction.AddBinding("<Keyboard>/v");
         zoomAction.AddBinding("<Mouse>/scroll/y");
-
-        var zoomKeyboardAxis = zoomAction.AddCompositeBinding("1DAxis");
-        zoomKeyboardAxis.With("Negative", "<Keyboard>/z");
-        zoomKeyboardAxis.With("Positive", "<Keyboard>/x");
 
         var zoomGamepadAxis = zoomAction.AddCompositeBinding("1DAxis");
         zoomGamepadAxis.With("Negative", "<Gamepad>/leftTrigger");
         zoomGamepadAxis.With("Positive", "<Gamepad>/rightTrigger");
 
-        changeFormationAction.AddBinding("<Keyboard>/f");
         changeFormationAction.AddBinding("<Gamepad>/dpad/right");
         selectObjectAction.AddBinding("<Mouse>/leftButton");
-        selectObjectAction.AddBinding("<Keyboard>/a");
-        skipAnyKeyAction.AddBinding("<Keyboard>/anyKey");
         skipAnyKeyAction.AddBinding("<Gamepad>/button*");
-
-        var nextAgentAxis = nextAgentAction.AddCompositeBinding("1DAxis");
-        nextAgentAxis.With("Negative", "<Keyboard>/minus");
-        nextAgentAxis.With("Positive", "<Keyboard>/equals");
-
-        var strafeAxis = strafeAction.AddCompositeBinding("1DAxis");
-        strafeAxis.With("Negative", "<Keyboard>/q");
-        strafeAxis.With("Positive", "<Keyboard>/e");
-
-        popupTab1Action.AddBinding("<Keyboard>/1");
-        popupTab2Action.AddBinding("<Keyboard>/2");
-        popupTab3Action.AddBinding("<Keyboard>/3");
-        popupTab4Action.AddBinding("<Keyboard>/4");
 
         var navigateWasd = navigateAction.AddCompositeBinding("2DVector");
         navigateWasd.With("Up", "<Keyboard>/w");

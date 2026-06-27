@@ -2,7 +2,6 @@ using System.Collections;
 using Cinemachine;
 using DogGame.Modules;
 using UnityEngine;
-using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
 
 public enum CameraModes { Unchanged = 0, FP, Overhead, Perspective, Nose };   // Unchanged is not a valid camera, just means leave as-is
@@ -20,8 +19,6 @@ public class CameraModeSwitcher : MonoBehaviour
     public CinemachineBrain brain;
     public CinemachineVirtualCamera vcamFP, vcamPerspective, vcamOverhead, vcamNose, vcamFree;
     //public GameObject playerModel;
-    public KeyCode toggleKey = KeyCode.Tab;
-    public KeyCode freeCameraToggleKey = KeyCode.BackQuote;
     public WorldObject target;
     public float height = 20f;
 
@@ -121,16 +118,9 @@ public class CameraModeSwitcher : MonoBehaviour
             loggedTargetWarning = true;
         }
 
-        if (WasFreeCameraTogglePressed())
-        {
-            if (freeCameraActive)
-                freeCameraController?.FocusLeaderNow();
-            else
-                EnableFreeCamera();
-        }
-
-        if (freeCameraActive && WasFreeCameraExitPressed())
-            DisableFreeCamera(restoreFollow: true);
+        PlayerInputState inputState = GetInputState();
+        if (inputState != null && inputState.freeCameraTogglePressed)
+            ToggleFreeCamera();
 
         if (freeCameraActive)
         {
@@ -172,6 +162,14 @@ public class CameraModeSwitcher : MonoBehaviour
             }
         //    target.appearanceModule.camera_refresh_needed = false;
         //}
+    }
+
+    private PlayerInputState GetInputState()
+    {
+        if (dir == null)
+            dir = Dir.Instance;
+
+        return dir != null && dir.gameInputRouter != null ? dir.gameInputRouter.InputState : GameInputRouter.Instance?.InputState;
     }
 
     public void SetViewTarget(WorldObject cameraTarget)
@@ -381,53 +379,6 @@ public class CameraModeSwitcher : MonoBehaviour
     }
 */
 
-    void Update_CameraHeight()
-    {
-        float delta = 0f;
-        float step = 0.5f;
-        bool continuous = true;
-
-        // '+' is usually Shift+'=' on the main keyboard.
-        bool plus = IsKeyboardKeyPressed(Key.Equals) || IsKeyboardKeyPressed(Key.NumpadPlus);
-        bool minus = IsKeyboardKeyPressed(Key.Minus) || IsKeyboardKeyPressed(Key.NumpadMinus);
-
-        if (continuous)
-        {
-            if (plus) delta += step * Time.deltaTime * 10f;
-            if (minus) delta -= step * Time.deltaTime * 10f;
-        }
-        else
-        {
-            if (WasKeyboardKeyPressedThisFrame(Key.Equals) || WasKeyboardKeyPressedThisFrame(Key.NumpadPlus)) delta += step;
-            if (WasKeyboardKeyPressedThisFrame(Key.Minus) || WasKeyboardKeyPressedThisFrame(Key.NumpadMinus)) delta -= step;
-        }
-
-        if (Mathf.Approximately(delta, 0f)) return;
-
-        // Pick which of your three is currently live
-        CinemachineVirtualCamera targetVcam = GetLiveVCam();
-        if (targetVcam == null) return;
-
-        // Adjust according to body type
-        var transposer = targetVcam.GetCinemachineComponent<CinemachineTransposer>();
-        if (transposer != null)
-        {
-            var off = transposer.m_FollowOffset;
-            off.y += delta;
-            transposer.m_FollowOffset = off;
-            return;
-        }
-
-        // Hard Lock to Target: use Camera Offset extension for "height"
-        var camOffset = targetVcam.GetComponent<CinemachineCameraOffset>();
-        if (camOffset == null)
-            camOffset = targetVcam.gameObject.AddComponent<CinemachineCameraOffset>();
-
-        var o = camOffset.m_Offset;
-        o.y += delta;
-        camOffset.m_Offset = o;
-    }
-
     CinemachineVirtualCamera GetLiveVCam()
     {
         // Prefer the one that is live according to Cinemachine
@@ -496,10 +447,6 @@ public class CameraModeSwitcher : MonoBehaviour
         delta *= zoomStep;  // scales zoom speed
 
         // 'x' = zoom in (closer), 'z' = zoom out (farther)
-        //if (Input.GetKey(KeyCode.Equals) || Input.GetKey(KeyCode.Plus))
-        //    delta -= zoomStep * Time.deltaTime * 10f;
-        //if (Input.GetKey(KeyCode.Minus) || Input.GetKey(KeyCode.Underscore))
-        //    delta += zoomStep * Time.deltaTime * 10f;
 
         if (Mathf.Approximately(delta, 0f))
             return;
@@ -798,48 +745,4 @@ public class CameraModeSwitcher : MonoBehaviour
             freeCameraController.SnapToCurrentTransform();
     }
 
-    private bool WasFreeCameraTogglePressed()
-    {
-        return WasKeyCodePressedThisFrame(freeCameraToggleKey);
-    }
-
-    private static bool WasFreeCameraExitPressed()
-    {
-        return Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame;
-    }
-
-    private static bool IsKeyboardKeyPressed(Key key)
-    {
-        Keyboard keyboard = Keyboard.current;
-        return keyboard != null && key != Key.None && keyboard[key].isPressed;
-    }
-
-    private static bool WasKeyboardKeyPressedThisFrame(Key key)
-    {
-        Keyboard keyboard = Keyboard.current;
-        return keyboard != null && key != Key.None && keyboard[key].wasPressedThisFrame;
-    }
-
-    private static bool WasKeyCodePressedThisFrame(KeyCode keyCode)
-    {
-        return keyCode switch
-        {
-            KeyCode.BackQuote => WasKeyboardKeyPressedThisFrame(Key.Backquote),
-            KeyCode.Tab => WasKeyboardKeyPressedThisFrame(Key.Tab),
-            KeyCode.Escape => WasKeyboardKeyPressedThisFrame(Key.Escape),
-            KeyCode.F1 => WasKeyboardKeyPressedThisFrame(Key.F1),
-            KeyCode.F2 => WasKeyboardKeyPressedThisFrame(Key.F2),
-            KeyCode.F3 => WasKeyboardKeyPressedThisFrame(Key.F3),
-            KeyCode.F4 => WasKeyboardKeyPressedThisFrame(Key.F4),
-            KeyCode.F5 => WasKeyboardKeyPressedThisFrame(Key.F5),
-            KeyCode.F6 => WasKeyboardKeyPressedThisFrame(Key.F6),
-            KeyCode.F7 => WasKeyboardKeyPressedThisFrame(Key.F7),
-            KeyCode.F8 => WasKeyboardKeyPressedThisFrame(Key.F8),
-            KeyCode.F9 => WasKeyboardKeyPressedThisFrame(Key.F9),
-            KeyCode.F10 => WasKeyboardKeyPressedThisFrame(Key.F10),
-            KeyCode.F11 => WasKeyboardKeyPressedThisFrame(Key.F11),
-            KeyCode.F12 => WasKeyboardKeyPressedThisFrame(Key.F12),
-            _ => false
-        };
-    }
 }

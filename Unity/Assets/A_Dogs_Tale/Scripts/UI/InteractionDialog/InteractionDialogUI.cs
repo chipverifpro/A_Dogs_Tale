@@ -197,11 +197,27 @@ public sealed partial class InteractionDialogUI : MonoBehaviour
 
     private void Update()
     {
-        if (WasInteractionTogglePressedThisFrame())
+        PlayerInputState inputState = GetInputState();
+        if (inputState != null && TryGetShortcutTab(inputState.requestedPopupTabIndex, out InteractionTab requestedTab))
+        {
+            if (isOpen)
+                SwitchToTab(requestedTab);
+            else
+                Show(requestedTab);
+        }
+        else if (inputState != null && inputState.interactionPanelTogglePressed)
+        {
             Toggle();
+        }
 
         if (!isOpen)
             return;
+
+        if (inputState != null && inputState.closeDialogsPressed)
+        {
+            Hide();
+            return;
+        }
 
         ApplyDialogScaleAndPosition();
         RefreshInteractionView();
@@ -325,20 +341,36 @@ public sealed partial class InteractionDialogUI : MonoBehaviour
         GamePause.Resume();
     }
 
-    private bool WasInteractionTogglePressedThisFrame()
+    private static PlayerInputState GetInputState()
     {
-        Keyboard keyboard = Keyboard.current;
-        if (keyboard == null || !keyboard.iKey.wasPressedThisFrame)
-            return false;
+        GameInputRouter router = GameInputRouter.Instance;
+        if (router != null)
+            return router.InputState;
 
-        GameObject selectedObject = EventSystem.current != null ? EventSystem.current.currentSelectedGameObject : null;
-        if (selectedObject != null &&
-            (selectedObject.GetComponent<TMP_InputField>() != null || selectedObject.GetComponent<InputField>() != null))
+        Dir dir = Dir.Instance;
+        return dir != null && dir.gameInputRouter != null ? dir.gameInputRouter.InputState : null;
+    }
+
+    private static bool TryGetShortcutTab(int shortcutIndex, out InteractionTab tab)
+    {
+        switch (shortcutIndex)
         {
-            return false;
+            case 1:
+                tab = InteractionTab.Social;
+                return true;
+            case 2:
+                tab = InteractionTab.Pack;
+                return true;
+            case 3:
+                tab = InteractionTab.Items;
+                return true;
+            case 4:
+                tab = InteractionTab.Quests;
+                return true;
+            default:
+                tab = InteractionTab.Items;
+                return false;
         }
-
-        return true;
     }
 
     #endregion

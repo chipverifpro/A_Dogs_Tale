@@ -2,7 +2,6 @@
 using DogGame.LLM;
 using DogGame.Tasks;
 using UnityEngine;
-using UnityEngine.InputSystem;
 
 namespace DogGame.Modules
 {
@@ -10,43 +9,6 @@ namespace DogGame.Modules
     {
         [Tooltip("If null, we'll try GetComponentInParent<WorldObject>().")]
         [SerializeField] private WorldObject? observer;
-
-        [Tooltip("Key binding for Scent Follow.")]
-        [SerializeField] private string binding = "<Keyboard>/m";
-
-        private InputAction? scentFollowAction;
-
-        private void Awake()
-        {
-            //TODO: get this elsewhere...
-            //if (observer == null)
-            //    observer = worldObject;
-
-            scentFollowAction = new InputAction(
-                name: "ScentFollow",
-                type: InputActionType.Button,
-                binding: binding
-            );
-        }
-
-        private void OnEnable()
-        {
-            if (scentFollowAction == null) return;
-            scentFollowAction.performed += OnscentFollowPerformed;
-            scentFollowAction.Enable();
-        }
-
-        private void OnDisable()
-        {
-            if (scentFollowAction == null) return;
-            scentFollowAction.performed -= OnscentFollowPerformed;
-            scentFollowAction.Disable();
-        }
-
-        private void OnscentFollowPerformed(InputAction.CallbackContext ctx)
-        {
-            TryRunPlayerScentFollow("scentFollow_key");
-        }
 
         public static bool TryRunPlayerScentFollow(string tag = "scentFollow_player")
         {

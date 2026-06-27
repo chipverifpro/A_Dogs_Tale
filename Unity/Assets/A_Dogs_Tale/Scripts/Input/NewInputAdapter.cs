@@ -5,6 +5,7 @@ using UnityEngine.InputSystem.UI;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using System.Collections.Generic;
+using TMPro;
 
 /// <summary>
 /// Bridges Unity's new Input System (PlayerInput + InputActions)
@@ -52,6 +53,36 @@ public class NewInputAdapter : MonoBehaviour
     // If you have explicit actions for camera view / pack agent switching, you can add them here:
     [SerializeField] private string cameraViewActionName      = "";     // optional: change view
     [SerializeField] private string nextAgentActionName       = "";     // optional: cycle player agent
+
+    [Header("Keyboard Bindings")]
+    [SerializeField] private Key moveForwardKey = Key.W;
+    [SerializeField] private Key moveBackwardKey = Key.S;
+    [SerializeField] private Key turnLeftKey = Key.A;
+    [SerializeField] private Key turnRightKey = Key.D;
+    [SerializeField] private Key moveForwardAlternateKey = Key.UpArrow;
+    [SerializeField] private Key moveBackwardAlternateKey = Key.DownArrow;
+    [SerializeField] private Key turnLeftAlternateKey = Key.LeftArrow;
+    [SerializeField] private Key turnRightAlternateKey = Key.RightArrow;
+    [SerializeField] private Key strafeLeftKey = Key.Q;
+    [SerializeField] private Key strafeRightKey = Key.E;
+    [SerializeField] private Key sprintKey = Key.LeftShift;
+    [SerializeField] private Key emoteKey = Key.B;
+    [SerializeField] private Key interactionPanelKey = Key.I;
+    [SerializeField] private Key markTerritoryKey = Key.M;
+    [SerializeField] private Key digKey = Key.V;
+    [SerializeField] private Key formationKey = Key.F;
+    [SerializeField] private Key scentFogKey = Key.H;
+    [SerializeField] private Key scentFogAlternateKey = Key.O;
+    [SerializeField] private Key popupTab1Key = Key.Digit1;
+    [SerializeField] private Key popupTab2Key = Key.Digit2;
+    [SerializeField] private Key popupTab3Key = Key.Digit3;
+    [SerializeField] private Key popupTab4Key = Key.Digit4;
+    [SerializeField] private Key freeCameraToggleKey = Key.Backquote;
+    [SerializeField] private Key cameraViewKey = Key.Tab;
+    [SerializeField] private Key zoomOutKey = Key.Z;
+    [SerializeField] private Key zoomInKey = Key.X;
+    [SerializeField] private Key returnToMainMenuKey = Key.Delete;
+    [SerializeField] private Key closeDialogsKey = Key.Escape;
 
     [Header("Tap (click-to-move)")]
     [SerializeField] private float tapMaxSeconds = 0.30f;      // must be < holdToOpenSeconds (default in WheelOpener is 0.45) for the wheel
@@ -413,13 +444,17 @@ public class NewInputAdapter : MonoBehaviour
 
         var state = gameInputRouter.InputState;
         Vector2 joystickAxis = UpdateMobileJoystick();
+        Keyboard keyboard = Keyboard.current;
+        bool textInputFocused = IsTextInputFocused();
         state.overheadWorldMoveFromMobileJoystick = false;
+        state.interactPressed = false;
+        state.selectObjectPressed = false;
 
 
         // --- Movement axis ---
-        state.moveAxis = moveAction != null
-            ? moveAction.ReadValue<Vector2>()
-            : Vector2.zero;
+        state.moveAxis = textInputFocused
+            ? Vector2.zero
+            : ReadKeyboardMoveAxis(keyboard);
 
         bool hasMobileJoystickInput = joystickAxis.sqrMagnitude > 0.0001f;
         if (hasMobileJoystickInput)
@@ -443,9 +478,9 @@ public class NewInputAdapter : MonoBehaviour
             state.hasPendingClickTargetLocationWorld = false;
         }
         // -- Strafe Movement ---
-        state.strafeAxis = strafeAction != null
-            ? strafeAction.ReadValue<float>()
-            : 0f;
+        state.strafeAxis = textInputFocused
+            ? 0f
+            : ReadKeyboardAxis(keyboard, strafeLeftKey, strafeRightKey);
         if (state.overheadWorldMoveFromMobileJoystick)
             state.strafeAxis = 0f;
 
@@ -458,24 +493,31 @@ public class NewInputAdapter : MonoBehaviour
         }
 
         // --- One-shot commands (per-frame triggers) ---
-        state.barkPressed = barkAction != null && barkAction.triggered;
-        state.markTerritoryPressed = markTerritoryAction != null && markTerritoryAction.triggered;
-        state.digPressed = (digAction != null && digAction.triggered) ||
-                           (digAction == null && Keyboard.current != null && Keyboard.current.vKey.wasPressedThisFrame);
-        state.pausePressed = pauseAction != null && pauseAction.triggered;
+        state.barkPressed = false;
+        state.sprintHeld = !textInputFocused && IsKeyPressed(keyboard, sprintKey);
+        state.emotePressed = !textInputFocused && WasKeyPressedThisFrame(keyboard, emoteKey);
+        state.interactionPanelTogglePressed = !textInputFocused && WasKeyPressedThisFrame(keyboard, interactionPanelKey);
+        state.markTerritoryPressed = !textInputFocused && WasKeyPressedThisFrame(keyboard, markTerritoryKey);
+        state.digPressed = !textInputFocused && WasKeyPressedThisFrame(keyboard, digKey);
+        state.pausePressed = false;
+        state.scentFogViewTogglePressed = !textInputFocused &&
+            (WasKeyPressedThisFrame(keyboard, scentFogKey) || WasKeyPressedThisFrame(keyboard, scentFogAlternateKey));
+        state.freeCameraTogglePressed = !textInputFocused && WasKeyPressedThisFrame(keyboard, freeCameraToggleKey);
+        state.returnToMainMenuPressed = !textInputFocused && WasKeyPressedThisFrame(keyboard, returnToMainMenuKey);
+        state.closeDialogsPressed = !textInputFocused && WasKeyPressedThisFrame(keyboard, closeDialogsKey);
         state.requestedPopupTabIndex = 0;
-        if (popupTab1Action != null && popupTab1Action.triggered) state.requestedPopupTabIndex = 1;
-        else if (popupTab2Action != null && popupTab2Action.triggered) state.requestedPopupTabIndex = 2;
-        else if (popupTab3Action != null && popupTab3Action.triggered) state.requestedPopupTabIndex = 3;
-        else if (popupTab4Action != null && popupTab4Action.triggered) state.requestedPopupTabIndex = 4;
+        if (!textInputFocused && WasKeyPressedThisFrame(keyboard, popupTab1Key)) state.requestedPopupTabIndex = 1;
+        else if (!textInputFocused && WasKeyPressedThisFrame(keyboard, popupTab2Key)) state.requestedPopupTabIndex = 2;
+        else if (!textInputFocused && WasKeyPressedThisFrame(keyboard, popupTab3Key)) state.requestedPopupTabIndex = 3;
+        else if (!textInputFocused && WasKeyPressedThisFrame(keyboard, popupTab4Key)) state.requestedPopupTabIndex = 4;
 
 
         // --- Camera commands (zoom / change view) ---
         if (IsMouseOverGameView())
         {
-            state.zoomDelta = zoomAction != null
-                ? zoomAction.ReadValue<float>()
-                : 0f;
+            state.zoomDelta = textInputFocused
+                ? 0f
+                : ReadKeyboardAxis(keyboard, zoomOutKey, zoomInKey);
             state.zoomDelta += GetMobilePinchZoomDelta();
             if (IsMousePointerOverInteractionDialogScrollableList())
                 state.zoomDelta = 0f;
@@ -492,9 +534,12 @@ public class NewInputAdapter : MonoBehaviour
         // By default, leave as "unchanged". If you have a dedicated action,
         // you can interpret its value here.
         //state.cameraViewSelect = CameraModes.Unchanged;
-        if (cameraViewAction != null && cameraViewAction.triggered)
+        if (!textInputFocused && WasKeyPressedThisFrame(keyboard, cameraViewKey))
         {
-            cameraMode = CameraModeSwitcher.GetNextViewMode(cameraMode);
+            CameraModes currentCameraMode = dir != null && dir.cameraModeSwitcher != null
+                ? dir.cameraModeSwitcher.cameraMode
+                : cameraMode;
+            cameraMode = CameraModeSwitcher.GetNextViewMode(currentCameraMode);
             state.cameraViewSelect = cameraMode;
         } else
         {
@@ -520,16 +565,12 @@ public class NewInputAdapter : MonoBehaviour
 
 
         // --- Pack Formation change (next) ---
-        state.changeFormationPressed = changeFormationAction != null && changeFormationAction.triggered;
+        state.changeFormationPressed = !textInputFocused && WasKeyPressedThisFrame(keyboard, formationKey);
 
 
         // --- Skip / any key-or-button ---
         bool anyKeyLogical = false;
         if (skipAnyKeyAction != null && skipAnyKeyAction.triggered)
-            anyKeyLogical = true;
-
-        // You can optionally OR in "real" any-key behavior from devices:
-        if (Keyboard.current != null && Keyboard.current.anyKey.wasPressedThisFrame)
             anyKeyLogical = true;
 
         if (Gamepad.current != null)
@@ -567,8 +608,8 @@ public class NewInputAdapter : MonoBehaviour
             Vector3 screenPosition3 = new(screenPosition.x, screenPosition.y, 0f);
             //Debug.Log($"TryGetMouseClickScreenPosition returned {screenPosition:0}");
             // These are left for another system (raycaster / selection) to fill in.
-            state.interactPressed      = interactAction != null && interactAction.triggered;
-            state.selectObjectPressed  = selectObjectAction != null && selectObjectAction.triggered;
+            state.interactPressed      = false;
+            state.selectObjectPressed  = false;
 
             state.screenCoordinateClicked = screenPosition;
 
@@ -1309,6 +1350,60 @@ public class NewInputAdapter : MonoBehaviour
     {
         if (mobileJoystickKnob != null)
             mobileJoystickKnob.anchoredPosition = offset;
+    }
+
+    private Vector2 ReadKeyboardMoveAxis(Keyboard keyboard)
+    {
+        if (keyboard == null)
+            return Vector2.zero;
+
+        float x = 0f;
+        float y = 0f;
+
+        if (IsKeyPressed(keyboard, turnLeftKey) || IsKeyPressed(keyboard, turnLeftAlternateKey))
+            x -= 1f;
+        if (IsKeyPressed(keyboard, turnRightKey) || IsKeyPressed(keyboard, turnRightAlternateKey))
+            x += 1f;
+        if (IsKeyPressed(keyboard, moveForwardKey) || IsKeyPressed(keyboard, moveForwardAlternateKey))
+            y += 1f;
+        if (IsKeyPressed(keyboard, moveBackwardKey) || IsKeyPressed(keyboard, moveBackwardAlternateKey))
+            y -= 1f;
+
+        return Vector2.ClampMagnitude(new Vector2(x, y), 1f);
+    }
+
+    private static float ReadKeyboardAxis(Keyboard keyboard, Key negativeKey, Key positiveKey)
+    {
+        if (keyboard == null)
+            return 0f;
+
+        float value = 0f;
+        if (IsKeyPressed(keyboard, negativeKey))
+            value -= 1f;
+        if (IsKeyPressed(keyboard, positiveKey))
+            value += 1f;
+
+        return value;
+    }
+
+    private static bool IsKeyPressed(Keyboard keyboard, Key key)
+    {
+        return keyboard != null && key != Key.None && keyboard[key].isPressed;
+    }
+
+    private static bool WasKeyPressedThisFrame(Keyboard keyboard, Key key)
+    {
+        return keyboard != null && key != Key.None && keyboard[key].wasPressedThisFrame;
+    }
+
+    public static bool IsTextInputFocused()
+    {
+        GameObject selectedObject = EventSystem.current != null ? EventSystem.current.currentSelectedGameObject : null;
+        if (selectedObject == null)
+            return false;
+
+        return selectedObject.GetComponent<TMP_InputField>() != null ||
+               selectedObject.GetComponent<InputField>() != null;
     }
 
     private static bool IsShiftClickModifierActive()

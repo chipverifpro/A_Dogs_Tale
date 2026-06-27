@@ -2,7 +2,6 @@ using System.Collections.Generic;
 using DogGame.Modules;
 using TMPro;
 using UnityEngine;
-using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 using UnityEngine.Serialization;
 using UnityEngine.UI;
@@ -96,7 +95,6 @@ public partial class TopPulldown : MonoBehaviour
     private readonly List<Image> modeButtonBackgrounds = new List<Image>();
     private readonly List<Image> speedButtonBackgrounds = new List<Image>();
 
-    private InputAction sniffAction;
     [SerializeField] private bool isSniffModeActive;
 
     private Canvas overlayCanvas;
@@ -199,11 +197,6 @@ public partial class TopPulldown : MonoBehaviour
         WalkMode.Sneak
     };
 
-    private void Awake()
-    {
-        EnsureSniffAction();
-    }
-
     private void Start()
     {
         EnsureDir();
@@ -216,7 +209,9 @@ public partial class TopPulldown : MonoBehaviour
 
     private void Update()
     {
-        if (WasEscapePressedThisFrame())
+        PlayerInputState inputState = GetInputState();
+
+        if (inputState != null && inputState.closeDialogsPressed)
             CloseOverlaysFromEscape();
 
         RefreshPersistentButtonSizePreference();
@@ -229,8 +224,11 @@ public partial class TopPulldown : MonoBehaviour
         UpdateTopControlsAutoHide();
         RefreshSniffOverlayForContextChanges();
 
-        if (Keyboard.current != null && Keyboard.current.fKey.wasPressedThisFrame)
-            ToggleSniffMode("Keyboard.fKey");
+        if (inputState != null && inputState.scentFogViewTogglePressed)
+            ToggleSniffMode("Keyboard.scentFogView");
+
+        if (inputState != null && inputState.emotePressed)
+            RepeatSelectedEmote();
 
         if (Mouse.current == null || !Mouse.current.leftButton.wasPressedThisFrame)
             return;
@@ -238,16 +236,10 @@ public partial class TopPulldown : MonoBehaviour
         CloseOpenPanelsIfClickedOutside(Mouse.current.position.ReadValue());
     }
 
-    private bool WasEscapePressedThisFrame()
+    private PlayerInputState GetInputState()
     {
-        Keyboard keyboard = Keyboard.current;
-        if (keyboard == null || !keyboard.escapeKey.wasPressedThisFrame)
-            return false;
-
-        GameObject selectedObject = EventSystem.current != null ? EventSystem.current.currentSelectedGameObject : null;
-        return selectedObject == null ||
-               (selectedObject.GetComponent<TMP_InputField>() == null &&
-                selectedObject.GetComponent<InputField>() == null);
+        EnsureDir();
+        return dir != null && dir.gameInputRouter != null ? dir.gameInputRouter.InputState : GameInputRouter.Instance?.InputState;
     }
 
     private void CloseOverlaysFromEscape()
@@ -278,19 +270,11 @@ public partial class TopPulldown : MonoBehaviour
 
     private void OnEnable()
     {
-        EnsureSniffAction();
-        sniffAction.performed += OnSniffToggle;
-        sniffAction.Enable();
         EnsureSniffOverlaySubscription();
     }
 
     private void OnDisable()
     {
-        if (sniffAction != null)
-        {
-            sniffAction.performed -= OnSniffToggle;
-            sniffAction.Disable();
-        }
         RemoveSniffOverlaySubscription();
     }
 

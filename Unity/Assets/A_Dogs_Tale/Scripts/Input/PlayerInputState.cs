@@ -10,6 +10,13 @@ public class PlayerInputState
     public bool markTerritoryPressed;
     public bool digPressed;
     public bool pausePressed;
+    public bool sprintHeld;
+    public bool emotePressed;
+    public bool interactionPanelTogglePressed;
+    public bool scentFogViewTogglePressed;
+    public bool freeCameraTogglePressed;
+    public bool returnToMainMenuPressed;
+    public bool closeDialogsPressed;
 
     // camera commands
     public float zoomDelta;                     // float +/- delta zoom, works with keys or mouse wheel, or touchscreen pinch

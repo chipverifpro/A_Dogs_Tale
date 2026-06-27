@@ -1,5 +1,4 @@
 using UnityEngine;
-using UnityEngine.InputSystem;
 
 public enum ActivateKind
 {
@@ -150,31 +149,7 @@ public class GameInputRouter : MonoBehaviour
         if (!EnsureRuntimeReferences())
             return;
 
-        HandleSaveLoadHotkeys();
         RouteClickToTarget();
-    }
-
-    private void HandleSaveLoadHotkeys()
-    {
-        Keyboard keyboard = Keyboard.current;
-        if (keyboard == null || keyboard.slashKey == null || !keyboard.slashKey.wasPressedThisFrame)
-            return;
-
-        bool loadRequested =
-            (keyboard.leftShiftKey != null && keyboard.leftShiftKey.isPressed) ||
-            (keyboard.rightShiftKey != null && keyboard.rightShiftKey.isPressed);
-
-        if (dir == null || dir.gen == null)
-        {
-            BottomBanner.Show("Save/load failed: map generator is not ready.");
-            Debug.LogWarning("[GameInputRouter] Save/load hotkey ignored because Dir or DungeonGenerator is missing.", this);
-            return;
-        }
-
-        if (loadRequested)
-            dir.gen.LoadMapFromSingleSlot();
-        else
-            dir.gen.SaveCurrentMapToSingleSlot();
     }
 
     // Routes clicked target events to Activate their appropriate WorldObject

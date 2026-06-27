@@ -9,7 +9,6 @@ public sealed class FreeCameraController : MonoBehaviour
     [SerializeField] private float fastMoveMultiplier = 1.5f;
     [SerializeField] private float moveAcceleration = 14f;
     [SerializeField] private float moveDeceleration = 28f;
-    [SerializeField] private float panSpeed = 0.0075f;
 
     [Header("Rotation")]
     [SerializeField] private float rotationSpeed = 0.0375f;
@@ -69,27 +68,20 @@ public sealed class FreeCameraController : MonoBehaviour
             return;
 
         float deltaTime = Time.unscaledDeltaTime;
-        HandleKeyboardMove(deltaTime);
+        HandleMove(deltaTime);
         HandleMouseRotate();
-        HandleMousePan(deltaTime);
     }
 
-    private void HandleKeyboardMove(float deltaTime)
+    private void HandleMove(float deltaTime)
     {
-        if (Keyboard.current == null)
+        PlayerInputState inputState = GetInputState();
+        if (inputState == null)
             return;
 
-        Vector3 input = Vector3.zero;
-
-        if (Keyboard.current.wKey.isPressed) input += Vector3.forward;
-        if (Keyboard.current.sKey.isPressed) input += Vector3.back;
-        if (Keyboard.current.dKey.isPressed) input += Vector3.right;
-        if (Keyboard.current.aKey.isPressed) input += Vector3.left;
-        if (Keyboard.current.eKey.isPressed) input += Vector3.up;
-        if (Keyboard.current.qKey.isPressed) input += Vector3.down;
+        Vector3 input = new(inputState.moveAxis.x, inputState.strafeAxis, inputState.moveAxis.y);
 
         float speed = moveSpeed;
-        if (Keyboard.current.leftShiftKey.isPressed || Keyboard.current.rightShiftKey.isPressed)
+        if (inputState.sprintHeld)
             speed *= fastMoveMultiplier;
 
         Vector3 desiredVelocity = Vector3.zero;
@@ -114,7 +106,7 @@ public sealed class FreeCameraController : MonoBehaviour
 
     private void HandleMouseRotate()
     {
-        if (Mouse.current == null || !CursorIsCaptured() || IsPanModifierPressed())
+        if (Mouse.current == null || !CursorIsCaptured())
             return;
 
         Vector2 delta = Mouse.current.delta.ReadValue();
@@ -124,22 +116,6 @@ public sealed class FreeCameraController : MonoBehaviour
         yaw += delta.x * rotationSpeed;
         pitch = Mathf.Clamp(pitch - delta.y * rotationSpeed, minPitch, maxPitch);
         transform.rotation = Quaternion.Euler(pitch, yaw, 0f);
-    }
-
-    private void HandleMousePan(float deltaTime)
-    {
-        if (Mouse.current == null || !CursorIsCaptured() || !IsPanModifierPressed())
-            return;
-
-        Vector2 delta = Mouse.current.delta.ReadValue();
-        if (delta == Vector2.zero)
-            return;
-
-        Vector3 pan =
-            (-transform.right * delta.x * panSpeed) +
-            (-transform.up * delta.y * panSpeed);
-
-        transform.position += pan * Mathf.Max(1f, moveSpeed * 0.1f) * deltaTime * 60f;
     }
 
     public void FocusLeaderNow()
@@ -167,10 +143,13 @@ public sealed class FreeCameraController : MonoBehaviour
         transform.rotation = Quaternion.Euler(pitch, yaw, 0f);
     }
 
-    private static bool IsPanModifierPressed()
+    private PlayerInputState GetInputState()
     {
-        return Keyboard.current != null &&
-               (Keyboard.current.leftShiftKey.isPressed || Keyboard.current.rightShiftKey.isPressed);
+        if (switcher != null && switcher.dir != null && switcher.dir.gameInputRouter != null)
+            return switcher.dir.gameInputRouter.InputState;
+
+        GameInputRouter router = GameInputRouter.Instance;
+        return router != null ? router.InputState : null;
     }
 
     private static float NormalizePitch(float x)

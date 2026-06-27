@@ -86,6 +86,16 @@ public partial class TopPulldown
         CloseEmoteDropdown();
     }
 
+    private void RepeatSelectedEmote()
+    {
+        EnsureDefaultEmoteSelection();
+        string emoteId = GetSelectedEmoteId();
+        if (string.IsNullOrEmpty(emoteId))
+            return;
+
+        BottomBanner.LogEmote(GetCurrentControlledWorldObject(), emoteId);
+    }
+
     private void RefreshEmoteButtonState(bool force = false)
     {
         if (emoteIconImage == null || emoteButtonImage == null)

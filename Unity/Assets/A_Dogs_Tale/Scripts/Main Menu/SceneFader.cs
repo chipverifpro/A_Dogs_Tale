@@ -40,7 +40,6 @@ public class SceneFader : MonoBehaviour
 
     [Header("Debug/UX")]
     public bool allowSkip = true;          // press any key / click to skip after min time
-    [SerializeField] private KeyCode returnToTitleKey = KeyCode.Delete;
 
     bool isTitleOverlayVisible = true;
     bool isTransitioning;
@@ -1315,28 +1314,15 @@ public class SceneFader : MonoBehaviour
 
     bool WasReturnToTitlePressedThisFrame()
     {
-        return WasKeyCodePressedThisFrame(returnToTitleKey)
-            || WasKeyboardKeyPressedThisFrame(Key.Backspace);
-    }
+        GameInputRouter router = GameInputRouter.Instance;
+        if (router != null && router.InputState != null)
+            return router.InputState.returnToMainMenuPressed;
 
-    static bool WasKeyCodePressedThisFrame(KeyCode keyCode)
-    {
-        return keyCode switch
-        {
-            KeyCode.Backspace => WasKeyboardKeyPressedThisFrame(Key.Backspace),
-            KeyCode.Delete => WasKeyboardKeyPressedThisFrame(Key.Delete),
-            KeyCode.Escape => WasKeyboardKeyPressedThisFrame(Key.Escape),
-            KeyCode.Return => WasKeyboardKeyPressedThisFrame(Key.Enter),
-            KeyCode.KeypadEnter => WasKeyboardKeyPressedThisFrame(Key.NumpadEnter),
-            KeyCode.Space => WasKeyboardKeyPressedThisFrame(Key.Space),
-            _ => false
-        };
-    }
-
-    static bool WasKeyboardKeyPressedThisFrame(Key key)
-    {
-        Keyboard keyboard = Keyboard.current;
-        return keyboard != null && key != Key.None && keyboard[key].wasPressedThisFrame;
+        Dir dir = Dir.Instance;
+        return dir != null &&
+               dir.gameInputRouter != null &&
+               dir.gameInputRouter.InputState != null &&
+               dir.gameInputRouter.InputState.returnToMainMenuPressed;
     }
 
 

@@ -1,5 +1,4 @@
 using UnityEngine;
-using UnityEngine.InputSystem;
 using TMPro;
 using UnityEngine.UI;
 using DogGame.Modules;
@@ -21,18 +20,6 @@ public partial class TopPulldown
         }
 
         pulldown.ToggleSniffMode(triggerSource);
-    }
-
-    private void EnsureSniffAction()
-    {
-        if (sniffAction != null)
-            return;
-
-        sniffAction = new InputAction(
-            name: "Sniff",
-            type: InputActionType.Button,
-            binding: "<Keyboard>/f"
-        );
     }
 
     private void BuildSniffResultsOverlay(Transform parent, Transform searchRoot)
@@ -279,11 +266,6 @@ public partial class TopPulldown
                 : (string.IsNullOrWhiteSpace(selected.scentName) ? scentKey : selected.scentName);
             sniffResultsTitleLabel.text = "Sniff: " + scentName;
         }
-    }
-
-    private void OnSniffToggle(InputAction.CallbackContext ctx)
-    {
-        ToggleSniffMode("InputAction");
     }
 
     private void ToggleSniffMode(string triggerSource)

@@ -264,8 +264,7 @@ namespace DogGame.UI.InteractionWheel
 
         private static bool IsShiftPressed()
         {
-            Keyboard keyboard = Keyboard.current;
-            return keyboard != null && keyboard.shiftKey.isPressed;
+            return false;
         }
     }
 }

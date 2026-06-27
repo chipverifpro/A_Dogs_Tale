@@ -581,8 +581,8 @@ namespace DogGame.Modules
             else if (desiredWorldDir.sqrMagnitude > 0.0001f)
             {
                 // Move to target location by 1 step.
-                // Keep the currently selected walk mode; keyboard input should not reset speed.
-                worldObject.agentMovementModule.SetDesiredMove(desiredWorldDir, maxDistance:1.0f, speedFactor:1.0f, changeWalkMode:WalkMode.None);
+                float speedFactor = GetManualInputSpeedFactor();
+                worldObject.agentMovementModule.SetDesiredMove(desiredWorldDir, maxDistance:1.0f, speedFactor:speedFactor, changeWalkMode:WalkMode.None);
             }
             else
             {
@@ -593,6 +593,16 @@ namespace DogGame.Modules
             // NOTE:
             // We do NOT rotate the worldObject here anymore.
             // MotionModule (called by AgentagentMovementModule) handles facing the move direction.
+        }
+
+        private float GetManualInputSpeedFactor()
+        {
+            if (inputState == null || !inputState.sprintHeld || worldObject?.motionModule == null)
+                return 1f;
+
+            float currentSpeed = Mathf.Max(0.0001f, worldObject.motionModule.GetMaxSpeedByCurrentWalkMode());
+            float runSpeed = worldObject.motionModule.GetMaxSpeedByWalkMode(WalkMode.Run);
+            return Mathf.Max(1f, runSpeed / currentSpeed);
         }
 
         public void SubmitMoveToTargetObjectTask(WorldObject targetWorldObject)

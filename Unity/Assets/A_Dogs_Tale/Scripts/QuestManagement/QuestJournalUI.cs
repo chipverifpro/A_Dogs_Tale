@@ -3,7 +3,6 @@ using DogGame.Modules;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
-using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.UI;
 using UnityEngine.UI;
 
@@ -55,9 +54,6 @@ public sealed class QuestJournalUI : MonoBehaviour
 
     private void Update()
     {
-        if (WasQuestTogglePressedThisFrame())
-            Toggle();
-
         if (!isOpen)
             return;
 
@@ -107,22 +103,6 @@ public sealed class QuestJournalUI : MonoBehaviour
 
         if (isOpen)
             RefreshQuestList();
-    }
-
-    private bool WasQuestTogglePressedThisFrame()
-    {
-        Keyboard keyboard = Keyboard.current;
-        if (keyboard == null || !keyboard.mKey.wasPressedThisFrame)
-            return false;
-
-        GameObject selectedObject = EventSystem.current != null ? EventSystem.current.currentSelectedGameObject : null;
-        if (selectedObject != null &&
-            (selectedObject.GetComponent<TMP_InputField>() != null || selectedObject.GetComponent<InputField>() != null))
-        {
-            return false;
-        }
-
-        return true;
     }
 
     private void BuildUI()

@@ -157,8 +157,8 @@ namespace DogGame.UI.InteractionWheel
 
             ApplyManualLayout();
 
-            var keyboard = Keyboard.current;
-            if (keyboard != null && keyboard.escapeKey.wasPressedThisFrame)
+            PlayerInputState inputState = GetInputState();
+            if (inputState != null && inputState.closeDialogsPressed)
             {
                 CloseMenuWheel();
                 return;
@@ -196,6 +196,16 @@ namespace DogGame.UI.InteractionWheel
                 Debug.Log($"[MenuWheelUI] Pointer released. screenPos={pointerScreenPos}, highlightedIndex={highlightedIndex}");
                 HandlePointerReleased();
             }
+        }
+
+        private static PlayerInputState GetInputState()
+        {
+            GameInputRouter router = GameInputRouter.Instance;
+            if (router != null)
+                return router.InputState;
+
+            Dir dir = Dir.Instance;
+            return dir != null && dir.gameInputRouter != null ? dir.gameInputRouter.InputState : null;
         }
 
         private void HandlePointerReleased()
