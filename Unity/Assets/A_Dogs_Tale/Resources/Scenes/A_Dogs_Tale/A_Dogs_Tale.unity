@@ -509,9 +509,6 @@ MonoBehaviour:
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
-  colorRingOuter: {fileID: 0}
-  colorRingInner: {fileID: 0}
-  optionsContainer: {fileID: 0}
   m_FillMethod: 4
   m_FillAmount: 1
   m_FillClockwise: 1
@@ -620,9 +617,6 @@ MonoBehaviour:
   m_Type: 1
   m_PreserveAspect: 0
   m_FillCenter: 1
-  colorRingOuter: {fileID: 0}
-  colorRingInner: {fileID: 0}
-  optionsContainer: {fileID: 0}
   m_FillMethod: 4
   m_FillAmount: 1
   m_FillClockwise: 1
@@ -698,9 +692,6 @@ MonoBehaviour:
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
-  colorRingOuter: {fileID: 0}
-  colorRingInner: {fileID: 0}
-  optionsContainer: {fileID: 0}
   m_FillMethod: 4
   m_FillAmount: 1
   m_FillClockwise: 1
@@ -914,9 +905,6 @@ MonoBehaviour:
   m_Type: 0
   m_PreserveAspect: 1
   m_FillCenter: 1
-  colorRingOuter: {fileID: 0}
-  colorRingInner: {fileID: 0}
-  optionsContainer: {fileID: 0}
   m_FillMethod: 4
   m_FillAmount: 1
   m_FillClockwise: 1
@@ -994,9 +982,6 @@ MonoBehaviour:
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
-  colorRingOuter: {fileID: 0}
-  colorRingInner: {fileID: 0}
-  optionsContainer: {fileID: 0}
   m_FillMethod: 4
   m_FillAmount: 1
   m_FillClockwise: 1
@@ -1163,7 +1148,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlanV2DebugLauncher
   sidecarPlanClient: {fileID: 81350531}
-  triggerKey: 30
   DebugPlan: '{   "schema": "plan_request_v2",   "agent_id": "dog_1",   "trigger":
     {     "type": "DebugTest"   } }'
 --- !u!4 &81350533
@@ -1478,9 +1462,6 @@ MonoBehaviour:
   m_Type: 1
   m_PreserveAspect: 0
   m_FillCenter: 1
-  colorRingOuter: {fileID: 0}
-  colorRingInner: {fileID: 0}
-  optionsContainer: {fileID: 0}
   m_FillMethod: 4
   m_FillAmount: 1
   m_FillClockwise: 1
@@ -1569,9 +1550,6 @@ MonoBehaviour:
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
-  colorRingOuter: {fileID: 0}
-  colorRingInner: {fileID: 0}
-  optionsContainer: {fileID: 0}
   m_FillMethod: 4
   m_FillAmount: 1
   m_FillClockwise: 1
@@ -1886,9 +1864,6 @@ MonoBehaviour:
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
-  colorRingOuter: {fileID: 0}
-  colorRingInner: {fileID: 0}
-  optionsContainer: {fileID: 0}
   m_FillMethod: 4
   m_FillAmount: 1
   m_FillClockwise: 1
@@ -2099,9 +2074,6 @@ MonoBehaviour:
   m_Type: 0
   m_PreserveAspect: 1
   m_FillCenter: 1
-  colorRingOuter: {fileID: 0}
-  colorRingInner: {fileID: 0}
-  optionsContainer: {fileID: 0}
   m_FillMethod: 4
   m_FillAmount: 1
   m_FillClockwise: 1
@@ -2237,9 +2209,6 @@ MonoBehaviour:
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
-  colorRingOuter: {fileID: 0}
-  colorRingInner: {fileID: 0}
-  optionsContainer: {fileID: 0}
   m_FillMethod: 4
   m_FillAmount: 1
   m_FillClockwise: 1
@@ -2361,9 +2330,6 @@ MonoBehaviour:
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
-  colorRingOuter: {fileID: 0}
-  colorRingInner: {fileID: 0}
-  optionsContainer: {fileID: 0}
   m_FillMethod: 4
   m_FillAmount: 1
   m_FillClockwise: 1
@@ -2578,9 +2544,6 @@ MonoBehaviour:
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
-  colorRingOuter: {fileID: 0}
-  colorRingInner: {fileID: 0}
-  optionsContainer: {fileID: 0}
   m_FillMethod: 4
   m_FillAmount: 1
   m_FillClockwise: 1
@@ -2847,9 +2810,6 @@ MonoBehaviour:
   m_Type: 1
   m_PreserveAspect: 0
   m_FillCenter: 1
-  colorRingOuter: {fileID: 0}
-  colorRingInner: {fileID: 0}
-  optionsContainer: {fileID: 0}
   m_FillMethod: 4
   m_FillAmount: 1
   m_FillClockwise: 1
@@ -2938,9 +2898,6 @@ MonoBehaviour:
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
-  colorRingOuter: {fileID: 0}
-  colorRingInner: {fileID: 0}
-  optionsContainer: {fileID: 0}
   m_FillMethod: 4
   m_FillAmount: 1
   m_FillClockwise: 1
@@ -3016,9 +2973,6 @@ MonoBehaviour:
   m_Type: 0
   m_PreserveAspect: 1
   m_FillCenter: 1
-  colorRingOuter: {fileID: 0}
-  colorRingInner: {fileID: 0}
-  optionsContainer: {fileID: 0}
   m_FillMethod: 4
   m_FillAmount: 1
   m_FillClockwise: 1
@@ -3130,9 +3084,6 @@ MonoBehaviour:
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
-  colorRingOuter: {fileID: 0}
-  colorRingInner: {fileID: 0}
-  optionsContainer: {fileID: 0}
   m_FillMethod: 4
   m_FillAmount: 1
   m_FillClockwise: 1
@@ -3301,9 +3252,6 @@ MonoBehaviour:
   m_Type: 0
   m_PreserveAspect: 1
   m_FillCenter: 1
-  colorRingOuter: {fileID: 0}
-  colorRingInner: {fileID: 0}
-  optionsContainer: {fileID: 0}
   m_FillMethod: 4
   m_FillAmount: 1
   m_FillClockwise: 1
@@ -3379,9 +3327,6 @@ MonoBehaviour:
   m_Type: 0
   m_PreserveAspect: 1
   m_FillCenter: 1
-  colorRingOuter: {fileID: 0}
-  colorRingInner: {fileID: 0}
-  optionsContainer: {fileID: 0}
   m_FillMethod: 4
   m_FillAmount: 1
   m_FillClockwise: 1
@@ -3457,9 +3402,6 @@ MonoBehaviour:
   m_Type: 1
   m_PreserveAspect: 0
   m_FillCenter: 1
-  colorRingOuter: {fileID: 0}
-  colorRingInner: {fileID: 0}
-  optionsContainer: {fileID: 0}
   m_FillMethod: 4
   m_FillAmount: 1
   m_FillClockwise: 1
@@ -3687,9 +3629,6 @@ MonoBehaviour:
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
-  colorRingOuter: {fileID: 0}
-  colorRingInner: {fileID: 0}
-  optionsContainer: {fileID: 0}
   m_FillMethod: 4
   m_FillAmount: 1
   m_FillClockwise: 1
@@ -3950,9 +3889,6 @@ MonoBehaviour:
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
-  colorRingOuter: {fileID: 0}
-  colorRingInner: {fileID: 0}
-  optionsContainer: {fileID: 0}
   m_FillMethod: 4
   m_FillAmount: 1
   m_FillClockwise: 1
@@ -4074,9 +4010,6 @@ MonoBehaviour:
   m_Type: 1
   m_PreserveAspect: 0
   m_FillCenter: 1
-  colorRingOuter: {fileID: 0}
-  colorRingInner: {fileID: 0}
-  optionsContainer: {fileID: 0}
   m_FillMethod: 4
   m_FillAmount: 1
   m_FillClockwise: 1
@@ -4173,7 +4106,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 2031285353}
   m_HandleRect: {fileID: 2031285352}
   m_Direction: 2
-  m_Value: 0
+  m_Value: 1
   m_Size: 1
   m_NumberOfSteps: 0
   m_OnValueChanged:
@@ -4203,9 +4136,6 @@ MonoBehaviour:
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
-  colorRingOuter: {fileID: 0}
-  colorRingInner: {fileID: 0}
-  optionsContainer: {fileID: 0}
   m_FillMethod: 4
   m_FillAmount: 1
   m_FillClockwise: 1
@@ -4360,9 +4290,6 @@ MonoBehaviour:
   m_Type: 0
   m_PreserveAspect: 1
   m_FillCenter: 1
-  colorRingOuter: {fileID: 0}
-  colorRingInner: {fileID: 0}
-  optionsContainer: {fileID: 0}
   m_FillMethod: 4
   m_FillAmount: 1
   m_FillClockwise: 1
@@ -4484,9 +4411,6 @@ MonoBehaviour:
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
-  colorRingOuter: {fileID: 0}
-  colorRingInner: {fileID: 0}
-  optionsContainer: {fileID: 0}
   m_FillMethod: 4
   m_FillAmount: 1
   m_FillClockwise: 1
@@ -4629,9 +4553,6 @@ MonoBehaviour:
   m_Type: 0
   m_PreserveAspect: 1
   m_FillCenter: 1
-  colorRingOuter: {fileID: 0}
-  colorRingInner: {fileID: 0}
-  optionsContainer: {fileID: 0}
   m_FillMethod: 4
   m_FillAmount: 1
   m_FillClockwise: 1
@@ -4696,7 +4617,6 @@ MonoBehaviour:
   fastMoveMultiplier: 1.5
   moveAcceleration: 14
   moveDeceleration: 28
-  panSpeed: 0.1
   rotationSpeed: 0.3
   minPitch: -80
   maxPitch: 80
@@ -5074,9 +4994,6 @@ MonoBehaviour:
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
-  colorRingOuter: {fileID: 0}
-  colorRingInner: {fileID: 0}
-  optionsContainer: {fileID: 0}
   m_FillMethod: 4
   m_FillAmount: 1
   m_FillClockwise: 1
@@ -5198,9 +5115,6 @@ MonoBehaviour:
   m_Type: 1
   m_PreserveAspect: 0
   m_FillCenter: 1
-  colorRingOuter: {fileID: 0}
-  colorRingInner: {fileID: 0}
-  optionsContainer: {fileID: 0}
   m_FillMethod: 4
   m_FillAmount: 1
   m_FillClockwise: 1
@@ -5360,9 +5274,6 @@ MonoBehaviour:
   m_Type: 0
   m_PreserveAspect: 1
   m_FillCenter: 1
-  colorRingOuter: {fileID: 0}
-  colorRingInner: {fileID: 0}
-  optionsContainer: {fileID: 0}
   m_FillMethod: 4
   m_FillAmount: 1
   m_FillClockwise: 1
@@ -5486,7 +5397,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 351839179}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 6ca92a87a181e4ecd9f7c5b7bba97820, type: 3}
   m_Name: 
@@ -5549,9 +5460,6 @@ MonoBehaviour:
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
-  colorRingOuter: {fileID: 0}
-  colorRingInner: {fileID: 0}
-  optionsContainer: {fileID: 0}
   m_FillMethod: 4
   m_FillAmount: 1
   m_FillClockwise: 1
@@ -6125,9 +6033,6 @@ MonoBehaviour:
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
-  colorRingOuter: {fileID: 0}
-  colorRingInner: {fileID: 0}
-  optionsContainer: {fileID: 0}
   m_FillMethod: 4
   m_FillAmount: 1
   m_FillClockwise: 1
@@ -6544,9 +6449,6 @@ MonoBehaviour:
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
-  colorRingOuter: {fileID: 0}
-  colorRingInner: {fileID: 0}
-  optionsContainer: {fileID: 0}
   m_FillMethod: 4
   m_FillAmount: 1
   m_FillClockwise: 1
@@ -6689,9 +6591,6 @@ MonoBehaviour:
   m_Type: 1
   m_PreserveAspect: 0
   m_FillCenter: 1
-  colorRingOuter: {fileID: 0}
-  colorRingInner: {fileID: 0}
-  optionsContainer: {fileID: 0}
   m_FillMethod: 4
   m_FillAmount: 1
   m_FillClockwise: 1
@@ -6838,9 +6737,6 @@ MonoBehaviour:
   m_Type: 1
   m_PreserveAspect: 0
   m_FillCenter: 1
-  colorRingOuter: {fileID: 0}
-  colorRingInner: {fileID: 0}
-  optionsContainer: {fileID: 0}
   m_FillMethod: 4
   m_FillAmount: 1
   m_FillClockwise: 1
@@ -7004,9 +6900,6 @@ MonoBehaviour:
   m_Type: 1
   m_PreserveAspect: 0
   m_FillCenter: 1
-  colorRingOuter: {fileID: 0}
-  colorRingInner: {fileID: 0}
-  optionsContainer: {fileID: 0}
   m_FillMethod: 4
   m_FillAmount: 1
   m_FillClockwise: 1
@@ -7224,9 +7117,6 @@ MonoBehaviour:
   m_Type: 1
   m_PreserveAspect: 0
   m_FillCenter: 1
-  colorRingOuter: {fileID: 0}
-  colorRingInner: {fileID: 0}
-  optionsContainer: {fileID: 0}
   m_FillMethod: 4
   m_FillAmount: 1
   m_FillClockwise: 1
@@ -7348,9 +7238,6 @@ MonoBehaviour:
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
-  colorRingOuter: {fileID: 0}
-  colorRingInner: {fileID: 0}
-  optionsContainer: {fileID: 0}
   m_FillMethod: 4
   m_FillAmount: 1
   m_FillClockwise: 1
@@ -8508,9 +8395,6 @@ MonoBehaviour:
   m_Type: 1
   m_PreserveAspect: 0
   m_FillCenter: 1
-  colorRingOuter: {fileID: 0}
-  colorRingInner: {fileID: 0}
-  optionsContainer: {fileID: 0}
   m_FillMethod: 4
   m_FillAmount: 1
   m_FillClockwise: 1
@@ -8653,9 +8537,6 @@ MonoBehaviour:
   m_Type: 0
   m_PreserveAspect: 1
   m_FillCenter: 1
-  colorRingOuter: {fileID: 0}
-  colorRingInner: {fileID: 0}
-  optionsContainer: {fileID: 0}
   m_FillMethod: 4
   m_FillAmount: 1
   m_FillClockwise: 1
@@ -8798,9 +8679,6 @@ MonoBehaviour:
   m_Type: 0
   m_PreserveAspect: 1
   m_FillCenter: 1
-  colorRingOuter: {fileID: 0}
-  colorRingInner: {fileID: 0}
-  optionsContainer: {fileID: 0}
   m_FillMethod: 4
   m_FillAmount: 1
   m_FillClockwise: 1
@@ -8900,9 +8778,6 @@ MonoBehaviour:
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
-  colorRingOuter: {fileID: 0}
-  colorRingInner: {fileID: 0}
-  optionsContainer: {fileID: 0}
   m_FillMethod: 4
   m_FillAmount: 1
   m_FillClockwise: 1
@@ -9172,9 +9047,6 @@ MonoBehaviour:
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
-  colorRingOuter: {fileID: 0}
-  colorRingInner: {fileID: 0}
-  optionsContainer: {fileID: 0}
   m_FillMethod: 4
   m_FillAmount: 1
   m_FillClockwise: 1
@@ -9325,9 +9197,6 @@ MonoBehaviour:
   m_Type: 0
   m_PreserveAspect: 1
   m_FillCenter: 1
-  colorRingOuter: {fileID: 0}
-  colorRingInner: {fileID: 0}
-  optionsContainer: {fileID: 0}
   m_FillMethod: 4
   m_FillAmount: 1
   m_FillClockwise: 1
@@ -9723,9 +9592,6 @@ MonoBehaviour:
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
-  colorRingOuter: {fileID: 0}
-  colorRingInner: {fileID: 0}
-  optionsContainer: {fileID: 0}
   m_FillMethod: 4
   m_FillAmount: 1
   m_FillClockwise: 1
@@ -10034,9 +9900,6 @@ MonoBehaviour:
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
-  colorRingOuter: {fileID: 0}
-  colorRingInner: {fileID: 0}
-  optionsContainer: {fileID: 0}
   m_FillMethod: 4
   m_FillAmount: 1
   m_FillClockwise: 1
@@ -10245,9 +10108,6 @@ MonoBehaviour:
   m_Type: 0
   m_PreserveAspect: 1
   m_FillCenter: 1
-  colorRingOuter: {fileID: 0}
-  colorRingInner: {fileID: 0}
-  optionsContainer: {fileID: 0}
   m_FillMethod: 4
   m_FillAmount: 1
   m_FillClockwise: 1
@@ -10546,9 +10406,6 @@ MonoBehaviour:
   m_Type: 0
   m_PreserveAspect: 1
   m_FillCenter: 1
-  colorRingOuter: {fileID: 0}
-  colorRingInner: {fileID: 0}
-  optionsContainer: {fileID: 0}
   m_FillMethod: 4
   m_FillAmount: 1
   m_FillClockwise: 1
@@ -10691,9 +10548,6 @@ MonoBehaviour:
   m_Type: 0
   m_PreserveAspect: 1
   m_FillCenter: 1
-  colorRingOuter: {fileID: 0}
-  colorRingInner: {fileID: 0}
-  optionsContainer: {fileID: 0}
   m_FillMethod: 4
   m_FillAmount: 1
   m_FillClockwise: 1
@@ -10963,9 +10817,6 @@ MonoBehaviour:
   m_Type: 1
   m_PreserveAspect: 0
   m_FillCenter: 1
-  colorRingOuter: {fileID: 0}
-  colorRingInner: {fileID: 0}
-  optionsContainer: {fileID: 0}
   m_FillMethod: 4
   m_FillAmount: 1
   m_FillClockwise: 1
@@ -11121,9 +10972,6 @@ MonoBehaviour:
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
-  colorRingOuter: {fileID: 0}
-  colorRingInner: {fileID: 0}
-  optionsContainer: {fileID: 0}
   m_FillMethod: 4
   m_FillAmount: 1
   m_FillClockwise: 1
@@ -11190,7 +11038,6 @@ MonoBehaviour:
   showPlayerIntroEmote: 1
   playerIntroEmoteId: A_0
   allowSkip: 1
-  returnToTitleKey: 127
   splashImage: {fileID: 1088835539}
   buildingMessage: {fileID: 0}
   buildingMessageText: {fileID: 0}
@@ -11769,9 +11616,6 @@ MonoBehaviour:
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
-  colorRingOuter: {fileID: 0}
-  colorRingInner: {fileID: 0}
-  optionsContainer: {fileID: 0}
   m_FillMethod: 4
   m_FillAmount: 1
   m_FillClockwise: 1
@@ -11820,7 +11664,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 0, y: -10}
-  m_SizeDelta: {x: 1721.2407, y: 880.71246}
+  m_SizeDelta: {x: 1789.3363, y: 834.8654}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &863588990
 MonoBehaviour:
@@ -12004,9 +11848,6 @@ MonoBehaviour:
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
-  colorRingOuter: {fileID: 0}
-  colorRingInner: {fileID: 0}
-  optionsContainer: {fileID: 0}
   m_FillMethod: 4
   m_FillAmount: 1
   m_FillClockwise: 1
@@ -12082,9 +11923,6 @@ MonoBehaviour:
   m_Type: 0
   m_PreserveAspect: 1
   m_FillCenter: 1
-  colorRingOuter: {fileID: 0}
-  colorRingInner: {fileID: 0}
-  optionsContainer: {fileID: 0}
   m_FillMethod: 4
   m_FillAmount: 1
   m_FillClockwise: 1
@@ -12248,9 +12086,6 @@ MonoBehaviour:
   m_Type: 1
   m_PreserveAspect: 0
   m_FillCenter: 1
-  colorRingOuter: {fileID: 0}
-  colorRingInner: {fileID: 0}
-  optionsContainer: {fileID: 0}
   m_FillMethod: 4
   m_FillAmount: 1
   m_FillClockwise: 1
@@ -12372,9 +12207,6 @@ MonoBehaviour:
   m_Type: 1
   m_PreserveAspect: 0
   m_FillCenter: 1
-  colorRingOuter: {fileID: 0}
-  colorRingInner: {fileID: 0}
-  optionsContainer: {fileID: 0}
   m_FillMethod: 4
   m_FillAmount: 1
   m_FillClockwise: 1
@@ -12709,9 +12541,6 @@ MonoBehaviour:
   m_Type: 1
   m_PreserveAspect: 0
   m_FillCenter: 1
-  colorRingOuter: {fileID: 0}
-  colorRingInner: {fileID: 0}
-  optionsContainer: {fileID: 0}
   m_FillMethod: 4
   m_FillAmount: 1
   m_FillClockwise: 1
@@ -12924,9 +12753,6 @@ MonoBehaviour:
   m_Type: 1
   m_PreserveAspect: 0
   m_FillCenter: 1
-  colorRingOuter: {fileID: 0}
-  colorRingInner: {fileID: 0}
-  optionsContainer: {fileID: 0}
   m_FillMethod: 4
   m_FillAmount: 1
   m_FillClockwise: 1
@@ -13019,6 +12845,35 @@ MonoBehaviour:
   popupTab4ActionName: PopupTab4
   cameraViewActionName: CameraView
   nextAgentActionName: NextAgent
+  moveForwardKey: 37
+  moveBackwardKey: 33
+  turnLeftKey: 15
+  turnRightKey: 18
+  moveForwardAlternateKey: 63
+  moveBackwardAlternateKey: 64
+  turnLeftAlternateKey: 61
+  turnRightAlternateKey: 62
+  strafeLeftKey: 31
+  strafeRightKey: 19
+  sprintKey: 51
+  emoteKey: 16
+  interactionPanelKey: 23
+  markTerritoryKey: 27
+  digKey: 36
+  formationKey: 20
+  scentFogKey: 22
+  scentFogAlternateKey: 29
+  popupTab1Key: 41
+  popupTab2Key: 42
+  popupTab3Key: 43
+  popupTab4Key: 44
+  popupTab5Key: 45
+  freeCameraToggleKey: 4
+  cameraViewKey: 3
+  zoomOutKey: 40
+  zoomInKey: 38
+  returnToMainMenuKey: 71
+  closeDialogsKey: 60
   tapMaxSeconds: 0.3
   tapMaxMovePixels: 18
   enableMobileJoystick: 1
@@ -13159,7 +13014,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.SniffInput
   observer: {fileID: 0}
-  binding: <Keyboard>/g
 --- !u!114 &942637351
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -13173,7 +13027,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.ScentFollowInput
   observer: {fileID: 0}
-  binding: <Keyboard>/h
 --- !u!114 &942637352
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -13276,9 +13129,6 @@ MonoBehaviour:
   m_Type: 0
   m_PreserveAspect: 1
   m_FillCenter: 1
-  colorRingOuter: {fileID: 0}
-  colorRingInner: {fileID: 0}
-  optionsContainer: {fileID: 0}
   m_FillMethod: 4
   m_FillAmount: 1
   m_FillClockwise: 1
@@ -13354,9 +13204,6 @@ MonoBehaviour:
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
-  colorRingOuter: {fileID: 0}
-  colorRingInner: {fileID: 0}
-  optionsContainer: {fileID: 0}
   m_FillMethod: 4
   m_FillAmount: 1
   m_FillClockwise: 1
@@ -13985,9 +13832,6 @@ MonoBehaviour:
   m_Type: 0
   m_PreserveAspect: 1
   m_FillCenter: 1
-  colorRingOuter: {fileID: 0}
-  colorRingInner: {fileID: 0}
-  optionsContainer: {fileID: 0}
   m_FillMethod: 4
   m_FillAmount: 1
   m_FillClockwise: 1
@@ -14202,9 +14046,6 @@ MonoBehaviour:
   m_Type: 0
   m_PreserveAspect: 1
   m_FillCenter: 1
-  colorRingOuter: {fileID: 0}
-  colorRingInner: {fileID: 0}
-  optionsContainer: {fileID: 0}
   m_FillMethod: 4
   m_FillAmount: 1
   m_FillClockwise: 1
@@ -14280,9 +14121,6 @@ MonoBehaviour:
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
-  colorRingOuter: {fileID: 0}
-  colorRingInner: {fileID: 0}
-  optionsContainer: {fileID: 0}
   m_FillMethod: 4
   m_FillAmount: 1
   m_FillClockwise: 1
@@ -14514,9 +14352,6 @@ MonoBehaviour:
   m_Type: 0
   m_PreserveAspect: 1
   m_FillCenter: 1
-  colorRingOuter: {fileID: 0}
-  colorRingInner: {fileID: 0}
-  optionsContainer: {fileID: 0}
   m_FillMethod: 4
   m_FillAmount: 1
   m_FillClockwise: 1
@@ -14808,9 +14643,6 @@ MonoBehaviour:
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
-  colorRingOuter: {fileID: 0}
-  colorRingInner: {fileID: 0}
-  optionsContainer: {fileID: 0}
   m_FillMethod: 4
   m_FillAmount: 1
   m_FillClockwise: 1
@@ -15134,6 +14966,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 25482a76cfa0045b48cc81a3b0583b89, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TopPulldown
+  useCornerControls: 1
+  cornerControlMargin: 24
+  interactionPanelButtonScale: 0.58
+  interactionSideButtonsSpriteResourcePath: Sprites/Frames/Interaction_Side_Buttons_A
   sniffVisuals: {fileID: 0}
   modeSpriteResourcePath: Sprites/SpriteSheet_Modes_V3
   speedSpriteResourcePath: Sprites/Speeds
@@ -15188,10 +15024,6 @@ MonoBehaviour:
   logSniffToggleDiagnostics: 1
   lastSniffDiagnostic: 
   isSniffModeActive: 0
-  useCornerControls: 1
-  cornerControlMargin: 24
-  interactionPanelButtonScale: 0.58
-  interactionSideButtonsSpriteResourcePath: Sprites/Frames/Interaction_Side_Buttons_A
 --- !u!1 &1145011622
 GameObject:
   m_ObjectHideFlags: 0
@@ -15253,9 +15085,6 @@ MonoBehaviour:
   m_Type: 0
   m_PreserveAspect: 1
   m_FillCenter: 1
-  colorRingOuter: {fileID: 0}
-  colorRingInner: {fileID: 0}
-  optionsContainer: {fileID: 0}
   m_FillMethod: 4
   m_FillAmount: 1
   m_FillClockwise: 1
@@ -15657,9 +15486,6 @@ MonoBehaviour:
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
-  colorRingOuter: {fileID: 0}
-  colorRingInner: {fileID: 0}
-  optionsContainer: {fileID: 0}
   m_FillMethod: 4
   m_FillAmount: 1
   m_FillClockwise: 1
@@ -15768,9 +15594,6 @@ MonoBehaviour:
   m_Type: 1
   m_PreserveAspect: 0
   m_FillCenter: 1
-  colorRingOuter: {fileID: 0}
-  colorRingInner: {fileID: 0}
-  optionsContainer: {fileID: 0}
   m_FillMethod: 4
   m_FillAmount: 1
   m_FillClockwise: 1
@@ -15848,9 +15671,6 @@ MonoBehaviour:
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
-  colorRingOuter: {fileID: 0}
-  colorRingInner: {fileID: 0}
-  optionsContainer: {fileID: 0}
   m_FillMethod: 4
   m_FillAmount: 1
   m_FillClockwise: 1
@@ -16190,9 +16010,6 @@ MonoBehaviour:
   m_Type: 1
   m_PreserveAspect: 0
   m_FillCenter: 1
-  colorRingOuter: {fileID: 0}
-  colorRingInner: {fileID: 0}
-  optionsContainer: {fileID: 0}
   m_FillMethod: 4
   m_FillAmount: 1
   m_FillClockwise: 1
@@ -16405,9 +16222,6 @@ MonoBehaviour:
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
-  colorRingOuter: {fileID: 0}
-  colorRingInner: {fileID: 0}
-  optionsContainer: {fileID: 0}
   m_FillMethod: 4
   m_FillAmount: 1
   m_FillClockwise: 1
@@ -16722,9 +16536,6 @@ MonoBehaviour:
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
-  colorRingOuter: {fileID: 0}
-  colorRingInner: {fileID: 0}
-  optionsContainer: {fileID: 0}
   m_FillMethod: 4
   m_FillAmount: 1
   m_FillClockwise: 1
@@ -16837,9 +16648,6 @@ MonoBehaviour:
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
-  colorRingOuter: {fileID: 0}
-  colorRingInner: {fileID: 0}
-  optionsContainer: {fileID: 0}
   m_FillMethod: 4
   m_FillAmount: 1
   m_FillClockwise: 1
@@ -16915,9 +16723,6 @@ MonoBehaviour:
   m_Type: 0
   m_PreserveAspect: 1
   m_FillCenter: 1
-  colorRingOuter: {fileID: 0}
-  colorRingInner: {fileID: 0}
-  optionsContainer: {fileID: 0}
   m_FillMethod: 4
   m_FillAmount: 1
   m_FillClockwise: 1
@@ -17431,9 +17236,6 @@ MonoBehaviour:
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
-  colorRingOuter: {fileID: 0}
-  colorRingInner: {fileID: 0}
-  optionsContainer: {fileID: 0}
   m_FillMethod: 4
   m_FillAmount: 1
   m_FillClockwise: 1
@@ -17772,9 +17574,6 @@ MonoBehaviour:
   m_Type: 1
   m_PreserveAspect: 0
   m_FillCenter: 1
-  colorRingOuter: {fileID: 0}
-  colorRingInner: {fileID: 0}
-  optionsContainer: {fileID: 0}
   m_FillMethod: 4
   m_FillAmount: 1
   m_FillClockwise: 1
@@ -18226,9 +18025,6 @@ MonoBehaviour:
   m_Type: 1
   m_PreserveAspect: 0
   m_FillCenter: 1
-  colorRingOuter: {fileID: 0}
-  colorRingInner: {fileID: 0}
-  optionsContainer: {fileID: 0}
   m_FillMethod: 4
   m_FillAmount: 1
   m_FillClockwise: 1
@@ -18306,9 +18102,6 @@ MonoBehaviour:
   m_Type: 1
   m_PreserveAspect: 0
   m_FillCenter: 1
-  colorRingOuter: {fileID: 0}
-  colorRingInner: {fileID: 0}
-  optionsContainer: {fileID: 0}
   m_FillMethod: 4
   m_FillAmount: 1
   m_FillClockwise: 1
@@ -18384,9 +18177,6 @@ MonoBehaviour:
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
-  colorRingOuter: {fileID: 0}
-  colorRingInner: {fileID: 0}
-  optionsContainer: {fileID: 0}
   m_FillMethod: 4
   m_FillAmount: 1
   m_FillClockwise: 1
@@ -18462,9 +18252,6 @@ MonoBehaviour:
   m_Type: 0
   m_PreserveAspect: 1
   m_FillCenter: 1
-  colorRingOuter: {fileID: 0}
-  colorRingInner: {fileID: 0}
-  optionsContainer: {fileID: 0}
   m_FillMethod: 4
   m_FillAmount: 1
   m_FillClockwise: 1
@@ -18619,9 +18406,6 @@ MonoBehaviour:
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
-  colorRingOuter: {fileID: 0}
-  colorRingInner: {fileID: 0}
-  optionsContainer: {fileID: 0}
   m_FillMethod: 4
   m_FillAmount: 1
   m_FillClockwise: 1
@@ -18872,9 +18656,6 @@ MonoBehaviour:
   m_Type: 1
   m_PreserveAspect: 0
   m_FillCenter: 1
-  colorRingOuter: {fileID: 0}
-  colorRingInner: {fileID: 0}
-  optionsContainer: {fileID: 0}
   m_FillMethod: 4
   m_FillAmount: 1
   m_FillClockwise: 1
@@ -18966,6 +18747,7 @@ Terrain:
   m_AllowAutoConnect: 1
   m_EnableHeightmapRayTracing: 1
   m_EnableTreesAndDetailsRayTracing: 0
+  m_EnableHeightmapLODFrustumCulling: 1
   m_TreeMotionVectorModeOverride: 3
 --- !u!4 &1448055485
 Transform:
@@ -19043,9 +18825,6 @@ MonoBehaviour:
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
-  colorRingOuter: {fileID: 0}
-  colorRingInner: {fileID: 0}
-  optionsContainer: {fileID: 0}
   m_FillMethod: 4
   m_FillAmount: 1
   m_FillClockwise: 1
@@ -19293,9 +19072,6 @@ MonoBehaviour:
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
-  colorRingOuter: {fileID: 0}
-  colorRingInner: {fileID: 0}
-  optionsContainer: {fileID: 0}
   m_FillMethod: 4
   m_FillAmount: 1
   m_FillClockwise: 1
@@ -20124,9 +19900,6 @@ MonoBehaviour:
   m_Type: 1
   m_PreserveAspect: 0
   m_FillCenter: 1
-  colorRingOuter: {fileID: 0}
-  colorRingInner: {fileID: 0}
-  optionsContainer: {fileID: 0}
   m_FillMethod: 4
   m_FillAmount: 1
   m_FillClockwise: 1
@@ -20537,9 +20310,6 @@ MonoBehaviour:
   m_Type: 1
   m_PreserveAspect: 0
   m_FillCenter: 1
-  colorRingOuter: {fileID: 0}
-  colorRingInner: {fileID: 0}
-  optionsContainer: {fileID: 0}
   m_FillMethod: 4
   m_FillAmount: 1
   m_FillClockwise: 1
@@ -20786,9 +20556,6 @@ MonoBehaviour:
   m_Type: 1
   m_PreserveAspect: 0
   m_FillCenter: 1
-  colorRingOuter: {fileID: 0}
-  colorRingInner: {fileID: 0}
-  optionsContainer: {fileID: 0}
   m_FillMethod: 4
   m_FillAmount: 1
   m_FillClockwise: 1
@@ -21316,9 +21083,6 @@ MonoBehaviour:
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
-  colorRingOuter: {fileID: 0}
-  colorRingInner: {fileID: 0}
-  optionsContainer: {fileID: 0}
   m_FillMethod: 4
   m_FillAmount: 1
   m_FillClockwise: 1
@@ -21470,9 +21234,6 @@ MonoBehaviour:
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
-  colorRingOuter: {fileID: 0}
-  colorRingInner: {fileID: 0}
-  optionsContainer: {fileID: 0}
   m_FillMethod: 4
   m_FillAmount: 1
   m_FillClockwise: 1
@@ -22069,9 +21830,6 @@ MonoBehaviour:
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
-  colorRingOuter: {fileID: 0}
-  colorRingInner: {fileID: 0}
-  optionsContainer: {fileID: 0}
   m_FillMethod: 4
   m_FillAmount: 1
   m_FillClockwise: 1
@@ -22198,9 +21956,6 @@ MonoBehaviour:
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
-  colorRingOuter: {fileID: 0}
-  colorRingInner: {fileID: 0}
-  optionsContainer: {fileID: 0}
   m_FillMethod: 4
   m_FillAmount: 1
   m_FillClockwise: 1
@@ -22603,9 +22358,6 @@ MonoBehaviour:
   m_Type: 1
   m_PreserveAspect: 0
   m_FillCenter: 1
-  colorRingOuter: {fileID: 0}
-  colorRingInner: {fileID: 0}
-  optionsContainer: {fileID: 0}
   m_FillMethod: 4
   m_FillAmount: 1
   m_FillClockwise: 1
@@ -22923,9 +22675,6 @@ MonoBehaviour:
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
-  colorRingOuter: {fileID: 0}
-  colorRingInner: {fileID: 0}
-  optionsContainer: {fileID: 0}
   m_FillMethod: 4
   m_FillAmount: 1
   m_FillClockwise: 1
@@ -23047,9 +22796,6 @@ MonoBehaviour:
   m_Type: 1
   m_PreserveAspect: 0
   m_FillCenter: 1
-  colorRingOuter: {fileID: 0}
-  colorRingInner: {fileID: 0}
-  optionsContainer: {fileID: 0}
   m_FillMethod: 4
   m_FillAmount: 1
   m_FillClockwise: 1
@@ -23253,9 +22999,6 @@ MonoBehaviour:
   m_Type: 0
   m_PreserveAspect: 1
   m_FillCenter: 1
-  colorRingOuter: {fileID: 0}
-  colorRingInner: {fileID: 0}
-  optionsContainer: {fileID: 0}
   m_FillMethod: 4
   m_FillAmount: 1
   m_FillClockwise: 1
@@ -23540,9 +23283,6 @@ MonoBehaviour:
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
-  colorRingOuter: {fileID: 0}
-  colorRingInner: {fileID: 0}
-  optionsContainer: {fileID: 0}
   m_FillMethod: 4
   m_FillAmount: 1
   m_FillClockwise: 1
@@ -23634,9 +23374,6 @@ MonoBehaviour:
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
-  colorRingOuter: {fileID: 0}
-  colorRingInner: {fileID: 0}
-  optionsContainer: {fileID: 0}
   m_FillMethod: 4
   m_FillAmount: 1
   m_FillClockwise: 1
@@ -23813,8 +23550,6 @@ MonoBehaviour:
   vcamOverhead: {fileID: 705631742}
   vcamNose: {fileID: 225585588}
   vcamFree: {fileID: 0}
-  toggleKey: 9
-  freeCameraToggleKey: 96
   target: {fileID: 0}
   height: 20
   freeCameraActive: 0
@@ -23990,9 +23725,6 @@ MonoBehaviour:
   m_Type: 0
   m_PreserveAspect: 1
   m_FillCenter: 1
-  colorRingOuter: {fileID: 0}
-  colorRingInner: {fileID: 0}
-  optionsContainer: {fileID: 0}
   m_FillMethod: 4
   m_FillAmount: 1
   m_FillClockwise: 1
@@ -24068,9 +23800,6 @@ MonoBehaviour:
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
-  colorRingOuter: {fileID: 0}
-  colorRingInner: {fileID: 0}
-  optionsContainer: {fileID: 0}
   m_FillMethod: 4
   m_FillAmount: 1
   m_FillClockwise: 1
@@ -24342,9 +24071,6 @@ MonoBehaviour:
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
-  colorRingOuter: {fileID: 0}
-  colorRingInner: {fileID: 0}
-  optionsContainer: {fileID: 0}
   m_FillMethod: 4
   m_FillAmount: 1
   m_FillClockwise: 1
@@ -24420,9 +24146,6 @@ MonoBehaviour:
   m_Type: 0
   m_PreserveAspect: 1
   m_FillCenter: 1
-  colorRingOuter: {fileID: 0}
-  colorRingInner: {fileID: 0}
-  optionsContainer: {fileID: 0}
   m_FillMethod: 4
   m_FillAmount: 1
   m_FillClockwise: 1
@@ -24557,9 +24280,6 @@ MonoBehaviour:
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
-  colorRingOuter: {fileID: 0}
-  colorRingInner: {fileID: 0}
-  optionsContainer: {fileID: 0}
   m_FillMethod: 4
   m_FillAmount: 1
   m_FillClockwise: 1
@@ -24753,9 +24473,6 @@ MonoBehaviour:
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
-  colorRingOuter: {fileID: 0}
-  colorRingInner: {fileID: 0}
-  optionsContainer: {fileID: 0}
   m_FillMethod: 4
   m_FillAmount: 1
   m_FillClockwise: 1
@@ -24868,9 +24585,6 @@ MonoBehaviour:
   m_Type: 1
   m_PreserveAspect: 0
   m_FillCenter: 1
-  colorRingOuter: {fileID: 0}
-  colorRingInner: {fileID: 0}
-  optionsContainer: {fileID: 0}
   m_FillMethod: 4
   m_FillAmount: 1
   m_FillClockwise: 1
@@ -25013,9 +24727,6 @@ MonoBehaviour:
   m_Type: 1
   m_PreserveAspect: 0
   m_FillCenter: 1
-  colorRingOuter: {fileID: 0}
-  colorRingInner: {fileID: 0}
-  optionsContainer: {fileID: 0}
   m_FillMethod: 4
   m_FillAmount: 1
   m_FillClockwise: 1
@@ -25119,9 +24830,6 @@ MonoBehaviour:
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
-  colorRingOuter: {fileID: 0}
-  colorRingInner: {fileID: 0}
-  optionsContainer: {fileID: 0}
   m_FillMethod: 4
   m_FillAmount: 1
   m_FillClockwise: 1
@@ -25210,9 +24918,6 @@ MonoBehaviour:
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
-  colorRingOuter: {fileID: 0}
-  colorRingInner: {fileID: 0}
-  optionsContainer: {fileID: 0}
   m_FillMethod: 4
   m_FillAmount: 1
   m_FillClockwise: 1
@@ -25474,9 +25179,6 @@ MonoBehaviour:
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
-  colorRingOuter: {fileID: 0}
-  colorRingInner: {fileID: 0}
-  optionsContainer: {fileID: 0}
   m_FillMethod: 4
   m_FillAmount: 1
   m_FillClockwise: 1
@@ -25768,9 +25470,6 @@ MonoBehaviour:
   m_Type: 1
   m_PreserveAspect: 0
   m_FillCenter: 1
-  colorRingOuter: {fileID: 0}
-  colorRingInner: {fileID: 0}
-  optionsContainer: {fileID: 0}
   m_FillMethod: 4
   m_FillAmount: 1
   m_FillClockwise: 1
@@ -26356,9 +26055,6 @@ MonoBehaviour:
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
-  colorRingOuter: {fileID: 0}
-  colorRingInner: {fileID: 0}
-  optionsContainer: {fileID: 0}
   m_FillMethod: 4
   m_FillAmount: 1
   m_FillClockwise: 1
@@ -26628,9 +26324,6 @@ MonoBehaviour:
   m_Type: 1
   m_PreserveAspect: 0
   m_FillCenter: 1
-  colorRingOuter: {fileID: 0}
-  colorRingInner: {fileID: 0}
-  optionsContainer: {fileID: 0}
   m_FillMethod: 4
   m_FillAmount: 1
   m_FillClockwise: 1
@@ -26706,9 +26399,6 @@ MonoBehaviour:
   m_Type: 0
   m_PreserveAspect: 1
   m_FillCenter: 1
-  colorRingOuter: {fileID: 0}
-  colorRingInner: {fileID: 0}
-  optionsContainer: {fileID: 0}
   m_FillMethod: 4
   m_FillAmount: 1
   m_FillClockwise: 1
@@ -26784,9 +26474,6 @@ MonoBehaviour:
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
-  colorRingOuter: {fileID: 0}
-  colorRingInner: {fileID: 0}
-  optionsContainer: {fileID: 0}
   m_FillMethod: 4
   m_FillAmount: 1
   m_FillClockwise: 1
@@ -27242,9 +26929,6 @@ MonoBehaviour:
   m_Type: 1
   m_PreserveAspect: 0
   m_FillCenter: 1
-  colorRingOuter: {fileID: 0}
-  colorRingInner: {fileID: 0}
-  optionsContainer: {fileID: 0}
   m_FillMethod: 4
   m_FillAmount: 1
   m_FillClockwise: 1
@@ -27930,9 +27614,6 @@ MonoBehaviour:
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
-  colorRingOuter: {fileID: 0}
-  colorRingInner: {fileID: 0}
-  optionsContainer: {fileID: 0}
   m_FillMethod: 4
   m_FillAmount: 1
   m_FillClockwise: 1

@@ -163,6 +163,7 @@ GameObject:
   - component: {fileID: -8369540164396031870}
   - component: {fileID: 1300814111836103854}
   - component: {fileID: 6609218103115676810}
+  - component: {fileID: 8964252853179299011}
   m_Layer: 0
   m_Name: elder_Female_A
   m_TagString: Untagged
@@ -961,6 +962,27 @@ MonoBehaviour:
   prefabId: resources:Prefabs/Agents/Humans/elder_Female_A
   resourcesPath: Prefabs/Agents/Humans/elder_Female_A
   assetPath: Assets/A_Dogs_Tale/Resources/Prefabs/Agents/Humans/elder_Female_A.prefab
+--- !u!114 &8964252853179299011
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 186757882122740016}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3f6cda250b193442c9f59a935c554f95, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.PlacementModule
+  allowedRooms: -1
+  autoSizeFromMesh: 1
+  sizeInCells: {x: 0.14660716, y: 0.034272723, z: 0.105638616}
+  cellSize: 1
+  edgeHint: 0
+  rotationRule: 1
+  minClearCellsAround: 0
+  mustTouchWall: 0
+  wallPadding: 0.05
 --- !u!1 &226850885270714430
 GameObject:
   m_ObjectHideFlags: 0

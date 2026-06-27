@@ -29,7 +29,7 @@ public class PlayerInputState
 
     // Skip delay
     public bool anyKeyOrButtonDown;             // skips delay in title screen / interraction / cutscene
-    public int requestedPopupTabIndex;          // popup tab shortcut; 0 means no request, 1..4 are valid tabs
+    public int requestedPopupTabIndex;          // popup tab shortcut; 0 means no request, 1..5 are valid tabs
 
     // world and object targeting
     public bool interactPressed;                // "do something" with ClickTargetWorldObject

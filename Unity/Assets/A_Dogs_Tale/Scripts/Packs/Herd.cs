@@ -173,7 +173,7 @@ public class Herd : Pack
     {
         if (agent != null && !IsSheepAgent(agent))
         {
-            Debug.LogWarning($"[Herd] Adding non-sheep agent '{agent.DisplayName}' to herd '{packName}'.", this);
+            Debug.Log($"[Herd] Adding non-sheep agent '{agent.DisplayName}' to herd '{packName}'.", this);
         }
 
         bool changed = base.AddMember(agent, setAsLeader);

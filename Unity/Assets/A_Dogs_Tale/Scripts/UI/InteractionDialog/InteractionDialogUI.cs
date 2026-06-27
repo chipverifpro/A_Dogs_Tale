@@ -367,6 +367,9 @@ public sealed partial class InteractionDialogUI : MonoBehaviour
             case 4:
                 tab = InteractionTab.Quests;
                 return true;
+            case 5:
+                tab = InteractionTab.Scent;
+                return true;
             default:
                 tab = InteractionTab.Items;
                 return false;

@@ -213,17 +213,21 @@ public class ScentAirGround : MonoBehaviour
         }
 
         // Switch the overlay to the source selected for currentAgentId.
-        ScentSource scentSource = dir.scentRegistry.GetScentSource(currentAgentId) ??
-            dir.scentRegistry.GetOrCreateScentSource(
-                currentAgentId,
-                agent: agent,
-                ScentCategory.Unknown,
-                defaultName: agent.DisplayName);
-        ActivateOverlayForSource(scentSource);
-
-        // Draw the current state for this agent with current visibility flags
-        VisualizeCurrentScents();
-        ApplyScentUpdates();
+        // ignore if not yet assigned.
+        if (currentAgentId >=0)
+        {
+            ScentSource scentSource = dir.scentRegistry.GetScentSource(currentAgentId) ??
+                dir.scentRegistry.GetOrCreateScentSource(
+                    currentAgentId,
+                    agent: agent,
+                    ScentCategory.Unknown,
+                    defaultName: agent.DisplayName);
+            ActivateOverlayForSource(scentSource);
+            // Draw the current state for this agent with current visibility flags
+            VisualizeCurrentScents();
+            ApplyScentUpdates();
+        }
+            
 
         // Sync "previous" state
         previousAgentIdVisualized = currentAgentId;

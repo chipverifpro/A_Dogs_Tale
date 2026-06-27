@@ -475,7 +475,7 @@ public class ScentRegistry : MonoBehaviour
         {
             return existing;
         }
-        Debug.LogWarning($"GetScentSource(agentId={agentId}) returned null)");
+        Debug.Log($"GetScentSource(agentId={agentId}) returned null)");
         return null;
     }
 

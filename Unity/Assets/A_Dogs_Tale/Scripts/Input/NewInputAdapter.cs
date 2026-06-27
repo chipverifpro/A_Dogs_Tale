@@ -77,6 +77,7 @@ public class NewInputAdapter : MonoBehaviour
     [SerializeField] private Key popupTab2Key = Key.Digit2;
     [SerializeField] private Key popupTab3Key = Key.Digit3;
     [SerializeField] private Key popupTab4Key = Key.Digit4;
+    [SerializeField] private Key popupTab5Key = Key.Digit5;
     [SerializeField] private Key freeCameraToggleKey = Key.Backquote;
     [SerializeField] private Key cameraViewKey = Key.Tab;
     [SerializeField] private Key zoomOutKey = Key.Z;
@@ -510,6 +511,7 @@ public class NewInputAdapter : MonoBehaviour
         else if (!textInputFocused && WasKeyPressedThisFrame(keyboard, popupTab2Key)) state.requestedPopupTabIndex = 2;
         else if (!textInputFocused && WasKeyPressedThisFrame(keyboard, popupTab3Key)) state.requestedPopupTabIndex = 3;
         else if (!textInputFocused && WasKeyPressedThisFrame(keyboard, popupTab4Key)) state.requestedPopupTabIndex = 4;
+        else if (!textInputFocused && WasKeyPressedThisFrame(keyboard, popupTab5Key)) state.requestedPopupTabIndex = 5;
 
 
         // --- Camera commands (zoom / change view) ---
