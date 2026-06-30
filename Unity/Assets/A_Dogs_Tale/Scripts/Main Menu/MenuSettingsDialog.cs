@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using DogGame;
 using UnityEngine;
 using UnityEngine.UI;
@@ -18,7 +19,9 @@ public class MenuSettingsDialog : MonoBehaviour
     [SerializeField] private string tallThemedBackgroundResourcePath = "Sprites/Settings_Background_Vert_C";
     [SerializeField] private string mapTypeSpriteResourcePath = "Sprites/SettingsMapType";
     [SerializeField] private string graphicsQualitySpriteResourcePath = "Sprites/GraphicsQualitySprites_A";
+    [SerializeField] private string settingsIconASpriteResourcePath = "Sprites/SettingsIcons_A";
     [SerializeField] private string settingsIconSpriteResourcePath = "Sprites/SettingsIcons_B";
+    [SerializeField] private string creditsFileRelativePath = "A_Dogs_Tale/Documentation/Credits.txt";
     [SerializeField] private Vector2 scrollAnchorMin = new Vector2(0.08f, 0.12f);
     [SerializeField] private Vector2 scrollAnchorMax = new Vector2(0.92f, 0.72f);
     [SerializeField] private Vector2 tallScrollAnchorMin = new Vector2(0.12f, 0.13f);
@@ -28,12 +31,20 @@ public class MenuSettingsDialog : MonoBehaviour
     [SerializeField] private Vector2 closeButtonSize = new Vector2(150f, 130f);
     [SerializeField] private Vector2 tallCloseButtonAnchor = new Vector2(0.79f, 0.805f);
     [SerializeField] private Vector2 tallCloseButtonSize = new Vector2(190f, 165f);
-    [SerializeField] private float mapTypeButtonHeight = 112f;
-    [SerializeField] private float graphicsQualityButtonHeight = 112f;
+    [SerializeField] private float mapTypeButtonHeight = 76f;
+    [SerializeField] private float graphicsQualityButtonHeight = 76f;
+    [SerializeField] private float settingsRowHeightScale = 0.82f;
+    [SerializeField] private float settingsFontSizeScale = 0.88f;
+    [SerializeField] private float settingsIconDisplayMaxSize = 34f;
+    [SerializeField] private float buttonSizeSampleDisplayMaxSize = 46f;
     [SerializeField] private Color textColor = new Color(0.18f, 0.11f, 0.05f, 1f);
     [SerializeField] private Color sectionColor = new Color(0.23f, 0.13f, 0.05f, 1f);
     [SerializeField] private Color controlColor = new Color(0.96f, 0.86f, 0.61f, 0.72f);
     [SerializeField] private Color selectedControlColor = new Color(0.56f, 0.82f, 0.47f, 0.85f);
+    [SerializeField] private Color scrollbarTrackColor = new Color(0.55f, 0.39f, 0.20f, 0.88f);
+    [SerializeField] private Color scrollbarHandleColor = new Color(0.30f, 0.18f, 0.08f, 0.96f);
+    [SerializeField] private float scrollbarWidth = 18f;
+    [SerializeField] private float scrollbarContentInset = 36f;
 
     private static readonly int[] GraphicsQualityLevels =
     {
@@ -91,6 +102,9 @@ public class MenuSettingsDialog : MonoBehaviour
     private Sprite defaultThemedBackgroundSprite;
     private Sprite tallThemedBackgroundSprite;
     private RectTransform closeButtonRect;
+    private GameObject settingsScreenRoot;
+    private GameObject creditsScreenRoot;
+    private Text creditsBodyText;
     private bool pausedGameForDialog;
     private Vector2 defaultThemedDialogSize;
     private Vector2 defaultThemedBackgroundSize;
@@ -164,6 +178,7 @@ public class MenuSettingsDialog : MonoBehaviour
         ApplyResponsiveThemedLayout();
         RefreshPanelSize();
         ApplyResponsiveScaleToBuiltDialog();
+        ShowSettingsScreen();
         LoadCurrentValues();
         dialogRoot.SetActive(true);
         dialogRoot.transform.SetAsLastSibling();
@@ -333,11 +348,13 @@ public class MenuSettingsDialog : MonoBehaviour
         docsButton.onClick.AddListener(() => menuManager?.OpenDocs());
         Button splashReviewButton = CreateButton(linkRow.transform, "Review Splash Screens", "ReviewSplashScreensButton");
         splashReviewButton.onClick.AddListener(() => menuManager?.ReviewSplashScreens());
-        Button closeButton = CreateButton(linkRow.transform, "Close", "CloseButton");
-        closeButton.onClick.AddListener(Close);
+        Button creditsButton = CreateButton(linkRow.transform, "Credits", "CreditsButton");
+        creditsButton.onClick.AddListener(ShowCreditsScreen);
 
         CreateVersionFooter(content);
+        CreateCreditsScreen(root, canvas);
         CreateCloseButtonOverlay(root, canvas);
+        ShowSettingsScreen();
 
         AddAiModelListeners();
         touchscreenJoystickToggle.onValueChanged.AddListener(_ => SaveFromControls());
@@ -366,6 +383,7 @@ public class MenuSettingsDialog : MonoBehaviour
         RectTransform scrollRectTransform = scrollObject.GetComponent<RectTransform>();
         Stretch(scrollRectTransform);
         themedScrollRect = scrollRectTransform;
+        settingsScreenRoot = scrollObject;
         ApplyScrollAnchorsForCurrentLayout(scrollRectTransform);
 
         Image scrollImage = scrollObject.GetComponent<Image>();
@@ -383,15 +401,20 @@ public class MenuSettingsDialog : MonoBehaviour
         scrollRect.scrollSensitivity = 5f;
 
         RectTransform viewport = EnsureViewport(scrollObject.transform);
+        ReserveScrollbarSpace(viewport);
         RectTransform content = EnsureContent(viewport);
         scrollRect.viewport = viewport;
         scrollRect.content = content;
 
         Scrollbar scrollbar = scrollObject.GetComponentInChildren<Scrollbar>(includeInactive: true);
-        if (scrollbar != null && scrollbar.handleRect != null)
-            scrollRect.verticalScrollbar = scrollbar;
-        else
-            scrollRect.verticalScrollbar = null;
+        if (scrollbar == null || scrollbar.handleRect == null)
+            scrollbar = CreateVerticalScrollbar(scrollObject.transform, "SettingsScrollbar", scrollObject.layer);
+
+        ApplyScrollbarLayout(scrollbar);
+        ConfigureScrollbarVisuals(scrollbar);
+        scrollRect.verticalScrollbar = scrollbar;
+        scrollRect.verticalScrollbarVisibility = ScrollRect.ScrollbarVisibility.Permanent;
+        scrollRect.verticalScrollbarSpacing = 0f;
 
         return scrollRect;
     }
@@ -441,6 +464,7 @@ public class MenuSettingsDialog : MonoBehaviour
         ApplyThemedBackgroundForCurrentLayout();
         ApplyScrollAnchorsForCurrentLayout(themedScrollRect);
         ApplyCloseButtonHitArea();
+        ApplyCreditsScreenLayout();
     }
 
     private void ApplyThemedBackgroundForCurrentLayout()
@@ -933,7 +957,7 @@ public class MenuSettingsDialog : MonoBehaviour
 
     private void CreateButtonSizeRow(Transform parent)
     {
-        GameObject row = CreateRow(parent, "ButtonSizeRow", PersistentGameSettings.MaxButtonSize + 16f);
+        GameObject row = CreateRow(parent, "ButtonSizeRow", buttonSizeSampleDisplayMaxSize + 12f);
         HorizontalLayoutGroup rowLayout = row.GetComponent<HorizontalLayoutGroup>();
         if (rowLayout != null)
         {
@@ -942,7 +966,7 @@ public class MenuSettingsDialog : MonoBehaviour
             rowLayout.childForceExpandHeight = false;
         }
 
-        Text label = CreateLabel(row.transform, "Button Size", 17, FontStyle.Bold, TextAnchor.MiddleLeft, 100f);
+        Text label = CreateLabel(row.transform, "Button Size", 15, FontStyle.Bold, TextAnchor.MiddleLeft, 44f);
         LayoutElement labelLayout = label.gameObject.GetComponent<LayoutElement>();
         labelLayout.preferredWidth = 116f;
         labelLayout.minWidth = 96f;
@@ -962,7 +986,7 @@ public class MenuSettingsDialog : MonoBehaviour
         sliderLayout.minWidth = 120f;
         sliderLayout.preferredHeight = 20f;
 
-        buttonSizeValueLabel = CreateLabel(row.transform, "176", 16, FontStyle.Bold, TextAnchor.MiddleRight, 46f, "ButtonSizeValueLabel");
+        buttonSizeValueLabel = CreateLabel(row.transform, "176", 14, FontStyle.Bold, TextAnchor.MiddleRight, 38f, "ButtonSizeValueLabel");
         LayoutElement valueLayout = buttonSizeValueLabel.gameObject.GetComponent<LayoutElement>();
         valueLayout.preferredWidth = 54f;
         valueLayout.minWidth = 46f;
@@ -1150,7 +1174,9 @@ public class MenuSettingsDialog : MonoBehaviour
         LayoutElement layout = buttonObject.GetComponent<LayoutElement>();
         layout.flexibleWidth = 1f;
         layout.minWidth = 74f;
-        layout.preferredHeight = mapTypeButtonHeight;
+        float buttonHeight = GetCompactRowHeight(mapTypeButtonHeight);
+        layout.minHeight = buttonHeight;
+        layout.preferredHeight = buttonHeight;
         return button;
     }
 
@@ -1171,7 +1197,9 @@ public class MenuSettingsDialog : MonoBehaviour
         LayoutElement layout = buttonObject.GetComponent<LayoutElement>();
         layout.flexibleWidth = 1f;
         layout.minWidth = 74f;
-        layout.preferredHeight = graphicsQualityButtonHeight;
+        float buttonHeight = GetCompactRowHeight(graphicsQualityButtonHeight);
+        layout.minHeight = buttonHeight;
+        layout.preferredHeight = buttonHeight;
         return button;
     }
 
@@ -1319,16 +1347,27 @@ public class MenuSettingsDialog : MonoBehaviour
         layout.childForceExpandHeight = false;
 
         LayoutElement layoutElement = row.GetComponent<LayoutElement>();
-        layoutElement.preferredHeight = height;
-        layoutElement.minHeight = height;
+        float compactHeight = GetCompactRowHeight(height);
+        layoutElement.preferredHeight = compactHeight;
+        layoutElement.minHeight = compactHeight;
         return row;
+    }
+
+    private float GetCompactRowHeight(float height)
+    {
+        return Mathf.Max(24f, height * Mathf.Clamp(settingsRowHeightScale, 0.5f, 1f));
+    }
+
+    private int GetCompactFontSize(int fontSize)
+    {
+        return Mathf.Max(10, Mathf.RoundToInt(fontSize * Mathf.Clamp(settingsFontSizeScale, 0.6f, 1f)));
     }
 
     private void CreateSectionHeader(Transform parent, string labelText)
     {
         if (string.Equals(labelText, "SOUND", StringComparison.OrdinalIgnoreCase))
         {
-            GameObject headerRow = CreateRow(parent, "SoundSectionHeader", 30f);
+            GameObject headerRow = CreateRow(parent, "SoundSectionHeader", 25f);
             HorizontalLayoutGroup layout = headerRow.GetComponent<HorizontalLayoutGroup>();
             if (layout != null)
             {
@@ -1336,8 +1375,8 @@ public class MenuSettingsDialog : MonoBehaviour
                 layout.childForceExpandWidth = false;
             }
 
-            AddInlineSettingsIcon(headerRow.transform, 7, "SoundSectionIcon", 28f, 32f);
-            Text soundLabel = CreateLabel(headerRow.transform, labelText, 20, FontStyle.Bold, TextAnchor.MiddleLeft, 30f);
+            AddInlineSettingsIcon(headerRow.transform, 7, "SoundSectionIcon", 22f, 26f);
+            Text soundLabel = CreateLabel(headerRow.transform, labelText, 17, FontStyle.Bold, TextAnchor.MiddleLeft, 25f);
             soundLabel.color = sectionColor;
 
             LayoutElement soundLabelLayout = soundLabel.GetComponent<LayoutElement>();
@@ -1346,7 +1385,7 @@ public class MenuSettingsDialog : MonoBehaviour
             return;
         }
 
-        Text label = CreateLabel(parent, labelText, 20, FontStyle.Bold, TextAnchor.MiddleLeft, 30f);
+        Text label = CreateLabel(parent, labelText, 17, FontStyle.Bold, TextAnchor.MiddleLeft, 25f);
         label.color = sectionColor;
     }
 
@@ -1388,7 +1427,7 @@ public class MenuSettingsDialog : MonoBehaviour
             toggleText.font = GetRuntimeFont();
             toggleText.text = FormatToggleLabel(labelText, objectName);
             toggleText.color = textColor;
-            toggleText.fontSize = 16;
+            toggleText.fontSize = GetCompactFontSize(16);
             toggleText.fontStyle = FontStyle.Bold;
             toggleText.horizontalOverflow = HorizontalWrapMode.Wrap;
             toggleText.verticalOverflow = VerticalWrapMode.Truncate;
@@ -1405,7 +1444,7 @@ public class MenuSettingsDialog : MonoBehaviour
         LayoutElement layout = toggleObject.AddComponent<LayoutElement>();
         layout.flexibleWidth = 1f;
         layout.minWidth = 120f;
-        float toggleHeight = IsTwoLineToggle(objectName) ? 56f : 36f;
+        float toggleHeight = IsTwoLineToggle(objectName) ? 44f : 30f;
         layout.minHeight = toggleHeight;
         layout.preferredHeight = toggleHeight;
         return toggle;
@@ -1556,14 +1595,15 @@ public class MenuSettingsDialog : MonoBehaviour
             text.font = GetRuntimeFont();
             text.text = labelText;
             text.color = Color.white;
-            text.fontSize = 17;
+            text.fontSize = GetCompactFontSize(17);
             text.fontStyle = FontStyle.Bold;
         }
 
         LayoutElement layout = buttonObject.AddComponent<LayoutElement>();
         layout.flexibleWidth = 1f;
-        layout.minWidth = 140f;
-        layout.preferredHeight = 38f;
+        layout.minWidth = 104f;
+        layout.minHeight = 30f;
+        layout.preferredHeight = 30f;
         ApplyButtonIcon(buttonObject, text, objectName);
         Button button = buttonObject.GetComponent<Button>();
         button.onClick.AddListener(AudioPlayer.PlayUiButtonClick);
@@ -1572,16 +1612,7 @@ public class MenuSettingsDialog : MonoBehaviour
 
     private void ApplyButtonIcon(GameObject buttonObject, Text buttonText, string objectName)
     {
-        int iconIndex = objectName switch
-        {
-            "DocumentationButton" => 11,
-            _ => -1
-        };
-
-        if (iconIndex < 0)
-            return;
-
-        Sprite icon = GetSettingsIconSprite(iconIndex);
+        Sprite icon = GetButtonIconSprite(objectName);
         if (icon == null)
             return;
 
@@ -1611,6 +1642,26 @@ public class MenuSettingsDialog : MonoBehaviour
             offsetMin.x = Mathf.Max(offsetMin.x, 46f);
             textRect.offsetMin = offsetMin;
         }
+    }
+
+    private Sprite GetButtonIconSprite(string objectName)
+    {
+        if (objectName == "DocumentationButton")
+        {
+            const int documentationIconIndex = 8;
+            string spriteName = $"SettingsIcons_A_{documentationIconIndex}";
+            return SpriteServer.SpriteLookup(spriteName)
+                ?? SpriteServer.SpriteSheetLookupByName(settingsIconASpriteResourcePath, spriteName)
+                ?? SpriteServer.SpriteSheetLookup(settingsIconASpriteResourcePath, documentationIconIndex);
+        }
+
+        int iconIndex = objectName switch
+        {
+            "CreditsButton" => 11,
+            _ => -1
+        };
+
+        return iconIndex >= 0 ? GetSettingsIconSprite(iconIndex) : null;
     }
 
     private void CreateCloseButtonOverlay(Transform root, Canvas canvas)
@@ -1752,10 +1803,14 @@ public class MenuSettingsDialog : MonoBehaviour
         CreateAndroidDisplayModeRow(panel.transform);
         CreateButtonSizeRow(panel.transform);
 
-        Button closeButton = CreateButton(panel.transform, "Close", "CloseButton");
-        closeButton.onClick.AddListener(Close);
+        settingsScreenRoot = panel;
+
+        Button creditsButton = CreateButton(panel.transform, "Credits", "CreditsButton");
+        creditsButton.onClick.AddListener(ShowCreditsScreen);
 
         CreateVersionFooter(panel.transform);
+        CreateCreditsScreen(dialogRoot.transform, canvas);
+        ShowSettingsScreen();
 
         AddAiModelListeners();
         touchscreenJoystickToggle.onValueChanged.AddListener(_ => SaveFromControls());
@@ -1786,6 +1841,292 @@ public class MenuSettingsDialog : MonoBehaviour
         float width = Mathf.Clamp(rect.width * 0.82f, 400f, 560f);
         float height = Mathf.Clamp(rect.height * 0.82f, 250f, 340f);
         panelRect.sizeDelta = new Vector2(width, height);
+        ApplyCreditsScreenLayout();
+    }
+
+    private void CreateCreditsScreen(Transform root, Canvas canvas)
+    {
+        if (root == null)
+            return;
+
+        Transform existing = root.Find("CreditsScreen");
+        creditsScreenRoot = existing != null
+            ? existing.gameObject
+            : new GameObject("CreditsScreen", typeof(RectTransform), typeof(Image), typeof(VerticalLayoutGroup));
+
+        if (creditsScreenRoot.transform.parent != root)
+            creditsScreenRoot.transform.SetParent(root, false);
+
+        SetLayerRecursive(creditsScreenRoot, canvas != null ? canvas.gameObject.layer : root.gameObject.layer);
+
+        Image background = creditsScreenRoot.GetComponent<Image>();
+        if (background != null)
+        {
+            background.color = new Color(1f, 1f, 1f, 0f);
+            background.raycastTarget = true;
+        }
+
+        RectTransform creditsRect = creditsScreenRoot.GetComponent<RectTransform>();
+        ApplyCreditsScreenLayout(creditsRect);
+
+        VerticalLayoutGroup layout = creditsScreenRoot.GetComponent<VerticalLayoutGroup>();
+        layout.padding = new RectOffset(8, 8, 6, 6);
+        layout.spacing = 6f;
+        layout.childAlignment = TextAnchor.UpperLeft;
+        layout.childControlWidth = true;
+        layout.childControlHeight = true;
+        layout.childForceExpandWidth = true;
+        layout.childForceExpandHeight = false;
+
+        ClearChildren(creditsScreenRoot.transform);
+
+        GameObject headerRow = CreateRow(creditsScreenRoot.transform, "CreditsHeaderRow", 44f);
+        Text title = CreateLabel(headerRow.transform, "Credits", 22, FontStyle.Bold, TextAnchor.MiddleLeft, 44f, "CreditsTitleLabel");
+        title.color = sectionColor;
+        LayoutElement titleLayout = title.GetComponent<LayoutElement>();
+        if (titleLayout != null)
+            titleLayout.flexibleWidth = 1f;
+
+        Button backButton = CreateButton(headerRow.transform, "Back", "CreditsBackButton");
+        LayoutElement backLayout = backButton.GetComponent<LayoutElement>();
+        if (backLayout != null)
+        {
+            backLayout.flexibleWidth = 0f;
+            backLayout.minWidth = 110f;
+            backLayout.preferredWidth = 120f;
+        }
+        backButton.onClick.AddListener(ShowSettingsScreen);
+
+        CreateCreditsScrollView(creditsScreenRoot.transform);
+        RefreshCreditsText();
+        creditsScreenRoot.SetActive(false);
+    }
+
+    private void CreateCreditsScrollView(Transform parent)
+    {
+        GameObject scrollObject = new GameObject("CreditsScrollView", typeof(RectTransform), typeof(ScrollRect), typeof(Image), typeof(LayoutElement));
+        scrollObject.transform.SetParent(parent, false);
+        SetLayerRecursive(scrollObject, parent.gameObject.layer);
+
+        Image image = scrollObject.GetComponent<Image>();
+        image.color = new Color(1f, 0.96f, 0.84f, 0.24f);
+        image.raycastTarget = true;
+
+        LayoutElement layout = scrollObject.GetComponent<LayoutElement>();
+        layout.minHeight = 160f;
+        layout.flexibleHeight = 1f;
+
+        ScrollRect scrollRect = scrollObject.GetComponent<ScrollRect>();
+        scrollRect.horizontal = false;
+        scrollRect.vertical = true;
+        scrollRect.movementType = ScrollRect.MovementType.Clamped;
+        scrollRect.scrollSensitivity = 18f;
+
+        RectTransform viewport = EnsureViewport(scrollObject.transform);
+        ReserveScrollbarSpace(viewport);
+
+        RectTransform content = EnsureContent(viewport);
+        VerticalLayoutGroup contentLayout = content.gameObject.GetComponent<VerticalLayoutGroup>();
+        if (contentLayout == null)
+            contentLayout = content.gameObject.AddComponent<VerticalLayoutGroup>();
+        contentLayout.padding = new RectOffset(12, 12, 12, 12);
+        contentLayout.spacing = 0f;
+        contentLayout.childAlignment = TextAnchor.UpperLeft;
+        contentLayout.childControlWidth = true;
+        contentLayout.childControlHeight = true;
+        contentLayout.childForceExpandWidth = true;
+        contentLayout.childForceExpandHeight = false;
+
+        ContentSizeFitter contentFitter = content.gameObject.GetComponent<ContentSizeFitter>();
+        if (contentFitter == null)
+            contentFitter = content.gameObject.AddComponent<ContentSizeFitter>();
+        contentFitter.horizontalFit = ContentSizeFitter.FitMode.Unconstrained;
+        contentFitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+
+        GameObject textObject = new GameObject("CreditsBodyText", typeof(RectTransform), typeof(Text), typeof(ContentSizeFitter));
+        textObject.transform.SetParent(content, false);
+        SetLayerRecursive(textObject, parent.gameObject.layer);
+
+        creditsBodyText = textObject.GetComponent<Text>();
+        creditsBodyText.font = GetRuntimeFont();
+        creditsBodyText.fontSize = 18;
+        creditsBodyText.fontStyle = FontStyle.Normal;
+        creditsBodyText.alignment = TextAnchor.UpperLeft;
+        creditsBodyText.color = textColor;
+        creditsBodyText.horizontalOverflow = HorizontalWrapMode.Wrap;
+        creditsBodyText.verticalOverflow = VerticalWrapMode.Overflow;
+
+        ContentSizeFitter textFitter = textObject.GetComponent<ContentSizeFitter>();
+        textFitter.horizontalFit = ContentSizeFitter.FitMode.Unconstrained;
+        textFitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+
+        Scrollbar scrollbar = CreateVerticalScrollbar(scrollObject.transform, "CreditsScrollbar", parent.gameObject.layer);
+        scrollRect.viewport = viewport;
+        scrollRect.content = content;
+        scrollRect.verticalScrollbar = scrollbar;
+        scrollRect.verticalScrollbarVisibility = ScrollRect.ScrollbarVisibility.Permanent;
+        scrollRect.verticalScrollbarSpacing = 0f;
+    }
+
+    private Scrollbar CreateVerticalScrollbar(Transform parent, string objectName, int layer)
+    {
+        GameObject scrollbarObject = DefaultControls.CreateScrollbar(new DefaultControls.Resources());
+        scrollbarObject.name = objectName;
+        scrollbarObject.transform.SetParent(parent, false);
+        SetLayerRecursive(scrollbarObject, layer);
+
+        Scrollbar scrollbar = scrollbarObject.GetComponent<Scrollbar>();
+        scrollbar.direction = Scrollbar.Direction.BottomToTop;
+        ApplyScrollbarLayout(scrollbar);
+        ConfigureScrollbarVisuals(scrollbar);
+        return scrollbar;
+    }
+
+    private void ReserveScrollbarSpace(RectTransform viewport)
+    {
+        if (viewport == null)
+            return;
+
+        Stretch(viewport);
+        viewport.offsetMax = new Vector2(-Mathf.Max(scrollbarContentInset, scrollbarWidth), 0f);
+    }
+
+    private void ApplyScrollbarLayout(Scrollbar scrollbar)
+    {
+        if (scrollbar == null)
+            return;
+
+        RectTransform scrollbarRect = scrollbar.GetComponent<RectTransform>();
+        if (scrollbarRect == null)
+            return;
+
+        scrollbarRect.anchorMin = new Vector2(1f, 0f);
+        scrollbarRect.anchorMax = new Vector2(1f, 1f);
+        scrollbarRect.pivot = new Vector2(1f, 0.5f);
+        scrollbarRect.anchoredPosition = Vector2.zero;
+        scrollbarRect.sizeDelta = new Vector2(scrollbarWidth, 0f);
+    }
+
+    private void ConfigureScrollbarVisuals(Scrollbar scrollbar)
+    {
+        if (scrollbar == null)
+            return;
+
+        Image trackImage = scrollbar.GetComponent<Image>();
+        if (trackImage != null)
+        {
+            trackImage.color = scrollbarTrackColor;
+            trackImage.raycastTarget = true;
+        }
+
+        if (scrollbar.handleRect != null)
+        {
+            Image handleImage = scrollbar.handleRect.GetComponent<Image>();
+            if (handleImage != null)
+            {
+                handleImage.color = scrollbarHandleColor;
+                handleImage.raycastTarget = true;
+                scrollbar.targetGraphic = handleImage;
+            }
+        }
+
+        ColorBlock colors = scrollbar.colors;
+        colors.normalColor = scrollbarHandleColor;
+        colors.highlightedColor = Color.Lerp(scrollbarHandleColor, Color.white, 0.12f);
+        colors.pressedColor = Color.Lerp(scrollbarHandleColor, Color.black, 0.16f);
+        colors.selectedColor = scrollbarHandleColor;
+        colors.disabledColor = new Color(scrollbarHandleColor.r, scrollbarHandleColor.g, scrollbarHandleColor.b, 0.35f);
+        scrollbar.colors = colors;
+    }
+
+    private void ShowCreditsScreen()
+    {
+        RefreshCreditsText();
+
+        if (settingsScreenRoot != null)
+            settingsScreenRoot.SetActive(false);
+
+        if (creditsScreenRoot != null)
+        {
+            creditsScreenRoot.SetActive(true);
+            creditsScreenRoot.transform.SetAsLastSibling();
+        }
+
+        if (closeButtonRect != null)
+            closeButtonRect.SetAsLastSibling();
+    }
+
+    private void ShowSettingsScreen()
+    {
+        if (creditsScreenRoot != null)
+            creditsScreenRoot.SetActive(false);
+
+        if (settingsScreenRoot != null)
+            settingsScreenRoot.SetActive(true);
+    }
+
+    private void RefreshCreditsText()
+    {
+        if (creditsBodyText == null)
+            return;
+
+        creditsBodyText.text = LoadCreditsText();
+    }
+
+    private string LoadCreditsText()
+    {
+        string[] paths =
+        {
+            Path.Combine(Application.dataPath, creditsFileRelativePath),
+            Path.Combine(Application.dataPath, "A_Dogs_Tale", "Documentation", "Credits.txt"),
+            Path.Combine(Directory.GetParent(Application.dataPath)?.FullName ?? string.Empty, "Assets", creditsFileRelativePath)
+        };
+
+        for (int i = 0; i < paths.Length; i++)
+        {
+            string path = paths[i];
+            if (string.IsNullOrWhiteSpace(path) || !File.Exists(path))
+                continue;
+
+            try
+            {
+                return File.ReadAllText(path).Trim();
+            }
+            catch (Exception ex)
+            {
+                Debug.LogWarning($"[MenuSettingsDialog] Could not read credits file at {path}: {ex.Message}", this);
+            }
+        }
+
+        return "Credits file not found.";
+    }
+
+    private void ApplyCreditsScreenLayout()
+    {
+        ApplyCreditsScreenLayout(creditsScreenRoot != null ? creditsScreenRoot.GetComponent<RectTransform>() : null);
+    }
+
+    private void ApplyCreditsScreenLayout(RectTransform creditsRect)
+    {
+        if (creditsRect == null)
+            return;
+
+        if (dialogRoot != null && dialogRoot.name == themedDialogRootName)
+        {
+            ApplyScrollAnchorsForCurrentLayout(creditsRect);
+            return;
+        }
+
+        RectTransform rootRect = dialogRoot != null ? dialogRoot.GetComponent<RectTransform>() : null;
+        Rect rect = rootRect != null ? rootRect.rect : new Rect(0f, 0f, 560f, 340f);
+        float width = Mathf.Clamp(rect.width * 0.82f, 400f, 560f);
+        float height = Mathf.Clamp(rect.height * 0.82f, 250f, 340f);
+
+        creditsRect.anchorMin = new Vector2(0.5f, 0.5f);
+        creditsRect.anchorMax = new Vector2(0.5f, 0.5f);
+        creditsRect.pivot = new Vector2(0.5f, 0.5f);
+        creditsRect.anchoredPosition = Vector2.zero;
+        creditsRect.sizeDelta = new Vector2(width, height);
     }
 
     private void ApplyResponsiveScaleToBuiltDialog()
@@ -2054,16 +2395,17 @@ public class MenuSettingsDialog : MonoBehaviour
         if (buttonSizeValueLabel != null)
             buttonSizeValueLabel.text = buttonSize.ToString("0");
 
+        float displaySize = Mathf.Min(buttonSize, buttonSizeSampleDisplayMaxSize);
         if (buttonSizeSampleButtonLayout != null)
         {
-            buttonSizeSampleButtonLayout.minWidth = buttonSize;
-            buttonSizeSampleButtonLayout.minHeight = buttonSize;
-            buttonSizeSampleButtonLayout.preferredWidth = buttonSize;
-            buttonSizeSampleButtonLayout.preferredHeight = buttonSize;
+            buttonSizeSampleButtonLayout.minWidth = displaySize;
+            buttonSizeSampleButtonLayout.minHeight = displaySize;
+            buttonSizeSampleButtonLayout.preferredWidth = displaySize;
+            buttonSizeSampleButtonLayout.preferredHeight = displaySize;
         }
 
         if (buttonSizeSampleButtonRect != null)
-            buttonSizeSampleButtonRect.sizeDelta = new Vector2(buttonSize, buttonSize);
+            buttonSizeSampleButtonRect.sizeDelta = new Vector2(displaySize, displaySize);
 
         UpdateSettingsIconSizes(buttonSize);
     }
@@ -2104,7 +2446,7 @@ public class MenuSettingsDialog : MonoBehaviour
 
     private void UpdateSettingsIconSizes(float value)
     {
-        float iconSize = PersistentGameSettings.SnapButtonSize(value);
+        float iconSize = Mathf.Min(PersistentGameSettings.SnapButtonSize(value), settingsIconDisplayMaxSize);
         for (int i = settingsIconBindings.Count - 1; i >= 0; i--)
         {
             SettingsIconBinding binding = settingsIconBindings[i];
@@ -2166,9 +2508,9 @@ public class MenuSettingsDialog : MonoBehaviour
     private float GetCurrentSettingsIconSize()
     {
         if (buttonSizeSlider != null)
-            return PersistentGameSettings.SnapButtonSize(buttonSizeSlider.value);
+            return Mathf.Min(PersistentGameSettings.SnapButtonSize(buttonSizeSlider.value), settingsIconDisplayMaxSize);
 
-        return PersistentGameSettings.SnapButtonSize(PersistentGameSettings.GetCurrentOrSaved().buttonSize);
+        return Mathf.Min(PersistentGameSettings.SnapButtonSize(PersistentGameSettings.GetCurrentOrSaved().buttonSize), settingsIconDisplayMaxSize);
     }
 
     private void ShowRandomButtonSizeSampleEmote()
@@ -2231,14 +2573,15 @@ public class MenuSettingsDialog : MonoBehaviour
         Text label = labelObject.GetComponent<Text>();
         label.text = textValue;
         label.font = GetRuntimeFont();
-        label.fontSize = fontSize;
+        label.fontSize = GetCompactFontSize(fontSize);
         label.fontStyle = fontStyle;
         label.alignment = alignment;
         label.color = textColor;
 
         LayoutElement layout = labelObject.GetComponent<LayoutElement>();
-        layout.preferredHeight = height;
-        layout.minHeight = height;
+        float compactHeight = GetCompactRowHeight(height);
+        layout.preferredHeight = compactHeight;
+        layout.minHeight = compactHeight;
         return label;
     }
 

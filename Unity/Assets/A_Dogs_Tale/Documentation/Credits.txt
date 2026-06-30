@@ -1,0 +1,17 @@
+Lead Developer: Mark Pontius
+Co Developer: Cameron Pontius
+
+Main LLM: Ollama
+
+
+
+
+
+
+
+
+
+
+
+
+Jacob Jones
