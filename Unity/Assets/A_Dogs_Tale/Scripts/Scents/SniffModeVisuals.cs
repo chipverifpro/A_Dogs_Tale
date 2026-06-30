@@ -32,9 +32,9 @@ public class SniffModeVisuals : MonoBehaviour
 
     // ----- Color adjustments targets -----
     [Header("Color Adjustments (Sniff Mode Targets)")]
-    [Tooltip("Saturation in sniff mode (-100 = full grayscale).")]
-    [Range(0f, 0f)]
-    public float sniffSaturation = -80f;
+    [Tooltip("Saturation in sniff mode (-100 = full grayscale, 0 = unchanged).")]
+    [Range(-100f, 100f)]
+    public float sniffSaturation = -20f;
 
     [Tooltip("Post exposure in sniff mode (negative = darker).")]
     [Range(-3f, 3f)]

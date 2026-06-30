@@ -185,7 +185,7 @@ public sealed partial class InteractionDialogUI : MonoBehaviour
         labelRect.offsetMax = new Vector2(-12f, -2f);
 
         TextMeshProUGUI label = labelObject.AddComponent<TextMeshProUGUI>();
-        label.text = source != null ? source.DisplayName : string.Empty;
+        label.text = GetScentSourceListDisplayLabel(source);
         label.fontSize = 22f;
         label.color = new Color(1f, 0.88f, 0.58f, 1f);
         label.alignment = TextAlignmentOptions.MidlineLeft;
@@ -197,7 +197,21 @@ public sealed partial class InteractionDialogUI : MonoBehaviour
 
         scentSourceListBackgrounds.Add(background);
         if (source != null)
-            ConfigureTooltip(rowObject, $"Select {source.DisplayName}");
+            ConfigureTooltip(rowObject, $"Select {GetScentSourceListDisplayLabel(source)}");
+    }
+
+    private static string GetScentSourceListDisplayLabel(WorldObject source)
+    {
+        if (source == null)
+            return string.Empty;
+
+        string displayName = string.IsNullOrWhiteSpace(source.DisplayName)
+            ? source.name
+            : source.DisplayName;
+
+        return source.ObjectId > 0
+            ? $"{displayName} #{source.ObjectId}"
+            : displayName;
     }
 
     #endregion

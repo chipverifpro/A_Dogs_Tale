@@ -157,7 +157,7 @@ namespace DogGame.UI.InteractionWheel
 
             ApplyManualLayout();
 
-            PlayerInputState inputState = GetInputState();
+            PlayerInputState? inputState = GetInputState();
             if (inputState != null && inputState.closeDialogsPressed)
             {
                 CloseMenuWheel();
@@ -198,7 +198,7 @@ namespace DogGame.UI.InteractionWheel
             }
         }
 
-        private static PlayerInputState GetInputState()
+        private static PlayerInputState? GetInputState()
         {
             GameInputRouter router = GameInputRouter.Instance;
             if (router != null)
