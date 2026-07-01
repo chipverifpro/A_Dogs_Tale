@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text.RegularExpressions;
 using DogGame;
 using UnityEngine;
 using UnityEngine.UI;
@@ -1955,6 +1956,7 @@ public class MenuSettingsDialog : MonoBehaviour
         creditsBodyText.color = textColor;
         creditsBodyText.horizontalOverflow = HorizontalWrapMode.Wrap;
         creditsBodyText.verticalOverflow = VerticalWrapMode.Overflow;
+        creditsBodyText.supportRichText = true;
 
         ContentSizeFitter textFitter = textObject.GetComponent<ContentSizeFitter>();
         textFitter.horizontalFit = ContentSizeFitter.FitMode.Unconstrained;
@@ -2070,7 +2072,58 @@ public class MenuSettingsDialog : MonoBehaviour
         if (creditsBodyText == null)
             return;
 
-        creditsBodyText.text = LoadCreditsText();
+        creditsBodyText.text = ConvertCreditsMarkdownToRichText(LoadCreditsText());
+    }
+
+    private string ConvertCreditsMarkdownToRichText(string markdown)
+    {
+        if (string.IsNullOrWhiteSpace(markdown))
+            return string.Empty;
+
+        string[] lines = markdown.Replace("\r\n", "\n").Replace('\r', '\n').Split('\n');
+        for (int i = 0; i < lines.Length; i++)
+            lines[i] = ConvertCreditsMarkdownLine(lines[i]);
+
+        return string.Join("\n", lines);
+    }
+
+    private string ConvertCreditsMarkdownLine(string line)
+    {
+        if (string.IsNullOrWhiteSpace(line))
+            return string.Empty;
+
+        string trimmed = line.TrimStart();
+        int leadingSpaces = line.Length - trimmed.Length;
+        string indent = leadingSpaces > 0 ? line.Substring(0, leadingSpaces) : string.Empty;
+
+        if (trimmed.StartsWith("### ", StringComparison.Ordinal))
+            return $"{indent}<b><size=21>{ConvertCreditsInlineMarkdown(trimmed.Substring(4))}</size></b>";
+        if (trimmed.StartsWith("## ", StringComparison.Ordinal))
+            return $"{indent}<b><size=23>{ConvertCreditsInlineMarkdown(trimmed.Substring(3))}</size></b>";
+        if (trimmed.StartsWith("# ", StringComparison.Ordinal))
+            return $"{indent}<b><size=25>{ConvertCreditsInlineMarkdown(trimmed.Substring(2))}</size></b>";
+        if (trimmed.StartsWith("- ", StringComparison.Ordinal) || trimmed.StartsWith("* ", StringComparison.Ordinal))
+            return $"{indent}\u2022 {ConvertCreditsInlineMarkdown(trimmed.Substring(2))}";
+
+        return indent + ConvertCreditsInlineMarkdown(trimmed);
+    }
+
+    private string ConvertCreditsInlineMarkdown(string text)
+    {
+        string richText = EscapeCreditsRichText(text);
+        richText = Regex.Replace(richText, @"`([^`\n]+)`", "<color=#5A3212>$1</color>");
+        richText = Regex.Replace(richText, @"\*\*([^*\n]+)\*\*", "<b>$1</b>");
+        richText = Regex.Replace(richText, @"__([^_\n]+)__", "<b>$1</b>");
+        richText = Regex.Replace(richText, @"(?<!\*)\*([^*\n]+)\*(?!\*)", "<i>$1</i>");
+        richText = Regex.Replace(richText, @"(?<!_)_([^_\n]+)_(?!_)", "<i>$1</i>");
+        return richText;
+    }
+
+    private string EscapeCreditsRichText(string text)
+    {
+        return text
+            .Replace("<", "&lt;")
+            .Replace(">", "&gt;");
     }
 
     private string LoadCreditsText()

@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using DogGame;
 using DogGame.Modules;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 public sealed partial class InteractionDialogUI : MonoBehaviour
@@ -13,9 +14,9 @@ public sealed partial class InteractionDialogUI : MonoBehaviour
 
     private ScrollRect socialEmoteGridScrollRect;
 
-    private const int SocialEmoteGridColumns = 5;
+    private const float SocialEmoteRowHeight = 128f;
 
-    private const float SocialEmoteTileSize = 72f;
+    private const float SocialEmoteIconSize = 112f;
 
     [SerializeField, Min(0f)] private float socialNearbyRadiusMultiplier = 2f;
 
@@ -67,13 +68,14 @@ public sealed partial class InteractionDialogUI : MonoBehaviour
         socialEmoteGridContentRect.anchoredPosition = Vector2.zero;
         socialEmoteGridContentRect.sizeDelta = Vector2.zero;
 
-        GridLayoutGroup layout = contentObject.AddComponent<GridLayoutGroup>();
-        layout.cellSize = new Vector2(SocialEmoteTileSize, SocialEmoteTileSize);
-        layout.spacing = new Vector2(8f, 8f);
-        layout.padding = new RectOffset(8, 8, 8, 8);
-        layout.childAlignment = TextAnchor.UpperLeft;
-        layout.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
-        layout.constraintCount = SocialEmoteGridColumns;
+        VerticalLayoutGroup layout = contentObject.AddComponent<VerticalLayoutGroup>();
+        layout.childAlignment = TextAnchor.UpperCenter;
+        layout.childControlWidth = true;
+        layout.childControlHeight = false;
+        layout.childForceExpandWidth = true;
+        layout.childForceExpandHeight = false;
+        layout.spacing = 6f;
+        layout.padding = new RectOffset(6, 6, 6, 6);
 
         ContentSizeFitter fitter = contentObject.AddComponent<ContentSizeFitter>();
         fitter.horizontalFit = ContentSizeFitter.FitMode.Unconstrained;
@@ -103,10 +105,8 @@ public sealed partial class InteractionDialogUI : MonoBehaviour
     {
         GameObject tileObject = CreateUIObject(objectName, socialEmoteGridContentRect);
         LayoutElement layout = tileObject.AddComponent<LayoutElement>();
-        layout.preferredWidth = SocialEmoteTileSize;
-        layout.preferredHeight = SocialEmoteTileSize;
-        layout.minWidth = SocialEmoteTileSize;
-        layout.minHeight = SocialEmoteTileSize;
+        layout.preferredHeight = SocialEmoteRowHeight;
+        layout.minHeight = SocialEmoteRowHeight;
 
         Image background = tileObject.AddComponent<Image>();
         background.color = new Color(0.2f, 0.15f, 0.08f, 0.9f);
@@ -118,17 +118,35 @@ public sealed partial class InteractionDialogUI : MonoBehaviour
 
         GameObject iconObject = CreateUIObject("Icon", tileObject.transform);
         RectTransform iconRect = iconObject.GetComponent<RectTransform>();
-        iconRect.anchorMin = new Vector2(0.5f, 0.5f);
-        iconRect.anchorMax = new Vector2(0.5f, 0.5f);
+        iconRect.anchorMin = new Vector2(0f, 0.5f);
+        iconRect.anchorMax = new Vector2(0f, 0.5f);
         iconRect.pivot = new Vector2(0.5f, 0.5f);
-        iconRect.anchoredPosition = Vector2.zero;
-        iconRect.sizeDelta = Vector2.one * (SocialEmoteTileSize - 16f);
+        iconRect.anchoredPosition = new Vector2(66f, 0f);
+        iconRect.sizeDelta = Vector2.one * SocialEmoteIconSize;
 
         Image iconImage = iconObject.AddComponent<Image>();
         iconImage.sprite = sprite;
         iconImage.preserveAspect = true;
         iconImage.color = Color.white;
         iconImage.raycastTarget = false;
+
+        GameObject labelObject = CreateUIObject("Label", tileObject.transform);
+        RectTransform labelRect = labelObject.GetComponent<RectTransform>();
+        labelRect.anchorMin = new Vector2(0f, 0f);
+        labelRect.anchorMax = new Vector2(1f, 1f);
+        labelRect.offsetMin = new Vector2(136f, 12f);
+        labelRect.offsetMax = new Vector2(-14f, -12f);
+
+        TextMeshProUGUI label = labelObject.AddComponent<TextMeshProUGUI>();
+        label.text = tooltipText;
+        label.fontSize = 26f;
+        label.color = new Color(1f, 0.88f, 0.58f, 1f);
+        label.alignment = TextAlignmentOptions.MidlineLeft;
+        label.textWrappingMode = TextWrappingModes.NoWrap;
+        label.overflowMode = TextOverflowModes.Ellipsis;
+        label.raycastTarget = false;
+        if (TMP_Settings.defaultFontAsset != null)
+            label.font = TMP_Settings.defaultFontAsset;
 
         ConfigureTooltip(tileObject, tooltipText);
         socialEmoteGridTiles.Add(tileObject);

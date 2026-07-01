@@ -1,17 +1,87 @@
-Lead Developer: Mark Pontius
-Co Developer: Cameron Pontius
+## Concept and Design
+Mark Pontius
 
-Main LLM: Ollama
+## Programming
+Mark Pontius
+Cameron Pontius
+
+## Coding Assistance
+ChatGPT / Codex
+
+## Alpha Testing and Feedback
+Ian Pontius
+Cameron Pontius
+
+## Cross platform conversions
+Mark Pontius
+
+## 2D Graphics
+ChatGPT – Icons and Windows
+NightCafe – Splash screens and Wallpapers
+PixelStyle – Graphics editing
+
+## 3D Models
+ChatGPT – Farm animals, Agility course, misc.
+Bublisher - Dogs
+DenysAlmaral - Humans
+ithappy - Animals
+Fries and Seagull – Indoor Furniture
+Pandazole – Indoor and outdoor Furnishings
+Gest - Trees
+
+## Algorithms
+Mark Pontius – Mapping and World Building
+
+Wilberforce - Dog’s Color Vision Filter
+
+Craig Reynolds - Boids herding algorithm
+
+Ken Perlin – Perlin Function
+
+Mark Pontius and ChatGPT - Scent Physics Model
+
+Peter Hart, Nils Nilsson, and Bertram Raphael - A* Pathfinding Algorithm
+
+Ashish Vaswani, Noam Shazeer, and Jakob Uszkoreit – LLM Transformer Architecture
+
+David Soria Parra and Justin Spahr-Summers – MCP Protocol
+
+## AI Integration
+Mark Pontius
+
+## AI Models
+Anthropic - ChatGPT
+Google – Gemini and Gemma
+Mistral - Ministral
+Alibaba – Qwen
+
+## Music
+Mureka
+Lyrics - Claude
+
+## Sound Effects
+Fagan
+Buster
+Paul the Trombonist
+
+## Sound Editing and Mixing
+Audacity
+
+## Local LLM Model Hosting
+HuggingFace
+Ollama
+
+## Game Engine
+Unity
+
+## C#, JSON, Lua and Python Editing
+Visual Studio
+
+## Revision Control
+GitHub
 
 
+## ASPCA notice
+No dogs or other animals were harmed in the making of this game.
 
-
-
-
-
-
-
-
-
-
-Jacob Jones
+_©2026 A Bit More Adventure_
