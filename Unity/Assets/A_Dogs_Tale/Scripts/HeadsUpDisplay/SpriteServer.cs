@@ -94,7 +94,7 @@ public static class SpriteServer
 
         { "TradeArrows_B",             "Sprites/TradeArrows_B" },
         // Curved_Arrow_Give, Curved_Arrow_Swap, Curved_Arrow_Take
-        //{ "TricksSpritesheet_A",       "Sprites/TricksSpritesheet_A" },
+        { "TricksSpritesheet_A",       "Sprites/TricksSpritesheet_A" },
         { "TricksSpritesheet_B",       "Sprites/TricksSpritesheet_B" },
         // Fetch, Stay, Come, DropIt, LeaveIt, Heel, Quiet, Bark, GoodDog, BadDog,
         //  FindIt, RollOver, Sit, Down, Release
@@ -322,10 +322,10 @@ public static class SpriteServer
         { NormalizeLookupKey("DropIt"),    new SpriteReference("TricksSpritesheet_B", 3) },
         { NormalizeLookupKey("LeaveIt"),   new SpriteReference("TricksSpritesheet_B", 4) },
         { NormalizeLookupKey("Heel"),      new SpriteReference("TricksSpritesheet_B", 5) },
-        { NormalizeLookupKey("Quiet"),     new SpriteReference("TricksSpritesheet_B", 6) },
-        { NormalizeLookupKey("Bark"),      new SpriteReference("TricksSpritesheet_B", 7) },
-        { NormalizeLookupKey("GoodDog"),   new SpriteReference("TricksSpritesheet_B", 8) },
-        { NormalizeLookupKey("BadDog"),    new SpriteReference("TricksSpritesheet_B", 9) },
+        { NormalizeLookupKey("Quiet"),     new SpriteReference("TricksSpritesheet_A", 6) },
+        { NormalizeLookupKey("Bark"),      new SpriteReference("TricksSpritesheet_A", 7) },
+        { NormalizeLookupKey("GoodDog"),   new SpriteReference("TricksSpritesheet_A", 8) },
+        { NormalizeLookupKey("BadDog"),    new SpriteReference("TricksSpritesheet_A", 9) },
         { NormalizeLookupKey("FindIt"),    new SpriteReference("TricksSpritesheet_B", 10) },
         { NormalizeLookupKey("RollOver"),  new SpriteReference("TricksSpritesheet_B", 11) },
         { NormalizeLookupKey("Sit"),       new SpriteReference("TricksSpritesheet_B", 12) },

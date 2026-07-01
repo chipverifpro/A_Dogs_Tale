@@ -77,6 +77,8 @@ public sealed partial class InteractionDialogUI : MonoBehaviour
         public bool DisplayedEmoteGridUsesHuman;
 
         public bool DisplayedEmoteGridInitialized;
+
+        public bool BarkingAllowed = true;
     }
 
     private sealed class QuestsInteractionTabState

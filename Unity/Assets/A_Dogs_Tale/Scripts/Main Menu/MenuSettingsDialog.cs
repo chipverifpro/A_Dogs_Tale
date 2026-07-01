@@ -1952,7 +1952,7 @@ public class MenuSettingsDialog : MonoBehaviour
         creditsBodyText.font = GetRuntimeFont();
         creditsBodyText.fontSize = 18;
         creditsBodyText.fontStyle = FontStyle.Normal;
-        creditsBodyText.alignment = TextAnchor.UpperLeft;
+        creditsBodyText.alignment = TextAnchor.UpperCenter;
         creditsBodyText.color = textColor;
         creditsBodyText.horizontalOverflow = HorizontalWrapMode.Wrap;
         creditsBodyText.verticalOverflow = VerticalWrapMode.Overflow;

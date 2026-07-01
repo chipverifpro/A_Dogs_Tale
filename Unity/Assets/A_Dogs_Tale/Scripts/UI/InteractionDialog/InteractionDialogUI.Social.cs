@@ -10,6 +10,8 @@ public sealed partial class InteractionDialogUI : MonoBehaviour
 
     private GameObject socialEmoteGridObject;
 
+    private GameObject socialActionButtonsObject;
+
     private RectTransform socialEmoteGridContentRect;
 
     private ScrollRect socialEmoteGridScrollRect;
@@ -18,7 +20,15 @@ public sealed partial class InteractionDialogUI : MonoBehaviour
 
     private const float SocialEmoteIconSize = 112f;
 
+    private static readonly Color SocialActionDefaultColor = new(0.2f, 0.15f, 0.08f, 0.9f);
+
+    private static readonly Color SocialActionNoisyColor = new(0.18f, 0.48f, 0.18f, 0.92f);
+
+    private static readonly Color SocialActionQuietColor = new(0.58f, 0.12f, 0.1f, 0.92f);
+
     [SerializeField, Min(0f)] private float socialNearbyRadiusMultiplier = 2f;
+
+    private Image socialQuietButtonBackground;
 
     private readonly List<GameObject> socialEmoteGridTiles = new();
 
@@ -84,6 +94,22 @@ public sealed partial class InteractionDialogUI : MonoBehaviour
         socialEmoteGridScrollRect.viewport = viewportRect;
         socialEmoteGridScrollRect.content = socialEmoteGridContentRect;
         socialEmoteGridObject.SetActive(false);
+
+        BuildSocialActionButtons(parent);
+    }
+
+    private void BuildSocialActionButtons(Transform parent)
+    {
+        socialActionButtonsObject = CreateUIObject("SocialActionButtons", parent);
+        RectTransform actionRect = socialActionButtonsObject.GetComponent<RectTransform>();
+        actionRect.anchorMin = new Vector2(0.5f, 1f);
+        actionRect.anchorMax = new Vector2(0.5f, 1f);
+        actionRect.pivot = new Vector2(0.5f, 0.5f);
+        actionRect.anchoredPosition = new Vector2(105f, -690f);
+        actionRect.sizeDelta = new Vector2(300f, 300f);
+
+        CreateSocialActionTiles();
+        socialActionButtonsObject.SetActive(false);
     }
 
     private void CreateSocialDogEmoteTile(DogEmojiEntry entry, Sprite sprite)
@@ -103,13 +129,40 @@ public sealed partial class InteractionDialogUI : MonoBehaviour
 
     private GameObject CreateSocialEmoteTile(string objectName, Sprite sprite, string tooltipText)
     {
-        GameObject tileObject = CreateUIObject(objectName, socialEmoteGridContentRect);
+        return CreateSocialTile(
+            socialEmoteGridContentRect,
+            objectName,
+            sprite,
+            tooltipText,
+            SocialActionDefaultColor,
+            SocialEmoteRowHeight,
+            SocialEmoteIconSize,
+            66f,
+            136f,
+            26f,
+            addToEmoteList: true);
+    }
+
+    private GameObject CreateSocialTile(
+        Transform parent,
+        string objectName,
+        Sprite sprite,
+        string labelText,
+        Color backgroundColor,
+        float rowHeight,
+        float iconSize,
+        float iconCenterX,
+        float labelLeftOffset,
+        float labelFontSize,
+        bool addToEmoteList)
+    {
+        GameObject tileObject = CreateUIObject(objectName, parent);
         LayoutElement layout = tileObject.AddComponent<LayoutElement>();
-        layout.preferredHeight = SocialEmoteRowHeight;
-        layout.minHeight = SocialEmoteRowHeight;
+        layout.preferredHeight = rowHeight;
+        layout.minHeight = rowHeight;
 
         Image background = tileObject.AddComponent<Image>();
-        background.color = new Color(0.2f, 0.15f, 0.08f, 0.9f);
+        background.color = backgroundColor;
         background.raycastTarget = true;
 
         Button button = tileObject.AddComponent<Button>();
@@ -121,8 +174,8 @@ public sealed partial class InteractionDialogUI : MonoBehaviour
         iconRect.anchorMin = new Vector2(0f, 0.5f);
         iconRect.anchorMax = new Vector2(0f, 0.5f);
         iconRect.pivot = new Vector2(0.5f, 0.5f);
-        iconRect.anchoredPosition = new Vector2(66f, 0f);
-        iconRect.sizeDelta = Vector2.one * SocialEmoteIconSize;
+        iconRect.anchoredPosition = new Vector2(iconCenterX, 0f);
+        iconRect.sizeDelta = Vector2.one * iconSize;
 
         Image iconImage = iconObject.AddComponent<Image>();
         iconImage.sprite = sprite;
@@ -134,12 +187,12 @@ public sealed partial class InteractionDialogUI : MonoBehaviour
         RectTransform labelRect = labelObject.GetComponent<RectTransform>();
         labelRect.anchorMin = new Vector2(0f, 0f);
         labelRect.anchorMax = new Vector2(1f, 1f);
-        labelRect.offsetMin = new Vector2(136f, 12f);
+        labelRect.offsetMin = new Vector2(labelLeftOffset, 8f);
         labelRect.offsetMax = new Vector2(-14f, -12f);
 
         TextMeshProUGUI label = labelObject.AddComponent<TextMeshProUGUI>();
-        label.text = tooltipText;
-        label.fontSize = 26f;
+        label.text = labelText;
+        label.fontSize = labelFontSize;
         label.color = new Color(1f, 0.88f, 0.58f, 1f);
         label.alignment = TextAlignmentOptions.MidlineLeft;
         label.textWrappingMode = TextWrappingModes.NoWrap;
@@ -148,9 +201,37 @@ public sealed partial class InteractionDialogUI : MonoBehaviour
         if (TMP_Settings.defaultFontAsset != null)
             label.font = TMP_Settings.defaultFontAsset;
 
-        ConfigureTooltip(tileObject, tooltipText);
-        socialEmoteGridTiles.Add(tileObject);
+        ConfigureTooltip(tileObject, labelText);
+        if (addToEmoteList)
+            socialEmoteGridTiles.Add(tileObject);
         return tileObject;
+    }
+
+    private void CreateSocialActionTiles()
+    {
+        CreateSocialActionIconButton("SocialAction_GoodDog", "GoodDog", "Good Dog", new Vector2(-72f, 72f), HandleSocialGoodDogClicked);
+        CreateSocialActionIconButton("SocialAction_BadDog", "BadDog", "Bad Dog", new Vector2(72f, 72f), HandleSocialBadDogClicked);
+        CreateSocialActionIconButton("SocialAction_Bark", "Bark", "Bark", new Vector2(-72f, -72f), HandleSocialBarkClicked);
+        Button quietButton = CreateSocialActionIconButton("SocialAction_Quiet", "Quiet", "Quiet", new Vector2(72f, -72f), HandleSocialQuietClicked);
+        socialQuietButtonBackground = quietButton.targetGraphic as Image;
+        RefreshSocialQuietButtonVisual();
+    }
+
+    private Button CreateSocialActionIconButton(
+        string objectName,
+        string spriteName,
+        string tooltipText,
+        Vector2 anchoredPosition,
+        UnityEngine.Events.UnityAction clickHandler)
+    {
+        Button button = CreateSpriteButton(objectName, socialActionButtonsObject.transform, SpriteServer.SpriteLookup(spriteName), tooltipText, clickHandler);
+        RectTransform rect = button.GetComponent<RectTransform>();
+        rect.anchorMin = new Vector2(0.5f, 0.5f);
+        rect.anchorMax = new Vector2(0.5f, 0.5f);
+        rect.pivot = new Vector2(0.5f, 0.5f);
+        rect.anchoredPosition = anchoredPosition;
+        rect.sizeDelta = new Vector2(128f, 128f);
+        return button;
     }
 
     #endregion
@@ -212,6 +293,13 @@ public sealed partial class InteractionDialogUI : MonoBehaviour
             socialEmoteGridObject.SetActive(active);
             if (active)
                 socialEmoteGridObject.transform.SetAsLastSibling();
+        }
+
+        if (socialActionButtonsObject != null)
+        {
+            socialActionButtonsObject.SetActive(active);
+            if (active)
+                socialActionButtonsObject.transform.SetAsLastSibling();
         }
     }
 
@@ -355,6 +443,49 @@ public sealed partial class InteractionDialogUI : MonoBehaviour
             return;
 
         BottomBanner.LogHumanEmote(actor, spriteIndex);
+    }
+
+    private void HandleSocialGoodDogClicked()
+    {
+        ShowSocialTrickEmote("GoodDog", "Good Dog");
+    }
+
+    private void HandleSocialBadDogClicked()
+    {
+        ShowSocialTrickEmote("BadDog", "Bad Dog");
+    }
+
+    private void HandleSocialBarkClicked()
+    {
+        AudioPlayer player = AudioPlayer.Instance ?? Dir.Instance?.audioPlayer;
+        player?.PlayClip("Bark", 1f);
+    }
+
+    private void HandleSocialQuietClicked()
+    {
+        socialState.BarkingAllowed = !socialState.BarkingAllowed;
+        RefreshSocialQuietButtonVisual();
+    }
+
+    private void ShowSocialTrickEmote(string spriteName, string displayName)
+    {
+        WorldObject actor = GetSelectedFromList(playerAgentOptions, ref sharedState.SelectedPlayerAgentIndex);
+        if (actor == null)
+            return;
+
+        Sprite sprite = SpriteServer.SpriteLookup(spriteName);
+        EmoteIconVisualFactory.ShowOverhead(actor, sprite);
+        BottomBanner.LogAgentMessageWithIcon(actor, BannerSense.None, BannerLevel.None, $"{actor.DisplayName} did the {displayName} emote.", spriteName);
+    }
+
+    private void RefreshSocialQuietButtonVisual()
+    {
+        if (socialQuietButtonBackground == null)
+            return;
+
+        socialQuietButtonBackground.color = socialState.BarkingAllowed
+            ? SocialActionNoisyColor
+            : SocialActionQuietColor;
     }
 
     private void CycleSocialLeftSelection(int direction)
