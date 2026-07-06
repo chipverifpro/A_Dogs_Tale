@@ -26,8 +26,6 @@ namespace DogGame.LLM.Providers
         // constructor:
         public OpenAIClient(string model = "gpt-4.1-mini")
         {
-            if (string.IsNullOrEmpty(ResolveApiKey(apiKeyEnvironmentVariable, "")))
-                Debug.LogWarning($"{Vendor}Client apiKey empty. apiKeyEnvironmentVariable={apiKeyEnvironmentVariable}");
             this.model = model;
         }
 

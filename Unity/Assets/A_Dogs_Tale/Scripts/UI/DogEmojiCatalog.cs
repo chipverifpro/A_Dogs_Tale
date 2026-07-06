@@ -31,7 +31,7 @@ public static class DogEmojiCatalog
         new("Content", 'B', 13),
         new("Cool", 'A', 26),
         new("Cry", 'A', 11),
-        new("Crying", 'C', 23),
+        //new("Crying", 'C', 23),
         new("Curious", 'C', 17),
         new("Determined", 'C', 15),
         new("Disappointed", 'C', 9),

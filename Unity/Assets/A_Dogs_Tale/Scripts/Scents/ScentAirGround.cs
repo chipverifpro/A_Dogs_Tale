@@ -222,10 +222,13 @@ public class ScentAirGround : MonoBehaviour
                     agent: agent,
                     ScentCategory.Unknown,
                     defaultName: agent.DisplayName);
-            ActivateOverlayForSource(scentSource);
-            // Draw the current state for this agent with current visibility flags
-            VisualizeCurrentScents();
-            ApplyScentUpdates();
+            if (scentSource != null)
+            {
+                ActivateOverlayForSource(scentSource);
+                // Draw the current state for this agent with current visibility flags
+                VisualizeCurrentScents();
+                ApplyScentUpdates();
+            }
         }
             
 

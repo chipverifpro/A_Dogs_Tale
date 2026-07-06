@@ -22,7 +22,10 @@ public static class PersistentGameSettings
     private const string SfxVolumeJsonField = "\"sfxVolume\"";
     private const string UiEnabledJsonField = "\"uiEnabled\"";
     private const string UiVolumeJsonField = "\"uiVolume\"";
+    private const string ChatGptEnabledJsonField = "\"chatGptEnabled\"";
+    private const string GeminiEnabledJsonField = "\"geminiEnabled\"";
     private const string MistralEnabledJsonField = "\"mistralEnabled\"";
+    private const string OllamaEnabledJsonField = "\"ollamaEnabled\"";
     private const string LocalQwenEnabledJsonField = "\"localQwenEnabled\"";
     private const string LocalGemmaEnabledJsonField = "\"localGemmaEnabled\"";
     private const string LocalMistralEnabledJsonField = "\"localMistralEnabled\"";
@@ -61,11 +64,11 @@ public static class PersistentGameSettings
     public class Data
     {
         public MapType mapType = MapType.House;
-        public bool chatGptEnabled = true;
-        public bool geminiEnabled = true;
+        public bool chatGptEnabled = false;
+        public bool geminiEnabled = false;
         public bool mistralEnabled = false;
-        public bool ollamaEnabled = true;
-        public bool localQwenEnabled = true;
+        public bool ollamaEnabled = false;
+        public bool localQwenEnabled = false;
         public bool localGemmaEnabled = false;
         public bool localMistralEnabled = false;
         public string chatGptModelName = DefaultChatGptModelName;
@@ -359,7 +362,10 @@ public static class PersistentGameSettings
         bool hasSfxVolume = json.Contains(SfxVolumeJsonField, StringComparison.Ordinal);
         bool hasUiEnabled = json.Contains(UiEnabledJsonField, StringComparison.Ordinal);
         bool hasUiVolume = json.Contains(UiVolumeJsonField, StringComparison.Ordinal);
+        bool hasChatGptEnabled = json.Contains(ChatGptEnabledJsonField, StringComparison.Ordinal);
+        bool hasGeminiEnabled = json.Contains(GeminiEnabledJsonField, StringComparison.Ordinal);
         bool hasMistralEnabled = json.Contains(MistralEnabledJsonField, StringComparison.Ordinal);
+        bool hasOllamaEnabled = json.Contains(OllamaEnabledJsonField, StringComparison.Ordinal);
         bool hasLocalQwenEnabled = json.Contains(LocalQwenEnabledJsonField, StringComparison.Ordinal);
         bool hasLocalGemmaEnabled = json.Contains(LocalGemmaEnabledJsonField, StringComparison.Ordinal);
         bool hasLocalMistralEnabled = json.Contains(LocalMistralEnabledJsonField, StringComparison.Ordinal);
@@ -389,10 +395,16 @@ public static class PersistentGameSettings
             data.uiEnabled = true;
         if (!hasUiVolume)
             data.uiVolume = 1f;
+        if (!hasChatGptEnabled)
+            data.chatGptEnabled = false;
+        if (!hasGeminiEnabled)
+            data.geminiEnabled = false;
         if (!hasMistralEnabled)
             data.mistralEnabled = false;
+        if (!hasOllamaEnabled)
+            data.ollamaEnabled = false;
         if (!hasLocalQwenEnabled)
-            data.localQwenEnabled = data.ollamaEnabled;
+            data.localQwenEnabled = false;
         if (!hasLocalGemmaEnabled)
             data.localGemmaEnabled = false;
         if (!hasLocalMistralEnabled)
@@ -409,13 +421,13 @@ public static class PersistentGameSettings
         LLMWorldScheduler scheduler = GetScheduler();
         if (scheduler != null)
         {
-            data.chatGptEnabled = HasAnyVendorEnabled(scheduler.llmVendorAndModel, LLMVendor.OpenAI);
-            data.geminiEnabled = HasAnyVendorEnabled(scheduler.llmVendorAndModel, LLMVendor.Gemini);
-            data.mistralEnabled = HasModelEnabled(scheduler.llmVendorAndModel, LLMVendorAndModel.Mistral_mistral_small_latest);
-            data.localQwenEnabled = HasModelEnabled(scheduler.llmVendorAndModel, LLMVendorAndModel.Ollama_Qwen2_5_1_5b);
-            data.localGemmaEnabled = HasModelEnabled(scheduler.llmVendorAndModel, LLMVendorAndModel.Ollama_Gemma3);
-            data.localMistralEnabled = HasModelEnabled(scheduler.llmVendorAndModel, LLMVendorAndModel.Ollama_Mistral);
-            data.ollamaEnabled = data.localQwenEnabled || data.localGemmaEnabled || data.localMistralEnabled;
+            data.chatGptEnabled = false;
+            data.geminiEnabled = false;
+            data.mistralEnabled = false;
+            data.localQwenEnabled = false;
+            data.localGemmaEnabled = false;
+            data.localMistralEnabled = false;
+            data.ollamaEnabled = false;
         }
 
         ScentAirGround scentAirGround = GetScentAirGround();

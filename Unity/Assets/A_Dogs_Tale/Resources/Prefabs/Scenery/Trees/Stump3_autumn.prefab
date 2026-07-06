@@ -153,7 +153,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3f6cda250b193442c9f59a935c554f95, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DogGame.Modules.PlacementModule
-  allowedRooms: 5888
+  allowedRooms: 7936
   autoSizeFromMesh: 1
   sizeInCells: {x: 0.4489529, y: 0.82357645, z: 0.49112934}
   cellSize: 1

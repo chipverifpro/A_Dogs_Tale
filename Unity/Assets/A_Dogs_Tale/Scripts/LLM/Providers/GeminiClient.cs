@@ -27,8 +27,6 @@ namespace DogGame.LLM.Providers
         // constructor:
         public GeminiClient(string model = "gemini-2.5-flash-lite")
         {
-            if (string.IsNullOrEmpty(ResolveApiKey(apiKeyEnvironmentVariable, "")))
-                Debug.LogWarning($"{Vendor}Client: apiKey is empty. apiKeyEnvironmentVariable={apiKeyEnvironmentVariable}");
             this.model = model;
         }
 

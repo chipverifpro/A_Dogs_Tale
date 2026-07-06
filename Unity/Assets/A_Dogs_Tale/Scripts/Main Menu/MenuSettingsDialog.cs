@@ -732,9 +732,9 @@ public class MenuSettingsDialog : MonoBehaviour
 
     private void AddAiModelListeners()
     {
-        chatGptToggle.onValueChanged.AddListener(_ => SaveFromControls());
-        geminiToggle.onValueChanged.AddListener(_ => SaveFromControls());
-        mistralToggle.onValueChanged.AddListener(_ => SaveFromControls());
+        chatGptToggle.onValueChanged.AddListener(_ => SaveFromControlsAndRefreshSecretRows());
+        geminiToggle.onValueChanged.AddListener(_ => SaveFromControlsAndRefreshSecretRows());
+        mistralToggle.onValueChanged.AddListener(_ => SaveFromControlsAndRefreshSecretRows());
         localQwenToggle.onValueChanged.AddListener(_ => SaveFromControls());
         localGemmaToggle.onValueChanged.AddListener(_ => SaveFromControls());
         localMistralToggle.onValueChanged.AddListener(_ => SaveFromControls());
@@ -768,7 +768,7 @@ public class MenuSettingsDialog : MonoBehaviour
 
         statusLabel = CreateLabel(parent, "", 13, FontStyle.Normal, TextAnchor.MiddleLeft, 22f, $"{labelText}StatusLabel");
         statusLabel.color = new Color(textColor.r, textColor.g, textColor.b, 0.76f);
-        RefreshSecretRow(inputField, statusLabel, secretKey);
+        SetSecretRowDisabled(inputField, statusLabel);
 
         InputField capturedInput = inputField;
         Text capturedStatus = statusLabel;
@@ -900,7 +900,7 @@ public class MenuSettingsDialog : MonoBehaviour
         string value = inputField != null ? inputField.text : "";
         if (value == StoredSecretMask && SecretStore.HasSecret(secretKey))
         {
-            RefreshSecretRow(inputField, statusLabel, secretKey);
+            RefreshSecretRow(inputField, statusLabel, secretKey, modelEnabled: true);
             return;
         }
 
@@ -912,7 +912,7 @@ public class MenuSettingsDialog : MonoBehaviour
 
         if (SecretStore.TrySetSecret(secretKey, value, out string error))
         {
-            RefreshSecretRow(inputField, statusLabel, secretKey);
+            RefreshSecretRow(inputField, statusLabel, secretKey, modelEnabled: true);
             return;
         }
 
@@ -923,7 +923,7 @@ public class MenuSettingsDialog : MonoBehaviour
     {
         if (SecretStore.TryDeleteSecret(secretKey, out string error))
         {
-            RefreshSecretRow(inputField, statusLabel, secretKey);
+            RefreshSecretRow(inputField, statusLabel, secretKey, modelEnabled: true);
             return;
         }
 
@@ -932,13 +932,19 @@ public class MenuSettingsDialog : MonoBehaviour
 
     private void RefreshSecretRows()
     {
-        RefreshSecretRow(openAIApiKeyInput, openAIApiKeyStatusLabel, SecretStore.OpenAIApiKey);
-        RefreshSecretRow(geminiApiKeyInput, geminiApiKeyStatusLabel, SecretStore.GeminiApiKey);
-        RefreshSecretRow(mistralApiKeyInput, mistralApiKeyStatusLabel, SecretStore.MistralApiKey);
+        RefreshSecretRow(openAIApiKeyInput, openAIApiKeyStatusLabel, SecretStore.OpenAIApiKey, chatGptToggle != null && chatGptToggle.isOn);
+        RefreshSecretRow(geminiApiKeyInput, geminiApiKeyStatusLabel, SecretStore.GeminiApiKey, geminiToggle != null && geminiToggle.isOn);
+        RefreshSecretRow(mistralApiKeyInput, mistralApiKeyStatusLabel, SecretStore.MistralApiKey, mistralToggle != null && mistralToggle.isOn);
     }
 
-    private void RefreshSecretRow(InputField inputField, Text statusLabel, string secretKey)
+    private void RefreshSecretRow(InputField inputField, Text statusLabel, string secretKey, bool modelEnabled)
     {
+        if (!modelEnabled)
+        {
+            SetSecretRowDisabled(inputField, statusLabel);
+            return;
+        }
+
         bool hasSecret = SecretStore.HasSecret(secretKey);
         if (inputField != null)
             inputField.text = hasSecret ? StoredSecretMask : "";
@@ -948,6 +954,14 @@ public class MenuSettingsDialog : MonoBehaviour
             : $"Not found in {SecretStore.Current.BackendName}";
 
         SetSecretStatus(statusLabel, status);
+    }
+
+    private void SetSecretRowDisabled(InputField inputField, Text statusLabel)
+    {
+        if (inputField != null)
+            inputField.text = "";
+
+        SetSecretStatus(statusLabel, "Model disabled. Secure key storage not checked.");
     }
 
     private static void SetSecretStatus(Text statusLabel, string status)
@@ -2367,6 +2381,12 @@ public class MenuSettingsDialog : MonoBehaviour
             buttonSize = PersistentGameSettings.SnapButtonSize(buttonSizeSlider != null ? buttonSizeSlider.value : current.buttonSize),
             androidFullscreenEnabled = androidFullscreenToggle != null ? androidFullscreenToggle.isOn : current.androidFullscreenEnabled
         });
+    }
+
+    private void SaveFromControlsAndRefreshSecretRows()
+    {
+        SaveFromControls();
+        RefreshSecretRows();
     }
 
     private static void SetInputTextWithoutNotify(InputField inputField, string value)
