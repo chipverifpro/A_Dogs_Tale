@@ -1,0 +1,8 @@
+# Warm, weathered wood
+newmtl ShepherdsCrook_Wood
+Ka 0.090 0.045 0.018
+Kd 0.390 0.185 0.065
+Ks 0.035 0.025 0.015
+Ns 18.0
+d 1.0
+illum 2
